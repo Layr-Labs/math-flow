@@ -5,7 +5,12 @@ from pathlib import Path
 
 from . import __version__
 from .errors import MathFlowError
-from .openrouter import OpenRouterTransport, judge_output_schema, send_chat_completion
+from .openrouter import (
+    OpenRouterTransport,
+    format_error_message,
+    judge_output_schema,
+    send_chat_completion,
+)
 from .repository import ledger, list_files_at, read_at, sha256_json, worktree_ledger
 
 
@@ -330,9 +335,8 @@ def _validate_openrouter_output(
 
 def _parse_openrouter_response(response: dict[str, object]) -> dict[str, object]:
     if "error" in response:
-        error = response["error"]
-        message = error.get("message", "request failed") if isinstance(error, dict) else "request failed"
-        raise MathFlowError(f"OpenRouter returned an error: {str(message)[:500]}")
+        message = format_error_message(response["error"])
+        raise MathFlowError(f"OpenRouter returned an error: {message[:500]}")
     try:
         choices = response["choices"]
         message = choices[0]["message"]

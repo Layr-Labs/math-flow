@@ -14,6 +14,21 @@ OPENROUTER_CHAT_COMPLETIONS_URL = "https://openrouter.ai/api/v1/chat/completions
 OpenRouterTransport = Callable[[dict[str, object]], dict[str, object]]
 
 
+def format_error_message(error: object, fallback: str = "request failed") -> str:
+    if not isinstance(error, dict):
+        return fallback
+    message = str(error.get("message", fallback))
+    metadata = error.get("metadata")
+    if not isinstance(metadata, dict):
+        return message
+    details = []
+    for field in ("error_type", "provider_name", "provider_code"):
+        value = metadata.get(field)
+        if isinstance(value, (str, int)):
+            details.append(f"{field}={value}")
+    return f"{message} ({', '.join(details)})" if details else message
+
+
 def judge_output_schema(transaction_ids: list[str]) -> dict[str, object]:
     transaction_id_schema: dict[str, object] = {"type": "string"}
     if transaction_ids:
@@ -60,7 +75,6 @@ def judge_output_schema(transaction_ids: list[str]) -> dict[str, object]:
                         "transactionIds": {
                             "type": "array",
                             "items": transaction_id_schema,
-                            "uniqueItems": True,
                         },
                         "score": {"type": "number", "minimum": 0, "maximum": 1},
                         "rationale": {"type": "string"},
@@ -102,7 +116,7 @@ def send_chat_completion(payload: dict[str, object]) -> dict[str, object]:
         message = "request failed"
         try:
             error = json.loads(body).get("error", {})
-            message = str(error.get("message", message))
+            message = format_error_message(error, message)
         except (json.JSONDecodeError, AttributeError):
             pass
         raise MathFlowError(f"OpenRouter returned HTTP {exc.code}: {message[:500]}") from exc

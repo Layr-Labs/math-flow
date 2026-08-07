@@ -8,6 +8,7 @@ from pathlib import Path
 
 from math_flow.errors import MathFlowError
 from math_flow.judges import project, render_request
+from math_flow.openrouter import format_error_message
 from math_flow.repository import ledger, validate_pr, validate_tree
 
 
@@ -43,6 +44,20 @@ class RepositoryValidationTests(unittest.TestCase):
             write(root / "problems/p/contributions/loose.txt", "not a transaction")
             with self.assertRaisesRegex(MathFlowError, "only contain contribution directories"):
                 validate_tree(root)
+
+    def test_openrouter_error_metadata_is_safely_summarized(self) -> None:
+        error = {
+            "message": "Provider returned error",
+            "metadata": {
+                "error_type": "invalid_request",
+                "provider_name": "OpenAI",
+                "provider_code": "invalid_json_schema",
+                "raw": "potentially sensitive provider payload",
+            },
+        }
+        rendered = format_error_message(error)
+        self.assertIn("provider_code=invalid_json_schema", rendered)
+        self.assertNotIn("potentially sensitive", rendered)
 
 
 class GitProtocolTests(unittest.TestCase):
@@ -111,6 +126,8 @@ class GitProtocolTests(unittest.TestCase):
         self.assertTrue(request["provider"]["require_parameters"])
         self.assertEqual(request["provider"]["data_collection"], "deny")
         self.assertIn("A useful argument", request["messages"][1]["content"])
+        request_schema = request["response_format"]["json_schema"]["schema"]
+        self.assertNotIn("uniqueItems", json.dumps(request_schema))
 
         def fake_transport(payload: dict[str, object]) -> dict[str, object]:
             self.assertEqual(payload, request)
