@@ -1,0 +1,27 @@
+name: Validate transaction
+
+on:
+  pull_request:
+    paths:
+      - "problems/**/contributions/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Validate repository tree
+        run: python -m math_flow validate-tree
+      - name: Validate atomic contribution diff
+        run: >-
+          python -m math_flow validate-pr
+          --base "${{ github.event.pull_request.base.sha }}"
+          --head "${{ github.event.pull_request.head.sha }}"

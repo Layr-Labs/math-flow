@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/projection.schema.json",
+  "title": "Math Flow Judge Projection",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "ledgerHead",
+    "judgeSpec",
+    "judgeRunner",
+    "contributionVerdicts",
+    "knowledgeState",
+    "creditAssignments",
+    "projectionDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "type": "string" },
+    "ledgerHead": { "type": "string" },
+    "judgeSpec": {
+      "type": "object",
+      "required": ["id", "digest"],
+      "properties": {
+        "id": { "type": "string" },
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      },
+      "additionalProperties": false
+    },
+    "judgeRunner": {
+      "type": "object",
+      "required": ["implementation", "mathFlowVersion"],
+      "properties": {
+        "implementation": { "type": "string" },
+        "mathFlowVersion": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "judgeRequestDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "contributionVerdicts": { "type": "array" },
+    "knowledgeState": { "type": "object" },
+    "creditAssignments": { "type": "array" },
+    "providerRun": {
+      "type": "object",
+      "required": ["provider", "requestedModel", "resolvedModel", "responseId", "usage"],
+      "properties": {
+        "provider": { "const": "openrouter" },
+        "requestedModel": { "type": "string" },
+        "resolvedModel": { "type": ["string", "null"] },
+        "responseId": { "type": ["string", "null"] },
+        "usage": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "projectionDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+  },
+  "additionalProperties": false
+}

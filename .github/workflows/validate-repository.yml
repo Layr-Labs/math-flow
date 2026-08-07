@@ -1,0 +1,27 @@
+name: Validate repository
+
+on:
+  pull_request:
+    paths:
+      - "problems/**"
+      - "protocol/**"
+      - "math_flow/**"
+      - "tests/**"
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Validate repository tree
+        run: python -m math_flow validate-tree
+      - name: Run protocol tests
+        run: python -m unittest discover -s tests -v

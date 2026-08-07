@@ -1,0 +1,38 @@
+name: Project OpenRouter judge
+
+on:
+  workflow_dispatch:
+    inputs:
+      problem:
+        description: Problem id
+        required: true
+        default: triangle-midpoints
+
+permissions:
+  contents: read
+
+jobs:
+  project:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Generate OpenRouter projection
+        env:
+          OPENROUTER_API_KEY: "${{ secrets.OPENROUTER_API_KEY }}"
+          MATH_FLOW_SITE_URL: "${{ github.server_url }}/${{ github.repository }}"
+        run: >-
+          python -m math_flow project
+          --problem "${{ inputs.problem }}"
+          --judge protocol/judges/openrouter-math-review-v1.json
+          --head HEAD
+          --output "projections/openrouter-math-review-v1/${{ inputs.problem }}/${{ github.sha }}.json"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: "openrouter-math-review-v1-${{ inputs.problem }}-${{ github.sha }}"
+          path: projections/
+          if-no-files-found: error
