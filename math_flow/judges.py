@@ -14,7 +14,20 @@ from .openrouter import (
 from .repository import ledger, list_files_at, read_at, sha256_json, worktree_ledger
 
 
-SUPPORTED_IMPLEMENTATIONS = {"baseline-neutral-v1", "openrouter-chat-completions-v1"}
+SUPPORTED_IMPLEMENTATIONS = {
+    "baseline-neutral-v1",
+    "openrouter-chat-completions-v1",
+    "openrouter-hierarchical-markdown-v1",
+}
+SUPPORTED_INPUT_BUILDERS = {"ledger-index-v1", "ledger-text-artifacts-v1"}
+SUPPORTED_INVOCATION_ADAPTERS = {"local-v1", "openrouter-chat-completions-v1"}
+SUPPORTED_OUTPUT_PROFILES = {"math-flow/flat-json-v1", "math-flow/hierarchical-markdown-v1"}
+SUPPORTED_OUTPUT_ADAPTERS = {
+    "flat-json-v1",
+    "structured-json-v1",
+    "select-report-extract-v1",
+}
+SUPPORTED_REDUCERS = {None, "hierarchical-delta-v1"}
 TEXT_ARTIFACT_SUFFIXES = {
     ".c",
     ".cpp",
@@ -46,13 +59,36 @@ def load_judge_spec(path: Path) -> dict[str, object]:
         spec = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise MathFlowError(f"could not read judge specification {path}: {exc}") from exc
-    required = {"schemaVersion", "id", "implementation", "description"}
+    required = {
+        "schemaVersion",
+        "id",
+        "implementation",
+        "description",
+        "inputBuilder",
+        "invocationAdapter",
+        "outputProfile",
+        "outputAdapter",
+        "reducer",
+    }
     missing = required - spec.keys()
     if missing:
         raise MathFlowError(f"judge specification is missing: {', '.join(sorted(missing))}")
     if spec["implementation"] not in SUPPORTED_IMPLEMENTATIONS:
         raise MathFlowError(f"unsupported judge implementation: {spec['implementation']}")
-    if spec["implementation"] == "openrouter-chat-completions-v1":
+    registry_fields = {
+        "inputBuilder": SUPPORTED_INPUT_BUILDERS,
+        "invocationAdapter": SUPPORTED_INVOCATION_ADAPTERS,
+        "outputProfile": SUPPORTED_OUTPUT_PROFILES,
+        "outputAdapter": SUPPORTED_OUTPUT_ADAPTERS,
+        "reducer": SUPPORTED_REDUCERS,
+    }
+    for field, allowed in registry_fields.items():
+        if spec[field] not in allowed:
+            raise MathFlowError(f"unsupported judge {field}: {spec[field]}")
+    if spec["implementation"] in {
+        "openrouter-chat-completions-v1",
+        "openrouter-hierarchical-markdown-v1",
+    }:
         for field in ("model", "systemPrompt", "rubric", "parameters", "provider"):
             if field not in spec:
                 raise MathFlowError(f"OpenRouter judge specification is missing: {field}")
@@ -76,6 +112,17 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             raise MathFlowError(
                 f"unsupported OpenRouter provider setting: {sorted(unexpected_provider_fields)[0]}"
             )
+        stages = spec.get("stages")
+        if stages is not None:
+            if not isinstance(stages, dict) or set(stages) - {"select", "report", "extract"}:
+                raise MathFlowError("OpenRouter judge stages must contain only select, report, and extract")
+            for stage_name, stage in stages.items():
+                if not isinstance(stage, dict) or set(stage) - {"model", "parameters"}:
+                    raise MathFlowError(f"invalid OpenRouter stage configuration: {stage_name}")
+                if "model" in stage and (not isinstance(stage["model"], str) or not stage["model"]):
+                    raise MathFlowError(f"OpenRouter stage model must be non-empty: {stage_name}")
+                if "parameters" in stage and not isinstance(stage["parameters"], dict):
+                    raise MathFlowError(f"OpenRouter stage parameters must be an object: {stage_name}")
     return spec
 
 
@@ -94,7 +141,7 @@ def _excerpt(markdown: str, limit: int = 280) -> str:
     return value if len(value) <= limit else value[: limit - 1].rstrip() + "…"
 
 
-def _source(root: Path, problem: str, head: str) -> dict[str, object]:
+def load_source(root: Path, problem: str, head: str) -> dict[str, object]:
     return worktree_ledger(root, problem) if head == "WORKTREE" else ledger(root, problem, head)
 
 
@@ -157,7 +204,7 @@ def _baseline_projection(
     return projection
 
 
-def _artifact_evidence(root: Path, source: dict[str, object], head: str) -> str:
+def artifact_evidence(root: Path, source: dict[str, object], head: str) -> str:
     blocks: list[str] = []
     used = 0
     for transaction in source["transactions"]:
@@ -195,7 +242,7 @@ def prepare_openrouter_request(
 ) -> dict[str, object]:
     resolved_head = "WORKTREE" if head == "WORKTREE" else str(source["ledgerHead"])
     problem_statement = read_at(root, resolved_head, f"problems/{problem}/problem.md")
-    evidence = _artifact_evidence(root, source, head)
+    evidence = artifact_evidence(root, source, head)
     participants: dict[str, list[str]] = {}
     for transaction in source["transactions"]:
         participant = str(transaction["author"]["displayName"])
@@ -242,7 +289,7 @@ def render_request(root: Path, problem: str, judge_path: Path, head: str) -> dic
     spec = load_judge_spec(judge_path)
     if spec["implementation"] != "openrouter-chat-completions-v1":
         raise MathFlowError("request rendering is only available for OpenRouter judge specs")
-    source = _source(root, problem, head)
+    source = load_source(root, problem, head)
     return prepare_openrouter_request(root, problem, spec, source, head)
 
 
@@ -394,7 +441,9 @@ def project(
 ) -> dict[str, object]:
     root = root.resolve()
     spec = load_judge_spec(judge_path)
-    source = _source(root, problem, head)
+    source = load_source(root, problem, head)
     if spec["implementation"] == "baseline-neutral-v1":
         return _baseline_projection(root, problem, spec, source, head)
+    if spec["implementation"] == "openrouter-hierarchical-markdown-v1":
+        raise MathFlowError("hierarchical Markdown judges must be run with the artifact-bundle command")
     return _openrouter_projection(root, problem, spec, source, head, transport)

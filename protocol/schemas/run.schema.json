@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/run.schema.json",
+  "title": "Math Flow Judge Run Manifest",
+  "type": "object",
+  "required": [
+    "protocolVersion",
+    "problemId",
+    "ledgerHead",
+    "judgeSpec",
+    "runner",
+    "judgeBuilder",
+    "baseRun",
+    "outputProfile",
+    "requestDigests",
+    "providerRuns",
+    "artifacts"
+  ],
+  "properties": {
+    "protocolVersion": { "const": 1 },
+    "problemId": { "type": "string" },
+    "ledgerHead": { "type": "string" },
+    "judgeSpec": {
+      "type": "object",
+      "required": ["id", "digest"],
+      "properties": {
+        "id": { "type": "string" },
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      },
+      "additionalProperties": false
+    },
+    "runner": {
+      "type": "object",
+      "required": ["implementation", "mathFlowVersion"],
+      "properties": {
+        "implementation": { "type": "string" },
+        "mathFlowVersion": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "judgeBuilder": {
+      "type": "object",
+      "required": ["inputBuilder", "invocationAdapter", "outputAdapter", "reducer"],
+      "properties": {
+        "inputBuilder": { "type": "string" },
+        "invocationAdapter": { "type": "string" },
+        "outputAdapter": { "type": "string" },
+        "reducer": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "baseRun": { "type": ["string", "null"] },
+    "outputProfile": { "type": "string" },
+    "requestDigests": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+    },
+    "providerRuns": { "type": "array", "items": { "type": "object" } },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "role", "mediaType", "digest", "bytes"],
+        "properties": {
+          "path": { "type": "string" },
+          "role": { "type": "string" },
+          "mediaType": { "type": "string" },
+          "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+          "bytes": { "type": "integer", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -47,6 +47,20 @@ def resolve_commit(root: Path, revision: str) -> str:
     return result.stdout.strip()
 
 
+def is_ancestor(root: Path, ancestor: str, descendant: str) -> bool:
+    return (
+        _run_git(
+            root,
+            "merge-base",
+            "--is-ancestor",
+            resolve_commit(root, ancestor),
+            resolve_commit(root, descendant),
+            check=False,
+        ).returncode
+        == 0
+    )
+
+
 def validate_slug(value: str, label: str) -> None:
     if not SLUG.fullmatch(value):
         raise MathFlowError(

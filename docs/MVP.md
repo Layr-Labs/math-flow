@@ -46,18 +46,18 @@ and structured result. GitHub check runs are the MVP transport for this evidence
 
 ### Pluralistic state layer
 
-A projection is addressed by:
+A judge run is addressed by:
 
 ```text
-(problem id, ledger head commit, judge specification digest)
+(problem id, ledger head commit, judge specification digest, optional base-run digest)
 ```
 
-Judge specifications are versioned JSON files. Projections contain per-
-contribution verdicts, a cumulative knowledge state, and credit assignments. The
-included `baseline-v1` implementation is intentionally epistemically neutral: it
-indexes contributions but leaves verdicts and credit unassessed. It is a stable
-fixture for exercising replay and comparison before an AI provider is chosen.
-Each result records both the spec digest and the Math Flow runner version.
+Judge specifications are versioned JSON files, but their mathematical output is
+not fixed by the core protocol. Every run has a small provenance manifest and a
+declared output profile. The included flat JSON profile contains verdicts,
+cumulative state, and credit; it is an example rather than a protocol requirement.
+The hierarchical Markdown profile keeps the detailed assessment in Markdown and
+uses structured JSON only for node selection and digest-checked state deltas.
 
 The `openrouter-math-review-v1` implementation sends the problem and text
 artifacts to OpenRouter's chat-completions endpoint with strict structured output.
@@ -66,6 +66,12 @@ privacy requirements. A completed projection records the request digest, model
 resolved by OpenRouter, response ID, and usage. Provider credentials are read only
 from `OPENROUTER_API_KEY`, used only in the HTTP authorization header, and never
 enter request bodies, specs, projection files, or normal command output.
+
+The recommended `openrouter-hierarchical-markdown-v1` builder composes an input
+builder, OpenRouter invocation adapter, select/report/extract output adapter, and
+hierarchical reducer. The Markdown stage has no JSON response format. Each stage
+can choose its own model and generation parameters. See
+[`PROJECTION_PROTOCOL.md`](PROJECTION_PROTOCOL.md).
 
 Generated projections are workflow artifacts or deployment data, not commits on
 the canonical branch. This avoids making an interpretation part of the ledger it
@@ -78,7 +84,7 @@ interprets.
 - repository conventions and sample problem;
 - full-tree and PR-diff validation;
 - canonical ledger derivation from Git first-parent history;
-- judge spec hashing and deterministic baseline projection;
+- generic artifact manifests, judge spec hashing, and deterministic baseline runs;
 - transaction and projection GitHub workflows;
 - tests covering valid and invalid PR shapes and deterministic replay.
 
@@ -87,6 +93,7 @@ interprets.
 - OpenRouter AI judge adapter with structured-output validation — implemented;
 - persisted prompt, model identifier, parameters, runner revision, and rubric —
   implemented;
+- unconstrained Markdown reports and hierarchical state deltas — implemented;
 - add a second judge and a projection-diff view;
 - record verifier attestations with content and environment digests;
 - add adversarial fixtures (incorrect proof, duplicate result, correction,
@@ -110,8 +117,8 @@ interprets.
 
 ## Decisions intentionally deferred
 
-- **AI provider and model:** the judge contract should be proven before coupling
-  it to an API.
+- **Additional providers and models:** OpenRouter is the first invocation adapter;
+  the builder boundary permits other adapters without changing the run protocol.
 - **Database:** Git remains adequate while usage is repository-native and query
   volume is low. A database can index Git later without becoming authoritative.
 - **Credit formula:** the protocol represents a judge's assignment; it should not
@@ -131,3 +138,6 @@ interprets.
   projections are canonical/replayable protocol outputs.
 - The MVP identifies runner releases semantically; production-grade replay should
   additionally pin an executable or container digest.
+- Hierarchical selection currently sees the full ledger evidence plus a compact
+  state index; incremental ledger slicing and retrieval for very large histories
+  remain future work.

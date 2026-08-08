@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/knowledge-delta.schema.json",
+  "title": "Hierarchical Knowledge Delta Example Profile",
+  "type": "object",
+  "required": ["operations"],
+  "properties": {
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "action",
+          "nodeId",
+          "parentId",
+          "nodeType",
+          "title",
+          "summary",
+          "reportSection",
+          "baseDigest",
+          "transactionIds"
+        ],
+        "properties": {
+          "action": { "enum": ["upsert", "retire"] },
+          "nodeId": { "type": "string" },
+          "parentId": { "type": ["string", "null"] },
+          "nodeType": {
+            "enum": ["root", "program", "claim", "lemma", "question", "dispute", "method", "result"]
+          },
+          "title": { "type": "string" },
+          "summary": { "type": "string" },
+          "reportSection": { "type": "string" },
+          "baseDigest": { "type": ["string", "null"] },
+          "transactionIds": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
+

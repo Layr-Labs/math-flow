@@ -21,18 +21,18 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - name: Generate OpenRouter projection
+      - name: Generate hierarchical OpenRouter judge run
         env:
           OPENROUTER_API_KEY: "${{ secrets.OPENROUTER_API_KEY }}"
           MATH_FLOW_SITE_URL: "${{ github.server_url }}/${{ github.repository }}"
         run: >-
-          python -m math_flow project
+          python -m math_flow run
           --problem "${{ inputs.problem }}"
-          --judge protocol/judges/openrouter-math-review-v1.json
+          --judge protocol/judges/openrouter-hierarchical-markdown-v1.json
           --head HEAD
-          --output "projections/openrouter-math-review-v1/${{ inputs.problem }}/${{ github.sha }}.json"
+          --output-dir "projections/openrouter-hierarchical-markdown-v1/${{ inputs.problem }}/${{ github.sha }}"
       - uses: actions/upload-artifact@v7
         with:
-          name: "openrouter-math-review-v1-${{ inputs.problem }}-${{ github.sha }}"
+          name: "openrouter-hierarchical-markdown-v1-${{ inputs.problem }}-${{ github.sha }}"
           path: projections/
           if-no-files-found: error

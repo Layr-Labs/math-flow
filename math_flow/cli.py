@@ -8,6 +8,7 @@ from pathlib import Path
 from .errors import MathFlowError
 from .judges import project, render_request
 from .repository import ledger, validate_pr, validate_tree
+from .runs import run_judge_bundle
 
 
 def _write_json(value: object, output: str | None) -> None:
@@ -49,6 +50,15 @@ def build_parser() -> argparse.ArgumentParser:
     request_parser.add_argument("--judge", required=True, type=Path)
     request_parser.add_argument("--head", default="HEAD", help="Git revision or WORKTREE")
     request_parser.add_argument("--output", help="write JSON to this path instead of stdout")
+
+    run_parser = commands.add_parser("run", help="run a judge and write a protocol artifact bundle")
+    run_parser.add_argument("--problem", required=True)
+    run_parser.add_argument("--judge", required=True, type=Path)
+    run_parser.add_argument("--head", default="HEAD", help="Git revision or WORKTREE")
+    run_parser.add_argument("--output-dir", required=True, type=Path)
+    run_parser.add_argument(
+        "--base-run", type=Path, help="previous hierarchical judge-run bundle to update"
+    )
     return parser
 
 
@@ -69,6 +79,17 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "render-request":
             result = render_request(root, args.problem, args.judge, args.head)
             _write_json(result, args.output)
+            return 0
+        elif args.command == "run":
+            result = run_judge_bundle(
+                root,
+                args.problem,
+                args.judge,
+                args.head,
+                args.output_dir,
+                base_run=args.base_run,
+            )
+            _write_json(result, None)
             return 0
         else:  # pragma: no cover
             raise AssertionError(args.command)

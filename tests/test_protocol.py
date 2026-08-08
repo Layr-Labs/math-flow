@@ -8,8 +8,10 @@ from pathlib import Path
 
 from math_flow.errors import MathFlowError
 from math_flow.judges import project, render_request
+from math_flow.knowledge import apply_deltas, empty_state
 from math_flow.openrouter import format_error_message
 from math_flow.repository import ledger, validate_pr, validate_tree
+from math_flow.runs import run_judge_bundle
 
 
 def git(root: Path, *args: str) -> str:
@@ -200,6 +202,174 @@ class GitProtocolTests(unittest.TestCase):
 
         with self.assertRaisesRegex(MathFlowError, "sum to 1.0"):
             project(self.root, "demo", judge, head, transport=fake_transport)
+
+    def test_flat_projection_can_be_written_as_generic_bundle(self) -> None:
+        head = self.commit_contribution("first-proof")
+        judge = Path(__file__).parents[1] / "protocol/judges/baseline-v1.json"
+        output = self.root / "generated-flat-run"
+        manifest = run_judge_bundle(self.root, "demo", judge, head, output)
+        self.assertEqual(manifest["outputProfile"], "math-flow/flat-json-v1")
+        self.assertEqual(manifest["ledgerHead"], head)
+        self.assertEqual(manifest["artifacts"][0]["role"], "flat-projection")
+        self.assertTrue((output / "run.json").is_file())
+        self.assertTrue((output / "projection.json").is_file())
+
+    def test_hierarchical_markdown_run_selects_and_updates_state(self) -> None:
+        head = self.commit_contribution("first-proof")
+        judge = (
+            Path(__file__).parents[1]
+            / "protocol/judges/openrouter-hierarchical-markdown-v1.json"
+        )
+        output = self.root / "generated-hierarchical-run"
+        requests: list[dict[str, object]] = []
+
+        def response(content: object, index: int) -> dict[str, object]:
+            rendered = content if isinstance(content, str) else json.dumps(content)
+            return {
+                "id": f"generation-{index}",
+                "model": "openai/gpt-5-mini",
+                "choices": [{"message": {"content": rendered}}],
+                "usage": {"total_tokens": 100 + index},
+            }
+
+        staged_responses = iter(
+            [
+                response(
+                    {
+                        "selectedNodeIds": ["root"],
+                        "rationale": "The first contribution may establish a new research program.",
+                    },
+                    1,
+                ),
+                response(
+                    "# Research assessment\n\n"
+                    "The contribution gives a complete proof and motivates an affine program.\n\n"
+                    "## Node: program/affine\n\n"
+                    "This program studies the problem through affine invariance and area scaling.\n",
+                    2,
+                ),
+                response(
+                    {
+                        "operations": [
+                            {
+                                "action": "upsert",
+                                "nodeId": "program/affine",
+                                "parentId": "root",
+                                "nodeType": "program",
+                                "title": "Affine methods",
+                                "summary": "Use affine invariance and area scaling.",
+                                "reportSection": "## Node: program/affine",
+                                "baseDigest": None,
+                                "transactionIds": [head],
+                            }
+                        ]
+                    },
+                    3,
+                ),
+            ]
+        )
+
+        def fake_transport(payload: dict[str, object]) -> dict[str, object]:
+            requests.append(payload)
+            return next(staged_responses)
+
+        manifest = run_judge_bundle(
+            self.root, "demo", judge, head, output, transport=fake_transport
+        )
+        self.assertEqual(len(requests), 3)
+        self.assertIn("response_format", requests[0])
+        self.assertNotIn("response_format", requests[1])
+        self.assertIn("response_format", requests[2])
+        self.assertNotIn("uniqueItems", json.dumps(requests))
+        self.assertIn("Do not output JSON", requests[1]["messages"][1]["content"])
+        self.assertEqual(manifest["outputProfile"], "math-flow/hierarchical-markdown-v1")
+        self.assertEqual(len(manifest["requestDigests"]), 3)
+        report = (output / "report.md").read_text(encoding="utf-8")
+        self.assertIn("## Node: program/affine", report)
+        state = json.loads((output / "state/state.json").read_text(encoding="utf-8"))
+        node = state["nodes"]["program/affine"]
+        self.assertEqual(node["parentId"], "root")
+        self.assertEqual(node["reportRef"]["digest"], next(
+            item["digest"] for item in manifest["artifacts"] if item["role"] == "report"
+        ))
+        self.assertIn("affine invariance", node["contentMarkdown"])
+
+        second_output = self.root / "generated-hierarchical-run-2"
+        update_responses = iter(
+            [
+                response(
+                    {
+                        "selectedNodeIds": ["program/affine"],
+                        "rationale": "Only the affine program needs refinement.",
+                    },
+                    4,
+                ),
+                response(
+                    "# Follow-up assessment\n\n"
+                    "## Node: program/affine\n\n"
+                    "The program now includes a determinant formulation.\n",
+                    5,
+                ),
+                response(
+                    {
+                        "operations": [
+                            {
+                                "action": "upsert",
+                                "nodeId": "program/affine",
+                                "parentId": "root",
+                                "nodeType": "program",
+                                "title": "Affine methods",
+                                "summary": "Use affine invariance, scaling, and determinants.",
+                                "reportSection": "## Node: program/affine",
+                                "baseDigest": node["digest"],
+                                "transactionIds": [head],
+                            }
+                        ]
+                    },
+                    6,
+                ),
+            ]
+        )
+
+        second_manifest = run_judge_bundle(
+            self.root,
+            "demo",
+            judge,
+            head,
+            second_output,
+            base_run=output,
+            transport=lambda _: next(update_responses),
+        )
+        self.assertTrue(second_manifest["baseRun"].startswith("sha256:"))
+        second_state = json.loads(
+            (second_output / "state/state.json").read_text(encoding="utf-8")
+        )
+        self.assertIn("determinants", second_state["nodes"]["program/affine"]["summary"])
+        self.assertEqual(second_state["nodes"]["root"]["digest"], state["nodes"]["root"]["digest"])
+
+    def test_hierarchical_reducer_rejects_stale_node_update(self) -> None:
+        state = empty_state("demo")
+        root = state["nodes"]["root"]
+        operation = {
+            "action": "upsert",
+            "nodeId": "root",
+            "parentId": None,
+            "nodeType": "root",
+            "title": "Updated root",
+            "summary": "Updated state.",
+            "reportSection": "## Node: root",
+            "baseDigest": "sha256:" + "0" * 64,
+            "transactionIds": [],
+        }
+        self.assertNotEqual(operation["baseDigest"], root["digest"])
+        with self.assertRaisesRegex(MathFlowError, "stale knowledge delta"):
+            apply_deltas(
+                state,
+                ["root"],
+                [operation],
+                "sha256:" + "1" * 64,
+                "## Node: root\n\nUpdated state.\n",
+            )
 
 
 if __name__ == "__main__":

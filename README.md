@@ -14,7 +14,9 @@ This repository is an executable MVP of that rule. It contains:
 - a folder-based contribution format that stays pleasant to read and edit;
 - a pull-request validator enforcing one atomic contribution per PR;
 - a ledger command that derives contribution order from first-parent Git history;
-- a versioned judge interface and a deterministic baseline projection;
+- a versioned, allowlisted judge-builder interface;
+- generic judge-run bundles with profile-specific artifacts;
+- flat JSON and hierarchical Markdown example profiles;
 - GitHub Actions for transaction checks and projection artifacts.
 
 ## Repository layout
@@ -28,9 +30,12 @@ problems/<problem-id>/
 
 protocol/
   judges/                 versioned judge specifications
-  schemas/                output contracts
+  profiles/               optional output-profile definitions
+  schemas/                protocol and example-profile contracts
 
-projections/              generated locally; ignored by Git
+projections/<run>/
+  run.json                protocol-level provenance and artifact manifest
+  ...                     profile-specific artifacts; ignored by Git
 ```
 
 A contribution may contain Markdown, Lean, source code, data, diagrams, or any
@@ -43,26 +48,28 @@ The CLI uses only the Python standard library (Python 3.11+):
 
 ```bash
 python -m math_flow validate-tree
-python -m math_flow project \
+python -m math_flow run \
   --problem triangle-midpoints \
   --judge protocol/judges/baseline-v1.json \
   --head WORKTREE \
-  --output projections/baseline-v1/triangle-midpoints/worktree.json
+  --output-dir projections/baseline-v1/triangle-midpoints/worktree
 ```
 
 After this repository is committed, use a Git commit instead:
 
 ```bash
 python -m math_flow ledger --problem triangle-midpoints --head HEAD
-python -m math_flow project \
+python -m math_flow run \
   --problem triangle-midpoints \
   --judge protocol/judges/baseline-v1.json \
-  --head HEAD
+  --head HEAD \
+  --output-dir projections/baseline-v1/triangle-midpoints/first-run
 ```
 
-### Preview or run the OpenRouter judge
+### OpenRouter judges
 
-Render the exact request without making a network call:
+The original flat-JSON judge remains available as an example profile. Render its
+exact request without making a network call:
 
 ```bash
 python -m math_flow render-request \
@@ -72,16 +79,32 @@ python -m math_flow render-request \
   --output /tmp/math-flow-openrouter-request.json
 ```
 
-To perform a billed judge run, export an API key and replace `WORKTREE` with a
-commit SHA or `HEAD` for a canonical projection:
+The older `project` command remains a compatibility interface for flat profiles;
+new integrations should use `run` and consume `run.json`.
+
+The recommended hierarchical judge uses three calls: node selection, an
+unconstrained Markdown assessment, and structured delta extraction. Export an API
+key and run it against a commit-addressed ledger:
 
 ```bash
 export OPENROUTER_API_KEY="..."
-python -m math_flow project \
+python -m math_flow run \
   --problem triangle-midpoints \
-  --judge protocol/judges/openrouter-math-review-v1.json \
+  --judge protocol/judges/openrouter-hierarchical-markdown-v1.json \
   --head HEAD \
-  --output projections/openrouter-math-review-v1/triangle-midpoints/result.json
+  --output-dir projections/openrouter-hierarchical-markdown-v1/triangle-midpoints/run-1
+```
+
+Its bundle contains a small `run.json`, `report.md`, the node selection and delta,
+and the reduced hierarchical state. A later run selectively updates that state:
+
+```bash
+python -m math_flow run \
+  --problem triangle-midpoints \
+  --judge protocol/judges/openrouter-hierarchical-markdown-v1.json \
+  --head HEAD \
+  --base-run projections/openrouter-hierarchical-markdown-v1/triangle-midpoints/run-1 \
+  --output-dir projections/openrouter-hierarchical-markdown-v1/triangle-midpoints/run-2
 ```
 
 The judge sends the problem statement and supported text artifacts (`.md`,
@@ -108,5 +131,5 @@ Problem creation and protocol changes use separate maintainer PRs. They are
 validated structurally but are not contribution transactions.
 
 See [docs/MVP.md](docs/MVP.md) for the architecture, decisions, rollout plan, and
-known limitations. See [docs/REMOTE_TESTING.md](docs/REMOTE_TESTING.md) for the
-first GitHub and live-provider test.
+known limitations. The generic run envelope and example output profiles are
+documented in [docs/PROJECTION_PROTOCOL.md](docs/PROJECTION_PROTOCOL.md).
