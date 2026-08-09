@@ -394,7 +394,9 @@ class GitProtocolTests(unittest.TestCase):
                 response(
                     "# Assessment\n\n"
                     "## Node: root\n\n"
-                    "The research state now includes an assessed contribution.\n"
+                    "The research state now includes an assessed contribution.\n\n"
+                    "## Node: program/top-level\n\n"
+                    "A new top-level research program records the contribution.\n"
                 ),
                 response(
                     {
@@ -419,7 +421,28 @@ class GitProtocolTests(unittest.TestCase):
                                         "relation": "supports",
                                     }
                                 ],
-                            }
+                            },
+                            {
+                                "action": "revise",
+                                "adjudicationId": "program/top-level",
+                                "nodeId": "program/top-level",
+                                "parentId": "None",
+                                "nodeType": "program",
+                                "title": "Top-level program",
+                                "summary": "A program established by the first contribution.",
+                                "reportSection": "## Node: program/top-level",
+                                "baseDigest": "sha256:" + "0" * 64,
+                                "baseRevisionId": "sha256:" + "1" * 64,
+                                "subjects": [{"kind": "transaction", "id": head}],
+                                "evidence": [
+                                    {
+                                        "kind": "transaction",
+                                        "id": head,
+                                        "digest": None,
+                                        "relation": "supports",
+                                    }
+                                ],
+                            },
                         ]
                     }
                 ),
@@ -438,12 +461,22 @@ class GitProtocolTests(unittest.TestCase):
         normalizations = json.loads(
             (output / "control/normalizations.json").read_text(encoding="utf-8")
         )
-        self.assertEqual(
-            normalizations["normalizations"][0]["kind"],
-            "structural-root-first-adjudication",
+        normalization_kinds = {
+            item["kind"] for item in normalizations["normalizations"]
+        }
+        self.assertTrue(
+            {
+                "structural-root-first-adjudication",
+                "new-node-first-adjudication",
+                "new-node-null-base",
+                "top-level-node-parent",
+            }
+            <= normalization_kinds
         )
         state = json.loads((output / "state/state.json").read_text(encoding="utf-8"))
         self.assertEqual(state["nodes"]["root"]["currentAdjudication"]["revisionNumber"], 1)
+        self.assertEqual(state["nodes"]["program/top-level"]["parentId"], "root")
+        self.assertEqual(delta["operations"][1]["action"], "issue")
         self.assertIn(
             "adapter-normalizations",
             {item["role"] for item in manifest["artifacts"]},

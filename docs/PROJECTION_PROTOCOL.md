@@ -69,11 +69,11 @@ state/revisions.jsonl
 ```
 
 The output adapter records deterministic control-plane normalizations separately
-from the judge report. In particular, the seed `root` exists structurally before
-it has an adjudication; if an extractor calls its first adjudication `revise`, the
-adapter canonicalizes that impossible transition to `issue` and records the
-change. Mathematical judgments and all other invalid transitions are never
-normalized this way.
+from the judge report. It derives concurrency guards from the selected state,
+orders parents before children, assigns selected `root` as the parent of an
+otherwise parentless top-level node, and canonicalizes an impossible first
+`revise` to `issue`. Mathematical judgments and non-mechanical invalid transitions
+are never normalized this way.
 
 Each JSON Lines entry is an immutable, content-addressed adjudication revision.
 The log is copied forward as an exact prefix and new revisions are appended. The

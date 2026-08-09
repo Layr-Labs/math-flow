@@ -583,6 +583,7 @@ def apply_revision_deltas(
     result = copy.deepcopy(state)
     history = copy.deepcopy(revisions)
     nodes = result["nodes"]
+    initial_node_ids = set(nodes)
 
     def report_section(heading: str) -> str:
         lines = report_markdown.splitlines()
@@ -646,7 +647,17 @@ def apply_revision_deltas(
             if action == "retract":
                 raise MathFlowError("cannot retract the root knowledge node")
         elif parent_id not in nodes:
-            raise MathFlowError(f"knowledge node parent must be created first: {parent_id}")
+            raise MathFlowError(
+                f"knowledge node parent must be created first: {parent_id!r} for {node_id}"
+            )
+        elif (
+            existing is None
+            and parent_id in initial_node_ids
+            and parent_id not in selected_node_ids
+        ):
+            raise MathFlowError(
+                f"new knowledge node parent was not selected: {parent_id!r} for {node_id}"
+            )
         status = "retired" if action == "retract" else "active"
         section_ref = {
             "artifact": "report.md",

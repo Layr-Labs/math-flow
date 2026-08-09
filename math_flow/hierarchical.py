@@ -218,35 +218,132 @@ def _revision_delta_schema(transaction_ids: list[str]) -> dict[str, object]:
 
 
 def _canonicalize_revision_delta(
-    state: dict[str, object], delta: dict[str, object]
+    state: dict[str, object], selected_node_ids: list[str], delta: dict[str, object]
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
-    """Resolve the sole structural-node ambiguity without changing mathematical meaning."""
+    """Canonicalize state-derived control fields without changing mathematical meaning."""
     canonical = copy.deepcopy(delta)
     normalizations: list[dict[str, object]] = []
     operations = canonical.get("operations")
-    root = state.get("nodes", {}).get("root") if isinstance(state.get("nodes"), dict) else None
-    if not isinstance(operations, list) or not isinstance(root, dict):
+    nodes = state.get("nodes")
+    if not isinstance(operations, list) or not isinstance(nodes, dict):
         return canonical, normalizations
+
+    def record(kind: str, node_id: object, reason: str, **fields: object) -> None:
+        normalizations.append(
+            {"kind": kind, "nodeId": node_id, "reason": reason, **fields}
+        )
+
     for operation in operations:
+        if not isinstance(operation, dict):
+            continue
+        node_id = operation.get("nodeId")
+        existing = nodes.get(node_id) if isinstance(node_id, str) else None
+        current = (
+            existing.get("currentAdjudication") if isinstance(existing, dict) else None
+        )
+        action = operation.get("action")
+        if existing is None:
+            if action == "revise":
+                operation["action"] = "issue"
+                record(
+                    "new-node-first-adjudication",
+                    node_id,
+                    "A node absent from the base state has no adjudication to revise.",
+                    fromAction="revise",
+                    toAction="issue",
+                )
+            if operation.get("baseDigest") is not None or operation.get(
+                "baseRevisionId"
+            ) is not None:
+                operation["baseDigest"] = None
+                operation["baseRevisionId"] = None
+                record(
+                    "new-node-null-base",
+                    node_id,
+                    "A new node has no prior node or adjudication revision.",
+                )
+            if (
+                node_id != "root"
+                and operation.get("parentId") in {None, "", "None", "null"}
+                and "root" in selected_node_ids
+            ):
+                operation["parentId"] = "root"
+                record(
+                    "top-level-node-parent",
+                    node_id,
+                    "A top-level node is a child of the selected structural root.",
+                    toParentId="root",
+                )
+            continue
+
+        expected_digest = existing.get("digest")
+        expected_revision_id = (
+            current.get("revisionId") if isinstance(current, dict) else None
+        )
         if (
-            isinstance(operation, dict)
-            and operation.get("nodeId") == "root"
-            and operation.get("adjudicationId") == "root"
-            and operation.get("action") == "revise"
-            and root.get("currentAdjudication") is None
+            operation.get("baseDigest") != expected_digest
+            or operation.get("baseRevisionId") != expected_revision_id
         ):
-            operation["action"] = "issue"
-            operation["baseDigest"] = root.get("digest")
-            operation["baseRevisionId"] = None
-            normalizations.append(
-                {
-                    "kind": "structural-root-first-adjudication",
-                    "nodeId": "root",
-                    "fromAction": "revise",
-                    "toAction": "issue",
-                    "reason": "The seed root exists structurally but has no prior adjudication to revise.",
-                }
+            operation["baseDigest"] = expected_digest
+            operation["baseRevisionId"] = expected_revision_id
+            record(
+                "attach-current-base",
+                node_id,
+                "Concurrency guards come from the authoritative selected state.",
             )
+        if action == "revise" and current is None:
+            operation["action"] = "issue"
+            record(
+                "structural-root-first-adjudication",
+                node_id,
+                "The seed root exists structurally but has no prior adjudication to revise.",
+                fromAction="revise",
+                toAction="issue",
+            )
+        elif (
+            action == "issue"
+            and isinstance(current, dict)
+            and existing.get("status") == "active"
+        ):
+            operation["action"] = "revise"
+            record(
+                "existing-node-subsequent-adjudication",
+                node_id,
+                "An active adjudication can be revised but cannot be issued twice.",
+                fromAction="issue",
+                toAction="revise",
+            )
+
+    available = set(nodes)
+    pending = list(operations)
+    ordered: list[object] = []
+    while pending:
+        next_pending: list[object] = []
+        progressed = False
+        for operation in pending:
+            if not isinstance(operation, dict):
+                next_pending.append(operation)
+                continue
+            node_id = operation.get("nodeId")
+            parent_id = operation.get("parentId")
+            if node_id == "root" or parent_id in available:
+                ordered.append(operation)
+                if isinstance(node_id, str):
+                    available.add(node_id)
+                progressed = True
+            else:
+                next_pending.append(operation)
+        if not progressed:
+            ordered.extend(next_pending)
+            break
+        pending = next_pending
+    if ordered != operations:
+        canonical["operations"] = ordered
+        record(
+            "parent-before-child-order",
+            None,
+            "Parent node creations must precede their children.",
+        )
     return canonical, normalizations
 
 
@@ -410,6 +507,7 @@ def run_hierarchical_judge(
                     "Use issue for a first adjudication, revise for an active adjudication changed without withdrawal, retract to withdraw an active adjudication, and reinstate only for a retracted adjudication.",
                     "adjudicationId must equal nodeId. Copy the selected node's current revisionId into baseRevisionId; use null for a first adjudication.",
                     f"These selected structural nodes have no prior adjudication and must use issue, never revise: {json.dumps(unadjudicated_selected_ids)}",
+                    "Every non-root node must have a non-null parentId. Use parentId root for a new top-level research program when root was selected.",
                     "subjects identify older or current ledger transactions being adjudicated. evidence identifies why the adjudication is warranted or changed; later transactions may refute earlier subjects.",
                     "For transaction evidence, use the transaction ID as id and null digest. Non-transaction evidence requires a SHA-256 digest and must only reference an artifact explicitly present in the supplied evidence.",
                 ]
@@ -444,7 +542,7 @@ def run_hierarchical_judge(
     if set(delta) != {"operations"} or not isinstance(delta["operations"], list):
         raise MathFlowError("hierarchical extractor returned an invalid delta envelope")
     if revisioned:
-        delta, normalizations = _canonicalize_revision_delta(state, delta)
+        delta, normalizations = _canonicalize_revision_delta(state, selected_ids, delta)
     else:
         normalizations = []
     report_headings = {line.strip() for line in report.splitlines() if line.strip().startswith("## ")}
