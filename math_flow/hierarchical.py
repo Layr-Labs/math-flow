@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 from pathlib import Path
 
@@ -216,6 +217,39 @@ def _revision_delta_schema(transaction_ids: list[str]) -> dict[str, object]:
     }
 
 
+def _canonicalize_revision_delta(
+    state: dict[str, object], delta: dict[str, object]
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    """Resolve the sole structural-node ambiguity without changing mathematical meaning."""
+    canonical = copy.deepcopy(delta)
+    normalizations: list[dict[str, object]] = []
+    operations = canonical.get("operations")
+    root = state.get("nodes", {}).get("root") if isinstance(state.get("nodes"), dict) else None
+    if not isinstance(operations, list) or not isinstance(root, dict):
+        return canonical, normalizations
+    for operation in operations:
+        if (
+            isinstance(operation, dict)
+            and operation.get("nodeId") == "root"
+            and operation.get("adjudicationId") == "root"
+            and operation.get("action") == "revise"
+            and root.get("currentAdjudication") is None
+        ):
+            operation["action"] = "issue"
+            operation["baseDigest"] = root.get("digest")
+            operation["baseRevisionId"] = None
+            normalizations.append(
+                {
+                    "kind": "structural-root-first-adjudication",
+                    "nodeId": "root",
+                    "fromAction": "revise",
+                    "toAction": "issue",
+                    "reason": "The seed root exists structurally but has no prior adjudication to revise.",
+                }
+            )
+    return canonical, normalizations
+
+
 def load_base_state(
     base_run: Path | None, problem: str
 ) -> tuple[dict[str, object], str | None, str | None]:
@@ -361,6 +395,11 @@ def run_hierarchical_judge(
     transaction_positions = {
         str(item["transactionId"]): int(item["ordinal"]) for item in source["transactions"]
     }
+    unadjudicated_selected_ids = [
+        str(node["id"])
+        for node in selected
+        if revisioned and node.get("currentAdjudication") is None
+    ]
     extractor_prompt = "\n\n".join(
         [
             "Extract only the knowledge-state delta implied by the report. Do not redo the mathematical judgment.",
@@ -370,6 +409,7 @@ def run_hierarchical_judge(
                 [
                     "Use issue for a first adjudication, revise for an active adjudication changed without withdrawal, retract to withdraw an active adjudication, and reinstate only for a retracted adjudication.",
                     "adjudicationId must equal nodeId. Copy the selected node's current revisionId into baseRevisionId; use null for a first adjudication.",
+                    f"These selected structural nodes have no prior adjudication and must use issue, never revise: {json.dumps(unadjudicated_selected_ids)}",
                     "subjects identify older or current ledger transactions being adjudicated. evidence identifies why the adjudication is warranted or changed; later transactions may refute earlier subjects.",
                     "For transaction evidence, use the transaction ID as id and null digest. Non-transaction evidence requires a SHA-256 digest and must only reference an artifact explicitly present in the supplied evidence.",
                 ]
@@ -403,6 +443,10 @@ def run_hierarchical_judge(
     delta = _structured_content(extractor_response)
     if set(delta) != {"operations"} or not isinstance(delta["operations"], list):
         raise MathFlowError("hierarchical extractor returned an invalid delta envelope")
+    if revisioned:
+        delta, normalizations = _canonicalize_revision_delta(state, delta)
+    else:
+        normalizations = []
     report_headings = {line.strip() for line in report.splitlines() if line.strip().startswith("## ")}
     allowed_transaction_ids = set(transaction_ids)
     for operation in delta["operations"]:
@@ -457,6 +501,7 @@ def run_hierarchical_judge(
         "delta": delta,
         "state": next_state,
         "revisions": next_revisions,
+        "normalizations": normalizations,
         "requestDigests": [f"sha256:{sha256_json(request)}" for request in requests],
         "providerRuns": [
             _provider_run(response, str(request["model"]), stage)

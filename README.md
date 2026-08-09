@@ -97,9 +97,9 @@ python -m math_flow run \
 ```
 
 Its bundle contains a small `run.json`, `report.md`, the node selection and delta,
-the reduced hierarchical state, and an immutable adjudication revision log. A
-later run can selectively update current state or revise a past adjudication in
-light of new evidence:
+audited adapter normalizations, the reduced hierarchical state, and an immutable
+adjudication revision log. A later run can selectively update current state or
+revise a past adjudication in light of new evidence:
 
 ```bash
 python -m math_flow run \

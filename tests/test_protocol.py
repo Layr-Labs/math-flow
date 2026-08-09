@@ -371,6 +371,84 @@ class GitProtocolTests(unittest.TestCase):
                 "## Node: root\n\nUpdated state.\n",
             )
 
+    def test_v2_canonicalizes_first_root_revision_to_issue(self) -> None:
+        head = self.commit_contribution("first-proof")
+        judge = (
+            Path(__file__).parents[1]
+            / "protocol/judges/openrouter-hierarchical-markdown-v2.json"
+        )
+        output = self.root / "root-normalization-run"
+
+        def response(content: object) -> dict[str, object]:
+            rendered = content if isinstance(content, str) else json.dumps(content)
+            return {"choices": [{"message": {"content": rendered}}]}
+
+        staged_responses = iter(
+            [
+                response(
+                    {
+                        "selectedNodeIds": ["root"],
+                        "rationale": "The overall state should reflect the first contribution.",
+                    }
+                ),
+                response(
+                    "# Assessment\n\n"
+                    "## Node: root\n\n"
+                    "The research state now includes an assessed contribution.\n"
+                ),
+                response(
+                    {
+                        "operations": [
+                            {
+                                "action": "revise",
+                                "adjudicationId": "root",
+                                "nodeId": "root",
+                                "parentId": None,
+                                "nodeType": "root",
+                                "title": "Research state for demo",
+                                "summary": "The first contribution has been assessed.",
+                                "reportSection": "## Node: root",
+                                "baseDigest": None,
+                                "baseRevisionId": None,
+                                "subjects": [{"kind": "transaction", "id": head}],
+                                "evidence": [
+                                    {
+                                        "kind": "transaction",
+                                        "id": head,
+                                        "digest": None,
+                                        "relation": "supports",
+                                    }
+                                ],
+                            }
+                        ]
+                    }
+                ),
+            ]
+        )
+        manifest = run_judge_bundle(
+            self.root,
+            "demo",
+            judge,
+            head,
+            output,
+            transport=lambda _: next(staged_responses),
+        )
+        delta = json.loads((output / "state/delta.json").read_text(encoding="utf-8"))
+        self.assertEqual(delta["operations"][0]["action"], "issue")
+        normalizations = json.loads(
+            (output / "control/normalizations.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            normalizations["normalizations"][0]["kind"],
+            "structural-root-first-adjudication",
+        )
+        state = json.loads((output / "state/state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["nodes"]["root"]["currentAdjudication"]["revisionNumber"], 1)
+        self.assertIn(
+            "adapter-normalizations",
+            {item["role"] for item in manifest["artifacts"]},
+        )
+
     def test_later_evidence_retracts_past_adjudication_without_rewriting_history(self) -> None:
         original_head = self.commit_contribution(
             "claimed-proof", "# Claimed proof\n\nAn argument initially believed to be complete."

@@ -68,6 +68,11 @@ def run_judge_bundle(
         bundle.add_json("state/delta.json", result["delta"], "knowledge-delta")
         bundle.add_json("state/state.json", result["state"], "knowledge-state")
         if spec["implementation"] == "openrouter-hierarchical-markdown-v2":
+            bundle.add_json(
+                "control/normalizations.json",
+                {"normalizations": result["normalizations"]},
+                "adapter-normalizations",
+            )
             revision_lines = "".join(
                 json.dumps(item, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
                 for item in result["revisions"]
