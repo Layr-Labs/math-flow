@@ -115,6 +115,31 @@ The judge sends the problem statement and supported text artifacts (`.md`,
 not sent. The included spec denies provider data collection and requires routing
 to an endpoint that supports all requested parameters.
 
+### Interactive research atlas
+
+The `viewer/` app turns a chain of hierarchical Markdown v2 runs into an
+interactive view of the canonical transaction ledger, the knowledge tree at each
+run, and every immutable adjudication revision. Generate its deterministic data
+file by listing runs from oldest to newest:
+
+```bash
+python -m math_flow export-viewer \
+  --problem triangle-midpoints \
+  --head HEAD \
+  --run-dir projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-live-1 \
+  --run-dir projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-live-2 \
+  --run-dir projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-live-3 \
+  --output viewer/app/math-flow-data.json
+
+cd viewer
+npm install
+npm run dev
+```
+
+Open the URL printed by the development server. Select a run to time-travel,
+select a transaction to highlight its subjects and evidence, or select a node to
+inspect its current Markdown, revision lineage, and source judge report.
+
 Run the tests with:
 
 ```bash

@@ -9,6 +9,7 @@ from .errors import MathFlowError
 from .judges import project, render_request
 from .repository import ledger, validate_pr, validate_tree
 from .runs import run_judge_bundle
+from .viewer import export_viewer_data
 
 
 def _write_json(value: object, output: str | None) -> None:
@@ -59,6 +60,16 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument(
         "--base-run", type=Path, help="previous hierarchical judge-run bundle to update"
     )
+
+    viewer_parser = commands.add_parser(
+        "export-viewer", help="export a hierarchical run chain for the interactive viewer"
+    )
+    viewer_parser.add_argument("--problem", required=True)
+    viewer_parser.add_argument("--head", default="HEAD")
+    viewer_parser.add_argument(
+        "--run-dir", required=True, action="append", type=Path, dest="run_dirs"
+    )
+    viewer_parser.add_argument("--output", required=True, type=Path)
     return parser
 
 
@@ -90,6 +101,14 @@ def main(argv: list[str] | None = None) -> int:
                 base_run=args.base_run,
             )
             _write_json(result, None)
+            return 0
+        elif args.command == "export-viewer":
+            result = export_viewer_data(root, args.problem, args.head, args.run_dirs)
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(
+                json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+            )
+            print(args.output)
             return 0
         else:  # pragma: no cover
             raise AssertionError(args.command)

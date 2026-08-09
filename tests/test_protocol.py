@@ -12,6 +12,7 @@ from math_flow.knowledge import apply_deltas, apply_revision_deltas, empty_state
 from math_flow.openrouter import format_error_message
 from math_flow.repository import ledger, validate_pr, validate_tree
 from math_flow.runs import run_judge_bundle
+from math_flow.viewer import export_viewer_data
 
 
 def git(root: Path, *args: str) -> str:
@@ -29,7 +30,7 @@ def write(path: Path, value: str) -> None:
 class RepositoryValidationTests(unittest.TestCase):
     def test_current_tree_is_valid(self) -> None:
         root = Path(__file__).parents[1]
-        self.assertEqual(validate_tree(root), {"problems": 1, "contributions": 1})
+        self.assertEqual(validate_tree(root), {"problems": 1, "contributions": 3})
 
     def test_empty_readme_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -694,6 +695,19 @@ class GitProtocolTests(unittest.TestCase):
             (first_output / "state/state.json").read_text(encoding="utf-8")
         )
         self.assertEqual(unchanged_first_state["nodes"]["claim/original"]["status"], "active")
+
+        viewer = export_viewer_data(
+            self.root,
+            "demo",
+            correction_head,
+            [first_output, second_output],
+        )
+        self.assertEqual(viewer["latestRunId"], "revision-aware-run-2")
+        self.assertEqual(len(viewer["transactions"]), 2)
+        self.assertEqual(len(viewer["runs"]), 2)
+        self.assertEqual(viewer["runs"][0]["revisionIds"], [issued_revision["revisionId"]])
+        self.assertEqual(viewer["runs"][1]["addedRevisionIds"], [retraction["revisionId"]])
+        self.assertEqual(viewer["runs"][1]["changedNodeIds"], ["claim/original"])
 
 
 if __name__ == "__main__":
