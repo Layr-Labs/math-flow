@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/knowledge-delta-v2.schema.json",
+  "title": "Revision-aware Hierarchical Knowledge Delta Example Profile",
+  "type": "object",
+  "required": ["operations"],
+  "properties": {
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "action", "adjudicationId", "nodeId", "parentId", "nodeType",
+          "title", "summary", "reportSection", "baseDigest",
+          "baseRevisionId", "subjects", "evidence"
+        ],
+        "properties": {
+          "action": { "enum": ["issue", "revise", "retract", "reinstate"] },
+          "adjudicationId": { "type": "string" },
+          "nodeId": { "type": "string" },
+          "parentId": { "type": ["string", "null"] },
+          "nodeType": {
+            "enum": ["root", "program", "claim", "lemma", "question", "dispute", "method", "result"]
+          },
+          "title": { "type": "string" },
+          "summary": { "type": "string" },
+          "reportSection": { "type": "string" },
+          "baseDigest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+          "baseRevisionId": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["kind", "id"],
+              "properties": {
+                "kind": { "const": "transaction" },
+                "id": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["kind", "id", "digest", "relation"],
+              "properties": {
+                "kind": { "enum": ["transaction", "artifact", "verifier-attestation", "judge-run"] },
+                "id": { "type": "string" },
+                "digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+                "relation": { "enum": ["supports", "refutes", "qualifies", "context", "formalizes", "supersedes"] }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

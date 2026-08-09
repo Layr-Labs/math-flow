@@ -67,10 +67,12 @@ resolved by OpenRouter, response ID, and usage. Provider credentials are read on
 from `OPENROUTER_API_KEY`, used only in the HTTP authorization header, and never
 enter request bodies, specs, projection files, or normal command output.
 
-The recommended `openrouter-hierarchical-markdown-v1` builder composes an input
+The recommended `openrouter-hierarchical-markdown-v2` builder composes an input
 builder, OpenRouter invocation adapter, select/report/extract output adapter, and
-hierarchical reducer. The Markdown stage has no JSON response format. Each stage
-can choose its own model and generation parameters. See
+revision-aware hierarchical reducer. The Markdown stage has no JSON response
+format. Each stage can choose its own model and generation parameters. Past
+adjudications can be revised or retracted using later evidence without mutating
+the original run. See
 [`PROJECTION_PROTOCOL.md`](PROJECTION_PROTOCOL.md).
 
 Generated projections are workflow artifacts or deployment data, not commits on
@@ -94,6 +96,7 @@ interprets.
 - persisted prompt, model identifier, parameters, runner revision, and rubric —
   implemented;
 - unconstrained Markdown reports and hierarchical state deltas — implemented;
+- append-only adjudication revisions with distinct subjects and evidence — implemented;
 - add a second judge and a projection-diff view;
 - record verifier attestations with content and environment digests;
 - add adversarial fixtures (incorrect proof, duplicate result, correction,

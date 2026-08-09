@@ -82,29 +82,32 @@ python -m math_flow render-request \
 The older `project` command remains a compatibility interface for flat profiles;
 new integrations should use `run` and consume `run.json`.
 
-The recommended hierarchical judge uses three calls: node selection, an
-unconstrained Markdown assessment, and structured delta extraction. Export an API
-key and run it against a commit-addressed ledger:
+The recommended revision-aware hierarchical judge uses three calls: node
+selection, an unconstrained Markdown assessment, and structured delta extraction.
+The three-stage builder is an example, not a core protocol requirement. Export an
+API key and run it against a commit-addressed ledger:
 
 ```bash
 export OPENROUTER_API_KEY="..."
 python -m math_flow run \
   --problem triangle-midpoints \
-  --judge protocol/judges/openrouter-hierarchical-markdown-v1.json \
+  --judge protocol/judges/openrouter-hierarchical-markdown-v2.json \
   --head HEAD \
-  --output-dir projections/openrouter-hierarchical-markdown-v1/triangle-midpoints/run-1
+  --output-dir projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-1
 ```
 
 Its bundle contains a small `run.json`, `report.md`, the node selection and delta,
-and the reduced hierarchical state. A later run selectively updates that state:
+the reduced hierarchical state, and an immutable adjudication revision log. A
+later run can selectively update current state or revise a past adjudication in
+light of new evidence:
 
 ```bash
 python -m math_flow run \
   --problem triangle-midpoints \
-  --judge protocol/judges/openrouter-hierarchical-markdown-v1.json \
+  --judge protocol/judges/openrouter-hierarchical-markdown-v2.json \
   --head HEAD \
-  --base-run projections/openrouter-hierarchical-markdown-v1/triangle-midpoints/run-1 \
-  --output-dir projections/openrouter-hierarchical-markdown-v1/triangle-midpoints/run-2
+  --base-run projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-1 \
+  --output-dir projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-2
 ```
 
 The judge sends the problem statement and supported text artifacts (`.md`,

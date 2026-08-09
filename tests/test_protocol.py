@@ -8,7 +8,7 @@ from pathlib import Path
 
 from math_flow.errors import MathFlowError
 from math_flow.judges import project, render_request
-from math_flow.knowledge import apply_deltas, empty_state
+from math_flow.knowledge import apply_deltas, apply_revision_deltas, empty_state
 from math_flow.openrouter import format_error_message
 from math_flow.repository import ledger, validate_pr, validate_tree
 from math_flow.runs import run_judge_bundle
@@ -370,6 +370,219 @@ class GitProtocolTests(unittest.TestCase):
                 "sha256:" + "1" * 64,
                 "## Node: root\n\nUpdated state.\n",
             )
+
+    def test_later_evidence_retracts_past_adjudication_without_rewriting_history(self) -> None:
+        original_head = self.commit_contribution(
+            "claimed-proof", "# Claimed proof\n\nAn argument initially believed to be complete."
+        )
+        judge = (
+            Path(__file__).parents[1]
+            / "protocol/judges/openrouter-hierarchical-markdown-v2.json"
+        )
+        first_output = self.root / "revision-aware-run-1"
+
+        def response(content: object, index: int) -> dict[str, object]:
+            rendered = content if isinstance(content, str) else json.dumps(content)
+            return {
+                "id": f"revision-generation-{index}",
+                "model": "openai/gpt-5-mini",
+                "choices": [{"message": {"content": rendered}}],
+            }
+
+        first_responses = iter(
+            [
+                response(
+                    {
+                        "selectedNodeIds": ["root"],
+                        "rationale": "The claimed proof needs an initial adjudication.",
+                    },
+                    1,
+                ),
+                response(
+                    "# Initial assessment\n\n"
+                    "## Node: claim/original\n\n"
+                    "The argument is accepted on the currently supplied evidence.\n",
+                    2,
+                ),
+                response(
+                    {
+                        "operations": [
+                            {
+                                "action": "issue",
+                                "adjudicationId": "claim/original",
+                                "nodeId": "claim/original",
+                                "parentId": "root",
+                                "nodeType": "claim",
+                                "title": "Original claim",
+                                "summary": "Accepted on the initially supplied argument.",
+                                "reportSection": "## Node: claim/original",
+                                "baseDigest": None,
+                                "baseRevisionId": None,
+                                "subjects": [
+                                    {"kind": "transaction", "id": original_head}
+                                ],
+                                "evidence": [
+                                    {
+                                        "kind": "transaction",
+                                        "id": original_head,
+                                        "digest": None,
+                                        "relation": "supports",
+                                    }
+                                ],
+                            }
+                        ]
+                    },
+                    3,
+                ),
+            ]
+        )
+        first_manifest = run_judge_bundle(
+            self.root,
+            "demo",
+            judge,
+            original_head,
+            first_output,
+            transport=lambda _: next(first_responses),
+        )
+        self.assertEqual(
+            first_manifest["outputProfile"], "math-flow/hierarchical-markdown-v2"
+        )
+        self.assertIn(
+            "adjudication-revisions",
+            {item["role"] for item in first_manifest["artifacts"]},
+        )
+        first_state = json.loads(
+            (first_output / "state/state.json").read_text(encoding="utf-8")
+        )
+        original_node = first_state["nodes"]["claim/original"]
+        self.assertEqual(original_node["status"], "active")
+        first_revision_lines = (
+            first_output / "state/revisions.jsonl"
+        ).read_text(encoding="utf-8").splitlines()
+        self.assertEqual(len(first_revision_lines), 1)
+        issued_revision = json.loads(first_revision_lines[0])
+        self.assertEqual(issued_revision["action"], "issue")
+        self.assertEqual(issued_revision["issuedAtLedgerHead"], original_head)
+        self.assertEqual(issued_revision["subjects"][0]["ledgerPosition"], 1)
+
+        correction_head = self.commit_contribution(
+            "lean-refutation",
+            "# Lean refutation\n\nA checked Lean proof derives a counterexample to the earlier claim.",
+        )
+        stale_retraction = {
+            "action": "retract",
+            "adjudicationId": "claim/original",
+            "nodeId": "claim/original",
+            "parentId": "root",
+            "nodeType": "claim",
+            "title": "Original claim",
+            "summary": "Retracted after a later Lean counterexample.",
+            "reportSection": "## Node: claim/original",
+            "baseDigest": original_node["digest"],
+            "baseRevisionId": "sha256:" + "0" * 64,
+            "subjects": [{"kind": "transaction", "id": original_head}],
+            "evidence": [
+                {
+                    "kind": "transaction",
+                    "id": correction_head,
+                    "digest": None,
+                    "relation": "refutes",
+                }
+            ],
+        }
+        with self.assertRaisesRegex(MathFlowError, "stale adjudication revision"):
+            apply_revision_deltas(
+                first_state,
+                [issued_revision],
+                ["claim/original"],
+                [stale_retraction],
+                "sha256:" + "1" * 64,
+                "## Node: claim/original\n\nRetracted.\n",
+                correction_head,
+                {original_head: 1, correction_head: 2},
+            )
+        second_output = self.root / "revision-aware-run-2"
+        retract_responses = iter(
+            [
+                response(
+                    {
+                        "selectedNodeIds": ["claim/original"],
+                        "rationale": "The later formal evidence directly refutes the old claim.",
+                    },
+                    4,
+                ),
+                response(
+                    "# Reassessment after formal evidence\n\n"
+                    "## Node: claim/original\n\n"
+                    "The earlier acceptance is retracted because the later Lean contribution supplies a counterexample.\n",
+                    5,
+                ),
+                response(
+                    {
+                        "operations": [
+                            {
+                                "action": "retract",
+                                "adjudicationId": "claim/original",
+                                "nodeId": "claim/original",
+                                "parentId": "root",
+                                "nodeType": "claim",
+                                "title": "Original claim",
+                                "summary": "Retracted after a later Lean counterexample.",
+                                "reportSection": "## Node: claim/original",
+                                "baseDigest": original_node["digest"],
+                                "baseRevisionId": issued_revision["revisionId"],
+                                "subjects": [
+                                    {"kind": "transaction", "id": original_head}
+                                ],
+                                "evidence": [
+                                    {
+                                        "kind": "transaction",
+                                        "id": correction_head,
+                                        "digest": None,
+                                        "relation": "refutes",
+                                    }
+                                ],
+                            }
+                        ]
+                    },
+                    6,
+                ),
+            ]
+        )
+        second_manifest = run_judge_bundle(
+            self.root,
+            "demo",
+            judge,
+            correction_head,
+            second_output,
+            base_run=first_output,
+            transport=lambda _: next(retract_responses),
+        )
+        self.assertEqual(second_manifest["ledgerHead"], correction_head)
+        second_state = json.loads(
+            (second_output / "state/state.json").read_text(encoding="utf-8")
+        )
+        retracted_node = second_state["nodes"]["claim/original"]
+        self.assertEqual(retracted_node["status"], "retired")
+        self.assertEqual(retracted_node["subjects"][0]["id"], original_head)
+        self.assertEqual(retracted_node["subjects"][0]["ledgerPosition"], 1)
+        self.assertEqual(retracted_node["evidence"][0]["id"], correction_head)
+        second_revision_lines = (
+            second_output / "state/revisions.jsonl"
+        ).read_text(encoding="utf-8").splitlines()
+        self.assertEqual(second_revision_lines[0], first_revision_lines[0])
+        self.assertEqual(len(second_revision_lines), 2)
+        retraction = json.loads(second_revision_lines[1])
+        self.assertEqual(retraction["action"], "retract")
+        self.assertEqual(retraction["baseRevisionId"], issued_revision["revisionId"])
+        self.assertEqual(retraction["issuedAtLedgerHead"], correction_head)
+        self.assertEqual(retraction["subjects"][0]["id"], original_head)
+        self.assertEqual(retraction["evidence"][0]["id"], correction_head)
+
+        unchanged_first_state = json.loads(
+            (first_output / "state/state.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(unchanged_first_state["nodes"]["claim/original"]["status"], "active")
 
 
 if __name__ == "__main__":

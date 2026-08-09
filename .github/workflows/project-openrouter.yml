@@ -28,11 +28,11 @@ jobs:
         run: >-
           python -m math_flow run
           --problem "${{ inputs.problem }}"
-          --judge protocol/judges/openrouter-hierarchical-markdown-v1.json
+          --judge protocol/judges/openrouter-hierarchical-markdown-v2.json
           --head HEAD
-          --output-dir "projections/openrouter-hierarchical-markdown-v1/${{ inputs.problem }}/${{ github.sha }}"
+          --output-dir "projections/openrouter-hierarchical-markdown-v2/${{ inputs.problem }}/${{ github.sha }}"
       - uses: actions/upload-artifact@v7
         with:
-          name: "openrouter-hierarchical-markdown-v1-${{ inputs.problem }}-${{ github.sha }}"
+          name: "openrouter-hierarchical-markdown-v2-${{ inputs.problem }}-${{ github.sha }}"
           path: projections/
           if-no-files-found: error

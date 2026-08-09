@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/adjudication-revision.schema.json",
+  "title": "Immutable Adjudication Revision Record",
+  "$defs": {
+    "subject": {
+      "type": "object",
+      "required": ["kind", "id", "ledgerPosition"],
+      "properties": {
+        "kind": { "const": "transaction" },
+        "id": { "type": "string" },
+        "ledgerPosition": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["kind", "id", "digest", "relation"],
+      "properties": {
+        "kind": { "enum": ["transaction", "artifact", "verifier-attestation", "judge-run"] },
+        "id": { "type": "string" },
+        "digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+        "relation": { "enum": ["supports", "refutes", "qualifies", "context", "formalizes", "supersedes"] }
+      },
+      "additionalProperties": false
+    },
+    "reportRef": {
+      "type": "object",
+      "required": ["artifact", "digest", "section"],
+      "properties": {
+        "artifact": { "const": "report.md" },
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "section": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "required": [
+    "revisionId", "adjudicationId", "revisionNumber", "action",
+    "baseRevisionId", "nodeId", "parentId", "nodeType", "title", "subjects", "evidence",
+    "issuedAtLedgerHead", "reportRef", "summary", "status"
+  ],
+  "properties": {
+    "revisionId": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "adjudicationId": { "type": "string" },
+    "revisionNumber": { "type": "integer", "minimum": 1 },
+    "action": { "enum": ["issue", "revise", "retract", "reinstate"] },
+    "baseRevisionId": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+    "nodeId": { "type": "string" },
+    "parentId": { "type": ["string", "null"] },
+    "nodeType": {
+      "enum": ["root", "program", "claim", "lemma", "question", "dispute", "method", "result"]
+    },
+    "title": { "type": "string" },
+    "subjects": { "type": "array", "items": { "$ref": "#/$defs/subject" } },
+    "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidence" } },
+    "issuedAtLedgerHead": { "type": "string" },
+    "reportRef": { "$ref": "#/$defs/reportRef" },
+    "summary": { "type": "string" },
+    "status": { "enum": ["active", "retired"] }
+  },
+  "additionalProperties": false
+}

@@ -34,7 +34,8 @@ python -m math_flow render-request \
 
 Then export `OPENROUTER_API_KEY` and run the hierarchical `run` command from the
 README. Inspect `run.json`, `report.md`, `control/selection.json`,
-`state/delta.json`, and `state/state.json` before enabling hosted inference.
+`state/delta.json`, `state/state.json`, and `state/revisions.jsonl` before enabling
+hosted inference.
 
 ## 4. Enable the manual hosted judge
 

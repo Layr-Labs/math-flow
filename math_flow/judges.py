@@ -18,16 +18,22 @@ SUPPORTED_IMPLEMENTATIONS = {
     "baseline-neutral-v1",
     "openrouter-chat-completions-v1",
     "openrouter-hierarchical-markdown-v1",
+    "openrouter-hierarchical-markdown-v2",
 }
 SUPPORTED_INPUT_BUILDERS = {"ledger-index-v1", "ledger-text-artifacts-v1"}
 SUPPORTED_INVOCATION_ADAPTERS = {"local-v1", "openrouter-chat-completions-v1"}
-SUPPORTED_OUTPUT_PROFILES = {"math-flow/flat-json-v1", "math-flow/hierarchical-markdown-v1"}
+SUPPORTED_OUTPUT_PROFILES = {
+    "math-flow/flat-json-v1",
+    "math-flow/hierarchical-markdown-v1",
+    "math-flow/hierarchical-markdown-v2",
+}
 SUPPORTED_OUTPUT_ADAPTERS = {
     "flat-json-v1",
     "structured-json-v1",
     "select-report-extract-v1",
+    "select-report-extract-revisions-v2",
 }
-SUPPORTED_REDUCERS = {None, "hierarchical-delta-v1"}
+SUPPORTED_REDUCERS = {None, "hierarchical-delta-v1", "hierarchical-revisions-v2"}
 TEXT_ARTIFACT_SUFFIXES = {
     ".c",
     ".cpp",
@@ -85,9 +91,29 @@ def load_judge_spec(path: Path) -> dict[str, object]:
     for field, allowed in registry_fields.items():
         if spec[field] not in allowed:
             raise MathFlowError(f"unsupported judge {field}: {spec[field]}")
+    hierarchical_components = {
+        "openrouter-hierarchical-markdown-v1": {
+            "outputProfile": "math-flow/hierarchical-markdown-v1",
+            "outputAdapter": "select-report-extract-v1",
+            "reducer": "hierarchical-delta-v1",
+        },
+        "openrouter-hierarchical-markdown-v2": {
+            "outputProfile": "math-flow/hierarchical-markdown-v2",
+            "outputAdapter": "select-report-extract-revisions-v2",
+            "reducer": "hierarchical-revisions-v2",
+        },
+    }
+    expected_components = hierarchical_components.get(str(spec["implementation"]))
+    if expected_components is not None:
+        for field, expected in expected_components.items():
+            if spec[field] != expected:
+                raise MathFlowError(
+                    f"judge {field} is incompatible with {spec['implementation']}: {spec[field]}"
+                )
     if spec["implementation"] in {
         "openrouter-chat-completions-v1",
         "openrouter-hierarchical-markdown-v1",
+        "openrouter-hierarchical-markdown-v2",
     }:
         for field in ("model", "systemPrompt", "rubric", "parameters", "provider"):
             if field not in spec:
@@ -444,6 +470,9 @@ def project(
     source = load_source(root, problem, head)
     if spec["implementation"] == "baseline-neutral-v1":
         return _baseline_projection(root, problem, spec, source, head)
-    if spec["implementation"] == "openrouter-hierarchical-markdown-v1":
+    if spec["implementation"] in {
+        "openrouter-hierarchical-markdown-v1",
+        "openrouter-hierarchical-markdown-v2",
+    }:
         raise MathFlowError("hierarchical Markdown judges must be run with the artifact-bundle command")
     return _openrouter_projection(root, problem, spec, source, head, transport)

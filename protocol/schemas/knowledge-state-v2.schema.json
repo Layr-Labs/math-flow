@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/knowledge-state-v2.schema.json",
+  "title": "Revision-aware Hierarchical Knowledge State Example Profile",
+  "type": "object",
+  "required": ["schemaVersion", "problemId", "rootId", "nodes", "stateDigest"],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "problemId": { "type": "string" },
+    "rootId": { "const": "root" },
+    "nodes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "id", "parentId", "type", "title", "summary", "status",
+          "reportRef", "contentMarkdown", "subjects", "evidence",
+          "currentAdjudication", "digest"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "parentId": { "type": ["string", "null"] },
+          "type": {
+            "enum": ["root", "program", "claim", "lemma", "question", "dispute", "method", "result"]
+          },
+          "title": { "type": "string" },
+          "summary": { "type": "string" },
+          "status": { "enum": ["active", "retired"] },
+          "reportRef": {
+            "oneOf": [
+              { "type": "null" },
+              {
+                "type": "object",
+                "required": ["artifact", "digest", "section"],
+                "properties": {
+                  "artifact": { "const": "report.md" },
+                  "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+                  "section": { "type": "string" }
+                },
+                "additionalProperties": false
+              }
+            ]
+          },
+          "contentMarkdown": { "type": "string" },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["kind", "id", "ledgerPosition"],
+              "properties": {
+                "kind": { "const": "transaction" },
+                "id": { "type": "string" },
+                "ledgerPosition": { "type": "integer", "minimum": 1 }
+              },
+              "additionalProperties": false
+            }
+          },
+          "evidence": { "type": "array", "items": { "$ref": "adjudication-revision.schema.json#/$defs/evidence" } },
+          "currentAdjudication": {
+            "oneOf": [
+              { "type": "null" },
+              {
+                "type": "object",
+                "required": ["adjudicationId", "revisionId", "revisionNumber"],
+                "properties": {
+                  "adjudicationId": { "type": "string" },
+                  "revisionId": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+                  "revisionNumber": { "type": "integer", "minimum": 1 }
+                },
+                "additionalProperties": false
+              }
+            ]
+          },
+          "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "stateDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+  },
+  "additionalProperties": false
+}

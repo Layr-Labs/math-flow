@@ -56,6 +56,49 @@ Each stage may select its own model and generation parameters in the judge spec.
 The structured stages are control-plane operations; the detailed mathematical
 assessment stays in Markdown.
 
+Version 1 remains available for replay. New runs should normally use the
+revision-aware `math-flow/hierarchical-markdown-v2` profile described below.
+
+### `math-flow/hierarchical-markdown-v2`
+
+Version 2 adds one artifact to the hierarchical bundle:
+
+```text
+state/revisions.jsonl
+```
+
+Each JSON Lines entry is an immutable, content-addressed adjudication revision.
+The log is copied forward as an exact prefix and new revisions are appended. The
+materialized `state/state.json` points each node to its current revision, so
+consumers that only need the latest view do not need to replay the log.
+
+Revision operations are `issue`, `revise`, `retract`, and `reinstate`. They use
+both the prior node digest and prior revision ID as optimistic concurrency guards.
+The first revision uses null base references; subsequent revisions explicitly
+chain to the revision they supersede.
+
+Subjects and evidence are intentionally different fields. A subject identifies
+the ledger transaction whose adjudication is being changed. Evidence records why
+the judgment is warranted or changed, with relations such as `supports`,
+`refutes`, `qualifies`, and `formalizes`. Evidence can identify a transaction,
+content-addressed artifact, verifier attestation, or judge run.
+
+### Retroactive correction and time
+
+Retroactive correction never mutates an old run. Suppose a judge accepts a claim
+at ledger head H1, and a contribution at H2 contains a checked Lean counterexample.
+A new run based on the H1 bundle can append a `retract` revision with:
+
+- the H1 contribution as its subject;
+- the H2 contribution or verifier attestation as refuting evidence;
+- the old revision ID as `baseRevisionId`;
+- H2 as `issuedAtLedgerHead`.
+
+Subjects carry their original `ledgerPosition`. These two temporal coordinates
+make both views reproducible: a query as of H1 sees the acceptance, while a query
+as of H2 sees the retraction and its reason. The earlier acceptance remains an
+auditable historical fact rather than being silently rewritten.
+
 ## Hierarchical state
 
 The state is a tree with stable IDs such as:
@@ -69,10 +112,11 @@ root
     └── method/determinant-area
 ```
 
-Nodes have individual content digests. A delta may `upsert` or `retire` nodes.
-Updating an existing node requires its exact prior digest, and the reducer rejects
-stale operations. Existing nodes may be updated only if the selector chose them.
-New nodes must be attached beneath a selected or newly created node. Unselected
+Nodes have individual content digests. Version 1 deltas `upsert` or `retire`
+nodes; version 2 uses semantic adjudication revision operations. Updating an
+existing node requires its exact prior digest, and the reducer rejects stale
+operations. Existing nodes may be updated only if the selector chose them. New
+nodes must be attached beneath a selected or newly created node. Unselected
 subtrees are carried forward byte-for-byte.
 
 Detailed node support is authored in a referenced section of `report.md`. The
@@ -89,9 +133,9 @@ Judge specs declare four allowlisted components:
 {
   "inputBuilder": "ledger-text-artifacts-v1",
   "invocationAdapter": "openrouter-chat-completions-v1",
-  "outputAdapter": "select-report-extract-v1",
-  "reducer": "hierarchical-delta-v1",
-  "outputProfile": "math-flow/hierarchical-markdown-v1"
+  "outputAdapter": "select-report-extract-revisions-v2",
+  "reducer": "hierarchical-revisions-v2",
+  "outputProfile": "math-flow/hierarchical-markdown-v2"
 }
 ```
 

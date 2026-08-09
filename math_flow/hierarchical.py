@@ -6,7 +6,18 @@ from pathlib import Path
 from .artifacts import load_manifest, read_verified_artifact, sha256_bytes
 from .errors import MathFlowError
 from .judges import artifact_evidence
-from .knowledge import apply_deltas, empty_state, selected_nodes, state_index, validate_state
+from .knowledge import (
+    apply_deltas,
+    apply_revision_deltas,
+    empty_state,
+    empty_state_v2,
+    selected_nodes,
+    selected_nodes_v2,
+    state_index,
+    state_index_v2,
+    validate_state,
+    validate_state_v2,
+)
 from .openrouter import OpenRouterTransport, format_error_message, send_chat_completion
 from .repository import is_ancestor, read_at, sha256_json
 
@@ -132,6 +143,79 @@ def _delta_schema(transaction_ids: list[str]) -> dict[str, object]:
     }
 
 
+def _revision_delta_schema(transaction_ids: list[str]) -> dict[str, object]:
+    transaction_schema: dict[str, object] = {"type": "string"}
+    if transaction_ids:
+        transaction_schema["enum"] = transaction_ids
+    subject = {
+        "type": "object",
+        "properties": {
+            "kind": {"type": "string", "enum": ["transaction"]},
+            "id": transaction_schema,
+        },
+        "required": ["kind", "id"],
+        "additionalProperties": False,
+    }
+    evidence = {
+        "type": "object",
+        "properties": {
+            "kind": {
+                "type": "string",
+                "enum": ["transaction", "artifact", "verifier-attestation", "judge-run"],
+            },
+            "id": {"type": "string"},
+            "digest": {"type": ["string", "null"]},
+            "relation": {
+                "type": "string",
+                "enum": ["supports", "refutes", "qualifies", "context", "formalizes", "supersedes"],
+            },
+        },
+        "required": ["kind", "id", "digest", "relation"],
+        "additionalProperties": False,
+    }
+    operation = {
+        "type": "object",
+        "properties": {
+            "action": {"type": "string", "enum": ["issue", "revise", "retract", "reinstate"]},
+            "adjudicationId": {"type": "string"},
+            "nodeId": {"type": "string"},
+            "parentId": {"type": ["string", "null"]},
+            "nodeType": {
+                "type": "string",
+                "enum": ["root", "program", "claim", "lemma", "question", "dispute", "method", "result"],
+            },
+            "title": {"type": "string"},
+            "summary": {"type": "string"},
+            "reportSection": {"type": "string"},
+            "baseDigest": {"type": ["string", "null"]},
+            "baseRevisionId": {"type": ["string", "null"]},
+            "subjects": {"type": "array", "items": subject},
+            "evidence": {"type": "array", "items": evidence},
+        },
+        "required": [
+            "action",
+            "adjudicationId",
+            "nodeId",
+            "parentId",
+            "nodeType",
+            "title",
+            "summary",
+            "reportSection",
+            "baseDigest",
+            "baseRevisionId",
+            "subjects",
+            "evidence",
+        ],
+        "additionalProperties": False,
+    }
+    return {
+        "type": "object",
+        "properties": {"operations": {"type": "array", "items": operation}},
+        "required": ["operations"],
+        "additionalProperties": False,
+    }
+
+
 def load_base_state(
     base_run: Path | None, problem: str
 ) -> tuple[dict[str, object], str | None, str | None]:
@@ -152,6 +236,31 @@ def load_base_state(
     return validate_state(state, problem), manifest_digest, ledger_head
 
 
+def load_base_revision_state(
+    base_run: Path | None, problem: str
+) -> tuple[dict[str, object], list[dict[str, object]], str | None, str | None]:
+    if base_run is None:
+        return empty_state_v2(problem), [], None, None
+    manifest, manifest_digest = load_manifest(base_run)
+    if manifest.get("problemId") != problem:
+        raise MathFlowError("base judge run belongs to a different problem")
+    if manifest.get("outputProfile") != "math-flow/hierarchical-markdown-v2":
+        raise MathFlowError("base judge run does not contain revision-aware hierarchical state")
+    try:
+        state = json.loads(read_verified_artifact(base_run, manifest, "knowledge-state"))
+        revision_text = read_verified_artifact(
+            base_run, manifest, "adjudication-revisions"
+        ).decode("utf-8")
+        revisions = [json.loads(line) for line in revision_text.splitlines() if line.strip()]
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise MathFlowError("base revision-aware state artifacts are not valid JSON") from exc
+    ledger_head = manifest.get("ledgerHead")
+    if not isinstance(ledger_head, str):
+        raise MathFlowError("base judge run has no ledger head")
+    valid_state, valid_revisions = validate_state_v2(state, revisions, problem)
+    return valid_state, valid_revisions, manifest_digest, ledger_head
+
+
 def run_hierarchical_judge(
     root: Path,
     problem: str,
@@ -161,7 +270,14 @@ def run_hierarchical_judge(
     base_run: Path | None,
     transport: OpenRouterTransport | None = None,
 ) -> dict[str, object]:
-    state, base_run_digest, base_ledger_head = load_base_state(base_run, problem)
+    revisioned = spec["implementation"] == "openrouter-hierarchical-markdown-v2"
+    if revisioned:
+        state, revisions, base_run_digest, base_ledger_head = load_base_revision_state(
+            base_run, problem
+        )
+    else:
+        state, base_run_digest, base_ledger_head = load_base_state(base_run, problem)
+        revisions = []
     if base_ledger_head is not None and head != "WORKTREE":
         if base_ledger_head.startswith("WORKTREE:") or not is_ancestor(
             root, base_ledger_head, str(source["ledgerHead"])
@@ -171,7 +287,7 @@ def run_hierarchical_judge(
     resolved_head = "WORKTREE" if head == "WORKTREE" else str(source["ledgerHead"])
     problem_statement = read_at(root, resolved_head, f"problems/{problem}/problem.md")
     evidence = artifact_evidence(root, source, head)
-    index = state_index(state)
+    index = state_index_v2(state, revisions) if revisioned else state_index(state)
     node_ids = [str(node["id"]) for node in index]
 
     selector_prompt = "\n\n".join(
@@ -203,7 +319,11 @@ def run_hierarchical_judge(
         raise MathFlowError("hierarchical selector returned duplicate node IDs")
     if not isinstance(selection["rationale"], str) or not selection["rationale"].strip():
         raise MathFlowError("hierarchical selector rationale must be non-empty")
-    selected = selected_nodes(state, selected_ids)
+    selected = (
+        selected_nodes_v2(state, revisions, selected_ids)
+        if revisioned
+        else selected_nodes(state, selected_ids)
+    )
 
     writer_prompt = "\n\n".join(
         [
@@ -211,6 +331,14 @@ def run_hierarchical_judge(
             "Explain correctness, gaps, competing approaches, cumulative knowledge, and credit with enough detail for a mathematician to audit.",
             "Use explicit headings of the form `## Node: <stable-id>` for every existing or proposed knowledge node that should change.",
             "You may propose new stable IDs using lowercase letters, numbers, slashes, underscores, and hyphens.",
+            *(
+                [
+                    "Treat prior adjudications as immutable history. When new evidence changes a past judgment, explain the revision or retraction and distinguish the older subject from the newer evidence.",
+                    "Discuss whether each changed node issues, revises, retracts, or reinstates its adjudication.",
+                ]
+                if revisioned
+                else []
+            ),
             f"Judge rubric:\n{json.dumps(spec['rubric'], indent=2, ensure_ascii=False)}",
             f"Problem:\n{problem_statement}",
             f"Selected knowledge nodes:\n{json.dumps(selected, indent=2, ensure_ascii=False)}",
@@ -230,11 +358,24 @@ def run_hierarchical_judge(
     report = _assistant_content(writer_response).rstrip() + "\n"
 
     transaction_ids = [str(item["transactionId"]) for item in source["transactions"]]
+    transaction_positions = {
+        str(item["transactionId"]): int(item["ordinal"]) for item in source["transactions"]
+    }
     extractor_prompt = "\n\n".join(
         [
             "Extract only the knowledge-state delta implied by the report. Do not redo the mathematical judgment.",
             "Existing nodes may be updated only if they were selected. New nodes must be parented under a selected or newly created node.",
             "For existing nodes, copy the exact current digest into baseDigest. For new nodes use null.",
+            *(
+                [
+                    "Use issue for a first adjudication, revise for an active adjudication changed without withdrawal, retract to withdraw an active adjudication, and reinstate only for a retracted adjudication.",
+                    "adjudicationId must equal nodeId. Copy the selected node's current revisionId into baseRevisionId; use null for a first adjudication.",
+                    "subjects identify older or current ledger transactions being adjudicated. evidence identifies why the adjudication is warranted or changed; later transactions may refute earlier subjects.",
+                    "For transaction evidence, use the transaction ID as id and null digest. Non-transaction evidence requires a SHA-256 digest and must only reference an artifact explicitly present in the supplied evidence.",
+                ]
+                if revisioned
+                else []
+            ),
             "Create parent nodes before their children in the operations array.",
             "reportSection must exactly equal the full `## Node: ...` heading line from the report, including the two hash characters. Return no operation when the report proposes no state change.",
             f"Selected nodes:\n{json.dumps(selected, indent=2, ensure_ascii=False)}",
@@ -252,7 +393,11 @@ def run_hierarchical_judge(
             },
             {"role": "user", "content": extractor_prompt},
         ],
-        _delta_schema(transaction_ids),
+        (
+            _revision_delta_schema(transaction_ids)
+            if revisioned
+            else _delta_schema(transaction_ids)
+        ),
     )
     extractor_response = send(extractor_request)
     delta = _structured_content(extractor_response)
@@ -265,13 +410,42 @@ def run_hierarchical_judge(
             raise MathFlowError("hierarchical extractor returned a non-object delta operation")
         if operation.get("reportSection") not in report_headings:
             raise MathFlowError("knowledge delta references a missing Markdown report heading")
-        operation_transaction_ids = operation.get("transactionIds")
-        if not isinstance(operation_transaction_ids, list) or not set(operation_transaction_ids) <= allowed_transaction_ids:
-            raise MathFlowError("knowledge delta references a transaction outside the ledger")
+        if revisioned:
+            operation_subjects = operation.get("subjects")
+            operation_evidence = operation.get("evidence")
+            if not isinstance(operation_subjects, list) or not isinstance(operation_evidence, list):
+                raise MathFlowError("revision operation must distinguish subjects and evidence")
+            subject_ids = {
+                item.get("id") for item in operation_subjects if isinstance(item, dict)
+            }
+            evidence_transaction_ids = {
+                item.get("id")
+                for item in operation_evidence
+                if isinstance(item, dict) and item.get("kind") == "transaction"
+            }
+            if not subject_ids <= allowed_transaction_ids or not evidence_transaction_ids <= allowed_transaction_ids:
+                raise MathFlowError("adjudication revision references a transaction outside the ledger")
+        else:
+            operation_transaction_ids = operation.get("transactionIds")
+            if not isinstance(operation_transaction_ids, list) or not set(operation_transaction_ids) <= allowed_transaction_ids:
+                raise MathFlowError("knowledge delta references a transaction outside the ledger")
     report_digest = sha256_bytes(report.encode("utf-8"))
-    next_state = apply_deltas(
-        state, selected_ids, delta["operations"], report_digest, report
-    )
+    if revisioned:
+        next_state, next_revisions = apply_revision_deltas(
+            state,
+            revisions,
+            selected_ids,
+            delta["operations"],
+            report_digest,
+            report,
+            str(source["ledgerHead"]),
+            transaction_positions,
+        )
+    else:
+        next_state = apply_deltas(
+            state, selected_ids, delta["operations"], report_digest, report
+        )
+        next_revisions = []
 
     responses = [selector_response, writer_response, extractor_response]
     requests = [selector_request, writer_request, extractor_request]
@@ -282,6 +456,7 @@ def run_hierarchical_judge(
         "report": report,
         "delta": delta,
         "state": next_state,
+        "revisions": next_revisions,
         "requestDigests": [f"sha256:{sha256_json(request)}" for request in requests],
         "providerRuns": [
             _provider_run(response, str(request["model"]), stage)

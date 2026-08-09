@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from . import __version__
@@ -55,7 +56,10 @@ def run_judge_bundle(
     source = load_source(root, problem, head)
     bundle = ArtifactBundle(output_dir)
 
-    if spec["implementation"] == "openrouter-hierarchical-markdown-v1":
+    if spec["implementation"] in {
+        "openrouter-hierarchical-markdown-v1",
+        "openrouter-hierarchical-markdown-v2",
+    }:
         result = run_hierarchical_judge(
             root, problem, spec, source, head, base_run, transport=transport
         )
@@ -63,6 +67,17 @@ def run_judge_bundle(
         bundle.add_text("report.md", result["report"], "report", "text/markdown")
         bundle.add_json("state/delta.json", result["delta"], "knowledge-delta")
         bundle.add_json("state/state.json", result["state"], "knowledge-state")
+        if spec["implementation"] == "openrouter-hierarchical-markdown-v2":
+            revision_lines = "".join(
+                json.dumps(item, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+                for item in result["revisions"]
+            )
+            bundle.add_text(
+                "state/revisions.jsonl",
+                revision_lines,
+                "adjudication-revisions",
+                "application/x-ndjson",
+            )
         envelope = _envelope(
             problem,
             source,
