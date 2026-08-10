@@ -6,6 +6,7 @@ import sys
 import time
 from pathlib import Path
 
+from .artifacts import verify_bundle
 from .coordination import (
     claim_due_build,
     complete_build,
@@ -14,14 +15,15 @@ from .coordination import (
     record_completed_inputs,
 )
 from .errors import MathFlowError
+from .formation import run_knowledge_build_bundle
 from .judgments import (
     detect_conflicts,
     load_judgment_bundle,
     run_primary_judgment_bundle,
     run_reconciliation_judgment_bundle,
 )
-from .judges import project, render_request
-from .repository import affected_problems, ledger, validate_pr, validate_tree
+from .judges import load_judge_spec, project, render_request
+from .repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
 from .runs import run_judge_bundle
 from .viewer import export_viewer_data
 
@@ -129,7 +131,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     trigger_parser.add_argument("--scheduler-file", required=True, type=Path)
     trigger_parser.add_argument("--problem", required=True)
-    trigger_parser.add_argument("--builder-digest", required=True)
+    builder_identity = trigger_parser.add_mutually_exclusive_group(required=True)
+    builder_identity.add_argument("--builder-digest")
+    builder_identity.add_argument("--builder", type=Path)
     trigger_parser.add_argument("--minimum-interval", required=True, type=int)
     trigger_parser.add_argument(
         "--judgment-dir", action="append", default=[], type=Path, dest="judgment_dirs"
@@ -144,6 +148,21 @@ def build_parser() -> argparse.ArgumentParser:
     claim_parser.add_argument("--lane-id", required=True)
     claim_parser.add_argument("--maximum-judgments", type=int, default=500)
     claim_parser.add_argument("--now", type=int)
+    claim_parser.add_argument("--output", type=Path)
+
+    formation_parser = commands.add_parser(
+        "knowledge-build", help="materialize one claimed judgment batch into knowledge state"
+    )
+    formation_parser.add_argument("--problem", required=True)
+    formation_parser.add_argument("--builder", required=True, type=Path)
+    formation_parser.add_argument("--head", default="HEAD")
+    formation_parser.add_argument("--claim", required=True, type=Path)
+    formation_parser.add_argument(
+        "--judgment-dir", action="append", default=[], type=Path, dest="judgment_dirs"
+    )
+    formation_parser.add_argument("--conflicts", type=Path)
+    formation_parser.add_argument("--base-run", type=Path)
+    formation_parser.add_argument("--output-dir", required=True, type=Path)
 
     complete_parser = commands.add_parser(
         "knowledge-complete", help="advance a knowledge lane after a successful build"
@@ -151,7 +170,9 @@ def build_parser() -> argparse.ArgumentParser:
     complete_parser.add_argument("--scheduler-file", required=True, type=Path)
     complete_parser.add_argument("--lane-id", required=True)
     complete_parser.add_argument("--build-token", required=True)
-    complete_parser.add_argument("--state-run-digest", required=True)
+    complete_source = complete_parser.add_mutually_exclusive_group(required=True)
+    complete_source.add_argument("--state-run-digest")
+    complete_source.add_argument("--state-run-dir", type=Path)
     complete_parser.add_argument("--now", type=int)
 
     fail_parser = commands.add_parser(
@@ -251,6 +272,11 @@ def main(argv: list[str] | None = None) -> int:
                 args.output_dir,
             )
         elif args.command == "knowledge-trigger":
+            builder_digest = (
+                f"sha256:{sha256_json(load_judge_spec(args.builder))}"
+                if args.builder
+                else args.builder_digest
+            )
             judgment_ids = []
             for bundle_dir in args.judgment_dirs:
                 _, judgment, _ = load_judgment_bundle(bundle_dir)
@@ -270,7 +296,7 @@ def main(argv: list[str] | None = None) -> int:
             result = record_completed_inputs(
                 args.scheduler_file,
                 args.problem,
-                args.builder_digest,
+                builder_digest,
                 judgment_ids,
                 conflict_ids,
                 args.minimum_interval,
@@ -283,12 +309,33 @@ def main(argv: list[str] | None = None) -> int:
                 args.now if args.now is not None else int(time.time()),
                 args.maximum_judgments,
             )
+            _write_json(result, str(args.output) if args.output else None)
+            return 0
+        elif args.command == "knowledge-build":
+            claim = json.loads(args.claim.read_text(encoding="utf-8"))
+            result = run_knowledge_build_bundle(
+                root,
+                args.problem,
+                args.builder,
+                args.head,
+                claim,
+                args.judgment_dirs,
+                args.conflicts,
+                args.output_dir,
+                base_run=args.base_run,
+            )
         elif args.command == "knowledge-complete":
+            if args.state_run_dir:
+                manifest, state_run_digest = verify_bundle(args.state_run_dir)
+                if manifest.get("runKind") != "knowledge-build":
+                    raise MathFlowError("knowledge completion bundle is not a knowledge build")
+            else:
+                state_run_digest = args.state_run_digest
             result = complete_build(
                 args.scheduler_file,
                 args.lane_id,
                 args.build_token,
-                args.state_run_digest,
+                state_run_digest,
                 args.now if args.now is not None else int(time.time()),
             )
         elif args.command == "knowledge-fail":
@@ -312,6 +359,6 @@ def main(argv: list[str] | None = None) -> int:
             raise AssertionError(args.command)
         _write_json(result, None)
         return 0
-    except (MathFlowError, OSError, UnicodeError) as exc:
+    except (MathFlowError, OSError, UnicodeError, json.JSONDecodeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

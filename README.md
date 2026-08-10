@@ -115,13 +115,20 @@ The judge sends the problem statement and supported text artifacts (`.md`,
 not sent. The included spec denies provider data collection and requires routing
 to an endpoint that supports all requested parameters.
 
-### Parallel judgments
+### Parallel judgments and serialized knowledge formation
 
-The experimental v0.4 execution path separates immutable primary and
-reconciliation judgments from rate-limited knowledge formation. Judgments have
-no base run and can execute concurrently; opposed findings create explicit
-conflict records for targeted reconciliation. Completed judgments coalesce in a
-single-writer knowledge-builder lane instead of immediately rebuilding state.
+The v0.5 execution path separates immutable primary and reconciliation judgments
+from rate-limited knowledge formation. Judgments have no base run and can execute
+concurrently; opposed findings create explicit conflict records for targeted
+reconciliation. Completed judgments coalesce in a single-writer knowledge-builder
+lane instead of immediately rebuilding state.
+
+The included knowledge builder consumes one exact scheduler claim. It is
+deliberately non-adjudicative: it may organize primary findings and supplied
+reconciliation outcomes, but an unreconciled or unresolved conflict must become
+an active dispute node. A deterministic reducer then applies the sparse update
+to the one serialized state chain. This three-stage OpenRouter builder remains
+an example profile rather than a core protocol requirement.
 
 See [docs/PARALLEL_JUDGMENTS.md](docs/PARALLEL_JUDGMENTS.md) for the command flow,
 scheduler semantics, and content-addressed batch publisher. The existing `run`

@@ -36,7 +36,14 @@ NODE_FIELDS = {
 
 REVISION_ACTIONS = {"issue", "revise", "retract", "reinstate"}
 REVISION_RELATIONS = {"supports", "refutes", "qualifies", "context", "formalizes", "supersedes"}
-REVISION_EVIDENCE_KINDS = {"transaction", "artifact", "verifier-attestation", "judge-run"}
+REVISION_EVIDENCE_KINDS = {
+    "transaction",
+    "artifact",
+    "verifier-attestation",
+    "judge-run",
+    "judgment",
+    "conflict",
+}
 V2_OPERATION_FIELDS = {
     "action",
     "adjudicationId",

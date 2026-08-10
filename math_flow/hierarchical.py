@@ -162,7 +162,14 @@ def _revision_delta_schema(transaction_ids: list[str]) -> dict[str, object]:
         "properties": {
             "kind": {
                 "type": "string",
-                "enum": ["transaction", "artifact", "verifier-attestation", "judge-run"],
+                "enum": [
+                    "transaction",
+                    "artifact",
+                    "verifier-attestation",
+                    "judge-run",
+                    "judgment",
+                    "conflict",
+                ],
             },
             "id": {"type": "string"},
             "digest": {"type": ["string", "null"]},
@@ -375,7 +382,10 @@ def load_base_revision_state(
     manifest, manifest_digest = load_manifest(base_run)
     if manifest.get("problemId") != problem:
         raise MathFlowError("base judge run belongs to a different problem")
-    if manifest.get("outputProfile") != "math-flow/hierarchical-markdown-v2":
+    if manifest.get("outputProfile") not in {
+        "math-flow/hierarchical-markdown-v2",
+        "math-flow/knowledge-build-markdown-v1",
+    }:
         raise MathFlowError("base judge run does not contain revision-aware hierarchical state")
     try:
         state = json.loads(read_verified_artifact(base_run, manifest, "knowledge-state"))

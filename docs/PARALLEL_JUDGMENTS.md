@@ -12,7 +12,7 @@ contributions
                                           coalescing knowledge-build lane
                                                         │
                                                         ▼
-                                           future hierarchical builder
+                                      serialized hierarchical formation
 ```
 
 ## Run a primary judgment
@@ -60,14 +60,15 @@ mathematical comparison and emits another immutable judgment bundle.
 
 ## Coalesce knowledge-build triggers
 
-Builder identities are full SHA-256 digests. Triggering is idempotent; repeating
-the same judgment or conflict does not duplicate pending work.
+Builder identities are full SHA-256 digests. The CLI can derive the digest from
+the builder spec. Triggering is idempotent; repeating the same judgment or
+conflict does not duplicate pending work.
 
 ```bash
 python -m math_flow knowledge-trigger \
   --scheduler-file projections/coordination/scheduler.json \
   --problem triangle-midpoints \
-  --builder-digest <sha256-builder-spec-digest> \
+  --builder protocol/judges/openrouter-knowledge-builder-v1.json \
   --minimum-interval 600 \
   --judgment-dir projections/staging/judgment-1 \
   --judgment-dir projections/staging/reconciliation-1 \
@@ -76,13 +77,57 @@ python -m math_flow knowledge-trigger \
 python -m math_flow knowledge-claim \
   --scheduler-file projections/coordination/scheduler.json \
   --lane-id <sha256-lane-id> \
-  --maximum-judgments 500
+  --maximum-judgments 500 \
+  --output projections/staging/knowledge-claim.json
 ```
 
-The claim is null before the lane is eligible. A successful builder later calls
-`knowledge-complete`; a failed builder calls `knowledge-fail`, which safely
-returns the exact batch to pending work. The actual knowledge-formation adapter
-is the next implementation step.
+The claim is null before the lane is eligible. It binds the exact base state,
+judgment IDs, conflict IDs, builder digest, and a deterministic build token.
+New completions during an active build remain pending for the next eligible
+interval.
+
+## Form the next knowledge state
+
+Run the included example builder against the exact claimed batch:
+
+```bash
+python -m math_flow knowledge-build \
+  --problem triangle-midpoints \
+  --builder protocol/judges/openrouter-knowledge-builder-v1.json \
+  --head HEAD \
+  --claim projections/staging/knowledge-claim.json \
+  --judgment-dir projections/staging/judgment-1 \
+  --judgment-dir projections/staging/reconciliation-1 \
+  --conflicts projections/staging/conflicts.json \
+  --output-dir projections/staging/knowledge-build-1
+```
+
+For later builds, also pass the prior state bundle named by the claim:
+
+```bash
+  --base-run projections/staging/knowledge-build-1
+```
+
+The adapter writes unconstrained Markdown plus a sparse structured delta. It is
+not allowed to redo mathematical adjudication. It can organize unopposed primary
+findings and supplied reconciliation outcomes; every claimed conflict without a
+single resolving reconciliation outcome must be cited by an active `dispute`
+operation. The runner enforces that invariant before applying the deterministic
+revision reducer.
+
+Complete the scheduler lease only after the bundle verifies:
+
+```bash
+python -m math_flow knowledge-complete \
+  --scheduler-file projections/coordination/scheduler.json \
+  --lane-id <sha256-lane-id> \
+  --build-token <sha256-build-token> \
+  --state-run-dir projections/staging/knowledge-build-1
+```
+
+A failed builder calls `knowledge-fail`, which safely returns the exact batch to
+pending work. `knowledge-complete --state-run-dir` verifies the bundle and derives
+its manifest digest, avoiding a manual digest-copy step.
 
 ## Batch projection publication
 

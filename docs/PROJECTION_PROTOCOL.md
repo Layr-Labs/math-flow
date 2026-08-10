@@ -155,7 +155,7 @@ digest.
 
 ## Parallel judgments and scheduled knowledge formation
 
-Version 0.4 separates immutable mathematical judgments from cumulative knowledge
+Version 0.5 separates immutable mathematical judgments from cumulative knowledge
 state. This is an additive path; older hierarchical runs remain replayable and
 continue to combine assessment with state reduction.
 
@@ -181,10 +181,19 @@ conflict IDs, and judgment-set digest. New completions during the build remain
 pending for the next eligible interval.
 
 Knowledge formation is intentionally not implemented by the primary or
-reconciliation judge adapters. A subsequent builder adapter will consume a
-claimed input set, organize resolved findings and open disputes, emit a sparse
-hierarchical delta, and use the existing deterministic revision reducer. Until
-then the scheduler output is an explicit, replayable handoff boundary.
+reconciliation judge adapters. The example `openrouter-knowledge-builder-v1`
+adapter consumes one claimed input set, organizes resolved findings and open
+disputes, emits a sparse hierarchical delta, and uses the existing deterministic
+revision reducer. It cannot silently settle an unresolved input: every conflict
+without a single resolving reconciliation outcome must appear as content-addressed
+evidence on an active dispute operation or the run is rejected.
+
+The knowledge-build bundle records `runKind: knowledge-build`, the scheduler
+lane, builder digest, exact base-state digest, judgment and conflict IDs,
+judgment-set digest, and build token. Its output profile is a reusable example,
+not a core requirement. A different registered builder may use another call
+topology or output profile while preserving the same immutable run envelope and
+serialized state-chain semantics.
 
 Projection publication is independent of computation. Workers produce verified
 run bundles; a single publisher copies them into content-addressed object paths

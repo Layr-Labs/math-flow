@@ -21,14 +21,20 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-hierarchical-markdown-v2",
     "openrouter-markdown-judgment-v1",
     "openrouter-markdown-reconciliation-v1",
+    "openrouter-knowledge-builder-v1",
 }
-SUPPORTED_INPUT_BUILDERS = {"ledger-index-v1", "ledger-text-artifacts-v1"}
+SUPPORTED_INPUT_BUILDERS = {
+    "ledger-index-v1",
+    "ledger-text-artifacts-v1",
+    "judgment-batch-v1",
+}
 SUPPORTED_INVOCATION_ADAPTERS = {"local-v1", "openrouter-chat-completions-v1"}
 SUPPORTED_OUTPUT_PROFILES = {
     "math-flow/flat-json-v1",
     "math-flow/hierarchical-markdown-v1",
     "math-flow/hierarchical-markdown-v2",
     "math-flow/judgment-markdown-v1",
+    "math-flow/knowledge-build-markdown-v1",
 }
 SUPPORTED_OUTPUT_ADAPTERS = {
     "flat-json-v1",
@@ -37,6 +43,7 @@ SUPPORTED_OUTPUT_ADAPTERS = {
     "select-report-extract-revisions-v2",
     "report-extract-findings-v1",
     "report-extract-reconciliation-v1",
+    "select-form-extract-revisions-v1",
 }
 SUPPORTED_REDUCERS = {None, "hierarchical-delta-v1", "hierarchical-revisions-v2"}
 TEXT_ARTIFACT_SUFFIXES = {
@@ -117,6 +124,12 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputAdapter": "report-extract-reconciliation-v1",
             "reducer": None,
         },
+        "openrouter-knowledge-builder-v1": {
+            "inputBuilder": "judgment-batch-v1",
+            "outputProfile": "math-flow/knowledge-build-markdown-v1",
+            "outputAdapter": "select-form-extract-revisions-v1",
+            "reducer": "hierarchical-revisions-v2",
+        },
     }
     expected_components = hierarchical_components.get(str(spec["implementation"]))
     if expected_components is not None:
@@ -131,6 +144,7 @@ def load_judge_spec(path: Path) -> dict[str, object]:
         "openrouter-hierarchical-markdown-v2",
         "openrouter-markdown-judgment-v1",
         "openrouter-markdown-reconciliation-v1",
+        "openrouter-knowledge-builder-v1",
     }:
         for field in ("model", "systemPrompt", "rubric", "parameters", "provider"):
             if field not in spec:

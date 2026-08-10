@@ -17,7 +17,7 @@
       "type": "object",
       "required": ["kind", "id", "digest", "relation"],
       "properties": {
-        "kind": { "enum": ["transaction", "artifact", "verifier-attestation", "judge-run"] },
+        "kind": { "enum": ["transaction", "artifact", "verifier-attestation", "judge-run", "judgment", "conflict"] },
         "id": { "type": "string" },
         "digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
         "relation": { "enum": ["supports", "refutes", "qualifies", "context", "formalizes", "supersedes"] }

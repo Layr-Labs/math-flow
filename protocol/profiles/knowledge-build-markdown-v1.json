@@ -1,0 +1,20 @@
+{
+  "id": "math-flow/knowledge-build-markdown-v1",
+  "description": "Example non-adjudicative knowledge-formation profile that consumes an exact claimed judgment batch and materializes revision-aware hierarchical state.",
+  "requiredArtifactRoles": [
+    "knowledge-build-input",
+    "node-selection",
+    "adapter-normalizations",
+    "report",
+    "knowledge-delta",
+    "knowledge-state",
+    "adjudication-revisions"
+  ],
+  "schemas": [
+    "protocol/schemas/knowledge-build-input.schema.json",
+    "protocol/schemas/knowledge-delta-v2.schema.json",
+    "protocol/schemas/knowledge-state-v2.schema.json",
+    "protocol/schemas/adjudication-revision.schema.json"
+  ],
+  "reducer": "hierarchical-revisions-v2"
+}

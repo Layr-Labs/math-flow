@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from math_flow.errors import MathFlowError
+from math_flow.artifacts import verify_bundle
 from math_flow.coordination import (
     claim_due_build,
     complete_build,
@@ -15,7 +16,8 @@ from math_flow.coordination import (
     publish_batch,
     record_completed_inputs,
 )
-from math_flow.judges import project, render_request
+from math_flow.formation import run_knowledge_build_bundle
+from math_flow.judges import load_judge_spec, project, render_request
 from math_flow.judgments import (
     detect_conflicts,
     load_judgment_bundle,
@@ -24,7 +26,7 @@ from math_flow.judgments import (
 )
 from math_flow.knowledge import apply_deltas, apply_revision_deltas, empty_state
 from math_flow.openrouter import format_error_message
-from math_flow.repository import affected_problems, ledger, validate_pr, validate_tree
+from math_flow.repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
 from math_flow.runs import run_judge_bundle
 from math_flow.viewer import export_viewer_data
 
@@ -327,12 +329,159 @@ class GitProtocolTests(unittest.TestCase):
             {supporting["judgmentId"], refuting["judgmentId"]},
         )
 
+        builder_path = (
+            Path(__file__).parents[1]
+            / "protocol/judges/openrouter-knowledge-builder-v1.json"
+        )
+        builder_digest = f"sha256:{sha256_json(load_judge_spec(builder_path))}"
+        formation_scheduler = self.root / "coordination/formation-scheduler.json"
+        formation_lane = record_completed_inputs(
+            formation_scheduler,
+            "demo",
+            builder_digest,
+            [
+                supporting["judgmentId"],
+                refuting["judgmentId"],
+                reconciliation["judgmentId"],
+            ],
+            [conflicts[0]["conflictId"]],
+            minimum_interval_seconds=60,
+            now=100,
+        )
+        formation_claim = claim_due_build(
+            formation_scheduler, formation_lane["laneId"], 100, 500
+        )
+        self.assertIsNotNone(formation_claim)
+        conflicts_path = self.root / "coordination/conflicts.json"
+        write(
+            conflicts_path,
+            json.dumps({"schemaVersion": 1, "conflicts": conflicts}) + "\n",
+        )
+
+        formation_responses = iter(
+            [
+                {
+                    "id": "formation-selection",
+                    "model": "openai/gpt-5-mini",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps(
+                                    {
+                                        "selectedNodeIds": ["root"],
+                                        "rationale": "The unresolved claim needs a dispute node.",
+                                    }
+                                )
+                            }
+                        }
+                    ],
+                },
+                {
+                    "id": "formation-report",
+                    "model": "openai/gpt-5-mini",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": "# Knowledge formation\n\n"
+                                "## Node: disputes/main-claim\n\n"
+                                "The immutable reconciliation leaves the opposed judgments unresolved. "
+                                "This node records their provenance without choosing a side.\n"
+                            }
+                        }
+                    ],
+                },
+                {
+                    "id": "formation-extract",
+                    "model": "openai/gpt-5-mini",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps(
+                                    {
+                                        "operations": [
+                                            {
+                                                "action": "issue",
+                                                "adjudicationId": "disputes/main-claim",
+                                                "nodeId": "disputes/main-claim",
+                                                "parentId": "root",
+                                                "nodeType": "dispute",
+                                                "title": "Main claim dispute",
+                                                "summary": "Opposed judgments remain unresolved.",
+                                                "reportSection": "## Node: disputes/main-claim",
+                                                "baseDigest": None,
+                                                "baseRevisionId": None,
+                                                "subjects": [
+                                                    {"kind": "transaction", "id": supporting_head},
+                                                    {"kind": "transaction", "id": refuting_head},
+                                                ],
+                                                "evidence": [
+                                                    {
+                                                        "kind": "conflict",
+                                                        "id": conflicts[0]["conflictId"],
+                                                        "digest": conflicts[0]["conflictId"],
+                                                        "relation": "context",
+                                                    },
+                                                    {
+                                                        "kind": "judgment",
+                                                        "id": reconciliation["judgmentId"],
+                                                        "digest": reconciliation["judgmentId"],
+                                                        "relation": "qualifies",
+                                                    },
+                                                ],
+                                            }
+                                        ]
+                                    }
+                                )
+                            }
+                        }
+                    ],
+                },
+            ]
+        )
+        knowledge_bundle = self.root / "knowledge-build-1"
+        knowledge_manifest = run_knowledge_build_bundle(
+            self.root,
+            "demo",
+            builder_path,
+            refuting_head,
+            formation_claim,
+            [supporting_bundle, refuting_bundle, reconciliation_bundle],
+            conflicts_path,
+            knowledge_bundle,
+            transport=lambda _: next(formation_responses),
+        )
+        self.assertEqual(knowledge_manifest["runKind"], "knowledge-build")
+        self.assertEqual(
+            knowledge_manifest["inputs"]["judgmentSetDigest"],
+            formation_claim["judgmentSetDigest"],
+        )
+        knowledge_state = json.loads(
+            (knowledge_bundle / "state/state.json").read_text(encoding="utf-8")
+        )
+        dispute = knowledge_state["nodes"]["disputes/main-claim"]
+        self.assertEqual(dispute["type"], "dispute")
+        self.assertEqual(dispute["evidence"][0]["id"], conflicts[0]["conflictId"])
+        _, knowledge_run_digest = verify_bundle(knowledge_bundle)
+        completed_formation_lane = complete_build(
+            formation_scheduler,
+            formation_lane["laneId"],
+            formation_claim["buildToken"],
+            knowledge_run_digest,
+            now=120,
+        )
+        self.assertEqual(completed_formation_lane["latestStateRun"], knowledge_run_digest)
+        viewer_data = export_viewer_data(
+            self.root, "demo", refuting_head, [knowledge_bundle]
+        )
+        self.assertEqual(viewer_data["runs"][0]["runKind"], "knowledge-build")
+        self.assertIn("disputes/main-claim", viewer_data["runs"][0]["changedNodeIds"])
+
         scheduler = self.root / "coordination/scheduler.json"
-        builder_digest = "sha256:" + "a" * 64
+        scheduler_builder_digest = "sha256:" + "a" * 64
         first_lane = record_completed_inputs(
             scheduler,
             "demo",
-            builder_digest,
+            scheduler_builder_digest,
             [supporting["judgmentId"]],
             [],
             minimum_interval_seconds=60,
@@ -355,7 +504,7 @@ class GitProtocolTests(unittest.TestCase):
         record_completed_inputs(
             scheduler,
             "demo",
-            builder_digest,
+            scheduler_builder_digest,
             [refuting["judgmentId"], reconciliation["judgmentId"]],
             [conflicts[0]["conflictId"]],
             minimum_interval_seconds=60,
@@ -393,7 +542,7 @@ class GitProtocolTests(unittest.TestCase):
         record_completed_inputs(
             scheduler,
             "demo",
-            builder_digest,
+            scheduler_builder_digest,
             [refuting["judgmentId"], reconciliation["judgmentId"]],
             [conflicts[0]["conflictId"]],
             minimum_interval_seconds=60,
@@ -403,18 +552,35 @@ class GitProtocolTests(unittest.TestCase):
 
         projection = self.root / "projection-worktree"
         batch = publish_batch(
-            projection, [supporting_bundle, refuting_bundle, reconciliation_bundle]
+            projection,
+            [
+                supporting_bundle,
+                refuting_bundle,
+                reconciliation_bundle,
+                knowledge_bundle,
+            ],
         )
-        self.assertEqual(len(batch["objects"]), 3)
+        self.assertEqual(len(batch["objects"]), 4)
         index = json.loads(
             (projection / "indexes/problems/demo/runs.json").read_text(encoding="utf-8")
         )
         self.assertEqual(
             {item["runDigest"] for item in index},
-            {supporting_run_digest, refuting_run_digest, reconciliation_run_digest},
+            {
+                supporting_run_digest,
+                refuting_run_digest,
+                reconciliation_run_digest,
+                knowledge_run_digest,
+            },
         )
         repeated = publish_batch(
-            projection, [supporting_bundle, refuting_bundle, reconciliation_bundle]
+            projection,
+            [
+                supporting_bundle,
+                refuting_bundle,
+                reconciliation_bundle,
+                knowledge_bundle,
+            ],
         )
         self.assertEqual(repeated["batchId"], batch["batchId"])
 

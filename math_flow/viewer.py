@@ -97,8 +97,11 @@ def export_viewer_data(
         manifest, manifest_digest = load_manifest(bundle)
         if manifest.get("problemId") != problem:
             raise MathFlowError(f"viewer run belongs to a different problem: {bundle}")
-        if manifest.get("outputProfile") != "math-flow/hierarchical-markdown-v2":
-            raise MathFlowError(f"viewer run is not hierarchical Markdown v2: {bundle}")
+        if manifest.get("outputProfile") not in {
+            "math-flow/hierarchical-markdown-v2",
+            "math-flow/knowledge-build-markdown-v1",
+        }:
+            raise MathFlowError(f"viewer run is not revision-aware hierarchical Markdown: {bundle}")
         if previous_manifest_digest is not None and manifest.get("baseRun") != previous_manifest_digest:
             raise MathFlowError(f"viewer judge runs do not form a base-run chain: {bundle}")
 
@@ -138,6 +141,8 @@ def export_viewer_data(
                 "ledgerHead": manifest["ledgerHead"],
                 "runDigest": manifest_digest,
                 "baseRun": manifest.get("baseRun"),
+                "runKind": manifest.get("runKind", "legacy-projection"),
+                "inputs": manifest.get("inputs"),
                 "judgeSpec": manifest["judgeSpec"],
                 "runner": manifest["runner"],
                 "cost": cost,
