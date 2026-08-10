@@ -50,7 +50,11 @@ test("keeps the viewer data-driven and free of starter preview assets", async ()
   assert.equal(parsed.transactions.length, 3);
   assert.equal(parsed.latestRunId, "run-live-3");
   assert.ok(parsed.runs.every((run) => run.revisionIds.length > 0));
-  assert.deepEqual(await readdir(new URL("app/_sites-preview", templateRoot)), []);
+  const previewAssets = await readdir(new URL("app/_sites-preview", templateRoot)).catch((error) => {
+    if (error?.code === "ENOENT") return [];
+    throw error;
+  });
+  assert.deepEqual(previewAssets, []);
 });
 
 test("proxies repository projection state through the worker", async () => {
