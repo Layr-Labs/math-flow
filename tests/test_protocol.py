@@ -147,7 +147,7 @@ class RepositoryValidationTests(unittest.TestCase):
 
     def test_current_tree_is_valid(self) -> None:
         root = Path(__file__).parents[1]
-        self.assertEqual(validate_tree(root), {"problems": 2, "contributions": 3})
+        self.assertEqual(validate_tree(root), {"problems": 2, "contributions": 4})
 
     def test_empty_readme_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
