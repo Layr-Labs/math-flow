@@ -57,6 +57,12 @@ downloads their retained artifacts, and verifies their bundle digests, approved
 judge identity, problem-ledger digest, ancestry, and exact planned transaction
 coverage before allowing knowledge formation.
 
+The workflow retains a completed knowledge-state artifact before attempting the
+GitHub-signed projection commit. Publication ignores only the scheduler's local
+`coordination/scheduler.json.lock` synchronization file; any other unexpected
+worktree path still fails closed. If publication fails, formation diagnostics
+are uploaded after the failure as well.
+
 The `Validate repository` workflow separately runs protocol tests plus the
 viewer production-build, rendered-HTML, and lint checks on relevant pushes and
 pull requests. The baseline judge continues to discover affected problems, so

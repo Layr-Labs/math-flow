@@ -19,6 +19,7 @@ _PUBLISHED_PATHS = (
     "publication-batches/",
     "viewer/catalog.json",
 )
+_TRANSIENT_PATHS = {"coordination/scheduler.json.lock"}
 _GRAPHQL = """
 mutation PublishProjection(
   $repository: String!
@@ -88,6 +89,10 @@ def _changed_files(worktree: Path) -> tuple[list[dict[str, str]], list[dict[str,
         path = entry[3:]
         if "R" in status or "C" in status:
             raise MathFlowError("projection publication does not support renamed files")
+        # Coordination keeps this file open while atomically updating the
+        # scheduler.  The lock is local process state, not projection state.
+        if path in _TRANSIENT_PATHS:
+            continue
         if not _is_published_path(path):
             raise MathFlowError(f"projection publication touched an unexpected path: {path}")
         if path in seen:

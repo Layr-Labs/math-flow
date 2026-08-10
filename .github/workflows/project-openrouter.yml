@@ -285,14 +285,6 @@ jobs:
             command+=(--base-run "$base_dir")
           fi
           "${command[@]}"
-      - name: Upload formation diagnostics
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: "formation-diagnostics-${{ inputs.problem }}-${{ github.run_id }}"
-          path: "${{ runner.temp }}/math-flow-staging"
-          if-no-files-found: error
-          retention-days: 7
       - name: Complete, publish, and export repository viewer state
         run: |
           set -euo pipefail
@@ -319,6 +311,15 @@ jobs:
             --canonical-ref main \
             --projection-ref projections \
             --output "$projection_dir/viewer/catalog.json"
+      - name: Retain completed knowledge state before publication
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: "knowledge-state-${{ inputs.problem }}-${{ github.run_id }}"
+          path: |
+            ${{ runner.temp }}/math-flow-staging/knowledge-build
+            ${{ runner.temp }}/projection-branch/viewer/catalog.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Publish a GitHub-signed projection commit
         env:
           GITHUB_TOKEN: "${{ github.token }}"
@@ -330,10 +331,11 @@ jobs:
             --repository "${GITHUB_REPOSITORY}" \
             --branch projections \
             --message "Publish ${MATH_FLOW_PROJECTION_ID}/${MATH_FLOW_PROBLEM_ID} from run ${GITHUB_RUN_ID}"
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - name: Upload formation diagnostics after a failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: "knowledge-state-${{ inputs.problem }}-${{ github.sha }}"
-          path: |
-            ${{ runner.temp }}/math-flow-staging/knowledge-build
-            ${{ runner.temp }}/projection-branch/viewer/catalog.json
+          name: "formation-diagnostics-${{ inputs.problem }}-${{ github.run_id }}"
+          path: "${{ runner.temp }}/math-flow-staging"
           if-no-files-found: error
+          retention-days: 7
