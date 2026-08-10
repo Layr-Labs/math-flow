@@ -333,10 +333,17 @@ def prepare_openrouter_request(
         },
         "provider": spec["provider"],
     }
-    allowed_parameters = {"temperature", "top_p", "max_tokens", "seed"}
+    allowed_parameters = {"temperature", "top_p", "max_tokens", "seed", "reasoning"}
     for key, value in spec["parameters"].items():
         if key not in allowed_parameters:
             raise MathFlowError(f"unsupported OpenRouter judge parameter: {key}")
+        if key == "reasoning" and (
+            not isinstance(value, dict)
+            or set(value) != {"effort"}
+            or value.get("effort")
+            not in {"none", "minimal", "low", "medium", "high", "xhigh", "max"}
+        ):
+            raise MathFlowError("OpenRouter reasoning must specify one supported effort")
         payload[key] = value
     return payload
 

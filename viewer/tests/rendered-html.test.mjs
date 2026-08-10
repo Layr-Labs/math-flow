@@ -27,6 +27,9 @@ test("server-renders the research atlas with exported run data", async () => {
   assert.match(html, /Triangle midpoint quadrilateral/);
   assert.match(html, /Transactions/);
   assert.match(html, /Knowledge state/);
+  assert.match(html, /Submission/);
+  assert.match(html, /Judgment/);
+  assert.match(html, /Build report/);
   assert.match(html, /Run[^<]*<!-- -->03/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|SkeletonPreview/i);
 });
@@ -48,6 +51,10 @@ test("keeps the viewer data-driven and free of starter preview assets", async ()
   const parsed = JSON.parse(data);
   assert.equal(parsed.runs.length, 3);
   assert.equal(parsed.transactions.length, 3);
+  assert.equal(parsed.judgments.length, 1);
+  assert.equal(parsed.judgments[0].judgmentKind, "primary");
+  assert.match(parsed.judgments[0].reportMarkdown, /^#/);
+  assert.equal(parsed.judgments[0].record.judgmentId, parsed.judgments[0].judgmentId);
   assert.equal(parsed.latestRunId, "run-live-3");
   assert.ok(parsed.runs.every((run) => run.revisionIds.length > 0));
   const previewAssets = await readdir(new URL("app/_sites-preview", templateRoot)).catch((error) => {

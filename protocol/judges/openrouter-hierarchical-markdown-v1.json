@@ -8,19 +8,19 @@
   "outputProfile": "math-flow/hierarchical-markdown-v1",
   "outputAdapter": "select-report-extract-v1",
   "reducer": "hierarchical-delta-v1",
-  "model": "openai/gpt-5-mini",
+  "model": "openai/gpt-5.6-sol",
   "parameters": {
     "seed": 1729
   },
   "stages": {
     "select": {
-      "parameters": { "max_tokens": 1200 }
+      "parameters": { "max_tokens": 1200, "reasoning": { "effort": "high" } }
     },
     "report": {
-      "parameters": { "max_tokens": 10000 }
+      "parameters": { "max_tokens": 10000, "reasoning": { "effort": "high" } }
     },
     "extract": {
-      "parameters": { "max_tokens": 4000 }
+      "parameters": { "max_tokens": 4000, "reasoning": { "effort": "high" } }
     }
   },
   "provider": {

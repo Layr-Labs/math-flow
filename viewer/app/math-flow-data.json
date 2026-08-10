@@ -5,7 +5,7 @@
     "title": "Triangle midpoint quadrilateral",
     "statementMarkdown": "# Triangle midpoint quadrilateral\n\nLet points \\(D\\), \\(E\\), and \\(F\\) be the midpoints of sides \\(BC\\), \\(CA\\), and\n\\(AB\\) of a nondegenerate triangle \\(ABC\\). Prove that the four small triangles\n\\(AEF\\), \\(BFD\\), \\(CDE\\), and \\(DEF\\) have equal area.\n\nContributions may give synthetic, coordinate, formal, or computational arguments,\nor may critique and extend earlier contributions.\n\n"
   },
-  "ledgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+  "ledgerHead": "daaad5e95526cb890aa78b270c6754f1bba93c73",
   "transactions": [
     {
       "ordinal": 1,
@@ -41,13 +41,109 @@
       "contentMarkdown": "# Correction to the base-height alternative\n\nThis contribution corrects one ancillary paragraph in the judge report with\nSHA-256 digest\n`sha256:561dbc76876de7977d2b77f8c0b81232c94c69c259535f1031da548926a1386b`.\nThe paragraph appears in the cumulative content associated with\n`triangle-midpoints/midpoint-lemma-detail`.\n\nThe report says that, because `EF` is parallel to `BC`, the altitude from `A`\nto `EF` equals the altitude from `A` to `BC`. That is false. Since `E` and `F`\nare the midpoints of `AC` and `AB`, the homothety centered at `A` with factor\n`1/2` maps `BC` to `EF`. Consequently,\n\n- `|EF| = |BC|/2`; and\n- the distance from `A` to the line `EF` is half the distance from `A` to the\n  line `BC`.\n\nBoth the base and the corresponding height are therefore scaled by `1/2`, so\n\n\\[\n\\frac{\\operatorname{area}(AEF)}{\\operatorname{area}(ABC)}\n= \\frac12 \\cdot \\frac12\n= \\frac14.\n\\]\n\nThis correction does not challenge the equal-area theorem, the original\naffine/homothety proof, or the midpoint lemma. Those conclusions remain correct.\nIt only replaces the erroneous explanation of the optional base-height\nalternative.\n"
     }
   ],
+  "judgments": [
+    {
+      "judgmentId": "sha256:41e3a9365c18d2d62073fde08b0f1fb803960b6cc129b07733f2eb9c7e970d02",
+      "runDigest": "sha256:f54985712b96f21ed8c6b029eeed8300534cca97babfda52268e04913b91325b",
+      "judgmentKind": "primary",
+      "ledgerHead": "cef3d446bb8990cd3283f5021f3c1a063a18f14b",
+      "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+      "judgeSpec": {
+        "id": "openrouter-markdown-judgment-v1",
+        "digest": "sha256:b152267c1265e59dd11b8e5c6926e323b86aa7c71e85fee2456bb6a2757d3a9a"
+      },
+      "models": [
+        "openai/gpt-5-mini"
+      ],
+      "cost": 0.012398300000000001,
+      "reportDigest": "sha256:51ff93bd2244e5cb163f0173ec575cce5f9685115bca32d73d157ea129e8001d",
+      "reportMarkdown": "# Judgment on subject transaction 8bcf66bbd7777ee31f637a0a1a144535feb82ba4\nAuthor of the transactions under review: Robert.\n\nThis judgment evaluates the mathematical content of the supplied subject transaction (transaction id 8bcf66bbd7777ee31f637a0a1a144535feb82ba4, contribution \"base-height-correction\") together with the immediately related supporting contributions provided as evidence (the earlier \"affine-area-proof\" and \"midpoint-lemma-detail\"). I treat only the supplied material as evidence and make no external assumptions.\n\nSummary conclusion (short): The correction correctly identifies and fixes an erroneous claim in an ancillary paragraph of the earlier report: the altitude from A to EF is not equal to the altitude from A to BC; rather both the base EF and the corresponding altitude from A scale by 1/2 under the homothety centered at A, so area(AEF) = (1/2)*(1/2)*area(ABC) = 1/4 area(ABC). Combined with the midpoint/medial-triangle facts supplied earlier, this yields a valid and convincing proof that the four small triangles AEF, BFD, CDE, and DEF have equal area. Confidence in this judgment: high.\n\nBelow I separate distinct findings and give decisive reasoning, point out the contradiction corrected, note any missing evidence or minor gaps, and comment on contribution/priority where relevant.\n\nFindings\n\n1) Claim addressed: The ancillary paragraph in a prior report asserted (falsely) that, because EF is parallel to BC, \"the altitude from A to EF equals the altitude from A to BC.\"\n\n   Evidence examined:\n   - The correction contribution explicitly states the false claim and corrects it.\n   - The midpoint-lemma-detail contribution gives the vector identities E = (A+C)/2 and F = (A+B)/2 and the derived relation E − F = (C − B)/2, which proves EF is parallel to BC and |EF| = |BC|/2.\n   - The affine-area-proof contribution states the homothety/affine reasoning for area scaling.\n\n   Decisive reasoning / assessment:\n   - The statement that the altitude from A to EF equals the altitude from A to BC contradicts the midpoint-homothety geometry: the map sending a point X to A + (1/2)(X − A) is a homothety centered at A with factor 1/2; it sends B ↦ F and C ↦ E, hence sends the line BC to the line EF. Distances from the center A to any image point or image line under such a homothety scale by 1/2. Thus the distance from A to the line EF must be half the distance from A to the line BC, not equal to it.\n   - The vector identity E − F = (C − B)/2 (provided in the midpoint-lemma-detail) gives EF parallel to BC with half the length; combining that with the homothety centered at A is sufficient to conclude the altitude from A to EF is half the altitude from A to BC.\n\n   Errors identified:\n   - The prior paragraph's claim of equality of altitudes is incorrect; the correction correctly identifies this as an error.\n\n   Missing evidence / minor gap:\n   - The correction assumes the reader accepts the standard fact that a homothety centered at A with factor 1/2 halves distances from A to any line or point. This is elementary and is implicitly justified by the midpoint identities; the midpoint-lemma-detail supplies the algebraic identities that make the homothety explicit. No substantive lemma is missing.\n\n   Confidence: very high.\n\n2) Claim addressed: The correct area relation for triangle AEF vs ABC is area(AEF) / area(ABC) = 1/4, obtained because both base EF and the corresponding height from A scale by 1/2.\n\n   Evidence examined:\n   - The correction contribution states the homothety argument and the two consequences: |EF| = |BC|/2 and the distance from A to EF is half the distance from A to BC, yielding the area ratio 1/4.\n   - The midpoint-lemma-detail provides the vector computations establishing EF's parallelism and half-length.\n   - The affine-area-proof contribution gave the alternative viewpoint: since edges joining midpoints produce the medial triangle similar to ABC with linear scale factor 1/2, areas scale by (1/2)^2 = 1/4; the same reasoning applied to corner triangles shows they have area 1/4 of ABC.\n\n   Decisive reasoning / assessment:\n   - Both arguments (homothety scaling of base and height, and similarity/scale-factor argument) are standard and consistent. The vector identities in midpoint-lemma-detail justify the statement that EF is the image of BC under the A-centered homothety of ratio 1/2; therefore both base and altitude scale by 1/2 and the area scales by (1/2)^2 = 1/4.\n   - Alternatively, computing area via side-lengths and included angle at A: AE = AC/2 and AF = AB/2, while angle EAF = angle CAB, gives area(AEF) = (1/2) AE·AF·sin(angle A) = (1/2) (AC/2)(AB/2) sin A = (1/4)·area(ABC). This is a direct algebraic check consistent with the homothety/similarity viewpoint.\n\n   Errors identified: none in the corrected argument.\n\n   Missing evidence / minor gap:\n   - None substantive; the supplied vector identity and the similarity/homothety explanations together give a complete elementary justification.\n\n   Confidence: very high.\n\n3) Claim addressed: The four small triangles AEF, BFD, CDE, and DEF all have equal area.\n\n   Evidence examined:\n   - Affine-area-proof: medial triangle DEF is similar to ABC with scale 1/2, area quarter of ABC. Corner triangles (AEF, etc.) also have area 1/4 of ABC via the same similarity/homothety reasoning or via side-halving with unchanged included angle.\n   - Midpoint-lemma-detail: gives algebraic justification for the parallelism and half-length facts used above.\n   - base-height-correction: fixes an erroneous altitude statement, restoring the valid base-height alternative argument to conclude area ratio 1/4 for corner triangles.\n\n   Decisive reasoning / assessment:\n   - The three small corner triangles (AEF, BFD, CDE) each have two sides that are half of two corresponding sides of ABC and they share the corresponding included angles, so each has area 1/4 area(ABC) by the standard 1/2 ab sin θ formula.\n   - The medial triangle DEF is similar to ABC with linear scale 1/2 (edges parallel and half-length by the midpoint lemma), so area(DEF) = (1/2)^2 area(ABC) = 1/4 area(ABC).\n   - Therefore all four areas are equal to 1/4 of the area of ABC, proving the theorem.\n\n   Errors identified: none remaining in the corrected presentation. The only earlier error (the equality-of-altitudes statement) has been identified and corrected; that error, if left uncorrected, would have been a logically incorrect justification in the base-height line of explanation, but it did not affect the correctness of the main theorem as already proved by affine/similarity arguments.\n\n   Missing evidence / minor gap:\n   - The supplied material is sufficient for a complete elementary proof. If a fully formalized proof is desired (e.g., in Lean), the affine invariance/determinant formulation or the explicit vector identities in midpoint-lemma-detail provide suitable starting points; the correction itself mentions neither a formal proof nor a mechanical derivation, but the earlier contributions together already give those details.\n\n   Confidence: very high.\n\n4) On the nature of the \"correction\" contribution relative to prior contributions (credit/prioritization statement required by the rubric)\n\n   Evidence examined:\n   - The \"affine-area-proof\" contribution presented the classical affine/homothety argument that reduces the area claim to scale factor 1/2.\n   - The \"midpoint-lemma-detail\" contribution made explicit the midpoint-vector computations supporting parallelism and half-length claims.\n   - The \"base-height-correction\" contribution points out and corrects an erroneous explanatory sentence about altitudes present in the earlier material.\n\n   Assessment of contribution:\n   - The correction is a responsible and precise fix of a specific false sentence in the prior exposition; it does not change the main result or displace earlier arguments, but it clarifies and replaces an incorrect optional argument with the correct homothety-based scaling claim.\n   - All three items are by the same author; the correction acknowledges it does not challenge the earlier correct conclusions and supplies the corrected explanation. In terms of mathematical value, the correction improves correctness and clarity; priority issues do not arise among distinct authors here, but the correction should be accepted as the accurate fix to an identified logical mistake.\n\n   Confidence: high.\n\nContradictions identified\n\n- The only explicit contradiction in the supplied transactions is the earlier incorrect sentence (in the cumulative content associated with midpoint-lemma-detail, as referenced by the correction) claiming that the altitude from A to EF equals the altitude from A to BC. The correction demonstrates this contradicts the midpoint/homothety facts and replaces the false equality by the correct statement that the altitude is halved. No other contradictions are present among the supplied contributions.\n\nRecommendations for formal completeness (not strictly required but noted)\n- The midpoint-lemma-detail already gives a succinct vector identity proving EF ∥ BC and |EF| = |BC|/2; if one wants the base-height argument to be fully explicit, add a one-line statement that the homothety A + (1/2)(X − A) maps BC to EF and thus maps perpendiculars/altitudes from A to lines to halves of those distances. This is routine and already implicit in the supplied evidence.\n- For formalization (e.g., in a proof assistant), the determinant/oriented-area formulation or the affine-invariance viewpoint mentioned in affine-area-proof would provide a compact route; the provided vector identities adapt readily to that setting.\n\nFinal verdict\n- The corrected argument in transaction 8bcf66bbd7777ee31f637a0a1a144535feb82ba4 is correct and fixes a genuine error in an earlier exposition. Together with the midpoint-vector detail and the affine/similarity argument, the supplied material gives a complete elementary proof that triangles AEF, BFD, CDE, and DEF all have equal area (each equal to one quarter of area(ABC)). Confidence in these conclusions is high.\n",
+      "record": {
+        "schemaVersion": 1,
+        "judgmentKind": "primary",
+        "problemId": "triangle-midpoints",
+        "ledgerHead": "cef3d446bb8990cd3283f5021f3c1a063a18f14b",
+        "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+        "judgeSpec": {
+          "id": "openrouter-markdown-judgment-v1",
+          "digest": "sha256:b152267c1265e59dd11b8e5c6926e323b86aa7c71e85fee2456bb6a2757d3a9a"
+        },
+        "subjects": [
+          {
+            "kind": "transaction",
+            "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "ledgerPosition": 3
+          }
+        ],
+        "findings": [
+          {
+            "claimKey": "altitude-from-a-to-ef-equals-altitude-from-a-to-bc",
+            "stance": "refutes",
+            "summary": "The ancillary sentence claiming “the altitude from A to EF equals the altitude from A to BC” is false. The base-height-correction transaction explicitly states this false claim and corrects it; the midpoint-lemma-detail gives E=(A+C)/2, F=(A+B)/2 and E−F=(C−B)/2 (so EF ∥ BC and |EF|=|BC|/2); and the affine-area-proof supplies the homothety/affine reasoning. Together these show the homothety centered at A with factor 1/2 sends BC to EF, hence distances from A to EF are half those to BC, so the altitude is halved (not equal).",
+            "subjectTransactionIds": [
+              "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+            ],
+            "evidenceTransactionIds": [
+              "64afc12868e150370e6c56e6eeceab6b7aabe158",
+              "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+              "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+            ]
+          },
+          {
+            "claimKey": "area-aef-is-one-quarter-of-area-abc",
+            "stance": "supports",
+            "summary": "The corrected argument shows area(AEF)/area(ABC)=1/4 because both base EF and the corresponding altitude from A scale by 1/2 under the A-centered homothety. The midpoint-lemma-detail provides the vector identities establishing EF ∥ BC and half-length, and the affine-area-proof gives the similarity/homothety area-scaling viewpoint; an elementary side-halving with unchanged included angle computation yields the same 1/4 factor. No substantive gaps remain. (Confidence: very high.)",
+            "subjectTransactionIds": [
+              "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+            ],
+            "evidenceTransactionIds": [
+              "64afc12868e150370e6c56e6eeceab6b7aabe158",
+              "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+              "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+            ]
+          },
+          {
+            "claimKey": "four-small-triangles-aef-bfd-cde-def-equal-area",
+            "stance": "supports",
+            "summary": "Using the midpoint/vector facts and the homothety/similarity reasoning, each corner triangle (AEF, BFD, CDE) has area 1/4 of ABC (two sides halved with the same included angle) and the medial triangle DEF is similar to ABC with linear scale 1/2 so area(DEF)=1/4 area(ABC). Therefore all four small triangles have equal area. The base-height correction removes a prior erroneous altitude statement but does not change this conclusion. (Confidence: very high.)",
+            "subjectTransactionIds": [
+              "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+            ],
+            "evidenceTransactionIds": [
+              "64afc12868e150370e6c56e6eeceab6b7aabe158",
+              "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+              "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+            ]
+          },
+          {
+            "claimKey": "correction-is-responsible-precise-fix-relative-to-prior-contributions",
+            "stance": "supports",
+            "summary": "The base-height-correction transaction responsibly and precisely fixes a specific false explanatory sentence in earlier material (it does not overturn prior correct arguments). The affine-area-proof provided the classical affine/homothety argument, the midpoint-lemma-detail gave explicit midpoint/vector computations, and the correction replaces the incorrect altitude-equality sentence with the correct homothety-based scaling statement; the correction improves correctness and clarity and does not raise priority disputes. (Confidence: high.)",
+            "subjectTransactionIds": [
+              "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+            ],
+            "evidenceTransactionIds": [
+              "64afc12868e150370e6c56e6eeceab6b7aabe158",
+              "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+              "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+            ]
+          }
+        ],
+        "reportDigest": "sha256:51ff93bd2244e5cb163f0173ec575cce5f9685115bca32d73d157ea129e8001d",
+        "judgmentId": "sha256:41e3a9365c18d2d62073fde08b0f1fb803960b6cc129b07733f2eb9c7e970d02"
+      }
+    }
+  ],
   "runs": [
     {
       "id": "run-live-1",
       "ordinal": 1,
       "ledgerHead": "b7430c0a5ebf85d13e7d81891a7f0a680ac20cf8",
+      "problemLedgerHead": "b7430c0a5ebf85d13e7d81891a7f0a680ac20cf8",
       "runDigest": "sha256:70b9b7de58e2cfaf027ecd9d8bdb463c995ef27469a6a04fee1b52734409686c",
       "baseRun": null,
+      "runKind": "legacy-projection",
+      "inputs": null,
       "judgeSpec": {
         "id": "openrouter-hierarchical-markdown-v2",
         "digest": "sha256:8ea5bc64602d986f0be487c66edcb68a587599e38cb60503d1b162efd6c32674"
@@ -294,8 +390,11 @@
       "id": "run-live-2",
       "ordinal": 2,
       "ledgerHead": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+      "problemLedgerHead": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
       "runDigest": "sha256:56baf9f3244cc08fc059b7d3c300d3154c482ce0f87248a30573d4d831127b37",
       "baseRun": "sha256:70b9b7de58e2cfaf027ecd9d8bdb463c995ef27469a6a04fee1b52734409686c",
+      "runKind": "legacy-projection",
+      "inputs": null,
       "judgeSpec": {
         "id": "openrouter-hierarchical-markdown-v2",
         "digest": "sha256:8ea5bc64602d986f0be487c66edcb68a587599e38cb60503d1b162efd6c32674"
@@ -568,8 +667,11 @@
       "id": "run-live-3",
       "ordinal": 3,
       "ledgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+      "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
       "runDigest": "sha256:02f1496a2c97fc9649e32b5fa5809ec0781cc0f06f2eb65ec6fd4e30f0324d93",
       "baseRun": "sha256:56baf9f3244cc08fc059b7d3c300d3154c482ce0f87248a30573d4d831127b37",
+      "runKind": "legacy-projection",
+      "inputs": null,
       "judgeSpec": {
         "id": "openrouter-hierarchical-markdown-v2",
         "digest": "sha256:8ea5bc64602d986f0be487c66edcb68a587599e38cb60503d1b162efd6c32674"

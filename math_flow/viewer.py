@@ -57,6 +57,51 @@ def _report_artifact(
     return report, str(matches[0]["digest"])
 
 
+def _viewer_judgment(bundle: Path, problem: str) -> dict[str, object]:
+    manifest, run_digest = load_manifest(bundle)
+    if manifest.get("runKind") != "judgment" or manifest.get("problemId") != problem:
+        raise MathFlowError(f"viewer judgment belongs to another problem or run kind: {bundle}")
+    record = _json_artifact(bundle, manifest, "judgment-record")
+    judgment_id = record.get("judgmentId")
+    if not isinstance(judgment_id, str):
+        raise MathFlowError(f"viewer judgment has no content address: {bundle}")
+    try:
+        report = read_verified_artifact(bundle, manifest, "judgment-report").decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise MathFlowError("viewer judgment report is not UTF-8") from exc
+    cost = sum(
+        float(provider_run.get("usage", {}).get("cost", 0))
+        for provider_run in manifest.get("providerRuns", [])
+        if isinstance(provider_run, dict)
+        and isinstance(provider_run.get("usage"), dict)
+        and isinstance(provider_run["usage"].get("cost", 0), (int, float))
+    )
+    models = sorted(
+        {
+            str(provider_run.get("resolvedModel") or provider_run.get("requestedModel"))
+            for provider_run in manifest.get("providerRuns", [])
+            if isinstance(provider_run, dict)
+            and isinstance(
+                provider_run.get("resolvedModel") or provider_run.get("requestedModel"),
+                str,
+            )
+        }
+    )
+    return {
+        "judgmentId": judgment_id,
+        "runDigest": run_digest,
+        "judgmentKind": record.get("judgmentKind"),
+        "ledgerHead": manifest.get("ledgerHead"),
+        "problemLedgerHead": manifest.get("problemLedgerHead", manifest.get("ledgerHead")),
+        "judgeSpec": manifest.get("judgeSpec"),
+        "models": models,
+        "cost": cost,
+        "reportDigest": record.get("reportDigest"),
+        "reportMarkdown": report,
+        "record": record,
+    }
+
+
 def _title(markdown: str, fallback: str) -> str:
     for line in markdown.splitlines():
         if line.startswith("# "):
@@ -69,6 +114,7 @@ def export_viewer_data(
     problem: str,
     head: str,
     run_dirs: list[Path],
+    judgment_dirs: list[Path] | None = None,
 ) -> dict[str, object]:
     if not run_dirs:
         raise MathFlowError("viewer export requires at least one judge run")
@@ -167,6 +213,29 @@ def export_viewer_data(
         previous_nodes = nodes
         latest_revisions = revisions
 
+    judgments_by_id: dict[str, dict[str, object]] = {}
+    for judgment_dir in judgment_dirs or []:
+        judgment = _viewer_judgment(judgment_dir.resolve(), problem)
+        judgment_id = str(judgment["judgmentId"])
+        prior = judgments_by_id.get(judgment_id)
+        if prior is not None and prior["runDigest"] != judgment["runDigest"]:
+            raise MathFlowError(f"viewer judgment ID has multiple run bundles: {judgment_id}")
+        judgments_by_id[judgment_id] = judgment
+    judgments = sorted(
+        judgments_by_id.values(),
+        key=lambda item: (
+            min(
+                (
+                    int(subject.get("ledgerPosition", 0))
+                    for subject in item["record"].get("subjects", [])
+                    if isinstance(subject, dict)
+                ),
+                default=0,
+            ),
+            str(item["judgmentId"]),
+        ),
+    )
+
     return {
         "schemaVersion": 1,
         "problem": {
@@ -176,6 +245,7 @@ def export_viewer_data(
         },
         "ledgerHead": source["ledgerHead"],
         "transactions": transactions,
+        "judgments": judgments,
         "runs": runs,
         "revisions": latest_revisions,
         "reports": reports,
@@ -183,11 +253,11 @@ def export_viewer_data(
     }
 
 
-def _projection_run_index(projection_root: Path) -> dict[str, dict[str, object]]:
-    runs: dict[str, dict[str, object]] = {}
+def _projection_object_index(projection_root: Path) -> dict[str, dict[str, object]]:
+    objects: dict[str, dict[str, object]] = {}
     index_root = projection_root / "indexes" / "problems"
     if not index_root.exists():
-        return runs
+        return objects
     for index_path in sorted(index_root.glob("*/runs.json")):
         try:
             values = json.loads(index_path.read_text(encoding="utf-8"))
@@ -208,20 +278,36 @@ def _projection_run_index(projection_root: Path) -> dict[str, dict[str, object]]
             manifest, verified_digest = verify_bundle(target)
             if verified_digest != digest:
                 raise MathFlowError(f"projection index digest does not match object: {relative}")
-            if manifest.get("runKind", "legacy-projection") not in {
-                "knowledge-build",
-                "legacy-projection",
-            }:
-                continue
-            if manifest.get("outputProfile") not in {
-                "math-flow/hierarchical-markdown-v2",
-                "math-flow/knowledge-build-markdown-v1",
-            }:
-                continue
-            if digest in runs and runs[digest]["path"] != target:
+            if digest in objects and objects[digest]["path"] != target:
                 raise MathFlowError(f"projection digest appears at multiple paths: {digest}")
-            runs[digest] = {"manifest": manifest, "path": target}
-    return runs
+            objects[digest] = {"manifest": manifest, "path": target}
+    return objects
+
+
+def _projection_judgment_index(
+    published_objects: dict[str, dict[str, object]],
+) -> dict[str, dict[str, object]]:
+    judgments: dict[str, dict[str, object]] = {}
+    for digest, item in published_objects.items():
+        manifest = item["manifest"]
+        target = item["path"]
+        if manifest.get("runKind") != "judgment":
+            continue
+        record = _json_artifact(target, manifest, "judgment-record")
+        judgment_id = record.get("judgmentId")
+        if not isinstance(judgment_id, str):
+            raise MathFlowError(f"published judgment has no content address: {target}")
+        prior = judgments.get(judgment_id)
+        if prior is not None and prior["path"] != target:
+            raise MathFlowError(
+                f"projection judgment appears at multiple paths: {judgment_id}"
+            )
+        judgments[judgment_id] = {
+            "manifest": manifest,
+            "path": target,
+            "runDigest": digest,
+        }
+    return judgments
 
 
 def _projection_lane(manifest: dict[str, object]) -> str:
@@ -268,7 +354,19 @@ def export_viewer_catalog(
 
     root = root.resolve()
     projection_root = projection_root.resolve()
-    published_runs = _projection_run_index(projection_root)
+    published_objects = _projection_object_index(projection_root)
+    published_runs = {
+        digest: item
+        for digest, item in published_objects.items()
+        if item["manifest"].get("runKind", "legacy-projection")
+        in {"knowledge-build", "legacy-projection"}
+        and item["manifest"].get("outputProfile")
+        in {
+            "math-flow/hierarchical-markdown-v2",
+            "math-flow/knowledge-build-markdown-v1",
+        }
+    }
+    published_judgments = _projection_judgment_index(published_objects)
     by_lane: dict[tuple[str, str], dict[str, dict[str, object]]] = {}
     for digest, item in published_runs.items():
         manifest = item["manifest"]
@@ -311,7 +409,33 @@ def export_viewer_catalog(
             head = terminal_manifest.get("ledgerHead")
             if not isinstance(head, str):
                 raise MathFlowError(f"viewer projection run has no ledger head: {terminal}")
-            data = export_viewer_data(root, problem, head, chain)
+            referenced_judgment_ids: set[str] = set()
+            for bundle in chain:
+                manifest, _ = load_manifest(bundle)
+                inputs = manifest.get("inputs")
+                if isinstance(inputs, dict) and isinstance(inputs.get("judgmentIds"), list):
+                    referenced_judgment_ids.update(
+                        str(value)
+                        for value in inputs["judgmentIds"]
+                        if isinstance(value, str)
+                    )
+            missing_judgments = referenced_judgment_ids - set(published_judgments)
+            if missing_judgments:
+                raise MathFlowError(
+                    "viewer projection is missing a referenced judgment: "
+                    f"{sorted(missing_judgments)[0]}"
+                )
+            judgment_dirs = [
+                published_judgments[judgment_id]["path"]
+                for judgment_id in sorted(referenced_judgment_ids)
+            ]
+            data = export_viewer_data(
+                root,
+                problem,
+                head,
+                chain,
+                judgment_dirs=judgment_dirs,
+            )
             judge_spec = terminal_manifest.get("judgeSpec")
             if not isinstance(judge_spec, dict):
                 raise MathFlowError(f"viewer projection run has no judge identity: {terminal}")

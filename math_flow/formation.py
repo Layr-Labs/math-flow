@@ -512,9 +512,12 @@ def run_knowledge_build_bundle(
         [
             "Write a detailed Markdown knowledge-formation report. Do not output JSON and do not redo, extend, or overturn any mathematical judgment.",
             "Organize the immutable judgment results into durable knowledge nodes. Attribute conclusions to their source judgments rather than presenting your own new mathematical conclusion.",
+            "Treat the knowledge state as a holistic current account, not a collection of deltas. A submission, judgment, correction, or revision event belongs in provenance and is not itself a knowledge node.",
+            "When a judgment changes an existing mathematical concept, update that concept's selected stable node. Propose a new node only for a distinct durable concept that would remain meaningful if transaction names and chronology were removed.",
             "A reconciliation outcome may resolve its named conflict. If a conflict has no reconciliation, has an unresolved or needs-evidence outcome, or has incompatible reconciliation outcomes, preserve it as an active dispute node and do not choose a side.",
             "Use explicit headings of the form `## Node: <stable-id>` for every existing or proposed node that should change.",
-            "Explain the organizational change and provenance in enough detail for an auditor. Stable IDs use lowercase letters, numbers, slashes, underscores, and hyphens.",
+            "Each `## Node:` section must be a self-contained statement of the complete current knowledge after the proposed update. Do not title or frame it as a submission, correction, revision, or change log. Put historical explanation under a separate `## Change: <stable-id>` heading so it remains in the report but outside materialized node content.",
+            "Explain organizational changes and provenance in enough detail for an auditor. Stable IDs use lowercase letters, numbers, slashes, underscores, and hyphens.",
             f"Formation rubric:\n{json.dumps(spec['rubric'], indent=2, ensure_ascii=False)}",
             f"Problem:\n{problem_statement}",
             f"Selected knowledge nodes:\n{json.dumps(selected, indent=2, ensure_ascii=False)}",
@@ -541,21 +544,32 @@ def run_knowledge_build_bundle(
         for node in selected
         if node.get("currentAdjudication") is None
     ]
+    selected_subject_ids = {
+        str(subject["id"])
+        for node in selected
+        for subject in node.get("subjects", [])
+        if isinstance(subject, dict) and isinstance(subject.get("id"), str)
+    }
+    allowed_subject_ids = claimed_subject_ids | selected_subject_ids
+    allowed_transaction_evidence_ids = (
+        claimed_transaction_evidence_ids | selected_subject_ids
+    )
     extractor_prompt = "\n\n".join(
         [
             "Extract only the sparse knowledge-state delta stated by the formation report. Do not perform mathematical reasoning or change any judgment outcome.",
             "Existing nodes may change only when selected. New nodes must be parented under a selected or newly created node. Create parents before children.",
+            "The state is a holistic current view. Do not issue an event-shaped node merely to record a submission, judgment, correction, or revision. When the report corrects an existing concept, emit only the operation on that stable node unless the report also states a genuinely distinct durable concept.",
             "Use issue for a first node adjudication, revise for an active node update, retract to retire an active node, and reinstate only for a retired node.",
             "adjudicationId must equal nodeId. For an existing node copy its exact digest and current revisionId into the base fields; use null base fields for a first adjudication.",
             f"Selected structural nodes without a prior adjudication must use issue: {json.dumps(unadjudicated_selected_ids)}",
             "Every non-root node needs a parentId. A new top-level node uses parentId root when root was selected.",
-            "Subjects are ledger transactions represented by the node. Evidence may reference an allowed transaction, judgment, or conflict. For transaction evidence use null digest. For judgment or conflict evidence set digest equal to its content-addressed ID.",
-            "A formation operation may name as a subject only a transaction that was a subject of a claimed judgment; context-only evidence must remain evidence and must not be promoted to a subject.",
+            "Subjects are ledger transactions represented by the durable mathematical node. On an existing node, preserve its prior subjects unless a supplied judgment changes what that node represents. A corrective transaction normally belongs in evidence rather than becoming a new subject. Evidence may reference an allowed transaction, judgment, or conflict. For transaction evidence use null digest. For judgment or conflict evidence set digest equal to its content-addressed ID.",
+            "A new node may name as a subject only a transaction that was a subject of a claimed judgment; context-only evidence must remain evidence and must not be promoted to a subject.",
             "Every conflict listed as requiring an active dispute must be cited by a non-retract dispute operation.",
             "Do not create an active dispute node merely to say that no conflict exists. Every active dispute operation must cite at least one conflict from the required unresolved dispute list. A resolved existing dispute may instead be retracted.",
             "reportSection must exactly equal `## Node: <nodeId>` using the operation's exact nodeId. Return no operation only when the report specifies no state change.",
             f"Selected nodes:\n{json.dumps(selected, indent=2, ensure_ascii=False)}",
-            f"Allowed subject transaction IDs:\n{json.dumps(sorted(claimed_subject_ids), indent=2)}",
+            f"Allowed subject transaction IDs (claimed subjects plus subjects already represented by selected nodes):\n{json.dumps(sorted(allowed_subject_ids), indent=2)}",
             f"Allowed transaction evidence IDs:\n{json.dumps(sorted(claimed_transaction_evidence_ids), indent=2)}",
             f"Allowed judgment IDs:\n{json.dumps(sorted(judgments), indent=2)}",
             f"Allowed conflict IDs:\n{json.dumps(sorted(conflicts), indent=2)}",
@@ -574,7 +588,7 @@ def run_knowledge_build_bundle(
             {"role": "user", "content": extractor_prompt},
         ],
         _revision_delta_schema(
-            sorted(claimed_subject_ids),
+            sorted(allowed_subject_ids),
             evidence_kinds=["transaction", "judgment", "conflict"],
             evidence_ids=[
                 *sorted(claimed_transaction_evidence_ids),
@@ -624,12 +638,16 @@ def run_knowledge_build_bundle(
         evidence = operation.get("evidence")
         if not isinstance(subjects, list) or not isinstance(evidence, list):
             raise MathFlowError("knowledge operation must distinguish subjects and evidence")
+        existing_node = state["nodes"].get(operation.get("nodeId"))
+        permitted_subject_ids = (
+            allowed_subject_ids if isinstance(existing_node, dict) else claimed_subject_ids
+        )
         if any(
-            not isinstance(item, dict) or item.get("id") not in claimed_subject_ids
+            not isinstance(item, dict) or item.get("id") not in permitted_subject_ids
             for item in subjects
         ):
             raise MathFlowError(
-                "knowledge operation promotes a transaction that was not a judgment subject"
+                "knowledge operation promotes a transaction outside its allowed subjects"
             )
         for item in evidence:
             if not isinstance(item, dict):

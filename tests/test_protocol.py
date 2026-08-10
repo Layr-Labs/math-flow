@@ -289,7 +289,7 @@ class GitProtocolTests(unittest.TestCase):
                 [
                     {
                         "id": f"report-{stance}",
-                        "model": "openai/gpt-5-mini",
+                        "model": "openai/gpt-5.6-sol",
                         "choices": [
                             {
                                 "message": {
@@ -300,7 +300,7 @@ class GitProtocolTests(unittest.TestCase):
                     },
                     {
                         "id": f"extract-{stance}",
-                        "model": "openai/gpt-5-mini",
+                        "model": "openai/gpt-5.6-sol",
                         "choices": [
                             {
                                 "message": {
@@ -365,7 +365,7 @@ class GitProtocolTests(unittest.TestCase):
             [
                 {
                     "id": "reconciliation-report",
-                    "model": "openai/gpt-5-mini",
+                    "model": "openai/gpt-5.6-sol",
                     "choices": [
                         {
                             "message": {
@@ -376,7 +376,7 @@ class GitProtocolTests(unittest.TestCase):
                 },
                 {
                     "id": "reconciliation-extract",
-                    "model": "openai/gpt-5-mini",
+                    "model": "openai/gpt-5.6-sol",
                     "choices": [
                         {
                             "message": {
@@ -461,7 +461,7 @@ class GitProtocolTests(unittest.TestCase):
         formation_response_values = [
                 {
                     "id": "formation-selection",
-                    "model": "openai/gpt-5-mini",
+                    "model": "openai/gpt-5.6-sol",
                     "choices": [
                         {
                             "message": {
@@ -477,7 +477,7 @@ class GitProtocolTests(unittest.TestCase):
                 },
                 {
                     "id": "formation-report",
-                    "model": "openai/gpt-5-mini",
+                    "model": "openai/gpt-5.6-sol",
                     "choices": [
                         {
                             "message": {
@@ -491,7 +491,7 @@ class GitProtocolTests(unittest.TestCase):
                 },
                 {
                     "id": "formation-extract",
-                    "model": "openai/gpt-5-mini",
+                    "model": "openai/gpt-5.6-sol",
                     "choices": [
                         {
                             "message": {
@@ -565,6 +565,20 @@ class GitProtocolTests(unittest.TestCase):
             transport=formation_transport,
         )
         self.assertEqual(len(formation_requests), 4)
+        self.assertTrue(
+            all(request["model"] == "openai/gpt-5.6-sol" for request in formation_requests)
+        )
+        self.assertTrue(
+            all(request["reasoning"] == {"effort": "high"} for request in formation_requests)
+        )
+        self.assertIn(
+            "holistic current account",
+            formation_requests[1]["messages"][1]["content"],
+        )
+        self.assertIn(
+            "corrective transaction normally belongs in evidence",
+            formation_requests[2]["messages"][1]["content"],
+        )
         extractor_schema = formation_requests[2]["response_format"]["json_schema"][
             "schema"
         ]
@@ -607,10 +621,29 @@ class GitProtocolTests(unittest.TestCase):
         )
         self.assertEqual(completed_formation_lane["latestStateRun"], knowledge_run_digest)
         viewer_data = export_viewer_data(
-            self.root, "demo", refuting_head, [knowledge_bundle]
+            self.root,
+            "demo",
+            refuting_head,
+            [knowledge_bundle],
+            judgment_dirs=[supporting_bundle, refuting_bundle, reconciliation_bundle],
         )
         self.assertEqual(viewer_data["runs"][0]["runKind"], "knowledge-build")
         self.assertIn("disputes/main-claim", viewer_data["runs"][0]["changedNodeIds"])
+        self.assertEqual(len(viewer_data["judgments"]), 3)
+        self.assertEqual(
+            {item["judgmentId"] for item in viewer_data["judgments"]},
+            {
+                supporting["judgmentId"],
+                refuting["judgmentId"],
+                reconciliation["judgmentId"],
+            },
+        )
+        self.assertTrue(
+            all(item["reportMarkdown"].startswith("#") for item in viewer_data["judgments"])
+        )
+        self.assertTrue(
+            all(item["record"]["judgmentId"] == item["judgmentId"] for item in viewer_data["judgments"])
+        )
 
         scheduler = self.root / "coordination/scheduler.json"
         scheduler_builder_digest = "sha256:" + "a" * 64
@@ -736,12 +769,14 @@ class GitProtocolTests(unittest.TestCase):
         self.assertEqual(catalog_projection["latestRunDigest"], knowledge_run_digest)
         self.assertEqual(catalog_projection["runCount"], 1)
         self.assertEqual(catalog_projection["data"]["problem"]["id"], "demo")
+        self.assertEqual(len(catalog_projection["data"]["judgments"]), 3)
 
     def test_openrouter_request_and_projection_with_fake_transport(self) -> None:
         head = self.commit_contribution("first-proof", "# Lemma\n\nA useful argument.")
         judge = Path(__file__).parents[1] / "protocol/judges/openrouter-math-review-v1.json"
         request = render_request(self.root, "demo", judge, head)
-        self.assertEqual(request["model"], "openai/gpt-5-mini")
+        self.assertEqual(request["model"], "openai/gpt-5.6-sol")
+        self.assertEqual(request["reasoning"], {"effort": "high"})
         self.assertTrue(request["provider"]["require_parameters"])
         self.assertEqual(request["provider"]["data_collection"], "deny")
         self.assertIn("A useful argument", request["messages"][1]["content"])
@@ -776,7 +811,7 @@ class GitProtocolTests(unittest.TestCase):
             }
             return {
                 "id": "generation-test",
-                "model": "openai/gpt-5-mini",
+                "model": "openai/gpt-5.6-sol",
                 "choices": [{"message": {"role": "assistant", "content": json.dumps(content)}}],
                 "usage": {"prompt_tokens": 100, "completion_tokens": 80, "total_tokens": 180},
             }
@@ -844,7 +879,7 @@ class GitProtocolTests(unittest.TestCase):
             rendered = content if isinstance(content, str) else json.dumps(content)
             return {
                 "id": f"generation-{index}",
-                "model": "openai/gpt-5-mini",
+                "model": "openai/gpt-5.6-sol",
                 "choices": [{"message": {"content": rendered}}],
                 "usage": {"total_tokens": 100 + index},
             }
@@ -1113,7 +1148,7 @@ class GitProtocolTests(unittest.TestCase):
             rendered = content if isinstance(content, str) else json.dumps(content)
             return {
                 "id": f"revision-generation-{index}",
-                "model": "openai/gpt-5-mini",
+                "model": "openai/gpt-5.6-sol",
                 "choices": [{"message": {"content": rendered}}],
             }
 

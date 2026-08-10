@@ -201,6 +201,9 @@ def build_parser() -> argparse.ArgumentParser:
     viewer_parser.add_argument(
         "--run-dir", required=True, action="append", type=Path, dest="run_dirs"
     )
+    viewer_parser.add_argument(
+        "--judgment-dir", action="append", type=Path, dest="judgment_dirs"
+    )
     viewer_parser.add_argument("--output", required=True, type=Path)
 
     catalog_parser = commands.add_parser(
@@ -363,7 +366,13 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "publish-batch":
             result = publish_batch(args.projection_dir, args.bundles)
         elif args.command == "export-viewer":
-            result = export_viewer_data(root, args.problem, args.head, args.run_dirs)
+            result = export_viewer_data(
+                root,
+                args.problem,
+                args.head,
+                args.run_dirs,
+                judgment_dirs=args.judgment_dirs,
+            )
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(
                 json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"

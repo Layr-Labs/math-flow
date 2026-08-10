@@ -8,16 +8,16 @@
   "outputProfile": "math-flow/judgment-markdown-v1",
   "outputAdapter": "report-extract-findings-v1",
   "reducer": null,
-  "model": "openai/gpt-5-mini",
+  "model": "openai/gpt-5.6-sol",
   "parameters": {
     "seed": 1729
   },
   "stages": {
     "report": {
-      "parameters": { "max_tokens": 10000 }
+      "parameters": { "max_tokens": 10000, "reasoning": { "effort": "high" } }
     },
     "extract": {
-      "parameters": { "max_tokens": 4000 }
+      "parameters": { "max_tokens": 4000, "reasoning": { "effort": "high" } }
     }
   },
   "provider": {
@@ -30,6 +30,7 @@
     "correctness": "Explain decisive proof steps, errors, missing lemmas, and the level of confidence warranted by supplied evidence.",
     "scope": "Make findings only about the supplied subject transactions; use other supplied material only as evidence.",
     "conflict": "Identify the mathematical claim addressed by each finding precisely enough that independent judgments about the same claim can be compared.",
+    "identity": "Finding claim keys identify durable mathematical propositions, questions, or methods, never a submission, correction, judgment, or revision event. A corrective contribution targets the proposition it changes.",
     "credit": "Discuss contribution and priority in the Markdown assessment when relevant; do not assign cumulative project credit."
   }
 }

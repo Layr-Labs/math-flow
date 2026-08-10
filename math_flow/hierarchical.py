@@ -510,7 +510,10 @@ def run_hierarchical_judge(
         [
             "Write a detailed Markdown research assessment. Do not output JSON and do not optimize for brevity.",
             "Explain correctness, gaps, competing approaches, cumulative knowledge, and credit with enough detail for a mathematician to audit.",
+            "Treat the materialized knowledge state as a holistic current account, not a collection of submissions, corrections, judgments, or other update events.",
+            "When later evidence changes an existing mathematical concept, update that selected stable node. Propose a new node only for a distinct durable concept that remains meaningful without transaction names or chronology.",
             "Use explicit headings of the form `## Node: <stable-id>` for every existing or proposed knowledge node that should change.",
+            "Each `## Node:` section must state the complete current knowledge after the update, without framing it as a correction or change log. Put historical explanation under a separate `## Change: <stable-id>` heading so it is audited in the report but not copied into current node content.",
             "You may propose new stable IDs using lowercase letters, numbers, slashes, underscores, and hyphens.",
             *(
                 [
@@ -551,6 +554,7 @@ def run_hierarchical_judge(
         [
             "Extract only the knowledge-state delta implied by the report. Do not redo the mathematical judgment.",
             "Existing nodes may be updated only if they were selected. New nodes must be parented under a selected or newly created node.",
+            "Do not issue a node merely to record a submission, judgment, correction, or revision event. A correction to an existing concept normally produces only a revise, retract, or reinstate operation on that stable node.",
             "For existing nodes, copy the exact current digest into baseDigest. For new nodes use null.",
             *(
                 [

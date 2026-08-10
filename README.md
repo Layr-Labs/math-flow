@@ -137,8 +137,9 @@ judge/state runs.
 
 ### Interactive research atlas
 
-The `viewer/` app presents the canonical transaction ledger, every published
-knowledge-state chain, and the immutable adjudication revisions behind it. Its
+The `viewer/` app presents the canonical transaction ledger, full submission
+Markdown, published primary and reconciliation judgments, every knowledge-state
+chain, and the immutable adjudication revisions behind it. Its
 server endpoint reads `viewer/catalog.json` directly from the orphan
 `projections` branch; the browser refreshes that endpoint every 30 seconds and
 offers problem and projection selectors. A checked-in deterministic export is
@@ -162,6 +163,7 @@ python -m math_flow export-viewer \
   --run-dir projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-live-1 \
   --run-dir projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-live-2 \
   --run-dir projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-live-3 \
+  --judgment-dir projections/staging/hosted-run-31361558280/judgment \
   --output viewer/app/math-flow-data.json
 
 cd viewer
@@ -170,8 +172,10 @@ npm run dev
 ```
 
 Open the URL printed by the development server. Select a run to time-travel,
-select a transaction to highlight its subjects and evidence, or select a node to
-inspect its current Markdown, revision lineage, and source judge report.
+select a transaction to inspect its raw submission and linked judgments, or
+select a node to inspect its current Markdown, revision lineage, and source
+knowledge-build report. The Judgment tab exposes both the original Markdown
+assessment and its structured finding record.
 
 To test the repository-backed catalog locally, publish verified bundles into a
 temporary projection worktree and run:

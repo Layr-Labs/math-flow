@@ -59,6 +59,8 @@ type Run = {
   addedRevisionIds: string[];
   changedNodeIds: string[];
   reportDigest: string;
+  runKind?: string;
+  inputs?: { judgmentIds?: string[] } | null;
 };
 
 type Transaction = {
@@ -69,10 +71,51 @@ type Transaction = {
   contentMarkdown: string;
 };
 
+type JudgmentFinding = {
+  claimKey: string;
+  stance: string;
+  summary: string;
+  subjectTransactionIds: string[];
+  evidenceTransactionIds: string[];
+};
+
+type JudgmentRecord = {
+  schemaVersion: number;
+  judgmentId: string;
+  judgmentKind: "primary" | "reconciliation";
+  problemId: string;
+  ledgerHead: string;
+  judgeSpec: { id: string; digest: string };
+  subjects: Ref[];
+  findings: JudgmentFinding[];
+  reportDigest: string;
+  reconciliation?: {
+    conflictId: string;
+    inputJudgmentIds: string[];
+    outcome: string;
+    summary: string;
+  };
+};
+
+type PublishedJudgment = {
+  judgmentId: string;
+  runDigest: string;
+  judgmentKind: "primary" | "reconciliation";
+  ledgerHead: string;
+  problemLedgerHead: string;
+  judgeSpec: { id: string; digest: string };
+  models: string[];
+  cost: number;
+  reportDigest: string;
+  reportMarkdown: string;
+  record: JudgmentRecord;
+};
+
 export type ViewerData = {
   problem: { id: string; title: string; statementMarkdown: string };
   ledgerHead: string;
   transactions: Transaction[];
+  judgments?: PublishedJudgment[];
   runs: Run[];
   revisions: Revision[];
   reports: Array<{ runId: string; digest: string; markdown: string }>;
@@ -100,6 +143,14 @@ const short = (value: string | null, size = 7) =>
   value ? value.replace(/^sha256:/, "").slice(0, size) : "genesis";
 
 const label = (value: string) => value.replaceAll("-", " ");
+
+function judgmentMentionsTransaction(judgment: PublishedJudgment, transactionId: string) {
+  return judgment.record.subjects.some((item) => item.id === transactionId) ||
+    judgment.record.findings.some((finding) =>
+      finding.subjectTransactionIds.includes(transactionId) ||
+      finding.evidenceTransactionIds.includes(transactionId),
+    );
+}
 
 function isViewerCatalog(value: unknown): value is ViewerCatalog {
   if (!value || typeof value !== "object") return false;
@@ -248,16 +299,36 @@ function TypeMark({ type }: { type: string }) {
 }
 
 export function KnowledgeViewer({ data }: { data: ViewerData }) {
+  const judgments = useMemo(() => data.judgments ?? [], [data.judgments]);
   const [runId, setRunId] = useState(data.latestRunId);
   const [nodeId, setNodeId] = useState("root");
   const [transactionId, setTransactionId] = useState<string | null>(null);
+  const [judgmentId, setJudgmentId] = useState<string | null>(judgments.at(-1)?.judgmentId ?? null);
   const [query, setQuery] = useState("");
-  const [detailMode, setDetailMode] = useState<"node" | "report">("node");
+  const [detailMode, setDetailMode] = useState<"node" | "transaction" | "judgment" | "report">("node");
 
   const run = data.runs.find((item) => item.id === runId) ?? data.runs.at(-1)!;
   const runLedgerPosition = data.transactions.find(
     (item) => item.transactionId === (run.problemLedgerHead ?? run.ledgerHead),
   )?.ordinal ?? data.transactions.length;
+  const judgmentIdsAtRun = useMemo(
+    () => new Set(
+      data.runs
+        .filter((item) => item.ordinal <= run.ordinal)
+        .flatMap((item) => item.inputs?.judgmentIds ?? []),
+    ),
+    [data.runs, run.ordinal],
+  );
+  const hasJudgmentRouting = data.runs.some((item) => (item.inputs?.judgmentIds?.length ?? 0) > 0);
+  const runJudgments = useMemo(
+    () => judgments.filter((item) =>
+      hasJudgmentRouting
+        ? judgmentIdsAtRun.has(item.judgmentId)
+        : item.record.subjects.some((subject) => (subject.ledgerPosition ?? 0) <= runLedgerPosition),
+    ),
+    [judgments, judgmentIdsAtRun, hasJudgmentRouting, runLedgerPosition],
+  );
+  const selectedJudgment = runJudgments.find((item) => item.judgmentId === judgmentId) ?? runJudgments.at(-1);
   const nodes = run.state.nodes;
   const selectedNode = nodes[nodeId] ?? nodes.root;
   const runRevisionSet = useMemo(() => new Set(run.revisionIds), [run.revisionIds]);
@@ -317,6 +388,18 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
     setDetailMode("node");
   }
 
+  function openJudgment(nextJudgmentId: string) {
+    setJudgmentId(nextJudgmentId);
+    setDetailMode("judgment");
+  }
+
+  function openTransaction(nextTransactionId: string) {
+    setTransactionId(nextTransactionId);
+    const linked = runJudgments.find((item) => judgmentMentionsTransaction(item, nextTransactionId));
+    if (linked) setJudgmentId(linked.judgmentId);
+    setDetailMode("transaction");
+  }
+
   function TreeNode({ id, depth = 0 }: { id: string; depth?: number }) {
     const node = nodes[id];
     if (!node || !visibleIds.has(id)) return null;
@@ -350,6 +433,9 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
   }
 
   const selectedTransaction = data.transactions.find((item) => item.transactionId === transactionId);
+  const transactionJudgments = selectedTransaction
+    ? runJudgments.filter((item) => judgmentMentionsTransaction(item, selectedTransaction.transactionId))
+    : [];
 
   return (
     <main className="app-shell">
@@ -369,6 +455,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
         <div className="run-metrics">
           <span><strong>{Object.keys(nodes).length}</strong> nodes</span>
           <span><strong>{run.revisionIds.length}</strong> revisions</span>
+          <span><strong>{runJudgments.length}</strong> judgments</span>
           <span><strong>${run.cost.toFixed(4)}</strong> run cost</span>
         </div>
       </header>
@@ -387,7 +474,14 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
                 <button
                   className={`transaction-card ${active ? "selected" : ""} ${available ? "" : "future"}`}
                   key={transaction.transactionId}
-                  onClick={() => setTransactionId(active ? null : transaction.transactionId)}
+                  onClick={() => {
+                    if (active) {
+                      setTransactionId(null);
+                      setDetailMode("node");
+                    } else {
+                      openTransaction(transaction.transactionId);
+                    }
+                  }}
                   disabled={!available}
                   aria-pressed={active}
                 >
@@ -403,13 +497,6 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
           <div className="ledger-footnote">
             <span className="pulse" /> Ledger at <code>{short(run.ledgerHead)}</code>
           </div>
-          {selectedTransaction && (
-            <div className="transaction-preview">
-              <span className="eyebrow">Selected evidence</span>
-              <h3>{label(selectedTransaction.contributionId)}</h3>
-              <Markdown value={selectedTransaction.contentMarkdown} />
-            </div>
-          )}
         </aside>
 
         <section className="knowledge-panel panel">
@@ -444,7 +531,9 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
         <aside className="detail-panel panel">
           <div className="detail-tabs" role="tablist">
             <button role="tab" aria-selected={detailMode === "node"} onClick={() => setDetailMode("node")}>Node</button>
-            <button role="tab" aria-selected={detailMode === "report"} onClick={() => setDetailMode("report")}>Source report</button>
+            <button role="tab" aria-selected={detailMode === "transaction"} disabled={!selectedTransaction} onClick={() => setDetailMode("transaction")}>Submission</button>
+            <button role="tab" aria-selected={detailMode === "judgment"} disabled={!selectedJudgment} onClick={() => setDetailMode("judgment")}>Judgment</button>
+            <button role="tab" aria-selected={detailMode === "report"} onClick={() => setDetailMode("report")}>Build report</button>
           </div>
           {detailMode === "node" ? (
             <>
@@ -459,9 +548,9 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
               </div>
               <div className="relation-block">
                 <h3>Subjects</h3>
-                <div className="chip-row">{selectedNode.subjects.length ? selectedNode.subjects.map((item) => <button key={item.id} onClick={() => setTransactionId(item.id)}>tx {item.ledgerPosition ?? "·"} · {short(item.id)}</button>) : <span className="muted">No transaction subjects</span>}</div>
+                <div className="chip-row">{selectedNode.subjects.length ? selectedNode.subjects.map((item) => <button key={item.id} onClick={() => openTransaction(item.id)}>tx {item.ledgerPosition ?? "·"} · {short(item.id)}</button>) : <span className="muted">No transaction subjects</span>}</div>
                 <h3>Evidence</h3>
-                <div className="chip-row">{selectedNode.evidence.length ? selectedNode.evidence.map((item) => <button key={`${item.id}-${item.relation}`} onClick={() => item.kind === "transaction" && setTransactionId(item.id)}>{item.relation} · {short(item.id)}</button>) : <span className="muted">No linked evidence</span>}</div>
+                <div className="chip-row">{selectedNode.evidence.length ? selectedNode.evidence.map((item) => <button key={`${item.id}-${item.relation}`} onClick={() => item.kind === "transaction" ? openTransaction(item.id) : item.kind === "judgment" ? openJudgment(item.id) : undefined}>{item.relation} · {short(item.id)}</button>) : <span className="muted">No linked evidence</span>}</div>
               </div>
               <section className="revision-section">
                 <div className="section-label"><h3>Revision lineage</h3><span>{nodeRevisions.length}</span></div>
@@ -479,6 +568,74 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
                 <Markdown value={selectedNode.contentMarkdown} />
               </details>
             </>
+          ) : detailMode === "transaction" && selectedTransaction ? (
+            <section className="artifact-detail">
+              <span className="eyebrow">Submission · transaction {selectedTransaction.ordinal}</span>
+              <h2>{label(selectedTransaction.contributionId)}</h2>
+              <div className="provenance-grid artifact-provenance">
+                <div><span>Author</span><strong>{selectedTransaction.author.displayName}</strong></div>
+                <div><span>Transaction</span><code>{short(selectedTransaction.transactionId, 12)}</code></div>
+              </div>
+              <section className="linked-judgments">
+                <div className="section-label"><h3>Judgments involving this submission</h3><span>{transactionJudgments.length}</span></div>
+                {transactionJudgments.map((judgment) => (
+                  <button key={judgment.judgmentId} onClick={() => openJudgment(judgment.judgmentId)}>
+                    <span>{judgment.judgmentKind}</span>
+                    <strong>{judgment.record.findings.map((finding) => finding.stance).join(" · ") || "no findings"}</strong>
+                    <code>{short(judgment.judgmentId)}</code>
+                  </button>
+                ))}
+                {!transactionJudgments.length && <p className="muted">No published judgment involves this submission in the selected run.</p>}
+              </section>
+              <details className="raw-artifact" open>
+                <summary>Raw submission Markdown</summary>
+                <Markdown value={selectedTransaction.contentMarkdown} />
+              </details>
+            </section>
+          ) : detailMode === "judgment" && selectedJudgment ? (
+            <section className="artifact-detail judgment-detail">
+              <span className="eyebrow">Raw {selectedJudgment.judgmentKind} judgment</span>
+              <h2>{selectedJudgment.judgeSpec.id}</h2>
+              {runJudgments.length > 1 && (
+                <label className="judgment-picker">
+                  <span>Published judgment</span>
+                  <select value={selectedJudgment.judgmentId} onChange={(event) => setJudgmentId(event.target.value)}>
+                    {runJudgments.map((judgment) => (
+                      <option value={judgment.judgmentId} key={judgment.judgmentId}>
+                        {judgment.judgmentKind} · {short(judgment.judgmentId)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              <div className="provenance-grid artifact-provenance">
+                <div><span>Model</span><strong>{selectedJudgment.models.join(", ") || "unreported"}</strong></div>
+                <div><span>Judgment ID</span><code>{short(selectedJudgment.judgmentId, 12)}</code></div>
+              </div>
+              {selectedJudgment.record.reconciliation && (
+                <article className="reconciliation-card">
+                  <span className="eyebrow">Reconciliation · {selectedJudgment.record.reconciliation.outcome}</span>
+                  <p>{selectedJudgment.record.reconciliation.summary}</p>
+                </article>
+              )}
+              <section className="finding-list">
+                <div className="section-label"><h3>Structured findings</h3><span>{selectedJudgment.record.findings.length}</span></div>
+                {selectedJudgment.record.findings.map((finding) => (
+                  <article className="finding-card" key={`${finding.claimKey}-${finding.stance}`}>
+                    <div><span className={`stance stance-${finding.stance}`}>{finding.stance}</span><code>{finding.claimKey}</code></div>
+                    <p>{finding.summary}</p>
+                  </article>
+                ))}
+              </section>
+              <details className="raw-artifact" open>
+                <summary>Raw judgment report</summary>
+                <Markdown value={selectedJudgment.reportMarkdown} />
+              </details>
+              <details className="raw-artifact structured-record">
+                <summary>Structured judgment JSON</summary>
+                <pre>{JSON.stringify(selectedJudgment.record, null, 2)}</pre>
+              </details>
+            </section>
           ) : (
             <section className="source-report">
               <span className="eyebrow">{report?.runId ?? "No source report"}</span>
