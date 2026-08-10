@@ -27,10 +27,10 @@ jobs:
     outputs:
       problems: ${{ steps.scope.outputs.problems }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
       - name: Discover affected problems
@@ -67,10 +67,10 @@ jobs:
         problem: ${{ fromJSON(needs.discover.outputs.problems) }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
       - name: Generate judge-run bundle
@@ -80,7 +80,7 @@ jobs:
           --judge protocol/judges/baseline-v1.json
           --head HEAD
           --output-dir "projections/baseline-v1/${{ matrix.problem }}/${{ github.sha }}"
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: "baseline-v1-${{ matrix.problem }}-${{ github.sha }}"
           path: "projections/baseline-v1/${{ matrix.problem }}/${{ github.sha }}"
