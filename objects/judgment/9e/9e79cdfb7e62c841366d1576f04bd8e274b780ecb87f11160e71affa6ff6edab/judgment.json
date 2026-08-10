@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "bec738deda3cecefcf2b873931a5c85fc1cc55b4",
+  "problemLedgerDigest": "sha256:cbcbefdab706ac27170e5302b3c2c5e64d1986f28ab69438233383d6f14857d4",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+      "ledgerPosition": 1
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line/g76-152-existence",
+      "stance": "supports",
+      "summary": "The exact decoded certificate contains 152 distinct points in G_76, and the exhaustive verifier checks all 573,800 unordered triples using the exact determinant criterion, certifying that no three points are collinear.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/g76-exact-value-152",
+      "stance": "supports",
+      "summary": "The certified 152-point configuration proves D(76) >= 152, while the horizontal-line capacity bound gives D(76) <= 152; hence the supplied evidence entails D(76) = 152.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/d77-lower-bound-152",
+      "stance": "supports",
+      "summary": "Because G_76 is contained in G_77 and the embedding preserves incidences, the same certified 152 points prove D(77) >= 152.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/d77-upper-bound-154",
+      "stance": "supports",
+      "summary": "Every no-three-in-line subset of G_77 has at most two points on each of its 77 horizontal lines, proving D(77) <= 154. This restates the baseline upper bound rather than improving it.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/d77-154-row-column-occupancy",
+      "stance": "supports",
+      "summary": "If a 154-point configuration in G_77 exists, the row and column capacity counts force every row and every column to contain exactly two selected points.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/d77-153-row-column-occupancy",
+      "stance": "supports",
+      "summary": "For any hypothetical 153-point configuration in G_77, exactly one row must contain one selected point and every other row two; independently, exactly one column must contain one selected point and every other column two.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/d77-certified-interval-152-154",
+      "stance": "supports",
+      "summary": "Combining the embedded 152-point certificate with the elementary row bound certifies 152 <= D(77) <= 154.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/d77-exact-value",
+      "stance": "uncertain",
+      "summary": "The contribution does not distinguish D(77) = 152, 153, or 154: it supplies neither a 153- or 154-point certificate nor an impossibility or exhaustive-search certificate excluding either value.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/g76-certificate-quarter-turn-symmetry",
+      "stance": "uncertain",
+      "summary": "The initial marker is recognized but ignored by the verifier, so the transaction does not independently certify that the decoded G_76 configuration has quarter-turn symmetry; this does not affect the no-three-in-line or lower-bound conclusions.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:e79a0be61ac16e981da1c0c031f0db2fe6a858dd281821a4ad6356ddad5a5e60",
+  "judgmentId": "sha256:6be1b72404002801ac782c66d7202888309fdf73c68b6ecb63633b3c163bcb8f"
+}
