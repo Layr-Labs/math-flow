@@ -9,7 +9,7 @@ from .errors import MathFlowError
 from .hierarchical import _assistant_content, _provider_run, _request, _structured_content
 from .judges import artifact_evidence, load_judge_spec, load_source
 from .openrouter import OpenRouterTransport, send_chat_completion
-from .repository import read_at, sha256_json
+from .repository import is_ancestor, read_at, sha256_json
 from .runs import run_envelope
 
 
@@ -638,6 +638,122 @@ def plan_primary_judgment_coverage(
                 for item in missing
             ]
         },
+    }
+
+
+def verify_primary_judgment_artifacts(
+    root: Path,
+    search_root: Path,
+    problem: str,
+    judge_path: Path,
+    head: str,
+    expected_subject_ids: list[str] | None = None,
+) -> dict[str, object]:
+    """Discover and verify a complete primary-judgment artifact batch.
+
+    download-artifact may extract one matching artifact directly into its target
+    directory while extracting multiple matches into per-artifact directories.
+    Discovering manifests recursively supports both layouts without weakening
+    bundle, judge, ledger, or expected-subject validation.
+    """
+
+    root = root.resolve()
+    search_root = search_root.resolve()
+    if not search_root.is_dir():
+        raise MathFlowError(f"judgment artifact directory does not exist: {search_root}")
+    spec = load_judge_spec(judge_path)
+    if spec.get("implementation") != "openrouter-markdown-judgment-v1":
+        raise MathFlowError("judgment artifact verification requires a primary judge spec")
+    judge_digest = f"sha256:{sha256_json(spec)}"
+    source = load_source(root, problem, head)
+    transactions = {
+        str(item["transactionId"]): int(item["ordinal"])
+        for item in source["transactions"]
+    }
+    expected = list(expected_subject_ids or [])
+    if len(expected) != len(set(expected)):
+        raise MathFlowError("expected judgment subjects contain duplicates")
+    unknown_expected = set(expected) - transactions.keys()
+    if unknown_expected:
+        raise MathFlowError(
+            f"expected judgment subject is outside the current ledger: {sorted(unknown_expected)[0]}"
+        )
+
+    candidates = sorted(
+        {
+            manifest.parent.resolve()
+            for manifest in search_root.rglob("run.json")
+            if manifest.is_file() and not manifest.is_symlink()
+        },
+        key=str,
+    )
+    if not candidates:
+        raise MathFlowError("no judgment bundles were found in the downloaded artifacts")
+
+    bundles: list[dict[str, object]] = []
+    observed_judgments: set[str] = set()
+    observed_subjects: set[str] = set()
+    for bundle_dir in candidates:
+        try:
+            bundle_dir.relative_to(search_root)
+        except ValueError as exc:  # pragma: no cover - resolve/rglob defensive check
+            raise MathFlowError("judgment bundle escapes the artifact directory") from exc
+        manifest, judgment, run_digest = load_judgment_bundle(bundle_dir)
+        judgment_id = str(judgment["judgmentId"])
+        if judgment_id in observed_judgments:
+            raise MathFlowError(f"downloaded judgment artifacts contain a duplicate: {judgment_id}")
+        if judgment.get("judgmentKind") != "primary":
+            raise MathFlowError(f"downloaded artifact is not a primary judgment: {bundle_dir}")
+        if judgment.get("problemId") != problem:
+            raise MathFlowError("downloaded judgment belongs to another problem")
+        if judgment.get("judgeSpec") != {"id": spec["id"], "digest": judge_digest}:
+            raise MathFlowError("downloaded judgment does not match the approved primary judge")
+        if judgment.get("problemLedgerDigest") != source["problemLedgerDigest"]:
+            raise MathFlowError("downloaded judgment is stale for the current problem ledger")
+        judgment_head = str(judgment["ledgerHead"])
+        if head != "WORKTREE" and not is_ancestor(
+            root, judgment_head, str(source["ledgerHead"])
+        ):
+            raise MathFlowError("downloaded judgment ledger is not an ancestor of the current head")
+
+        subject_ids: list[str] = []
+        for subject in judgment["subjects"]:
+            subject_id = str(subject["id"])
+            if transactions.get(subject_id) != subject["ledgerPosition"]:
+                raise MathFlowError(
+                    f"downloaded judgment subject is outside the current ledger: {subject_id}"
+                )
+            if subject_id in observed_subjects:
+                raise MathFlowError(
+                    f"downloaded judgments assess the same subject more than once: {subject_id}"
+                )
+            observed_subjects.add(subject_id)
+            subject_ids.append(subject_id)
+        observed_judgments.add(judgment_id)
+        bundles.append(
+            {
+                "path": str(bundle_dir),
+                "runDigest": run_digest,
+                "judgmentId": judgment_id,
+                "subjectTransactionIds": subject_ids,
+            }
+        )
+
+    if expected and observed_subjects != set(expected):
+        missing = set(expected) - observed_subjects
+        extra = observed_subjects - set(expected)
+        detail = sorted(missing or extra)[0]
+        raise MathFlowError(
+            f"downloaded judgment subjects do not match the current plan: {detail}"
+        )
+    return {
+        "schemaVersion": 1,
+        "problemId": problem,
+        "ledgerHead": source["ledgerHead"],
+        "problemLedgerDigest": source["problemLedgerDigest"],
+        "judgeSpec": {"id": spec["id"], "digest": judge_digest},
+        "expectedSubjectTransactionIds": expected,
+        "bundles": bundles,
     }
 
 

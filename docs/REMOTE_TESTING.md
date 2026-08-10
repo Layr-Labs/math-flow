@@ -49,6 +49,14 @@ scheduler state to the orphan `projections` branch, and refreshes
 `viewer/catalog.json`. It is intentionally not push-triggered so early
 experiments cannot create surprise inference spend.
 
+If judgments succeed but a later formation or publication step fails, keep the
+original run. After correcting the downstream failure, dispatch the workflow
+again with the same projection and problem and set `resume_run_id` to that
+earlier GitHub Actions run ID. The recovery dispatch skips paid judgment jobs,
+downloads their retained artifacts, and verifies their bundle digests, approved
+judge identity, problem-ledger digest, ancestry, and exact planned transaction
+coverage before allowing knowledge formation.
+
 The `Validate repository` workflow separately runs protocol tests plus the
 viewer production-build, rendered-HTML, and lint checks on relevant pushes and
 pull requests. The baseline judge continues to discover affected problems, so

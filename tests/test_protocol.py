@@ -29,6 +29,7 @@ from math_flow.judgments import (
     plan_primary_judgment_coverage,
     run_primary_judgment_bundle,
     run_reconciliation_judgment_bundle,
+    verify_primary_judgment_artifacts,
 )
 from math_flow.knowledge import apply_deltas, apply_revision_deltas, empty_state
 from math_flow.openrouter import format_error_message
@@ -272,6 +273,95 @@ class GitProtocolTests(unittest.TestCase):
         self.assertEqual(first["contributionVerdicts"][0]["status"], "unassessed")
         self.assertEqual(first["judgeRunner"]["implementation"], "baseline-neutral-v1")
         self.assertEqual(first["projectionDigest"], second["projectionDigest"])
+
+    def test_flat_downloaded_judgment_artifact_can_resume_after_unrelated_commit(self) -> None:
+        subject = self.commit_contribution(
+            "resume-proof", "# Resume proof\n\nEvidence for a resumable judgment."
+        )
+        judge = (
+            Path(__file__).parents[1]
+            / "protocol/judges/openrouter-markdown-judgment-v1.json"
+        )
+        responses = iter(
+            [
+                {
+                    "id": "resume-report",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": "# Assessment\n\nThe submitted evidence supports the claim."
+                            }
+                        }
+                    ],
+                },
+                {
+                    "id": "resume-extract",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps(
+                                    {
+                                        "findings": [
+                                            {
+                                                "claimKey": "demo/resume-claim",
+                                                "stance": "supports",
+                                                "summary": "The evidence supports the claim.",
+                                                "subjectTransactionIds": [subject],
+                                                "evidenceTransactionIds": [subject],
+                                            }
+                                        ]
+                                    }
+                                )
+                            }
+                        }
+                    ],
+                },
+            ]
+        )
+        downloaded = tempfile.TemporaryDirectory()
+        self.addCleanup(downloaded.cleanup)
+        flat_download = Path(downloaded.name)
+        run_primary_judgment_bundle(
+            self.root,
+            "demo",
+            judge,
+            subject,
+            [subject],
+            flat_download,
+            transport=lambda _: next(responses),
+        )
+
+        write(self.root / "docs/maintenance.md", "Unrelated maintenance.\n")
+        git(self.root, "add", "docs/maintenance.md")
+        git(self.root, "commit", "-qm", "Unrelated maintenance")
+        resumed_head = git(self.root, "rev-parse", "HEAD")
+        verified = verify_primary_judgment_artifacts(
+            self.root,
+            flat_download,
+            "demo",
+            judge,
+            resumed_head,
+            [subject],
+        )
+        self.assertEqual(verified["ledgerHead"], resumed_head)
+        self.assertEqual(len(verified["bundles"]), 1)
+        self.assertEqual(verified["bundles"][0]["path"], str(flat_download.resolve()))
+        self.assertEqual(
+            verified["bundles"][0]["subjectTransactionIds"], [subject]
+        )
+
+        self.commit_contribution("later-proof")
+        with self.assertRaisesRegex(MathFlowError, "stale for the current problem ledger"):
+            verify_primary_judgment_artifacts(
+                self.root,
+                flat_download,
+                "demo",
+                judge,
+                "HEAD",
+                [subject],
+            )
 
     def test_parallel_judgments_trigger_conflict_and_coalesced_knowledge_build(self) -> None:
         supporting_head = self.commit_contribution(
