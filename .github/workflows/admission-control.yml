@@ -1,0 +1,71 @@
+name: Validate governed admission
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  admission:
+    name: Admin admission approval
+    runs-on: ubuntu-latest
+    steps:
+      # pull_request_target is used only to run trusted code from the base branch.
+      # The candidate commit is fetched as inert Git data and is never checked out
+      # or executed. No repository or environment secrets are exposed to it; the
+      # workflow token is read-only and is used only for fetching and review reads.
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: "${{ github.event.pull_request.base.sha }}"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch candidate as untrusted Git data
+        env:
+          PR_NUMBER: "${{ github.event.pull_request.number }}"
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            "+refs/pull/${PR_NUMBER}/head:refs/remotes/origin/math-flow-admission-head"
+      - name: Read current-head approvals
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          REPOSITORY: "${{ github.repository }}"
+          PR_NUMBER: "${{ github.event.pull_request.number }}"
+          HEAD_SHA: "${{ github.event.pull_request.head.sha }}"
+        run: |
+          set -euo pipefail
+          reviews="${RUNNER_TEMP}/reviews.json"
+          gh api --paginate \
+            "repos/${REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
+            --slurp > "$reviews"
+          mapfile -t approvers < <(
+            jq -r --arg head "$HEAD_SHA" \
+              'flatten
+               | map(select(
+                   .state == "APPROVED"
+                   or .state == "CHANGES_REQUESTED"
+                   or .state == "DISMISSED"
+                 ))
+               | group_by(.user.login)
+               | map(sort_by(.submitted_at, .id) | last)
+               | .[]
+               | select(.state == "APPROVED" and .commit_id == $head)
+               | .user.login' \
+              "$reviews"
+          )
+          command=(
+            python -m math_flow validate-admission-pr
+            --base "${{ github.event.pull_request.base.sha }}"
+            --head refs/remotes/origin/math-flow-admission-head
+          )
+          for approver in "${approvers[@]}"; do
+            command+=(--approver "$approver")
+          done
+          "${command[@]}"

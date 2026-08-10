@@ -68,9 +68,24 @@ def load_scheduler(path: Path) -> dict[str, object]:
     return state
 
 
-def lane_id(problem: str, builder_spec_digest: str) -> str:
+def lane_id(
+    problem: str,
+    builder_spec_digest: str,
+    projection_spec_digest: str | None = None,
+) -> str:
     _digest(builder_spec_digest, "builder spec digest")
-    return f"sha256:{sha256_json({'problemId': problem, 'builderSpecDigest': builder_spec_digest})}"
+    if projection_spec_digest is not None:
+        _digest(projection_spec_digest, "projection spec digest")
+        identity = {
+            "problemId": problem,
+            "projectionSpecDigest": projection_spec_digest,
+        }
+    else:
+        identity = {
+            "problemId": problem,
+            "builderSpecDigest": builder_spec_digest,
+        }
+    return f"sha256:{sha256_json(identity)}"
 
 
 @_scheduler_locked
@@ -82,6 +97,7 @@ def record_completed_inputs(
     conflict_ids: list[str],
     minimum_interval_seconds: int,
     now: int,
+    projection_spec_digest: str | None = None,
 ) -> dict[str, object]:
     if minimum_interval_seconds < 0:
         raise MathFlowError("minimum knowledge-build interval cannot be negative")
@@ -93,7 +109,7 @@ def record_completed_inputs(
         _digest(conflict_id, "conflict ID")
     state = load_scheduler(path)
     lanes = state["lanes"]
-    identifier = lane_id(problem, builder_spec_digest)
+    identifier = lane_id(problem, builder_spec_digest, projection_spec_digest)
     lane = lanes.get(identifier)
     if lane is None:
         lane = {
@@ -110,7 +126,11 @@ def record_completed_inputs(
             "pendingConflictIds": [],
             "activeBuild": None,
         }
+        if projection_spec_digest is not None:
+            lane["projectionSpecDigest"] = projection_spec_digest
         lanes[identifier] = lane
+    elif lane.get("projectionSpecDigest") != projection_spec_digest:
+        raise MathFlowError("knowledge-build lane projection does not match its existing policy")
     elif lane.get("minimumIntervalSeconds") != minimum_interval_seconds:
         raise MathFlowError("knowledge-build lane interval does not match its existing policy")
     observed_judgments = set(lane.setdefault("observedJudgmentIds", []))
@@ -177,6 +197,8 @@ def claim_due_build(
         "conflictIds": selected_conflicts,
         "judgmentSetDigest": f"sha256:{sha256_json({'judgmentIds': selected_judgments, 'conflictIds': selected_conflicts})}",
     }
+    if lane.get("projectionSpecDigest") is not None:
+        request_core["projectionSpecDigest"] = lane["projectionSpecDigest"]
     request = {
         **request_core,
         "buildToken": f"sha256:{sha256_json(request_core)}",

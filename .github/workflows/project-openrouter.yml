@@ -3,14 +3,22 @@ name: OpenRouter repository projection
 on:
   workflow_dispatch:
     inputs:
+      projection:
+        description: Approved projection id
+        required: true
+        default: openrouter-research-v1
       problem:
         description: Problem id
         required: true
         default: triangle-midpoints
 
 concurrency:
-  group: "openrouter-projection-${{ inputs.problem }}"
+  group: "openrouter-projection-${{ inputs.projection }}-${{ inputs.problem }}"
   cancel-in-progress: false
+
+env:
+  MATH_FLOW_PROJECTION_ID: "${{ inputs.projection }}"
+  MATH_FLOW_PROBLEM_ID: "${{ inputs.problem }}"
 
 jobs:
   plan:
@@ -20,13 +28,44 @@ jobs:
     outputs:
       matrix: ${{ steps.coverage.outputs.matrix }}
       count: ${{ steps.coverage.outputs.count }}
+      primary_judge: ${{ steps.registry.outputs.primary_judge }}
+      knowledge_builder: ${{ steps.registry.outputs.knowledge_builder }}
+      projection_digest: ${{ steps.registry.outputs.projection_digest }}
+      judgment_max_parallel: ${{ steps.registry.outputs.judgment_max_parallel }}
+      minimum_interval: ${{ steps.registry.outputs.minimum_interval }}
+      maximum_judgments: ${{ steps.registry.outputs.maximum_judgments }}
     steps:
+      - name: Require canonical main dispatch
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "Repository projections may only be dispatched from canonical main." >&2
+            exit 1
+          fi
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - id: registry
+        name: Resolve approved projection
+        run: |
+          set -euo pipefail
+          resolved="${RUNNER_TEMP}/projection-spec.json"
+          python -m math_flow resolve-projection \
+            --projection "$MATH_FLOW_PROJECTION_ID" \
+            --problem "$MATH_FLOW_PROBLEM_ID" \
+            --head HEAD \
+            --output "$resolved"
+          echo "primary_judge=$(jq -r '.primaryJudge' "$resolved")" >> "$GITHUB_OUTPUT"
+          echo "knowledge_builder=$(jq -r '.knowledgeBuilder' "$resolved")" >> "$GITHUB_OUTPUT"
+          echo "projection_digest=$(jq -r '.projectionSpecDigest' "$resolved")" >> "$GITHUB_OUTPUT"
+          echo "judgment_max_parallel=$(jq -r '.scheduling.judgmentMaxParallel' "$resolved")" >> "$GITHUB_OUTPUT"
+          echo "minimum_interval=$(jq -r '.scheduling.knowledgeMinimumIntervalSeconds' "$resolved")" >> "$GITHUB_OUTPUT"
+          echo "maximum_judgments=$(jq -r '.scheduling.maximumJudgmentsPerBuild' "$resolved")" >> "$GITHUB_OUTPUT"
       - name: Prepare published projection state
         run: |
           set -euo pipefail
@@ -43,8 +82,8 @@ jobs:
           set -euo pipefail
           plan="${RUNNER_TEMP}/judgment-plan.json"
           python -m math_flow judgment-plan \
-            --problem "${{ inputs.problem }}" \
-            --judge protocol/judges/openrouter-markdown-judgment-v1.json \
+            --problem "$MATH_FLOW_PROBLEM_ID" \
+            --judge "${{ steps.registry.outputs.primary_judge }}" \
             --head HEAD \
             --projection-dir "${RUNNER_TEMP}/projection-branch" \
             --output "$plan"
@@ -57,7 +96,7 @@ jobs:
     if: needs.plan.outputs.count != '0'
     strategy:
       fail-fast: false
-      max-parallel: 16
+      max-parallel: ${{ fromJSON(needs.plan.outputs.judgment_max_parallel) }}
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     runs-on: ubuntu-latest
     permissions:
@@ -66,6 +105,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -83,13 +123,13 @@ jobs:
           mkdir -p "$staging_dir"
           ledger="$staging_dir/ledger.json"
           python -m math_flow ledger \
-            --problem "${{ inputs.problem }}" \
+            --problem "$MATH_FLOW_PROBLEM_ID" \
             --head HEAD \
             > "$ledger"
           command=(
             python -m math_flow judgment
-            --problem "${{ inputs.problem }}"
-            --judge protocol/judges/openrouter-markdown-judgment-v1.json
+            --problem "$MATH_FLOW_PROBLEM_ID"
+            --judge "${{ needs.plan.outputs.primary_judge }}"
             --head HEAD
             --subject "${{ matrix.transactionId }}"
             --output-dir "$staging_dir/judgment-${{ matrix.ordinal }}"
@@ -119,6 +159,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -153,9 +194,10 @@ jobs:
           trigger=(
             python -m math_flow knowledge-trigger
             --scheduler-file "$scheduler"
-            --problem "${{ inputs.problem }}"
-            --builder protocol/judges/openrouter-knowledge-builder-v1.json
-            --minimum-interval 0
+            --problem "$MATH_FLOW_PROBLEM_ID"
+            --builder "${{ needs.plan.outputs.knowledge_builder }}"
+            --projection-digest "${{ needs.plan.outputs.projection_digest }}"
+            --minimum-interval "${{ needs.plan.outputs.minimum_interval }}"
             --output "$staging_dir/lane.json"
           )
           for judgment_dir in "${judgment_dirs[@]}"; do
@@ -166,7 +208,7 @@ jobs:
           python -m math_flow knowledge-claim \
             --scheduler-file "$scheduler" \
             --lane-id "$lane_id" \
-            --maximum-judgments 500 \
+            --maximum-judgments "${{ needs.plan.outputs.maximum_judgments }}" \
             --output "$staging_dir/claim.json"
           if [[ "$(jq -r 'type' "$staging_dir/claim.json")" != "object" ]]; then
             echo "The knowledge lane was not eligible for a build." >&2
@@ -185,8 +227,8 @@ jobs:
           )
           command=(
             python -m math_flow knowledge-build
-            --problem "${{ inputs.problem }}"
-            --builder protocol/judges/openrouter-knowledge-builder-v1.json
+            --problem "$MATH_FLOW_PROBLEM_ID"
+            --builder "${{ needs.plan.outputs.knowledge_builder }}"
             --head HEAD
             --claim "$staging_dir/claim.json"
             --checkpoint-dir "$staging_dir/checkpoints"
@@ -239,7 +281,7 @@ jobs:
           python -m math_flow export-viewer-catalog \
             --projection-dir "$projection_dir" \
             --repository "${{ github.repository }}" \
-            --canonical-ref "${{ github.ref_name }}" \
+            --canonical-ref main \
             --projection-ref projections \
             --output "$projection_dir/viewer/catalog.json"
       - name: Commit the projection batch
@@ -254,7 +296,7 @@ jobs:
             objects \
             publication-batches \
             viewer/catalog.json
-          git -C "$projection_dir" commit -m "Publish ${{ inputs.problem }} projection from run ${{ github.run_id }}"
+          git -C "$projection_dir" commit -m "Publish ${MATH_FLOW_PROJECTION_ID}/${MATH_FLOW_PROBLEM_ID} from run ${GITHUB_RUN_ID}"
           git -C "$projection_dir" push origin HEAD:projections
       - uses: actions/upload-artifact@v7
         with:

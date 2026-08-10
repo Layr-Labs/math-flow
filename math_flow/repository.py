@@ -76,6 +76,11 @@ def _check_nonempty(path: Path, label: str) -> None:
 
 def validate_tree(root: Path) -> dict[str, int]:
     root = root.resolve()
+    # Imported lazily to keep the projection registry's Git-oriented admission
+    # helpers from creating an import cycle at module load time.
+    from .governance import validate_projection_registry
+
+    validate_projection_registry(root)
     problems_root = root / "problems"
     if not problems_root.is_dir():
         raise MathFlowError(f"missing problems directory: {problems_root}")

@@ -32,7 +32,7 @@ const worker = {
 
     if (url.pathname === "/api/catalog") {
       const source = env.MATH_FLOW_CATALOG_URL ??
-        "https://api.github.com/repos/mooselumph/math-flow/contents/viewer/catalog.json?ref=projections";
+        "https://api.github.com/repos/Layr-Labs/math-flow/contents/viewer/catalog.json?ref=projections";
       try {
         const headers: Record<string, string> = {
           accept: "application/vnd.github.raw+json",

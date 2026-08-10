@@ -40,7 +40,7 @@ CLAIM_FIELDS = {
     "buildToken",
     "claimedAt",
 }
-IMMUTABLE_CLAIM_FIELDS = CLAIM_FIELDS - {"claimedAt", "buildToken"}
+OPTIONAL_CLAIM_FIELDS = {"projectionSpecDigest"}
 RESOLVED_OUTCOMES = {
     "compatible",
     "prefer-support",
@@ -62,7 +62,14 @@ def _digest(value: object, label: str, nullable: bool = False) -> str | None:
 def validate_build_claim(
     claim: object, problem: str, builder_spec_digest: str
 ) -> dict[str, object]:
-    if not isinstance(claim, dict) or set(claim) != CLAIM_FIELDS:
+    claim_fields = set(claim) if isinstance(claim, dict) else set()
+    if (
+        not isinstance(claim, dict)
+        or claim_fields not in (
+            CLAIM_FIELDS,
+            CLAIM_FIELDS | OPTIONAL_CLAIM_FIELDS,
+        )
+    ):
         raise MathFlowError("knowledge build claim has an invalid envelope")
     if claim.get("schemaVersion") != 1 or claim.get("problemId") != problem:
         raise MathFlowError("knowledge build claim belongs to another problem or version")
@@ -70,15 +77,18 @@ def validate_build_claim(
         raise MathFlowError("knowledge build claim does not match the builder specification")
     _digest(claim.get("laneId"), "knowledge lane ID")
     _digest(claim.get("builderSpecDigest"), "builder spec digest")
+    projection_spec_digest = claim.get("projectionSpecDigest")
+    if projection_spec_digest is not None:
+        _digest(projection_spec_digest, "projection spec digest")
     _digest(claim.get("baseStateRun"), "base state run", nullable=True)
     _digest(claim.get("judgmentSetDigest"), "judgment-set digest")
     _digest(claim.get("buildToken"), "knowledge build token")
-    expected_lane = (
-        "sha256:"
-        + sha256_json(
-            {"problemId": problem, "builderSpecDigest": builder_spec_digest}
-        )
+    lane_identity = (
+        {"problemId": problem, "projectionSpecDigest": projection_spec_digest}
+        if projection_spec_digest is not None
+        else {"problemId": problem, "builderSpecDigest": builder_spec_digest}
     )
+    expected_lane = "sha256:" + sha256_json(lane_identity)
     if claim["laneId"] != expected_lane:
         raise MathFlowError("knowledge build claim has the wrong lane identity")
     if (
@@ -107,7 +117,8 @@ def validate_build_claim(
     )
     if claim["judgmentSetDigest"] != expected_set_digest:
         raise MathFlowError("knowledge build claim judgment-set digest does not match")
-    core = {key: claim[key] for key in IMMUTABLE_CLAIM_FIELDS}
+    immutable_fields = set(claim) - {"claimedAt", "buildToken"}
+    core = {key: claim[key] for key in immutable_fields}
     if claim["buildToken"] != f"sha256:{sha256_json(core)}":
         raise MathFlowError("knowledge build token does not match its claim")
     return {**core, "buildToken": claim["buildToken"]}

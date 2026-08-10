@@ -30,6 +30,7 @@ problems/<problem-id>/
 
 protocol/
   judges/                 versioned judge specifications
+  projections/            approved logical projection definitions
   profiles/               optional output-profile definitions
   schemas/                protocol and example-profile contracts
 
@@ -148,13 +149,20 @@ Private repositories configure the viewer's server-only
 `MATH_FLOW_GITHUB_TOKEN` binding with a fine-grained, read-only Contents token;
 the credential is never sent to the browser.
 
-The manual OpenRouter workflow first plans judgment coverage for every ledger
-transaction under the active judge spec. It fans out all missing primary
+The manual OpenRouter workflow resolves an approved logical projection from
+`protocol/projections/` at canonical `main`, then plans judgment coverage for
+every ledger transaction under its judge spec. It fans out all missing primary
 judgments concurrently, then coalesces the completed judgments into one
 serialized knowledge build, publishes the content-addressed batch and scheduler
 state to `projections`, and regenerates the catalog. Re-dispatching is
 idempotent when coverage is complete. It remains manually dispatched so a push
 cannot create surprise inference spend.
+
+Problem namespaces and projection definitions require a configured administrator
+approval before admission, while ordinary contribution PRs retain the atomic
+transaction validator without this extra gate. See
+[docs/GOVERNANCE.md](docs/GOVERNANCE.md) for the registry, approval workflow, and
+required branch-protection settings.
 
 For an offline fixture, generate the single-projection data file by listing runs
 from oldest to newest:
@@ -183,13 +191,34 @@ transaction context and offers only its current assessment and source Build
 report. The Judgment view exposes both the original Markdown assessment and its
 structured finding record.
 
+### Agent context and solver skill
+
+Agents that do not use the viewer can materialize the same verified latest
+state from a local worktree of the orphan projection branch:
+
+```bash
+python3 -m math_flow context \
+  --problem triangle-midpoints \
+  --projection-dir /path/to/projection-worktree \
+  --projection openrouter-research-v1 \
+  --head origin/main \
+  --output-dir /tmp/math-flow-context
+```
+
+The command writes the complete exact `state.json`, machine-readable freshness
+and coverage metadata in `context.json`, and a concise `context.md`. Repeated
+`--node` arguments scope the Markdown view without truncating the exact state.
+The repository-owned [`math-flow-solver`](skills/math-flow-solver/SKILL.md)
+skill explains how an agent should use this context, inspect provenance, and
+submit one atomic contribution without mutating judgments or projections.
+
 To test the repository-backed catalog locally, publish verified bundles into a
 temporary projection worktree and run:
 
 ```bash
 python -m math_flow export-viewer-catalog \
   --projection-dir /path/to/projection-worktree \
-  --repository mooselumph/math-flow \
+  --repository Layr-Labs/math-flow \
   --output /path/to/projection-worktree/viewer/catalog.json
 ```
 

@@ -40,7 +40,8 @@ README. Inspect `run.json`, `report.md`, `control/selection.json`,
 ## 4. Enable the manual repository projection
 
 Add `OPENROUTER_API_KEY` as a GitHub Actions repository secret. Manually dispatch
-`OpenRouter repository projection` for `triangle-midpoints`. It compares the
+`OpenRouter repository projection` from `main` for projection
+`openrouter-research-v1` and problem `triangle-midpoints`. It compares the
 ledger with judgments published under the active judge spec, fans out one
 primary judgment for every uncovered transaction, performs one serialized
 knowledge build over the completed batch, publishes the verified bundles and

@@ -6,6 +6,7 @@ from pathlib import Path
 from .artifacts import load_manifest, read_verified_artifact, verify_bundle
 from .coordination import load_scheduler
 from .errors import MathFlowError
+from .governance import projection_registry_index
 from .knowledge import validate_state_v2
 from .repository import ledger, read_at
 
@@ -354,6 +355,7 @@ def export_viewer_catalog(
 
     root = root.resolve()
     projection_root = projection_root.resolve()
+    projection_specs = projection_registry_index(root)
     published_objects = _projection_object_index(projection_root)
     published_runs = {
         digest: item
@@ -439,12 +441,31 @@ def export_viewer_catalog(
             judge_spec = terminal_manifest.get("judgeSpec")
             if not isinstance(judge_spec, dict):
                 raise MathFlowError(f"viewer projection run has no judge identity: {terminal}")
-            projection_id = lane if len(terminals) == 1 else f"{lane}@{terminal}"
+            terminal_inputs = terminal_manifest.get("inputs")
+            projection_digest = (
+                terminal_inputs.get("projectionSpecDigest")
+                if isinstance(terminal_inputs, dict)
+                else None
+            )
+            registered = (
+                projection_specs.get(projection_digest)
+                if isinstance(projection_digest, str)
+                else None
+            )
+            registered_id = str(registered["id"]) if registered else None
+            base_projection_id = registered_id or lane
+            projection_id = (
+                base_projection_id
+                if len(terminals) == 1
+                else f"{base_projection_id}@{terminal}"
+            )
             projections.append(
                 {
                     "id": projection_id,
                     "problemId": problem,
-                    "label": str(judge_spec.get("id", "unnamed projection")),
+                    "label": registered_id
+                    or str(judge_spec.get("id", "unnamed projection")),
+                    "projectionSpec": registered,
                     "builder": judge_spec,
                     "latestRunDigest": terminal,
                     "runCount": len(chain),

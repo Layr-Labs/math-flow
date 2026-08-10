@@ -116,7 +116,7 @@ test("proxies repository projection state through the worker", async () => {
   const catalog = { schemaVersion: 1, projections: [{ id: "live" }] };
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async (request, init) => {
-    assert.match(String(request), /api\.github\.com\/repos\/mooselumph\/math-flow\/contents\/viewer\/catalog\.json\?ref=projections/);
+    assert.match(String(request), /api\.github\.com\/repos\/Layr-Labs\/math-flow\/contents\/viewer\/catalog\.json\?ref=projections/);
     assert.equal(init.headers.authorization, "Bearer test-token");
     assert.equal(init.headers.accept, "application/vnd.github.raw+json");
     return Response.json(catalog);

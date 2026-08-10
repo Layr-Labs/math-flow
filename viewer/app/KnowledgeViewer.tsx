@@ -197,7 +197,7 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
   };
   const fallbackCatalog: ViewerCatalog = {
     schemaVersion: 1,
-    repository: { slug: "mooselumph/math-flow", canonicalRef: "main", projectionRef: "projections" },
+    repository: { slug: "Layr-Labs/math-flow", canonicalRef: "main", projectionRef: "projections" },
     projections: [fallbackProjection],
     defaultProjectionId: fallbackProjection.id,
   };

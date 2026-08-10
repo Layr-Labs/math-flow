@@ -1,0 +1,13 @@
+# These paths define new governed namespaces. Keep this list aligned with
+# .github/math-flow-governance.json and require CODEOWNER review on main.
+/problems/*/problem.md @mooselumph
+/protocol/projections/*.json @mooselumph
+/.github/math-flow-governance.json @mooselumph
+/.github/CODEOWNERS @mooselumph
+/.github/workflows/admission-control.yml @mooselumph
+
+# The trusted admission workflow imports the base branch's Python package.
+# Protect that executable surface and root-level Python import shims as well.
+/math_flow/** @mooselumph
+/*.py @mooselumph
+/*/__init__.py @mooselumph

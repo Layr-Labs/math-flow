@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.dev/schemas/projection-registry.schema.json",
+  "title": "Math Flow approved projection",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "description",
+    "status",
+    "engine",
+    "allowedProblems",
+    "primaryJudge",
+    "reconciliationJudge",
+    "knowledgeBuilder",
+    "scheduling"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "description": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["active", "disabled"] },
+    "engine": { "const": "openrouter-repository-v1" },
+    "allowedProblems": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^(?:\\*|[a-z0-9][a-z0-9-]*)$"
+      }
+    },
+    "primaryJudge": { "type": "string" },
+    "reconciliationJudge": { "type": "string" },
+    "knowledgeBuilder": { "type": "string" },
+    "scheduling": {
+      "type": "object",
+      "required": [
+        "judgmentMaxParallel",
+        "knowledgeMinimumIntervalSeconds",
+        "maximumJudgmentsPerBuild"
+      ],
+      "properties": {
+        "judgmentMaxParallel": { "type": "integer", "minimum": 1, "maximum": 256 },
+        "knowledgeMinimumIntervalSeconds": { "type": "integer", "minimum": 0, "maximum": 86400 },
+        "maximumJudgmentsPerBuild": { "type": "integer", "minimum": 1, "maximum": 5000 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,80 @@
+# Governed problem and projection admission
+
+Problems and logical projections are named protocol namespaces. Creating one is
+therefore governed separately from submitting an ordinary research contribution.
+
+## Approved projection registry
+
+Every runnable repository projection has one declarative specification at:
+
+```text
+protocol/projections/<projection-id>.json
+```
+
+The specification binds the primary judge, reconciliation judge, knowledge
+builder, allowed problems, concurrency, and knowledge-build cadence. The
+repository workflow accepts only a projection ID and problem ID. It resolves all
+implementation paths from the registry at canonical `main`, and refuses a
+dispatch from any other ref. A digest of the entire projection specification is
+part of the knowledge-lane identity, so two approved projections do not share a
+serialized state chain merely because they use the same builder.
+
+Validate or inspect the registry without making a provider call:
+
+```bash
+python -m math_flow validate-projections
+python -m math_flow resolve-projection \
+  --projection openrouter-research-v1 \
+  --problem triangle-midpoints \
+  --head HEAD
+```
+
+The repository continues to use one orphan `projections` branch as a
+content-addressed publication layer. Logical projection isolation comes from the
+registry digest and scheduler lane, not from additional Git branches.
+
+## Admission policy
+
+`.github/math-flow-governance.json` lists GitHub logins authorized to admit a new
+problem or projection and the number of approvals required. The admission check
+also protects changes to projection definitions and to its own policy,
+CODEOWNERS, and workflow.
+
+Governed changes use a one-file PR:
+
+- a problem PR adds `problems/<problem-id>/problem.md`;
+- a projection PR adds or edits one `protocol/projections/<id>.json`;
+- a policy PR edits one governance-control file.
+
+The check counts only an approving review by a configured administrator against
+the PR's current head commit. Ordinary contribution-only PRs are explicitly not
+subject to this approval policy and retain the atomic transaction validator.
+
+The workflow uses `pull_request_target` so its definition and Python validator
+come from the trusted base branch. It fetches the proposed head only into the Git
+object database and treats every candidate file as inert data: it never checks
+out or executes PR code, exposes no secrets, and has read-only repository and PR
+permissions. CODEOWNERS also covers the base-branch Python package that this
+workflow executes, preventing an unreviewed change from weakening a later
+admission check. These are important invariants; do not add build,
+package-manager, or candidate-script execution to that workflow.
+
+## Required repository settings
+
+The workflow reports policy but cannot prevent a merge by itself. On the
+protected `main` branch, configure:
+
+1. Require pull requests and the `Admin admission approval` status check.
+2. Require CODEOWNER review.
+3. Dismiss stale approvals when new commits are pushed.
+4. Restrict direct pushes and branch-protection bypass to the intended admins.
+5. Restrict creation and updates of the `projections` branch to GitHub Actions.
+
+GitHub team membership is deliberately not inferred in this MVP because the
+default workflow token cannot reliably enumerate private organization teams.
+Use explicit GitHub logins in the policy. A GitHub App can later replace this
+with organization/team identity and immutable user IDs.
+
+The registered reconciliation judge is part of projection identity, but the
+current manual workflow does not yet schedule conflict reconciliation. It runs
+parallel primary judgments followed by one serialized knowledge build.

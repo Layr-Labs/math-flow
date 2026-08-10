@@ -14,8 +14,14 @@ from .coordination import (
     publish_batch,
     record_completed_inputs,
 )
+from .context import materialize_agent_context
 from .errors import MathFlowError
 from .formation import run_knowledge_build_bundle
+from .governance import (
+    resolve_projection,
+    validate_admission_pr,
+    validate_projection_registry,
+)
 from .judgments import (
     detect_conflicts,
     load_judgment_bundle,
@@ -46,6 +52,32 @@ def build_parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
 
     commands.add_parser("validate-tree", help="validate all problem and contribution folders")
+
+    commands.add_parser(
+        "validate-projections", help="validate the approved projection registry"
+    )
+
+    resolve_projection_parser = commands.add_parser(
+        "resolve-projection",
+        help="resolve one approved projection for a problem at a Git commit",
+    )
+    resolve_projection_parser.add_argument("--projection", required=True)
+    resolve_projection_parser.add_argument("--problem", required=True)
+    resolve_projection_parser.add_argument("--head", default="HEAD")
+    resolve_projection_parser.add_argument("--output")
+
+    admission_parser = commands.add_parser(
+        "validate-admission-pr",
+        help="validate a problem/projection admission and its admin approvals",
+    )
+    admission_parser.add_argument("--base", required=True)
+    admission_parser.add_argument("--head", required=True)
+    admission_parser.add_argument(
+        "--approver",
+        action="append",
+        default=[],
+        help="GitHub login with a current-head approving review (repeatable)",
+    )
 
     validate_pr_parser = commands.add_parser("validate-pr", help="validate one contribution-only PR diff")
     validate_pr_parser.add_argument("--base", required=True, help="base commit or revision")
@@ -145,6 +177,10 @@ def build_parser() -> argparse.ArgumentParser:
     builder_identity = trigger_parser.add_mutually_exclusive_group(required=True)
     builder_identity.add_argument("--builder-digest")
     builder_identity.add_argument("--builder", type=Path)
+    trigger_parser.add_argument(
+        "--projection-digest",
+        help="approved projection-spec digest used to isolate this logical lane",
+    )
     trigger_parser.add_argument("--minimum-interval", required=True, type=int)
     trigger_parser.add_argument(
         "--judgment-dir", action="append", default=[], type=Path, dest="judgment_dirs"
@@ -226,6 +262,31 @@ def build_parser() -> argparse.ArgumentParser:
     catalog_parser.add_argument("--canonical-ref", default="main")
     catalog_parser.add_argument("--projection-ref", default="projections")
     catalog_parser.add_argument("--output", required=True, type=Path)
+
+    context_parser = commands.add_parser(
+        "context",
+        help="materialize a verified latest knowledge state for a non-UI agent",
+    )
+    context_parser.add_argument("--problem", required=True)
+    context_parser.add_argument(
+        "--projection-dir",
+        required=True,
+        type=Path,
+        help="local worktree containing the published projection branch",
+    )
+    context_parser.add_argument(
+        "--projection",
+        help="projection ID; required when the problem has multiple projections",
+    )
+    context_parser.add_argument("--head", default="HEAD", help="canonical Git revision")
+    context_parser.add_argument(
+        "--node",
+        action="append",
+        default=[],
+        dest="nodes",
+        help="limit context.md to this node and its descendants (repeatable)",
+    )
+    context_parser.add_argument("--output-dir", required=True, type=Path)
     return parser
 
 
@@ -235,6 +296,18 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "validate-tree":
             result = validate_tree(root)
+        elif args.command == "validate-projections":
+            result = validate_projection_registry(root)
+        elif args.command == "resolve-projection":
+            result = resolve_projection(
+                root, args.projection, args.problem, args.head
+            )
+            _write_json(result, args.output)
+            return 0
+        elif args.command == "validate-admission-pr":
+            result = validate_admission_pr(
+                root, args.base, args.head, args.approver
+            )
         elif args.command == "validate-pr":
             result = validate_pr(root, args.base, args.head)
         elif args.command == "ledger":
@@ -337,6 +410,7 @@ def main(argv: list[str] | None = None) -> int:
                 conflict_ids,
                 args.minimum_interval,
                 args.now if args.now is not None else int(time.time()),
+                args.projection_digest,
             )
             _write_json(result, str(args.output) if args.output else None)
             return 0
@@ -414,6 +488,16 @@ def main(argv: list[str] | None = None) -> int:
             )
             print(args.output)
             return 0
+        elif args.command == "context":
+            result = materialize_agent_context(
+                root,
+                args.projection_dir,
+                args.problem,
+                args.output_dir,
+                projection_id=args.projection,
+                head=args.head,
+                node_ids=args.nodes,
+            )
         else:  # pragma: no cover
             raise AssertionError(args.command)
         _write_json(result, None)
