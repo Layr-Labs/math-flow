@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -22,6 +23,7 @@ from .governance import (
     validate_admission_pr,
     validate_projection_registry,
 )
+from .github_projection import publish_github_projection
 from .judgments import (
     detect_conflicts,
     load_judgment_bundle,
@@ -239,6 +241,15 @@ def build_parser() -> argparse.ArgumentParser:
     publish_parser.add_argument(
         "--bundle", required=True, action="append", type=Path, dest="bundles"
     )
+
+    github_publish_parser = commands.add_parser(
+        "github-publish-projection",
+        help="atomically publish projection changes as a GitHub-signed commit",
+    )
+    github_publish_parser.add_argument("--projection-dir", required=True, type=Path)
+    github_publish_parser.add_argument("--repository", required=True)
+    github_publish_parser.add_argument("--branch", default="projections")
+    github_publish_parser.add_argument("--message", required=True)
 
     viewer_parser = commands.add_parser(
         "export-viewer", help="export a hierarchical run chain for the interactive viewer"
@@ -460,6 +471,14 @@ def main(argv: list[str] | None = None) -> int:
             )
         elif args.command == "publish-batch":
             result = publish_batch(args.projection_dir, args.bundles)
+        elif args.command == "github-publish-projection":
+            result = publish_github_projection(
+                args.projection_dir,
+                args.repository,
+                args.branch,
+                args.message,
+                os.environ.get("GITHUB_TOKEN", ""),
+            )
         elif args.command == "export-viewer":
             result = export_viewer_data(
                 root,

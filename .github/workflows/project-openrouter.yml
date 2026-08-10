@@ -284,20 +284,17 @@ jobs:
             --canonical-ref main \
             --projection-ref projections \
             --output "$projection_dir/viewer/catalog.json"
-      - name: Commit the projection batch
+      - name: Publish a GitHub-signed projection commit
+        env:
+          GITHUB_TOKEN: "${{ github.token }}"
         run: |
           set -euo pipefail
           projection_dir="${RUNNER_TEMP}/projection-branch"
-          git -C "$projection_dir" config user.name "github-actions[bot]"
-          git -C "$projection_dir" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git -C "$projection_dir" add \
-            coordination/scheduler.json \
-            indexes \
-            objects \
-            publication-batches \
-            viewer/catalog.json
-          git -C "$projection_dir" commit -m "Publish ${MATH_FLOW_PROJECTION_ID}/${MATH_FLOW_PROBLEM_ID} from run ${GITHUB_RUN_ID}"
-          git -C "$projection_dir" push origin HEAD:projections
+          python -m math_flow github-publish-projection \
+            --projection-dir "$projection_dir" \
+            --repository "${GITHUB_REPOSITORY}" \
+            --branch projections \
+            --message "Publish ${MATH_FLOW_PROJECTION_ID}/${MATH_FLOW_PROBLEM_ID} from run ${GITHUB_RUN_ID}"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: "knowledge-state-${{ inputs.problem }}-${{ github.sha }}"
