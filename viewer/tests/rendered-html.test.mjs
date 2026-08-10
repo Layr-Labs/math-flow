@@ -40,7 +40,8 @@ test("keeps the viewer data-driven and free of starter preview assets", async ()
   ]);
 
   assert.match(page, /math-flow-data\.json/);
-  assert.match(page, /<KnowledgeViewer/);
+  assert.match(page, /<RepositoryKnowledgeViewer/);
+  assert.match(page, /fallbackData=/);
   assert.match(layout, /Math Flow · Research Atlas/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton|site-creator-vinext-starter/);
 
@@ -50,4 +51,28 @@ test("keeps the viewer data-driven and free of starter preview assets", async ()
   assert.equal(parsed.latestRunId, "run-live-3");
   assert.ok(parsed.runs.every((run) => run.revisionIds.length > 0));
   assert.deepEqual(await readdir(new URL("app/_sites-preview", templateRoot)), []);
+});
+
+test("proxies repository projection state through the worker", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("catalog-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const catalog = { schemaVersion: 1, projections: [{ id: "live" }] };
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (request) => {
+    assert.match(String(request), /raw\.githubusercontent\.com\/mooselumph\/math-flow\/projections\/viewer\/catalog\.json/);
+    return Response.json(catalog);
+  };
+  try {
+    const response = await worker.fetch(
+      new Request("http://localhost/api/catalog"),
+      { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
+      { waitUntil() {}, passThroughOnException() {} },
+    );
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("x-math-flow-source")?.includes("/projections/"), true);
+    assert.deepEqual(await response.json(), catalog);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, type CSSProperties, type ReactNode, useMemo, useState } from "react";
+import { Fragment, type CSSProperties, type ReactNode, useEffect, useMemo, useState } from "react";
 
 type Ref = {
   kind: string;
@@ -48,6 +48,7 @@ type Run = {
   id: string;
   ordinal: number;
   ledgerHead: string;
+  problemLedgerHead?: string;
   runDigest: string;
   baseRun: string | null;
   cost: number;
@@ -68,7 +69,7 @@ type Transaction = {
   contentMarkdown: string;
 };
 
-type ViewerData = {
+export type ViewerData = {
   problem: { id: string; title: string; statementMarkdown: string };
   ledgerHead: string;
   transactions: Transaction[];
@@ -78,10 +79,129 @@ type ViewerData = {
   latestRunId: string;
 };
 
+type RepositoryProjection = {
+  id: string;
+  problemId: string;
+  label: string;
+  builder: { id: string; digest: string };
+  latestRunDigest: string;
+  runCount: number;
+  data: ViewerData;
+};
+
+export type ViewerCatalog = {
+  schemaVersion: number;
+  repository: { slug: string; canonicalRef: string; projectionRef: string };
+  projections: RepositoryProjection[];
+  defaultProjectionId: string | null;
+};
+
 const short = (value: string | null, size = 7) =>
   value ? value.replace(/^sha256:/, "").slice(0, size) : "genesis";
 
 const label = (value: string) => value.replaceAll("-", " ");
+
+function isViewerCatalog(value: unknown): value is ViewerCatalog {
+  if (!value || typeof value !== "object") return false;
+  const catalog = value as Partial<ViewerCatalog>;
+  return catalog.schemaVersion === 1 &&
+    !!catalog.repository &&
+    Array.isArray(catalog.projections) &&
+    catalog.projections.length > 0 &&
+    catalog.projections.every((projection) =>
+      typeof projection?.id === "string" &&
+      typeof projection?.problemId === "string" &&
+      Array.isArray(projection?.data?.runs) &&
+      projection.data.runs.length > 0,
+    );
+}
+
+export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: ViewerData }) {
+  const fallbackProjection: RepositoryProjection = {
+    id: `fallback:${fallbackData.problem.id}`,
+    problemId: fallbackData.problem.id,
+    label: "checked-in demonstration",
+    builder: { id: "demo", digest: "local" },
+    latestRunDigest: fallbackData.runs.at(-1)?.runDigest ?? "local",
+    runCount: fallbackData.runs.length,
+    data: fallbackData,
+  };
+  const fallbackCatalog: ViewerCatalog = {
+    schemaVersion: 1,
+    repository: { slug: "mooselumph/math-flow", canonicalRef: "main", projectionRef: "projections" },
+    projections: [fallbackProjection],
+    defaultProjectionId: fallbackProjection.id,
+  };
+  const [catalog, setCatalog] = useState(fallbackCatalog);
+  const [source, setSource] = useState<"checking" | "repository" | "fallback">("checking");
+  const [problemId, setProblemId] = useState(fallbackProjection.problemId);
+  const [projectionId, setProjectionId] = useState(fallbackProjection.id);
+
+  useEffect(() => {
+    let active = true;
+    async function refresh() {
+      try {
+        const response = await fetch("/api/catalog", { cache: "no-store" });
+        if (!response.ok) throw new Error(`catalog returned ${response.status}`);
+        const next: unknown = await response.json();
+        if (!isViewerCatalog(next)) throw new Error("catalog shape is invalid");
+        if (!active) return;
+        setCatalog(next);
+        const preferred = next.projections.find((item) => item.id === next.defaultProjectionId) ?? next.projections[0];
+        setProblemId((current) => next.projections.some((item) => item.problemId === current) ? current : preferred.problemId);
+        setProjectionId((current) => next.projections.some((item) => item.id === current) ? current : preferred.id);
+        setSource("repository");
+      } catch {
+        if (active) setSource("fallback");
+      }
+    }
+    void refresh();
+    const interval = window.setInterval(refresh, 30_000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  const problems = [...new Set(catalog.projections.map((item) => item.problemId))].sort();
+  const effectiveProblem = problems.includes(problemId) ? problemId : problems[0];
+  const problemProjections = catalog.projections.filter((item) => item.problemId === effectiveProblem);
+  const projection = problemProjections.find((item) => item.id === projectionId) ?? problemProjections[0];
+
+  function chooseProblem(nextProblem: string) {
+    const nextProjection = catalog.projections.find((item) => item.problemId === nextProblem);
+    if (!nextProjection) return;
+    setProblemId(nextProblem);
+    setProjectionId(nextProjection.id);
+  }
+
+  return (
+    <div className="repository-shell">
+      <nav className="repository-toolbar" aria-label="Repository projection selection">
+        <div className="repository-source">
+          <span className={`source-light source-${source}`} />
+          <span>
+            <strong>{catalog.repository.slug}</strong>
+            <small>{catalog.repository.canonicalRef} → {catalog.repository.projectionRef} · {source === "repository" ? "live repository state" : source === "checking" ? "checking repository" : "local fallback"}</small>
+          </span>
+        </div>
+        <label>
+          <span>Problem</span>
+          <select value={effectiveProblem} onChange={(event) => chooseProblem(event.target.value)}>
+            {problems.map((problem) => <option value={problem} key={problem}>{label(problem)}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>Projection</span>
+          <select value={projection.id} onChange={(event) => setProjectionId(event.target.value)}>
+            {problemProjections.map((item) => <option value={item.id} key={item.id}>{item.label} · {short(item.latestRunDigest)}</option>)}
+          </select>
+        </label>
+      </nav>
+      <KnowledgeViewer key={`${projection.id}:${projection.latestRunDigest}`} data={projection.data} />
+    </div>
+  );
+}
 
 function inline(text: string): ReactNode[] {
   return text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g).map((part, index) => {
@@ -135,6 +255,9 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
   const [detailMode, setDetailMode] = useState<"node" | "report">("node");
 
   const run = data.runs.find((item) => item.id === runId) ?? data.runs.at(-1)!;
+  const runLedgerPosition = data.transactions.find(
+    (item) => item.transactionId === (run.problemLedgerHead ?? run.ledgerHead),
+  )?.ordinal ?? data.transactions.length;
   const nodes = run.state.nodes;
   const selectedNode = nodes[nodeId] ?? nodes.root;
   const runRevisionSet = useMemo(() => new Set(run.revisionIds), [run.revisionIds]);
@@ -258,7 +381,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
           </div>
           <div className="ledger-line">
             {data.transactions.map((transaction) => {
-              const available = transaction.ordinal <= run.ordinal;
+              const available = transaction.ordinal <= runLedgerPosition;
               const active = transaction.transactionId === transactionId;
               return (
                 <button

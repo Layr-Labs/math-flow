@@ -149,3 +149,21 @@ The publisher verifies every manifest, digest, byte count, undeclared file, and
 symlink before creating content-addressed objects, per-problem indexes, and an
 idempotent publication-batch record. One automation process can commit these
 batches to an orphan projection branch at its own cadence.
+
+After updating the scheduler's authoritative state tip, the publisher can build
+the repository viewer catalog from those indexes:
+
+```bash
+python -m math_flow export-viewer-catalog \
+  --projection-dir <projection-branch-worktree> \
+  --repository <owner/repository> \
+  --canonical-ref main \
+  --projection-ref projections \
+  --output <projection-branch-worktree>/viewer/catalog.json
+```
+
+The catalog follows `baseRun` content digests and uses each scheduler lane's
+`latestStateRun` as its authoritative terminal. Git publication order therefore
+does not become knowledge-state order. The included OpenRouter repository smoke
+workflow keeps primary judgment in a separate job and applies job-level
+serialization only to formation and projection publication.

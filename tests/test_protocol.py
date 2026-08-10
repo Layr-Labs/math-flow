@@ -32,7 +32,7 @@ from math_flow.knowledge import apply_deltas, apply_revision_deltas, empty_state
 from math_flow.openrouter import format_error_message
 from math_flow.repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
 from math_flow.runs import run_judge_bundle
-from math_flow.viewer import export_viewer_data
+from math_flow.viewer import export_viewer_catalog, export_viewer_data
 from math_flow.hierarchical import _structured_content
 
 
@@ -705,6 +705,23 @@ class GitProtocolTests(unittest.TestCase):
             ],
         )
         self.assertEqual(repeated["batchId"], batch["batchId"])
+        projection_scheduler = projection / "coordination/scheduler.json"
+        write(
+            projection_scheduler,
+            formation_scheduler.read_text(encoding="utf-8"),
+        )
+        catalog = export_viewer_catalog(
+            self.root,
+            projection,
+            "example/math-flow",
+        )
+        self.assertEqual(catalog["repository"]["projectionRef"], "projections")
+        self.assertEqual(catalog["defaultProjectionId"], formation_lane["laneId"])
+        self.assertEqual(len(catalog["projections"]), 1)
+        catalog_projection = catalog["projections"][0]
+        self.assertEqual(catalog_projection["latestRunDigest"], knowledge_run_digest)
+        self.assertEqual(catalog_projection["runCount"], 1)
+        self.assertEqual(catalog_projection["data"]["problem"]["id"], "demo")
 
     def test_openrouter_request_and_projection_with_fake_transport(self) -> None:
         head = self.commit_contribution("first-proof", "# Lemma\n\nA useful argument.")

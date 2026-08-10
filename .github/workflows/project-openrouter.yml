@@ -1,4 +1,4 @@
-name: Project OpenRouter judge
+name: OpenRouter repository smoke test
 
 on:
   workflow_dispatch:
@@ -8,12 +8,11 @@ on:
         required: true
         default: triangle-midpoints
 
-permissions:
-  contents: read
-
 jobs:
-  project:
+  judgment:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v7
         with:
@@ -21,18 +20,173 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - name: Generate hierarchical OpenRouter judge run
+      - name: Select the latest transaction and its prior evidence
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/math-flow-staging"
+          python -m math_flow ledger \
+            --problem "${{ inputs.problem }}" \
+            --head HEAD \
+            > "${RUNNER_TEMP}/math-flow-staging/ledger.json"
+          transaction_count="$(jq '.transactions | length' "${RUNNER_TEMP}/math-flow-staging/ledger.json")"
+          if [[ "$transaction_count" -lt 1 ]]; then
+            echo "The problem has no transactions to judge." >&2
+            exit 1
+          fi
+      - name: Generate immutable primary judgment
         env:
           OPENROUTER_API_KEY: "${{ secrets.OPENROUTER_API_KEY }}"
           MATH_FLOW_SITE_URL: "${{ github.server_url }}/${{ github.repository }}"
-        run: >-
-          python -m math_flow run
-          --problem "${{ inputs.problem }}"
-          --judge protocol/judges/openrouter-hierarchical-markdown-v2.json
-          --head HEAD
-          --output-dir "projections/openrouter-hierarchical-markdown-v2/${{ inputs.problem }}/${{ github.sha }}"
+        run: |
+          set -euo pipefail
+          if [[ -z "$OPENROUTER_API_KEY" ]]; then
+            echo "The OPENROUTER_API_KEY repository secret is not configured." >&2
+            exit 1
+          fi
+          ledger="${RUNNER_TEMP}/math-flow-staging/ledger.json"
+          subject="$(jq -r '.transactions[-1].transactionId' "$ledger")"
+          command=(
+            python -m math_flow judgment
+            --problem "${{ inputs.problem }}"
+            --judge protocol/judges/openrouter-markdown-judgment-v1.json
+            --head HEAD
+            --subject "$subject"
+            --output-dir "${RUNNER_TEMP}/math-flow-staging/judgment"
+          )
+          while IFS= read -r evidence; do
+            command+=(--evidence "$evidence")
+          done < <(jq -r '.transactions[0:-1][].transactionId' "$ledger")
+          "${command[@]}"
       - uses: actions/upload-artifact@v7
         with:
-          name: "openrouter-hierarchical-markdown-v2-${{ inputs.problem }}-${{ github.sha }}"
-          path: projections/
+          name: "judgment-${{ inputs.problem }}"
+          path: "${{ runner.temp }}/math-flow-staging/judgment"
+          if-no-files-found: error
+
+  form-and-publish:
+    needs: judgment
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: "knowledge-formation-${{ inputs.problem }}-openrouter-knowledge-builder-v1"
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v8
+        with:
+          name: "judgment-${{ inputs.problem }}"
+          path: "${{ runner.temp }}/math-flow-staging/judgment"
+      - name: Prepare the orphan projection worktree
+        run: |
+          set -euo pipefail
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          if git ls-remote --exit-code origin refs/heads/projections >/dev/null 2>&1; then
+            git fetch origin refs/heads/projections:refs/remotes/origin/projections
+            git worktree add --detach "$projection_dir" refs/remotes/origin/projections
+          else
+            git worktree add --detach "$projection_dir" HEAD
+            git -C "$projection_dir" switch --orphan projection-publish
+            git -C "$projection_dir" rm -rf .
+          fi
+      - name: Claim the current knowledge lane
+        run: |
+          set -euo pipefail
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          staging_dir="${RUNNER_TEMP}/math-flow-staging"
+          scheduler="$projection_dir/coordination/scheduler.json"
+          python -m math_flow knowledge-trigger \
+            --scheduler-file "$scheduler" \
+            --problem "${{ inputs.problem }}" \
+            --builder protocol/judges/openrouter-knowledge-builder-v1.json \
+            --minimum-interval 0 \
+            --judgment-dir "$staging_dir/judgment" \
+            --output "$staging_dir/lane.json"
+          lane_id="$(jq -r '.laneId' "$staging_dir/lane.json")"
+          python -m math_flow knowledge-claim \
+            --scheduler-file "$scheduler" \
+            --lane-id "$lane_id" \
+            --maximum-judgments 500 \
+            --output "$staging_dir/claim.json"
+          if [[ "$(jq -r 'type' "$staging_dir/claim.json")" != "object" ]]; then
+            echo "The knowledge lane was not eligible for a build." >&2
+            exit 1
+          fi
+      - name: Build the next serialized knowledge state
+        env:
+          OPENROUTER_API_KEY: "${{ secrets.OPENROUTER_API_KEY }}"
+          MATH_FLOW_SITE_URL: "${{ github.server_url }}/${{ github.repository }}"
+        run: |
+          set -euo pipefail
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          staging_dir="${RUNNER_TEMP}/math-flow-staging"
+          command=(
+            python -m math_flow knowledge-build
+            --problem "${{ inputs.problem }}"
+            --builder protocol/judges/openrouter-knowledge-builder-v1.json
+            --head HEAD
+            --claim "$staging_dir/claim.json"
+            --judgment-dir "$staging_dir/judgment"
+            --checkpoint-dir "$staging_dir/checkpoints"
+            --output-dir "$staging_dir/knowledge-build"
+          )
+          base_digest="$(jq -r '.baseStateRun // empty' "$staging_dir/claim.json")"
+          if [[ -n "$base_digest" ]]; then
+            base_hex="${base_digest#sha256:}"
+            base_dir="$projection_dir/objects/knowledge-build/${base_hex:0:2}/$base_hex"
+            if [[ ! -d "$base_dir" ]]; then
+              echo "Published base state is missing: $base_digest" >&2
+              exit 1
+            fi
+            command+=(--base-run "$base_dir")
+          fi
+          "${command[@]}"
+      - name: Complete, publish, and export repository viewer state
+        run: |
+          set -euo pipefail
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          staging_dir="${RUNNER_TEMP}/math-flow-staging"
+          scheduler="$projection_dir/coordination/scheduler.json"
+          lane_id="$(jq -r '.laneId' "$staging_dir/claim.json")"
+          build_token="$(jq -r '.buildToken' "$staging_dir/claim.json")"
+          python -m math_flow knowledge-complete \
+            --scheduler-file "$scheduler" \
+            --lane-id "$lane_id" \
+            --build-token "$build_token" \
+            --state-run-dir "$staging_dir/knowledge-build"
+          python -m math_flow publish-batch \
+            --projection-dir "$projection_dir" \
+            --bundle "$staging_dir/judgment" \
+            --bundle "$staging_dir/knowledge-build"
+          python -m math_flow export-viewer-catalog \
+            --projection-dir "$projection_dir" \
+            --repository "${{ github.repository }}" \
+            --canonical-ref "${{ github.ref_name }}" \
+            --projection-ref projections \
+            --output "$projection_dir/viewer/catalog.json"
+      - name: Commit the projection batch
+        run: |
+          set -euo pipefail
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          git -C "$projection_dir" config user.name "github-actions[bot]"
+          git -C "$projection_dir" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$projection_dir" add \
+            coordination/scheduler.json \
+            indexes \
+            objects \
+            publication-batches \
+            viewer/catalog.json
+          git -C "$projection_dir" commit -m "Publish ${{ inputs.problem }} projection from run ${{ github.run_id }}"
+          git -C "$projection_dir" push origin HEAD:projections
+      - uses: actions/upload-artifact@v7
+        with:
+          name: "knowledge-state-${{ inputs.problem }}-${{ github.sha }}"
+          path: |
+            ${{ runner.temp }}/math-flow-staging/knowledge-build
+            ${{ runner.temp }}/projection-branch/viewer/catalog.json
           if-no-files-found: error

@@ -137,10 +137,20 @@ judge/state runs.
 
 ### Interactive research atlas
 
-The `viewer/` app turns a chain of hierarchical Markdown v2 runs into an
-interactive view of the canonical transaction ledger, the knowledge tree at each
-run, and every immutable adjudication revision. Generate its deterministic data
-file by listing runs from oldest to newest:
+The `viewer/` app presents the canonical transaction ledger, every published
+knowledge-state chain, and the immutable adjudication revisions behind it. Its
+server endpoint reads `viewer/catalog.json` directly from the orphan
+`projections` branch; the browser refreshes that endpoint every 30 seconds and
+offers problem and projection selectors. A checked-in deterministic export is
+used only for local development or when repository state is unavailable.
+
+The manual OpenRouter workflow judges the latest transaction, serializes the
+corresponding knowledge build, publishes content-addressed bundles and scheduler
+state to `projections`, and regenerates the catalog. It remains manually
+dispatched so a push cannot create surprise inference spend.
+
+For an offline fixture, generate the single-projection data file by listing runs
+from oldest to newest:
 
 ```bash
 python -m math_flow export-viewer \
@@ -160,10 +170,21 @@ Open the URL printed by the development server. Select a run to time-travel,
 select a transaction to highlight its subjects and evidence, or select a node to
 inspect its current Markdown, revision lineage, and source judge report.
 
+To test the repository-backed catalog locally, publish verified bundles into a
+temporary projection worktree and run:
+
+```bash
+python -m math_flow export-viewer-catalog \
+  --projection-dir /path/to/projection-worktree \
+  --repository mooselumph/math-flow \
+  --output /path/to/projection-worktree/viewer/catalog.json
+```
+
 Run the tests with:
 
 ```bash
 python -m unittest discover -s tests -v
+cd viewer && npm test && npm run lint
 ```
 
 ## Submitting a contribution

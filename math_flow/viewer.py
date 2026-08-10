@@ -3,7 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .artifacts import load_manifest, read_verified_artifact
+from .artifacts import load_manifest, read_verified_artifact, verify_bundle
+from .coordination import load_scheduler
 from .errors import MathFlowError
 from .knowledge import validate_state_v2
 from .repository import ledger, read_at
@@ -140,6 +141,9 @@ def export_viewer_data(
                 "id": run_id,
                 "ordinal": ordinal,
                 "ledgerHead": manifest["ledgerHead"],
+                "problemLedgerHead": manifest.get(
+                    "problemLedgerHead", manifest["ledgerHead"]
+                ),
                 "runDigest": manifest_digest,
                 "baseRun": manifest.get("baseRun"),
                 "runKind": manifest.get("runKind", "legacy-projection"),
@@ -176,4 +180,162 @@ def export_viewer_data(
         "revisions": latest_revisions,
         "reports": reports,
         "latestRunId": runs[-1]["id"],
+    }
+
+
+def _projection_run_index(projection_root: Path) -> dict[str, dict[str, object]]:
+    runs: dict[str, dict[str, object]] = {}
+    index_root = projection_root / "indexes" / "problems"
+    if not index_root.exists():
+        return runs
+    for index_path in sorted(index_root.glob("*/runs.json")):
+        try:
+            values = json.loads(index_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise MathFlowError(f"could not read projection index {index_path}: {exc}") from exc
+        if not isinstance(values, list) or any(not isinstance(item, dict) for item in values):
+            raise MathFlowError(f"invalid projection index: {index_path}")
+        for item in values:
+            digest = item.get("runDigest")
+            relative = item.get("path")
+            if not isinstance(digest, str) or not isinstance(relative, str):
+                raise MathFlowError(f"projection index entry is incomplete: {index_path}")
+            target = (projection_root / relative).resolve()
+            try:
+                target.relative_to(projection_root.resolve())
+            except ValueError as exc:
+                raise MathFlowError(f"projection index path escapes its root: {relative}") from exc
+            manifest, verified_digest = verify_bundle(target)
+            if verified_digest != digest:
+                raise MathFlowError(f"projection index digest does not match object: {relative}")
+            if manifest.get("runKind", "legacy-projection") not in {
+                "knowledge-build",
+                "legacy-projection",
+            }:
+                continue
+            if manifest.get("outputProfile") not in {
+                "math-flow/hierarchical-markdown-v2",
+                "math-flow/knowledge-build-markdown-v1",
+            }:
+                continue
+            if digest in runs and runs[digest]["path"] != target:
+                raise MathFlowError(f"projection digest appears at multiple paths: {digest}")
+            runs[digest] = {"manifest": manifest, "path": target}
+    return runs
+
+
+def _projection_lane(manifest: dict[str, object]) -> str:
+    inputs = manifest.get("inputs")
+    if isinstance(inputs, dict) and isinstance(inputs.get("laneId"), str):
+        return str(inputs["laneId"])
+    judge_spec = manifest.get("judgeSpec")
+    if isinstance(judge_spec, dict) and isinstance(judge_spec.get("digest"), str):
+        return str(judge_spec["digest"])
+    raise MathFlowError("viewer projection run has no stable lane identity")
+
+
+def _projection_chain(
+    runs: dict[str, dict[str, object]], terminal_digest: str
+) -> list[Path]:
+    chain: list[Path] = []
+    seen: set[str] = set()
+    cursor: str | None = terminal_digest
+    while cursor is not None:
+        if cursor in seen:
+            raise MathFlowError(f"viewer projection chain contains a cycle: {cursor}")
+        seen.add(cursor)
+        item = runs.get(cursor)
+        if item is None:
+            raise MathFlowError(f"viewer projection chain is missing base run: {cursor}")
+        chain.append(item["path"])
+        manifest = item["manifest"]
+        base = manifest.get("baseRun")
+        if base is not None and not isinstance(base, str):
+            raise MathFlowError(f"viewer projection run has an invalid base run: {cursor}")
+        cursor = base
+    chain.reverse()
+    return chain
+
+
+def export_viewer_catalog(
+    root: Path,
+    projection_root: Path,
+    repository: str,
+    canonical_ref: str = "main",
+    projection_ref: str = "projections",
+) -> dict[str, object]:
+    """Build a deterministic, repository-backed catalog of published projections."""
+
+    root = root.resolve()
+    projection_root = projection_root.resolve()
+    published_runs = _projection_run_index(projection_root)
+    by_lane: dict[tuple[str, str], dict[str, dict[str, object]]] = {}
+    for digest, item in published_runs.items():
+        manifest = item["manifest"]
+        problem = manifest.get("problemId")
+        if not isinstance(problem, str):
+            raise MathFlowError(f"viewer projection run has no problem ID: {digest}")
+        by_lane.setdefault((problem, _projection_lane(manifest)), {})[digest] = item
+
+    scheduler_path = projection_root / "coordination" / "scheduler.json"
+    scheduler = load_scheduler(scheduler_path) if scheduler_path.exists() else None
+    scheduled_terminals: dict[tuple[str, str], str] = {}
+    if scheduler is not None:
+        for lane_id, lane in scheduler["lanes"].items():
+            latest = lane.get("latestStateRun")
+            problem = lane.get("problemId")
+            if latest is None:
+                continue
+            if not isinstance(problem, str) or not isinstance(latest, str):
+                raise MathFlowError(f"knowledge scheduler lane has invalid viewer state: {lane_id}")
+            scheduled_terminals[(problem, str(lane_id))] = latest
+
+    projections: list[dict[str, object]] = []
+    for (problem, lane), lane_runs in sorted(by_lane.items()):
+        bases = {
+            str(item["manifest"].get("baseRun"))
+            for item in lane_runs.values()
+            if item["manifest"].get("baseRun") is not None
+        }
+        scheduled = scheduled_terminals.get((problem, lane))
+        terminals = [scheduled] if scheduled is not None else sorted(set(lane_runs) - bases)
+        if scheduled is not None and scheduled not in lane_runs:
+            raise MathFlowError(
+                f"knowledge scheduler latest state is not published for {problem}: {scheduled}"
+            )
+        if not terminals:
+            raise MathFlowError(f"viewer projection lane has no terminal run: {lane}")
+        for terminal in terminals:
+            chain = _projection_chain(lane_runs, terminal)
+            terminal_manifest = lane_runs[terminal]["manifest"]
+            head = terminal_manifest.get("ledgerHead")
+            if not isinstance(head, str):
+                raise MathFlowError(f"viewer projection run has no ledger head: {terminal}")
+            data = export_viewer_data(root, problem, head, chain)
+            judge_spec = terminal_manifest.get("judgeSpec")
+            if not isinstance(judge_spec, dict):
+                raise MathFlowError(f"viewer projection run has no judge identity: {terminal}")
+            projection_id = lane if len(terminals) == 1 else f"{lane}@{terminal}"
+            projections.append(
+                {
+                    "id": projection_id,
+                    "problemId": problem,
+                    "label": str(judge_spec.get("id", "unnamed projection")),
+                    "builder": judge_spec,
+                    "latestRunDigest": terminal,
+                    "runCount": len(chain),
+                    "data": data,
+                }
+            )
+
+    projections.sort(key=lambda item: (str(item["problemId"]), str(item["label"]), str(item["id"])))
+    return {
+        "schemaVersion": 1,
+        "repository": {
+            "slug": repository,
+            "canonicalRef": canonical_ref,
+            "projectionRef": projection_ref,
+        },
+        "projections": projections,
+        "defaultProjectionId": projections[0]["id"] if projections else None,
     }

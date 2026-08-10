@@ -1,20 +1,29 @@
 name: Validate repository
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
+      - ".github/workflows/**"
       - "problems/**"
       - "protocol/**"
       - "math_flow/**"
       - "tests/**"
+      - "viewer/**"
   push:
-    branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - "problems/**"
+      - "protocol/**"
+      - "math_flow/**"
+      - "tests/**"
+      - "viewer/**"
 
 permissions:
   contents: read
 
 jobs:
-  validate:
+  protocol:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -25,3 +34,22 @@ jobs:
         run: python -m math_flow validate-tree
       - name: Run protocol tests
         run: python -m unittest discover -s tests -v
+
+  viewer:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: viewer
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: viewer/package-lock.json
+      - name: Install viewer dependencies
+        run: npm ci
+      - name: Test production viewer build
+        run: npm test
+      - name: Lint viewer
+        run: npm run lint

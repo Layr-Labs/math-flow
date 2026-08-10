@@ -1,3 +1,3 @@
 """Git-native protocol tools for Math Flow."""
 
-__version__ = "0.5.2"
+__version__ = "0.6.0"

@@ -30,9 +30,30 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-button, input { font: inherit; }
+button, input, select { font: inherit; }
 button { color: inherit; }
 code { font-family: var(--font-geist-mono), ui-monospace, monospace; }
+
+.repository-shell { min-height: 100vh; }
+.repository-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(170px, 0.45fr) minmax(240px, 0.65fr);
+  gap: 12px;
+  align-items: end;
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 18px 28px 0;
+}
+.repository-source { display: flex; min-height: 42px; align-items: center; gap: 11px; }
+.repository-source > span:last-child { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.repository-source strong { font: 650 11px var(--font-geist-mono); }
+.repository-source small { overflow: hidden; color: var(--ink-soft); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.source-light { width: 9px; height: 9px; flex: 0 0 auto; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 4px #f2ead7; }
+.source-repository { background: var(--teal); box-shadow: 0 0 0 4px var(--teal-soft); }
+.source-fallback { background: var(--coral); box-shadow: 0 0 0 4px var(--coral-soft); }
+.repository-toolbar label { display: flex; min-width: 0; flex-direction: column; gap: 5px; color: var(--ink-soft); font: 650 8px var(--font-geist-mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.repository-toolbar select { width: 100%; min-width: 0; padding: 8px 28px 8px 10px; border: 1px solid var(--line); border-radius: 9px; outline: 0; color: var(--ink); background: rgba(255, 254, 249, 0.86); font-size: 10px; letter-spacing: 0; text-transform: none; }
+.repository-toolbar select:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
 
 .app-shell { min-height: 100vh; padding: 24px; }
 
@@ -72,7 +93,9 @@ h1, h2, h3, h4, p { margin-top: 0; }
 
 .run-strip {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-auto-columns: minmax(120px, 1fr);
+  grid-auto-flow: column;
+  overflow-x: auto;
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -282,6 +305,7 @@ button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px 
 }
 
 @media (max-width: 760px) {
+  .repository-toolbar { display: flex; align-items: stretch; flex-direction: column; padding: 14px 16px 0; }
   .app-shell { padding: 12px; }
   .masthead { display: flex; align-items: stretch; flex-direction: column; gap: 14px; }
   .run-metrics { justify-content: space-between; }

@@ -75,9 +75,11 @@ adjudications can be revised or retracted using later evidence without mutating
 the original run. See
 [`PROJECTION_PROTOCOL.md`](PROJECTION_PROTOCOL.md).
 
-Generated projections are workflow artifacts or deployment data, not commits on
-the canonical branch. This avoids making an interpretation part of the ledger it
-interprets.
+Generated projections are content-addressed commits on a separate orphan
+`projections` branch, never on the canonical branch. The branch also carries the
+knowledge scheduler and a deterministic viewer catalog. This keeps an
+interpretation out of the ledger it interprets while allowing repository-backed
+tools to follow current state.
 
 ## MVP phases
 
@@ -104,8 +106,8 @@ interprets.
 
 ### Phase 3 — contributor experience
 
-- a read-only Vercel web app that renders the ledger and switches between judge
-  projections;
+- a read-only repository-backed web app that renders the ledger and switches
+  between problems, judge projections, and historical state runs — implemented;
 - a GitHub App that posts richer check summaries and projection links;
 - GitHub identity/PR provenance derived through the API;
 - contribution scaffolding and reference helpers.

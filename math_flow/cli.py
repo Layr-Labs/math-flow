@@ -25,7 +25,7 @@ from .judgments import (
 from .judges import load_judge_spec, project, render_request
 from .repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
 from .runs import run_judge_bundle
-from .viewer import export_viewer_data
+from .viewer import export_viewer_catalog, export_viewer_data
 
 
 def _write_json(value: object, output: str | None) -> None:
@@ -202,6 +202,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--run-dir", required=True, action="append", type=Path, dest="run_dirs"
     )
     viewer_parser.add_argument("--output", required=True, type=Path)
+
+    catalog_parser = commands.add_parser(
+        "export-viewer-catalog",
+        help="export published projection-branch state for the repository viewer",
+    )
+    catalog_parser.add_argument("--projection-dir", required=True, type=Path)
+    catalog_parser.add_argument("--repository", required=True, help="GitHub owner/repository slug")
+    catalog_parser.add_argument("--canonical-ref", default="main")
+    catalog_parser.add_argument("--projection-ref", default="projections")
+    catalog_parser.add_argument("--output", required=True, type=Path)
     return parser
 
 
@@ -354,6 +364,20 @@ def main(argv: list[str] | None = None) -> int:
             result = publish_batch(args.projection_dir, args.bundles)
         elif args.command == "export-viewer":
             result = export_viewer_data(root, args.problem, args.head, args.run_dirs)
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(
+                json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+            )
+            print(args.output)
+            return 0
+        elif args.command == "export-viewer-catalog":
+            result = export_viewer_catalog(
+                root,
+                args.projection_dir,
+                args.repository,
+                canonical_ref=args.canonical_ref,
+                projection_ref=args.projection_ref,
+            )
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(
                 json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
