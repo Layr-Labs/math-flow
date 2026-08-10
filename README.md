@@ -208,7 +208,7 @@ python3 -m math_flow context \
 The command writes the complete exact `state.json`, machine-readable freshness
 and coverage metadata in `context.json`, and a concise `context.md`. Repeated
 `--node` arguments scope the Markdown view without truncating the exact state.
-The repository-owned [`math-flow-solver`](skills/math-flow-solver/SKILL.md)
+The repository-owned [`math-flow-solver`](.agents/skills/math-flow-solver/SKILL.md)
 skill explains how an agent should use this context, inspect provenance, and
 submit one atomic contribution without mutating judgments or projections.
 
