@@ -1,4 +1,4 @@
-name: OpenRouter repository smoke test
+name: OpenRouter repository projection
 
 on:
   workflow_dispatch:
@@ -8,8 +8,57 @@ on:
         required: true
         default: triangle-midpoints
 
+concurrency:
+  group: "openrouter-projection-${{ inputs.problem }}"
+  cancel-in-progress: false
+
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.coverage.outputs.matrix }}
+      count: ${{ steps.coverage.outputs.count }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Prepare published projection state
+        run: |
+          set -euo pipefail
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          if git ls-remote --exit-code origin refs/heads/projections >/dev/null 2>&1; then
+            git fetch origin refs/heads/projections:refs/remotes/origin/projections
+            git worktree add --detach "$projection_dir" refs/remotes/origin/projections
+          else
+            mkdir -p "$projection_dir"
+          fi
+      - id: coverage
+        name: Plan missing transaction judgments
+        run: |
+          set -euo pipefail
+          plan="${RUNNER_TEMP}/judgment-plan.json"
+          python -m math_flow judgment-plan \
+            --problem "${{ inputs.problem }}" \
+            --judge protocol/judges/openrouter-markdown-judgment-v1.json \
+            --head HEAD \
+            --projection-dir "${RUNNER_TEMP}/projection-branch" \
+            --output "$plan"
+          echo "matrix=$(jq -c '.matrix' "$plan")" >> "$GITHUB_OUTPUT"
+          echo "count=$(jq '.missingTransactions | length' "$plan")" >> "$GITHUB_OUTPUT"
+          jq '{problemId, judgeSpec, covered: (.coveredTransactionIds | length), missingTransactions}' "$plan"
+
   judgment:
+    needs: plan
+    if: needs.plan.outputs.count != '0'
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -20,20 +69,7 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - name: Select the latest transaction and its prior evidence
-        run: |
-          set -euo pipefail
-          mkdir -p "${RUNNER_TEMP}/math-flow-staging"
-          python -m math_flow ledger \
-            --problem "${{ inputs.problem }}" \
-            --head HEAD \
-            > "${RUNNER_TEMP}/math-flow-staging/ledger.json"
-          transaction_count="$(jq '.transactions | length' "${RUNNER_TEMP}/math-flow-staging/ledger.json")"
-          if [[ "$transaction_count" -lt 1 ]]; then
-            echo "The problem has no transactions to judge." >&2
-            exit 1
-          fi
-      - name: Generate immutable primary judgment
+      - name: Generate primary judgment for transaction ${{ matrix.ordinal }}
         env:
           OPENROUTER_API_KEY: "${{ secrets.OPENROUTER_API_KEY }}"
           MATH_FLOW_SITE_URL: "${{ github.server_url }}/${{ github.repository }}"
@@ -43,34 +79,42 @@ jobs:
             echo "The OPENROUTER_API_KEY repository secret is not configured." >&2
             exit 1
           fi
-          ledger="${RUNNER_TEMP}/math-flow-staging/ledger.json"
-          subject="$(jq -r '.transactions[-1].transactionId' "$ledger")"
+          staging_dir="${RUNNER_TEMP}/math-flow-staging"
+          mkdir -p "$staging_dir"
+          ledger="$staging_dir/ledger.json"
+          python -m math_flow ledger \
+            --problem "${{ inputs.problem }}" \
+            --head HEAD \
+            > "$ledger"
           command=(
             python -m math_flow judgment
             --problem "${{ inputs.problem }}"
             --judge protocol/judges/openrouter-markdown-judgment-v1.json
             --head HEAD
-            --subject "$subject"
-            --output-dir "${RUNNER_TEMP}/math-flow-staging/judgment"
+            --subject "${{ matrix.transactionId }}"
+            --output-dir "$staging_dir/judgment-${{ matrix.ordinal }}"
           )
           while IFS= read -r evidence; do
             command+=(--evidence "$evidence")
-          done < <(jq -r '.transactions[0:-1][].transactionId' "$ledger")
+          done < <(
+            jq -r \
+              --argjson ordinal "${{ matrix.ordinal }}" \
+              '.transactions[] | select(.ordinal < $ordinal) | .transactionId' \
+              "$ledger"
+          )
           "${command[@]}"
       - uses: actions/upload-artifact@v7
         with:
-          name: "judgment-${{ inputs.problem }}"
-          path: "${{ runner.temp }}/math-flow-staging/judgment"
+          name: "judgment-${{ inputs.problem }}-${{ matrix.ordinal }}"
+          path: "${{ runner.temp }}/math-flow-staging/judgment-${{ matrix.ordinal }}"
           if-no-files-found: error
 
   form-and-publish:
-    needs: judgment
+    needs: [plan, judgment]
+    if: needs.plan.outputs.count != '0' && needs.judgment.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    concurrency:
-      group: "knowledge-formation-${{ inputs.problem }}-openrouter-knowledge-builder-v1"
-      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v7
         with:
@@ -80,8 +124,8 @@ jobs:
           python-version: "3.12"
       - uses: actions/download-artifact@v8
         with:
-          name: "judgment-${{ inputs.problem }}"
-          path: "${{ runner.temp }}/math-flow-staging/judgment"
+          pattern: "judgment-${{ inputs.problem }}-*"
+          path: "${{ runner.temp }}/math-flow-staging/judgments"
       - name: Prepare the orphan projection worktree
         run: |
           set -euo pipefail
@@ -99,13 +143,25 @@ jobs:
           projection_dir="${RUNNER_TEMP}/projection-branch"
           staging_dir="${RUNNER_TEMP}/math-flow-staging"
           scheduler="$projection_dir/coordination/scheduler.json"
-          python -m math_flow knowledge-trigger \
-            --scheduler-file "$scheduler" \
-            --problem "${{ inputs.problem }}" \
-            --builder protocol/judges/openrouter-knowledge-builder-v1.json \
-            --minimum-interval 0 \
-            --judgment-dir "$staging_dir/judgment" \
+          mapfile -t judgment_dirs < <(
+            find "$staging_dir/judgments" -mindepth 1 -maxdepth 1 -type d -print | sort
+          )
+          if [[ "${#judgment_dirs[@]}" -eq 0 ]]; then
+            echo "No judgment artifacts were downloaded." >&2
+            exit 1
+          fi
+          trigger=(
+            python -m math_flow knowledge-trigger
+            --scheduler-file "$scheduler"
+            --problem "${{ inputs.problem }}"
+            --builder protocol/judges/openrouter-knowledge-builder-v1.json
+            --minimum-interval 0
             --output "$staging_dir/lane.json"
+          )
+          for judgment_dir in "${judgment_dirs[@]}"; do
+            trigger+=(--judgment-dir "$judgment_dir")
+          done
+          "${trigger[@]}"
           lane_id="$(jq -r '.laneId' "$staging_dir/lane.json")"
           python -m math_flow knowledge-claim \
             --scheduler-file "$scheduler" \
@@ -124,16 +180,21 @@ jobs:
           set -euo pipefail
           projection_dir="${RUNNER_TEMP}/projection-branch"
           staging_dir="${RUNNER_TEMP}/math-flow-staging"
+          mapfile -t judgment_dirs < <(
+            find "$staging_dir/judgments" -mindepth 1 -maxdepth 1 -type d -print | sort
+          )
           command=(
             python -m math_flow knowledge-build
             --problem "${{ inputs.problem }}"
             --builder protocol/judges/openrouter-knowledge-builder-v1.json
             --head HEAD
             --claim "$staging_dir/claim.json"
-            --judgment-dir "$staging_dir/judgment"
             --checkpoint-dir "$staging_dir/checkpoints"
             --output-dir "$staging_dir/knowledge-build"
           )
+          for judgment_dir in "${judgment_dirs[@]}"; do
+            command+=(--judgment-dir "$judgment_dir")
+          done
           base_digest="$(jq -r '.baseStateRun // empty' "$staging_dir/claim.json")"
           if [[ -n "$base_digest" ]]; then
             base_hex="${base_digest#sha256:}"
@@ -159,6 +220,9 @@ jobs:
           projection_dir="${RUNNER_TEMP}/projection-branch"
           staging_dir="${RUNNER_TEMP}/math-flow-staging"
           scheduler="$projection_dir/coordination/scheduler.json"
+          mapfile -t judgment_dirs < <(
+            find "$staging_dir/judgments" -mindepth 1 -maxdepth 1 -type d -print | sort
+          )
           lane_id="$(jq -r '.laneId' "$staging_dir/claim.json")"
           build_token="$(jq -r '.buildToken' "$staging_dir/claim.json")"
           python -m math_flow knowledge-complete \
@@ -166,10 +230,12 @@ jobs:
             --lane-id "$lane_id" \
             --build-token "$build_token" \
             --state-run-dir "$staging_dir/knowledge-build"
-          python -m math_flow publish-batch \
-            --projection-dir "$projection_dir" \
-            --bundle "$staging_dir/judgment" \
-            --bundle "$staging_dir/knowledge-build"
+          publish=(python -m math_flow publish-batch --projection-dir "$projection_dir")
+          for judgment_dir in "${judgment_dirs[@]}"; do
+            publish+=(--bundle "$judgment_dir")
+          done
+          publish+=(--bundle "$staging_dir/knowledge-build")
+          "${publish[@]}"
           python -m math_flow export-viewer-catalog \
             --projection-dir "$projection_dir" \
             --repository "${{ github.repository }}" \

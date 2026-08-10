@@ -37,15 +37,16 @@ README. Inspect `run.json`, `report.md`, `control/selection.json`,
 `control/normalizations.json`, `state/delta.json`, `state/state.json`, and
 `state/revisions.jsonl` before enabling hosted inference.
 
-## 4. Enable the manual repository smoke test
+## 4. Enable the manual repository projection
 
 Add `OPENROUTER_API_KEY` as a GitHub Actions repository secret. Manually dispatch
-`OpenRouter repository smoke test` for `triangle-midpoints`. It judges the latest
-transaction using earlier transactions as evidence, performs one serialized
-knowledge build, publishes both verified bundles and scheduler state to the
-orphan `projections` branch, and refreshes `viewer/catalog.json`. It is
-intentionally not push-triggered so early experiments cannot create surprise
-inference spend.
+`OpenRouter repository projection` for `triangle-midpoints`. It compares the
+ledger with judgments published under the active judge spec, fans out one
+primary judgment for every uncovered transaction, performs one serialized
+knowledge build over the completed batch, publishes the verified bundles and
+scheduler state to the orphan `projections` branch, and refreshes
+`viewer/catalog.json`. It is intentionally not push-triggered so early
+experiments cannot create surprise inference spend.
 
 The `Validate repository` workflow separately runs protocol tests plus the
 viewer production-build, rendered-HTML, and lint checks on relevant pushes and

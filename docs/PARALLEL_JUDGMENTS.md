@@ -36,6 +36,24 @@ The manifest records both the repository-wide ledger head and a
 `problemLedgerDigest`, so unrelated problem commits do not invalidate scheduling
 or caches for this problem.
 
+Before dispatching work, automation can compare the canonical problem ledger
+with the published projection index:
+
+```bash
+python -m math_flow judgment-plan \
+  --problem triangle-midpoints \
+  --judge protocol/judges/openrouter-markdown-judgment-v1.json \
+  --head HEAD \
+  --projection-dir /path/to/projections-worktree \
+  --output /tmp/judgment-plan.json
+```
+
+Coverage is scoped to the full judge-spec digest: a primary judgment from an
+older or different judge remains part of history but does not satisfy the active
+judge's queue. The output contains a GitHub-compatible matrix with one entry for
+every uncovered transaction. Those judgments may execute in parallel because
+they do not read or mutate a base knowledge state.
+
 ## Detect and reconcile conflicts
 
 ```bash
@@ -166,6 +184,8 @@ python -m math_flow export-viewer-catalog \
 
 The catalog follows `baseRun` content digests and uses each scheduler lane's
 `latestStateRun` as its authoritative terminal. Git publication order therefore
-does not become knowledge-state order. The included OpenRouter repository smoke
-workflow keeps primary judgment in a separate job and applies job-level
-serialization only to formation and projection publication.
+does not become knowledge-state order. The included OpenRouter repository
+projection workflow fans out every missing primary judgment, coalesces the
+resulting artifacts into one formation claim, and serializes formation and
+projection publication per problem. A second dispatch is a no-op when the
+active judge already covers every transaction.

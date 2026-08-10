@@ -16,30 +16,29 @@ async function render() {
   );
 }
 
-test("server-renders the research atlas with exported run data", async () => {
+test("server-renders a stable loading state before repository data arrives", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
+  const initialMarkup = html.slice(0, html.indexOf('<script type="module"'));
   assert.match(html, /<title>Math Flow · Research Atlas<\/title>/i);
-  assert.match(html, /Math Flow · research atlas/);
-  assert.match(html, /Triangle midpoint quadrilateral/);
-  assert.match(html, /Transactions/);
-  assert.match(html, /Knowledge state/);
-  assert.match(html, /Submission/);
-  assert.match(html, /Judgment/);
-  assert.match(html, /Build report/);
-  assert.match(html, /Run[^<]*<!-- -->03/);
+  assert.match(initialMarkup, /Math Flow · research atlas/);
+  assert.match(initialMarkup, /Loading repository state/);
+  assert.match(initialMarkup, /checked-in demonstration will be used only if the live projection is unavailable/i);
+  assert.doesNotMatch(initialMarkup, /Triangle midpoint quadrilateral/);
+  assert.doesNotMatch(initialMarkup, /State[^<]*<!-- -->03/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|SkeletonPreview/i);
 });
 
-test("keeps the viewer data-driven and free of starter preview assets", async () => {
-  const [page, layout, packageJson, data] = await Promise.all([
+test("keeps the viewer data-driven with contextual artifact details", async () => {
+  const [page, layout, packageJson, data, viewer] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     readFile(new URL("../app/math-flow-data.json", import.meta.url), "utf8"),
+    readFile(new URL("../app/KnowledgeViewer.tsx", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /math-flow-data\.json/);
@@ -47,6 +46,14 @@ test("keeps the viewer data-driven and free of starter preview assets", async ()
   assert.match(page, /fallbackData=/);
   assert.match(layout, /Math Flow · Research Atlas/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton|site-creator-vinext-starter/);
+  assert.match(viewer, /detail-tabs-transaction/);
+  assert.match(viewer, /Submission<\/button>/);
+  assert.match(viewer, /Judgment<\/button>/);
+  assert.match(viewer, /detail-tabs-node/);
+  assert.match(viewer, /Node<\/button>/);
+  assert.match(viewer, /Build report<\/button>/);
+  assert.match(viewer, /primary judgment/);
+  assert.match(viewer, /the full state remains visible/);
 
   const parsed = JSON.parse(data);
   assert.equal(parsed.runs.length, 3);

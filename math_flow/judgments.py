@@ -551,6 +551,96 @@ def load_judgment_bundle(bundle_dir: Path) -> tuple[dict[str, object], dict[str,
     return manifest, judgment, manifest_digest
 
 
+def plan_primary_judgment_coverage(
+    root: Path,
+    projection_root: Path,
+    problem: str,
+    judge_path: Path,
+    head: str,
+) -> dict[str, object]:
+    """Find ledger transactions without a published primary judgment from this judge."""
+
+    root = root.resolve()
+    projection_root = projection_root.resolve()
+    spec = load_judge_spec(judge_path)
+    if spec["implementation"] != "openrouter-markdown-judgment-v1":
+        raise MathFlowError("judgment planning requires a primary Markdown judge spec")
+    judge_digest = f"sha256:{sha256_json(spec)}"
+    source = load_source(root, problem, head)
+    transactions = list(source["transactions"])
+    ledger_ids = {str(item["transactionId"]) for item in transactions}
+    covered: set[str] = set()
+
+    index_path = projection_root / "indexes" / "problems" / problem / "runs.json"
+    if index_path.exists():
+        try:
+            entries = json.loads(index_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise MathFlowError(f"could not read projection judgment index: {exc}") from exc
+        if not isinstance(entries, list) or any(
+            not isinstance(item, dict) for item in entries
+        ):
+            raise MathFlowError("projection judgment index must be an object array")
+        for entry in entries:
+            if entry.get("runKind") != "judgment":
+                continue
+            relative = entry.get("path")
+            expected_digest = entry.get("runDigest")
+            if not isinstance(relative, str) or not isinstance(expected_digest, str):
+                raise MathFlowError("projection judgment index entry is incomplete")
+            target = (projection_root / relative).resolve()
+            try:
+                target.relative_to(projection_root)
+            except ValueError as exc:
+                raise MathFlowError(
+                    f"projection judgment path escapes its root: {relative}"
+                ) from exc
+            _, judgment, run_digest = load_judgment_bundle(target)
+            if run_digest != expected_digest:
+                raise MathFlowError(
+                    f"projection judgment digest does not match its index: {relative}"
+                )
+            if (
+                judgment.get("problemId") != problem
+                or judgment.get("judgmentKind") != "primary"
+                or not isinstance(judgment.get("judgeSpec"), dict)
+                or judgment["judgeSpec"].get("digest") != judge_digest
+            ):
+                continue
+            covered.update(
+                str(subject["id"])
+                for subject in judgment["subjects"]
+                if isinstance(subject, dict) and subject.get("id") in ledger_ids
+            )
+
+    missing = [
+        {
+            "transactionId": str(transaction["transactionId"]),
+            "ordinal": int(transaction["ordinal"]),
+            "contributionId": str(transaction["contributionId"]),
+        }
+        for transaction in transactions
+        if transaction["transactionId"] not in covered
+    ]
+    return {
+        "schemaVersion": 1,
+        "problemId": problem,
+        "ledgerHead": source["ledgerHead"],
+        "judgeSpec": {"id": spec["id"], "digest": judge_digest},
+        "coveredTransactionIds": sorted(covered),
+        "missingTransactions": missing,
+        "matrix": {
+            "include": [
+                {
+                    "transactionId": item["transactionId"],
+                    "ordinal": item["ordinal"],
+                }
+                for item in missing
+            ]
+        },
+    }
+
+
 def detect_conflicts(bundle_dirs: list[Path]) -> list[dict[str, object]]:
     grouped: dict[tuple[str, str], list[dict[str, str]]] = {}
     for bundle_dir in bundle_dirs:

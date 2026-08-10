@@ -226,6 +226,18 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
     setProjectionId(nextProjection.id);
   }
 
+  if (source === "checking") {
+    return (
+      <main className="repository-loading" aria-live="polite">
+        <div className="loading-mark">MF</div>
+        <span className="eyebrow">Math Flow · research atlas</span>
+        <h1>Loading repository state</h1>
+        <p>The checked-in demonstration will be used only if the live projection is unavailable.</p>
+        <span className="loading-line" aria-hidden="true" />
+      </main>
+    );
+  }
+
   return (
     <div className="repository-shell">
       <nav className="repository-toolbar" aria-label="Repository projection selection">
@@ -352,16 +364,9 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
 
   const visibleIds = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    if (!needle && !transactionId) return new Set(Object.keys(nodes));
+    if (!needle) return new Set(Object.keys(nodes));
     const direct = Object.values(nodes)
-      .filter((node) => {
-        const textMatch = !needle || `${node.id} ${node.title} ${node.summary}`.toLowerCase().includes(needle);
-        const transactionMatch =
-          !transactionId ||
-          node.subjects.some((item) => item.id === transactionId) ||
-          node.evidence.some((item) => item.id === transactionId);
-        return textMatch && transactionMatch;
-      })
+      .filter((node) => `${node.id} ${node.title} ${node.summary}`.toLowerCase().includes(needle))
       .map((node) => node.id);
     const visible = new Set(direct);
     direct.forEach((id) => {
@@ -372,7 +377,31 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
       }
     });
     return visible;
-  }, [nodes, query, transactionId]);
+  }, [nodes, query]);
+
+  const transactionDirectIds = useMemo(() => new Set(
+    transactionId
+      ? Object.values(nodes)
+        .filter((node) =>
+          node.subjects.some((item) => item.id === transactionId) ||
+          node.evidence.some((item) => item.id === transactionId),
+        )
+        .map((node) => node.id)
+      : [],
+  ), [nodes, transactionId]);
+
+  const transactionContextIds = useMemo(() => {
+    if (!transactionId) return new Set(Object.keys(nodes));
+    const context = new Set(transactionDirectIds);
+    transactionDirectIds.forEach((id) => {
+      let parent = nodes[id]?.parentId;
+      while (parent) {
+        context.add(parent);
+        parent = nodes[parent]?.parentId;
+      }
+    });
+    return context;
+  }, [nodes, transactionDirectIds, transactionId]);
 
   function relation(node: KnowledgeNode) {
     if (!transactionId) return null;
@@ -385,6 +414,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
     const next = data.runs.find((item) => item.id === nextId)!;
     setRunId(nextId);
     if (!next.state.nodes[nodeId]) setNodeId("root");
+    setTransactionId(null);
     setDetailMode("node");
   }
 
@@ -405,21 +435,22 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
     if (!node || !visibleIds.has(id)) return null;
     const nodeRelation = relation(node);
     const changed = run.changedNodeIds.includes(id);
+    const dimmed = Boolean(transactionId) && !transactionContextIds.has(id);
     return (
       <div
         className="tree-branch"
         style={{ "--indent": `${Math.min(depth, 4) * 26}px` } as CSSProperties}
       >
         <button
-          className={`node-card ${selectedNode.id === id ? "selected" : ""} ${nodeRelation ?? ""}`}
-          onClick={() => { setNodeId(id); setDetailMode("node"); }}
+          className={`node-card ${selectedNode.id === id ? "selected" : ""} ${nodeRelation ?? ""} ${dimmed ? "dimmed" : ""}`}
+          onClick={() => { setNodeId(id); setTransactionId(null); setDetailMode("node"); }}
           aria-pressed={selectedNode.id === id}
         >
           <TypeMark type={node.type} />
           <span className="node-copy">
             <span className="node-topline">
               <span className="node-type">{node.type}</span>
-              {changed && <span className="change-dot">changed in run {run.ordinal}</span>}
+              {changed && <span className="change-dot">changed in state {run.ordinal}</span>}
               {nodeRelation && <span className={`relation ${nodeRelation}`}>{nodeRelation}</span>}
             </span>
             <strong>{node.title}</strong>
@@ -444,10 +475,10 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
           <span className="brand-mark">MF</span>
           <div><span className="eyebrow">Math Flow · research atlas</span><h1>{data.problem.title}</h1></div>
         </div>
-        <div className="run-strip" aria-label="Adjudication runs">
+        <div className="run-strip" aria-label="Knowledge state versions">
           {data.runs.map((item) => (
             <button key={item.id} onClick={() => chooseRun(item.id)} aria-pressed={item.id === run.id}>
-              <span>Run {String(item.ordinal).padStart(2, "0")}</span>
+              <span>State {String(item.ordinal).padStart(2, "0")}</span>
               <small>{short(item.ledgerHead)} · +{item.addedRevisionIds.length}</small>
             </button>
           ))}
@@ -456,7 +487,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
           <span><strong>{Object.keys(nodes).length}</strong> nodes</span>
           <span><strong>{run.revisionIds.length}</strong> revisions</span>
           <span><strong>{runJudgments.length}</strong> judgments</span>
-          <span><strong>${run.cost.toFixed(4)}</strong> run cost</span>
+          <span><strong>${run.cost.toFixed(4)}</strong> build cost</span>
         </div>
       </header>
 
@@ -470,6 +501,16 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
             {data.transactions.map((transaction) => {
               const available = transaction.ordinal <= runLedgerPosition;
               const active = transaction.transactionId === transactionId;
+              const primaryJudgments = runJudgments.filter((judgment) =>
+                judgment.judgmentKind === "primary" &&
+                judgment.record.subjects.some((subject) => subject.id === transaction.transactionId),
+              );
+              const evidenceJudgments = runJudgments.filter((judgment) =>
+                !judgment.record.subjects.some((subject) => subject.id === transaction.transactionId) &&
+                judgment.record.findings.some((finding) =>
+                  finding.evidenceTransactionIds.includes(transaction.transactionId),
+                ),
+              );
               return (
                 <button
                   className={`transaction-card ${active ? "selected" : ""} ${available ? "" : "future"}`}
@@ -489,6 +530,13 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
                   <span className="transaction-copy">
                     <strong>{label(transaction.contributionId)}</strong>
                     <span>{transaction.author.displayName} · {short(transaction.transactionId)}</span>
+                    <small className={primaryJudgments.length ? "coverage-complete" : "coverage-missing"}>
+                      {primaryJudgments.length
+                        ? `${primaryJudgments.length} primary judgment${primaryJudgments.length === 1 ? "" : "s"}`
+                        : evidenceJudgments.length
+                          ? `unjudged · evidence in ${evidenceJudgments.length}`
+                          : "unjudged"}
+                    </small>
                   </span>
                 </button>
               );
@@ -501,7 +549,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
 
         <section className="knowledge-panel panel">
           <div className="panel-heading knowledge-heading">
-            <div><span className="eyebrow">Judge projection · run {run.ordinal}</span><h2>Knowledge state</h2></div>
+            <div><span className="eyebrow">Knowledge build · state {run.ordinal}</span><h2>Knowledge state</h2></div>
             <label className="search-box">
               <span>⌕</span>
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a claim, proof, or lemma" />
@@ -509,13 +557,17 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
           </div>
           {(query || transactionId) && (
             <div className="filter-banner">
-              Showing {visibleIds.size} connected node{visibleIds.size === 1 ? "" : "s"}
-              <button onClick={() => { setQuery(""); setTransactionId(null); }}>Clear filter</button>
+              <span>
+                {transactionId
+                  ? `Highlighting ${transactionDirectIds.size} direct connection${transactionDirectIds.size === 1 ? "" : "s"} to transaction ${selectedTransaction?.ordinal ?? "·"}; the full state remains visible.`
+                  : `Showing ${visibleIds.size} search-connected node${visibleIds.size === 1 ? "" : "s"}.`}
+              </span>
+              <button onClick={() => { setQuery(""); setTransactionId(null); setDetailMode("node"); }}>Clear</button>
             </div>
           )}
           <div className="tree-canvas">
             <div className="tree-legend">
-              <span><i className="legend-swatch changed" /> changed this run</span>
+              <span><i className="legend-swatch changed" /> changed in this state version</span>
               <span><i className="legend-swatch subject" /> transaction subject</span>
               <span><i className="legend-swatch evidence" /> supporting evidence</span>
             </div>
@@ -529,12 +581,17 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
         </section>
 
         <aside className="detail-panel panel">
-          <div className="detail-tabs" role="tablist">
-            <button role="tab" aria-selected={detailMode === "node"} onClick={() => setDetailMode("node")}>Node</button>
-            <button role="tab" aria-selected={detailMode === "transaction"} disabled={!selectedTransaction} onClick={() => setDetailMode("transaction")}>Submission</button>
-            <button role="tab" aria-selected={detailMode === "judgment"} disabled={!selectedJudgment} onClick={() => setDetailMode("judgment")}>Judgment</button>
-            <button role="tab" aria-selected={detailMode === "report"} onClick={() => setDetailMode("report")}>Build report</button>
-          </div>
+          {selectedTransaction ? (
+            <div className="detail-tabs detail-tabs-transaction" role="tablist" aria-label="Transaction details">
+              <button role="tab" aria-selected={detailMode === "transaction"} onClick={() => setDetailMode("transaction")}>Submission</button>
+              <button role="tab" aria-selected={detailMode === "judgment"} disabled={!transactionJudgments.length} onClick={() => setDetailMode("judgment")}>Judgment</button>
+            </div>
+          ) : (
+            <div className="detail-tabs detail-tabs-node" role="tablist" aria-label="Knowledge node details">
+              <button role="tab" aria-selected={detailMode === "node"} onClick={() => setDetailMode("node")}>Node</button>
+              <button role="tab" aria-selected={detailMode === "report"} onClick={() => setDetailMode("report")}>Build report</button>
+            </div>
+          )}
           {detailMode === "node" ? (
             <>
               <div className="detail-title">
@@ -550,7 +607,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
                 <h3>Subjects</h3>
                 <div className="chip-row">{selectedNode.subjects.length ? selectedNode.subjects.map((item) => <button key={item.id} onClick={() => openTransaction(item.id)}>tx {item.ledgerPosition ?? "·"} · {short(item.id)}</button>) : <span className="muted">No transaction subjects</span>}</div>
                 <h3>Evidence</h3>
-                <div className="chip-row">{selectedNode.evidence.length ? selectedNode.evidence.map((item) => <button key={`${item.id}-${item.relation}`} onClick={() => item.kind === "transaction" ? openTransaction(item.id) : item.kind === "judgment" ? openJudgment(item.id) : undefined}>{item.relation} · {short(item.id)}</button>) : <span className="muted">No linked evidence</span>}</div>
+                <div className="chip-row">{selectedNode.evidence.length ? selectedNode.evidence.map((item) => item.kind === "transaction" ? <button key={`${item.id}-${item.relation}`} onClick={() => openTransaction(item.id)}>{item.relation} · {short(item.id)}</button> : <span className="reference-chip" key={`${item.id}-${item.relation}`}>{item.kind} · {short(item.id)}</span>) : <span className="muted">No linked evidence</span>}</div>
               </div>
               <section className="revision-section">
                 <div className="section-label"><h3>Revision lineage</h3><span>{nodeRevisions.length}</span></div>
@@ -596,11 +653,11 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
             <section className="artifact-detail judgment-detail">
               <span className="eyebrow">Raw {selectedJudgment.judgmentKind} judgment</span>
               <h2>{selectedJudgment.judgeSpec.id}</h2>
-              {runJudgments.length > 1 && (
+              {transactionJudgments.length > 1 && (
                 <label className="judgment-picker">
                   <span>Published judgment</span>
                   <select value={selectedJudgment.judgmentId} onChange={(event) => setJudgmentId(event.target.value)}>
-                    {runJudgments.map((judgment) => (
+                    {transactionJudgments.map((judgment) => (
                       <option value={judgment.judgmentId} key={judgment.judgmentId}>
                         {judgment.judgmentKind} · {short(judgment.judgmentId)}
                       </option>
@@ -647,7 +704,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
       </section>
       <footer>
         <span>Projection, not canon.</span>
-        <span>Run <code>{short(run.runDigest, 12)}</code> · state <code>{short(run.state.stateDigest, 12)}</code></span>
+        <span>Build <code>{short(run.runDigest, 12)}</code> · state <code>{short(run.state.stateDigest, 12)}</code></span>
       </footer>
     </main>
   );

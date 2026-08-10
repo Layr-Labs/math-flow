@@ -148,10 +148,13 @@ Private repositories configure the viewer's server-only
 `MATH_FLOW_GITHUB_TOKEN` binding with a fine-grained, read-only Contents token;
 the credential is never sent to the browser.
 
-The manual OpenRouter workflow judges the latest transaction, serializes the
-corresponding knowledge build, publishes content-addressed bundles and scheduler
-state to `projections`, and regenerates the catalog. It remains manually
-dispatched so a push cannot create surprise inference spend.
+The manual OpenRouter workflow first plans judgment coverage for every ledger
+transaction under the active judge spec. It fans out all missing primary
+judgments concurrently, then coalesces the completed judgments into one
+serialized knowledge build, publishes the content-addressed batch and scheduler
+state to `projections`, and regenerates the catalog. Re-dispatching is
+idempotent when coverage is complete. It remains manually dispatched so a push
+cannot create surprise inference spend.
 
 For an offline fixture, generate the single-projection data file by listing runs
 from oldest to newest:
@@ -171,11 +174,14 @@ npm install
 npm run dev
 ```
 
-Open the URL printed by the development server. Select a run to time-travel,
-select a transaction to inspect its raw submission and linked judgments, or
-select a node to inspect its current Markdown, revision lineage, and source
-knowledge-build report. The Judgment tab exposes both the original Markdown
-assessment and its structured finding record.
+Open the URL printed by the development server. Select a state version to
+time-travel across cumulative knowledge builds. Selecting a transaction keeps
+the complete state visible, highlights its provenance connections, and offers
+only Submission and Judgment details; its coverage label distinguishes a
+primary judgment from an evidence-only mention. Selecting a node clears that
+transaction context and offers only its current assessment and source Build
+report. The Judgment view exposes both the original Markdown assessment and its
+structured finding record.
 
 To test the repository-backed catalog locally, publish verified bundles into a
 temporary projection worktree and run:

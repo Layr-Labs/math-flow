@@ -19,6 +19,7 @@ from .formation import run_knowledge_build_bundle
 from .judgments import (
     detect_conflicts,
     load_judgment_bundle,
+    plan_primary_judgment_coverage,
     run_primary_judgment_bundle,
     run_reconciliation_judgment_bundle,
 )
@@ -104,6 +105,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="additional context transaction ID (repeatable)",
     )
     judgment_parser.add_argument("--output-dir", required=True, type=Path)
+
+    judgment_plan_parser = commands.add_parser(
+        "judgment-plan",
+        help="find transactions missing a published primary judgment from one judge",
+    )
+    judgment_plan_parser.add_argument("--problem", required=True)
+    judgment_plan_parser.add_argument("--judge", required=True, type=Path)
+    judgment_plan_parser.add_argument("--head", default="HEAD")
+    judgment_plan_parser.add_argument("--projection-dir", required=True, type=Path)
+    judgment_plan_parser.add_argument("--output", type=Path)
 
     conflict_parser = commands.add_parser(
         "detect-conflicts", help="derive reconciliation candidates from judgments"
@@ -261,6 +272,16 @@ def main(argv: list[str] | None = None) -> int:
                 args.output_dir,
                 context_transaction_ids=args.evidence,
             )
+        elif args.command == "judgment-plan":
+            result = plan_primary_judgment_coverage(
+                root,
+                args.projection_dir,
+                args.problem,
+                args.judge,
+                args.head,
+            )
+            _write_json(result, str(args.output) if args.output else None)
+            return 0
         elif args.command == "detect-conflicts":
             result = {"schemaVersion": 1, "conflicts": detect_conflicts(args.judgment_dirs)}
             _write_json(result, str(args.output) if args.output else None)

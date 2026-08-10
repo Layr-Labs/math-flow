@@ -26,6 +26,7 @@ from math_flow.judges import load_judge_spec, project, render_request
 from math_flow.judgments import (
     detect_conflicts,
     load_judgment_bundle,
+    plan_primary_judgment_coverage,
     run_primary_judgment_bundle,
     run_reconciliation_judgment_bundle,
 )
@@ -720,6 +721,17 @@ class GitProtocolTests(unittest.TestCase):
         self.assertIsNone(claim_due_build(scheduler, first_lane["laneId"], 300, 500))
 
         projection = self.root / "projection-worktree"
+        empty_coverage = plan_primary_judgment_coverage(
+            self.root,
+            projection,
+            "demo",
+            judge,
+            refuting_head,
+        )
+        self.assertEqual(
+            [item["transactionId"] for item in empty_coverage["missingTransactions"]],
+            [supporting_head, refuting_head],
+        )
         batch = publish_batch(
             projection,
             [
@@ -730,6 +742,18 @@ class GitProtocolTests(unittest.TestCase):
             ],
         )
         self.assertEqual(len(batch["objects"]), 4)
+        complete_coverage = plan_primary_judgment_coverage(
+            self.root,
+            projection,
+            "demo",
+            judge,
+            refuting_head,
+        )
+        self.assertEqual(complete_coverage["missingTransactions"], [])
+        self.assertEqual(
+            complete_coverage["coveredTransactionIds"],
+            sorted([supporting_head, refuting_head]),
+        )
         index = json.loads(
             (projection / "indexes/problems/demo/runs.json").read_text(encoding="utf-8")
         )
