@@ -10,6 +10,7 @@ Every judge run is a directory containing `run.json` and one or more artifacts.
 The manifest records:
 
 - the problem and exact ledger head;
+- a problem-ledger head and digest unaffected by unrelated problems;
 - the judge-spec and runner identity;
 - the allowlisted builder components used for input, invocation, output, and
   optional reduction;
@@ -151,3 +152,43 @@ The allowlist is an MVP security boundary: a repository spec cannot import and
 execute an arbitrary Python path. New builders can be registered in the runner;
 later they can be separately signed executables or container images identified by
 digest.
+
+## Parallel judgments and scheduled knowledge formation
+
+Version 0.4 separates immutable mathematical judgments from cumulative knowledge
+state. This is an additive path; older hierarchical runs remain replayable and
+continue to combine assessment with state reduction.
+
+A `runKind: judgment` bundle has no reducer or base run. Its Markdown report is
+the detailed assessment, while `judgment.json` contains only the provenance and
+small routing index needed to identify subjects, evidence, claims, and potential
+conflicts. Primary judgments can therefore run concurrently over different
+transaction subsets.
+
+Conflict detection is conservative and non-adjudicative. Opposed `supports` and
+`refutes` findings for the same stable claim key create a content-addressed open
+conflict record. That record, the immutable input judgments, and the canonical
+contribution evidence become the inputs to a separate reconciliation judgment.
+Reconciliation reports decide whether the apparent conflict is compatible,
+resolved toward one side, synthesized, unresolved, or awaiting evidence. They do
+not mutate knowledge state and never rewrite their input judgments.
+
+Completed primary and reconciliation judgments mark a knowledge-builder lane
+dirty. Each lane is keyed by `(problem id, builder-spec digest)`, admits one
+active build, coalesces pending inputs, and enforces a minimum interval between
+completed builds. A claimed build records its exact base-state run, judgment IDs,
+conflict IDs, and judgment-set digest. New completions during the build remain
+pending for the next eligible interval.
+
+Knowledge formation is intentionally not implemented by the primary or
+reconciliation judge adapters. A subsequent builder adapter will consume a
+claimed input set, organize resolved findings and open disputes, emit a sparse
+hierarchical delta, and use the existing deterministic revision reducer. Until
+then the scheduler output is an explicit, replayable handoff boundary.
+
+Projection publication is independent of computation. Workers produce verified
+run bundles; a single publisher copies them into content-addressed object paths
+and records an idempotent publication batch. A deployment can periodically
+commit that worktree to one orphan `projections` branch without allowing parallel
+workers to contend on a Git ref. Git publication order has no semantic meaning;
+judgment, reconciliation, and state relationships are always explicit digests.

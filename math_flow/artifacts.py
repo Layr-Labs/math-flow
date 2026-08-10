@@ -98,3 +98,44 @@ def read_verified_artifact(bundle_dir: Path, manifest: dict[str, object], role: 
     if sha256_bytes(value) != artifact.get("digest"):
         raise MathFlowError(f"base artifact digest mismatch: {path}")
     return value
+
+
+def verify_bundle(bundle_dir: Path) -> tuple[dict[str, object], str]:
+    """Verify every artifact declared by a run manifest and reject loose files."""
+    bundle = bundle_dir.resolve()
+    manifest, manifest_digest = load_manifest(bundle)
+    artifacts = manifest.get("artifacts")
+    if not isinstance(artifacts, list) or any(not isinstance(item, dict) for item in artifacts):
+        raise MathFlowError("judge run contains an invalid artifact index")
+    declared = {"run.json"}
+    symlinks = [path for path in bundle.rglob("*") if path.is_symlink()]
+    if symlinks:
+        raise MathFlowError(
+            f"run bundle may not contain symlinks: {symlinks[0].relative_to(bundle)}"
+        )
+    for artifact in artifacts:
+        relative = PurePosixPath(str(artifact.get("path", "")))
+        if relative.is_absolute() or ".." in relative.parts or not relative.parts:
+            raise MathFlowError(f"invalid artifact path in run manifest: {relative}")
+        target = bundle.joinpath(*relative.parts).resolve()
+        try:
+            target.relative_to(bundle)
+        except ValueError as exc:
+            raise MathFlowError(f"artifact escapes run bundle: {relative}") from exc
+        if not target.is_file():
+            raise MathFlowError(f"run artifact is missing: {relative}")
+        value = target.read_bytes()
+        if artifact.get("digest") != sha256_bytes(value):
+            raise MathFlowError(f"run artifact digest mismatch: {relative}")
+        if artifact.get("bytes") != len(value):
+            raise MathFlowError(f"run artifact byte count mismatch: {relative}")
+        declared.add(relative.as_posix())
+    actual = {
+        path.relative_to(bundle).as_posix()
+        for path in bundle.rglob("*")
+        if path.is_file()
+    }
+    extras = actual - declared
+    if extras:
+        raise MathFlowError(f"run bundle contains undeclared artifact: {sorted(extras)[0]}")
+    return manifest, manifest_digest

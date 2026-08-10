@@ -19,6 +19,8 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-chat-completions-v1",
     "openrouter-hierarchical-markdown-v1",
     "openrouter-hierarchical-markdown-v2",
+    "openrouter-markdown-judgment-v1",
+    "openrouter-markdown-reconciliation-v1",
 }
 SUPPORTED_INPUT_BUILDERS = {"ledger-index-v1", "ledger-text-artifacts-v1"}
 SUPPORTED_INVOCATION_ADAPTERS = {"local-v1", "openrouter-chat-completions-v1"}
@@ -26,12 +28,15 @@ SUPPORTED_OUTPUT_PROFILES = {
     "math-flow/flat-json-v1",
     "math-flow/hierarchical-markdown-v1",
     "math-flow/hierarchical-markdown-v2",
+    "math-flow/judgment-markdown-v1",
 }
 SUPPORTED_OUTPUT_ADAPTERS = {
     "flat-json-v1",
     "structured-json-v1",
     "select-report-extract-v1",
     "select-report-extract-revisions-v2",
+    "report-extract-findings-v1",
+    "report-extract-reconciliation-v1",
 }
 SUPPORTED_REDUCERS = {None, "hierarchical-delta-v1", "hierarchical-revisions-v2"}
 TEXT_ARTIFACT_SUFFIXES = {
@@ -102,6 +107,16 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputAdapter": "select-report-extract-revisions-v2",
             "reducer": "hierarchical-revisions-v2",
         },
+        "openrouter-markdown-judgment-v1": {
+            "outputProfile": "math-flow/judgment-markdown-v1",
+            "outputAdapter": "report-extract-findings-v1",
+            "reducer": None,
+        },
+        "openrouter-markdown-reconciliation-v1": {
+            "outputProfile": "math-flow/judgment-markdown-v1",
+            "outputAdapter": "report-extract-reconciliation-v1",
+            "reducer": None,
+        },
     }
     expected_components = hierarchical_components.get(str(spec["implementation"]))
     if expected_components is not None:
@@ -114,6 +129,8 @@ def load_judge_spec(path: Path) -> dict[str, object]:
         "openrouter-chat-completions-v1",
         "openrouter-hierarchical-markdown-v1",
         "openrouter-hierarchical-markdown-v2",
+        "openrouter-markdown-judgment-v1",
+        "openrouter-markdown-reconciliation-v1",
     }:
         for field in ("model", "systemPrompt", "rubric", "parameters", "provider"):
             if field not in spec:

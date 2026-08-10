@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/conflict-record.schema.json",
+  "title": "Math Flow Conflict Record",
+  "type": "object",
+  "required": ["schemaVersion", "conflictId", "problemId", "claimKey", "status", "judgments"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "conflictId": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "problemId": { "type": "string" },
+    "claimKey": { "type": "string" },
+    "status": { "const": "open" },
+    "judgments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["judgmentId", "stance", "summary"],
+        "properties": {
+          "judgmentId": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+          "stance": { "type": "string" },
+          "summary": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

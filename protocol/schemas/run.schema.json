@@ -18,8 +18,17 @@
   ],
   "properties": {
     "protocolVersion": { "const": 1 },
+    "runKind": {
+      "type": "string",
+      "enum": ["judgment", "knowledge-build", "legacy-projection"]
+    },
     "problemId": { "type": "string" },
     "ledgerHead": { "type": "string" },
+    "problemLedgerHead": { "type": "string" },
+    "problemLedgerDigest": {
+      "type": ["string", "null"],
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
     "judgeSpec": {
       "type": "object",
       "required": ["id", "digest"],
@@ -56,6 +65,7 @@
       "items": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
     },
     "providerRuns": { "type": "array", "items": { "type": "object" } },
+    "inputs": { "type": "object" },
     "artifacts": {
       "type": "array",
       "items": {

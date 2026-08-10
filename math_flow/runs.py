@@ -12,18 +12,22 @@ from .openrouter import OpenRouterTransport
 from .repository import sha256_json
 
 
-def _envelope(
+def run_envelope(
     problem: str,
     source: dict[str, object],
     spec: dict[str, object],
     base_run: str | None,
     request_digests: list[str],
     provider_runs: list[dict[str, object]],
+    run_kind: str | None = None,
+    inputs: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    return {
+    envelope = {
         "protocolVersion": 1,
         "problemId": problem,
         "ledgerHead": source["ledgerHead"],
+        "problemLedgerHead": source.get("problemLedgerHead", source["ledgerHead"]),
+        "problemLedgerDigest": source.get("problemLedgerDigest"),
         "judgeSpec": {"id": spec["id"], "digest": f"sha256:{sha256_json(spec)}"},
         "runner": {
             "implementation": spec["implementation"],
@@ -40,6 +44,11 @@ def _envelope(
         "requestDigests": request_digests,
         "providerRuns": provider_runs,
     }
+    if run_kind is not None:
+        envelope["runKind"] = run_kind
+    if inputs is not None:
+        envelope["inputs"] = inputs
+    return envelope
 
 
 def run_judge_bundle(
@@ -83,7 +92,7 @@ def run_judge_bundle(
                 "adjudication-revisions",
                 "application/x-ndjson",
             )
-        envelope = _envelope(
+        envelope = run_envelope(
             problem,
             source,
             spec,
@@ -99,7 +108,7 @@ def run_judge_bundle(
     bundle.add_json("projection.json", projection, "flat-projection")
     request_digest = projection.get("judgeRequestDigest")
     provider_run = projection.get("providerRun")
-    envelope = _envelope(
+    envelope = run_envelope(
         problem,
         source,
         spec,

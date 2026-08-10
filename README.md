@@ -115,6 +115,19 @@ The judge sends the problem statement and supported text artifacts (`.md`,
 not sent. The included spec denies provider data collection and requires routing
 to an endpoint that supports all requested parameters.
 
+### Parallel judgments
+
+The experimental v0.4 execution path separates immutable primary and
+reconciliation judgments from rate-limited knowledge formation. Judgments have
+no base run and can execute concurrently; opposed findings create explicit
+conflict records for targeted reconciliation. Completed judgments coalesce in a
+single-writer knowledge-builder lane instead of immediately rebuilding state.
+
+See [docs/PARALLEL_JUDGMENTS.md](docs/PARALLEL_JUDGMENTS.md) for the command flow,
+scheduler semantics, and content-addressed batch publisher. The existing `run`
+command remains available for replay and comparison of combined hierarchical
+judge/state runs.
+
 ### Interactive research atlas
 
 The `viewer/` app turns a chain of hierarchical Markdown v2 runs into an

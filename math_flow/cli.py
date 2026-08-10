@@ -3,9 +3,23 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 
+from .coordination import (
+    claim_due_build,
+    complete_build,
+    fail_build,
+    publish_batch,
+    record_completed_inputs,
+)
 from .errors import MathFlowError
+from .judgments import (
+    detect_conflicts,
+    load_judgment_bundle,
+    run_primary_judgment_bundle,
+    run_reconciliation_judgment_bundle,
+)
 from .judges import project, render_request
 from .repository import affected_problems, ledger, validate_pr, validate_tree
 from .runs import run_judge_bundle
@@ -73,6 +87,89 @@ def build_parser() -> argparse.ArgumentParser:
         "--base-run", type=Path, help="previous hierarchical judge-run bundle to update"
     )
 
+    judgment_parser = commands.add_parser(
+        "judgment", help="run one immutable parallel Markdown judgment"
+    )
+    judgment_parser.add_argument("--problem", required=True)
+    judgment_parser.add_argument("--judge", required=True, type=Path)
+    judgment_parser.add_argument("--head", default="HEAD")
+    judgment_parser.add_argument(
+        "--subject", required=True, action="append", dest="subjects",
+        help="subject transaction ID (repeatable)",
+    )
+    judgment_parser.add_argument(
+        "--evidence", action="append", default=[], dest="evidence",
+        help="additional context transaction ID (repeatable)",
+    )
+    judgment_parser.add_argument("--output-dir", required=True, type=Path)
+
+    conflict_parser = commands.add_parser(
+        "detect-conflicts", help="derive reconciliation candidates from judgments"
+    )
+    conflict_parser.add_argument(
+        "--judgment-dir", required=True, action="append", type=Path, dest="judgment_dirs"
+    )
+    conflict_parser.add_argument("--output", type=Path)
+
+    reconcile_parser = commands.add_parser(
+        "reconcile", help="run an immutable judgment over one detected conflict"
+    )
+    reconcile_parser.add_argument("--problem", required=True)
+    reconcile_parser.add_argument("--judge", required=True, type=Path)
+    reconcile_parser.add_argument("--head", default="HEAD")
+    reconcile_parser.add_argument("--conflicts", required=True, type=Path)
+    reconcile_parser.add_argument("--conflict-id", required=True)
+    reconcile_parser.add_argument(
+        "--judgment-dir", required=True, action="append", type=Path, dest="judgment_dirs"
+    )
+    reconcile_parser.add_argument("--output-dir", required=True, type=Path)
+
+    trigger_parser = commands.add_parser(
+        "knowledge-trigger", help="mark a rate-limited knowledge-build lane dirty"
+    )
+    trigger_parser.add_argument("--scheduler-file", required=True, type=Path)
+    trigger_parser.add_argument("--problem", required=True)
+    trigger_parser.add_argument("--builder-digest", required=True)
+    trigger_parser.add_argument("--minimum-interval", required=True, type=int)
+    trigger_parser.add_argument(
+        "--judgment-dir", action="append", default=[], type=Path, dest="judgment_dirs"
+    )
+    trigger_parser.add_argument("--conflicts", type=Path)
+    trigger_parser.add_argument("--now", type=int)
+
+    claim_parser = commands.add_parser(
+        "knowledge-claim", help="claim an eligible coalesced knowledge build"
+    )
+    claim_parser.add_argument("--scheduler-file", required=True, type=Path)
+    claim_parser.add_argument("--lane-id", required=True)
+    claim_parser.add_argument("--maximum-judgments", type=int, default=500)
+    claim_parser.add_argument("--now", type=int)
+
+    complete_parser = commands.add_parser(
+        "knowledge-complete", help="advance a knowledge lane after a successful build"
+    )
+    complete_parser.add_argument("--scheduler-file", required=True, type=Path)
+    complete_parser.add_argument("--lane-id", required=True)
+    complete_parser.add_argument("--build-token", required=True)
+    complete_parser.add_argument("--state-run-digest", required=True)
+    complete_parser.add_argument("--now", type=int)
+
+    fail_parser = commands.add_parser(
+        "knowledge-fail", help="return a failed knowledge build to its lane"
+    )
+    fail_parser.add_argument("--scheduler-file", required=True, type=Path)
+    fail_parser.add_argument("--lane-id", required=True)
+    fail_parser.add_argument("--build-token", required=True)
+    fail_parser.add_argument("--now", type=int)
+
+    publish_parser = commands.add_parser(
+        "publish-batch", help="stage verified run bundles in a projection worktree"
+    )
+    publish_parser.add_argument("--projection-dir", required=True, type=Path)
+    publish_parser.add_argument(
+        "--bundle", required=True, action="append", type=Path, dest="bundles"
+    )
+
     viewer_parser = commands.add_parser(
         "export-viewer", help="export a hierarchical run chain for the interactive viewer"
     )
@@ -118,6 +215,91 @@ def main(argv: list[str] | None = None) -> int:
             )
             _write_json(result, None)
             return 0
+        elif args.command == "judgment":
+            result = run_primary_judgment_bundle(
+                root,
+                args.problem,
+                args.judge,
+                args.head,
+                args.subjects,
+                args.output_dir,
+                context_transaction_ids=args.evidence,
+            )
+        elif args.command == "detect-conflicts":
+            result = {"schemaVersion": 1, "conflicts": detect_conflicts(args.judgment_dirs)}
+            _write_json(result, str(args.output) if args.output else None)
+            return 0
+        elif args.command == "reconcile":
+            value = json.loads(args.conflicts.read_text(encoding="utf-8"))
+            records = value.get("conflicts") if isinstance(value, dict) else None
+            if not isinstance(records, list):
+                raise MathFlowError("conflict input must contain a conflicts array")
+            matches = [
+                record
+                for record in records
+                if isinstance(record, dict) and record.get("conflictId") == args.conflict_id
+            ]
+            if len(matches) != 1:
+                raise MathFlowError("requested conflict ID is not unique in the conflict input")
+            result = run_reconciliation_judgment_bundle(
+                root,
+                args.problem,
+                args.judge,
+                args.head,
+                matches[0],
+                args.judgment_dirs,
+                args.output_dir,
+            )
+        elif args.command == "knowledge-trigger":
+            judgment_ids = []
+            for bundle_dir in args.judgment_dirs:
+                _, judgment, _ = load_judgment_bundle(bundle_dir)
+                if judgment.get("problemId") != args.problem:
+                    raise MathFlowError("knowledge trigger judgment belongs to another problem")
+                judgment_ids.append(str(judgment["judgmentId"]))
+            conflict_ids = []
+            if args.conflicts:
+                value = json.loads(args.conflicts.read_text(encoding="utf-8"))
+                records = value.get("conflicts") if isinstance(value, dict) else None
+                if not isinstance(records, list):
+                    raise MathFlowError("conflict input must contain a conflicts array")
+                for record in records:
+                    if not isinstance(record, dict) or record.get("problemId") != args.problem:
+                        raise MathFlowError("knowledge trigger conflict belongs to another problem")
+                    conflict_ids.append(str(record.get("conflictId")))
+            result = record_completed_inputs(
+                args.scheduler_file,
+                args.problem,
+                args.builder_digest,
+                judgment_ids,
+                conflict_ids,
+                args.minimum_interval,
+                args.now if args.now is not None else int(time.time()),
+            )
+        elif args.command == "knowledge-claim":
+            result = claim_due_build(
+                args.scheduler_file,
+                args.lane_id,
+                args.now if args.now is not None else int(time.time()),
+                args.maximum_judgments,
+            )
+        elif args.command == "knowledge-complete":
+            result = complete_build(
+                args.scheduler_file,
+                args.lane_id,
+                args.build_token,
+                args.state_run_digest,
+                args.now if args.now is not None else int(time.time()),
+            )
+        elif args.command == "knowledge-fail":
+            result = fail_build(
+                args.scheduler_file,
+                args.lane_id,
+                args.build_token,
+                args.now if args.now is not None else int(time.time()),
+            )
+        elif args.command == "publish-batch":
+            result = publish_batch(args.projection_dir, args.bundles)
         elif args.command == "export-viewer":
             result = export_viewer_data(root, args.problem, args.head, args.run_dirs)
             args.output.parent.mkdir(parents=True, exist_ok=True)

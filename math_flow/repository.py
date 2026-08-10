@@ -255,7 +255,30 @@ def ledger(root: Path, problem: str, head: str = "HEAD") -> dict[str, object]:
                 }
             )
 
-    return {"problemId": problem, "ledgerHead": head_sha, "transactions": transactions}
+    statement = read_at(root, head_sha, f"problems/{problem}/problem.md")
+    problem_core = {
+        "problemId": problem,
+        "problemStatementDigest": f"sha256:{hashlib.sha256(statement.encode('utf-8')).hexdigest()}",
+        "transactionIds": [item["transactionId"] for item in transactions],
+    }
+    relevant = _run_git(
+        root,
+        "rev-list",
+        "--first-parent",
+        "-n",
+        "1",
+        head_sha,
+        "--",
+        f"problems/{problem}/problem.md",
+        path_prefix,
+    ).stdout.strip()
+    return {
+        "problemId": problem,
+        "ledgerHead": head_sha,
+        "problemLedgerHead": relevant or head_sha,
+        "problemLedgerDigest": f"sha256:{sha256_json(problem_core)}",
+        "transactions": transactions,
+    }
 
 
 def affected_problems(
@@ -368,7 +391,13 @@ def worktree_ledger(root: Path, problem: str) -> dict[str, object]:
         }
         for index, contribution in enumerate(contributions, start=1)
     ]
-    return {"problemId": problem, "ledgerHead": head, "transactions": transactions}
+    return {
+        "problemId": problem,
+        "ledgerHead": head,
+        "problemLedgerHead": head,
+        "problemLedgerDigest": f"sha256:{digest.hexdigest()}",
+        "transactions": transactions,
+    }
 
 
 def canonical_json(value: object) -> str:

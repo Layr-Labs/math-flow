@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/judgment.schema.json",
+  "title": "Math Flow Judgment",
+  "type": "object",
+  "required": ["schemaVersion", "judgmentId", "judgmentKind", "problemId", "ledgerHead", "problemLedgerDigest", "judgeSpec", "subjects", "findings", "reportDigest"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "judgmentId": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "judgmentKind": { "enum": ["primary", "reconciliation"] },
+    "problemId": { "type": "string" },
+    "ledgerHead": { "type": "string" },
+    "problemLedgerDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "judgeSpec": {
+      "type": "object",
+      "required": ["id", "digest"],
+      "properties": {
+        "id": { "type": "string" },
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      },
+      "additionalProperties": false
+    },
+    "subjects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "id", "ledgerPosition"],
+        "properties": {
+          "kind": { "const": "transaction" },
+          "id": { "type": "string" },
+          "ledgerPosition": { "type": "integer", "minimum": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["claimKey", "stance", "summary", "subjectTransactionIds", "evidenceTransactionIds"],
+        "properties": {
+          "claimKey": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+          "stance": { "enum": ["supports", "refutes", "qualifies", "uncertain", "raises"] },
+          "summary": { "type": "string" },
+          "subjectTransactionIds": { "type": "array", "items": { "type": "string" } },
+          "evidenceTransactionIds": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    },
+    "reportDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "reconciliation": {
+      "type": "object",
+      "required": ["conflictId", "inputJudgmentIds", "outcome", "summary"],
+      "properties": {
+        "conflictId": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "inputJudgmentIds": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+        },
+        "outcome": {
+          "enum": ["compatible", "prefer-support", "prefer-refutation", "synthesize", "unresolved", "needs-evidence"]
+        },
+        "summary": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

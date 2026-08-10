@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "openrouter-markdown-reconciliation-v1",
+  "implementation": "openrouter-markdown-reconciliation-v1",
+  "description": "A targeted immutable judgment over a detected conflict between primary judgments; it never mutates knowledge state.",
+  "inputBuilder": "ledger-text-artifacts-v1",
+  "invocationAdapter": "openrouter-chat-completions-v1",
+  "outputProfile": "math-flow/judgment-markdown-v1",
+  "outputAdapter": "report-extract-reconciliation-v1",
+  "reducer": null,
+  "model": "openai/gpt-5-mini",
+  "parameters": {
+    "seed": 1729
+  },
+  "stages": {
+    "report": {
+      "parameters": { "max_tokens": 12000 }
+    },
+    "extract": {
+      "parameters": { "max_tokens": 3000 }
+    }
+  },
+  "provider": {
+    "require_parameters": true,
+    "data_collection": "deny",
+    "allow_fallbacks": true
+  },
+  "systemPrompt": "You are a careful mathematical reconciliation adjudicator. Compare the supplied immutable judgments and their evidence rather than voting by majority or authority. Decide whether they are compatible, whether one is better supported, whether a synthesis is warranted, or whether the dispute remains unresolved. Never construct or mutate cumulative knowledge state. Earlier judgments remain immutable even when your later judgment rejects their conclusions.",
+  "rubric": {
+    "correctness": "Recheck the decisive mathematical disagreement using the supplied reports and canonical contribution evidence.",
+    "provenance": "Name which judgments and evidence support each side and distinguish subjects from later evidence.",
+    "pluralism": "Preserve a genuine unresolved dispute rather than forcing agreement; explain compatible interpretations when apparent conflict is only about scope.",
+    "revision": "State precisely what later evidence would justify reopening this reconciliation."
+  }
+}

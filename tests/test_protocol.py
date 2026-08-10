@@ -4,10 +4,24 @@ import json
 import subprocess
 import tempfile
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from math_flow.errors import MathFlowError
+from math_flow.coordination import (
+    claim_due_build,
+    complete_build,
+    fail_build,
+    publish_batch,
+    record_completed_inputs,
+)
 from math_flow.judges import project, render_request
+from math_flow.judgments import (
+    detect_conflicts,
+    load_judgment_bundle,
+    run_primary_judgment_bundle,
+    run_reconciliation_judgment_bundle,
+)
 from math_flow.knowledge import apply_deltas, apply_revision_deltas, empty_state
 from math_flow.openrouter import format_error_message
 from math_flow.repository import affected_problems, ledger, validate_pr, validate_tree
@@ -90,6 +104,8 @@ class GitProtocolTests(unittest.TestCase):
         self.assertEqual(result["contributionId"], "first-proof")
         state = ledger(self.root, "demo", head)
         self.assertEqual(state["ledgerHead"], head)
+        self.assertEqual(state["problemLedgerHead"], head)
+        self.assertRegex(state["problemLedgerDigest"], r"^sha256:[0-9a-f]{64}$")
         self.assertEqual(state["transactions"][0]["transactionId"], head)
         self.assertEqual(state["transactions"][0]["ordinal"], 1)
 
@@ -108,6 +124,7 @@ class GitProtocolTests(unittest.TestCase):
         )
         self.assertEqual(scoped["problems"], ["demo"])
         self.assertEqual(scoped["reason"], "problem-path")
+        demo_digest = ledger(self.root, "demo", demo_head)["problemLedgerDigest"]
 
         write(self.root / "math_flow/runtime.py", "# shared runner change\n")
         git(self.root, "add", ".")
@@ -121,6 +138,9 @@ class GitProtocolTests(unittest.TestCase):
         )
         self.assertEqual(shared["problems"], ["demo", "other"])
         self.assertEqual(shared["reason"], "shared-input")
+        after_shared_change = ledger(self.root, "demo", shared_head)
+        self.assertEqual(after_shared_change["problemLedgerDigest"], demo_digest)
+        self.assertEqual(after_shared_change["problemLedgerHead"], demo_head)
 
     def test_pr_cannot_edit_problem_statement(self) -> None:
         self.commit_contribution("first-proof")
@@ -149,6 +169,254 @@ class GitProtocolTests(unittest.TestCase):
         self.assertEqual(first["contributionVerdicts"][0]["status"], "unassessed")
         self.assertEqual(first["judgeRunner"]["implementation"], "baseline-neutral-v1")
         self.assertEqual(first["projectionDigest"], second["projectionDigest"])
+
+    def test_parallel_judgments_trigger_conflict_and_coalesced_knowledge_build(self) -> None:
+        supporting_head = self.commit_contribution(
+            "supporting-proof", "# Supporting proof\n\nA proposed proof of the claim."
+        )
+        refuting_head = self.commit_contribution(
+            "counterexample", "# Counterexample\n\nA proposed counterexample to the claim."
+        )
+        judge = (
+            Path(__file__).parents[1]
+            / "protocol/judges/openrouter-markdown-judgment-v1.json"
+        )
+
+        def transport_for(subject: str, stance: str):
+            responses = iter(
+                [
+                    {
+                        "id": f"report-{stance}",
+                        "model": "openai/gpt-5-mini",
+                        "choices": [
+                            {
+                                "message": {
+                                    "content": f"# Assessment\n\nThe evidence {stance} the claim in detail."
+                                }
+                            }
+                        ],
+                    },
+                    {
+                        "id": f"extract-{stance}",
+                        "model": "openai/gpt-5-mini",
+                        "choices": [
+                            {
+                                "message": {
+                                    "content": json.dumps(
+                                        {
+                                            "findings": [
+                                                {
+                                                    "claimKey": "demo/main-claim",
+                                                    "stance": stance,
+                                                    "summary": f"The subject {stance} the main claim.",
+                                                    "subjectTransactionIds": [subject],
+                                                    "evidenceTransactionIds": [subject],
+                                                }
+                                            ]
+                                        }
+                                    )
+                                }
+                            }
+                        ],
+                    },
+                ]
+            )
+            return lambda _: next(responses)
+
+        supporting_bundle = self.root / "judgment-supporting"
+        refuting_bundle = self.root / "judgment-refuting"
+        run_primary_judgment_bundle(
+            self.root,
+            "demo",
+            judge,
+            refuting_head,
+            [supporting_head],
+            supporting_bundle,
+            transport=transport_for(supporting_head, "supports"),
+        )
+        run_primary_judgment_bundle(
+            self.root,
+            "demo",
+            judge,
+            refuting_head,
+            [refuting_head],
+            refuting_bundle,
+            context_transaction_ids=[supporting_head],
+            transport=transport_for(refuting_head, "refutes"),
+        )
+        _, supporting, supporting_run_digest = load_judgment_bundle(supporting_bundle)
+        _, refuting, refuting_run_digest = load_judgment_bundle(refuting_bundle)
+        self.assertNotEqual(supporting["judgmentId"], refuting["judgmentId"])
+        self.assertEqual(
+            [item["id"] for item in refuting["subjects"]], [refuting_head]
+        )
+
+        conflicts = detect_conflicts([supporting_bundle, refuting_bundle])
+        self.assertEqual(len(conflicts), 1)
+        self.assertEqual(conflicts[0]["claimKey"], "demo/main-claim")
+        self.assertEqual(
+            {item["stance"] for item in conflicts[0]["judgments"]},
+            {"supports", "refutes"},
+        )
+
+        reconciliation_responses = iter(
+            [
+                {
+                    "id": "reconciliation-report",
+                    "model": "openai/gpt-5-mini",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": "# Reconciliation\n\nThe supplied evidence leaves the conflict unresolved."
+                            }
+                        }
+                    ],
+                },
+                {
+                    "id": "reconciliation-extract",
+                    "model": "openai/gpt-5-mini",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps(
+                                    {
+                                        "outcome": "unresolved",
+                                        "summary": "Neither side is yet decisive.",
+                                        "findings": [
+                                            {
+                                                "claimKey": "demo/main-claim",
+                                                "stance": "uncertain",
+                                                "summary": "The conflict remains open.",
+                                                "subjectTransactionIds": [
+                                                    supporting_head,
+                                                    refuting_head,
+                                                ],
+                                                "evidenceTransactionIds": [
+                                                    supporting_head,
+                                                    refuting_head,
+                                                ],
+                                            }
+                                        ],
+                                    }
+                                )
+                            }
+                        }
+                    ],
+                },
+            ]
+        )
+        reconciliation_bundle = self.root / "judgment-reconciliation"
+        run_reconciliation_judgment_bundle(
+            self.root,
+            "demo",
+            Path(__file__).parents[1]
+            / "protocol/judges/openrouter-markdown-reconciliation-v1.json",
+            refuting_head,
+            conflicts[0],
+            [supporting_bundle, refuting_bundle],
+            reconciliation_bundle,
+            transport=lambda _: next(reconciliation_responses),
+        )
+        _, reconciliation, reconciliation_run_digest = load_judgment_bundle(
+            reconciliation_bundle
+        )
+        self.assertEqual(reconciliation["judgmentKind"], "reconciliation")
+        self.assertEqual(reconciliation["reconciliation"]["outcome"], "unresolved")
+        self.assertEqual(
+            set(reconciliation["reconciliation"]["inputJudgmentIds"]),
+            {supporting["judgmentId"], refuting["judgmentId"]},
+        )
+
+        scheduler = self.root / "coordination/scheduler.json"
+        builder_digest = "sha256:" + "a" * 64
+        first_lane = record_completed_inputs(
+            scheduler,
+            "demo",
+            builder_digest,
+            [supporting["judgmentId"]],
+            [],
+            minimum_interval_seconds=60,
+            now=100,
+        )
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            attempts = list(
+                executor.map(
+                    lambda _: claim_due_build(
+                        scheduler, first_lane["laneId"], 100, 500
+                    ),
+                    range(2),
+                )
+            )
+        claimed = [attempt for attempt in attempts if attempt is not None]
+        self.assertEqual(len(claimed), 1)
+        first_build = claimed[0]
+        self.assertEqual(first_build["judgmentIds"], [supporting["judgmentId"]])
+
+        record_completed_inputs(
+            scheduler,
+            "demo",
+            builder_digest,
+            [refuting["judgmentId"], reconciliation["judgmentId"]],
+            [conflicts[0]["conflictId"]],
+            minimum_interval_seconds=60,
+            now=110,
+        )
+        complete_build(
+            scheduler,
+            first_lane["laneId"],
+            first_build["buildToken"],
+            "sha256:" + "b" * 64,
+            now=120,
+        )
+        self.assertIsNone(claim_due_build(scheduler, first_lane["laneId"], 179, 500))
+        second_build = claim_due_build(scheduler, first_lane["laneId"], 180, 500)
+        self.assertEqual(
+            second_build["judgmentIds"],
+            sorted([refuting["judgmentId"], reconciliation["judgmentId"]]),
+        )
+        self.assertEqual(second_build["conflictIds"], [conflicts[0]["conflictId"]])
+        fail_build(
+            scheduler,
+            first_lane["laneId"],
+            second_build["buildToken"],
+            now=180,
+        )
+        retried_build = claim_due_build(scheduler, first_lane["laneId"], 180, 500)
+        self.assertEqual(retried_build["buildToken"], second_build["buildToken"])
+        complete_build(
+            scheduler,
+            first_lane["laneId"],
+            retried_build["buildToken"],
+            "sha256:" + "c" * 64,
+            now=190,
+        )
+        record_completed_inputs(
+            scheduler,
+            "demo",
+            builder_digest,
+            [refuting["judgmentId"], reconciliation["judgmentId"]],
+            [conflicts[0]["conflictId"]],
+            minimum_interval_seconds=60,
+            now=200,
+        )
+        self.assertIsNone(claim_due_build(scheduler, first_lane["laneId"], 300, 500))
+
+        projection = self.root / "projection-worktree"
+        batch = publish_batch(
+            projection, [supporting_bundle, refuting_bundle, reconciliation_bundle]
+        )
+        self.assertEqual(len(batch["objects"]), 3)
+        index = json.loads(
+            (projection / "indexes/problems/demo/runs.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            {item["runDigest"] for item in index},
+            {supporting_run_digest, refuting_run_digest, reconciliation_run_digest},
+        )
+        repeated = publish_batch(
+            projection, [supporting_bundle, refuting_bundle, reconciliation_bundle]
+        )
+        self.assertEqual(repeated["batchId"], batch["batchId"])
 
     def test_openrouter_request_and_projection_with_fake_transport(self) -> None:
         head = self.commit_contribution("first-proof", "# Lemma\n\nA useful argument.")
