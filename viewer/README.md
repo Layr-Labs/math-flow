@@ -4,9 +4,12 @@ Interactive viewer for Math Flow repository projections and their canonical
 transaction ledgers.
 
 The deployed worker proxies `viewer/catalog.json` from the repository's orphan
-`projections` branch. The client refreshes it every 30 seconds and exposes
-problem and projection selectors. Set the optional `MATH_FLOW_CATALOG_URL`
-worker binding to point at another public catalog.
+`projections` branch through GitHub's Contents API. The client refreshes it every
+30 seconds and exposes problem and projection selectors. For a private
+repository, configure `MATH_FLOW_GITHUB_TOKEN` as a server-side secret containing
+a fine-grained token scoped only to this repository with read-only Contents
+permission. Set the optional `MATH_FLOW_CATALOG_URL` worker binding to point at
+another catalog endpoint.
 
 The checked-in `app/math-flow-data.json` is only a deterministic development and
 outage fallback. Refresh it from the repository root with

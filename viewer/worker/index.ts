@@ -5,6 +5,7 @@ import handler from "vinext/server/app-router-entry";
 interface Env {
   ASSETS: Fetcher;
   MATH_FLOW_CATALOG_URL?: string;
+  MATH_FLOW_GITHUB_TOKEN?: string;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
@@ -31,10 +32,19 @@ const worker = {
 
     if (url.pathname === "/api/catalog") {
       const source = env.MATH_FLOW_CATALOG_URL ??
-        "https://raw.githubusercontent.com/mooselumph/math-flow/projections/viewer/catalog.json";
+        "https://api.github.com/repos/mooselumph/math-flow/contents/viewer/catalog.json?ref=projections";
       try {
+        const headers: Record<string, string> = {
+          accept: "application/vnd.github.raw+json",
+          "cache-control": "no-cache",
+          "x-github-api-version": "2026-03-10",
+          "user-agent": "math-flow-viewer",
+        };
+        if (env.MATH_FLOW_GITHUB_TOKEN) {
+          headers.authorization = `Bearer ${env.MATH_FLOW_GITHUB_TOKEN}`;
+        }
         const upstream = await fetch(source, {
-          headers: { accept: "application/json", "cache-control": "no-cache" },
+          headers,
         });
         if (!upstream.ok) {
           return Response.json(

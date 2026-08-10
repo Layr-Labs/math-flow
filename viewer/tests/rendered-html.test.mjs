@@ -63,18 +63,23 @@ test("proxies repository projection state through the worker", async () => {
   const { default: worker } = await import(workerUrl.href);
   const catalog = { schemaVersion: 1, projections: [{ id: "live" }] };
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = async (request) => {
-    assert.match(String(request), /raw\.githubusercontent\.com\/mooselumph\/math-flow\/projections\/viewer\/catalog\.json/);
+  globalThis.fetch = async (request, init) => {
+    assert.match(String(request), /api\.github\.com\/repos\/mooselumph\/math-flow\/contents\/viewer\/catalog\.json\?ref=projections/);
+    assert.equal(init.headers.authorization, "Bearer test-token");
+    assert.equal(init.headers.accept, "application/vnd.github.raw+json");
     return Response.json(catalog);
   };
   try {
     const response = await worker.fetch(
       new Request("http://localhost/api/catalog"),
-      { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
+      {
+        ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
+        MATH_FLOW_GITHUB_TOKEN: "test-token",
+      },
       { waitUntil() {}, passThroughOnException() {} },
     );
     assert.equal(response.status, 200);
-    assert.equal(response.headers.get("x-math-flow-source")?.includes("/projections/"), true);
+    assert.equal(response.headers.get("x-math-flow-source")?.includes("ref=projections"), true);
     assert.deepEqual(await response.json(), catalog);
   } finally {
     globalThis.fetch = originalFetch;

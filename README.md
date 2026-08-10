@@ -143,6 +143,9 @@ server endpoint reads `viewer/catalog.json` directly from the orphan
 `projections` branch; the browser refreshes that endpoint every 30 seconds and
 offers problem and projection selectors. A checked-in deterministic export is
 used only for local development or when repository state is unavailable.
+Private repositories configure the viewer's server-only
+`MATH_FLOW_GITHUB_TOKEN` binding with a fine-grained, read-only Contents token;
+the credential is never sent to the browser.
 
 The manual OpenRouter workflow judges the latest transaction, serializes the
 corresponding knowledge build, publishes content-addressed bundles and scheduler
