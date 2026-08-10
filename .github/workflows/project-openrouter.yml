@@ -92,7 +92,6 @@ jobs:
           else
             git worktree add --detach "$projection_dir" HEAD
             git -C "$projection_dir" switch --orphan projection-publish
-            git -C "$projection_dir" rm -rf .
           fi
       - name: Claim the current knowledge lane
         run: |
