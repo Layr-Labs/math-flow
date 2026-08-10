@@ -145,6 +145,14 @@ jobs:
             command+=(--base-run "$base_dir")
           fi
           "${command[@]}"
+      - name: Upload formation diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: "formation-diagnostics-${{ inputs.problem }}-${{ github.run_id }}"
+          path: "${{ runner.temp }}/math-flow-staging"
+          if-no-files-found: error
+          retention-days: 7
       - name: Complete, publish, and export repository viewer state
         run: |
           set -euo pipefail

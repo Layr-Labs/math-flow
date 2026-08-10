@@ -308,12 +308,16 @@ def _normalize_new_node_ids_from_report_headings(
         if not section.startswith(prefix):
             continue
         if section not in report_headings:
-            section_key = section.removeprefix(prefix).replace("/", "_")
+            def heading_key(value: str) -> str:
+                identifier = value.removeprefix(prefix).strip().strip("`*_ ").lower()
+                return re.sub(r"[/_-]+", "-", identifier)
+
+            aliases = {heading_key(section), heading_key(old_id)}
             matches = [
                 heading
                 for heading in report_headings
                 if heading.startswith(prefix)
-                and heading.removeprefix(prefix).replace("/", "_") == section_key
+                and heading_key(heading) in aliases
             ]
             if len(matches) == 1 and operation.get("action") == "issue":
                 prior_section = section
@@ -321,9 +325,9 @@ def _normalize_new_node_ids_from_report_headings(
                 section = matches[0]
                 normalizations.append(
                     {
-                        "kind": "new-node-report-section-separator",
+                        "kind": "new-node-report-section-alias",
                         "nodeId": old_id,
-                        "reason": "A new node's report reference differed only by a slash-versus-underscore separator.",
+                        "reason": "A new node's report reference used an equivalent stable-ID separator or quoting form.",
                         "fromReportSection": prior_section,
                         "toReportSection": matches[0],
                     }
@@ -448,12 +452,16 @@ def run_knowledge_build_bundle(
         else output_dir.resolve().with_name(f".{output_dir.name}.checkpoints")
     )
 
-    cache_hits: dict[str, bool] = {}
+    stage_attempts: dict[str, list[tuple[dict[str, object], bool]]] = {}
 
     def send_stage(stage: str, request: dict[str, object]) -> dict[str, object]:
         response, cache_hit = _cached_stage_response(checkpoints, stage, request, send)
-        cache_hits[stage] = cache_hit
+        stage_attempts.setdefault(stage, []).append((response, cache_hit))
         return response
+
+    def invalidate_stage(stage: str, request: dict[str, object]) -> None:
+        request_digest = sha256_json(request)
+        (checkpoints / f"{stage}-{request_digest}.json").unlink(missing_ok=True)
 
     selector_prompt = "\n\n".join(
         [
@@ -576,20 +584,32 @@ def run_knowledge_build_bundle(
             evidence_digests=[None, *sorted(judgments), *sorted(conflicts)],
         ),
     )
-    extractor_response = send_stage("extract", extractor_request)
-    delta = _structured_content(extractor_response, "extract")
-    if set(delta) != {"operations"} or not isinstance(delta["operations"], list):
-        raise MathFlowError("knowledge builder extractor returned an invalid delta envelope")
     report_headings = {
         line.strip() for line in report.splitlines() if line.strip().startswith("## ")
     }
-    delta, heading_normalizations = _normalize_new_node_ids_from_report_headings(
-        state, delta, report_headings
-    )
-    delta, state_normalizations = _canonicalize_revision_delta(
-        state, selected_ids, delta
-    )
-    normalizations = [*heading_normalizations, *state_normalizations]
+
+    def normalized_delta(response: dict[str, object]) -> tuple[dict[str, object], list[dict[str, object]]]:
+        extracted = _structured_content(response, "extract")
+        if set(extracted) != {"operations"} or not isinstance(extracted["operations"], list):
+            raise MathFlowError("knowledge builder extractor returned an invalid delta envelope")
+        extracted, heading_normalizations = _normalize_new_node_ids_from_report_headings(
+            state, extracted, report_headings
+        )
+        extracted, state_normalizations = _canonicalize_revision_delta(
+            state, selected_ids, extracted
+        )
+        return extracted, [*heading_normalizations, *state_normalizations]
+
+    extractor_response = send_stage("extract", extractor_request)
+    delta, normalizations = normalized_delta(extractor_response)
+    if any(
+        not isinstance(operation, dict)
+        or operation.get("reportSection") not in report_headings
+        for operation in delta["operations"]
+    ):
+        invalidate_stage("extract", extractor_request)
+        extractor_response = send_stage("extract", extractor_request)
+        delta, normalizations = normalized_delta(extractor_response)
     observed_unresolved: set[str] = set()
     for operation in delta["operations"]:
         if not isinstance(operation, dict):
@@ -666,8 +686,19 @@ def run_knowledge_build_bundle(
         transaction_positions,
     )
     requests = [selector_request, writer_request, extractor_request]
-    responses = [selector_response, writer_response, extractor_response]
     stages = ["select", "report", "extract"]
+    provider_runs: list[dict[str, object]] = []
+    for request, stage in zip(requests, stages, strict=True):
+        attempts = stage_attempts[stage]
+        for attempt, (response, cache_hit) in enumerate(attempts, start=1):
+            provider_run = {
+                **_provider_run(response, str(request["model"]), stage),
+                "cacheHit": cache_hit,
+            }
+            if len(attempts) > 1:
+                provider_run["attempt"] = attempt
+                provider_run["validationRejected"] = attempt < len(attempts)
+            provider_runs.append(provider_run)
 
     bundle = ArtifactBundle(output_dir)
     bundle.add_json("control/build-input.json", build_input, "knowledge-build-input")
@@ -697,13 +728,7 @@ def run_knowledge_build_bundle(
         spec,
         base_digest,
         [f"sha256:{sha256_json(request)}" for request in requests],
-        [
-            {
-                **_provider_run(response, str(request["model"]), stage),
-                "cacheHit": cache_hits[stage],
-            }
-            for response, request, stage in zip(responses, requests, stages, strict=True)
-        ],
+        provider_runs,
         run_kind="knowledge-build",
         inputs=build_input,
     )

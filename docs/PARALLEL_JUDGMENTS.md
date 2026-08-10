@@ -119,8 +119,10 @@ revision reducer.
 Each provider stage is cached by request digest in a sibling checkpoint
 directory. If a later stage is truncated or rejected, rerunning the same command
 reuses successful earlier stages. Pass `--checkpoint-dir` to choose another
-location. The formation schema also prevents context-only evidence from being
-promoted into an adjudication subject.
+location. A structured extraction that references no matching Markdown section
+is rejected and retried once without regenerating the selection or report; both
+attempts remain visible in `providerRuns`. The formation schema also prevents
+context-only evidence from being promoted into an adjudication subject.
 
 Complete the scheduler lease only after the bundle verifies:
 

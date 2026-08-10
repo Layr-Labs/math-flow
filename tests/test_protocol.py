@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import subprocess
 import tempfile
@@ -457,8 +458,7 @@ class GitProtocolTests(unittest.TestCase):
             json.dumps({"schemaVersion": 1, "conflicts": conflicts}) + "\n",
         )
 
-        formation_responses = iter(
-            [
+        formation_response_values = [
                 {
                     "id": "formation-selection",
                     "model": "openai/gpt-5-mini",
@@ -536,6 +536,15 @@ class GitProtocolTests(unittest.TestCase):
                     ],
                 },
             ]
+        invalid_extract = copy.deepcopy(formation_response_values[-1])
+        invalid_extract["id"] = "formation-extract-invalid-heading"
+        invalid_delta = json.loads(invalid_extract["choices"][0]["message"]["content"])
+        invalid_delta["operations"][0]["nodeId"] = "disputes/unreported-claim"
+        invalid_delta["operations"][0]["adjudicationId"] = "disputes/unreported-claim"
+        invalid_delta["operations"][0]["reportSection"] = "## Node: missing-heading"
+        invalid_extract["choices"][0]["message"]["content"] = json.dumps(invalid_delta)
+        formation_responses = iter(
+            [*formation_response_values[:-1], invalid_extract, formation_response_values[-1]]
         )
         knowledge_bundle = self.root / "knowledge-build-1"
         formation_requests: list[dict[str, object]] = []
@@ -555,7 +564,7 @@ class GitProtocolTests(unittest.TestCase):
             knowledge_bundle,
             transport=formation_transport,
         )
-        self.assertEqual(len(formation_requests), 3)
+        self.assertEqual(len(formation_requests), 4)
         extractor_schema = formation_requests[2]["response_format"]["json_schema"][
             "schema"
         ]
@@ -570,9 +579,14 @@ class GitProtocolTests(unittest.TestCase):
             3,
         )
         self.assertEqual(knowledge_manifest["runKind"], "knowledge-build")
-        self.assertTrue(
-            all(run["cacheHit"] is False for run in knowledge_manifest["providerRuns"])
-        )
+        self.assertTrue(all(run["cacheHit"] is False for run in knowledge_manifest["providerRuns"]))
+        self.assertEqual(len(knowledge_manifest["providerRuns"]), 4)
+        rejected = [
+            run for run in knowledge_manifest["providerRuns"]
+            if run.get("validationRejected") is True
+        ]
+        self.assertEqual(len(rejected), 1)
+        self.assertEqual(rejected[0]["stage"], "extract")
         self.assertEqual(
             knowledge_manifest["inputs"]["judgmentSetDigest"],
             formation_claim["judgmentSetDigest"],
