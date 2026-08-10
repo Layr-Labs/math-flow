@@ -11,6 +11,10 @@ on:
         description: Problem id
         required: true
         default: triangle-midpoints
+      resume_run_id:
+        description: Prior workflow run containing successful judgment artifacts
+        required: false
+        default: ""
 
 concurrency:
   group: "openrouter-projection-${{ inputs.projection }}-${{ inputs.problem }}"
@@ -19,6 +23,7 @@ concurrency:
 env:
   MATH_FLOW_PROJECTION_ID: "${{ inputs.projection }}"
   MATH_FLOW_PROBLEM_ID: "${{ inputs.problem }}"
+  MATH_FLOW_RESUME_RUN_ID: "${{ inputs.resume_run_id }}"
 
 jobs:
   plan:
@@ -28,6 +33,7 @@ jobs:
     outputs:
       matrix: ${{ steps.coverage.outputs.matrix }}
       count: ${{ steps.coverage.outputs.count }}
+      expected_subjects: ${{ steps.coverage.outputs.expected_subjects }}
       primary_judge: ${{ steps.registry.outputs.primary_judge }}
       knowledge_builder: ${{ steps.registry.outputs.knowledge_builder }}
       projection_digest: ${{ steps.registry.outputs.projection_digest }}
@@ -41,6 +47,10 @@ jobs:
           set -euo pipefail
           if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
             echo "Repository projections may only be dispatched from canonical main." >&2
+            exit 1
+          fi
+          if [[ -n "$MATH_FLOW_RESUME_RUN_ID" && ! "$MATH_FLOW_RESUME_RUN_ID" =~ ^[1-9][0-9]*$ ]]; then
+            echo "resume_run_id must be a positive GitHub Actions run ID." >&2
             exit 1
           fi
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
@@ -89,11 +99,12 @@ jobs:
             --output "$plan"
           echo "matrix=$(jq -c '.matrix' "$plan")" >> "$GITHUB_OUTPUT"
           echo "count=$(jq '.missingTransactions | length' "$plan")" >> "$GITHUB_OUTPUT"
+          echo "expected_subjects=$(jq -c '[.missingTransactions[].transactionId]' "$plan")" >> "$GITHUB_OUTPUT"
           jq '{problemId, judgeSpec, covered: (.coveredTransactionIds | length), missingTransactions}' "$plan"
 
   judgment:
     needs: plan
-    if: needs.plan.outputs.count != '0'
+    if: needs.plan.outputs.count != '0' && inputs.resume_run_id == ''
     strategy:
       fail-fast: false
       max-parallel: ${{ fromJSON(needs.plan.outputs.judgment_max_parallel) }}
@@ -151,9 +162,15 @@ jobs:
 
   form-and-publish:
     needs: [plan, judgment]
-    if: needs.plan.outputs.count != '0' && needs.judgment.result == 'success'
+    if: >-
+      always() &&
+      needs.plan.result == 'success' &&
+      needs.plan.outputs.count != '0' &&
+      (needs.judgment.result == 'success' ||
+      (inputs.resume_run_id != '' && needs.judgment.result == 'skipped'))
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: write
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
@@ -167,6 +184,34 @@ jobs:
         with:
           pattern: "judgment-${{ inputs.problem }}-*"
           path: "${{ runner.temp }}/math-flow-staging/judgments"
+          github-token: "${{ github.token }}"
+          run-id: "${{ inputs.resume_run_id || github.run_id }}"
+      - name: Discover and verify judgment artifacts
+        env:
+          MATH_FLOW_EXPECTED_SUBJECTS: "${{ needs.plan.outputs.expected_subjects }}"
+        run: |
+          set -euo pipefail
+          staging_dir="${RUNNER_TEMP}/math-flow-staging"
+          verification="$staging_dir/judgment-artifacts.json"
+          command=(
+            python -m math_flow verify-judgment-artifacts
+            --problem "$MATH_FLOW_PROBLEM_ID"
+            --judge "${{ needs.plan.outputs.primary_judge }}"
+            --head HEAD
+            --search-root "$staging_dir/judgments"
+            --output "$verification"
+          )
+          while IFS= read -r subject; do
+            command+=(--expected-subject "$subject")
+          done < <(
+            printf '%s\n' "$MATH_FLOW_EXPECTED_SUBJECTS" | jq -r '.[]'
+          )
+          "${command[@]}"
+          jq -r '.bundles[].path' "$verification" > "$staging_dir/judgment-dirs.txt"
+          if [[ ! -s "$staging_dir/judgment-dirs.txt" ]]; then
+            echo "No verified judgment artifacts were discovered." >&2
+            exit 1
+          fi
       - name: Prepare the orphan projection worktree
         run: |
           set -euo pipefail
@@ -184,13 +229,7 @@ jobs:
           projection_dir="${RUNNER_TEMP}/projection-branch"
           staging_dir="${RUNNER_TEMP}/math-flow-staging"
           scheduler="$projection_dir/coordination/scheduler.json"
-          mapfile -t judgment_dirs < <(
-            find "$staging_dir/judgments" -mindepth 1 -maxdepth 1 -type d -print | sort
-          )
-          if [[ "${#judgment_dirs[@]}" -eq 0 ]]; then
-            echo "No judgment artifacts were downloaded." >&2
-            exit 1
-          fi
+          mapfile -t judgment_dirs < "$staging_dir/judgment-dirs.txt"
           trigger=(
             python -m math_flow knowledge-trigger
             --scheduler-file "$scheduler"
@@ -222,9 +261,7 @@ jobs:
           set -euo pipefail
           projection_dir="${RUNNER_TEMP}/projection-branch"
           staging_dir="${RUNNER_TEMP}/math-flow-staging"
-          mapfile -t judgment_dirs < <(
-            find "$staging_dir/judgments" -mindepth 1 -maxdepth 1 -type d -print | sort
-          )
+          mapfile -t judgment_dirs < "$staging_dir/judgment-dirs.txt"
           command=(
             python -m math_flow knowledge-build
             --problem "$MATH_FLOW_PROBLEM_ID"
@@ -262,9 +299,7 @@ jobs:
           projection_dir="${RUNNER_TEMP}/projection-branch"
           staging_dir="${RUNNER_TEMP}/math-flow-staging"
           scheduler="$projection_dir/coordination/scheduler.json"
-          mapfile -t judgment_dirs < <(
-            find "$staging_dir/judgments" -mindepth 1 -maxdepth 1 -type d -print | sort
-          )
+          mapfile -t judgment_dirs < "$staging_dir/judgment-dirs.txt"
           lane_id="$(jq -r '.laneId' "$staging_dir/claim.json")"
           build_token="$(jq -r '.buildToken' "$staging_dir/claim.json")"
           python -m math_flow knowledge-complete \

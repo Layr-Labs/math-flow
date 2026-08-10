@@ -30,6 +30,7 @@ from .judgments import (
     plan_primary_judgment_coverage,
     run_primary_judgment_bundle,
     run_reconciliation_judgment_bundle,
+    verify_primary_judgment_artifacts,
 )
 from .judges import load_judge_spec, project, render_request
 from .repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
@@ -149,6 +150,22 @@ def build_parser() -> argparse.ArgumentParser:
     judgment_plan_parser.add_argument("--head", default="HEAD")
     judgment_plan_parser.add_argument("--projection-dir", required=True, type=Path)
     judgment_plan_parser.add_argument("--output", type=Path)
+
+    verify_judgments_parser = commands.add_parser(
+        "verify-judgment-artifacts",
+        help="discover and verify downloaded primary-judgment bundles",
+    )
+    verify_judgments_parser.add_argument("--problem", required=True)
+    verify_judgments_parser.add_argument("--judge", required=True, type=Path)
+    verify_judgments_parser.add_argument("--head", default="HEAD")
+    verify_judgments_parser.add_argument("--search-root", required=True, type=Path)
+    verify_judgments_parser.add_argument(
+        "--expected-subject",
+        action="append",
+        default=[],
+        dest="expected_subjects",
+    )
+    verify_judgments_parser.add_argument("--output", type=Path)
 
     conflict_parser = commands.add_parser(
         "detect-conflicts", help="derive reconciliation candidates from judgments"
@@ -363,6 +380,17 @@ def main(argv: list[str] | None = None) -> int:
                 args.problem,
                 args.judge,
                 args.head,
+            )
+            _write_json(result, str(args.output) if args.output else None)
+            return 0
+        elif args.command == "verify-judgment-artifacts":
+            result = verify_primary_judgment_artifacts(
+                root,
+                args.search_root,
+                args.problem,
+                args.judge,
+                args.head,
+                args.expected_subjects,
             )
             _write_json(result, str(args.output) if args.output else None)
             return 0
