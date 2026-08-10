@@ -11,14 +11,60 @@ on:
     branches: [main]
     paths:
       - "problems/**"
-      - "protocol/judges/**"
+      - "protocol/judges/baseline-v1.json"
+      - "protocol/profiles/flat-json-v1.json"
+      - "protocol/schemas/projection.schema.json"
+      - "protocol/schemas/run.schema.json"
       - "math_flow/**"
+      - ".github/workflows/project-baseline.yml"
 
 permissions:
   contents: read
 
 jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      problems: ${{ steps.scope.outputs.problems }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Discover affected problems
+        id: scope
+        shell: bash
+        env:
+          EVENT_NAME: "${{ github.event_name }}"
+          REQUESTED_PROBLEM: "${{ inputs.problem }}"
+          BASE_SHA: "${{ github.event.before }}"
+          HEAD_SHA: "${{ github.sha }}"
+        run: |
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            problems=$(jq -cn --arg problem "$REQUESTED_PROBLEM" '[$problem]')
+          else
+            scope=$(python -m math_flow affected-problems \
+              --base "$BASE_SHA" \
+              --head "$HEAD_SHA" \
+              --global-pattern 'math_flow/**' \
+              --global-pattern 'protocol/judges/baseline-v1.json' \
+              --global-pattern 'protocol/profiles/flat-json-v1.json' \
+              --global-pattern 'protocol/schemas/projection.schema.json' \
+              --global-pattern 'protocol/schemas/run.schema.json' \
+              --global-pattern '.github/workflows/project-baseline.yml')
+            problems=$(jq -c '.problems' <<<"$scope")
+          fi
+          echo "problems=$problems" >> "$GITHUB_OUTPUT"
+
   project:
+    needs: discover
+    if: ${{ needs.discover.outputs.problems != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        problem: ${{ fromJSON(needs.discover.outputs.problems) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -27,27 +73,15 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - name: Generate judge-run bundles
-        shell: bash
-        env:
-          EVENT_NAME: "${{ github.event_name }}"
-          REQUESTED_PROBLEM: "${{ inputs.problem }}"
-        run: |
-          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
-            problem_ids="$REQUESTED_PROBLEM"
-          else
-            problem_ids=$(find problems -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)
-          fi
-
-          for problem_id in $problem_ids; do
-            python -m math_flow run \
-              --problem "$problem_id" \
-              --judge protocol/judges/baseline-v1.json \
-              --head HEAD \
-              --output-dir "projections/baseline-v1/$problem_id/${{ github.sha }}"
-          done
+      - name: Generate judge-run bundle
+        run: >-
+          python -m math_flow run
+          --problem "${{ matrix.problem }}"
+          --judge protocol/judges/baseline-v1.json
+          --head HEAD
+          --output-dir "projections/baseline-v1/${{ matrix.problem }}/${{ github.sha }}"
       - uses: actions/upload-artifact@v7
         with:
-          name: "baseline-v1-${{ github.sha }}"
-          path: projections/
+          name: "baseline-v1-${{ matrix.problem }}-${{ github.sha }}"
+          path: "projections/baseline-v1/${{ matrix.problem }}/${{ github.sha }}"
           if-no-files-found: error

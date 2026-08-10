@@ -4,6 +4,7 @@ import hashlib
 import json
 import re
 import subprocess
+from fnmatch import fnmatchcase
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
@@ -255,6 +256,63 @@ def ledger(root: Path, problem: str, head: str = "HEAD") -> dict[str, object]:
             )
 
     return {"problemId": problem, "ledgerHead": head_sha, "transactions": transactions}
+
+
+def affected_problems(
+    root: Path,
+    base: str,
+    head: str,
+    global_patterns: list[str] | None = None,
+) -> dict[str, object]:
+    """Return problems whose source changed between two repository commits.
+
+    A path matching a global pattern affects every problem that exists at the
+    head commit. Otherwise, changes under ``problems/<id>/`` affect only that
+    problem. Deleted problems are omitted because they cannot be projected.
+    """
+    root = root.resolve()
+    head_sha = resolve_commit(root, head)
+    problem_tree = _run_git(
+        root, "ls-tree", "-d", "--name-only", f"{head_sha}:problems"
+    )
+    problems = sorted(line for line in problem_tree.stdout.splitlines() if line)
+    for problem in problems:
+        validate_slug(problem, "problem id")
+
+    if base and set(base) == {"0"}:
+        return {
+            "base": base,
+            "head": head_sha,
+            "problems": problems,
+            "reason": "initial-push",
+        }
+
+    base_sha = resolve_commit(root, base)
+    changed = _run_git(
+        root, "diff", "--name-only", "-z", base_sha, head_sha, "--"
+    ).stdout.split("\0")
+    changed_paths = [path for path in changed if path]
+    patterns = global_patterns or []
+    if any(fnmatchcase(path, pattern) for path in changed_paths for pattern in patterns):
+        selected = problems
+        reason = "shared-input"
+    else:
+        selected = sorted(
+            {
+                parts[1]
+                for path in changed_paths
+                if len(parts := PurePosixPath(path).parts) >= 2
+                and parts[0] == "problems"
+                and parts[1] in problems
+            }
+        )
+        reason = "problem-path"
+    return {
+        "base": base_sha,
+        "head": head_sha,
+        "problems": selected,
+        "reason": reason,
+    }
 
 
 def read_at(root: Path, head: str, path: str) -> str:

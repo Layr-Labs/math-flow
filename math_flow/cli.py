@@ -7,7 +7,7 @@ from pathlib import Path
 
 from .errors import MathFlowError
 from .judges import project, render_request
-from .repository import ledger, validate_pr, validate_tree
+from .repository import affected_problems, ledger, validate_pr, validate_tree
 from .runs import run_judge_bundle
 from .viewer import export_viewer_data
 
@@ -37,6 +37,18 @@ def build_parser() -> argparse.ArgumentParser:
     ledger_parser = commands.add_parser("ledger", help="derive a problem ledger from first-parent Git history")
     ledger_parser.add_argument("--problem", required=True)
     ledger_parser.add_argument("--head", default="HEAD")
+
+    affected_parser = commands.add_parser(
+        "affected-problems", help="list problems affected between two Git commits"
+    )
+    affected_parser.add_argument("--base", required=True)
+    affected_parser.add_argument("--head", default="HEAD")
+    affected_parser.add_argument(
+        "--global-pattern",
+        action="append",
+        default=[],
+        help="path glob whose changes affect every problem (repeatable)",
+    )
 
     project_parser = commands.add_parser("project", help="run a versioned judge over a ledger prefix")
     project_parser.add_argument("--problem", required=True)
@@ -83,6 +95,10 @@ def main(argv: list[str] | None = None) -> int:
             result = validate_pr(root, args.base, args.head)
         elif args.command == "ledger":
             result = ledger(root, args.problem, args.head)
+        elif args.command == "affected-problems":
+            result = affected_problems(
+                root, args.base, args.head, args.global_pattern
+            )
         elif args.command == "project":
             result = project(root, args.problem, args.judge, args.head)
             _write_json(result, args.output)

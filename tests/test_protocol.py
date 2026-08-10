@@ -10,7 +10,7 @@ from math_flow.errors import MathFlowError
 from math_flow.judges import project, render_request
 from math_flow.knowledge import apply_deltas, apply_revision_deltas, empty_state
 from math_flow.openrouter import format_error_message
-from math_flow.repository import ledger, validate_pr, validate_tree
+from math_flow.repository import affected_problems, ledger, validate_pr, validate_tree
 from math_flow.runs import run_judge_bundle
 from math_flow.viewer import export_viewer_data
 
@@ -92,6 +92,35 @@ class GitProtocolTests(unittest.TestCase):
         self.assertEqual(state["ledgerHead"], head)
         self.assertEqual(state["transactions"][0]["transactionId"], head)
         self.assertEqual(state["transactions"][0]["ordinal"], 1)
+
+    def test_affected_problems_are_scoped_unless_shared_inputs_change(self) -> None:
+        write(self.root / "problems/other/problem.md", "# Other\n")
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Add other problem")
+        two_problem_head = git(self.root, "rev-parse", "HEAD")
+
+        demo_head = self.commit_contribution("first-proof")
+        scoped = affected_problems(
+            self.root,
+            two_problem_head,
+            demo_head,
+            ["math_flow/**", "protocol/judges/baseline-v1.json"],
+        )
+        self.assertEqual(scoped["problems"], ["demo"])
+        self.assertEqual(scoped["reason"], "problem-path")
+
+        write(self.root / "math_flow/runtime.py", "# shared runner change\n")
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Change shared runner")
+        shared_head = git(self.root, "rev-parse", "HEAD")
+        shared = affected_problems(
+            self.root,
+            demo_head,
+            shared_head,
+            ["math_flow/**", "protocol/judges/baseline-v1.json"],
+        )
+        self.assertEqual(shared["problems"], ["demo", "other"])
+        self.assertEqual(shared["reason"], "shared-input")
 
     def test_pr_cannot_edit_problem_statement(self) -> None:
         self.commit_contribution("first-proof")
