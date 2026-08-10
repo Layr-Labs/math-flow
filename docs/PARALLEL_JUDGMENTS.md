@@ -72,7 +72,8 @@ python -m math_flow knowledge-trigger \
   --minimum-interval 600 \
   --judgment-dir projections/staging/judgment-1 \
   --judgment-dir projections/staging/reconciliation-1 \
-  --conflicts projections/staging/conflicts.json
+  --conflicts projections/staging/conflicts.json \
+  --output projections/staging/knowledge-lane.json
 
 python -m math_flow knowledge-claim \
   --scheduler-file projections/coordination/scheduler.json \
@@ -114,6 +115,12 @@ findings and supplied reconciliation outcomes; every claimed conflict without a
 single resolving reconciliation outcome must be cited by an active `dispute`
 operation. The runner enforces that invariant before applying the deterministic
 revision reducer.
+
+Each provider stage is cached by request digest in a sibling checkpoint
+directory. If a later stage is truncated or rejected, rerunning the same command
+reuses successful earlier stages. Pass `--checkpoint-dir` to choose another
+location. The formation schema also prevents context-only evidence from being
+promoted into an adjudication subject.
 
 Complete the scheduler lease only after the bundle verifies:
 

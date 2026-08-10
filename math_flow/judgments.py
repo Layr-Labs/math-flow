@@ -212,7 +212,7 @@ def run_primary_judgment_bundle(
     )
     extract_response = send(extract_request)
     findings = _validate_findings(
-        _structured_content(extract_response), set(subject_ids), set(ledger_ids)
+        _structured_content(extract_response, "extract"), set(subject_ids), set(ledger_ids)
     )
     report_digest = sha256_bytes(report.encode("utf-8"))
     judgment_core: dict[str, object] = {
@@ -394,7 +394,7 @@ def run_reconciliation_judgment_bundle(
         _reconciliation_schema(transaction_ids),
     )
     extract_response = send(extract_request)
-    extracted = _structured_content(extract_response)
+    extracted = _structured_content(extract_response, "extract")
     if not isinstance(extracted, dict) or set(extracted) != {"outcome", "summary", "findings"}:
         raise MathFlowError("reconciliation extractor returned an invalid envelope")
     outcome = extracted["outcome"]

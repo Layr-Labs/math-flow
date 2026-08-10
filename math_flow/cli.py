@@ -140,6 +140,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     trigger_parser.add_argument("--conflicts", type=Path)
     trigger_parser.add_argument("--now", type=int)
+    trigger_parser.add_argument("--output", type=Path)
 
     claim_parser = commands.add_parser(
         "knowledge-claim", help="claim an eligible coalesced knowledge build"
@@ -162,6 +163,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     formation_parser.add_argument("--conflicts", type=Path)
     formation_parser.add_argument("--base-run", type=Path)
+    formation_parser.add_argument("--checkpoint-dir", type=Path)
     formation_parser.add_argument("--output-dir", required=True, type=Path)
 
     complete_parser = commands.add_parser(
@@ -302,6 +304,8 @@ def main(argv: list[str] | None = None) -> int:
                 args.minimum_interval,
                 args.now if args.now is not None else int(time.time()),
             )
+            _write_json(result, str(args.output) if args.output else None)
+            return 0
         elif args.command == "knowledge-claim":
             result = claim_due_build(
                 args.scheduler_file,
@@ -323,6 +327,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.conflicts,
                 args.output_dir,
                 base_run=args.base_run,
+                checkpoint_dir=args.checkpoint_dir,
             )
         elif args.command == "knowledge-complete":
             if args.state_run_dir:

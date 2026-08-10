@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import copy
 import json
+import os
 import re
+import tempfile
 from pathlib import Path
 
 from .artifacts import ArtifactBundle, read_verified_artifact, sha256_bytes
@@ -45,6 +48,7 @@ RESOLVED_OUTCOMES = {
     "synthesize",
 }
 CONFLICT_STANCES = {"supports", "refutes", "qualifies", "uncertain", "raises"}
+NODE_ID = re.compile(r"^[a-z0-9][a-z0-9/_-]*$")
 
 
 def _digest(value: object, label: str, nullable: bool = False) -> str | None:
@@ -225,6 +229,139 @@ def _unresolved_conflict_ids(
     }
 
 
+def _cached_stage_response(
+    checkpoint_dir: Path,
+    stage: str,
+    request: dict[str, object],
+    send: OpenRouterTransport,
+) -> tuple[dict[str, object], bool]:
+    request_digest = f"sha256:{sha256_json(request)}"
+    target = checkpoint_dir / f"{stage}-{request_digest.removeprefix('sha256:')}.json"
+    if target.exists():
+        try:
+            cached = json.loads(target.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise MathFlowError(f"could not read knowledge-build checkpoint: {target}") from exc
+        if (
+            not isinstance(cached, dict)
+            or set(cached) != {"schemaVersion", "stage", "requestDigest", "response"}
+            or cached.get("schemaVersion") != 1
+            or cached.get("stage") != stage
+            or cached.get("requestDigest") != request_digest
+            or not isinstance(cached.get("response"), dict)
+        ):
+            raise MathFlowError(f"invalid knowledge-build checkpoint: {target}")
+        return cached["response"], True
+
+    response = send(request)
+    try:
+        finish_reason = response["choices"][0].get("finish_reason")
+    except (KeyError, IndexError, TypeError, AttributeError):
+        finish_reason = None
+    if finish_reason == "length":
+        return response, False
+    checkpoint = {
+        "schemaVersion": 1,
+        "stage": stage,
+        "requestDigest": request_digest,
+        "response": response,
+    }
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary = tempfile.mkstemp(prefix=f".{target.name}.", dir=checkpoint_dir)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            json.dump(checkpoint, handle, ensure_ascii=False)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, target)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+    return response, False
+
+
+def _normalize_new_node_ids_from_report_headings(
+    state: dict[str, object],
+    delta: dict[str, object],
+    report_headings: set[str],
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    """Make a new node's identity match the report heading it references."""
+    canonical = copy.deepcopy(delta)
+    operations = canonical.get("operations")
+    nodes = state.get("nodes")
+    if not isinstance(operations, list) or not isinstance(nodes, dict):
+        return canonical, []
+    mapping: dict[str, str] = {}
+    normalizations: list[dict[str, object]] = []
+    operation_ids = {
+        str(item.get("nodeId")) for item in operations if isinstance(item, dict)
+    }
+    for operation in operations:
+        if not isinstance(operation, dict):
+            continue
+        old_id = operation.get("nodeId")
+        section = operation.get("reportSection")
+        if not isinstance(old_id, str) or not isinstance(section, str):
+            continue
+        prefix = "## Node: "
+        if not section.startswith(prefix):
+            continue
+        if section not in report_headings:
+            section_key = section.removeprefix(prefix).replace("/", "_")
+            matches = [
+                heading
+                for heading in report_headings
+                if heading.startswith(prefix)
+                and heading.removeprefix(prefix).replace("/", "_") == section_key
+            ]
+            if len(matches) == 1 and operation.get("action") == "issue":
+                prior_section = section
+                operation["reportSection"] = matches[0]
+                section = matches[0]
+                normalizations.append(
+                    {
+                        "kind": "new-node-report-section-separator",
+                        "nodeId": old_id,
+                        "reason": "A new node's report reference differed only by a slash-versus-underscore separator.",
+                        "fromReportSection": prior_section,
+                        "toReportSection": matches[0],
+                    }
+                )
+        heading_id = section.removeprefix(prefix).strip()
+        if heading_id == old_id:
+            continue
+        if (
+            operation.get("action") != "issue"
+            or operation.get("baseDigest") is not None
+            or operation.get("baseRevisionId") is not None
+            or old_id in nodes
+            or heading_id in nodes
+            or not NODE_ID.fullmatch(heading_id)
+            or heading_id in operation_ids
+            or old_id in mapping
+        ):
+            raise MathFlowError(
+                "knowledge operation report heading does not match its stable node ID"
+            )
+        mapping[old_id] = heading_id
+        operation["nodeId"] = heading_id
+        operation["adjudicationId"] = heading_id
+        normalizations.append(
+            {
+                "kind": "new-node-id-from-report-heading",
+                "nodeId": heading_id,
+                "reason": "A new node's stable identity is defined by its referenced report heading.",
+                "fromNodeId": old_id,
+                "toNodeId": heading_id,
+            }
+        )
+    for operation in operations:
+        if isinstance(operation, dict) and operation.get("parentId") in mapping:
+            operation["parentId"] = mapping[str(operation["parentId"])]
+    return canonical, normalizations
+
+
 def run_knowledge_build_bundle(
     root: Path,
     problem: str,
@@ -236,6 +373,7 @@ def run_knowledge_build_bundle(
     output_dir: Path,
     base_run: Path | None = None,
     transport: OpenRouterTransport | None = None,
+    checkpoint_dir: Path | None = None,
 ) -> dict[str, object]:
     root = root.resolve()
     spec = load_judge_spec(builder_path)
@@ -254,6 +392,17 @@ def run_knowledge_build_bundle(
     transaction_positions = {
         str(item["transactionId"]): int(item["ordinal"])
         for item in source["transactions"]
+    }
+    claimed_subject_ids = {
+        str(subject["id"])
+        for item in judgments.values()
+        for subject in item["record"]["subjects"]
+    }
+    claimed_transaction_evidence_ids = claimed_subject_ids | {
+        str(transaction_id)
+        for item in judgments.values()
+        for finding in item["record"]["findings"]
+        for transaction_id in finding["evidenceTransactionIds"]
     }
     for item in judgments.values():
         for subject in item["record"]["subjects"]:
@@ -293,6 +442,18 @@ def run_knowledge_build_bundle(
     ]
     conflict_index = [conflicts[key] for key in sorted(conflicts)]
     send = transport or send_chat_completion
+    checkpoints = (
+        checkpoint_dir.resolve()
+        if checkpoint_dir is not None
+        else output_dir.resolve().with_name(f".{output_dir.name}.checkpoints")
+    )
+
+    cache_hits: dict[str, bool] = {}
+
+    def send_stage(stage: str, request: dict[str, object]) -> dict[str, object]:
+        response, cache_hit = _cached_stage_response(checkpoints, stage, request, send)
+        cache_hits[stage] = cache_hit
+        return response
 
     selector_prompt = "\n\n".join(
         [
@@ -314,8 +475,8 @@ def run_knowledge_build_bundle(
         ],
         _selector_schema(node_ids),
     )
-    selector_response = send(selector_request)
-    selection = _structured_content(selector_response)
+    selector_response = send_stage("select", selector_request)
+    selection = _structured_content(selector_response, "select")
     if set(selection) != {"selectedNodeIds", "rationale"}:
         raise MathFlowError("knowledge builder selector returned unexpected fields")
     selected_ids = selection["selectedNodeIds"]
@@ -364,10 +525,9 @@ def run_knowledge_build_bundle(
             {"role": "user", "content": writer_prompt},
         ],
     )
-    writer_response = send(writer_request)
+    writer_response = send_stage("report", writer_request)
     report = _assistant_content(writer_response).rstrip() + "\n"
 
-    transaction_ids = list(transaction_positions)
     unadjudicated_selected_ids = [
         str(node["id"])
         for node in selected
@@ -382,10 +542,13 @@ def run_knowledge_build_bundle(
             f"Selected structural nodes without a prior adjudication must use issue: {json.dumps(unadjudicated_selected_ids)}",
             "Every non-root node needs a parentId. A new top-level node uses parentId root when root was selected.",
             "Subjects are ledger transactions represented by the node. Evidence may reference an allowed transaction, judgment, or conflict. For transaction evidence use null digest. For judgment or conflict evidence set digest equal to its content-addressed ID.",
+            "A formation operation may name as a subject only a transaction that was a subject of a claimed judgment; context-only evidence must remain evidence and must not be promoted to a subject.",
             "Every conflict listed as requiring an active dispute must be cited by a non-retract dispute operation.",
-            "reportSection must exactly equal the full `## Node: ...` heading line from the report. Return no operation only when the report specifies no state change.",
+            "Do not create an active dispute node merely to say that no conflict exists. Every active dispute operation must cite at least one conflict from the required unresolved dispute list. A resolved existing dispute may instead be retracted.",
+            "reportSection must exactly equal `## Node: <nodeId>` using the operation's exact nodeId. Return no operation only when the report specifies no state change.",
             f"Selected nodes:\n{json.dumps(selected, indent=2, ensure_ascii=False)}",
-            f"Allowed transaction IDs:\n{json.dumps(transaction_ids, indent=2)}",
+            f"Allowed subject transaction IDs:\n{json.dumps(sorted(claimed_subject_ids), indent=2)}",
+            f"Allowed transaction evidence IDs:\n{json.dumps(sorted(claimed_transaction_evidence_ids), indent=2)}",
             f"Allowed judgment IDs:\n{json.dumps(sorted(judgments), indent=2)}",
             f"Allowed conflict IDs:\n{json.dumps(sorted(conflicts), indent=2)}",
             f"Required unresolved dispute IDs:\n{json.dumps(sorted(unresolved_conflicts), indent=2)}",
@@ -402,31 +565,52 @@ def run_knowledge_build_bundle(
             },
             {"role": "user", "content": extractor_prompt},
         ],
-        _revision_delta_schema(transaction_ids),
+        _revision_delta_schema(
+            sorted(claimed_subject_ids),
+            evidence_kinds=["transaction", "judgment", "conflict"],
+            evidence_ids=[
+                *sorted(claimed_transaction_evidence_ids),
+                *sorted(judgments),
+                *sorted(conflicts),
+            ],
+            evidence_digests=[None, *sorted(judgments), *sorted(conflicts)],
+        ),
     )
-    extractor_response = send(extractor_request)
-    delta = _structured_content(extractor_response)
+    extractor_response = send_stage("extract", extractor_request)
+    delta = _structured_content(extractor_response, "extract")
     if set(delta) != {"operations"} or not isinstance(delta["operations"], list):
         raise MathFlowError("knowledge builder extractor returned an invalid delta envelope")
-    delta, normalizations = _canonicalize_revision_delta(state, selected_ids, delta)
     report_headings = {
         line.strip() for line in report.splitlines() if line.strip().startswith("## ")
     }
+    delta, heading_normalizations = _normalize_new_node_ids_from_report_headings(
+        state, delta, report_headings
+    )
+    delta, state_normalizations = _canonicalize_revision_delta(
+        state, selected_ids, delta
+    )
+    normalizations = [*heading_normalizations, *state_normalizations]
     observed_unresolved: set[str] = set()
     for operation in delta["operations"]:
         if not isinstance(operation, dict):
             raise MathFlowError("knowledge builder extractor returned a non-object operation")
         if operation.get("reportSection") not in report_headings:
             raise MathFlowError("knowledge delta references a missing Markdown report heading")
+        if operation.get("reportSection") != f"## Node: {operation.get('nodeId')}":
+            raise MathFlowError(
+                "knowledge operation report heading does not match its stable node ID"
+            )
         subjects = operation.get("subjects")
         evidence = operation.get("evidence")
         if not isinstance(subjects, list) or not isinstance(evidence, list):
             raise MathFlowError("knowledge operation must distinguish subjects and evidence")
         if any(
-            not isinstance(item, dict) or item.get("id") not in transaction_positions
+            not isinstance(item, dict) or item.get("id") not in claimed_subject_ids
             for item in subjects
         ):
-            raise MathFlowError("knowledge operation has a subject outside the current ledger")
+            raise MathFlowError(
+                "knowledge operation promotes a transaction that was not a judgment subject"
+            )
         for item in evidence:
             if not isinstance(item, dict):
                 raise MathFlowError("knowledge operation has an invalid evidence reference")
@@ -434,7 +618,7 @@ def run_knowledge_build_bundle(
             identifier = item.get("id")
             digest = item.get("digest")
             if kind == "transaction":
-                valid = identifier in transaction_positions and digest is None
+                valid = identifier in claimed_transaction_evidence_ids and digest is None
             elif kind == "judgment":
                 valid = identifier in judgments and digest == identifier
             elif kind == "conflict":
@@ -443,7 +627,8 @@ def run_knowledge_build_bundle(
                 valid = False
             if not valid:
                 raise MathFlowError(
-                    "knowledge operation references evidence outside its claimed inputs"
+                    "knowledge operation references evidence outside its claimed inputs: "
+                    f"kind={kind!r}, id={identifier!r}"
                 )
             if (
                 kind == "conflict"
@@ -452,6 +637,16 @@ def run_knowledge_build_bundle(
                 and operation.get("action") != "retract"
             ):
                 observed_unresolved.add(str(identifier))
+        if operation.get("nodeType") == "dispute" and operation.get("action") != "retract":
+            cited_conflicts = {
+                str(item.get("id"))
+                for item in evidence
+                if isinstance(item, dict) and item.get("kind") == "conflict"
+            }
+            if not cited_conflicts or not cited_conflicts <= unresolved_conflicts:
+                raise MathFlowError(
+                    "active knowledge dispute does not cite a required unresolved conflict"
+                )
     missing_disputes = unresolved_conflicts - observed_unresolved
     if missing_disputes:
         raise MathFlowError(
@@ -503,7 +698,10 @@ def run_knowledge_build_bundle(
         base_digest,
         [f"sha256:{sha256_json(request)}" for request in requests],
         [
-            _provider_run(response, str(request["model"]), stage)
+            {
+                **_provider_run(response, str(request["model"]), stage),
+                "cacheHit": cache_hits[stage],
+            }
             for response, request, stage in zip(responses, requests, stages, strict=True)
         ],
         run_kind="knowledge-build",

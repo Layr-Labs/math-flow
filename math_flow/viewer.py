@@ -130,6 +130,7 @@ def export_viewer_data(
             float(provider_run.get("usage", {}).get("cost", 0))
             for provider_run in manifest.get("providerRuns", [])
             if isinstance(provider_run, dict)
+            and provider_run.get("cacheHit") is not True
             and isinstance(provider_run.get("usage"), dict)
             and isinstance(provider_run["usage"].get("cost", 0), (int, float))
         )

@@ -16,7 +16,11 @@ from math_flow.coordination import (
     publish_batch,
     record_completed_inputs,
 )
-from math_flow.formation import run_knowledge_build_bundle
+from math_flow.formation import (
+    _cached_stage_response,
+    _normalize_new_node_ids_from_report_headings,
+    run_knowledge_build_bundle,
+)
 from math_flow.judges import load_judge_spec, project, render_request
 from math_flow.judgments import (
     detect_conflicts,
@@ -45,6 +49,73 @@ def write(path: Path, value: str) -> None:
 
 
 class RepositoryValidationTests(unittest.TestCase):
+    def test_knowledge_checkpoint_reuses_success_but_not_truncation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            checkpoint_dir = Path(directory)
+            calls: list[str] = []
+
+            def stopped(_: dict[str, object]) -> dict[str, object]:
+                calls.append("stop")
+                return {
+                    "choices": [
+                        {"finish_reason": "stop", "message": {"content": "{}"}}
+                    ]
+                }
+
+            _, first_hit = _cached_stage_response(
+                checkpoint_dir, "select", {"request": "stable"}, stopped
+            )
+            _, second_hit = _cached_stage_response(
+                checkpoint_dir, "select", {"request": "stable"}, stopped
+            )
+            self.assertFalse(first_hit)
+            self.assertTrue(second_hit)
+            self.assertEqual(calls, ["stop"])
+
+            def truncated(_: dict[str, object]) -> dict[str, object]:
+                calls.append("length")
+                return {
+                    "choices": [
+                        {"finish_reason": "length", "message": {"content": "{"}}
+                    ]
+                }
+
+            _, first_truncated_hit = _cached_stage_response(
+                checkpoint_dir, "extract", {"request": "truncated"}, truncated
+            )
+            _, second_truncated_hit = _cached_stage_response(
+                checkpoint_dir, "extract", {"request": "truncated"}, truncated
+            )
+            self.assertFalse(first_truncated_hit)
+            self.assertFalse(second_truncated_hit)
+            self.assertEqual(calls.count("length"), 2)
+
+    def test_new_node_id_follows_its_report_heading(self) -> None:
+        delta = {
+            "operations": [
+                {
+                    "action": "issue",
+                    "adjudicationId": "missing-evidence_standard-facts",
+                    "nodeId": "missing-evidence_standard-facts",
+                    "parentId": "root",
+                    "baseDigest": None,
+                    "baseRevisionId": None,
+                    "reportSection": "## Node: missing-evidence_standard-facts",
+                }
+            ]
+        }
+        normalized, records = _normalize_new_node_ids_from_report_headings(
+            {"nodes": {"root": {}}},
+            delta,
+            {"## Node: missing-evidence/standard-facts"},
+        )
+        operation = normalized["operations"][0]
+        self.assertEqual(operation["nodeId"], "missing-evidence/standard-facts")
+        self.assertEqual(
+            operation["reportSection"], "## Node: missing-evidence/standard-facts"
+        )
+        self.assertEqual(len(records), 2)
+
     def test_structured_control_accepts_one_json_code_fence(self) -> None:
         response = {
             "choices": [
@@ -467,6 +538,12 @@ class GitProtocolTests(unittest.TestCase):
             ]
         )
         knowledge_bundle = self.root / "knowledge-build-1"
+        formation_requests: list[dict[str, object]] = []
+
+        def formation_transport(payload: dict[str, object]) -> dict[str, object]:
+            formation_requests.append(payload)
+            return next(formation_responses)
+
         knowledge_manifest = run_knowledge_build_bundle(
             self.root,
             "demo",
@@ -476,9 +553,26 @@ class GitProtocolTests(unittest.TestCase):
             [supporting_bundle, refuting_bundle, reconciliation_bundle],
             conflicts_path,
             knowledge_bundle,
-            transport=lambda _: next(formation_responses),
+            transport=formation_transport,
+        )
+        self.assertEqual(len(formation_requests), 3)
+        extractor_schema = formation_requests[2]["response_format"]["json_schema"][
+            "schema"
+        ]
+        evidence_kind_schema = extractor_schema["properties"]["operations"]["items"][
+            "properties"
+        ]["evidence"]["items"]["properties"]["kind"]
+        self.assertEqual(
+            evidence_kind_schema["enum"], ["transaction", "judgment", "conflict"]
+        )
+        self.assertEqual(
+            len(list((self.root / ".knowledge-build-1.checkpoints").glob("*.json"))),
+            3,
         )
         self.assertEqual(knowledge_manifest["runKind"], "knowledge-build")
+        self.assertTrue(
+            all(run["cacheHit"] is False for run in knowledge_manifest["providerRuns"])
+        )
         self.assertEqual(
             knowledge_manifest["inputs"]["judgmentSetDigest"],
             formation_claim["judgmentSetDigest"],

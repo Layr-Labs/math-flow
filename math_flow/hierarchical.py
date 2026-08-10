@@ -40,8 +40,15 @@ def _request(
         "provider": spec["provider"],
     }
     for key, value in parameters.items():
-        if key not in {"temperature", "top_p", "max_tokens", "seed"}:
+        if key not in {"temperature", "top_p", "max_tokens", "seed", "reasoning"}:
             raise MathFlowError(f"unsupported OpenRouter judge parameter: {key}")
+        if key == "reasoning" and (
+            not isinstance(value, dict)
+            or set(value) != {"effort"}
+            or value.get("effort")
+            not in {"none", "minimal", "low", "medium", "high", "xhigh", "max"}
+        ):
+            raise MathFlowError("OpenRouter reasoning must specify one supported effort")
         payload[key] = value
     if schema is not None:
         payload["response_format"] = {
@@ -67,7 +74,9 @@ def _assistant_content(response: dict[str, object]) -> str:
     return content
 
 
-def _structured_content(response: dict[str, object]) -> dict[str, object]:
+def _structured_content(
+    response: dict[str, object], stage: str | None = None
+) -> dict[str, object]:
     content = _assistant_content(response)
     candidate = content.strip()
     fenced = re.fullmatch(
@@ -84,7 +93,8 @@ def _structured_content(response: dict[str, object]) -> dict[str, object]:
         except (KeyError, IndexError, TypeError, AttributeError):
             pass
         detail = (
-            f"finish_reason={finish_reason or 'unknown'}, "
+            (f"stage={stage}, " if stage else "")
+            + f"finish_reason={finish_reason or 'unknown'}, "
             f"content_chars={len(content)}, line={exc.lineno}, column={exc.colno}"
         )
         raise MathFlowError(
@@ -162,7 +172,12 @@ def _delta_schema(transaction_ids: list[str]) -> dict[str, object]:
     }
 
 
-def _revision_delta_schema(transaction_ids: list[str]) -> dict[str, object]:
+def _revision_delta_schema(
+    transaction_ids: list[str],
+    evidence_kinds: list[str] | None = None,
+    evidence_ids: list[str] | None = None,
+    evidence_digests: list[str | None] | None = None,
+) -> dict[str, object]:
     transaction_schema: dict[str, object] = {"type": "string"}
     if transaction_ids:
         transaction_schema["enum"] = transaction_ids
@@ -175,12 +190,19 @@ def _revision_delta_schema(transaction_ids: list[str]) -> dict[str, object]:
         "required": ["kind", "id"],
         "additionalProperties": False,
     }
+    evidence_id_schema: dict[str, object] = {"type": "string"}
+    if evidence_ids:
+        evidence_id_schema["enum"] = evidence_ids
+    evidence_digest_schema: dict[str, object] = {"type": ["string", "null"]}
+    if evidence_digests:
+        evidence_digest_schema["enum"] = evidence_digests
     evidence = {
         "type": "object",
         "properties": {
             "kind": {
                 "type": "string",
-                "enum": [
+                "enum": evidence_kinds
+                or [
                     "transaction",
                     "artifact",
                     "verifier-attestation",
@@ -189,8 +211,8 @@ def _revision_delta_schema(transaction_ids: list[str]) -> dict[str, object]:
                     "conflict",
                 ],
             },
-            "id": {"type": "string"},
-            "digest": {"type": ["string", "null"]},
+            "id": evidence_id_schema,
+            "digest": evidence_digest_schema,
             "relation": {
                 "type": "string",
                 "enum": ["supports", "refutes", "qualifies", "context", "formalizes", "supersedes"],
@@ -468,7 +490,7 @@ def run_hierarchical_judge(
         _selector_schema(node_ids),
     )
     selector_response = send(selector_request)
-    selection = _structured_content(selector_response)
+    selection = _structured_content(selector_response, "select")
     if set(selection) != {"selectedNodeIds", "rationale"}:
         raise MathFlowError("hierarchical selector returned unexpected fields")
     selected_ids = selection["selectedNodeIds"]
@@ -566,7 +588,7 @@ def run_hierarchical_judge(
         ),
     )
     extractor_response = send(extractor_request)
-    delta = _structured_content(extractor_response)
+    delta = _structured_content(extractor_response, "extract")
     if set(delta) != {"operations"} or not isinstance(delta["operations"], list):
         raise MathFlowError("hierarchical extractor returned an invalid delta envelope")
     if revisioned:
