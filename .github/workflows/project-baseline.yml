@@ -27,10 +27,10 @@ jobs:
     outputs:
       problems: ${{ steps.scope.outputs.problems }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Discover affected problems
@@ -67,10 +67,10 @@ jobs:
         problem: ${{ fromJSON(needs.discover.outputs.problems) }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Generate judge-run bundle

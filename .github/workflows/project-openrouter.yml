@@ -21,10 +21,10 @@ jobs:
       matrix: ${{ steps.coverage.outputs.matrix }}
       count: ${{ steps.coverage.outputs.count }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Prepare published projection state
@@ -63,10 +63,10 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Generate primary judgment for transaction ${{ matrix.ordinal }}
@@ -116,10 +116,10 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - uses: actions/download-artifact@v8
