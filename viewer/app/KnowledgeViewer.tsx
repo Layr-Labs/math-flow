@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, type CSSProperties, type ReactNode, useEffect, useMemo, useState } from "react";
+import { createViewerReferenceResolver } from "./referenceLinks.mjs";
 
 type Ref = {
   kind: string;
@@ -144,6 +145,23 @@ const short = (value: string | null, size = 7) =>
 
 const label = (value: string) => value.replaceAll("-", " ");
 
+type ViewerReference = {
+  kind: "transaction" | "judgment";
+  id: string;
+  text: string;
+};
+
+type ViewerReferenceResolver = {
+  resolve(value: string): ViewerReference | null;
+  split(value: string): Array<string | ViewerReference>;
+};
+
+type ReferenceActions = {
+  resolver: ViewerReferenceResolver;
+  openTransaction(id: string): void;
+  openJudgment(id: string): void;
+};
+
 function judgmentMentionsTransaction(judgment: PublishedJudgment, transactionId: string) {
   return judgment.record.subjects.some((item) => item.id === transactionId) ||
     judgment.record.findings.some((finding) =>
@@ -266,31 +284,61 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
   );
 }
 
-function inline(text: string): ReactNode[] {
+function ReferenceLink({ reference, actions }: { reference: ViewerReference; actions: ReferenceActions }) {
+  const kindLabel = reference.kind === "transaction" ? "transaction" : "judgment";
+  return (
+    <button
+      type="button"
+      className={`markdown-reference reference-${reference.kind}`}
+      onClick={() => reference.kind === "transaction"
+        ? actions.openTransaction(reference.id)
+        : actions.openJudgment(reference.id)}
+      aria-label={`Open ${kindLabel} ${short(reference.id, 12)}`}
+      title={`Open ${kindLabel} ${short(reference.id, 12)}`}
+    >
+      {reference.text}
+    </button>
+  );
+}
+
+function referenceText(text: string, key: string, actions?: ReferenceActions): ReactNode[] {
+  if (!actions) return [<Fragment key={key}>{text}</Fragment>];
+  return actions.resolver.split(text).map((part, index) =>
+    typeof part === "string"
+      ? <Fragment key={`${key}-${index}`}>{part}</Fragment>
+      : <ReferenceLink reference={part} actions={actions} key={`${key}-${index}`} />,
+  );
+}
+
+function inline(text: string, actions?: ReferenceActions): ReactNode[] {
   return text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g).map((part, index) => {
     if (part.startsWith("`") && part.endsWith("`")) {
-      return <code key={index}>{part.slice(1, -1)}</code>;
+      const value = part.slice(1, -1);
+      const reference = actions?.resolver.resolve(value);
+      return reference
+        ? <ReferenceLink reference={reference} actions={actions} key={index} />
+        : <code key={index}>{value}</code>;
     }
     if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={index}>{part.slice(2, -2)}</strong>;
+      return <strong key={index}>{referenceText(part.slice(2, -2), `${index}-strong`, actions)}</strong>;
     }
-    return <Fragment key={index}>{part}</Fragment>;
+    return <Fragment key={index}>{referenceText(part, `${index}-text`, actions)}</Fragment>;
   });
 }
 
-function Markdown({ value }: { value: string }) {
+function Markdown({ value, actions }: { value: string; actions?: ReferenceActions }) {
   return (
     <div className="markdown">
       {value.split("\n").map((raw, index) => {
         const line = raw.trim();
         if (!line || line === "---") return <div className="markdown-gap" key={index} />;
-        if (line.startsWith("### ")) return <h4 key={index}>{inline(line.slice(4))}</h4>;
-        if (line.startsWith("## ")) return <h3 key={index}>{inline(line.slice(3))}</h3>;
-        if (line.startsWith("# ")) return <h2 key={index}>{inline(line.slice(2))}</h2>;
-        if (/^\d+\. /.test(line)) return <p className="numbered" key={index}>{inline(line)}</p>;
-        if (line.startsWith("- ")) return <p className="bullet" key={index}>{inline(line.slice(2))}</p>;
+        if (line.startsWith("### ")) return <h4 key={index}>{inline(line.slice(4), actions)}</h4>;
+        if (line.startsWith("## ")) return <h3 key={index}>{inline(line.slice(3), actions)}</h3>;
+        if (line.startsWith("# ")) return <h2 key={index}>{inline(line.slice(2), actions)}</h2>;
+        if (/^\d+\. /.test(line)) return <p className="numbered" key={index}>{inline(line, actions)}</p>;
+        if (line.startsWith("- ")) return <p className="bullet" key={index}>{inline(line.slice(2), actions)}</p>;
         if (line === "\\[" || line === "\\]") return null;
-        return <p key={index}>{inline(line)}</p>;
+        return <p key={index}>{inline(line, actions)}</p>;
       })}
     </div>
   );
@@ -339,6 +387,22 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
         : item.record.subjects.some((subject) => (subject.ledgerPosition ?? 0) <= runLedgerPosition),
     ),
     [judgments, judgmentIdsAtRun, hasJudgmentRouting, runLedgerPosition],
+  );
+  const referenceTransactions = useMemo(
+    () => data.transactions.filter((item) => item.ordinal <= runLedgerPosition),
+    [data.transactions, runLedgerPosition],
+  );
+  const referenceJudgments = useMemo(
+    () => runJudgments.filter((judgment) =>
+      referenceTransactions.some((transaction) =>
+        judgmentMentionsTransaction(judgment, transaction.transactionId),
+      ),
+    ),
+    [referenceTransactions, runJudgments],
+  );
+  const referenceResolver = useMemo<ViewerReferenceResolver>(
+    () => createViewerReferenceResolver(referenceTransactions, referenceJudgments),
+    [referenceTransactions, referenceJudgments],
   );
   const selectedJudgment = runJudgments.find((item) => item.judgmentId === judgmentId) ?? runJudgments.at(-1);
   const nodes = run.state.nodes;
@@ -419,6 +483,15 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
   }
 
   function openJudgment(nextJudgmentId: string) {
+    const judgment = runJudgments.find((item) => item.judgmentId === nextJudgmentId);
+    if (!judgment) return;
+    const relevantTransaction = transactionId && judgmentMentionsTransaction(judgment, transactionId)
+      ? transactionId
+      : referenceTransactions.find((item) =>
+        judgmentMentionsTransaction(judgment, item.transactionId),
+      )?.transactionId;
+    if (!relevantTransaction) return;
+    setTransactionId(relevantTransaction);
     setJudgmentId(nextJudgmentId);
     setDetailMode("judgment");
   }
@@ -467,6 +540,11 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
   const transactionJudgments = selectedTransaction
     ? runJudgments.filter((item) => judgmentMentionsTransaction(item, selectedTransaction.transactionId))
     : [];
+  const referenceActions: ReferenceActions = {
+    resolver: referenceResolver,
+    openTransaction,
+    openJudgment,
+  };
 
   return (
     <main className="app-shell">
@@ -607,7 +685,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
                 <h3>Subjects</h3>
                 <div className="chip-row">{selectedNode.subjects.length ? selectedNode.subjects.map((item) => <button key={item.id} onClick={() => openTransaction(item.id)}>tx {item.ledgerPosition ?? "·"} · {short(item.id)}</button>) : <span className="muted">No transaction subjects</span>}</div>
                 <h3>Evidence</h3>
-                <div className="chip-row">{selectedNode.evidence.length ? selectedNode.evidence.map((item) => item.kind === "transaction" ? <button key={`${item.id}-${item.relation}`} onClick={() => openTransaction(item.id)}>{item.relation} · {short(item.id)}</button> : <span className="reference-chip" key={`${item.id}-${item.relation}`}>{item.kind} · {short(item.id)}</span>) : <span className="muted">No linked evidence</span>}</div>
+                <div className="chip-row">{selectedNode.evidence.length ? selectedNode.evidence.map((item) => item.kind === "transaction" ? <button key={`${item.id}-${item.relation}`} onClick={() => openTransaction(item.id)}>{item.relation} · {short(item.id)}</button> : item.kind === "judgment" && referenceResolver.resolve(item.id)?.kind === "judgment" ? <button key={`${item.id}-${item.relation}`} onClick={() => openJudgment(item.id)}>judgment · {short(item.id)}</button> : <span className="reference-chip" key={`${item.id}-${item.relation}`}>{item.kind} · {short(item.id)}</span>) : <span className="muted">No linked evidence</span>}</div>
               </div>
               <section className="revision-section">
                 <div className="section-label"><h3>Revision lineage</h3><span>{nodeRevisions.length}</span></div>
@@ -622,7 +700,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
               </section>
               <details className="node-body" open>
                 <summary>Current mathematical assessment</summary>
-                <Markdown value={selectedNode.contentMarkdown} />
+                <Markdown value={selectedNode.contentMarkdown} actions={referenceActions} />
               </details>
             </>
           ) : detailMode === "transaction" && selectedTransaction ? (
@@ -646,7 +724,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
               </section>
               <details className="raw-artifact" open>
                 <summary>Raw submission Markdown</summary>
-                <Markdown value={selectedTransaction.contentMarkdown} />
+                <Markdown value={selectedTransaction.contentMarkdown} actions={referenceActions} />
               </details>
             </section>
           ) : detailMode === "judgment" && selectedJudgment ? (
@@ -686,7 +764,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
               </section>
               <details className="raw-artifact" open>
                 <summary>Raw judgment report</summary>
-                <Markdown value={selectedJudgment.reportMarkdown} />
+                <Markdown value={selectedJudgment.reportMarkdown} actions={referenceActions} />
               </details>
               <details className="raw-artifact structured-record">
                 <summary>Structured judgment JSON</summary>
@@ -697,7 +775,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
             <section className="source-report">
               <span className="eyebrow">{report?.runId ?? "No source report"}</span>
               <h2>{selectedNode.reportRef?.section ?? "Structural root"}</h2>
-              {report ? <Markdown value={report.markdown} /> : <p className="muted">This node predates a judge-authored report.</p>}
+              {report ? <Markdown value={report.markdown} actions={referenceActions} /> : <p className="muted">This node predates a judge-authored report.</p>}
             </section>
           )}
         </aside>

@@ -362,6 +362,25 @@ h1, h2, h3, h4, p { margin-top: 0; }
 .markdown .numbered { padding-left: 8px; }
 .markdown-gap { height: 6px; }
 .markdown code { padding: 1px 3px; border-radius: 3px; background: var(--paper-deep); font-size: 0.9em; }
+.markdown-reference {
+  display: inline;
+  max-width: 100%;
+  padding: 1px 3px;
+  border: 0;
+  border-radius: 3px;
+  color: var(--teal);
+  background: var(--teal-soft);
+  cursor: pointer;
+  font: 0.9em var(--font-geist-mono), ui-monospace, monospace;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  white-space: normal;
+}
+.markdown-reference.reference-judgment { color: #795910; background: #f2ead7; }
+.markdown-reference:hover { color: white; background: var(--teal); text-decoration-style: solid; }
+.markdown-reference.reference-judgment:hover { color: white; background: var(--gold); }
 
 footer { display: flex; max-width: 1800px; justify-content: space-between; margin: 12px auto 0; padding: 0 4px; color: var(--ink-soft); font-size: 9px; }
 footer span:first-child { color: var(--coral); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }

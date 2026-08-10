@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
+import { createViewerReferenceResolver } from "../app/referenceLinks.mjs";
 
 const templateRoot = new URL("../", import.meta.url);
 
@@ -54,6 +55,8 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /Build report<\/button>/);
   assert.match(viewer, /primary judgment/);
   assert.match(viewer, /the full state remains visible/);
+  assert.match(viewer, /markdown-reference/);
+  assert.match(viewer, /createViewerReferenceResolver/);
 
   const parsed = JSON.parse(data);
   assert.equal(parsed.runs.length, 3);
@@ -69,6 +72,41 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
     throw error;
   });
   assert.deepEqual(previewAssets, []);
+});
+
+test("links only unique repository-known transaction and judgment references", () => {
+  const firstTransaction = "abcdef0123456789abcdef0123456789abcdef01";
+  const secondTransaction = "abcdef0987654321abcdef0987654321abcdef09";
+  const judgment = "sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+  const resolver = createViewerReferenceResolver(
+    [{ transactionId: firstTransaction }, { transactionId: secondTransaction }],
+    [{ judgmentId: judgment }],
+  );
+
+  assert.deepEqual(resolver.resolve("abcdef01"), {
+    kind: "transaction",
+    id: firstTransaction,
+    text: "abcdef01",
+  });
+  assert.equal(resolver.resolve("abcdef0"), null, "ambiguous prefixes stay inert");
+  assert.deepEqual(resolver.resolve("sha256:1234567"), {
+    kind: "judgment",
+    id: judgment,
+    text: "sha256:1234567",
+  });
+  assert.equal(resolver.resolve("feedface"), null, "unknown hexadecimal text stays inert");
+
+  const linked = resolver.split(
+    "ledger tx abcdef01 and judgment sha256:1234567; [elsewhere](javascript:alert(1))",
+  );
+  assert.deepEqual(
+    linked.filter((part) => typeof part !== "string").map(({ kind, id }) => ({ kind, id })),
+    [
+      { kind: "transaction", id: firstTransaction },
+      { kind: "judgment", id: judgment },
+    ],
+  );
+  assert.match(linked.filter((part) => typeof part === "string").join(""), /javascript:alert/);
 });
 
 test("proxies repository projection state through the worker", async () => {
