@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "triangle-midpoints",
+  "ledgerHead": "b258804cff8f9183744b11dfb7727ae120b1a22d",
+  "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:b152267c1265e59dd11b8e5c6926e323b86aa7c71e85fee2456bb6a2757d3a9a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+      "ledgerPosition": 3
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "triangle-midpoints/altitude-equality",
+      "stance": "refutes",
+      "summary": "The ancillary claim that 'the altitude from A to EF equals the altitude from A to BC' is false; the subject correction shows the perpendicular distance from A to EF is half that to BC (homothety about A with factor 1/2), so the altitude-equality statement is refuted.",
+      "subjectTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ],
+      "evidenceTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+        "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+      ]
+    },
+    {
+      "claimKey": "triangle-midpoints/area-aef-one-quarter",
+      "stance": "supports",
+      "summary": "area(AEF) = (1/4) area(ABC) is established: with E=(A+C)/2 and F=(A+B)/2 the vectors E−A and F−A are half those of C−A and B−A, so the determinant/base×height argument (or homothety scaling by 1/2) yields area(AEF)=1/4·area(ABC).",
+      "subjectTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ],
+      "evidenceTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+        "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+        "64afc12868e150370e6c56e6eeceab6b7aabe158"
+      ]
+    },
+    {
+      "claimKey": "triangle-midpoints/area-def-one-quarter",
+      "stance": "supports",
+      "summary": "area(DEF) = (1/4) area(ABC) is supported: midpoint lemma gives EF∥BC and |EF|=|BC|/2 (and cyclically for FD,DE), so DEF is similar to ABC with linear scale 1/2 and area scales by (1/2)^2=1/4.",
+      "subjectTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ],
+      "evidenceTransactionIds": [
+        "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+        "64afc12868e150370e6c56e6eeceab6b7aabe158"
+      ]
+    },
+    {
+      "claimKey": "triangle-midpoints/four-small-triangles-equal-area",
+      "stance": "supports",
+      "summary": "The four triangles AEF, BFD, CDE, and DEF all have equal area: each corner triangle is obtained by homothety of factor 1/2 about its vertex (area 1/4 of ABC) and the medial triangle DEF has area 1/4 of ABC, so all four areas are equal.",
+      "subjectTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ],
+      "evidenceTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+        "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+        "64afc12868e150370e6c56e6eeceab6b7aabe158"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:f1be6d7551900c9348158a2010c0f1e38510d470ca8b1b203a7440196ccb8c8b",
+  "judgmentId": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce"
+}

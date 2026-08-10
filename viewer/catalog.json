@@ -1,0 +1,903 @@
+{
+  "schemaVersion": 1,
+  "repository": {
+    "slug": "Layr-Labs/math-flow",
+    "canonicalRef": "main",
+    "projectionRef": "projections"
+  },
+  "projections": [
+    {
+      "id": "sha256:3bab25c8108050afbd12361ab97a192ab1d0fd6862a5d8aa9671f88b74388404",
+      "problemId": "triangle-midpoints",
+      "label": "openrouter-knowledge-builder-v1",
+      "projectionSpec": null,
+      "builder": {
+        "id": "openrouter-knowledge-builder-v1",
+        "digest": "sha256:8594150f3ef6fe221998bbe40b3359bd907fb70be38e55012eea722ee1665b08"
+      },
+      "latestRunDigest": "sha256:1b32a4c9bde723d8faf84357e0bb2c647725b55796c544e217b647f63c9f2efd",
+      "runCount": 1,
+      "data": {
+        "schemaVersion": 1,
+        "problem": {
+          "id": "triangle-midpoints",
+          "title": "Triangle midpoint quadrilateral",
+          "statementMarkdown": "# Triangle midpoint quadrilateral\n\nLet points \\(D\\), \\(E\\), and \\(F\\) be the midpoints of sides \\(BC\\), \\(CA\\), and\n\\(AB\\) of a nondegenerate triangle \\(ABC\\). Prove that the four small triangles\n\\(AEF\\), \\(BFD\\), \\(CDE\\), and \\(DEF\\) have equal area.\n\nContributions may give synthetic, coordinate, formal, or computational arguments,\nor may critique and extend earlier contributions.\n\n"
+        },
+        "ledgerHead": "b258804cff8f9183744b11dfb7727ae120b1a22d",
+        "transactions": [
+          {
+            "ordinal": 1,
+            "transactionId": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+            "contributionId": "affine-area-proof",
+            "path": "problems/triangle-midpoints/contributions/affine-area-proof",
+            "author": {
+              "displayName": "Robert",
+              "email": "robert.raynor@gmail.com"
+            },
+            "contentMarkdown": "# Affine area proof\n\nEach segment joining two side midpoints is parallel to the third side, so the\nmedial triangle \\(DEF\\) is similar to \\(ABC\\) with scale factor \\(1/2\\). Its area\nis therefore one quarter of the area of \\(ABC\\).\n\nThe same reasoning applies to each corner triangle: for example, \\(AE=AC/2\\) and\n\\(AF=AB/2\\), with the included angle unchanged, so \\(AEF\\) has one quarter of the\narea of \\(ABC\\). Cyclically, the other two corner triangles do as well. Hence all\nfour areas are equal.\n\n## Possible formalization\n\nAn eventual Lean artifact could express this through affine invariance or the\ndeterminant formula for oriented area.\n\n"
+          },
+          {
+            "ordinal": 2,
+            "transactionId": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+            "contributionId": "midpoint-lemma-detail",
+            "path": "problems/triangle-midpoints/contributions/midpoint-lemma-detail",
+            "author": {
+              "displayName": "Robert",
+              "email": "robert.raynor@gmail.com"
+            },
+            "contentMarkdown": "# Midpoint lemma detail\n\nThis contribution supplements the earlier `affine-area-proof` by making its\nmidpoint-segment step explicit.\n\nWrite the points as position vectors. For the midpoints\n\n\\[\nE = \\frac{A+C}{2}, \\qquad F = \\frac{A+B}{2},\n\\]\n\nwe have\n\n\\[\nE-F = \\frac{C-B}{2}.\n\\]\n\nThus `EF` is parallel to `BC` and has half its length. Cyclically, the same\ncalculation shows that `FD` is parallel to `CA` with half its length and that\n`DE` is parallel to `AB` with half its length.\n\nConsequently the medial triangle is similar to the original triangle with\nlinear scale factor `1/2`. The same midpoint identities give the corresponding\nscale factor for each corner triangle, closing the elementary lemma used by the\noriginal proof.\n\nThis supplies a missing detail in the presentation; it does not claim\noriginality for the classical theorem.\n"
+          },
+          {
+            "ordinal": 3,
+            "transactionId": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "contributionId": "base-height-correction",
+            "path": "problems/triangle-midpoints/contributions/base-height-correction",
+            "author": {
+              "displayName": "Robert",
+              "email": "robert.raynor@gmail.com"
+            },
+            "contentMarkdown": "# Correction to the base-height alternative\n\nThis contribution corrects one ancillary paragraph in the judge report with\nSHA-256 digest\n`sha256:561dbc76876de7977d2b77f8c0b81232c94c69c259535f1031da548926a1386b`.\nThe paragraph appears in the cumulative content associated with\n`triangle-midpoints/midpoint-lemma-detail`.\n\nThe report says that, because `EF` is parallel to `BC`, the altitude from `A`\nto `EF` equals the altitude from `A` to `BC`. That is false. Since `E` and `F`\nare the midpoints of `AC` and `AB`, the homothety centered at `A` with factor\n`1/2` maps `BC` to `EF`. Consequently,\n\n- `|EF| = |BC|/2`; and\n- the distance from `A` to the line `EF` is half the distance from `A` to the\n  line `BC`.\n\nBoth the base and the corresponding height are therefore scaled by `1/2`, so\n\n\\[\n\\frac{\\operatorname{area}(AEF)}{\\operatorname{area}(ABC)}\n= \\frac12 \\cdot \\frac12\n= \\frac14.\n\\]\n\nThis correction does not challenge the equal-area theorem, the original\naffine/homothety proof, or the midpoint lemma. Those conclusions remain correct.\nIt only replaces the erroneous explanation of the optional base-height\nalternative.\n"
+          }
+        ],
+        "judgments": [
+          {
+            "judgmentId": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+            "runDigest": "sha256:bef60ea76bf34a9fa83c94e263a8dcbb21db5fe19f88f2327983515354428ef1",
+            "judgmentKind": "primary",
+            "ledgerHead": "b258804cff8f9183744b11dfb7727ae120b1a22d",
+            "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "judgeSpec": {
+              "id": "openrouter-markdown-judgment-v1",
+              "digest": "sha256:b152267c1265e59dd11b8e5c6926e323b86aa7c71e85fee2456bb6a2757d3a9a"
+            },
+            "models": [
+              "openai/gpt-5-mini"
+            ],
+            "cost": 0.01079805,
+            "reportDigest": "sha256:f1be6d7551900c9348158a2010c0f1e38510d470ca8b1b203a7440196ccb8c8b",
+            "reportMarkdown": "# Judgment on subject transaction 8bcf66bbd7777ee31f637a0a1a144535feb82ba4\nSubject transaction: contribution_id = base-height-correction (author: Robert)\n\nSummary statement\n- The subject transaction correctly identifies and corrects an erroneous ancillary claim that \"the altitude from A to EF equals the altitude from A to BC.\" The correction replaces that false claim with the correct homothety / scaling statement: the homothety about A with factor 1/2 maps BC to EF, so both the base (length) and the corresponding perpendicular distance from A scale by 1/2, giving area(AEF) = (1/2)*(1/2)*area(ABC) = (1/4) area(ABC).\n- Together with the earlier supplied evidence (affine-area-proof and midpoint-lemma-detail), the correction yields a complete and elementary proof that the four triangles AEF, BFD, CDE, and DEF all have equal area, each equal to one quarter of area(ABC).\n- I judge the correction to be mathematically correct, appropriately targeted (it fixes a specific mistaken claim), and consistent with the other supplied materials. Confidence: high.\n\nFindings, reasoning, and evidence\n\n1) Claim addressed: \"The altitude from A to EF equals the altitude from A to BC\" is false.\n- Evidence supplied: the base-height-correction explicitly states this sentence is false and explains why.\n- Decisive reasoning: If E and F are midpoints of AC and AB, then the homothety centered at A with scale factor 1/2 sends B ↦ F and C ↦ E, so it sends the whole line BC to line EF and scales all distances from A by 1/2. In particular the perpendicular distance from A to EF is half the perpendicular distance from A to BC, not equal to it.\n- Conclusion: the original altitude-equality statement is incorrect. The correction identifies the correct relation (heights scale by 1/2) and gives the correct area consequence.\n\n2) Claim addressed: area(AEF) = (1/4) area(ABC).\n- Evidence: base-height-correction plus midpoint-lemma-detail and affine-area-proof.\n- Decisive reasoning (vector/determinant form, which is implicit in the supplied evidence): write position vectors relative to A. With E = (A + C)/2 and F = (A + B)/2, we have\n  E − A = (C − A)/2 and F − A = (B − A)/2. The (absolute) area of triangle AEF is (1/2)|det(E − A, F − A)| = (1/2) * (1/4) |det(C − A, B − A)| = (1/4) * (1/2)|det(C − A, B − A)| = (1/4) area(ABC).\n  Equivalently, the homothety argument in the correction scales both a side (base) and corresponding altitude by 1/2, so area scales by 1/4.\n- Conclusion: area(AEF) = (1/4) area(ABC). The correction's formula area(AEF)/area(ABC) = 1/4 is correct and decisively established by the standard midpoint / homothety / determinant computations.\n\n3) Claim addressed: area(DEF) = (1/4) area(ABC).\n- Evidence: affine-area-proof and midpoint-lemma-detail.\n- Decisive reasoning: midpoint-lemma-detail shows EF ∥ BC and |EF| = |BC|/2 (and cyclically for FD and DE), so triangle DEF is similar to triangle ABC with linear scale factor 1/2; hence area(DEF) = (1/2)^2 area(ABC) = (1/4) area(ABC).\n- Conclusion: the medial triangle DEF has area one quarter of ABC.\n\n4) Final theorem claim: the four small triangles AEF, BFD, CDE, and DEF have equal area.\n- Evidence: combining findings (2) and (3) and cyclic symmetry for BFD and CDE from the same midpoint reasoning.\n- Decisive reasoning: each of the three corner triangles (AEF, BFD, CDE) is obtained from one corner of ABC by a homothety of factor 1/2 about that corner, or equivalently by halving both adjacent side lengths while preserving the included angle, so each has area 1/4 area(ABC); the medial triangle DEF has area 1/4 area(ABC) by similarity. Hence all four areas are equal to each other.\n- Conclusion: the main theorem is proved using the corrected argument.\n\nContradictions, missing evidence, or gaps\n- The correction refers to an \"ancillary paragraph in the judge report with SHA-256 digest ...\" and asserts that that paragraph appears in \"the cumulative content associated with triangle-midpoints/midpoint-lemma-detail.\" In the supplied midpoint-lemma-detail file there is no explicit sentence claiming the altitude equality; that sentence appears to have been in some earlier judge report (not included here). This is a minor provenance inconsistency in the meta-commentary: I cannot verify the exact wording of the earlier erroneous paragraph from the materials provided, but the correction is self-contained and rectifies the mathematical error in any case.\n- The correction asserts \"the homothety centered at A with factor 1/2 maps BC to EF.\" This is accurate and sufficiently justified by the midpoint identities in the midpoint-lemma-detail (E = (A + C)/2, F = (A + B)/2 → B ↦ F, C ↦ E under the homothety). If one wanted a fully formal linear-algebra proof, the determinant/vector computation presented above makes the scaling of area explicit and leaves no gap.\n- No other substantive gaps remain: the combination of the three contributions (affine-area-proof, midpoint-lemma-detail, and this correction) contains elementary, standard proofs that close all necessary steps: (i) EF ∥ BC and |EF| = |BC|/2; (ii) homothety/scaling of distances from the center; (iii) area scaling via base×height or via determinant.\n\nCredit and priority\n- All three supplied contributions are authored by the same person (Robert). The correction appropriately acknowledges the earlier incomplete/erroneous wording and fixes it; thus, the author corrects his own earlier ancillary claim. There is no competing claim or priority dispute in the supplied materials.\n- The mathematical content (medial triangle properties and area scaling by 1/4) is classical and well known; the contributions present standard proofs (affine/determinant or homothety), and the correction simply ensures a correct variant of the base-height explanation is given.\n\nOverall confidence and verdict\n- The correction is mathematically correct, addresses a real mistake (the altitude-equality claim), and supplies the correct scaling principle and area computation. Combined with the midpoint lemma and the affine proof, the evidence gives a complete elementary proof that triangles AEF, BFD, CDE, and DEF all have equal area, each equal to one quarter the area of ABC.\n- Confidence level: high.\n",
+            "record": {
+              "schemaVersion": 1,
+              "judgmentKind": "primary",
+              "problemId": "triangle-midpoints",
+              "ledgerHead": "b258804cff8f9183744b11dfb7727ae120b1a22d",
+              "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+              "judgeSpec": {
+                "id": "openrouter-markdown-judgment-v1",
+                "digest": "sha256:b152267c1265e59dd11b8e5c6926e323b86aa7c71e85fee2456bb6a2757d3a9a"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                  "ledgerPosition": 3
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "triangle-midpoints/altitude-equality",
+                  "stance": "refutes",
+                  "summary": "The ancillary claim that 'the altitude from A to EF equals the altitude from A to BC' is false; the subject correction shows the perpendicular distance from A to EF is half that to BC (homothety about A with factor 1/2), so the altitude-equality statement is refuted.",
+                  "subjectTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ],
+                  "evidenceTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                  ]
+                },
+                {
+                  "claimKey": "triangle-midpoints/area-aef-one-quarter",
+                  "stance": "supports",
+                  "summary": "area(AEF) = (1/4) area(ABC) is established: with E=(A+C)/2 and F=(A+B)/2 the vectors E−A and F−A are half those of C−A and B−A, so the determinant/base×height argument (or homothety scaling by 1/2) yields area(AEF)=1/4·area(ABC).",
+                  "subjectTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ],
+                  "evidenceTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                  ]
+                },
+                {
+                  "claimKey": "triangle-midpoints/area-def-one-quarter",
+                  "stance": "supports",
+                  "summary": "area(DEF) = (1/4) area(ABC) is supported: midpoint lemma gives EF∥BC and |EF|=|BC|/2 (and cyclically for FD,DE), so DEF is similar to ABC with linear scale 1/2 and area scales by (1/2)^2=1/4.",
+                  "subjectTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ],
+                  "evidenceTransactionIds": [
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                  ]
+                },
+                {
+                  "claimKey": "triangle-midpoints/four-small-triangles-equal-area",
+                  "stance": "supports",
+                  "summary": "The four triangles AEF, BFD, CDE, and DEF all have equal area: each corner triangle is obtained by homothety of factor 1/2 about its vertex (area 1/4 of ABC) and the medial triangle DEF has area 1/4 of ABC, so all four areas are equal.",
+                  "subjectTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ],
+                  "evidenceTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                  ]
+                }
+              ],
+              "reportDigest": "sha256:f1be6d7551900c9348158a2010c0f1e38510d470ca8b1b203a7440196ccb8c8b",
+              "judgmentId": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce"
+            }
+          }
+        ],
+        "runs": [
+          {
+            "id": "1b32a4c9bde723d8faf84357e0bb2c647725b55796c544e217b647f63c9f2efd",
+            "ordinal": 1,
+            "ledgerHead": "b258804cff8f9183744b11dfb7727ae120b1a22d",
+            "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "runDigest": "sha256:1b32a4c9bde723d8faf84357e0bb2c647725b55796c544e217b647f63c9f2efd",
+            "baseRun": null,
+            "runKind": "knowledge-build",
+            "inputs": {
+              "builderSpecDigest": "sha256:8594150f3ef6fe221998bbe40b3359bd907fb70be38e55012eea722ee1665b08",
+              "problemId": "triangle-midpoints",
+              "schemaVersion": 1,
+              "laneId": "sha256:3bab25c8108050afbd12361ab97a192ab1d0fd6862a5d8aa9671f88b74388404",
+              "judgmentSetDigest": "sha256:15f0ddfbc2166972657e6fc0452b9845e67375b44687c3e27b659ba029e2f07f",
+              "baseStateRun": null,
+              "conflictIds": [],
+              "judgmentIds": [
+                "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce"
+              ],
+              "buildToken": "sha256:08aea0a40909ccaa76088edb910abd96554f0d5812434b2e62ce2c9746d56246"
+            },
+            "judgeSpec": {
+              "id": "openrouter-knowledge-builder-v1",
+              "digest": "sha256:8594150f3ef6fe221998bbe40b3359bd907fb70be38e55012eea722ee1665b08"
+            },
+            "runner": {
+              "implementation": "openrouter-knowledge-builder-v1",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.0125845,
+            "selection": {
+              "selectedNodeIds": [
+                "root"
+              ],
+              "rationale": "All judgments introduce or support specific claims about the triangle-midpoints program (areas of AEF, DEF, BFD, CDE and refutation of an ancillary altitude-equality claim). The current index contains only the top-level root node for this program, so the minimal required organizational update is to modify/extend that root (add child claim nodes and attach the submitted primary judgments and evidence). No other existing nodes exist to update."
+            },
+            "normalizations": [
+              {
+                "kind": "attach-current-base",
+                "nodeId": "root",
+                "reason": "Concurrency guards come from the authoritative selected state."
+              }
+            ],
+            "delta": {
+              "operations": [
+                {
+                  "action": "issue",
+                  "adjudicationId": "root",
+                  "nodeId": "root",
+                  "parentId": null,
+                  "nodeType": "root",
+                  "title": "Research state for triangle-midpoints",
+                  "summary": "No judge-authored research programs have been established yet.",
+                  "reportSection": "## Node: root",
+                  "baseDigest": "sha256:a6f9dfb09d5938331e9e74179208f8c1017988ec1f7d4c9d516ad69993f9160e",
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "relation": "context"
+                    }
+                  ]
+                },
+                {
+                  "action": "issue",
+                  "adjudicationId": "triangle-midpoints/altitude-equality",
+                  "nodeId": "triangle-midpoints/altitude-equality",
+                  "parentId": "root",
+                  "nodeType": "claim",
+                  "title": "triangle-midpoints/altitude-equality",
+                  "summary": "The ancillary statement \"the altitude from A to EF equals the altitude from A to BC\" is refuted.",
+                  "reportSection": "## Node: triangle-midpoints/altitude-equality",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "relation": "formalizes"
+                    }
+                  ]
+                },
+                {
+                  "action": "issue",
+                  "adjudicationId": "triangle-midpoints/area-aef-one-quarter",
+                  "nodeId": "triangle-midpoints/area-aef-one-quarter",
+                  "parentId": "root",
+                  "nodeType": "claim",
+                  "title": "triangle-midpoints/area-aef-one-quarter",
+                  "summary": "area(AEF) = (1/4) · area(ABC).",
+                  "reportSection": "## Node: triangle-midpoints/area-aef-one-quarter",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "relation": "formalizes"
+                    }
+                  ]
+                },
+                {
+                  "action": "issue",
+                  "adjudicationId": "triangle-midpoints/area-def-one-quarter",
+                  "nodeId": "triangle-midpoints/area-def-one-quarter",
+                  "parentId": "root",
+                  "nodeType": "claim",
+                  "title": "triangle-midpoints/area-def-one-quarter",
+                  "summary": "area(DEF) = (1/4) · area(ABC).",
+                  "reportSection": "## Node: triangle-midpoints/area-def-one-quarter",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "relation": "formalizes"
+                    }
+                  ]
+                },
+                {
+                  "action": "issue",
+                  "adjudicationId": "triangle-midpoints/four-small-triangles-equal-area",
+                  "nodeId": "triangle-midpoints/four-small-triangles-equal-area",
+                  "parentId": "root",
+                  "nodeType": "claim",
+                  "title": "triangle-midpoints/four-small-triangles-equal-area",
+                  "summary": "The four triangles AEF, BFD, CDE, and DEF have equal area (each equal to one quarter of area(ABC)).",
+                  "reportSection": "## Node: triangle-midpoints/four-small-triangles-equal-area",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "relation": "formalizes"
+                    }
+                  ]
+                }
+              ]
+            },
+            "state": {
+              "schemaVersion": 2,
+              "problemId": "triangle-midpoints",
+              "rootId": "root",
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "root",
+                  "title": "Research state for triangle-midpoints",
+                  "summary": "No judge-authored research programs have been established yet.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:86460f0f8d2b8d3d70ba8111f2ef0368b99f06f07298706cbfa9eab8113b6381",
+                    "section": "## Node: root"
+                  },
+                  "contentMarkdown": "## Node: root\nStable id: root\n\nOrganizational change\n- Preserve the existing top-level program node \"Research state for triangle-midpoints\" and append links (provenance pointers) to the new claim nodes created below. No change to the root's status (\"active\"), but its content is expanded by explicit child claim nodes derived from the immutable judgment report.\n\nProvenance\n- This update follows the single immutable judgment report listed below (sha256:9df802c9...). See child nodes for the detailed attributions and evidence lists.\n\nReference (immutable judgment)\n- Judgment: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce\n- Subject transaction: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4\n\nCredit statement carried forward\n- The judgment attributes the contributions and correction to the same author (Robert). That credit is preserved here as part of the provenance for the child nodes.\n\n----\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "ledgerPosition": 3
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "relation": "context"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "root",
+                    "revisionId": "sha256:5c627a109c5054491a1c1386b4a68f7b6464902c6d9c5d4cf2c6923757602189",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:88d978413dcd37ffa08a8e7d1514fbe6f886abf544a7806e757f488144e8de83"
+                },
+                "triangle-midpoints/altitude-equality": {
+                  "id": "triangle-midpoints/altitude-equality",
+                  "parentId": "root",
+                  "type": "claim",
+                  "title": "triangle-midpoints/altitude-equality",
+                  "summary": "The ancillary statement \"the altitude from A to EF equals the altitude from A to BC\" is refuted.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:86460f0f8d2b8d3d70ba8111f2ef0368b99f06f07298706cbfa9eab8113b6381",
+                    "section": "## Node: triangle-midpoints/altitude-equality"
+                  },
+                  "contentMarkdown": "## Node: triangle-midpoints/altitude-equality\nStable id: triangle-midpoints/altitude-equality\n\nClaim (as recorded in the supplied judgments)\n- The ancillary statement \"the altitude from A to EF equals the altitude from A to BC\" is refuted.\n\nStance and confidence (preserved from the immutable judgment)\n- Stance: refutes\n- Confidence (as recorded in the judgment): high\n\nSummary of provenance and reasoning recorded in the judgment\n- Source judgment: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce (subject transaction 8bcf66bbd7777ee31f637a0a1a144535feb82ba4).\n- Evidence transaction ids cited in the judgment: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4 and 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3.\n- Recorded decisive reasoning: With E and F midpoints of AC and AB, the homothety centered at A with scale factor 1/2 sends BC to EF and scales all distances from A by 1/2; therefore the perpendicular distance (altitude) from A to EF is half, not equal to, the perpendicular distance from A to BC.\n- Note on provenance gap recorded in the judgment: The judgment notes a meta-commentary provenance inconsistency (an earlier erroneous sentence is not present in the supplied midpoint-lemma-detail file), but treats the refutation and correction as self-contained.\n\nAudit trail\n- Immutable judgment id: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce\n- Subject transaction: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4\n- Evidence transaction ids: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4, 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3\n\nRemarks for an auditor\n- This node preserves the judgment's exact stance (refutes) and recorded confidence (high). No attempt is made here to re-prove or further justify the refutation beyond quoting the judgment's reasoning and evidence pointers.\n\n----\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "ledgerPosition": 3
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "relation": "formalizes"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "triangle-midpoints/altitude-equality",
+                    "revisionId": "sha256:d797a6093f7ab74d06ac85d64e9fb50871f3dc52fc2655cb2e76d5a2c07331fa",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:b184911b3a3c915b57f4f93afaaa4f37f03f116ce89479db5413b63474a069d9"
+                },
+                "triangle-midpoints/area-aef-one-quarter": {
+                  "id": "triangle-midpoints/area-aef-one-quarter",
+                  "parentId": "root",
+                  "type": "claim",
+                  "title": "triangle-midpoints/area-aef-one-quarter",
+                  "summary": "area(AEF) = (1/4) · area(ABC).",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:86460f0f8d2b8d3d70ba8111f2ef0368b99f06f07298706cbfa9eab8113b6381",
+                    "section": "## Node: triangle-midpoints/area-aef-one-quarter"
+                  },
+                  "contentMarkdown": "## Node: triangle-midpoints/area-aef-one-quarter\nStable id: triangle-midpoints/area-aef-one-quarter\n\nClaim (as recorded in the supplied judgments)\n- area(AEF) = (1/4) · area(ABC)\n\nStance and confidence (preserved)\n- Stance: supports\n- Confidence (as recorded in the judgment): high\n\nSummary of provenance and reasoning recorded in the judgment\n- Source judgment: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce (subject transaction 8bcf66bbd7777ee31f637a0a1a144535feb82ba4).\n- Evidence transaction ids cited in the judgment: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4, 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3, 64afc12868e150370e6c56e6eeceab6b7aabe158.\n- Recorded decisive reasoning: Vector/determinant formulation or homothety about vertex A with factor 1/2. Writing position vectors relative to A, E − A = (C − A)/2 and F − A = (B − A)/2, so the area determinant for triangle AEF is 1/4 of that for ABC; equivalently, halving both base and corresponding height gives area scaling factor 1/4.\n\nAudit trail\n- Immutable judgment id: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce\n- Subject transaction: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4\n- Evidence transaction ids: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4, 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3, 64afc12868e150370e6c56e6eeceab6b7aabe158\n\nRemarks for an auditor\n- The node records the judgment's exact supportive stance and its coupling to the cited evidence. No independent verification or extension is attempted here.\n\n----\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "ledgerPosition": 3
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "relation": "formalizes"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "triangle-midpoints/area-aef-one-quarter",
+                    "revisionId": "sha256:c99da1ef079b6c6b35b5c801a71c3ddb5cdaaf3010a5cb9295938eeefcc0ac9f",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:868aae3bc21fb5425575429594f27b824e5640e9dab2fda43add174f8d44493e"
+                },
+                "triangle-midpoints/area-def-one-quarter": {
+                  "id": "triangle-midpoints/area-def-one-quarter",
+                  "parentId": "root",
+                  "type": "claim",
+                  "title": "triangle-midpoints/area-def-one-quarter",
+                  "summary": "area(DEF) = (1/4) · area(ABC).",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:86460f0f8d2b8d3d70ba8111f2ef0368b99f06f07298706cbfa9eab8113b6381",
+                    "section": "## Node: triangle-midpoints/area-def-one-quarter"
+                  },
+                  "contentMarkdown": "## Node: triangle-midpoints/area-def-one-quarter\nStable id: triangle-midpoints/area-def-one-quarter\n\nClaim (as recorded in the supplied judgments)\n- area(DEF) = (1/4) · area(ABC)\n\nStance and confidence (preserved)\n- Stance: supports\n- Confidence (as recorded in the judgment): high\n\nSummary of provenance and reasoning recorded in the judgment\n- Source judgment: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce (subject transaction 8bcf66bbd7777ee31f637a0a1a144535feb82ba4).\n- Evidence transaction ids cited in the judgment: 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3, 64afc12868e150370e6c56e6eeceab6b7aabe158.\n- Recorded decisive reasoning: Midpoint lemma: EF ∥ BC and |EF| = |BC|/2 (and cyclic variants for other sides), so triangle DEF is similar to ABC with linear scale 1/2 and hence area scales by (1/2)^2 = 1/4.\n\nAudit trail\n- Immutable judgment id: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce\n- Subject transaction: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4\n- Evidence transaction ids: 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3, 64afc12868e150370e6c56e6eeceab6b7aabe158\n\nRemarks for an auditor\n- This node preserves the judgment's conclusion that the medial triangle DEF has area 1/4 that of ABC, citing the same judgment and the midpoint-lemma-detail and affine-area-proof materials.\n\n----\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "ledgerPosition": 3
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "relation": "formalizes"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "triangle-midpoints/area-def-one-quarter",
+                    "revisionId": "sha256:2e623db3764ae67b81853966c326e1b66bfbfdf8e731f74686e19e36a1881901",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:8dd84fcb5ceeabdc31be74a88321d03d4a4298abac0cefdb9b1f9ae96ffb97fc"
+                },
+                "triangle-midpoints/four-small-triangles-equal-area": {
+                  "id": "triangle-midpoints/four-small-triangles-equal-area",
+                  "parentId": "root",
+                  "type": "claim",
+                  "title": "triangle-midpoints/four-small-triangles-equal-area",
+                  "summary": "The four triangles AEF, BFD, CDE, and DEF have equal area (each equal to one quarter of area(ABC)).",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:86460f0f8d2b8d3d70ba8111f2ef0368b99f06f07298706cbfa9eab8113b6381",
+                    "section": "## Node: triangle-midpoints/four-small-triangles-equal-area"
+                  },
+                  "contentMarkdown": "## Node: triangle-midpoints/four-small-triangles-equal-area\nStable id: triangle-midpoints/four-small-triangles-equal-area\n\nClaim (as recorded in the supplied judgments)\n- The four triangles AEF, BFD, CDE, and DEF have equal area (each equal to one quarter of area(ABC)).\n\nStance and confidence (preserved)\n- Stance: supports\n- Confidence (as recorded in the judgment): high\n\nSummary of provenance and reasoning recorded in the judgment\n- Source judgment: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce (subject transaction 8bcf66bbd7777ee31f637a0a1a144535feb82ba4).\n- Evidence transaction ids cited in the judgment: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4, 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3, 64afc12868e150370e6c56e6eeceab6b7aabe158.\n- Recorded decisive reasoning: Combine the corner-triangle scaling results (each corner triangle is homothetic to the corresponding corner of ABC with linear factor 1/2 → area 1/4 of ABC) with the medial-triangle area result (DEF area 1/4 of ABC). Since all four are equal to 1/4 area(ABC), they are equal to each other.\n\nAudit trail\n- Immutable judgment id: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce\n- Subject transaction: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4\n- Evidence transaction ids: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4, 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3, 64afc12868e150370e6c56e6eeceab6b7aabe158\n\nRemarks for an auditor\n- This node records the overall theorem as supported in the immutable judgment. The exact supportive logic and evidence citations are preserved without modification.\n\n----\n\nStatus of conflicts\n- The supplied conflict records list is empty. There are no unresolved or active conflicts to represent.\n- The only refutation present is the recorded refutation of the ancillary altitude-equality claim; that refutation is represented above as an explicit node and preserved as an active settled refutation (the judgment itself contains a high-confidence refutation and no competing judgments were supplied).\n\nFinal notes for auditing\n- All nodes above reproduce exactly the stances, summaries, evidence pointers, and confidence levels given in the immutable judgment sha256:9df802c9...; no additional mathematical claims, proofs, or reconciliations have been introduced or inferred beyond those explicitly recorded in that judgment.\n- For detailed line-by-line reasoning, consult the cited subject transaction 8bcf66bbd7777ee31f637a0a1a144535feb82ba4 and the evidence transactions listed in each node.\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "ledgerPosition": 3
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                      "relation": "formalizes"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "triangle-midpoints/four-small-triangles-equal-area",
+                    "revisionId": "sha256:a90ddc5018cbfe33b8153d0f9ddcd4135a03ef86c76341191c684404ad3296e3",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:d6efd05c61decbf7447275cecea7e66d79aec4f6ff524907495d6dac033b8c27"
+                }
+              },
+              "stateDigest": "sha256:9bd9b20a206384a1a68b4570e249284afea50f781f2446e12b0fb4b13f298b10"
+            },
+            "revisionIds": [
+              "sha256:5c627a109c5054491a1c1386b4a68f7b6464902c6d9c5d4cf2c6923757602189",
+              "sha256:d797a6093f7ab74d06ac85d64e9fb50871f3dc52fc2655cb2e76d5a2c07331fa",
+              "sha256:c99da1ef079b6c6b35b5c801a71c3ddb5cdaaf3010a5cb9295938eeefcc0ac9f",
+              "sha256:2e623db3764ae67b81853966c326e1b66bfbfdf8e731f74686e19e36a1881901",
+              "sha256:a90ddc5018cbfe33b8153d0f9ddcd4135a03ef86c76341191c684404ad3296e3"
+            ],
+            "addedRevisionIds": [
+              "sha256:5c627a109c5054491a1c1386b4a68f7b6464902c6d9c5d4cf2c6923757602189",
+              "sha256:d797a6093f7ab74d06ac85d64e9fb50871f3dc52fc2655cb2e76d5a2c07331fa",
+              "sha256:c99da1ef079b6c6b35b5c801a71c3ddb5cdaaf3010a5cb9295938eeefcc0ac9f",
+              "sha256:2e623db3764ae67b81853966c326e1b66bfbfdf8e731f74686e19e36a1881901",
+              "sha256:a90ddc5018cbfe33b8153d0f9ddcd4135a03ef86c76341191c684404ad3296e3"
+            ],
+            "changedNodeIds": [
+              "root",
+              "triangle-midpoints/altitude-equality",
+              "triangle-midpoints/area-aef-one-quarter",
+              "triangle-midpoints/area-def-one-quarter",
+              "triangle-midpoints/four-small-triangles-equal-area"
+            ],
+            "reportDigest": "sha256:86460f0f8d2b8d3d70ba8111f2ef0368b99f06f07298706cbfa9eab8113b6381"
+          }
+        ],
+        "revisions": [
+          {
+            "action": "issue",
+            "adjudicationId": "root",
+            "baseRevisionId": null,
+            "evidence": [
+              {
+                "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                "kind": "judgment",
+                "relation": "context"
+              }
+            ],
+            "issuedAtLedgerHead": "b258804cff8f9183744b11dfb7727ae120b1a22d",
+            "nodeId": "root",
+            "nodeType": "root",
+            "parentId": null,
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:86460f0f8d2b8d3d70ba8111f2ef0368b99f06f07298706cbfa9eab8113b6381",
+              "section": "## Node: root"
+            },
+            "revisionId": "sha256:5c627a109c5054491a1c1386b4a68f7b6464902c6d9c5d4cf2c6923757602189",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "ledgerPosition": 3
+              }
+            ],
+            "summary": "No judge-authored research programs have been established yet.",
+            "title": "Research state for triangle-midpoints"
+          },
+          {
+            "action": "issue",
+            "adjudicationId": "triangle-midpoints/altitude-equality",
+            "baseRevisionId": null,
+            "evidence": [
+              {
+                "digest": null,
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                "kind": "judgment",
+                "relation": "formalizes"
+              }
+            ],
+            "issuedAtLedgerHead": "b258804cff8f9183744b11dfb7727ae120b1a22d",
+            "nodeId": "triangle-midpoints/altitude-equality",
+            "nodeType": "claim",
+            "parentId": "root",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:86460f0f8d2b8d3d70ba8111f2ef0368b99f06f07298706cbfa9eab8113b6381",
+              "section": "## Node: triangle-midpoints/altitude-equality"
+            },
+            "revisionId": "sha256:d797a6093f7ab74d06ac85d64e9fb50871f3dc52fc2655cb2e76d5a2c07331fa",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "ledgerPosition": 3
+              }
+            ],
+            "summary": "The ancillary statement \"the altitude from A to EF equals the altitude from A to BC\" is refuted.",
+            "title": "triangle-midpoints/altitude-equality"
+          },
+          {
+            "action": "issue",
+            "adjudicationId": "triangle-midpoints/area-aef-one-quarter",
+            "baseRevisionId": null,
+            "evidence": [
+              {
+                "digest": null,
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                "kind": "judgment",
+                "relation": "formalizes"
+              }
+            ],
+            "issuedAtLedgerHead": "b258804cff8f9183744b11dfb7727ae120b1a22d",
+            "nodeId": "triangle-midpoints/area-aef-one-quarter",
+            "nodeType": "claim",
+            "parentId": "root",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:86460f0f8d2b8d3d70ba8111f2ef0368b99f06f07298706cbfa9eab8113b6381",
+              "section": "## Node: triangle-midpoints/area-aef-one-quarter"
+            },
+            "revisionId": "sha256:c99da1ef079b6c6b35b5c801a71c3ddb5cdaaf3010a5cb9295938eeefcc0ac9f",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "ledgerPosition": 3
+              }
+            ],
+            "summary": "area(AEF) = (1/4) · area(ABC).",
+            "title": "triangle-midpoints/area-aef-one-quarter"
+          },
+          {
+            "action": "issue",
+            "adjudicationId": "triangle-midpoints/area-def-one-quarter",
+            "baseRevisionId": null,
+            "evidence": [
+              {
+                "digest": null,
+                "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                "kind": "judgment",
+                "relation": "formalizes"
+              }
+            ],
+            "issuedAtLedgerHead": "b258804cff8f9183744b11dfb7727ae120b1a22d",
+            "nodeId": "triangle-midpoints/area-def-one-quarter",
+            "nodeType": "claim",
+            "parentId": "root",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:86460f0f8d2b8d3d70ba8111f2ef0368b99f06f07298706cbfa9eab8113b6381",
+              "section": "## Node: triangle-midpoints/area-def-one-quarter"
+            },
+            "revisionId": "sha256:2e623db3764ae67b81853966c326e1b66bfbfdf8e731f74686e19e36a1881901",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "ledgerPosition": 3
+              }
+            ],
+            "summary": "area(DEF) = (1/4) · area(ABC).",
+            "title": "triangle-midpoints/area-def-one-quarter"
+          },
+          {
+            "action": "issue",
+            "adjudicationId": "triangle-midpoints/four-small-triangles-equal-area",
+            "baseRevisionId": null,
+            "evidence": [
+              {
+                "digest": null,
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                "id": "sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce",
+                "kind": "judgment",
+                "relation": "formalizes"
+              }
+            ],
+            "issuedAtLedgerHead": "b258804cff8f9183744b11dfb7727ae120b1a22d",
+            "nodeId": "triangle-midpoints/four-small-triangles-equal-area",
+            "nodeType": "claim",
+            "parentId": "root",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:86460f0f8d2b8d3d70ba8111f2ef0368b99f06f07298706cbfa9eab8113b6381",
+              "section": "## Node: triangle-midpoints/four-small-triangles-equal-area"
+            },
+            "revisionId": "sha256:a90ddc5018cbfe33b8153d0f9ddcd4135a03ef86c76341191c684404ad3296e3",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "ledgerPosition": 3
+              }
+            ],
+            "summary": "The four triangles AEF, BFD, CDE, and DEF have equal area (each equal to one quarter of area(ABC)).",
+            "title": "triangle-midpoints/four-small-triangles-equal-area"
+          }
+        ],
+        "reports": [
+          {
+            "runId": "1b32a4c9bde723d8faf84357e0bb2c647725b55796c544e217b647f63c9f2efd",
+            "digest": "sha256:86460f0f8d2b8d3d70ba8111f2ef0368b99f06f07298706cbfa9eab8113b6381",
+            "markdown": "## Node: root\nStable id: root\n\nOrganizational change\n- Preserve the existing top-level program node \"Research state for triangle-midpoints\" and append links (provenance pointers) to the new claim nodes created below. No change to the root's status (\"active\"), but its content is expanded by explicit child claim nodes derived from the immutable judgment report.\n\nProvenance\n- This update follows the single immutable judgment report listed below (sha256:9df802c9...). See child nodes for the detailed attributions and evidence lists.\n\nReference (immutable judgment)\n- Judgment: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce\n- Subject transaction: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4\n\nCredit statement carried forward\n- The judgment attributes the contributions and correction to the same author (Robert). That credit is preserved here as part of the provenance for the child nodes.\n\n----\n\n## Node: triangle-midpoints/altitude-equality\nStable id: triangle-midpoints/altitude-equality\n\nClaim (as recorded in the supplied judgments)\n- The ancillary statement \"the altitude from A to EF equals the altitude from A to BC\" is refuted.\n\nStance and confidence (preserved from the immutable judgment)\n- Stance: refutes\n- Confidence (as recorded in the judgment): high\n\nSummary of provenance and reasoning recorded in the judgment\n- Source judgment: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce (subject transaction 8bcf66bbd7777ee31f637a0a1a144535feb82ba4).\n- Evidence transaction ids cited in the judgment: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4 and 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3.\n- Recorded decisive reasoning: With E and F midpoints of AC and AB, the homothety centered at A with scale factor 1/2 sends BC to EF and scales all distances from A by 1/2; therefore the perpendicular distance (altitude) from A to EF is half, not equal to, the perpendicular distance from A to BC.\n- Note on provenance gap recorded in the judgment: The judgment notes a meta-commentary provenance inconsistency (an earlier erroneous sentence is not present in the supplied midpoint-lemma-detail file), but treats the refutation and correction as self-contained.\n\nAudit trail\n- Immutable judgment id: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce\n- Subject transaction: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4\n- Evidence transaction ids: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4, 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3\n\nRemarks for an auditor\n- This node preserves the judgment's exact stance (refutes) and recorded confidence (high). No attempt is made here to re-prove or further justify the refutation beyond quoting the judgment's reasoning and evidence pointers.\n\n----\n\n## Node: triangle-midpoints/area-aef-one-quarter\nStable id: triangle-midpoints/area-aef-one-quarter\n\nClaim (as recorded in the supplied judgments)\n- area(AEF) = (1/4) · area(ABC)\n\nStance and confidence (preserved)\n- Stance: supports\n- Confidence (as recorded in the judgment): high\n\nSummary of provenance and reasoning recorded in the judgment\n- Source judgment: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce (subject transaction 8bcf66bbd7777ee31f637a0a1a144535feb82ba4).\n- Evidence transaction ids cited in the judgment: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4, 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3, 64afc12868e150370e6c56e6eeceab6b7aabe158.\n- Recorded decisive reasoning: Vector/determinant formulation or homothety about vertex A with factor 1/2. Writing position vectors relative to A, E − A = (C − A)/2 and F − A = (B − A)/2, so the area determinant for triangle AEF is 1/4 of that for ABC; equivalently, halving both base and corresponding height gives area scaling factor 1/4.\n\nAudit trail\n- Immutable judgment id: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce\n- Subject transaction: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4\n- Evidence transaction ids: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4, 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3, 64afc12868e150370e6c56e6eeceab6b7aabe158\n\nRemarks for an auditor\n- The node records the judgment's exact supportive stance and its coupling to the cited evidence. No independent verification or extension is attempted here.\n\n----\n\n## Node: triangle-midpoints/area-def-one-quarter\nStable id: triangle-midpoints/area-def-one-quarter\n\nClaim (as recorded in the supplied judgments)\n- area(DEF) = (1/4) · area(ABC)\n\nStance and confidence (preserved)\n- Stance: supports\n- Confidence (as recorded in the judgment): high\n\nSummary of provenance and reasoning recorded in the judgment\n- Source judgment: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce (subject transaction 8bcf66bbd7777ee31f637a0a1a144535feb82ba4).\n- Evidence transaction ids cited in the judgment: 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3, 64afc12868e150370e6c56e6eeceab6b7aabe158.\n- Recorded decisive reasoning: Midpoint lemma: EF ∥ BC and |EF| = |BC|/2 (and cyclic variants for other sides), so triangle DEF is similar to ABC with linear scale 1/2 and hence area scales by (1/2)^2 = 1/4.\n\nAudit trail\n- Immutable judgment id: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce\n- Subject transaction: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4\n- Evidence transaction ids: 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3, 64afc12868e150370e6c56e6eeceab6b7aabe158\n\nRemarks for an auditor\n- This node preserves the judgment's conclusion that the medial triangle DEF has area 1/4 that of ABC, citing the same judgment and the midpoint-lemma-detail and affine-area-proof materials.\n\n----\n\n## Node: triangle-midpoints/four-small-triangles-equal-area\nStable id: triangle-midpoints/four-small-triangles-equal-area\n\nClaim (as recorded in the supplied judgments)\n- The four triangles AEF, BFD, CDE, and DEF have equal area (each equal to one quarter of area(ABC)).\n\nStance and confidence (preserved)\n- Stance: supports\n- Confidence (as recorded in the judgment): high\n\nSummary of provenance and reasoning recorded in the judgment\n- Source judgment: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce (subject transaction 8bcf66bbd7777ee31f637a0a1a144535feb82ba4).\n- Evidence transaction ids cited in the judgment: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4, 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3, 64afc12868e150370e6c56e6eeceab6b7aabe158.\n- Recorded decisive reasoning: Combine the corner-triangle scaling results (each corner triangle is homothetic to the corresponding corner of ABC with linear factor 1/2 → area 1/4 of ABC) with the medial-triangle area result (DEF area 1/4 of ABC). Since all four are equal to 1/4 area(ABC), they are equal to each other.\n\nAudit trail\n- Immutable judgment id: sha256:9df802c904f03c561ed0d5e78f4181765fb2ad58e7cfe5f65df22949d7de4fce\n- Subject transaction: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4\n- Evidence transaction ids: 8bcf66bbd7777ee31f637a0a1a144535feb82ba4, 4ccbe3f18db7402d31a2ef795f6ad67962ff63e3, 64afc12868e150370e6c56e6eeceab6b7aabe158\n\nRemarks for an auditor\n- This node records the overall theorem as supported in the immutable judgment. The exact supportive logic and evidence citations are preserved without modification.\n\n----\n\nStatus of conflicts\n- The supplied conflict records list is empty. There are no unresolved or active conflicts to represent.\n- The only refutation present is the recorded refutation of the ancillary altitude-equality claim; that refutation is represented above as an explicit node and preserved as an active settled refutation (the judgment itself contains a high-confidence refutation and no competing judgments were supplied).\n\nFinal notes for auditing\n- All nodes above reproduce exactly the stances, summaries, evidence pointers, and confidence levels given in the immutable judgment sha256:9df802c9...; no additional mathematical claims, proofs, or reconciliations have been introduced or inferred beyond those explicitly recorded in that judgment.\n- For detailed line-by-line reasoning, consult the cited subject transaction 8bcf66bbd7777ee31f637a0a1a144535feb82ba4 and the evidence transactions listed in each node.\n"
+          }
+        ],
+        "latestRunId": "1b32a4c9bde723d8faf84357e0bb2c647725b55796c544e217b647f63c9f2efd"
+      }
+    }
+  ],
+  "defaultProjectionId": "sha256:3bab25c8108050afbd12361ab97a192ab1d0fd6862a5d8aa9671f88b74388404"
+}
