@@ -57,6 +57,7 @@ class GitHubProjectionPublicationTests(unittest.TestCase):
     def test_publishes_only_projection_files_and_requires_github_signature(self) -> None:
         scheduler = self.root / "coordination/scheduler.json"
         scheduler.write_text('{"schemaVersion": 1, "lanes": {}}\n', encoding="utf-8")
+        scheduler.with_name("scheduler.json.lock").touch()
         report = self.root / "objects/judgment/ab/example/report.md"
         report.parent.mkdir(parents=True)
         report.write_text("# Judgment\n", encoding="utf-8")
