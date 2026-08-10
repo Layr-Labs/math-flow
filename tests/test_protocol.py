@@ -29,6 +29,7 @@ from math_flow.openrouter import format_error_message
 from math_flow.repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
 from math_flow.runs import run_judge_bundle
 from math_flow.viewer import export_viewer_data
+from math_flow.hierarchical import _structured_content
 
 
 def git(root: Path, *args: str) -> str:
@@ -44,6 +45,33 @@ def write(path: Path, value: str) -> None:
 
 
 class RepositoryValidationTests(unittest.TestCase):
+    def test_structured_control_accepts_one_json_code_fence(self) -> None:
+        response = {
+            "choices": [
+                {
+                    "finish_reason": "stop",
+                    "message": {"content": '```json\n{"findings": []}\n```'},
+                }
+            ]
+        }
+        self.assertEqual(_structured_content(response), {"findings": []})
+
+    def test_structured_control_failure_reports_safe_shape_metadata(self) -> None:
+        response = {
+            "choices": [
+                {
+                    "finish_reason": "length",
+                    "message": {"content": "not-json-sensitive-content"},
+                }
+            ]
+        }
+        with self.assertRaisesRegex(
+            MathFlowError,
+            r"finish_reason=length, content_chars=26, line=1, column=1",
+        ) as raised:
+            _structured_content(response)
+        self.assertNotIn("sensitive-content", str(raised.exception))
+
     def test_current_tree_is_valid(self) -> None:
         root = Path(__file__).parents[1]
         self.assertEqual(validate_tree(root), {"problems": 1, "contributions": 3})

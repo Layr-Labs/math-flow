@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 from pathlib import Path
 
 from .artifacts import load_manifest, read_verified_artifact, sha256_bytes
@@ -68,10 +69,27 @@ def _assistant_content(response: dict[str, object]) -> str:
 
 def _structured_content(response: dict[str, object]) -> dict[str, object]:
     content = _assistant_content(response)
+    candidate = content.strip()
+    fenced = re.fullmatch(
+        r"```(?:json)?\s*\n?(.*?)\n?```", candidate, flags=re.DOTALL | re.IGNORECASE
+    )
+    if fenced is not None:
+        candidate = fenced.group(1).strip()
     try:
-        value = json.loads(content)
+        value = json.loads(candidate)
     except json.JSONDecodeError as exc:
-        raise MathFlowError("OpenRouter control response was not valid JSON") from exc
+        finish_reason: object = None
+        try:
+            finish_reason = response["choices"][0].get("finish_reason")
+        except (KeyError, IndexError, TypeError, AttributeError):
+            pass
+        detail = (
+            f"finish_reason={finish_reason or 'unknown'}, "
+            f"content_chars={len(content)}, line={exc.lineno}, column={exc.colno}"
+        )
+        raise MathFlowError(
+            f"OpenRouter control response was not valid JSON ({detail})"
+        ) from exc
     if not isinstance(value, dict):
         raise MathFlowError("OpenRouter control response must be a JSON object")
     return value
