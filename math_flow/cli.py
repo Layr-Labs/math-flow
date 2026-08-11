@@ -97,6 +97,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         help="GitHub login with a current-head approving review (repeatable)",
     )
+    admission_parser.add_argument(
+        "--approval-comments",
+        type=Path,
+        help="JSON array of current PR comments normalized to author and body",
+    )
 
     validate_pr_parser = commands.add_parser("validate-pr", help="validate one contribution-only PR diff")
     validate_pr_parser.add_argument("--base", required=True, help="base commit or revision")
@@ -448,8 +453,22 @@ def main(argv: list[str] | None = None) -> int:
             _write_json(result, args.output)
             return 0
         elif args.command == "validate-admission-pr":
+            approval_comments = None
+            if args.approval_comments is not None:
+                try:
+                    approval_comments = json.loads(
+                        args.approval_comments.read_text(encoding="utf-8")
+                    )
+                except (OSError, json.JSONDecodeError) as exc:
+                    raise MathFlowError(
+                        f"could not read admission approval comments: {exc}"
+                    ) from exc
             result = validate_admission_pr(
-                root, args.base, args.head, args.approver
+                root,
+                args.base,
+                args.head,
+                args.approver,
+                approval_comments,
             )
         elif args.command == "validate-pr":
             result = validate_pr(root, args.base, args.head)

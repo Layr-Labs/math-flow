@@ -46,16 +46,32 @@ Governed changes use a one-file PR:
 - a projection PR adds or edits one `protocol/projections/<id>.json`;
 - a policy PR edits one governance-control file.
 
-The check counts only an approving review by a configured administrator against
-the PR's current head commit. Ordinary contribution-only PRs are explicitly not
-subject to this approval policy and retain the atomic transaction validator.
+The check counts either an approving review against the PR's current head commit
+or an exact head-bound command comment from a configured administrator:
 
-The workflow uses `pull_request_target` so its definition and Python validator
-come from the trusted base branch. It fetches the proposed head only into the Git
-object database and treats every candidate file as inert data: it never checks
-out or executes PR code, exposes no secrets, and has read-only repository and PR
-permissions. CODEOWNERS also covers the base-branch Python package that this
-workflow executes, preventing an unreviewed change from weakening a later
+```text
+/approve-admission <full-40-character-head-SHA>
+```
+
+The command must be the comment's only non-whitespace text. Short SHAs, stale
+head SHAs, surrounding prose, duplicate comments from one administrator, and
+comments from logins outside the base branch's administrator allowlist do not
+count. Pushing a commit changes the head and invalidates every earlier command;
+editing or deleting a command comment also removes it from the next check. A PR
+author may use the command if they are an allowlisted administrator, avoiding
+GitHub's prohibition on self-approving reviews while retaining the configured
+permission set and `minimumApprovals` threshold.
+
+Ordinary contribution-only PRs are explicitly not subject to this approval
+policy and retain the atomic transaction validator.
+
+The workflow uses `pull_request_target` and `issue_comment` so its definition and
+Python validator come from the trusted base/default branch. It fetches the
+proposed head only into the Git object database and treats every candidate file
+as inert data: it never checks out or executes PR code, exposes no secrets, and
+has read-only repository, PR, and issue permissions. CODEOWNERS also covers the
+base-branch Python package that this workflow executes, preventing an unreviewed
+change from weakening a later
 admission check. These are important invariants; do not add build,
 package-manager, or candidate-script execution to that workflow.
 

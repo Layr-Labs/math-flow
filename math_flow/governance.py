@@ -43,6 +43,10 @@ EXPECTED_IMPLEMENTATIONS = {
     },
 }
 LOGIN = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$")
+FULL_GIT_SHA = re.compile(r"^[0-9a-f]{40}$")
+ADMISSION_APPROVAL_COMMAND = re.compile(
+    r"^/approve-admission ([0-9a-fA-F]{40})$"
+)
 
 
 def _json_object(text: str, label: str) -> dict[str, object]:
@@ -307,11 +311,51 @@ def _load_policy(root: Path, base_sha: str) -> dict[str, object]:
     return _validate_policy(value)
 
 
+def head_bound_comment_approvers(
+    head_sha: str,
+    comments: object | None,
+) -> list[str]:
+    """Return authors of exact approval commands bound to ``head_sha``.
+
+    The caller supplies a current snapshot of PR comments normalized to
+    ``{"author": <GitHub login>, "body": <comment text>}`` objects. Deleted
+    comments are therefore absent, edited comments expose only their current
+    body, and commands for an older PR head cannot authorize a newer one.
+    """
+
+    if not FULL_GIT_SHA.fullmatch(head_sha):
+        raise MathFlowError("admission approval head must be a full Git SHA")
+    if comments is None:
+        return []
+    if not isinstance(comments, list):
+        raise MathFlowError("admission approval comments must be a JSON array")
+
+    approvers: set[str] = set()
+    for index, comment in enumerate(comments):
+        if (
+            not isinstance(comment, dict)
+            or set(comment) != {"author", "body"}
+            or not isinstance(comment.get("author"), str)
+            or not LOGIN.fullmatch(str(comment["author"]))
+            or not isinstance(comment.get("body"), str)
+        ):
+            raise MathFlowError(
+                f"admission approval comment {index} has an invalid shape"
+            )
+        command = ADMISSION_APPROVAL_COMMAND.fullmatch(
+            str(comment["body"]).strip()
+        )
+        if command is not None and command.group(1).lower() == head_sha:
+            approvers.add(str(comment["author"]))
+    return sorted(approvers, key=str.lower)
+
+
 def validate_admission_pr(
     root: Path,
     base: str,
     head: str,
     approvers: list[str] | None = None,
+    approval_comments: object | None = None,
 ) -> dict[str, object]:
     """Validate a governance-sensitive PR and its current-head admin approvals.
 
@@ -429,10 +473,14 @@ def validate_admission_pr(
     administrator_map = {
         str(login).lower(): str(login) for login in policy["administrators"]
     }
+    supplied_approvers = list(approvers or [])
+    supplied_approvers.extend(
+        head_bound_comment_approvers(head_sha, approval_comments)
+    )
     matched = sorted(
         {
             administrator_map[login.lower()]
-            for login in (approvers or [])
+            for login in supplied_approvers
             if login.lower() in administrator_map
         },
         key=str.lower,

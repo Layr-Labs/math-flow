@@ -11,6 +11,7 @@ from math_flow.cli import main
 from math_flow.errors import MathFlowError
 from math_flow.formation import validate_build_claim
 from math_flow.governance import (
+    head_bound_comment_approvers,
     list_active_projections,
     resolve_projection,
     validate_admission_pr,
@@ -107,6 +108,78 @@ class GovernanceRepositoryTests(unittest.TestCase):
         self.assertEqual(result["admissionType"], "problem")
         self.assertEqual(result["subjectId"], "new-problem")
         self.assertEqual(result["approvedBy"], ["Trusted-Admin"])
+
+    def test_exact_full_head_comment_authorizes_configured_admin(self) -> None:
+        write(self.root / "problems/new-problem/problem.md", "# New problem\n")
+        head = self.commit("Propose a problem")
+        comments = [
+            {
+                "author": "Trusted-Admin",
+                "body": f"/approve-admission {head}",
+            }
+        ]
+        result = validate_admission_pr(
+            self.root,
+            self.base,
+            head,
+            approval_comments=comments,
+        )
+        self.assertEqual(result["approvedBy"], ["Trusted-Admin"])
+
+        comments_path = self.root / "comments.json"
+        write_json(comments_path, comments)
+        self.assertEqual(
+            main(
+                [
+                    "--root",
+                    str(self.root),
+                    "validate-admission-pr",
+                    "--base",
+                    self.base,
+                    "--head",
+                    head,
+                    "--approval-comments",
+                    str(comments_path),
+                ]
+            ),
+            0,
+        )
+
+    def test_approval_comment_is_exact_head_bound_and_permissioned(self) -> None:
+        head = "a" * 40
+        comments = [
+            {"author": "Trusted-Admin", "body": f"/approve-admission {'b' * 40}"},
+            {"author": "Trusted-Admin", "body": f"please /approve-admission {head}"},
+            {"author": "Trusted-Admin", "body": f"/approve-admission {head[:12]}"},
+            {"author": "Someone-Else", "body": f"/approve-admission {head.upper()}"},
+            {"author": "Trusted-Admin", "body": f"\n/approve-admission {head.upper()}\n"},
+            {"author": "Trusted-Admin", "body": f"/approve-admission {head}"},
+        ]
+        self.assertEqual(
+            head_bound_comment_approvers(head, comments),
+            ["Someone-Else", "Trusted-Admin"],
+        )
+        with self.assertRaisesRegex(MathFlowError, "full Git SHA"):
+            head_bound_comment_approvers("a" * 12, comments)
+        with self.assertRaisesRegex(MathFlowError, "JSON array"):
+            head_bound_comment_approvers(head, {})
+        with self.assertRaisesRegex(MathFlowError, "invalid shape"):
+            head_bound_comment_approvers(head, [{"author": "Trusted-Admin"}])
+
+        write(self.root / "problems/new-problem/problem.md", "# New problem\n")
+        actual_head = self.commit("Propose a problem")
+        with self.assertRaisesRegex(MathFlowError, "needs 1 current-head admin"):
+            validate_admission_pr(
+                self.root,
+                self.base,
+                actual_head,
+                approval_comments=[
+                    {
+                        "author": "Someone-Else",
+                        "body": f"/approve-admission {actual_head}",
+                    }
+                ],
+            )
 
     def test_problem_admission_must_be_a_separate_one_file_pr(self) -> None:
         write(self.root / "problems/new-problem/problem.md", "# New problem\n")
