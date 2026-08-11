@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useId, useMemo, useState } from "react";
+import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { collectProgramContributionIds } from "./programContributions.mjs";
 import { createViewerReferenceResolver } from "./referenceLinks.mjs";
 import { preferredTransactionDetailMode, resolveTransactionDetailMode } from "./transactionDetailMode.mjs";
@@ -207,48 +207,6 @@ export type ViewerCatalog = {
 
 type DetailMode = "node" | "transaction" | "judgment" | "credit" | "report";
 
-type OverlayStateOption = {
-  value: string;
-  label: string;
-};
-
-function OverlayStateSelector({
-  label,
-  value,
-  options,
-  status,
-  statusTone,
-  description,
-  placeholder,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: OverlayStateOption[];
-  status?: string;
-  statusTone?: "current" | "historical" | "stale";
-  description: string;
-  placeholder?: string;
-  onChange(value: string): void;
-}) {
-  const id = useId();
-  return (
-    <div className="overlay-state-selector">
-      <div className="overlay-state-heading">
-        <label htmlFor={id}>{label}</label>
-        {status && <span className={`overlay-state-status ${statusTone ?? "historical"}`}>{status}</span>}
-      </div>
-      <select id={id} value={value} onChange={(event) => onChange(event.target.value)}>
-        {placeholder && <option value="" disabled>{placeholder}</option>}
-        {options.map((option) => (
-          <option value={option.value} key={option.value}>{option.label}</option>
-        ))}
-      </select>
-      <small>{description}</small>
-    </div>
-  );
-}
-
 type ViewerState = {
   problemId?: string;
   projectionId?: string;
@@ -407,6 +365,14 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
     (item) => item.id === viewerState.creditProjectionId,
   );
   const creditProjection = requestedCreditProjection ?? compatibleCreditProjections[0];
+  const knowledgeRun = projection.data.runs.find((item) => item.id === viewerState.runId)
+    ?? projection.data.runs.find((item) => item.id === projection.data.latestRunId)
+    ?? projection.data.runs.at(-1)!;
+  const creditRun = creditProjection?.runs.find(
+    (item) => item.runDigest === viewerState.creditRunId,
+  ) ?? creditProjection?.runs.find(
+    (item) => item.runDigest === creditProjection.latestRunDigest,
+  );
 
   function chooseProblem(nextProblem: string) {
     const nextProjection = catalog.projections.find((item) => item.problemId === nextProblem);
@@ -453,6 +419,23 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
     });
   }
 
+  function chooseKnowledgeRun(nextRunId: string) {
+    const nextRun = projection.data.runs.find((item) => item.id === nextRunId);
+    if (!nextRun) return;
+    const currentNodeId = viewerState.nodeId ?? "root";
+    updateViewerState({
+      runId: nextRunId,
+      nodeId: nextRun.state.nodes[currentNodeId] ? currentNodeId : "root",
+      transactionId: undefined,
+      judgmentId: undefined,
+      detailMode: "node",
+    });
+  }
+
+  function chooseCreditRun(nextRunDigest: string) {
+    updateViewerState({ creditRunId: nextRunDigest || undefined });
+  }
+
   if (source === "checking") {
     return (
       <main className="repository-loading" aria-live="polite">
@@ -475,37 +458,77 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
             <small>{catalog.repository.canonicalRef} → {catalog.repository.projectionRef} · {source === "repository" ? "live repository state" : source === "checking" ? "checking repository" : "local fallback"}</small>
           </span>
         </div>
-        <label>
+        <label className="problem-selector">
           <span>Problem</span>
           <select value={effectiveProblem} onChange={(event) => chooseProblem(event.target.value)}>
             {problems.map((problem) => <option value={problem} key={problem}>{label(problem)}</option>)}
           </select>
         </label>
-        <label>
-          <span>Knowledge projection</span>
-          <select value={projection.id} onChange={(event) => chooseProjection(event.target.value)}>
-            {problemProjections.map((item) => <option value={item.id} key={item.id}>{item.label} · {short(item.latestRunDigest)}</option>)}
-          </select>
-        </label>
-        <label>
-          <span>Credit overlay</span>
-          <select
-            value={creditProjection?.id ?? ""}
-            onChange={(event) => chooseCreditProjection(event.target.value)}
-            disabled={!compatibleCreditProjections.length}
-          >
-            {!compatibleCreditProjections.length && <option value="">No published credit</option>}
-            {compatibleCreditProjections.map((item) => (
-              <option value={item.id} key={item.id}>
-                {item.label} · {item.latestRunDigest
-                  ? short(item.latestRunDigest)
-                  : item.runCount
-                    ? `${item.runCount} runs · choose`
-                    : "not run"}
-              </option>
-            ))}
-          </select>
-        </label>
+        <fieldset className="selector-bubble knowledge-selector-bubble">
+          <legend>Knowledge</legend>
+          <label>
+            <span>Projection</span>
+            <select aria-label="Knowledge projection" value={projection.id} onChange={(event) => chooseProjection(event.target.value)}>
+              {problemProjections.map((item) => <option value={item.id} key={item.id}>{item.label} · {short(item.latestRunDigest)}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>State</span>
+            <select aria-label="Knowledge state" value={knowledgeRun.id} onChange={(event) => chooseKnowledgeRun(event.target.value)}>
+              {projection.data.runs.map((item) => (
+                <option value={item.id} key={item.id}>
+                  State {String(item.ordinal).padStart(2, "0")} · {short(item.ledgerHead)} · {item.id === projection.data.latestRunId ? "current" : "historical"}
+                </option>
+              ))}
+            </select>
+            <small>{knowledgeRun.id === projection.data.latestRunId ? "Current state" : "Historical state"} · +{knowledgeRun.addedRevisionIds.length} revisions</small>
+          </label>
+        </fieldset>
+        <fieldset className="selector-bubble credit-selector-bubble">
+          <legend>Credit</legend>
+          <label>
+            <span>Projection</span>
+            <select
+              aria-label="Credit projection"
+              value={creditProjection?.id ?? ""}
+              onChange={(event) => chooseCreditProjection(event.target.value)}
+              disabled={!compatibleCreditProjections.length}
+            >
+              {!compatibleCreditProjections.length && <option value="">No credit projection</option>}
+              {compatibleCreditProjections.map((item) => (
+                <option value={item.id} key={item.id}>
+                  {item.label} · {item.latestRunDigest
+                    ? short(item.latestRunDigest)
+                    : item.runCount
+                      ? `${item.runCount} runs · choose`
+                      : "not run"}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>State</span>
+            <select
+              aria-label="Credit state"
+              value={creditRun?.runDigest ?? ""}
+              onChange={(event) => chooseCreditRun(event.target.value)}
+              disabled={!creditProjection?.runs.length}
+            >
+              {!creditProjection?.runs.length && <option value="">No published credit yet</option>}
+              {creditProjection?.runs.length && !creditRun && <option value="" disabled>Choose an assessment</option>}
+              {creditProjection?.runs.map((item, index) => (
+                <option value={item.runDigest} key={item.runDigest}>
+                  Assessment {String(index + 1).padStart(2, "0")} · {short(item.runDigest)} · {item.stale ? "stale" : "current"}
+                </option>
+              ))}
+            </select>
+            <small>{creditRun
+              ? `${creditRun.stale ? "Historical input lock" : "Current input lock"} · ${creditRun.assignments.length} assignments`
+              : creditProjection?.runs.length
+                ? "No credit terminal selected"
+                : "Waiting for the first verified run"}</small>
+          </label>
+        </fieldset>
       </nav>
       <KnowledgeViewer
         key={`${projection.id}:${projection.latestRunDigest}`}
@@ -781,21 +804,6 @@ export function KnowledgeViewer({
     return null;
   }
 
-  function chooseRun(nextId: string) {
-    const next = data.runs.find((item) => item.id === nextId)!;
-    onViewerStateChange({
-      runId: nextId,
-      nodeId: next.state.nodes[selectedNode.id] ? selectedNode.id : "root",
-      transactionId: undefined,
-      judgmentId: undefined,
-      detailMode: "node",
-    });
-  }
-
-  function chooseCreditRun(nextDigest: string) {
-    onViewerStateChange({ creditRunId: nextDigest });
-  }
-
   function openCreditKnowledgeRef(reference: CreditKnowledgeRef) {
     const dependencyRun = data.runs.find(
       (item) => item.runDigest === creditRun?.dependency.runDigest,
@@ -882,61 +890,6 @@ export function KnowledgeViewer({
           <span className="brand-mark">MF</span>
           <div><span className="eyebrow">Math Flow · research atlas</span><h1>{data.problem.title}</h1></div>
         </div>
-        <OverlayStateSelector
-          label="Knowledge state"
-          value={run.id}
-          options={data.runs.map((item) => ({
-            value: item.id,
-            label: `State ${String(item.ordinal).padStart(2, "0")} · ${short(item.ledgerHead)} · ${item.id === data.latestRunId ? "current" : "historical"}`,
-          }))}
-          status={run.id === data.latestRunId ? "Current state" : "Historical state"}
-          statusTone={run.id === data.latestRunId ? "current" : "historical"}
-          description={`Ledger ${short(run.ledgerHead)} · +${run.addedRevisionIds.length} revisions`}
-          onChange={chooseRun}
-        />
-        {creditProjection && creditRun && (
-          <div className="credit-strip" aria-label="Credit assignment projection">
-            <span className="eyebrow">Credit assignment · separate overlay</span>
-            <OverlayStateSelector
-              label={creditProjection.label}
-              value={creditRun.runDigest}
-              options={creditProjection.runs.map((item, index) => ({
-                value: item.runDigest,
-                label: `Assessment ${String(index + 1).padStart(2, "0")} · ${short(item.runDigest)} · ${item.stale ? "stale" : "current"}`,
-              }))}
-              status={creditRun.stale ? "Historical input lock" : "Current input lock"}
-              statusTone={creditRun.stale ? "stale" : "current"}
-              description={`Knowledge ${short(creditRun.dependency.runDigest)} · ${creditRun.assignments.length} assignments`}
-              onChange={chooseCreditRun}
-            />
-          </div>
-        )}
-        {creditProjection && !creditRun && (
-          <div className="credit-strip credit-strip-empty" aria-label="Credit assignment projection">
-            <span className="eyebrow">Credit assignment · separate overlay</span>
-            {creditProjection.runs.length ? (
-              <>
-                <strong>No credit run selected</strong>
-                <OverlayStateSelector
-                  label={creditProjection.selectionStatus === "ambiguous" ? "Multiple equally applicable runs" : "Published assessments"}
-                  value=""
-                  options={creditProjection.runs.map((item, index) => ({
-                    value: item.runDigest,
-                    label: `Assessment ${String(index + 1).padStart(2, "0")} · ${short(item.runDigest)} · ${item.stale ? "stale" : "current"}`,
-                  }))}
-                  description="No projection terminal chooses one automatically."
-                  placeholder="Choose an assessment"
-                  onChange={chooseCreditRun}
-                />
-              </>
-            ) : (
-              <>
-                <strong>No published credit yet</strong>
-                <small>{creditProjection.label} is admitted and waiting for its first verified run.</small>
-              </>
-            )}
-          </div>
-        )}
         <div className="run-metrics">
           <span><strong>{Object.keys(nodes).length}</strong> nodes</span>
           <span><strong>{run.revisionIds.length}</strong> revisions</span>

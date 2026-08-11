@@ -55,10 +55,13 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /Submission<\/button>/);
   assert.match(viewer, /Judgment<\/button>/);
   assert.match(viewer, /Credit<\/button>/);
-  assert.match(viewer, /Credit overlay/);
-  assert.equal((viewer.match(/<OverlayStateSelector/g) ?? []).length, 3);
+  assert.match(viewer, /className="selector-bubble knowledge-selector-bubble"/);
+  assert.match(viewer, /className="selector-bubble credit-selector-bubble"/);
+  assert.match(viewer, /aria-label="Knowledge projection"/);
+  assert.match(viewer, /aria-label="Knowledge state"/);
+  assert.match(viewer, /aria-label="Credit projection"/);
+  assert.match(viewer, /aria-label="Credit state"/);
   assert.doesNotMatch(viewer, /className="run-strip"/);
-  assert.match(viewer, /label="Knowledge state"/);
   assert.match(viewer, /Historical state/);
   assert.match(viewer, /Historical input lock/);
   assert.match(viewer, /detailMode: preferredTransactionDetailMode\(viewerState\.detailMode\)/);
@@ -89,7 +92,8 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(styles, /\.action-update/);
   assert.match(styles, /\.action-retire/);
   assert.match(styles, /\.action-restore/);
-  assert.match(styles, /\.overlay-state-selector select/);
+  assert.match(styles, /\.selector-bubble/);
+  assert.match(styles, /\.credit-selector-bubble/);
   assert.doesNotMatch(styles, /\.run-strip/);
 
   const parsed = JSON.parse(data);
