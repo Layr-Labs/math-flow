@@ -23,7 +23,9 @@ npm run dev
 The viewer supports repository projection selection, run-by-run time travel,
 full submission inspection, raw and structured primary/reconciliation judgment
 review, transaction evidence filtering, knowledge-tree search, adjudication
-revision history, and knowledge-build report review.
+revision history, and knowledge-build report review. The complete active view is
+mirrored in the query string, so its URL can be refreshed or shared without
+losing the selected projection, state, artifact, detail tab, or search filter.
 
 Use `npm test` for a production build plus rendered-HTML smoke tests, and
 `npm run lint` for static checks.

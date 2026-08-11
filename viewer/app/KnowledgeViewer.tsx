@@ -1,7 +1,8 @@
 "use client";
 
-import { Fragment, type CSSProperties, type ReactNode, useEffect, useMemo, useState } from "react";
+import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { createViewerReferenceResolver } from "./referenceLinks.mjs";
+import { applyViewerStateToSearch, parseViewerState } from "./viewerState.mjs";
 
 type Ref = {
   kind: string;
@@ -140,6 +141,19 @@ export type ViewerCatalog = {
   defaultProjectionId: string | null;
 };
 
+type DetailMode = "node" | "transaction" | "judgment" | "report";
+
+type ViewerState = {
+  problemId?: string;
+  projectionId?: string;
+  runId?: string;
+  nodeId?: string;
+  transactionId?: string;
+  judgmentId?: string;
+  query?: string;
+  detailMode?: DetailMode;
+};
+
 const short = (value: string | null, size = 7) =>
   value ? value.replace(/^sha256:/, "").slice(0, size) : "genesis";
 
@@ -203,8 +217,24 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
   };
   const [catalog, setCatalog] = useState(fallbackCatalog);
   const [source, setSource] = useState<"checking" | "repository" | "fallback">("checking");
-  const [problemId, setProblemId] = useState(fallbackProjection.problemId);
-  const [projectionId, setProjectionId] = useState(fallbackProjection.id);
+  const [viewerState, setViewerState] = useState<ViewerState>(() =>
+    typeof window === "undefined" ? {} : parseViewerState(window.location.search) as ViewerState,
+  );
+  const updateViewerState = useCallback((patch: Partial<ViewerState>) => {
+    setViewerState((current) => ({ ...current, ...patch }));
+  }, []);
+
+  useEffect(() => {
+    const restoreState = () => setViewerState(parseViewerState(window.location.search) as ViewerState);
+    window.addEventListener("popstate", restoreState);
+    return () => window.removeEventListener("popstate", restoreState);
+  }, []);
+
+  useEffect(() => {
+    const search = applyViewerStateToSearch(window.location.search, viewerState);
+    const nextUrl = `${window.location.pathname}${search}${window.location.hash}`;
+    window.history.replaceState(window.history.state, "", nextUrl);
+  }, [viewerState]);
 
   useEffect(() => {
     let active = true;
@@ -216,9 +246,6 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
         if (!isViewerCatalog(next)) throw new Error("catalog shape is invalid");
         if (!active) return;
         setCatalog(next);
-        const preferred = next.projections.find((item) => item.id === next.defaultProjectionId) ?? next.projections[0];
-        setProblemId((current) => next.projections.some((item) => item.problemId === current) ? current : preferred.problemId);
-        setProjectionId((current) => next.projections.some((item) => item.id === current) ? current : preferred.id);
         setSource("repository");
       } catch {
         if (active) setSource("fallback");
@@ -233,15 +260,41 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
   }, []);
 
   const problems = [...new Set(catalog.projections.map((item) => item.problemId))].sort();
-  const effectiveProblem = problems.includes(problemId) ? problemId : problems[0];
+  const requestedProjection = catalog.projections.find((item) => item.id === viewerState.projectionId);
+  const preferredProjection = catalog.projections.find((item) => item.id === catalog.defaultProjectionId) ?? catalog.projections[0];
+  const effectiveProblem = requestedProjection?.problemId ??
+    (viewerState.problemId && problems.includes(viewerState.problemId) ? viewerState.problemId : preferredProjection.problemId);
   const problemProjections = catalog.projections.filter((item) => item.problemId === effectiveProblem);
-  const projection = problemProjections.find((item) => item.id === projectionId) ?? problemProjections[0];
+  const projection = requestedProjection ?? problemProjections[0];
 
   function chooseProblem(nextProblem: string) {
     const nextProjection = catalog.projections.find((item) => item.problemId === nextProblem);
     if (!nextProjection) return;
-    setProblemId(nextProblem);
-    setProjectionId(nextProjection.id);
+    updateViewerState({
+      problemId: nextProblem,
+      projectionId: nextProjection.id,
+      runId: undefined,
+      nodeId: undefined,
+      transactionId: undefined,
+      judgmentId: undefined,
+      query: undefined,
+      detailMode: undefined,
+    });
+  }
+
+  function chooseProjection(nextProjectionId: string) {
+    const nextProjection = catalog.projections.find((item) => item.id === nextProjectionId);
+    if (!nextProjection) return;
+    updateViewerState({
+      problemId: nextProjection.problemId,
+      projectionId: nextProjection.id,
+      runId: undefined,
+      nodeId: undefined,
+      transactionId: undefined,
+      judgmentId: undefined,
+      query: undefined,
+      detailMode: undefined,
+    });
   }
 
   if (source === "checking") {
@@ -274,12 +327,19 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
         </label>
         <label>
           <span>Projection</span>
-          <select value={projection.id} onChange={(event) => setProjectionId(event.target.value)}>
+          <select value={projection.id} onChange={(event) => chooseProjection(event.target.value)}>
             {problemProjections.map((item) => <option value={item.id} key={item.id}>{item.label} · {short(item.latestRunDigest)}</option>)}
           </select>
         </label>
       </nav>
-      <KnowledgeViewer key={`${projection.id}:${projection.latestRunDigest}`} data={projection.data} />
+      <KnowledgeViewer
+        key={`${projection.id}:${projection.latestRunDigest}`}
+        data={projection.data}
+        problemId={effectiveProblem}
+        projectionId={projection.id}
+        viewerState={viewerState}
+        onViewerStateChange={updateViewerState}
+      />
     </div>
   );
 }
@@ -358,16 +418,22 @@ function TypeMark({ type }: { type: string }) {
   return <span className={`type-mark type-${type}`} aria-hidden="true">{marks[type] ?? "·"}</span>;
 }
 
-export function KnowledgeViewer({ data }: { data: ViewerData }) {
+export function KnowledgeViewer({
+  data,
+  problemId,
+  projectionId,
+  viewerState,
+  onViewerStateChange,
+}: {
+  data: ViewerData;
+  problemId: string;
+  projectionId: string;
+  viewerState: ViewerState;
+  onViewerStateChange(patch: Partial<ViewerState>): void;
+}) {
   const judgments = useMemo(() => data.judgments ?? [], [data.judgments]);
-  const [runId, setRunId] = useState(data.latestRunId);
-  const [nodeId, setNodeId] = useState("root");
-  const [transactionId, setTransactionId] = useState<string | null>(null);
-  const [judgmentId, setJudgmentId] = useState<string | null>(judgments.at(-1)?.judgmentId ?? null);
-  const [query, setQuery] = useState("");
-  const [detailMode, setDetailMode] = useState<"node" | "transaction" | "judgment" | "report">("node");
-
-  const run = data.runs.find((item) => item.id === runId) ?? data.runs.at(-1)!;
+  const query = viewerState.query ?? "";
+  const run = data.runs.find((item) => item.id === viewerState.runId) ?? data.runs.at(-1)!;
   const runLedgerPosition = data.transactions.find(
     (item) => item.transactionId === (run.problemLedgerHead ?? run.ledgerHead),
   )?.ordinal ?? data.transactions.length;
@@ -404,9 +470,8 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
     () => createViewerReferenceResolver(referenceTransactions, referenceJudgments),
     [referenceTransactions, referenceJudgments],
   );
-  const selectedJudgment = runJudgments.find((item) => item.judgmentId === judgmentId) ?? runJudgments.at(-1);
   const nodes = run.state.nodes;
-  const selectedNode = nodes[nodeId] ?? nodes.root;
+  const selectedNode = nodes[viewerState.nodeId ?? "root"] ?? nodes.root;
   const runRevisionSet = useMemo(() => new Set(run.revisionIds), [run.revisionIds]);
   const nodeRevisions = data.revisions.filter(
     (item) => item.nodeId === selectedNode.id && runRevisionSet.has(item.revisionId),
@@ -443,6 +508,30 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
     return visible;
   }, [nodes, query]);
 
+  const selectedTransaction = data.transactions.find((item) =>
+    item.transactionId === viewerState.transactionId && item.ordinal <= runLedgerPosition,
+  );
+  const transactionId = selectedTransaction?.transactionId;
+  const transactionJudgments = selectedTransaction
+    ? runJudgments.filter((item) => judgmentMentionsTransaction(item, selectedTransaction.transactionId))
+    : [];
+  const selectedJudgment = transactionJudgments.find((item) => item.judgmentId === viewerState.judgmentId) ?? transactionJudgments.at(-1);
+  const detailMode: DetailMode = selectedTransaction
+    ? viewerState.detailMode === "judgment" && transactionJudgments.length ? "judgment" : "transaction"
+    : viewerState.detailMode === "report" ? "report" : "node";
+
+  useEffect(() => {
+    onViewerStateChange({
+      problemId,
+      projectionId,
+      runId: run.id,
+      nodeId: selectedNode.id,
+      transactionId,
+      judgmentId: selectedTransaction ? selectedJudgment?.judgmentId : undefined,
+      detailMode,
+    });
+  }, [detailMode, onViewerStateChange, problemId, projectionId, run.id, selectedJudgment?.judgmentId, selectedNode.id, selectedTransaction, transactionId]);
+
   const transactionDirectIds = useMemo(() => new Set(
     transactionId
       ? Object.values(nodes)
@@ -476,10 +565,13 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
 
   function chooseRun(nextId: string) {
     const next = data.runs.find((item) => item.id === nextId)!;
-    setRunId(nextId);
-    if (!next.state.nodes[nodeId]) setNodeId("root");
-    setTransactionId(null);
-    setDetailMode("node");
+    onViewerStateChange({
+      runId: nextId,
+      nodeId: next.state.nodes[selectedNode.id] ? selectedNode.id : "root",
+      transactionId: undefined,
+      judgmentId: undefined,
+      detailMode: "node",
+    });
   }
 
   function openJudgment(nextJudgmentId: string) {
@@ -491,16 +583,16 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
         judgmentMentionsTransaction(judgment, item.transactionId),
       )?.transactionId;
     if (!relevantTransaction) return;
-    setTransactionId(relevantTransaction);
-    setJudgmentId(nextJudgmentId);
-    setDetailMode("judgment");
+    onViewerStateChange({ transactionId: relevantTransaction, judgmentId: nextJudgmentId, detailMode: "judgment" });
   }
 
   function openTransaction(nextTransactionId: string) {
-    setTransactionId(nextTransactionId);
     const linked = runJudgments.find((item) => judgmentMentionsTransaction(item, nextTransactionId));
-    if (linked) setJudgmentId(linked.judgmentId);
-    setDetailMode("transaction");
+    onViewerStateChange({
+      transactionId: nextTransactionId,
+      judgmentId: linked?.judgmentId,
+      detailMode: "transaction",
+    });
   }
 
   function TreeNode({ id, depth = 0 }: { id: string; depth?: number }) {
@@ -516,7 +608,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
       >
         <button
           className={`node-card ${selectedNode.id === id ? "selected" : ""} ${nodeRelation ?? ""} ${dimmed ? "dimmed" : ""}`}
-          onClick={() => { setNodeId(id); setTransactionId(null); setDetailMode("node"); }}
+          onClick={() => onViewerStateChange({ nodeId: id, transactionId: undefined, judgmentId: undefined, detailMode: "node" })}
           aria-pressed={selectedNode.id === id}
         >
           <TypeMark type={node.type} />
@@ -536,10 +628,6 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
     );
   }
 
-  const selectedTransaction = data.transactions.find((item) => item.transactionId === transactionId);
-  const transactionJudgments = selectedTransaction
-    ? runJudgments.filter((item) => judgmentMentionsTransaction(item, selectedTransaction.transactionId))
-    : [];
   const referenceActions: ReferenceActions = {
     resolver: referenceResolver,
     openTransaction,
@@ -595,8 +683,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
                   key={transaction.transactionId}
                   onClick={() => {
                     if (active) {
-                      setTransactionId(null);
-                      setDetailMode("node");
+                      onViewerStateChange({ transactionId: undefined, judgmentId: undefined, detailMode: "node" });
                     } else {
                       openTransaction(transaction.transactionId);
                     }
@@ -630,7 +717,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
             <div><span className="eyebrow">Knowledge build · state {run.ordinal}</span><h2>Knowledge state</h2></div>
             <label className="search-box">
               <span>⌕</span>
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a claim, proof, or lemma" />
+              <input value={query} onChange={(event) => onViewerStateChange({ query: event.target.value })} placeholder="Find a claim, proof, or lemma" />
             </label>
           </div>
           {(query || transactionId) && (
@@ -640,7 +727,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
                   ? `Highlighting ${transactionDirectIds.size} direct connection${transactionDirectIds.size === 1 ? "" : "s"} to transaction ${selectedTransaction?.ordinal ?? "·"}; the full state remains visible.`
                   : `Showing ${visibleIds.size} search-connected node${visibleIds.size === 1 ? "" : "s"}.`}
               </span>
-              <button onClick={() => { setQuery(""); setTransactionId(null); setDetailMode("node"); }}>Clear</button>
+              <button onClick={() => onViewerStateChange({ query: undefined, transactionId: undefined, judgmentId: undefined, detailMode: "node" })}>Clear</button>
             </div>
           )}
           <div className="tree-canvas">
@@ -661,13 +748,13 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
         <aside className="detail-panel panel">
           {selectedTransaction ? (
             <div className="detail-tabs detail-tabs-transaction" role="tablist" aria-label="Transaction details">
-              <button role="tab" aria-selected={detailMode === "transaction"} onClick={() => setDetailMode("transaction")}>Submission</button>
-              <button role="tab" aria-selected={detailMode === "judgment"} disabled={!transactionJudgments.length} onClick={() => setDetailMode("judgment")}>Judgment</button>
+              <button role="tab" aria-selected={detailMode === "transaction"} onClick={() => onViewerStateChange({ detailMode: "transaction" })}>Submission</button>
+              <button role="tab" aria-selected={detailMode === "judgment"} disabled={!transactionJudgments.length} onClick={() => onViewerStateChange({ detailMode: "judgment" })}>Judgment</button>
             </div>
           ) : (
             <div className="detail-tabs detail-tabs-node" role="tablist" aria-label="Knowledge node details">
-              <button role="tab" aria-selected={detailMode === "node"} onClick={() => setDetailMode("node")}>Node</button>
-              <button role="tab" aria-selected={detailMode === "report"} onClick={() => setDetailMode("report")}>Build report</button>
+              <button role="tab" aria-selected={detailMode === "node"} onClick={() => onViewerStateChange({ detailMode: "node" })}>Node</button>
+              <button role="tab" aria-selected={detailMode === "report"} onClick={() => onViewerStateChange({ detailMode: "report" })}>Build report</button>
             </div>
           )}
           {detailMode === "node" ? (
@@ -734,7 +821,7 @@ export function KnowledgeViewer({ data }: { data: ViewerData }) {
               {transactionJudgments.length > 1 && (
                 <label className="judgment-picker">
                   <span>Published judgment</span>
-                  <select value={selectedJudgment.judgmentId} onChange={(event) => setJudgmentId(event.target.value)}>
+                  <select value={selectedJudgment.judgmentId} onChange={(event) => onViewerStateChange({ judgmentId: event.target.value })}>
                     {transactionJudgments.map((judgment) => (
                       <option value={judgment.judgmentId} key={judgment.judgmentId}>
                         {judgment.judgmentKind} · {short(judgment.judgmentId)}

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 import { createViewerReferenceResolver } from "../app/referenceLinks.mjs";
+import { applyViewerStateToSearch, parseViewerState } from "../app/viewerState.mjs";
 
 const templateRoot = new URL("../", import.meta.url);
 
@@ -107,6 +108,32 @@ test("links only unique repository-known transaction and judgment references", (
     ],
   );
   assert.match(linked.filter((part) => typeof part === "string").join(""), /javascript:alert/);
+});
+
+test("round-trips viewer state through the query string", () => {
+  const search = applyViewerStateToSearch("?campaign=atlas&run=stale", {
+    problemId: "triangle-problem",
+    projectionId: "builder:main",
+    runId: "run-3",
+    nodeId: "claim/midpoint",
+    transactionId: "abc123",
+    judgmentId: "sha256:def456",
+    query: "parallel lines",
+    detailMode: "judgment",
+  });
+
+  assert.deepEqual(parseViewerState(search), {
+    problemId: "triangle-problem",
+    projectionId: "builder:main",
+    runId: "run-3",
+    nodeId: "claim/midpoint",
+    transactionId: "abc123",
+    judgmentId: "sha256:def456",
+    query: "parallel lines",
+    detailMode: "judgment",
+  });
+  assert.match(search, /campaign=atlas/);
+  assert.deepEqual(parseViewerState("?detail=unknown&node=root"), { nodeId: "root" });
 });
 
 test("proxies repository projection state through the worker", async () => {
