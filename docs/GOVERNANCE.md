@@ -68,11 +68,13 @@ policy and retain the atomic transaction validator.
 The workflow uses `pull_request_target` and `issue_comment` so its definition and
 Python validator come from the trusted base/default branch. It fetches the
 proposed head only into the Git object database and treats every candidate file
-as inert data: it never checks out or executes PR code, exposes no secrets, and
-has read-only repository, PR, and issue permissions. CODEOWNERS also covers the
-base-branch Python package that this workflow executes, preventing an unreviewed
-change from weakening a later
-admission check. These are important invariants; do not add build,
+as inert data: it never checks out or executes PR code and exposes no secrets.
+Repository, PR, and issue access is read-only. The narrowly scoped
+`checks: write` permission is used only to publish the trusted validation result
+on the resolved PR head, because an `issue_comment` workflow run is attached to
+the default-branch commit. CODEOWNERS also covers the base-branch Python package
+that this workflow executes, preventing an unreviewed change from weakening a
+later admission check. These are important invariants; do not add build,
 package-manager, or candidate-script execution to that workflow.
 
 ## Required repository settings
