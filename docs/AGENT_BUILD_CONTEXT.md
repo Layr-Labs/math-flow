@@ -137,7 +137,8 @@ automatic squash merge to main
 | Repository-backed viewer | Implemented and deployed through ChatGPT Sites | `viewer/` |
 | Non-UI agent context command | Implemented | `math_flow/context.py` |
 | Solver-facing repository skill | Implemented | `.agents/skills/math-flow-solver/` |
-| Typed dependencies and credit overlays | Not yet implemented; current active build | This document, `docs/PROJECTION_PROTOCOL.md` |
+| Typed projection dependencies | Implemented in the current credit-foundation change: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
+| Credit overlay profile and publication transport | Initial qualitative Markdown profile and independent `credit-assignment` run kind implemented; hosted runner not yet implemented | `protocol/profiles/credit-assignment-markdown-v1.json`, `math_flow/coordination.py` |
 | Objective verifier attestations | Not yet implemented as durable protocol artifacts | `docs/MVP.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
 
@@ -292,12 +293,15 @@ the task requires an end-to-end check.
 
 These are the most important gaps as of this document's reconciliation date:
 
-1. **Add typed projection dependencies and a credit overlay.** This is the
-   active build. Judgment reuse currently decouples a knowledge profile from its
-   primary judge by pinned judge identity, but credit and future overlays need
-   governed, typed dependencies on verified published artifacts. A credit run
-   should execute after its declared judgment/knowledge dependencies, append
-   content-addressed credit assessments, and never mutate mathematical knowledge.
+1. **Build the hosted credit overlay runner.** The dependency
+   foundation now lets a governed consumer name a producer and artifact role,
+   then lock `knowledge-state` to an exact verified scheduler-authoritative run.
+   A qualitative, non-zero-sum Markdown/index profile and independent published
+   run kind now define the first output example. The next slice should consume
+   the lock in a hosted credit-specific assessment, validate report/index
+   correspondence, and schedule only after declared inputs are current. Credit
+   must never mutate mathematical knowledge. Additional typed resolvers can be
+   added as new overlay inputs are introduced.
 2. **Add reservations as canonical research transactions.** A reservation must
    be participant-authored evidence rather than an adjudication field. The
    credit overlay can consider priority, specificity, overlap, completion

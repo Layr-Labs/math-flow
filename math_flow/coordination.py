@@ -626,7 +626,12 @@ def publish_batch(projection_root: Path, bundle_dirs: list[Path]) -> dict[str, o
     for bundle_dir in bundle_dirs:
         manifest, manifest_digest = verify_bundle(bundle_dir)
         run_kind = manifest.get("runKind", "legacy-projection")
-        if run_kind not in {"judgment", "knowledge-build", "legacy-projection"}:
+        if run_kind not in {
+            "credit-assignment",
+            "judgment",
+            "knowledge-build",
+            "legacy-projection",
+        }:
             raise MathFlowError(f"unsupported run kind for publication: {run_kind}")
         digest_hex = manifest_digest.removeprefix("sha256:")
         relative = Path("objects") / str(run_kind) / digest_hex[:2] / digest_hex

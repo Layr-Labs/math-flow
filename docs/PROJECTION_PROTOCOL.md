@@ -245,3 +245,69 @@ parallel: each publisher refetches the orphan `projections` branch, three-way
 merges its scheduler lane, and retries an expected-head race. Git publication
 order has no semantic meaning;
 judgment, reconciliation, and state relationships are always explicit digests.
+
+## Typed projection dependencies
+
+A governed projection may declare dependencies without making their outputs part
+of its own schema:
+
+```json
+{
+  "dependencies": [
+    {
+      "name": "knowledge",
+      "projectionId": "openrouter-no-three-in-line-research-programs-v2",
+      "artifactRole": "knowledge-state"
+    }
+  ]
+}
+```
+
+The name is local to the consumer. The projection ID selects a governed producer,
+and the artifact role is the dependency type. Registry validation rejects unknown
+targets, duplicate names, incomplete problem coverage, self-dependencies, and
+cycles. A declaration names a logical source; it does not point at a mutable file
+or silently select whichever run happens to be newest.
+
+Before execution, a runner materializes a dependency lock. The current
+`resolve-projection-dependencies` implementation resolves `knowledge-state` to
+the scheduler-authoritative terminal of the producer's exact projection-spec
+digest. It verifies the content-addressed bundle and artifact, requires the lane
+to have no active build or pending inputs, and requires its problem-ledger digest
+to equal the consumer's current problem ledger. The lock records both projection
+digests, the terminal run digest, ledger provenance, and exact artifact digest;
+the lock itself is content-addressed. A downstream run can therefore be replayed
+against the same bytes even after the producer advances.
+
+Artifact roles are extensible protocol identifiers. Support for a role is an
+explicit runner capability, not permission to execute repository code. The first
+resolver supports `knowledge-state`; future handlers can add judgments,
+reconciliations, verifier attestations, reservations, or prior overlay state
+without changing the dependency envelope.
+
+## Credit as an independent overlay
+
+Credit assignment should be a separate projection that consumes a locked
+knowledge state and canonical contribution transactions. It must not alter
+primary judgments, reconciliation outcomes, or mathematical knowledge. Its
+detailed reasoning belongs in Markdown; a profile-specific structured artifact
+may index assignments to stable transaction IDs and the exact knowledge nodes or
+revisions being credited. Published credit runs remain immutable, so a later
+assessment changes credit by publishing a new run rather than rewriting an old
+one.
+
+The initial `math-flow/credit-assignment-markdown-v1` profile is deliberately
+qualitative and non-zero-sum. It records each contribution's significance, roles,
+knowledge references, reservation references, and exact Markdown report section.
+That is an example policy surface, not a core credit formula. Another governed
+credit projection can use numerical shares, Shapley-style measures, peer voting,
+or another schema while reusing the same dependency lock and run envelope. The
+publisher already accepts `credit-assignment` bundles as independent immutable
+objects; the hosted credit runner and scheduler are the next implementation
+slice.
+
+Research-direction reservations belong in participant-authored canonical
+transactions, not in judge or knowledge state. A credit profile may treat an
+earlier, specific reservation as evidence of priority while also considering
+overlap, completion quality, abandonment, and independent work. A reservation is
+neither permanent ownership nor mathematical evidence by itself.

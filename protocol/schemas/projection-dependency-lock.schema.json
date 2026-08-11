@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.dev/schemas/projection-dependency-lock.schema.json",
+  "title": "Math Flow projection dependency lock",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "consumer",
+    "problemLedger",
+    "dependencies",
+    "dependencyLockDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "consumer": {
+      "type": "object",
+      "required": [
+        "projectionId",
+        "projectionSpecDigest",
+        "problemId",
+        "canonicalHead"
+      ],
+      "properties": {
+        "projectionId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "projectionSpecDigest": { "$ref": "#/$defs/digest" },
+        "problemId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "canonicalHead": { "$ref": "#/$defs/gitSha" }
+      },
+      "additionalProperties": false
+    },
+    "problemLedger": {
+      "type": "object",
+      "required": ["problemLedgerHead", "problemLedgerDigest"],
+      "properties": {
+        "problemLedgerHead": { "$ref": "#/$defs/gitSha" },
+        "problemLedgerDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "projectionId",
+          "projectionSpecDigest",
+          "artifactRole",
+          "runKind",
+          "runDigest",
+          "ledgerHead",
+          "problemLedgerHead",
+          "problemLedgerDigest",
+          "artifact"
+        ],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "projectionId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "projectionSpecDigest": { "$ref": "#/$defs/digest" },
+          "artifactRole": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "runKind": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "runDigest": { "$ref": "#/$defs/digest" },
+          "ledgerHead": { "$ref": "#/$defs/gitSha" },
+          "problemLedgerHead": { "$ref": "#/$defs/gitSha" },
+          "problemLedgerDigest": { "$ref": "#/$defs/digest" },
+          "artifact": {
+            "type": "object",
+            "required": ["path", "role", "mediaType", "digest", "bytes"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "role": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+              "mediaType": { "type": "string", "minLength": 1 },
+              "digest": { "$ref": "#/$defs/digest" },
+              "bytes": { "type": "integer", "minimum": 0 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "dependencyLockDigest": { "$ref": "#/$defs/digest" }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    }
+  },
+  "additionalProperties": false
+}

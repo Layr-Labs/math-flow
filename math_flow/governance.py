@@ -17,7 +17,7 @@ from .repository import (
 )
 
 
-PROJECTION_FIELDS = {
+PROJECTION_REQUIRED_FIELDS = {
     "schemaVersion",
     "id",
     "description",
@@ -29,6 +29,9 @@ PROJECTION_FIELDS = {
     "knowledgeBuilder",
     "scheduling",
 }
+PROJECTION_OPTIONAL_FIELDS = {"dependencies"}
+PROJECTION_DEPENDENCY_FIELDS = {"name", "projectionId", "artifactRole"}
+ARTIFACT_ROLE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 SCHEDULING_FIELDS = {
     "judgmentMaxParallel",
     "knowledgeMinimumIntervalSeconds",
@@ -80,9 +83,13 @@ def validate_projection_spec(
     projection_id: str,
     read_text: Callable[[str], str],
 ) -> dict[str, object]:
-    if not isinstance(value, dict) or set(value) != PROJECTION_FIELDS:
+    if (
+        not isinstance(value, dict)
+        or not PROJECTION_REQUIRED_FIELDS <= set(value)
+        or not set(value) <= PROJECTION_REQUIRED_FIELDS | PROJECTION_OPTIONAL_FIELDS
+    ):
         raise MathFlowError(
-            f"projection {projection_id!r} must contain exactly the supported fields"
+            f"projection {projection_id!r} has unsupported or missing fields"
         )
     if value.get("schemaVersion") != 1 or value.get("id") != projection_id:
         raise MathFlowError(
@@ -108,6 +115,50 @@ def validate_projection_spec(
     for problem in allowed:
         if problem != "*":
             validate_slug(problem, "allowed problem id")
+
+    dependencies = value.get("dependencies", [])
+    if not isinstance(dependencies, list) or any(
+        not isinstance(item, dict) or set(item) != PROJECTION_DEPENDENCY_FIELDS
+        for item in dependencies
+    ):
+        raise MathFlowError(
+            f"projection {projection_id!r} has invalid dependencies"
+        )
+    dependency_names: set[str] = set()
+    dependency_targets: set[tuple[str, str]] = set()
+    for dependency in dependencies:
+        name = dependency.get("name")
+        target = dependency.get("projectionId")
+        role = dependency.get("artifactRole")
+        if not isinstance(name, str):
+            raise MathFlowError(
+                f"projection {projection_id!r} dependency name must be a slug"
+            )
+        validate_slug(name, "projection dependency name")
+        if not isinstance(target, str):
+            raise MathFlowError(
+                f"projection {projection_id!r} dependency projectionId must be a slug"
+            )
+        validate_slug(target, "projection dependency projection id")
+        if target == projection_id:
+            raise MathFlowError(
+                f"projection {projection_id!r} cannot depend on itself"
+            )
+        if not isinstance(role, str) or not ARTIFACT_ROLE.fullmatch(role):
+            raise MathFlowError(
+                f"projection {projection_id!r} dependency artifactRole must be a slug"
+            )
+        if name in dependency_names:
+            raise MathFlowError(
+                f"projection {projection_id!r} dependency names must be unique"
+            )
+        target_key = (target, role)
+        if target_key in dependency_targets:
+            raise MathFlowError(
+                f"projection {projection_id!r} repeats a dependency target and artifact role"
+            )
+        dependency_names.add(name)
+        dependency_targets.add(target_key)
 
     for field, implementations in EXPECTED_IMPLEMENTATIONS.items():
         reference = _projection_reference(value.get(field), field)
@@ -139,14 +190,63 @@ def validate_projection_spec(
     return value
 
 
-def validate_projection_registry(root: Path) -> dict[str, object]:
-    root = root.resolve()
+def _validate_projection_graph(specs: dict[str, dict[str, object]]) -> None:
+    """Validate dependency references, problem coverage, and acyclicity."""
+
+    adjacency: dict[str, list[str]] = {}
+    for projection_id, spec in specs.items():
+        targets: list[str] = []
+        consumer_allowed = set(spec["allowedProblems"])
+        for dependency in spec.get("dependencies", []):
+            target_id = str(dependency["projectionId"])
+            target = specs.get(target_id)
+            if target is None:
+                raise MathFlowError(
+                    f"projection {projection_id!r} depends on unknown projection {target_id!r}"
+                )
+            producer_allowed = set(target["allowedProblems"])
+            covered = (
+                "*" in producer_allowed
+                or (
+                    "*" not in consumer_allowed
+                    and consumer_allowed <= producer_allowed
+                )
+            )
+            if not covered:
+                raise MathFlowError(
+                    f"projection {projection_id!r} dependency {target_id!r} "
+                    "does not cover every allowed problem"
+                )
+            targets.append(target_id)
+        adjacency[projection_id] = targets
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(projection_id: str) -> None:
+        if projection_id in visiting:
+            raise MathFlowError(
+                f"projection dependency graph contains a cycle at {projection_id!r}"
+            )
+        if projection_id in visited:
+            return
+        visiting.add(projection_id)
+        for target_id in adjacency[projection_id]:
+            visit(target_id)
+        visiting.remove(projection_id)
+        visited.add(projection_id)
+
+    for projection_id in sorted(adjacency):
+        visit(projection_id)
+
+
+def _worktree_projection_specs(root: Path) -> dict[str, dict[str, object]]:
     registry = root / "protocol" / "projections"
     if not registry.exists():
-        return {"projections": 0, "active": 0}
+        return {}
     if not registry.is_dir() or registry.is_symlink():
         raise MathFlowError(f"projection registry must be a real directory: {registry}")
-    specs: list[dict[str, object]] = []
+    specs: dict[str, dict[str, object]] = {}
     for path in sorted(registry.iterdir()):
         if not path.is_file() or path.suffix != ".json" or path.is_symlink():
             raise MathFlowError(
@@ -156,16 +256,50 @@ def validate_projection_registry(root: Path) -> dict[str, object]:
         value = _json_object(
             path.read_text(encoding="utf-8"), f"projection specification {path}"
         )
-        specs.append(
-            validate_projection_spec(
-                value,
-                path.stem,
-                lambda relative: (root / relative).read_text(encoding="utf-8"),
-            )
+        specs[path.stem] = validate_projection_spec(
+            value,
+            path.stem,
+            lambda relative: (root / relative).read_text(encoding="utf-8"),
         )
+    _validate_projection_graph(specs)
+    return specs
+
+
+def _projection_specs_at(
+    root: Path, resolved_head: str
+) -> dict[str, dict[str, object]]:
+    specs: dict[str, dict[str, object]] = {}
+    for path in list_files_at(root, resolved_head, "protocol/projections"):
+        parts = PurePosixPath(path).parts
+        if (
+            len(parts) != 3
+            or parts[:2] != ("protocol", "projections")
+            or not parts[2].endswith(".json")
+        ):
+            raise MathFlowError(
+                f"projection registry may only contain JSON files: {path}"
+            )
+        projection_id = parts[2][:-5]
+        validate_slug(projection_id, "projection id")
+        value = _json_object(
+            read_at(root, resolved_head, path),
+            f"projection specification {path}",
+        )
+        specs[projection_id] = validate_projection_spec(
+            value,
+            projection_id,
+            lambda relative: read_at(root, resolved_head, relative),
+        )
+    _validate_projection_graph(specs)
+    return specs
+
+
+def validate_projection_registry(root: Path) -> dict[str, object]:
+    root = root.resolve()
+    specs = _worktree_projection_specs(root)
     return {
         "projections": len(specs),
-        "active": sum(spec.get("status") == "active" for spec in specs),
+        "active": sum(spec.get("status") == "active" for spec in specs.values()),
     }
 
 
@@ -173,19 +307,9 @@ def projection_registry_index(root: Path) -> dict[str, dict[str, object]]:
     """Return active projection metadata keyed by its content digest."""
 
     root = root.resolve()
-    registry = root / "protocol" / "projections"
-    if not registry.is_dir():
-        return {}
+    specs = _worktree_projection_specs(root)
     indexed: dict[str, dict[str, object]] = {}
-    for path in sorted(registry.glob("*.json")):
-        value = _json_object(
-            path.read_text(encoding="utf-8"), f"projection specification {path}"
-        )
-        spec = validate_projection_spec(
-            value,
-            path.stem,
-            lambda relative: (root / relative).read_text(encoding="utf-8"),
-        )
+    for spec in specs.values():
         if spec["status"] != "active":
             continue
         digest = f"sha256:{sha256_json(spec)}"
@@ -204,15 +328,14 @@ def resolve_projection(
     validate_slug(projection, "projection id")
     validate_slug(problem, "problem id")
     resolved_head = "WORKTREE" if head == "WORKTREE" else resolve_commit(root, head)
-    path = f"protocol/projections/{projection}.json"
-    value = _json_object(
-        read_at(root, resolved_head, path), f"projection specification {path}"
+    specs = (
+        _worktree_projection_specs(root)
+        if resolved_head == "WORKTREE"
+        else _projection_specs_at(root, resolved_head)
     )
-    spec = validate_projection_spec(
-        value,
-        projection,
-        lambda relative: read_at(root, resolved_head, relative),
-    )
+    spec = specs.get(projection)
+    if spec is None:
+        raise MathFlowError(f"unknown projection: {projection}")
     if spec["status"] != "active":
         raise MathFlowError(f"projection is not active: {projection}")
     allowed = spec["allowedProblems"]
@@ -222,6 +345,28 @@ def resolve_projection(
         )
     read_at(root, resolved_head, f"problems/{problem}/problem.md")
     scheduling = spec["scheduling"]
+    dependencies: list[dict[str, object]] = []
+    for dependency in spec.get("dependencies", []):
+        target_id = str(dependency["projectionId"])
+        target = specs[target_id]
+        target_allowed = target["allowedProblems"]
+        if target["status"] != "active":
+            raise MathFlowError(
+                f"projection {projection!r} dependency is not active: {target_id}"
+            )
+        if "*" not in target_allowed and problem not in target_allowed:
+            raise MathFlowError(
+                f"projection {projection!r} dependency {target_id!r} is not "
+                f"approved for problem {problem!r}"
+            )
+        dependencies.append(
+            {
+                "name": dependency["name"],
+                "projectionId": target_id,
+                "projectionSpecDigest": f"sha256:{sha256_json(target)}",
+                "artifactRole": dependency["artifactRole"],
+            }
+        )
     return {
         "schemaVersion": 1,
         "projectionId": projection,
@@ -231,6 +376,7 @@ def resolve_projection(
         "primaryJudge": spec["primaryJudge"],
         "reconciliationJudge": spec["reconciliationJudge"],
         "knowledgeBuilder": spec["knowledgeBuilder"],
+        "dependencies": dependencies,
         "scheduling": scheduling,
     }
 
@@ -244,31 +390,13 @@ def list_active_projections(
     validate_slug(problem, "problem id")
     resolved_head = "WORKTREE" if head == "WORKTREE" else resolve_commit(root, head)
     read_at(root, resolved_head, f"problems/{problem}/problem.md")
-    prefix = "protocol/projections"
-    paths = list_files_at(root, resolved_head, prefix)
+    specs = (
+        _worktree_projection_specs(root)
+        if resolved_head == "WORKTREE"
+        else _projection_specs_at(root, resolved_head)
+    )
     projection_ids: list[str] = []
-    for path in paths:
-        parts = PurePosixPath(path).parts
-        if len(parts) != 3 or parts[:2] != ("protocol", "projections"):
-            raise MathFlowError(
-                f"projection registry may only contain JSON files: {path}"
-            )
-        filename = parts[2]
-        if not filename.endswith(".json"):
-            raise MathFlowError(
-                f"projection registry may only contain JSON files: {path}"
-            )
-        projection_id = filename[:-5]
-        validate_slug(projection_id, "projection id")
-        value = _json_object(
-            read_at(root, resolved_head, path),
-            f"projection specification {path}",
-        )
-        spec = validate_projection_spec(
-            value,
-            projection_id,
-            lambda relative: read_at(root, resolved_head, relative),
-        )
+    for projection_id, spec in specs.items():
         allowed = spec["allowedProblems"]
         if spec["status"] == "active" and ("*" in allowed or problem in allowed):
             projection_ids.append(projection_id)

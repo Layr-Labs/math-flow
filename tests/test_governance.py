@@ -216,6 +216,83 @@ class GovernanceRepositoryTests(unittest.TestCase):
         self.assertEqual(resolved["primaryJudge"], "protocol/judges/primary.json")
         self.assertEqual(resolved["scheduling"]["judgmentMaxParallel"], 8)
         self.assertRegex(resolved["projectionSpecDigest"], r"^sha256:[0-9a-f]{64}$")
+        self.assertEqual(resolved["dependencies"], [])
+
+    def test_projection_dependencies_are_governed_typed_and_resolved(self) -> None:
+        producer = projection_spec("producer-v1")
+        consumer = projection_spec("credit-v1")
+        consumer["dependencies"] = [
+            {
+                "name": "knowledge",
+                "projectionId": "producer-v1",
+                "artifactRole": "knowledge-state",
+            }
+        ]
+        write_json(
+            self.root / "protocol/projections/producer-v1.json", producer
+        )
+        write_json(self.root / "protocol/projections/credit-v1.json", consumer)
+        head = self.commit("Add typed projection dependency")
+
+        self.assertEqual(
+            validate_projection_registry(self.root),
+            {"projections": 2, "active": 2},
+        )
+        resolved = resolve_projection(self.root, "credit-v1", "demo", head)
+        self.assertEqual(
+            resolved["dependencies"],
+            [
+                {
+                    "name": "knowledge",
+                    "projectionId": "producer-v1",
+                    "projectionSpecDigest": resolve_projection(
+                        self.root, "producer-v1", "demo", head
+                    )["projectionSpecDigest"],
+                    "artifactRole": "knowledge-state",
+                }
+            ],
+        )
+
+    def test_projection_dependency_graph_rejects_unknown_cycles_and_gaps(self) -> None:
+        consumer = projection_spec("consumer-v1")
+        consumer["dependencies"] = [
+            {
+                "name": "knowledge",
+                "projectionId": "missing-v1",
+                "artifactRole": "knowledge-state",
+            }
+        ]
+        write_json(
+            self.root / "protocol/projections/consumer-v1.json", consumer
+        )
+        with self.assertRaisesRegex(MathFlowError, "unknown projection"):
+            validate_projection_registry(self.root)
+
+        producer = projection_spec("producer-v1")
+        producer["dependencies"] = [
+            {
+                "name": "consumer",
+                "projectionId": "consumer-v1",
+                "artifactRole": "knowledge-state",
+            }
+        ]
+        consumer["dependencies"][0]["projectionId"] = "producer-v1"
+        write_json(
+            self.root / "protocol/projections/consumer-v1.json", consumer
+        )
+        write_json(
+            self.root / "protocol/projections/producer-v1.json", producer
+        )
+        with self.assertRaisesRegex(MathFlowError, "contains a cycle"):
+            validate_projection_registry(self.root)
+
+        producer.pop("dependencies")
+        producer["allowedProblems"] = ["some-other-problem"]
+        write_json(
+            self.root / "protocol/projections/producer-v1.json", producer
+        )
+        with self.assertRaisesRegex(MathFlowError, "does not cover every"):
+            validate_projection_registry(self.root)
 
     def test_lists_only_active_projections_allowed_for_problem_deterministically(self) -> None:
         wildcard = projection_spec("wildcard-v1")

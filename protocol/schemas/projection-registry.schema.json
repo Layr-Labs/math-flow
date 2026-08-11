@@ -33,6 +33,19 @@
     "primaryJudge": { "type": "string" },
     "reconciliationJudge": { "type": "string" },
     "knowledgeBuilder": { "type": "string" },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "projectionId", "artifactRole"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "projectionId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "artifactRole": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
+        },
+        "additionalProperties": false
+      }
+    },
     "scheduling": {
       "type": "object",
       "required": [

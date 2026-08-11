@@ -36,6 +36,7 @@ from .judgments import (
     verify_primary_judgment_artifacts,
 )
 from .judges import load_judge_spec, project, render_request
+from .projection_dependencies import resolve_projection_dependencies
 from .projection_queue import (
     filter_projection_dispatch_history,
     merge_scheduler_states,
@@ -76,6 +77,18 @@ def build_parser() -> argparse.ArgumentParser:
     resolve_projection_parser.add_argument("--problem", required=True)
     resolve_projection_parser.add_argument("--head", default="HEAD")
     resolve_projection_parser.add_argument("--output")
+
+    dependency_parser = commands.add_parser(
+        "resolve-projection-dependencies",
+        help="lock a projection's governed dependencies to verified published runs",
+    )
+    dependency_parser.add_argument("--projection", required=True)
+    dependency_parser.add_argument("--problem", required=True)
+    dependency_parser.add_argument("--head", default="HEAD")
+    dependency_parser.add_argument(
+        "--projection-dir", required=True, type=Path
+    )
+    dependency_parser.add_argument("--output")
 
     active_projections_parser = commands.add_parser(
         "list-active-projections",
@@ -445,6 +458,16 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "resolve-projection":
             result = resolve_projection(
                 root, args.projection, args.problem, args.head
+            )
+            _write_json(result, args.output)
+            return 0
+        elif args.command == "resolve-projection-dependencies":
+            result = resolve_projection_dependencies(
+                root,
+                args.projection_dir,
+                args.projection,
+                args.problem,
+                args.head,
             )
             _write_json(result, args.output)
             return 0
