@@ -650,6 +650,18 @@ class GitProtocolTests(unittest.TestCase):
             [item["conflictId"] for item in missing_reconciliation["missingConflicts"]],
             [conflicts[0]["conflictId"]],
         )
+        self.assertEqual(
+            missing_reconciliation["matrix"],
+            {
+                "include": [
+                    {
+                        "ordinal": 1,
+                        "conflictId": conflicts[0]["conflictId"],
+                        "claimKey": "demo/main-claim",
+                    }
+                ]
+            },
+        )
         self.assertEqual(missing_reconciliation["publishedBundles"], [])
         complete_reconciliation = plan_reconciliation_inputs(
             self.root,

@@ -75,7 +75,10 @@ default workflow token cannot reliably enumerate private organization teams.
 Use explicit GitHub logins in the policy. A GitHub App can later replace this
 with organization/team identity and immutable user IDs.
 
-The registered reconciliation judge is part of projection identity, but the
-current repository projection workflow does not yet schedule conflict
-reconciliation. It runs parallel primary judgments followed by one serialized
-knowledge build.
+The registered reconciliation judge is part of projection identity. After the
+hosted workflow verifies the complete primary-judgment set, it deterministically
+derives the current conflicts, reuses any matching published reconciliation
+bundles, and fans out one reconciliation call for each missing conflict before
+serialized knowledge formation. Only the relevant primary judgment reports,
+their canonical subject evidence, and the derived conflict record are sent to
+the configured OpenRouter reconciliation judge.

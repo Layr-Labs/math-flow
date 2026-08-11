@@ -179,7 +179,7 @@ jobs:
           path: "${{ runner.temp }}/math-flow-staging/judgment-${{ matrix.ordinal }}"
           if-no-files-found: error
 
-  form:
+  reconciliation_plan:
     needs: [plan, judgment]
     if: >-
       always() &&
@@ -187,6 +187,199 @@ jobs:
       (needs.plan.outputs.count == '0' ||
       needs.judgment.result == 'success' ||
       (inputs.resume_run_id != '' && needs.judgment.result == 'skipped'))
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      matrix: ${{ steps.coverage.outputs.matrix }}
+      count: ${{ steps.coverage.outputs.count }}
+      expected_conflicts: ${{ steps.coverage.outputs.expected_conflicts }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          ref: main
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        if: needs.plan.outputs.count != '0'
+        with:
+          pattern: "judgment-${{ inputs.problem }}-*"
+          path: "${{ runner.temp }}/math-flow-reconciliation-plan/judgments"
+          github-token: "${{ github.token }}"
+          run-id: "${{ inputs.resume_run_id || github.run_id }}"
+      - name: Prepare published projection state
+        run: |
+          set -euo pipefail
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          if git ls-remote --exit-code origin refs/heads/projections >/dev/null 2>&1; then
+            git fetch origin refs/heads/projections:refs/remotes/origin/projections
+            git worktree add --detach "$projection_dir" \
+              refs/remotes/origin/projections
+          else
+            mkdir -p "$projection_dir"
+          fi
+      - id: coverage
+        name: Plan missing reconciliation judgments
+        env:
+          MATH_FLOW_EXPECTED_SUBJECTS: "${{ needs.plan.outputs.expected_subjects }}"
+        run: |
+          set -euo pipefail
+          staging_dir="${RUNNER_TEMP}/math-flow-reconciliation-plan"
+          primary_plan="$staging_dir/primary-inputs.json"
+          command=(
+            python -m math_flow judgment-input-plan
+            --problem "$MATH_FLOW_PROBLEM_ID"
+            --judge "${{ needs.plan.outputs.primary_judge }}"
+            --head HEAD
+            --projection-dir "${RUNNER_TEMP}/projection-branch"
+            --output "$primary_plan"
+          )
+          if [[ "${{ needs.plan.outputs.count }}" != "0" ]]; then
+            command+=(--additional-root "$staging_dir/judgments")
+            while IFS= read -r subject; do
+              command+=(--expected-new-subject "$subject")
+            done < <(
+              printf '%s\n' "$MATH_FLOW_EXPECTED_SUBJECTS" | jq -r '.[]'
+            )
+          fi
+          "${command[@]}"
+
+          mapfile -t primary_dirs < <(jq -r '.bundles[].path' "$primary_plan")
+          reconciliation_plan="$staging_dir/reconciliation-plan.json"
+          reconcile=(
+            python -m math_flow reconciliation-plan
+            --problem "$MATH_FLOW_PROBLEM_ID"
+            --primary-judge "${{ needs.plan.outputs.primary_judge }}"
+            --reconciliation-judge "${{ needs.plan.outputs.reconciliation_judge }}"
+            --head HEAD
+            --projection-dir "${RUNNER_TEMP}/projection-branch"
+            --output "$reconciliation_plan"
+          )
+          for primary_dir in "${primary_dirs[@]}"; do
+            reconcile+=(--primary-judgment-dir "$primary_dir")
+          done
+          "${reconcile[@]}"
+          echo "matrix=$(jq -c '.matrix' "$reconciliation_plan")" >> "$GITHUB_OUTPUT"
+          echo "count=$(jq '.missingConflicts | length' "$reconciliation_plan")" >> "$GITHUB_OUTPUT"
+          echo "expected_conflicts=$(jq -c '[.missingConflicts[].conflictId]' "$reconciliation_plan")" >> "$GITHUB_OUTPUT"
+          jq '{problemId, primaryJudgments: (.primaryJudgmentIds | length), conflicts: (.conflicts | length), inherited: (.publishedBundles | length), missingConflicts}' "$reconciliation_plan"
+
+  reconciliation:
+    needs: [plan, judgment, reconciliation_plan]
+    if: >-
+      always() &&
+      needs.reconciliation_plan.result == 'success' &&
+      needs.reconciliation_plan.outputs.count != '0'
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJSON(needs.plan.outputs.judgment_max_parallel) }}
+      matrix: ${{ fromJSON(needs.reconciliation_plan.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          ref: main
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        if: needs.plan.outputs.count != '0'
+        with:
+          pattern: "judgment-${{ inputs.problem }}-*"
+          path: "${{ runner.temp }}/math-flow-reconciliation/judgments"
+          github-token: "${{ github.token }}"
+          run-id: "${{ inputs.resume_run_id || github.run_id }}"
+      - name: Prepare published projection state
+        run: |
+          set -euo pipefail
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          if git ls-remote --exit-code origin refs/heads/projections >/dev/null 2>&1; then
+            git fetch origin refs/heads/projections:refs/remotes/origin/projections
+            git worktree add --detach "$projection_dir" \
+              refs/remotes/origin/projections
+          else
+            mkdir -p "$projection_dir"
+          fi
+      - name: Reconcile conflict ${{ matrix.ordinal }}
+        env:
+          OPENROUTER_API_KEY: "${{ secrets.OPENROUTER_API_KEY }}"
+          MATH_FLOW_EXPECTED_SUBJECTS: "${{ needs.plan.outputs.expected_subjects }}"
+          MATH_FLOW_SITE_URL: "${{ github.server_url }}/${{ github.repository }}"
+        run: |
+          set -euo pipefail
+          if [[ -z "$OPENROUTER_API_KEY" ]]; then
+            echo "The OPENROUTER_API_KEY repository secret is not configured." >&2
+            exit 1
+          fi
+          staging_dir="${RUNNER_TEMP}/math-flow-reconciliation"
+          primary_plan="$staging_dir/primary-inputs.json"
+          command=(
+            python -m math_flow judgment-input-plan
+            --problem "$MATH_FLOW_PROBLEM_ID"
+            --judge "${{ needs.plan.outputs.primary_judge }}"
+            --head HEAD
+            --projection-dir "${RUNNER_TEMP}/projection-branch"
+            --output "$primary_plan"
+          )
+          if [[ "${{ needs.plan.outputs.count }}" != "0" ]]; then
+            command+=(--additional-root "$staging_dir/judgments")
+            while IFS= read -r subject; do
+              command+=(--expected-new-subject "$subject")
+            done < <(
+              printf '%s\n' "$MATH_FLOW_EXPECTED_SUBJECTS" | jq -r '.[]'
+            )
+          fi
+          "${command[@]}"
+
+          mapfile -t primary_dirs < <(jq -r '.bundles[].path' "$primary_plan")
+          conflict_plan="$staging_dir/conflicts.json"
+          reconcile_plan=(
+            python -m math_flow reconciliation-plan
+            --problem "$MATH_FLOW_PROBLEM_ID"
+            --primary-judge "${{ needs.plan.outputs.primary_judge }}"
+            --reconciliation-judge "${{ needs.plan.outputs.reconciliation_judge }}"
+            --head HEAD
+            --projection-dir "${RUNNER_TEMP}/projection-branch"
+            --output "$conflict_plan"
+          )
+          for primary_dir in "${primary_dirs[@]}"; do
+            reconcile_plan+=(--primary-judgment-dir "$primary_dir")
+          done
+          "${reconcile_plan[@]}"
+
+          reconcile=(
+            python -m math_flow reconcile
+            --problem "$MATH_FLOW_PROBLEM_ID"
+            --judge "${{ needs.plan.outputs.reconciliation_judge }}"
+            --head HEAD
+            --conflicts "$conflict_plan"
+            --conflict-id "${{ matrix.conflictId }}"
+            --output-dir "$staging_dir/reconciliation-${{ matrix.ordinal }}"
+          )
+          for primary_dir in "${primary_dirs[@]}"; do
+            reconcile+=(--judgment-dir "$primary_dir")
+          done
+          "${reconcile[@]}"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: "reconciliation-${{ inputs.problem }}-${{ matrix.ordinal }}"
+          path: "${{ runner.temp }}/math-flow-reconciliation/reconciliation-${{ matrix.ordinal }}"
+          if-no-files-found: error
+
+  form:
+    needs: [plan, judgment, reconciliation_plan, reconciliation]
+    if: >-
+      always() &&
+      needs.reconciliation_plan.result == 'success' &&
+      (needs.reconciliation_plan.outputs.count == '0' ||
+      needs.reconciliation.result == 'success')
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -208,6 +401,13 @@ jobs:
           path: "${{ runner.temp }}/math-flow-staging/judgments"
           github-token: "${{ github.token }}"
           run-id: "${{ inputs.resume_run_id || github.run_id }}"
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        if: needs.reconciliation_plan.outputs.count != '0'
+        with:
+          pattern: "reconciliation-${{ inputs.problem }}-*"
+          path: "${{ runner.temp }}/math-flow-staging/reconciliations"
+          github-token: "${{ github.token }}"
+          run-id: "${{ github.run_id }}"
       - name: Prepare the orphan projection worktree
         run: |
           set -euo pipefail
@@ -228,8 +428,9 @@ jobs:
             printf '{"schemaVersion":1,"lanes":{}}\n' \
               > "$staging_dir/scheduler-base.json"
           fi
-      - name: Plan complete verified judgment inputs
+      - name: Plan complete verified judgment and conflict inputs
         env:
+          MATH_FLOW_EXPECTED_CONFLICTS: "${{ needs.reconciliation_plan.outputs.expected_conflicts }}"
           MATH_FLOW_EXPECTED_SUBJECTS: "${{ needs.plan.outputs.expected_subjects }}"
         run: |
           set -euo pipefail
@@ -253,9 +454,55 @@ jobs:
             )
           fi
           "${command[@]}"
+
+          mapfile -t primary_dirs < <(jq -r '.bundles[].path' "$input_plan")
+          reconciliation_plan="$staging_dir/reconciliation-plan.json"
+          reconcile=(
+            python -m math_flow reconciliation-plan
+            --problem "$MATH_FLOW_PROBLEM_ID"
+            --primary-judge "${{ needs.plan.outputs.primary_judge }}"
+            --reconciliation-judge "${{ needs.plan.outputs.reconciliation_judge }}"
+            --head HEAD
+            --projection-dir "${RUNNER_TEMP}/projection-branch"
+            --output "$reconciliation_plan"
+          )
+          for primary_dir in "${primary_dirs[@]}"; do
+            reconcile+=(--primary-judgment-dir "$primary_dir")
+          done
+          if [[ "${{ needs.reconciliation_plan.outputs.count }}" != "0" ]]; then
+            reconcile+=(--additional-root "$staging_dir/reconciliations")
+            while IFS= read -r conflict_id; do
+              reconcile+=(--expected-new-conflict "$conflict_id")
+            done < <(
+              printf '%s\n' "$MATH_FLOW_EXPECTED_CONFLICTS" | jq -r '.[]'
+            )
+          fi
+          "${reconcile[@]}"
+
           jq -r '.bundles[].path' "$input_plan" > "$staging_dir/judgment-dirs.txt"
+          jq -r '.bundles[].path' "$reconciliation_plan" >> "$staging_dir/judgment-dirs.txt"
           jq -r '.newBundles[].path' "$input_plan" > "$staging_dir/new-judgment-dirs.txt"
-          jq '{problemId, judgeSpec, inherited: (.publishedBundles | length), new: (.newBundles | length), total: (.bundles | length)}' "$input_plan"
+          jq -r '.newBundles[].path' "$reconciliation_plan" >> "$staging_dir/new-judgment-dirs.txt"
+          jq -s '{bundles: (.[0].bundles + .[1].bundles)}' \
+            "$input_plan" "$reconciliation_plan" \
+            > "$staging_dir/all-judgment-inputs.json"
+          jq -n \
+            --slurpfile primary "$input_plan" \
+            --slurpfile reconciliation "$reconciliation_plan" \
+            '{
+              problemId: $primary[0].problemId,
+              primary: {
+                inherited: ($primary[0].publishedBundles | length),
+                new: ($primary[0].newBundles | length),
+                total: ($primary[0].bundles | length)
+              },
+              reconciliation: {
+                conflicts: ($reconciliation[0].conflicts | length),
+                inherited: ($reconciliation[0].publishedBundles | length),
+                new: ($reconciliation[0].newBundles | length),
+                total: ($reconciliation[0].bundles | length)
+              }
+            }'
       - id: claim
         name: Claim the current knowledge lane
         run: |
@@ -276,6 +523,7 @@ jobs:
           for judgment_dir in "${judgment_dirs[@]}"; do
             trigger+=(--judgment-dir "$judgment_dir")
           done
+          trigger+=(--conflicts "$staging_dir/reconciliation-plan.json")
           "${trigger[@]}"
           lane_id="$(jq -r '.laneId' "$staging_dir/lane.json")"
           python -m math_flow knowledge-claim \
@@ -293,7 +541,19 @@ jobs:
             .bundles[]
             | select(.judgmentId as $id | ($claim[0].judgmentIds | index($id)))
             | .path
-          ' "$staging_dir/judgment-input-plan.json" > "$staging_dir/claimed-judgment-dirs.txt"
+          ' "$staging_dir/all-judgment-inputs.json" > "$staging_dir/claimed-judgment-dirs.txt"
+          jq --slurpfile claim "$staging_dir/claim.json" '
+            {
+              schemaVersion: 1,
+              conflicts: [
+                .conflicts[]
+                | select(
+                    .conflictId as $id
+                    | ($claim[0].conflictIds | index($id))
+                  )
+              ]
+            }
+          ' "$staging_dir/reconciliation-plan.json" > "$staging_dir/claimed-conflicts.json"
       - id: formation
         name: Build the next serialized knowledge state
         if: steps.claim.outputs.claimed == 'true'
@@ -311,6 +571,7 @@ jobs:
             --builder "${{ needs.plan.outputs.knowledge_builder }}"
             --head HEAD
             --claim "$staging_dir/claim.json"
+            --conflicts "$staging_dir/claimed-conflicts.json"
             --checkpoint-dir "$staging_dir/checkpoints"
             --output-dir "$staging_dir/knowledge-build"
           )

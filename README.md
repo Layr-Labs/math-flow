@@ -153,10 +153,13 @@ After every validated atomic contribution is squash-merged, the trusted
 auto-merge workflow dispatches the baseline and approved OpenRouter projection
 for that contribution's problem. The OpenRouter workflow resolves its logical
 projection from `protocol/projections/` at canonical `main`, plans judgment
-coverage for every ledger transaction under its judge spec, fans out all
-missing primary judgments concurrently, and coalesces them into one serialized
-knowledge build. It then publishes the content-addressed batch and scheduler
-state to `projections` and regenerates the catalog. Manual dispatch remains
+coverage for every ledger transaction under its judge spec, and fans out all
+missing primary judgments concurrently. It then deterministically derives
+conflicts from the complete verified primary set, reuses published
+reconciliations, fans out any missing reconciliations, and coalesces the
+dependency-complete results into one serialized knowledge build. It publishes
+the content-addressed batch and scheduler state to `projections` and regenerates
+the catalog. Manual dispatch remains
 available for repair and replay, and redispatching is idempotent when coverage
 is complete.
 

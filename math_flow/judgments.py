@@ -1374,10 +1374,11 @@ def plan_reconciliation_inputs(
         "matrix": {
             "include": [
                 {
+                    "ordinal": ordinal,
                     "conflictId": item["conflictId"],
                     "claimKey": item["claimKey"],
                 }
-                for item in missing
+                for ordinal, item in enumerate(missing, start=1)
             ]
         },
     }

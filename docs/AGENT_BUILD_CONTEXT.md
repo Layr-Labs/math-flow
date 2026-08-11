@@ -38,8 +38,9 @@ automatic squash merge to main
         └── approved OpenRouter projection
                     │
                     ├── parallel primary judgments
-                    ├── conflict detection and reconciliation  [CLI exists;
-                    │                                            workflow pending]
+                    ├── deterministic conflict detection
+                    ├── reuse published reconciliations
+                    ├── parallel missing reconciliations
                     ▼
               coalesced builder claim
                     │
@@ -96,8 +97,10 @@ automatic squash merge to main
   deltas. Deltas and immutable revisions live in the transaction/build history.
 - Knowledge formation consumes completed judgments and reconciliation outcomes;
   it does not independently adjudicate the mathematics again.
-- Primary and reconciliation judgments may run concurrently. Construction of a
-  given `(problem, projection)` knowledge chain is single-writer and serialized.
+- Primary judgments run concurrently. After their complete verified set is
+  available, missing reconciliation judgments for independent conflicts also
+  run concurrently. Construction of a given `(problem, projection)` knowledge
+  chain is single-writer and serialized.
 - Formation may be triggered by completed judgments but should coalesce work and
   obey a configurable minimum interval. The active example projection currently
   sets that interval to zero for MVP testing.
@@ -126,7 +129,7 @@ automatic squash merge to main
 | Generic run/artifact envelope | Implemented | `math_flow/runs.py`, `math_flow/artifacts.py` |
 | Approved projection registry | Implemented | `math_flow/governance.py`, `protocol/projections/` |
 | Parallel primary judgments | Implemented | `math_flow/judgments.py` |
-| Conflict detection and reconciliation commands | Implemented locally/CLI; not scheduled by the hosted projection workflow | `math_flow/judgments.py` |
+| Conflict detection and reconciliation | Implemented locally and in the hosted projection workflow | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
 | Coalescing, leased formation lanes | Implemented | `math_flow/coordination.py` |
 | Holistic hierarchical state and revisions | Implemented | `math_flow/formation.py`, `math_flow/knowledge.py` |
 | Content-addressed projection publisher | Implemented, including optimistic cross-problem merge/retry and bounded GitHub commits | `math_flow/coordination.py`, `math_flow/projection_queue.py`, `math_flow/github_projection.py` |
@@ -159,12 +162,16 @@ The ordinary solver path is fully automatic:
    succeeded, it is squash-merged at the exact validated head SHA.
 4. The auto-merger explicitly dispatches the baseline and approved OpenRouter
    workflows for only the affected problem.
-5. OpenRouter coverage planning fans out one judgment for each transaction not
-   covered by the active judge-spec digest.
-6. Completed judgments are claimed into one serialized knowledge build, then
-   published with the updated scheduler, indexes, and viewer catalog. Published
-   judgments are reused by later knowledge projections using the same judge.
-7. Cross-problem publications three-way merge disjoint scheduler lanes against
+5. OpenRouter coverage planning fans out one primary judgment for each
+   transaction not covered by the active judge-spec digest.
+6. The workflow reconstructs the complete verified primary set, derives the
+   exact current conflicts, reuses matching published reconciliations, and fans
+   out one OpenRouter call for each missing conflict reconciliation.
+7. Completed primary and reconciliation judgments are claimed dependency-
+   atomically into one serialized knowledge build, then published with the
+   updated scheduler, indexes, and viewer catalog. Later knowledge projections
+   using the same judge identities reuse those published judgments.
+8. Cross-problem publications three-way merge disjoint scheduler lanes against
    the latest orphan-branch head and retry expected-head races. A scheduled
    wake-up pass redispatches due coalesced lanes every five minutes. Formation
    failures publish their claim rollback and an exponential retry marker;
@@ -256,27 +263,24 @@ the task requires an end-to-end check.
 
 These are the most important gaps as of this document's reconciliation date:
 
-1. **Schedule reconciliation.** The registry and CLI support it, but the hosted
-   workflow does not yet detect opposed published judgments, fan out conflict
-   adjudications, or feed their outcomes into formation.
-2. **Add typed projection dependencies.** Judgment reuse now decouples a
+1. **Add typed projection dependencies.** Judgment reuse now decouples a
    knowledge profile from its primary judge, but credit and other overlays need
    governed, typed dependencies on published projection artifacts.
-3. **Add reservations and credit overlays.** Reservations should remain
+2. **Add reservations and credit overlays.** Reservations should remain
    canonical participant transactions; a later credit projection can consume
    them together with judgment and knowledge dependencies without contaminating
    mathematical assessment.
-4. **Add durable objective attestations.** Lean, exact certificate checkers, and
+3. **Add durable objective attestations.** Lean, exact certificate checkers, and
    reproducible computation should become content-addressed evidence with pinned
    environments rather than only ephemeral CI checks.
-5. **Admit and exercise the second knowledge projection.** The neutral
+4. **Admit and exercise the second knowledge projection.** The neutral
    research-program builder and comparison UX are implemented, but its
    problem-scoped projection definition must land through the separate governed
    one-file admission flow.
-6. **Improve GitHub identity and contributor UX.** A GitHub App can record stable
+5. **Improve GitHub identity and contributor UX.** A GitHub App can record stable
    user identity, add richer PR summaries and projection links, and scaffold
    valid contribution directories.
-7. **Exercise governance on an organization plan.** The personal repository is
+6. **Exercise governance on an organization plan.** The personal repository is
    the current test target. Required checks, CODEOWNER review, bypass controls,
    and projection-branch restrictions must be configured when organization
    access becomes available.

@@ -76,6 +76,16 @@ python -m math_flow reconcile \
 Detection only routes opposed findings. The reconciliation call performs the
 mathematical comparison and emits another immutable judgment bundle.
 
+The hosted projection workflow performs this stage automatically after it has
+reconstructed and verified the complete current primary-judgment set. It derives
+conflicts deterministically, reuses matching content-addressed reconciliation
+bundles already published for the same judge identities, and fans out only the
+missing reconciliations. Each OpenRouter reconciliation request contains the
+derived conflict record, the relevant immutable primary judgment reports, and
+the canonical subject evidence required to compare them; it does not receive an
+unrestricted repository snapshot. Independent missing conflicts are reconciled
+in parallel, after which knowledge formation remains serialized per lane.
+
 ## Coalesce knowledge-build triggers
 
 Builder identities are full SHA-256 digests. The CLI can derive the digest from
@@ -195,12 +205,14 @@ python -m math_flow export-viewer-catalog \
 The catalog follows `baseRun` content digests and uses each scheduler lane's
 `latestStateRun` as its authoritative terminal. Git publication order therefore
 does not become knowledge-state order. The included OpenRouter repository
-projection workflow fans out every missing primary judgment, coalesces the
-resulting artifacts into one formation claim, and serializes formation per
-problem. This problem-wide serialization is a conservative compatibility
-boundary: each later knowledge projection replans after the preceding one and
-can inherit its verified judgments. Cross-problem judgment and formation work
-remains parallel. Publication snapshots its lane update, three-way merges that
+projection workflow fans out every missing primary judgment, derives conflicts
+from the complete verified set, reuses or fans out reconciliations, and
+coalesces the dependency-complete artifacts into one formation claim. Formation
+is serialized per problem. This problem-wide serialization is a conservative
+compatibility boundary: each later knowledge projection replans after the
+preceding one and can inherit its verified primary and reconciliation
+judgments. Cross-problem judgment and formation work remains parallel.
+Publication snapshots its lane update, three-way merges that
 disjoint lane onto the newest orphan-branch scheduler, and retries optimistic
 GitHub-signed publication when another problem wins the expected-head race.
 Automatic dispatch passes the sorted active projection list as a one-at-a-time

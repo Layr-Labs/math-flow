@@ -207,8 +207,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     reconciliation_plan_parser.add_argument(
         "--primary-judgment-dir",
-        required=True,
         action="append",
+        default=[],
         type=Path,
         dest="primary_judgment_dirs",
     )
