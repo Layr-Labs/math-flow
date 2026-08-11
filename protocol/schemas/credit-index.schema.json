@@ -64,11 +64,11 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["nodeId"],
+              "required": ["nodeId", "revisionId"],
               "properties": {
                 "nodeId": { "type": "string", "minLength": 1 },
                 "revisionId": {
-                  "type": "string",
+                  "type": ["string", "null"],
                   "pattern": "^sha256:[0-9a-f]{64}$"
                 }
               },

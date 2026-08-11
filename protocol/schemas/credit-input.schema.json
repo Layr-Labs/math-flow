@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.dev/schemas/credit-input.schema.json",
+  "title": "Math Flow locked credit input",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "ledgerHead",
+    "problemLedgerHead",
+    "problemLedgerDigest",
+    "creditProjection",
+    "dependencyLockDigest",
+    "transactions",
+    "problemStatement",
+    "contributionEvidence",
+    "knowledgeState",
+    "knowledgeRevisions",
+    "knowledgeOutputProfile"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "ledgerHead": { "$ref": "#/$defs/gitSha" },
+    "problemLedgerHead": { "$ref": "#/$defs/gitSha" },
+    "problemLedgerDigest": { "$ref": "#/$defs/digest" },
+    "creditProjection": {
+      "type": "object",
+      "required": ["projectionId", "projectionSpecDigest"],
+      "properties": {
+        "projectionId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "projectionSpecDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "dependencyLockDigest": { "$ref": "#/$defs/digest" },
+    "transactions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "ordinal",
+          "transactionId",
+          "contributionId",
+          "path",
+          "author"
+        ],
+        "properties": {
+          "ordinal": { "type": "integer", "minimum": 1 },
+          "transactionId": { "$ref": "#/$defs/gitSha" },
+          "contributionId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "path": { "type": "string", "minLength": 1 },
+          "author": {
+            "type": "object",
+            "required": ["displayName", "email"],
+            "properties": {
+              "displayName": { "type": "string" },
+              "email": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "problemStatement": { "type": "string" },
+    "contributionEvidence": { "type": "string" },
+    "knowledgeState": { "type": "object" },
+    "knowledgeRevisions": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "knowledgeOutputProfile": {
+      "enum": [
+        "math-flow/hierarchical-markdown-v2",
+        "math-flow/knowledge-build-markdown-v1",
+        "math-flow/knowledge-build-markdown-v2"
+      ]
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    }
+  },
+  "additionalProperties": false
+}

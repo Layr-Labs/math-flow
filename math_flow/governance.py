@@ -17,7 +17,7 @@ from .repository import (
 )
 
 
-PROJECTION_REQUIRED_FIELDS = {
+KNOWLEDGE_PROJECTION_REQUIRED_FIELDS = {
     "schemaVersion",
     "id",
     "description",
@@ -29,7 +29,21 @@ PROJECTION_REQUIRED_FIELDS = {
     "knowledgeBuilder",
     "scheduling",
 }
-PROJECTION_OPTIONAL_FIELDS = {"dependencies"}
+KNOWLEDGE_PROJECTION_OPTIONAL_FIELDS = {"dependencies"}
+OVERLAY_PROJECTION_FIELDS = {
+    "schemaVersion",
+    "id",
+    "description",
+    "status",
+    "engine",
+    "allowedProblems",
+    "runner",
+    "dependencies",
+    "scheduling",
+}
+OVERLAY_RUNNER_FIELDS = {"implementation", "spec"}
+OVERLAY_SCHEDULING_FIELDS = {"minimumIntervalSeconds"}
+OVERLAY_IMPLEMENTATIONS = {"openrouter-credit-assignment-v1"}
 PROJECTION_DEPENDENCY_FIELDS = {"name", "projectionId", "artifactRole"}
 ARTIFACT_ROLE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 SCHEDULING_FIELDS = {
@@ -83,25 +97,49 @@ def validate_projection_spec(
     projection_id: str,
     read_text: Callable[[str], str],
 ) -> dict[str, object]:
-    if (
-        not isinstance(value, dict)
-        or not PROJECTION_REQUIRED_FIELDS <= set(value)
-        or not set(value) <= PROJECTION_REQUIRED_FIELDS | PROJECTION_OPTIONAL_FIELDS
-    ):
+    if not isinstance(value, dict):
         raise MathFlowError(
             f"projection {projection_id!r} has unsupported or missing fields"
         )
-    if value.get("schemaVersion") != 1 or value.get("id") != projection_id:
+    schema_version = value.get("schemaVersion")
+    if (
+        not isinstance(schema_version, int)
+        or isinstance(schema_version, bool)
+        or schema_version not in {1, 2}
+        or value.get("id") != projection_id
+    ):
         raise MathFlowError(
             f"projection {projection_id!r} has the wrong schema version or id"
         )
+    if schema_version == 1:
+        if (
+            not KNOWLEDGE_PROJECTION_REQUIRED_FIELDS <= set(value)
+            or not set(value)
+            <= KNOWLEDGE_PROJECTION_REQUIRED_FIELDS
+            | KNOWLEDGE_PROJECTION_OPTIONAL_FIELDS
+        ):
+            raise MathFlowError(
+                f"projection {projection_id!r} has unsupported or missing fields"
+            )
+    elif set(value) != OVERLAY_PROJECTION_FIELDS:
+        raise MathFlowError(
+            f"projection {projection_id!r} has unsupported or missing fields"
+        )
+
     description = value.get("description")
     if not isinstance(description, str) or not description.strip():
         raise MathFlowError(f"projection {projection_id!r} needs a description")
     if value.get("status") not in {"active", "disabled"}:
         raise MathFlowError(f"projection {projection_id!r} has an invalid status")
-    if value.get("engine") != "openrouter-repository-v1":
-        raise MathFlowError(f"projection {projection_id!r} uses an unsupported engine")
+    expected_engine = (
+        "openrouter-repository-v1"
+        if schema_version == 1
+        else "overlay-repository-v1"
+    )
+    if value.get("engine") != expected_engine:
+        raise MathFlowError(
+            f"projection {projection_id!r} uses an unsupported engine"
+        )
 
     allowed = value.get("allowedProblems")
     if not isinstance(allowed, list) or not allowed or any(
@@ -159,6 +197,49 @@ def validate_projection_spec(
             )
         dependency_names.add(name)
         dependency_targets.add(target_key)
+
+    if schema_version == 2:
+        if not dependencies:
+            raise MathFlowError(
+                f"overlay projection {projection_id!r} needs at least one dependency"
+            )
+        runner = value.get("runner")
+        if not isinstance(runner, dict) or set(runner) != OVERLAY_RUNNER_FIELDS:
+            raise MathFlowError(
+                f"overlay projection {projection_id!r} has an invalid runner"
+            )
+        implementation = runner.get("implementation")
+        if implementation not in OVERLAY_IMPLEMENTATIONS:
+            raise MathFlowError(
+                f"overlay projection {projection_id!r} uses an unsupported runner"
+            )
+        reference = _projection_reference(runner.get("spec"), "runner spec")
+        runner_spec = _json_object(
+            read_text(reference), f"overlay runner specification {reference}"
+        )
+        if runner_spec.get("implementation") != implementation:
+            raise MathFlowError(
+                f"overlay projection {projection_id!r} runner does not match its spec"
+            )
+        scheduling = value.get("scheduling")
+        if (
+            not isinstance(scheduling, dict)
+            or set(scheduling) != OVERLAY_SCHEDULING_FIELDS
+        ):
+            raise MathFlowError(
+                f"overlay projection {projection_id!r} has invalid scheduling policy"
+            )
+        interval = scheduling.get("minimumIntervalSeconds")
+        if (
+            not isinstance(interval, int)
+            or isinstance(interval, bool)
+            or not 0 <= interval <= 86_400
+        ):
+            raise MathFlowError(
+                f"overlay projection {projection_id!r} minimumIntervalSeconds "
+                "must be between 0 and 86400"
+            )
+        return value
 
     for field, implementations in EXPECTED_IMPLEMENTATIONS.items():
         reference = _projection_reference(value.get(field), field)
@@ -317,6 +398,7 @@ def projection_registry_index(root: Path) -> dict[str, dict[str, object]]:
             "id": spec["id"],
             "description": spec["description"],
             "digest": digest,
+            "engine": spec["engine"],
         }
     return indexed
 
@@ -344,7 +426,6 @@ def resolve_projection(
             f"projection {projection!r} is not approved for problem {problem!r}"
         )
     read_at(root, resolved_head, f"problems/{problem}/problem.md")
-    scheduling = spec["scheduling"]
     dependencies: list[dict[str, object]] = []
     for dependency in spec.get("dependencies", []):
         target_id = str(dependency["projectionId"])
@@ -367,22 +448,34 @@ def resolve_projection(
                 "artifactRole": dependency["artifactRole"],
             }
         )
-    return {
+    resolved: dict[str, object] = {
         "schemaVersion": 1,
         "projectionId": projection,
         "projectionSpecDigest": f"sha256:{sha256_json(spec)}",
         "problemId": problem,
         "canonicalHead": resolved_head,
-        "primaryJudge": spec["primaryJudge"],
-        "reconciliationJudge": spec["reconciliationJudge"],
-        "knowledgeBuilder": spec["knowledgeBuilder"],
+        "engine": spec["engine"],
         "dependencies": dependencies,
-        "scheduling": scheduling,
+        "scheduling": spec["scheduling"],
     }
+    if spec["schemaVersion"] == 1:
+        resolved.update(
+            {
+                "primaryJudge": spec["primaryJudge"],
+                "reconciliationJudge": spec["reconciliationJudge"],
+                "knowledgeBuilder": spec["knowledgeBuilder"],
+            }
+        )
+    else:
+        resolved["runner"] = spec["runner"]
+    return resolved
 
 
 def list_active_projections(
-    root: Path, problem: str, head: str = "HEAD"
+    root: Path,
+    problem: str,
+    head: str = "HEAD",
+    engine: str | None = None,
 ) -> dict[str, object]:
     """Resolve every active projection approved for a problem at one commit."""
 
@@ -398,7 +491,11 @@ def list_active_projections(
     projection_ids: list[str] = []
     for projection_id, spec in specs.items():
         allowed = spec["allowedProblems"]
-        if spec["status"] == "active" and ("*" in allowed or problem in allowed):
+        if (
+            spec["status"] == "active"
+            and ("*" in allowed or problem in allowed)
+            and (engine is None or spec["engine"] == engine)
+        ):
             projection_ids.append(projection_id)
     projections = [
         resolve_projection(root, projection_id, problem, resolved_head)

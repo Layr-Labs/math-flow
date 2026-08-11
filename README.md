@@ -136,6 +136,36 @@ scheduler semantics, and content-addressed batch publisher. The existing `run`
 command remains available for replay and comparison of combined hierarchical
 judge/state runs.
 
+### Credit overlays
+
+Credit is an independent projection over an exact locked knowledge state, never
+a field in the mathematical state. After a schema-version-2 overlay projection
+has been admitted, inspect its immutable inputs without a provider call:
+
+```bash
+python -m math_flow resolve-projection-dependencies \
+  --projection <credit-projection-id> \
+  --problem <problem-id> \
+  --head HEAD \
+  --projection-dir /path/to/projection-worktree
+```
+
+Run the initial qualitative Markdown/index profile locally with:
+
+```bash
+python -m math_flow credit \
+  --projection <credit-projection-id> \
+  --problem <problem-id> \
+  --head HEAD \
+  --projection-dir /path/to/projection-worktree \
+  --output-dir /tmp/math-flow-credit-run
+```
+
+The report call is unconstrained Markdown. A second control call indexes one
+qualitative assignment per transaction, linked to exact knowledge revisions and
+prior reservation transactions. This is an example credit policy rather than a
+core formula. Hosted scheduling and viewer presentation are not active yet.
+
 ### Interactive research atlas
 
 The `viewer/` app presents the canonical transaction ledger, full submission

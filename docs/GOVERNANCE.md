@@ -11,13 +11,15 @@ Every runnable repository projection has one declarative specification at:
 protocol/projections/<projection-id>.json
 ```
 
-The specification binds the primary judge, reconciliation judge, knowledge
-builder, allowed problems, concurrency, and knowledge-build cadence. The
-repository workflow accepts only a projection ID and problem ID. It resolves all
-implementation paths from the registry at canonical `main`, and refuses a
-dispatch from any other ref. A digest of the entire projection specification is
-part of the knowledge-lane identity, so two approved projections do not share a
-serialized state chain merely because they use the same builder.
+Schema-version-1 knowledge specifications bind the primary judge,
+reconciliation judge, knowledge builder, allowed problems, concurrency, and
+knowledge-build cadence. Schema-version-2 overlay specifications instead bind an
+allowlisted runner, typed projection dependencies, allowed problems, and overlay
+cadence. The repository workflows accept only a projection ID and problem ID.
+They resolve implementation paths from the registry at canonical `main`, reject
+the wrong execution engine, and refuse a dispatch from any other ref. A digest
+of the entire specification is part of run and lane identity, so projections do
+not share logical state merely because they reuse one component.
 
 Validate or inspect the registry without making a provider call:
 
@@ -26,6 +28,10 @@ python -m math_flow validate-projections
 python -m math_flow resolve-projection \
   --projection openrouter-research-v1 \
   --problem triangle-midpoints \
+  --head HEAD
+python -m math_flow list-active-projections \
+  --problem no-three-in-line-77 \
+  --engine overlay-repository-v1 \
   --head HEAD
 ```
 

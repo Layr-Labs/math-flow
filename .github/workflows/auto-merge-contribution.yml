@@ -195,6 +195,7 @@ jobs:
           python -m math_flow list-active-projections \
             --problem "$PROBLEM" \
             --head refs/remotes/origin/main \
+            --engine openrouter-repository-v1 \
             --output "$projection_plan"
           mapfile -t projections < <(
             jq -r '.projections[].projectionId' "$projection_plan"

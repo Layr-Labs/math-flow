@@ -263,6 +263,33 @@ of its own schema:
 }
 ```
 
+Existing judgment/knowledge projections remain schema version 1. Independent
+overlays use the additive schema-version-2 form, which binds an allowlisted runner
+without pretending the overlay has a primary judge or knowledge builder:
+
+```json
+{
+  "schemaVersion": 2,
+  "id": "no-three-in-line-credit-v1",
+  "description": "Qualitative contribution credit over the research-program view.",
+  "status": "active",
+  "engine": "overlay-repository-v1",
+  "allowedProblems": ["no-three-in-line-77"],
+  "runner": {
+    "implementation": "openrouter-credit-assignment-v1",
+    "spec": "protocol/judges/openrouter-credit-assignment-v1.json"
+  },
+  "dependencies": [
+    {
+      "name": "knowledge",
+      "projectionId": "openrouter-no-three-in-line-research-programs-v2",
+      "artifactRole": "knowledge-state"
+    }
+  ],
+  "scheduling": {"minimumIntervalSeconds": 0}
+}
+```
+
 The name is local to the consumer. The projection ID selects a governed producer,
 and the artifact role is the dependency type. Registry validation rejects unknown
 targets, duplicate names, incomplete problem coverage, self-dependencies, and
@@ -301,10 +328,17 @@ qualitative and non-zero-sum. It records each contribution's significance, roles
 knowledge references, reservation references, and exact Markdown report section.
 That is an example policy surface, not a core credit formula. Another governed
 credit projection can use numerical shares, Shapley-style measures, peer voting,
-or another schema while reusing the same dependency lock and run envelope. The
-publisher already accepts `credit-assignment` bundles as independent immutable
-objects; the hosted credit runner and scheduler are the next implementation
-slice.
+or another schema while reusing the same dependency lock and run envelope.
+
+The `credit` command now implements the local two-stage example runner. Its first
+call writes detailed Markdown with one exact section per canonical transaction;
+its second call extracts only the qualitative index. Deterministic validation
+requires one assignment per transaction, exact current node/revision references,
+ordered prior reservation references, and a unique non-empty matching report
+section. The published bundle contains the dependency lock, complete structured
+input (including the locked knowledge state), Markdown report, and credit index.
+The publisher accepts it as an independent immutable `credit-assignment` object.
+Hosted scheduling and viewer presentation are the next implementation slice.
 
 Research-direction reservations belong in participant-authored canonical
 transactions, not in judge or knowledge state. A credit profile may treat an

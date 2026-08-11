@@ -2,25 +2,15 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://math-flow.dev/schemas/projection-registry.schema.json",
   "title": "Math Flow approved projection",
-  "type": "object",
-  "required": [
-    "schemaVersion",
-    "id",
-    "description",
-    "status",
-    "engine",
-    "allowedProblems",
-    "primaryJudge",
-    "reconciliationJudge",
-    "knowledgeBuilder",
-    "scheduling"
+  "oneOf": [
+    { "$ref": "#/$defs/knowledgeProjection" },
+    { "$ref": "#/$defs/overlayProjection" }
   ],
-  "properties": {
-    "schemaVersion": { "const": 1 },
-    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
-    "description": { "type": "string", "minLength": 1 },
-    "status": { "enum": ["active", "disabled"] },
-    "engine": { "const": "openrouter-repository-v1" },
+  "$defs": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
     "allowedProblems": {
       "type": "array",
       "minItems": 1,
@@ -30,36 +20,109 @@
         "pattern": "^(?:\\*|[a-z0-9][a-z0-9-]*)$"
       }
     },
-    "primaryJudge": { "type": "string" },
-    "reconciliationJudge": { "type": "string" },
-    "knowledgeBuilder": { "type": "string" },
-    "dependencies": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["name", "projectionId", "artifactRole"],
-        "properties": {
-          "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
-          "projectionId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
-          "artifactRole": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
-        },
-        "additionalProperties": false
-      }
+    "dependency": {
+      "type": "object",
+      "required": ["name", "projectionId", "artifactRole"],
+      "properties": {
+        "name": { "$ref": "#/$defs/slug" },
+        "projectionId": { "$ref": "#/$defs/slug" },
+        "artifactRole": { "$ref": "#/$defs/slug" }
+      },
+      "additionalProperties": false
     },
-    "scheduling": {
+    "knowledgeProjection": {
       "type": "object",
       "required": [
-        "judgmentMaxParallel",
-        "knowledgeMinimumIntervalSeconds",
-        "maximumJudgmentsPerBuild"
+        "schemaVersion",
+        "id",
+        "description",
+        "status",
+        "engine",
+        "allowedProblems",
+        "primaryJudge",
+        "reconciliationJudge",
+        "knowledgeBuilder",
+        "scheduling"
       ],
       "properties": {
-        "judgmentMaxParallel": { "type": "integer", "minimum": 1, "maximum": 256 },
-        "knowledgeMinimumIntervalSeconds": { "type": "integer", "minimum": 0, "maximum": 86400 },
-        "maximumJudgmentsPerBuild": { "type": "integer", "minimum": 1, "maximum": 5000 }
+        "schemaVersion": { "const": 1 },
+        "id": { "$ref": "#/$defs/slug" },
+        "description": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["active", "disabled"] },
+        "engine": { "const": "openrouter-repository-v1" },
+        "allowedProblems": { "$ref": "#/$defs/allowedProblems" },
+        "primaryJudge": { "type": "string" },
+        "reconciliationJudge": { "type": "string" },
+        "knowledgeBuilder": { "type": "string" },
+        "dependencies": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dependency" }
+        },
+        "scheduling": {
+          "type": "object",
+          "required": [
+            "judgmentMaxParallel",
+            "knowledgeMinimumIntervalSeconds",
+            "maximumJudgmentsPerBuild"
+          ],
+          "properties": {
+            "judgmentMaxParallel": { "type": "integer", "minimum": 1, "maximum": 256 },
+            "knowledgeMinimumIntervalSeconds": { "type": "integer", "minimum": 0, "maximum": 86400 },
+            "maximumJudgmentsPerBuild": { "type": "integer", "minimum": 1, "maximum": 5000 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "overlayProjection": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "id",
+        "description",
+        "status",
+        "engine",
+        "allowedProblems",
+        "runner",
+        "dependencies",
+        "scheduling"
+      ],
+      "properties": {
+        "schemaVersion": { "const": 2 },
+        "id": { "$ref": "#/$defs/slug" },
+        "description": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["active", "disabled"] },
+        "engine": { "const": "overlay-repository-v1" },
+        "allowedProblems": { "$ref": "#/$defs/allowedProblems" },
+        "runner": {
+          "type": "object",
+          "required": ["implementation", "spec"],
+          "properties": {
+            "implementation": { "const": "openrouter-credit-assignment-v1" },
+            "spec": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "dependencies": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/dependency" }
+        },
+        "scheduling": {
+          "type": "object",
+          "required": ["minimumIntervalSeconds"],
+          "properties": {
+            "minimumIntervalSeconds": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 86400
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "additionalProperties": false
     }
-  },
-  "additionalProperties": false
+  }
 }

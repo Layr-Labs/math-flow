@@ -88,6 +88,10 @@ jobs:
             --problem "$MATH_FLOW_PROBLEM_ID" \
             --head HEAD \
             --output "$resolved"
+          if [[ "$(jq -r '.engine' "$resolved")" != "openrouter-repository-v1" ]]; then
+            echo "projection is not executable by project-openrouter.yml" >&2
+            exit 1
+          fi
           echo "primary_judge=$(jq -r '.primaryJudge' "$resolved")" >> "$GITHUB_OUTPUT"
           echo "reconciliation_judge=$(jq -r '.reconciliationJudge' "$resolved")" >> "$GITHUB_OUTPUT"
           echo "knowledge_builder=$(jq -r '.knowledgeBuilder' "$resolved")" >> "$GITHUB_OUTPUT"

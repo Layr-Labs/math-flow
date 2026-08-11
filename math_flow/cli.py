@@ -16,6 +16,7 @@ from .coordination import (
     record_completed_inputs,
 )
 from .context import materialize_agent_context
+from .credit import run_credit_assignment_bundle
 from .errors import MathFlowError
 from .formation import run_knowledge_build_bundle
 from .governance import (
@@ -90,12 +91,27 @@ def build_parser() -> argparse.ArgumentParser:
     )
     dependency_parser.add_argument("--output")
 
+    credit_parser = commands.add_parser(
+        "credit",
+        help="run a governed credit overlay over its locked projection dependencies",
+    )
+    credit_parser.add_argument("--projection", required=True)
+    credit_parser.add_argument("--problem", required=True)
+    credit_parser.add_argument("--head", default="HEAD")
+    credit_parser.add_argument(
+        "--projection-dir", required=True, type=Path
+    )
+    credit_parser.add_argument("--output-dir", required=True, type=Path)
+
     active_projections_parser = commands.add_parser(
         "list-active-projections",
         help="list approved active projections for one problem at a Git commit",
     )
     active_projections_parser.add_argument("--problem", required=True)
     active_projections_parser.add_argument("--head", default="HEAD")
+    active_projections_parser.add_argument(
+        "--engine", help="only list projections executed by this engine"
+    )
     active_projections_parser.add_argument("--output")
 
     admission_parser = commands.add_parser(
@@ -471,8 +487,19 @@ def main(argv: list[str] | None = None) -> int:
             )
             _write_json(result, args.output)
             return 0
+        elif args.command == "credit":
+            result = run_credit_assignment_bundle(
+                root,
+                args.projection_dir,
+                args.projection,
+                args.problem,
+                args.head,
+                args.output_dir,
+            )
         elif args.command == "list-active-projections":
-            result = list_active_projections(root, args.problem, args.head)
+            result = list_active_projections(
+                root, args.problem, args.head, args.engine
+            )
             _write_json(result, args.output)
             return 0
         elif args.command == "validate-admission-pr":

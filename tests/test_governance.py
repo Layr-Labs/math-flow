@@ -59,6 +59,31 @@ def projection_spec(projection_id: str = "research-v1") -> dict[str, object]:
     }
 
 
+def overlay_projection_spec(
+    projection_id: str = "credit-v1",
+) -> dict[str, object]:
+    return {
+        "schemaVersion": 2,
+        "id": projection_id,
+        "description": "Test credit overlay",
+        "status": "active",
+        "engine": "overlay-repository-v1",
+        "allowedProblems": ["demo"],
+        "runner": {
+            "implementation": "openrouter-credit-assignment-v1",
+            "spec": "protocol/judges/credit.json",
+        },
+        "dependencies": [
+            {
+                "name": "knowledge",
+                "projectionId": "research-v1",
+                "artifactRole": "knowledge-state",
+            }
+        ],
+        "scheduling": {"minimumIntervalSeconds": 60},
+    }
+
+
 class GovernanceRepositoryTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
@@ -85,6 +110,10 @@ class GovernanceRepositoryTests(unittest.TestCase):
                 self.root / f"protocol/judges/{name}.json",
                 {"implementation": implementation},
             )
+        write_json(
+            self.root / "protocol/judges/credit.json",
+            {"implementation": "openrouter-credit-assignment-v1"},
+        )
         git(self.root, "add", ".")
         git(self.root, "commit", "-qm", "Initialize governed repository")
         self.base = git(self.root, "rev-parse", "HEAD")
@@ -252,6 +281,52 @@ class GovernanceRepositoryTests(unittest.TestCase):
                 }
             ],
         )
+
+    def test_overlay_projection_uses_allowlisted_runner_and_engine_filter(self) -> None:
+        write_json(
+            self.root / "protocol/projections/research-v1.json",
+            projection_spec(),
+        )
+        write_json(
+            self.root / "protocol/projections/credit-v1.json",
+            overlay_projection_spec(),
+        )
+        head = self.commit("Add credit overlay")
+        resolved = resolve_projection(self.root, "credit-v1", "demo", head)
+        self.assertEqual(resolved["engine"], "overlay-repository-v1")
+        self.assertEqual(
+            resolved["runner"]["implementation"],
+            "openrouter-credit-assignment-v1",
+        )
+        self.assertNotIn("knowledgeBuilder", resolved)
+        knowledge_only = list_active_projections(
+            self.root,
+            "demo",
+            head,
+            engine="openrouter-repository-v1",
+        )
+        self.assertEqual(
+            [item["projectionId"] for item in knowledge_only["projections"]],
+            ["research-v1"],
+        )
+        overlays = list_active_projections(
+            self.root,
+            "demo",
+            head,
+            engine="overlay-repository-v1",
+        )
+        self.assertEqual(
+            [item["projectionId"] for item in overlays["projections"]],
+            ["credit-v1"],
+        )
+
+        invalid = overlay_projection_spec()
+        invalid["runner"]["implementation"] = "repository-python-path-v1"
+        write_json(
+            self.root / "protocol/projections/credit-v1.json", invalid
+        )
+        with self.assertRaisesRegex(MathFlowError, "unsupported runner"):
+            validate_projection_registry(self.root)
 
     def test_projection_dependency_graph_rejects_unknown_cycles_and_gaps(self) -> None:
         consumer = projection_spec("consumer-v1")

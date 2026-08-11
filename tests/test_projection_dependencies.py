@@ -9,11 +9,22 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from math_flow.artifacts import ArtifactBundle, load_manifest, sha256_bytes
+from math_flow.artifacts import (
+    ArtifactBundle,
+    load_manifest,
+    read_verified_artifact,
+    sha256_bytes,
+    verify_bundle,
+)
 from math_flow.cli import main
 from math_flow.coordination import lane_id, publish_batch, record_completed_inputs
+from math_flow.credit import (
+    load_credit_assignment_bundle,
+    run_credit_assignment_bundle,
+)
 from math_flow.errors import MathFlowError
 from math_flow.governance import resolve_projection
+from math_flow.knowledge import empty_state_v3
 from math_flow.projection_dependencies import resolve_projection_dependencies
 from math_flow.repository import ledger, sha256_json
 
@@ -63,6 +74,25 @@ def projection_spec(
     return value
 
 
+def overlay_projection_spec(
+    dependencies: list[dict[str, str]],
+) -> dict[str, object]:
+    return {
+        "schemaVersion": 2,
+        "id": "credit-v1",
+        "description": "Credit overlay",
+        "status": "active",
+        "engine": "overlay-repository-v1",
+        "allowedProblems": ["demo"],
+        "runner": {
+            "implementation": "openrouter-credit-assignment-v1",
+            "spec": "protocol/judges/credit.json",
+        },
+        "dependencies": dependencies,
+        "scheduling": {"minimumIntervalSeconds": 0},
+    }
+
+
 class ProjectionDependencyTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
@@ -72,6 +102,10 @@ class ProjectionDependencyTests(unittest.TestCase):
         git(self.root, "config", "user.name", "Dependency Test")
         git(self.root, "config", "user.email", "dependency@example.com")
         write(self.root / "problems/demo/problem.md", "# Demo\n")
+        write(
+            self.root / "problems/demo/contributions/first-result/README.md",
+            "# First result\n\nA complete proof of the fixture claim.\n",
+        )
         for name, implementation in {
             "primary": "openrouter-markdown-judgment-v1",
             "reconciliation": "openrouter-markdown-reconciliation-v1",
@@ -81,14 +115,20 @@ class ProjectionDependencyTests(unittest.TestCase):
                 self.root / f"protocol/judges/{name}.json",
                 {"implementation": implementation},
             )
+        write(
+            self.root / "protocol/judges/credit.json",
+            (
+                Path(__file__).parents[1]
+                / "protocol/judges/openrouter-credit-assignment-v1.json"
+            ).read_text(encoding="utf-8"),
+        )
         write_json(
             self.root / "protocol/projections/knowledge-v1.json",
             projection_spec("knowledge-v1"),
         )
         write_json(
             self.root / "protocol/projections/credit-v1.json",
-            projection_spec(
-                "credit-v1",
+            overlay_projection_spec(
                 [
                     {
                         "name": "knowledge",
@@ -124,8 +164,14 @@ class ProjectionDependencyTests(unittest.TestCase):
         writer = ArtifactBundle(bundle)
         writer.add_json(
             "state/state.json",
-            {"schemaVersion": 1, "problemId": "demo", "nodes": []},
+            empty_state_v3("demo"),
             "knowledge-state",
+        )
+        writer.add_text(
+            "state/revisions.jsonl",
+            "",
+            "knowledge-revisions",
+            "application/x-ndjson",
         )
         writer.finalize(
             {
@@ -135,6 +181,7 @@ class ProjectionDependencyTests(unittest.TestCase):
                 "ledgerHead": source["ledgerHead"],
                 "problemLedgerHead": source["problemLedgerHead"],
                 "problemLedgerDigest": source["problemLedgerDigest"],
+                "outputProfile": "math-flow/knowledge-build-markdown-v2",
                 "judgeSpec": {"id": "builder", "digest": builder_digest},
                 "inputs": {
                     "laneId": identifier,
@@ -258,8 +305,7 @@ class ProjectionDependencyTests(unittest.TestCase):
             )
 
     def test_rejects_unsupported_dependency_role_before_execution(self) -> None:
-        consumer = projection_spec(
-            "credit-v1",
+        consumer = overlay_projection_spec(
             [
                 {
                     "name": "judgments",
@@ -335,7 +381,102 @@ class ProjectionDependencyTests(unittest.TestCase):
                 self.head,
             )
 
+    def test_credit_runner_keeps_reasoning_in_markdown_and_indexes_transactions(self) -> None:
+        transaction_id = str(
+            ledger(self.root, "demo", self.head)["transactions"][0][
+                "transactionId"
+            ]
+        )
+        report = "\n".join(
+            [
+                "# Credit assessment",
+                "",
+                f"## Contribution: {transaction_id}",
+                "",
+                "This transaction supplies the complete proof represented by the locked root state.",
+                "",
+            ]
+        )
+        extracted = {
+            "assignments": [
+                {
+                    "transactionId": transaction_id,
+                    "significance": "major",
+                    "roles": ["proof"],
+                    "knowledgeRefs": [
+                        {"nodeId": "root", "revisionId": None}
+                    ],
+                    "reservationTransactionIds": [],
+                    "reportSection": f"## Contribution: {transaction_id}",
+                }
+            ]
+        }
+        requests: list[dict[str, object]] = []
+
+        def transport(payload: dict[str, object]) -> dict[str, object]:
+            requests.append(payload)
+            content = report if len(requests) == 1 else json.dumps(extracted)
+            return {
+                "id": f"credit-{len(requests)}",
+                "model": "openai/gpt-5.6-sol",
+                "choices": [
+                    {
+                        "message": {"role": "assistant", "content": content},
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 100,
+                    "completion_tokens": 50,
+                    "total_tokens": 150,
+                },
+            }
+
+        output = self.root / "credit-run"
+        manifest = run_credit_assignment_bundle(
+            self.root,
+            self.projection_root,
+            "credit-v1",
+            "demo",
+            self.head,
+            output,
+            transport=transport,
+        )
+        self.assertEqual(len(requests), 2)
+        self.assertNotIn("response_format", requests[0])
+        self.assertIn("response_format", requests[1])
+        self.assertEqual(manifest["runKind"], "credit-assignment")
+        self.assertEqual(manifest["baseRun"], None)
+        self.assertEqual(
+            manifest["outputProfile"],
+            "math-flow/credit-assignment-markdown-v1",
+        )
+        verified, run_digest = verify_bundle(output)
+        self.assertEqual(verified, manifest)
+        self.assertRegex(run_digest, r"^sha256:[0-9a-f]{64}$")
+        loaded_manifest, loaded_index, loaded_digest = (
+            load_credit_assignment_bundle(output)
+        )
+        self.assertEqual(loaded_manifest, manifest)
+        self.assertEqual(loaded_digest, run_digest)
+        index = json.loads(
+            read_verified_artifact(output, manifest, "credit-index")
+        )
+        self.assertEqual(index["assignments"], extracted["assignments"])
+        self.assertEqual(loaded_index, index)
+        lock = json.loads(
+            read_verified_artifact(output, manifest, "dependency-lock")
+        )
+        self.assertEqual(
+            index["dependencyLockDigest"], lock["dependencyLockDigest"]
+        )
+
     def test_publisher_accepts_credit_assignment_as_an_independent_run_kind(self) -> None:
+        transaction_id = str(
+            ledger(self.root, "demo", self.head)["transactions"][0][
+                "transactionId"
+            ]
+        )
         dependency_lock = resolve_projection_dependencies(
             self.root,
             self.projection_root,
@@ -350,7 +491,9 @@ class ProjectionDependencyTests(unittest.TestCase):
         )
         writer.add_text(
             "report.md",
-            "# Credit assessment\n\nNo contributions yet.\n",
+            "# Credit assessment\n\n"
+            f"## Contribution: {transaction_id}\n\n"
+            "No credit assessment was made by this transport fixture.\n",
             "credit-report",
             "text/markdown",
         )
@@ -362,7 +505,16 @@ class ProjectionDependencyTests(unittest.TestCase):
                 "dependencyLockDigest": dependency_lock[
                     "dependencyLockDigest"
                 ],
-                "assignments": [],
+                "assignments": [
+                    {
+                        "transactionId": transaction_id,
+                        "significance": "uncertain",
+                        "roles": [],
+                        "knowledgeRefs": [],
+                        "reservationTransactionIds": [],
+                        "reportSection": f"## Contribution: {transaction_id}",
+                    }
+                ],
             },
             "credit-index",
         )

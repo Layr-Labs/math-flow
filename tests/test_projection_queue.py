@@ -566,6 +566,57 @@ class ProjectionQueueTests(unittest.TestCase):
             [("first-problem", ["alpha-v1", "zeta-v1"])],
         )
 
+    def test_knowledge_recovery_does_not_dispatch_active_overlay_engine(self) -> None:
+        write_json(
+            self.root / "protocol/judges/credit.json",
+            {"implementation": "openrouter-credit-assignment-v1"},
+        )
+        write_json(
+            self.root / "protocol/projections/credit-v1.json",
+            {
+                "schemaVersion": 2,
+                "id": "credit-v1",
+                "description": "Credit overlay",
+                "status": "active",
+                "engine": "overlay-repository-v1",
+                "allowedProblems": ["*"],
+                "runner": {
+                    "implementation": "openrouter-credit-assignment-v1",
+                    "spec": "protocol/judges/credit.json",
+                },
+                "dependencies": [
+                    {
+                        "name": "knowledge",
+                        "projectionId": "alpha-v1",
+                        "artifactRole": "knowledge-state",
+                    }
+                ],
+                "scheduling": {"minimumIntervalSeconds": 0},
+            },
+        )
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Add active overlay")
+        self.head = git(self.root, "rev-parse", "HEAD")
+        self.add_contribution("first-problem")
+
+        plan = plan_due_projection_dispatches(
+            self.root,
+            {"schemaVersion": 1, "lanes": {}},
+            now=10,
+            repository_head=self.head,
+            projection_root=self.root / "absent-projection-branch",
+        )
+        self.assertEqual(
+            [
+                (
+                    problem["problemId"],
+                    [item["projectionId"] for item in problem["projections"]],
+                )
+                for problem in plan["problems"]
+            ],
+            [("first-problem", ["alpha-v1", "zeta-v1"])],
+        )
+
     def test_recovery_planner_queues_idle_lane_with_stale_state(self) -> None:
         self.add_contribution("first-problem", "initial")
         old_head = self.head

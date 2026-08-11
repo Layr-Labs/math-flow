@@ -492,7 +492,12 @@ def plan_due_projection_dispatches(
 
     problem_queues: list[dict[str, object]] = []
     for problem in sorted(due_by_problem):
-        active = list_active_projections(root, problem, resolved_head)
+        active = list_active_projections(
+            root,
+            problem,
+            resolved_head,
+            engine="openrouter-repository-v1",
+        )
         active_by_digest = {
             item["projectionSpecDigest"]: item for item in active["projections"]
         }
@@ -754,7 +759,12 @@ def _plan_recoverable_projection_dispatches(
             else ledger(root, problem, repository_head)
         )
         nonempty_ledger = bool(current_ledger["transactions"])
-        active = list_active_projections(root, problem, repository_head)["projections"]
+        active = list_active_projections(
+            root,
+            problem,
+            repository_head,
+            engine="openrouter-repository-v1",
+        )["projections"]
         due: list[dict[str, object]] = []
         for projection in active:
             projection_digest = str(projection["projectionSpecDigest"])

@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-11 (`2e99f7a`).
+Last reconciled with `main`: 2026-08-11 (`ae71f98`).
 
 ## Product thesis
 
@@ -137,8 +137,8 @@ automatic squash merge to main
 | Repository-backed viewer | Implemented and deployed through ChatGPT Sites | `viewer/` |
 | Non-UI agent context command | Implemented | `math_flow/context.py` |
 | Solver-facing repository skill | Implemented | `.agents/skills/math-flow-solver/` |
-| Typed projection dependencies | Implemented in the current credit-foundation change: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
-| Credit overlay profile and publication transport | Initial qualitative Markdown profile and independent `credit-assignment` run kind implemented; hosted runner not yet implemented | `protocol/profiles/credit-assignment-markdown-v1.json`, `math_flow/coordination.py` |
+| Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
+| Credit overlay runner, profile, and publication transport | Local two-stage qualitative runner and independent `credit-assignment` bundles implemented; hosted scheduling not yet implemented | `math_flow/credit.py`, `protocol/profiles/credit-assignment-markdown-v1.json` |
 | Objective verifier attestations | Not yet implemented as durable protocol artifacts | `docs/MVP.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
 
@@ -293,15 +293,15 @@ the task requires an end-to-end check.
 
 These are the most important gaps as of this document's reconciliation date:
 
-1. **Build the hosted credit overlay runner.** The dependency
+1. **Host and schedule the credit overlay runner.** The dependency
    foundation now lets a governed consumer name a producer and artifact role,
    then lock `knowledge-state` to an exact verified scheduler-authoritative run.
-   A qualitative, non-zero-sum Markdown/index profile and independent published
-   run kind now define the first output example. The next slice should consume
-   the lock in a hosted credit-specific assessment, validate report/index
-   correspondence, and schedule only after declared inputs are current. Credit
-   must never mutate mathematical knowledge. Additional typed resolvers can be
-   added as new overlay inputs are introduced.
+   A qualitative, non-zero-sum Markdown/index profile, local two-stage runner,
+   report/index validation, and independent published run kind now define the
+   first output example. The next slice should dispatch that runner only after
+   declared inputs are current, publish its terminal, and expose it in the
+   viewer. Credit must never mutate mathematical knowledge. Additional typed
+   resolvers can be added as new overlay inputs are introduced.
 2. **Add reservations as canonical research transactions.** A reservation must
    be participant-authored evidence rather than an adjudication field. The
    credit overlay can consider priority, specificity, overlap, completion
