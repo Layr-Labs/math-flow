@@ -3,6 +3,7 @@
 ## Contents
 
 - [Create isolated worktrees](#create-isolated-worktrees)
+- [Use repository tools, not the UI](#use-repository-tools-not-the-ui)
 - [Build a verified context](#build-a-verified-context)
 - [Inspect provenance](#inspect-provenance)
 - [Create one contribution](#create-one-contribution)
@@ -64,6 +65,30 @@ From this point on, run edits, artifact tools, tests, commits, and pushes with
 `$solver_worktree` as the working directory. Use `$projection_worktree` only as
 read-only published input. Do not switch its detached `HEAD` while a context
 command is reading it.
+
+## Use repository tools, not the UI
+
+Complete repository work through machine-readable tools:
+
+- use `python3 -m math_flow context` for the verified current knowledge state,
+  freshness, coverage, and scheduler status;
+- read `context.json`, `state.json`, and the content-addressed records in the
+  detached projection worktree for provenance and raw judgments;
+- use `python3 -m math_flow ledger` and `git show` for canonical transactions;
+- use `git` for branches, commits, worktrees, fetches, and pushes;
+- use `gh` or an available GitHub connector/API for PR creation, PR metadata,
+  checks, workflow runs, and artifacts.
+
+Do not open or automate the deployed research atlas or GitHub website for these
+operations. Do not scrape UI text, copy UI-derived state into a contribution,
+click merge buttons, or ask the user to perform routine browser steps. In
+particular, never use `viewer/app/math-flow-data.json` as current state; it is a
+development/outage fallback.
+
+Browsing external mathematical literature is allowed when research requires
+it. Cite and attribute those sources in the contribution. If `math_flow`, `git`,
+or an authenticated GitHub CLI/connector is unavailable, stop and report the
+specific tool or authentication blocker rather than falling back to the web UI.
 
 ## Build a verified context
 
@@ -176,10 +201,12 @@ changes into the contribution.
 
 ## Handoff and cleanup
 
-Push the solver branch from its own worktree and open the PR from that branch.
-Report the solver branch and worktree path so another agent can resume safely.
-Keep the worktree while work is uncommitted, unpushed, under review, or otherwise
-needed for handoff.
+Push the solver branch from its own worktree and open the PR from that branch
+with `gh pr create` or an available GitHub connector. Use `gh pr checks` or the
+connector to monitor validation; do not open GitHub in a browser. Report the
+solver branch and worktree path so another agent can resume safely. Keep the
+worktree while work is uncommitted, unpushed, under review, or otherwise needed
+for handoff.
 
 An agent may remove only the two worktrees it created. First verify the solver
 worktree is clean and its commits are pushed:

@@ -13,6 +13,12 @@ Use the deterministic `math_flow context` command before reasoning from a projec
 
 The command makes no model calls. Require an explicit projection ID when more than one exists. Use repeated `--node` options to limit only the Markdown view to selected subtrees; `state.json` intentionally remains complete.
 
+## Use tools, not web interfaces
+
+Use `math_flow`, local projection artifacts, `git`, and `gh` or an available GitHub connector for the entire repository workflow. Do not use the deployed research atlas, GitHub website, or browser automation to inspect state, read submissions or judgments, create a PR, monitor checks, merge, or recover a run. The web viewer is a human interface and its checked-in fallback data is not authoritative.
+
+Web research is allowed when the mathematical task needs external sources; it is not a substitute for repository tooling. If a required CLI or authenticated GitHub tool is unavailable, report the blocker instead of switching to a web UI or asking the user to click through the workflow.
+
 ## Workflow
 
 1. Treat the checkout you were given as a shared control checkout. Inspect it, but do not switch its branch, edit files, commit, reset, clean, or remove anything there.
@@ -22,7 +28,7 @@ The command makes no model calls. Require an explicit projection ID when more th
 5. Select one bounded research objective. Prefer resolving an explicit question, improving a bound, supplying independent evidence, formalizing a claim, or refuting an existing assessment.
 6. Add exactly one new directory under `problems/<problem>/contributions/<contribution>/` in the solver worktree. Put the claim, method, provenance, limitations, and reproduction instructions in `README.md`; keep supporting artifacts beside it.
 7. Validate the artifact and repository from the solver worktree. Commit only the contribution, then validate the committed PR diff against `origin/main`. Do not edit past contributions, judgments, knowledge state, projection indexes, or scheduler data.
-8. Push only the solver branch, then open one PR for that one contribution. Present the result as evidence for future adjudication, not as a mutation of accepted knowledge. The repository re-verifies and automatically squash-merges atomic contribution PRs after every required current-head check passes; do not add unrelated changes to obtain a merge.
+8. Push only the solver branch, then use `gh` or an available GitHub connector to open one PR for that one contribution and monitor its checks. Present the result as evidence for future adjudication, not as a mutation of accepted knowledge. The repository re-verifies and automatically squash-merges atomic contribution PRs after every required current-head check passes; do not add unrelated changes to obtain a merge and do not merge it through the UI.
 9. Keep the solver worktree until its work is safely pushed and handed off. Remove only worktrees created by this agent, only after confirming they are clean, and never use forced removal.
 
 ## Safety and integrity
