@@ -5,40 +5,87 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
   pull_request_review:
     types: [submitted, dismissed]
+  issue_comment:
+    types: [created, edited, deleted]
 
 permissions:
+  checks: write
   contents: read
+  issues: read
   pull-requests: read
 
 jobs:
   admission:
     name: Admin admission approval
+    if: >-
+      github.event_name != 'issue_comment' ||
+      github.event.issue.pull_request != null
     runs-on: ubuntu-latest
     steps:
-      # pull_request_target is used only to run trusted code from the base branch.
-      # The candidate commit is fetched as inert Git data and is never checked out
-      # or executed. No repository or environment secrets are exposed to it; the
-      # workflow token is read-only and is used only for fetching and review reads.
+      # Every trigger runs trusted code from the base/default branch. The candidate
+      # commit is fetched as inert Git data and is never checked out or executed.
+      # The only write permission creates the validated check on the PR head because
+      # issue_comment workflow runs are otherwise attached to the default branch.
+      - id: pr
+        name: Resolve the current pull request
+        env:
+          EVENT_NAME: "${{ github.event_name }}"
+          EVENT_PR_NUMBER: "${{ github.event.pull_request.number }}"
+          GH_TOKEN: "${{ github.token }}"
+          ISSUE_NUMBER: "${{ github.event.issue.number }}"
+          REPOSITORY: "${{ github.repository }}"
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "issue_comment" ]]; then
+            pr_number="$ISSUE_NUMBER"
+          else
+            pr_number="$EVENT_PR_NUMBER"
+          fi
+          if [[ ! "$pr_number" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Could not resolve a pull request number." >&2
+            exit 1
+          fi
+          pull_request="${RUNNER_TEMP}/pull-request.json"
+          gh api "repos/${REPOSITORY}/pulls/${pr_number}" > "$pull_request"
+          jq -e --arg repository "$REPOSITORY" '
+            .number > 0 and
+            .state == "open" and
+            .base.ref == "main" and
+            .base.repo.full_name == $repository and
+            (.base.sha | test("^[0-9a-f]{40}$")) and
+            (.head.sha | test("^[0-9a-f]{40}$"))
+          ' "$pull_request" >/dev/null
+          echo "number=$(jq -r '.number' "$pull_request")" >> "$GITHUB_OUTPUT"
+          echo "base_sha=$(jq -r '.base.sha' "$pull_request")" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$(jq -r '.head.sha' "$pull_request")" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
-          ref: "${{ github.event.pull_request.base.sha }}"
+          ref: "${{ steps.pr.outputs.base_sha }}"
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
       - name: Fetch candidate as untrusted Git data
         env:
-          PR_NUMBER: "${{ github.event.pull_request.number }}"
+          EXPECTED_HEAD_SHA: "${{ steps.pr.outputs.head_sha }}"
+          PR_NUMBER: "${{ steps.pr.outputs.number }}"
         run: |
           set -euo pipefail
           git fetch --no-tags origin \
             "+refs/pull/${PR_NUMBER}/head:refs/remotes/origin/math-flow-admission-head"
-      - name: Read current-head approvals
+          fetched_head="$(git rev-parse refs/remotes/origin/math-flow-admission-head)"
+          if [[ "$fetched_head" != "$EXPECTED_HEAD_SHA" ]]; then
+            echo "The pull request head changed during admission validation." >&2
+            exit 1
+          fi
+      - id: validation
+        name: Read and validate current-head approvals
+        continue-on-error: ${{ github.event_name == 'issue_comment' }}
         env:
           GH_TOKEN: "${{ github.token }}"
+          HEAD_SHA: "${{ steps.pr.outputs.head_sha }}"
+          PR_NUMBER: "${{ steps.pr.outputs.number }}"
           REPOSITORY: "${{ github.repository }}"
-          PR_NUMBER: "${{ github.event.pull_request.number }}"
-          HEAD_SHA: "${{ github.event.pull_request.head.sha }}"
         run: |
           set -euo pipefail
           reviews="${RUNNER_TEMP}/reviews.json"
@@ -60,12 +107,62 @@ jobs:
                | .user.login' \
               "$reviews"
           )
+
+          raw_comments="${RUNNER_TEMP}/raw-comments.json"
+          comments="${RUNNER_TEMP}/approval-comments.json"
+          gh api --paginate \
+            "repos/${REPOSITORY}/issues/${PR_NUMBER}/comments?per_page=100" \
+            --slurp > "$raw_comments"
+          jq '[
+            flatten[]
+            | select((.user.login | type) == "string")
+            | {author: .user.login, body: (.body // "")}
+          ]' "$raw_comments" > "$comments"
+
           command=(
             python -m math_flow validate-admission-pr
-            --base "${{ github.event.pull_request.base.sha }}"
+            --base "${{ steps.pr.outputs.base_sha }}"
             --head refs/remotes/origin/math-flow-admission-head
+            --approval-comments "$comments"
           )
           for approver in "${approvers[@]}"; do
             command+=(--approver "$approver")
           done
           "${command[@]}"
+      - name: Publish the comment-triggered result on the PR head
+        if: always() && github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          HEAD_SHA: "${{ steps.pr.outputs.head_sha }}"
+          REPOSITORY: "${{ github.repository }}"
+          VALIDATION_OUTCOME: "${{ steps.validation.outcome }}"
+        run: |
+          set -euo pipefail
+          if [[ "$VALIDATION_OUTCOME" == "success" ]]; then
+            conclusion="success"
+            summary="The permissioned current-head admission requirement is satisfied."
+          else
+            conclusion="failure"
+            summary="The permissioned current-head admission requirement is not satisfied."
+          fi
+          jq -n \
+            --arg conclusion "$conclusion" \
+            --arg head_sha "$HEAD_SHA" \
+            --arg summary "$summary" \
+            --arg url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            '{
+              name: "Admin admission approval",
+              head_sha: $head_sha,
+              status: "completed",
+              conclusion: $conclusion,
+              details_url: $url,
+              output: {
+                title: "Governed admission validation",
+                summary: $summary
+              }
+            }' | gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              "repos/${REPOSITORY}/check-runs" \
+              --input -
+          [[ "$conclusion" == "success" ]]
