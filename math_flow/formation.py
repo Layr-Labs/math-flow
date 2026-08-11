@@ -49,6 +49,7 @@ RESOLVED_OUTCOMES = {
 }
 CONFLICT_STANCES = {"supports", "refutes", "qualifies", "uncertain", "raises"}
 NODE_ID = re.compile(r"^[a-z0-9][a-z0-9/_-]*$")
+EMPTY_RESPONSE_ATTEMPTS = 3
 
 
 def _digest(value: object, label: str, nullable: bool = False) -> str | None:
@@ -262,14 +263,18 @@ def _cached_stage_response(
             or not isinstance(cached.get("response"), dict)
         ):
             raise MathFlowError(f"invalid knowledge-build checkpoint: {target}")
-        return cached["response"], True
+        cached_response = cached["response"]
+        if _stage_response_disposition(cached_response) == "usable":
+            return cached_response, True
+        target.unlink(missing_ok=True)
 
-    response = send(request)
-    try:
-        finish_reason = response["choices"][0].get("finish_reason")
-    except (KeyError, IndexError, TypeError, AttributeError):
-        finish_reason = None
-    if finish_reason == "length":
+    response: dict[str, object] = {}
+    for attempt in range(EMPTY_RESPONSE_ATTEMPTS):
+        response = send(request)
+        disposition = _stage_response_disposition(response)
+        if disposition != "empty" or attempt == EMPTY_RESPONSE_ATTEMPTS - 1:
+            break
+    if disposition != "usable":
         return response, False
     checkpoint = {
         "schemaVersion": 1,
@@ -290,6 +295,20 @@ def _cached_stage_response(
         if os.path.exists(temporary):
             os.unlink(temporary)
     return response, False
+
+
+def _stage_response_disposition(response: dict[str, object]) -> str:
+    """Classify responses for formation retry and checkpoint decisions."""
+    if "error" in response:
+        return "error"
+    try:
+        choice = response["choices"][0]
+        if choice.get("finish_reason") == "length":
+            return "truncated"
+        content = choice["message"]["content"]
+    except (KeyError, IndexError, TypeError, AttributeError):
+        return "empty"
+    return "usable" if isinstance(content, str) and content.strip() else "empty"
 
 
 def _normalize_new_node_ids_from_report_headings(

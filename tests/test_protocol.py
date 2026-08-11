@@ -93,6 +93,51 @@ class RepositoryValidationTests(unittest.TestCase):
             self.assertFalse(second_truncated_hit)
             self.assertEqual(calls.count("length"), 2)
 
+    def test_knowledge_checkpoint_retries_and_does_not_cache_empty_responses(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            checkpoint_dir = Path(directory)
+            calls: list[str] = []
+
+            def eventually_succeeds(_: dict[str, object]) -> dict[str, object]:
+                calls.append("send")
+                content = "{}" if len(calls) == 3 else ""
+                return {
+                    "choices": [
+                        {"finish_reason": "stop", "message": {"content": content}}
+                    ]
+                }
+
+            response, first_hit = _cached_stage_response(
+                checkpoint_dir, "report", {"request": "retry"}, eventually_succeeds
+            )
+            cached_response, second_hit = _cached_stage_response(
+                checkpoint_dir, "report", {"request": "retry"}, eventually_succeeds
+            )
+            self.assertFalse(first_hit)
+            self.assertTrue(second_hit)
+            self.assertEqual(response, cached_response)
+            self.assertEqual(calls, ["send", "send", "send"])
+
+            empty_calls: list[str] = []
+
+            def always_empty(_: dict[str, object]) -> dict[str, object]:
+                empty_calls.append("send")
+                return {
+                    "choices": [
+                        {"finish_reason": "stop", "message": {"content": None}}
+                    ]
+                }
+
+            _, first_empty_hit = _cached_stage_response(
+                checkpoint_dir, "extract", {"request": "empty"}, always_empty
+            )
+            _, second_empty_hit = _cached_stage_response(
+                checkpoint_dir, "extract", {"request": "empty"}, always_empty
+            )
+            self.assertFalse(first_empty_hit)
+            self.assertFalse(second_empty_hit)
+            self.assertEqual(len(empty_calls), 6)
+
     def test_new_node_id_follows_its_report_heading(self) -> None:
         delta = {
             "operations": [
