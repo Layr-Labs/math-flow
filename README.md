@@ -195,6 +195,11 @@ structured finding record.
 
 ### Agent context and solver skill
 
+Build and protocol contributors should start with
+[`docs/AGENT_BUILD_CONTEXT.md`](docs/AGENT_BUILD_CONTEXT.md), which records the
+current architecture, deployment target, invariants, workflow lifecycle, safe
+multi-agent conventions, and near-term priorities.
+
 Agents that do not use the viewer can materialize the same verified latest
 state from a local worktree of the orphan projection branch:
 
