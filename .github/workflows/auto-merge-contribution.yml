@@ -1,0 +1,194 @@
+name: Auto-merge validated contribution
+
+on:
+  workflow_run:
+    workflows: ["Validate repository"]
+    types: [completed]
+
+# This workflow runs trusted code from the default branch. Candidate commits are
+# fetched only as inert Git data and are never checked out or executed here.
+permissions:
+  actions: write
+  checks: read
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: auto-merge-contribution-${{ github.event.workflow_run.head_repository.id }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          ref: main
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - id: pr
+        name: Resolve the current pull request head
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          REPOSITORY: "${{ github.repository }}"
+          WORKFLOW_RUN_ID: "${{ github.event.workflow_run.id }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          associated="${RUNNER_TEMP}/associated-prs.json"
+          gh api \
+            "repos/${REPOSITORY}/actions/runs/${WORKFLOW_RUN_ID}/pull_requests" \
+            > "$associated"
+          mapfile -t pr_numbers < <(jq -r '.[].number' "$associated")
+          if [[ "${#pr_numbers[@]}" -ne 1 ]]; then
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+            echo "Expected one associated pull request; found ${#pr_numbers[@]}."
+            exit 0
+          fi
+
+          pr_number="${pr_numbers[0]}"
+          pr="${RUNNER_TEMP}/pull-request.json"
+          gh api "repos/${REPOSITORY}/pulls/${pr_number}" > "$pr"
+          if [[ "$(jq -r '.state' "$pr")" != "open" ]] ||
+             [[ "$(jq -r '.draft' "$pr")" == "true" ]] ||
+             [[ "$(jq -r '.base.ref' "$pr")" != "main" ]]; then
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+            echo "Pull request is closed, draft, or does not target main."
+            exit 0
+          fi
+
+          echo "eligible=true" >> "$GITHUB_OUTPUT"
+          echo "number=${pr_number}" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$(jq -r '.head.sha' "$pr")" >> "$GITHUB_OUTPUT"
+
+      - id: checks
+        if: steps.pr.outputs.eligible == 'true'
+        name: Require every validation check on the current head
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          REPOSITORY: "${{ github.repository }}"
+          HEAD_SHA: "${{ steps.pr.outputs.head_sha }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=("protocol" "viewer" "validate" "Admin admission approval")
+          for attempt in {1..60}; do
+            checks="${RUNNER_TEMP}/check-runs.json"
+            gh api \
+              -H "Accept: application/vnd.github+json" \
+              "repos/${REPOSITORY}/commits/${HEAD_SHA}/check-runs?per_page=100" \
+              > "$checks"
+            pending=()
+            failed=()
+            for name in "${required[@]}"; do
+              result=$(jq -r --arg name "$name" '
+                [.check_runs[] | select(.name == $name)]
+                | sort_by(.started_at // "")
+                | last
+                | if . == null then "missing"
+                  elif .status != "completed" then .status
+                  else (.conclusion // "missing") end
+              ' "$checks")
+              case "$result" in
+                success) ;;
+                missing|queued|in_progress|pending|requested|waiting)
+                  pending+=("${name}:${result}")
+                  ;;
+                *) failed+=("${name}:${result}") ;;
+              esac
+            done
+
+            if [[ "${#failed[@]}" -gt 0 ]]; then
+              echo "ready=false" >> "$GITHUB_OUTPUT"
+              echo "Validation did not pass: ${failed[*]}"
+              exit 0
+            fi
+            if [[ "${#pending[@]}" -eq 0 ]]; then
+              echo "ready=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "Waiting for validation: ${pending[*]}"
+            sleep 2
+          done
+          echo "Timed out waiting for required validation checks." >&2
+          exit 1
+
+      - id: contribution
+        if: steps.checks.outputs.ready == 'true'
+        name: Re-verify one atomic contribution against current main
+        env:
+          PR_NUMBER: "${{ steps.pr.outputs.number }}"
+          HEAD_SHA: "${{ steps.pr.outputs.head_sha }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main \
+            "+refs/pull/${PR_NUMBER}/head:refs/remotes/origin/math-flow-auto-merge-head"
+          if [[ "$(git rev-parse refs/remotes/origin/math-flow-auto-merge-head)" != "$HEAD_SHA" ]]; then
+            echo "Pull request head changed while validation was running." >&2
+            exit 1
+          fi
+
+          result="${RUNNER_TEMP}/validated-contribution.json"
+          if ! python -m math_flow validate-pr \
+            --base origin/main \
+            --head refs/remotes/origin/math-flow-auto-merge-head \
+            > "$result"; then
+            echo "atomic=false" >> "$GITHUB_OUTPUT"
+            echo "Pull request is not an atomic solver contribution; leaving it for maintainers."
+            exit 0
+          fi
+          echo "atomic=true" >> "$GITHUB_OUTPUT"
+          echo "problem=$(jq -r '.problemId' "$result")" >> "$GITHUB_OUTPUT"
+
+      - if: steps.contribution.outputs.atomic == 'true'
+        name: Squash-merge the validated contribution
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          REPOSITORY: "${{ github.repository }}"
+          PR_NUMBER: "${{ steps.pr.outputs.number }}"
+          HEAD_SHA: "${{ steps.pr.outputs.head_sha }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          merged="${RUNNER_TEMP}/merge.json"
+          gh api --method PUT \
+            "repos/${REPOSITORY}/pulls/${PR_NUMBER}/merge" \
+            -f merge_method=squash \
+            -f sha="$HEAD_SHA" \
+            > "$merged"
+          if [[ "$(jq -r '.merged' "$merged")" != "true" ]]; then
+            jq -r '.message' "$merged" >&2
+            exit 1
+          fi
+          echo "Merged pull request ${PR_NUMBER} at $(jq -r '.sha' "$merged")."
+
+      - if: steps.contribution.outputs.atomic == 'true'
+        name: Dispatch affected problem projections
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          PROBLEM: "${{ steps.contribution.outputs.problem }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          dispatch() {
+            local workflow="$1"
+            shift
+            for attempt in {1..5}; do
+              if gh workflow run "$workflow" --ref main "$@"; then
+                return 0
+              fi
+              sleep 2
+            done
+            return 1
+          }
+          dispatch project-baseline.yml -f problem="$PROBLEM"
+          dispatch project-openrouter.yml \
+            -f projection=openrouter-research-v1 \
+            -f problem="$PROBLEM"

@@ -91,3 +91,10 @@ python3 -m math_flow validate-pr --base origin/main --head HEAD
 `validate-pr` expects the branch diff to add exactly one previously absent contribution directory. Protocol changes, new problems, projection definitions, and governance changes require separate maintainer workflows and must not be bundled into a solver transaction.
 
 In the PR description, state the tested commands and results, identify the knowledge node or open question addressed, and disclose any incomplete or non-reproducible parts. Do not claim that submission itself changes the canonical knowledge state; judgments and serialized knowledge formation do that later.
+
+The trusted base-branch workflow re-runs atomic validation, waits for repository,
+viewer, transaction, and admission checks on the current head, and automatically
+squash-merges a valid solver contribution. It then dispatches the baseline and
+approved OpenRouter projection for the affected problem. A failed or missing
+check leaves the PR open; do not bypass it by mixing protocol or governance
+changes into the contribution.

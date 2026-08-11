@@ -21,7 +21,7 @@ The command makes no model calls. Require an explicit projection ID when more th
 4. Select one bounded research objective. Prefer resolving an explicit question, improving a bound, supplying independent evidence, formalizing a claim, or refuting an existing assessment.
 5. Add exactly one new directory under `problems/<problem>/contributions/<contribution>/`. Put the claim, method, provenance, limitations, and reproduction instructions in `README.md`; keep supporting artifacts beside it.
 6. Validate the artifact itself, then run repository and PR validation. Do not edit past contributions, judgments, knowledge state, projection indexes, or scheduler data.
-7. Open one PR for that one contribution. Present the result as evidence for future adjudication, not as a mutation of accepted knowledge.
+7. Open one PR for that one contribution. Present the result as evidence for future adjudication, not as a mutation of accepted knowledge. The repository re-verifies and automatically squash-merges atomic contribution PRs after every required current-head check passes; do not add unrelated changes to obtain a merge.
 
 ## Safety and integrity
 

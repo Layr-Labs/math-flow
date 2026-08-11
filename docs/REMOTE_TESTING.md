@@ -37,17 +37,17 @@ README. Inspect `run.json`, `report.md`, `control/selection.json`,
 `control/normalizations.json`, `state/delta.json`, `state/state.json`, and
 `state/revisions.jsonl` before enabling hosted inference.
 
-## 4. Enable the manual repository projection
+## 4. Enable the repository projection
 
-Add `OPENROUTER_API_KEY` as a GitHub Actions repository secret. Manually dispatch
-`OpenRouter repository projection` from `main` for projection
-`openrouter-research-v1` and problem `triangle-midpoints`. It compares the
-ledger with judgments published under the active judge spec, fans out one
-primary judgment for every uncovered transaction, performs one serialized
-knowledge build over the completed batch, publishes the verified bundles and
-scheduler state to the orphan `projections` branch, and refreshes
-`viewer/catalog.json`. It is intentionally not push-triggered so early
-experiments cannot create surprise inference spend.
+Add `OPENROUTER_API_KEY` as a GitHub Actions repository secret. A validated
+atomic contribution is squash-merged by `Auto-merge validated contribution`,
+which explicitly dispatches `OpenRouter repository projection` from `main` for
+the affected problem. The projection compares the ledger with judgments
+published under the active judge spec, fans out one primary judgment for every
+uncovered transaction, performs one serialized knowledge build over the
+completed batch, publishes the verified bundles and scheduler state to the
+orphan `projections` branch, and refreshes `viewer/catalog.json`. Manual
+dispatch remains available for recovery and replay.
 
 If judgments succeed but a later formation or publication step fails, keep the
 original run. After correcting the downstream failure, dispatch the workflow
@@ -73,4 +73,5 @@ unrelated problem pushes do not fan out projection jobs.
 Create a branch that adds one new contribution directory, open a pull request, and
 confirm `Validate transaction` passes. Also try a deliberately invalid PR that
 edits `problem.md` alongside the contribution and confirm it is rejected. Squash-
-merge the valid PR, then compare projections at the old and new commit heads.
+confirm that the valid PR is automatically squash-merged after every check
+passes, then compare projections at the old and new commit heads.

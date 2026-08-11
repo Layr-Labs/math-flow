@@ -76,5 +76,6 @@ Use explicit GitHub logins in the policy. A GitHub App can later replace this
 with organization/team identity and immutable user IDs.
 
 The registered reconciliation judge is part of projection identity, but the
-current manual workflow does not yet schedule conflict reconciliation. It runs
-parallel primary judgments followed by one serialized knowledge build.
+current repository projection workflow does not yet schedule conflict
+reconciliation. It runs parallel primary judgments followed by one serialized
+knowledge build.

@@ -149,14 +149,16 @@ Private repositories configure the viewer's server-only
 `MATH_FLOW_GITHUB_TOKEN` binding with a fine-grained, read-only Contents token;
 the credential is never sent to the browser.
 
-The manual OpenRouter workflow resolves an approved logical projection from
-`protocol/projections/` at canonical `main`, then plans judgment coverage for
-every ledger transaction under its judge spec. It fans out all missing primary
-judgments concurrently, then coalesces the completed judgments into one
-serialized knowledge build, publishes the content-addressed batch and scheduler
-state to `projections`, and regenerates the catalog. Re-dispatching is
-idempotent when coverage is complete. It remains manually dispatched so a push
-cannot create surprise inference spend.
+After every validated atomic contribution is squash-merged, the trusted
+auto-merge workflow dispatches the baseline and approved OpenRouter projection
+for that contribution's problem. The OpenRouter workflow resolves its logical
+projection from `protocol/projections/` at canonical `main`, plans judgment
+coverage for every ledger transaction under its judge spec, fans out all
+missing primary judgments concurrently, and coalesces them into one serialized
+knowledge build. It then publishes the content-addressed batch and scheduler
+state to `projections` and regenerates the catalog. Manual dispatch remains
+available for repair and replay, and redispatching is idempotent when coverage
+is complete.
 
 Problem namespaces and projection definitions require a configured administrator
 approval before admission, while ordinary contribution PRs retain the atomic
@@ -235,8 +237,9 @@ cd viewer && npm test && npm run lint
 2. Add a non-empty `README.md`; put supporting files beside it.
 3. Open a pull request. The transaction check rejects edits outside that one new
    directory.
-4. Once checks and human review pass, squash-merge the PR. That commit is the
-   canonical transaction, and its position on the protected branch is its order.
+4. The trusted auto-merge workflow re-verifies the atomic diff and squash-merges
+   it after all current-head checks pass. That commit is the canonical
+   transaction, and its position on the ledger branch is its order.
 
 Problem creation and protocol changes use separate maintainer PRs. They are
 validated structurally but are not contribution transactions.
