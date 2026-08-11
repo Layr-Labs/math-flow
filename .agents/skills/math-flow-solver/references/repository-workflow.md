@@ -8,6 +8,8 @@
 - [Inspect provenance](#inspect-provenance)
 - [Create one contribution](#create-one-contribution)
 - [Validate and hand off](#validate-and-hand-off)
+- [After submission](#after-submission)
+- [Understand coordination lanes](#understand-coordination-lanes)
 - [Handoff and cleanup](#handoff-and-cleanup)
 
 ## Create isolated worktrees
@@ -198,6 +200,144 @@ squash-merges a valid solver contribution. It then dispatches the baseline and
 approved OpenRouter projection for the affected problem. A failed or missing
 check leaves the PR open; do not bypass it by mixing protocol or governance
 changes into the contribution.
+
+## After submission
+
+A green PR means the contribution is valid, not that judgment and knowledge
+formation are complete. Close the loop with repository tools.
+
+First wait for automatic merge and record the canonical squash commit:
+
+```bash
+pr_number=<pull-request-number>
+merge_commit=$(gh pr view "$pr_number" \
+  --json state,mergeCommit \
+  --jq 'select(.state == "MERGED") | .mergeCommit.oid')
+test -n "$merge_commit"
+```
+
+Fetch both authoritative refs. A new projection commit normally has a message
+of the form `Publish <projection>/<problem> from run <run-id>`; use this only as
+an operational signal, not as proof that the submission is covered:
+
+```bash
+git -C "$control_checkout" fetch origin main projections
+git -C "$control_checkout" log -n 10 --format='%H %s' \
+  --grep="^Publish <projection-id>/<problem-id> from run " \
+  origin/projections
+git -C "$projection_worktree" switch --detach origin/projections
+```
+
+Materialize context into a new empty directory on every poll; the context tool
+deliberately refuses to overwrite an existing snapshot:
+
+```bash
+after_context="${TMPDIR:-/tmp}/math-flow-after-$agent_task-<unique-poll-id>"
+cd "$solver_worktree"
+python3 -m math_flow context \
+  --problem <problem-id> \
+  --projection-dir "$projection_worktree" \
+  --projection <projection-id> \
+  --head origin/main \
+  --output-dir "$after_context"
+```
+
+Inspect the receipt fields without a web UI:
+
+```bash
+jq --arg transaction "$merge_commit" '{
+  freshness: .freshness.status,
+  projectedProblemLedgerHead: .freshness.projectedProblemLedgerHead,
+  missingFromProjection:
+    (.freshness.canonicalTransactionsMissingFromProjection | index($transaction)),
+  missingPrimaryJudgment:
+    ([.coverage.canonicalTransactionsWithoutBuiltPrimaryJudgment[].transactionId]
+      | index($transaction)),
+  missingFromState:
+    ([.coverage.canonicalTransactionsNotRepresentedInState[].transactionId]
+      | index($transaction)),
+  coordination: .coordination
+}' "$after_context/context.json"
+```
+
+Interpret the receipt in stages:
+
+- canonical projection coverage is complete when `missingFromProjection` is
+  `null` (`jq index` uses null to mean absent);
+- primary judgment is published when `missingPrimaryJudgment` is `null`;
+- knowledge formation represents the transaction in current state provenance
+  when `missingFromState` is `null`;
+- `freshness` is `current`, unless a known later same-problem contribution has
+  made the just-fetched projection stale again;
+- `projectedProblemLedgerHead` equals the merge commit when it is still the
+  latest transaction for that problem, or is a later descendant that includes
+  it.
+
+The expected full lifecycle has all three missing fields null. If primary
+judgment is present but state representation remains missing after the lane is
+quiescent, report that formation outcome rather than resubmitting the same work
+or polling forever; a builder may have omitted a transaction that produced no
+durable state change, or formation may need maintainer attention.
+
+Check the last condition robustly when other submissions may have merged:
+
+```bash
+projected_problem_head=$(jq -r \
+  '.freshness.projectedProblemLedgerHead' "$after_context/context.json")
+git -C "$solver_worktree" merge-base --is-ancestor \
+  "$merge_commit" "$projected_problem_head"
+```
+
+To locate the raw primary judgment, search the detached projection objects for
+the merge commit, then use `jq` to confirm it is a primary judgment whose
+subjects contain that transaction. Read the sibling `report.md` for the full
+assessment:
+
+```bash
+while IFS= read -r judgment_record; do
+  jq --arg transaction "$merge_commit" --arg record "$judgment_record" '
+    select(
+      .judgmentKind == "primary"
+      and any(.subjects[]?;
+        .kind == "transaction" and .id == $transaction)
+    )
+    | {record: $record, judgmentId, findings}
+  ' "$judgment_record"
+done < <(
+  rg -l --fixed-strings "$merge_commit" \
+    "$projection_worktree/objects/judgment" -g judgment.json
+)
+```
+
+Do not treat every matching file as the subject judgment: a transaction may
+also appear as evidence. For a selected record, read `report.md` in the same
+directory for the full assessment. If the receipt is incomplete, refresh the
+refs and materialize another context snapshot later. Do not rerun or manually
+merge the hosted projection from a solver task.
+
+## Understand coordination lanes
+
+`context.json.coordination` summarizes the scheduler lane for one logical
+`(problem, projection)` knowledge chain:
+
+- `laneId` is the stable digest identity of that problem and registered
+  projection. It is not a solver lock or a Git branch.
+- `pendingJudgmentIds` and `pendingConflictIds` are completed immutable inputs
+  observed by the scheduler but not yet claimed into a formation batch.
+- `activeBuild` is the exact leased batch currently constructing the next
+  serialized state. Claimed inputs move out of pending while it is active.
+- `nextEligibleAt` is the earliest Unix timestamp at which pending inputs may be
+  claimed. It is null when no build is scheduled and also while `activeBuild`
+  owns the lane; interpret it together with the other fields.
+
+Do not delay or withhold a valid solver submission because `activeBuild` is
+non-null. The lease serializes knowledge-state construction only. Contributions
+may merge and primary judgments may run in parallel; judgments completed during
+an active build stay pending for the next eligible coalesced build. A failed
+build returns its claimed inputs to pending. Nonempty pending arrays or an
+active build may belong to other concurrent submissions, so they do not by
+themselves show that this solver's transaction is incomplete—use the receipt
+checks above.
 
 ## Handoff and cleanup
 

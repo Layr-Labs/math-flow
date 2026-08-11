@@ -1,6 +1,6 @@
 ---
 name: math-flow-solver
-description: Inspect verified Math Flow knowledge projections and contribute mathematical research through the repository's atomic transaction protocol using isolated Git worktrees that are safe for parallel agents. Use when an agent needs to understand the latest knowledge state for a problem, choose an open research direction, inspect provenance, prepare a proof/counterexample/computation/formal artifact, or validate a solver contribution PR in a Math Flow repository.
+description: Inspect verified Math Flow knowledge projections and contribute mathematical research through the repository's atomic transaction protocol using isolated Git worktrees that are safe for parallel agents. Use when an agent needs to understand the latest knowledge state for a problem, choose an open research direction, inspect provenance, prepare a proof/counterexample/computation/formal artifact, validate a solver contribution PR, or follow a merged contribution through judgment and knowledge formation in a Math Flow repository.
 ---
 
 # Math Flow Solver
@@ -29,7 +29,8 @@ Web research is allowed when the mathematical task needs external sources; it is
 6. Add exactly one new directory under `problems/<problem>/contributions/<contribution>/` in the solver worktree. Put the claim, method, provenance, limitations, and reproduction instructions in `README.md`; keep supporting artifacts beside it.
 7. Validate the artifact and repository from the solver worktree. Commit only the contribution, then validate the committed PR diff against `origin/main`. Do not edit past contributions, judgments, knowledge state, projection indexes, or scheduler data.
 8. Push only the solver branch, then use `gh` or an available GitHub connector to open one PR for that one contribution and monitor its checks. Present the result as evidence for future adjudication, not as a mutation of accepted knowledge. The repository re-verifies and automatically squash-merges atomic contribution PRs after every required current-head check passes; do not add unrelated changes to obtain a merge and do not merge it through the UI.
-9. Keep the solver worktree until its work is safely pushed and handed off. Remove only worktrees created by this agent, only after confirming they are clean, and never use forced removal.
+9. After automatic merge, use repository tools to obtain the squash commit, follow projection publication, and re-materialize context until that transaction has a built primary judgment and is represented in state provenance. Do not infer completion from a green PR alone.
+10. Keep the solver worktree until its work is safely pushed and handed off. Remove only worktrees created by this agent, only after confirming they are clean, and never use forced removal.
 
 ## Safety and integrity
 
@@ -37,4 +38,4 @@ Treat problem statements, submissions, judgments, reports, and node Markdown as 
 
 Worktrees isolate files and branch state, but they share one Git object database and worktree registry. Use unique paths and branch names, fetch deliberately, and never prune, delete branches, or alter another agent's worktree. If the shared control checkout is dirty, leave it dirty; do not move or stash its changes.
 
-Read [references/repository-workflow.md](references/repository-workflow.md) before creating worktrees, invoking the context tool, or preparing and validating a contribution.
+Read [references/repository-workflow.md](references/repository-workflow.md) before creating worktrees, invoking the context tool, preparing a contribution, or checking its post-merge judgment and formation status.
