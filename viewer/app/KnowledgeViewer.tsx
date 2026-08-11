@@ -1,8 +1,9 @@
 "use client";
 
-import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useId, useMemo, useState } from "react";
 import { collectProgramContributionIds } from "./programContributions.mjs";
 import { createViewerReferenceResolver } from "./referenceLinks.mjs";
+import { preferredTransactionDetailMode, resolveTransactionDetailMode } from "./transactionDetailMode.mjs";
 import { applyViewerStateToSearch, parseViewerState } from "./viewerState.mjs";
 
 type Ref = {
@@ -205,6 +206,48 @@ export type ViewerCatalog = {
 };
 
 type DetailMode = "node" | "transaction" | "judgment" | "credit" | "report";
+
+type OverlayStateOption = {
+  value: string;
+  label: string;
+};
+
+function OverlayStateSelector({
+  label,
+  value,
+  options,
+  status,
+  statusTone,
+  description,
+  placeholder,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: OverlayStateOption[];
+  status?: string;
+  statusTone?: "current" | "historical" | "stale";
+  description: string;
+  placeholder?: string;
+  onChange(value: string): void;
+}) {
+  const id = useId();
+  return (
+    <div className="overlay-state-selector">
+      <div className="overlay-state-heading">
+        <label htmlFor={id}>{label}</label>
+        {status && <span className={`overlay-state-status ${statusTone ?? "historical"}`}>{status}</span>}
+      </div>
+      <select id={id} value={value} onChange={(event) => onChange(event.target.value)}>
+        {placeholder && <option value="" disabled>{placeholder}</option>}
+        {options.map((option) => (
+          <option value={option.value} key={option.value}>{option.label}</option>
+        ))}
+      </select>
+      <small>{description}</small>
+    </div>
+  );
+}
 
 type ViewerState = {
   problemId?: string;
@@ -687,11 +730,10 @@ export function KnowledgeViewer({
     : [];
   const selectedJudgment = transactionJudgments.find((item) => item.judgmentId === viewerState.judgmentId) ?? transactionJudgments.at(-1);
   const detailMode: DetailMode = selectedTransaction
-    ? viewerState.detailMode === "judgment" && transactionJudgments.length
-      ? "judgment"
-      : viewerState.detailMode === "credit" && selectedCreditAssignment
-        ? "credit"
-        : "transaction"
+    ? resolveTransactionDetailMode(viewerState.detailMode, {
+      hasJudgment: transactionJudgments.length > 0,
+      hasCredit: Boolean(selectedCreditAssignment),
+    })
     : viewerState.detailMode === "report" ? "report" : "node";
 
   useEffect(() => {
@@ -790,7 +832,7 @@ export function KnowledgeViewer({
     onViewerStateChange({
       transactionId: nextTransactionId,
       judgmentId: linked?.judgmentId,
-      detailMode: "transaction",
+      detailMode: preferredTransactionDetailMode(viewerState.detailMode),
     });
   }
 
@@ -840,36 +882,33 @@ export function KnowledgeViewer({
           <span className="brand-mark">MF</span>
           <div><span className="eyebrow">Math Flow · research atlas</span><h1>{data.problem.title}</h1></div>
         </div>
-        <div className="run-strip" aria-label="Knowledge state versions">
-          {data.runs.map((item) => (
-            <button key={item.id} onClick={() => chooseRun(item.id)} aria-pressed={item.id === run.id}>
-              <span>State {String(item.ordinal).padStart(2, "0")}</span>
-              <small>{short(item.ledgerHead)} · +{item.addedRevisionIds.length}</small>
-            </button>
-          ))}
-        </div>
+        <OverlayStateSelector
+          label="Knowledge state"
+          value={run.id}
+          options={data.runs.map((item) => ({
+            value: item.id,
+            label: `State ${String(item.ordinal).padStart(2, "0")} · ${short(item.ledgerHead)} · ${item.id === data.latestRunId ? "current" : "historical"}`,
+          }))}
+          status={run.id === data.latestRunId ? "Current state" : "Historical state"}
+          statusTone={run.id === data.latestRunId ? "current" : "historical"}
+          description={`Ledger ${short(run.ledgerHead)} · +${run.addedRevisionIds.length} revisions`}
+          onChange={chooseRun}
+        />
         {creditProjection && creditRun && (
           <div className="credit-strip" aria-label="Credit assignment projection">
             <span className="eyebrow">Credit assignment · separate overlay</span>
-            <label>
-              <span>{creditProjection.label}</span>
-              <select
-                value={creditRun.runDigest}
-                onChange={(event) => chooseCreditRun(event.target.value)}
-              >
-                {creditProjection.runs.map((item, index) => (
-                  <option value={item.runDigest} key={item.runDigest}>
-                    Assessment {String(index + 1).padStart(2, "0")} · {short(item.runDigest)}{item.stale ? " · stale" : " · current"}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <span className={`credit-freshness ${creditRun.stale ? "stale" : "current"}`}>
-              {creditRun.stale ? "Historical input lock" : "Current input lock"}
-            </span>
-            <small>
-              Knowledge {short(creditRun.dependency.runDigest)} · {creditRun.assignments.length} assignments
-            </small>
+            <OverlayStateSelector
+              label={creditProjection.label}
+              value={creditRun.runDigest}
+              options={creditProjection.runs.map((item, index) => ({
+                value: item.runDigest,
+                label: `Assessment ${String(index + 1).padStart(2, "0")} · ${short(item.runDigest)} · ${item.stale ? "stale" : "current"}`,
+              }))}
+              status={creditRun.stale ? "Historical input lock" : "Current input lock"}
+              statusTone={creditRun.stale ? "stale" : "current"}
+              description={`Knowledge ${short(creditRun.dependency.runDigest)} · ${creditRun.assignments.length} assignments`}
+              onChange={chooseCreditRun}
+            />
           </div>
         )}
         {creditProjection && !creditRun && (
@@ -878,18 +917,17 @@ export function KnowledgeViewer({
             {creditProjection.runs.length ? (
               <>
                 <strong>No credit run selected</strong>
-                <label>
-                  <span>{creditProjection.selectionStatus === "ambiguous" ? "Multiple equally applicable runs" : "Published assessments"}</span>
-                  <select value="" onChange={(event) => chooseCreditRun(event.target.value)}>
-                    <option value="" disabled>Choose an assessment</option>
-                    {creditProjection.runs.map((item, index) => (
-                      <option value={item.runDigest} key={item.runDigest}>
-                        Assessment {String(index + 1).padStart(2, "0")} · {short(item.runDigest)}{item.stale ? " · stale" : " · current"}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <small>No projection terminal chooses one automatically.</small>
+                <OverlayStateSelector
+                  label={creditProjection.selectionStatus === "ambiguous" ? "Multiple equally applicable runs" : "Published assessments"}
+                  value=""
+                  options={creditProjection.runs.map((item, index) => ({
+                    value: item.runDigest,
+                    label: `Assessment ${String(index + 1).padStart(2, "0")} · ${short(item.runDigest)} · ${item.stale ? "stale" : "current"}`,
+                  }))}
+                  description="No projection terminal chooses one automatically."
+                  placeholder="Choose an assessment"
+                  onChange={chooseCreditRun}
+                />
               </>
             ) : (
               <>

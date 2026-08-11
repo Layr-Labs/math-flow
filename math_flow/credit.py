@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 from .artifacts import ArtifactBundle, read_verified_artifact, verify_bundle
+from .credit_schedule import plan_credit_run, validate_credit_run_schedule
 from .errors import MathFlowError
 from .governance import resolve_projection
 from .hierarchical import (
@@ -134,11 +135,17 @@ def _current_revisions(state: dict[str, object]) -> dict[str, str | None]:
 
 
 def _credit_schema(
-    transaction_ids: list[str], node_revisions: dict[str, str | None]
+    transaction_ids: list[str],
+    node_revisions: dict[str, str | None],
+    reservation_transaction_ids: list[str] | None = None,
 ) -> dict[str, object]:
     transaction: dict[str, object] = {
         "type": "string",
         "enum": transaction_ids,
+    }
+    reservation_transaction: dict[str, object] = {
+        "type": "string",
+        "enum": reservation_transaction_ids or transaction_ids,
     }
     node_ids = sorted(node_revisions)
     revision_ids = sorted(
@@ -171,7 +178,7 @@ def _credit_schema(
             "knowledgeRefs": {"type": "array", "items": knowledge_ref},
             "reservationTransactionIds": {
                 "type": "array",
-                "items": transaction,
+                "items": reservation_transaction,
             },
         },
         "required": [
@@ -237,11 +244,18 @@ def _validate_credit_index(
     report: str,
     *,
     materialized: bool = False,
+    assignment_transaction_ids: list[str] | None = None,
 ) -> dict[str, object]:
     if not isinstance(value, dict) or set(value) != {"assignments"}:
         raise MathFlowError("credit extractor returned an invalid assignments envelope")
     assignments = value["assignments"]
-    transaction_ids = [str(item["transactionId"]) for item in transactions]
+    canonical_transaction_ids = [str(item["transactionId"]) for item in transactions]
+    transaction_ids = assignment_transaction_ids or canonical_transaction_ids
+    if (
+        len(transaction_ids) != len(set(transaction_ids))
+        or any(item not in canonical_transaction_ids for item in transaction_ids)
+    ):
+        raise MathFlowError("credit assignment scope is not a canonical transaction subset")
     ordinals = {
         str(item["transactionId"]): int(item["ordinal"])
         for item in transactions
@@ -425,12 +439,14 @@ def load_credit_assignment_bundle(
         "knowledgeRevisions",
         "knowledgeOutputProfile",
     }
+    optional_input_fields = {"schedule"}
     transactions = credit_input.get("transactions")
     state = credit_input.get("knowledgeState")
     revisions = credit_input.get("knowledgeRevisions")
     knowledge_profile = credit_input.get("knowledgeOutputProfile")
     if (
-        set(credit_input) != input_fields
+        not input_fields <= set(credit_input)
+        or not set(credit_input) <= input_fields | optional_input_fields
         or credit_input.get("schemaVersion") != 1
         or credit_input.get("problemId") != manifest.get("problemId")
         or credit_input.get("ledgerHead") != manifest.get("ledgerHead")
@@ -490,6 +506,12 @@ def load_credit_assignment_bundle(
             raise MathFlowError("credit bundle input has invalid transaction metadata")
     projection = credit_input.get("creditProjection")
     manifest_inputs = manifest.get("inputs")
+    raw_schedule = credit_input.get("schedule")
+    schedule = (
+        validate_credit_run_schedule(raw_schedule)
+        if raw_schedule is not None
+        else None
+    )
     if (
         not isinstance(projection, dict)
         or set(projection) != {"projectionId", "projectionSpecDigest"}
@@ -509,6 +531,7 @@ def load_credit_assignment_bundle(
         or manifest_inputs.get("dependencyLockDigest") != lock_digest
         or manifest_inputs.get("dependencyRunDigests")
         != [item.get("runDigest") for item in dependencies]
+        or manifest_inputs.get("schedule") != schedule
     ):
         raise MathFlowError("credit bundle projection inputs are inconsistent")
     if not isinstance(credit_index, dict) or set(credit_index) != {
@@ -518,6 +541,11 @@ def load_credit_assignment_bundle(
         "assignments",
     }:
         raise MathFlowError("credit bundle index has an invalid envelope")
+    assignment_transaction_ids = None
+    if schedule is not None and schedule["mode"] == "utc-calendar":
+        assignment_transaction_ids = list(
+            schedule["allocationWindow"]["transactionIds"]
+        )
     validated_index = _validate_credit_index(
         {"assignments": credit_index["assignments"]},
         str(manifest["problemId"]),
@@ -526,6 +554,7 @@ def load_credit_assignment_bundle(
         _current_revisions(state),
         report,
         materialized=True,
+        assignment_transaction_ids=assignment_transaction_ids,
     )
     if validated_index != credit_index:
         raise MathFlowError("credit bundle index is not canonical")
@@ -540,6 +569,8 @@ def run_credit_assignment_bundle(
     head: str,
     output_dir: Path,
     transport: OpenRouterTransport | None = None,
+    *,
+    as_of: int | None = None,
 ) -> dict[str, object]:
     root = root.resolve()
     resolved = resolve_projection(root, projection, problem, head)
@@ -562,6 +593,16 @@ def run_credit_assignment_bundle(
     if canonical_spec != spec:
         raise MathFlowError("credit judge spec differs from the canonical projection head")
 
+    plan = plan_credit_run(
+        root, projection_root, projection, problem, head, as_of
+    )
+    if plan.get("eligible") is not True:
+        raise MathFlowError(
+            "credit run is not eligible: "
+            f"{plan.get('reasonCode')}: {plan.get('message')}"
+        )
+    schedule = validate_credit_run_schedule(plan.get("schedule"))
+
     dependency_lock = resolve_projection_dependencies(
         root,
         projection_root,
@@ -569,6 +610,8 @@ def run_credit_assignment_bundle(
         problem,
         head,
     )
+    if dependency_lock["dependencyLockDigest"] != plan.get("dependencyLockDigest"):
+        raise MathFlowError("credit dependency state changed after eligibility planning")
     knowledge_dependencies = [
         item
         for item in dependency_lock["dependencies"]
@@ -590,6 +633,11 @@ def run_credit_assignment_bundle(
     if not transactions:
         raise MathFlowError("credit assignment requires at least one canonical transaction")
     transaction_ids = [str(item["transactionId"]) for item in transactions]
+    assignment_transaction_ids = transaction_ids
+    if schedule["mode"] == "utc-calendar":
+        assignment_transaction_ids = list(
+            schedule["allocationWindow"]["transactionIds"]
+        )
     problem_statement = read_at(
         root, str(source["ledgerHead"]), f"problems/{problem}/problem.md"
     )
@@ -611,15 +659,27 @@ def run_credit_assignment_bundle(
         "knowledgeState": state,
         "knowledgeRevisions": knowledge_revisions,
         "knowledgeOutputProfile": knowledge_profile,
+        "schedule": schedule,
     }
 
     headings = "\n".join(
-        f"## Contribution: {transaction_id}" for transaction_id in transaction_ids
+        f"## Contribution: {transaction_id}"
+        for transaction_id in assignment_transaction_ids
     )
     report_prompt = "\n\n".join(
         [
-            "Write a detailed Markdown credit assessment of every canonical contribution. Do not output JSON and do not alter or re-adjudicate the mathematics.",
+            (
+                "Write a detailed Markdown credit assessment of every contribution in the governed UTC allocation window. Do not output JSON and do not alter or re-adjudicate the mathematics."
+                if schedule["mode"] == "utc-calendar"
+                else "Write a detailed Markdown credit assessment of every canonical contribution. Do not output JSON and do not alter or re-adjudicate the mathematics."
+            ),
             "Credit is qualitative and non-zero-sum: assess each transaction's causal contribution, significance, and roles on its own merits. Explain uncertainty rather than forcing a ranking.",
+            (
+                "This run has a governed UTC allocation window. Assess and emit headings only for the window's transaction IDs; older contributions are context and may be cited as reservation evidence. "
+                + json.dumps(schedule["allocationWindow"], ensure_ascii=False)
+                if schedule["mode"] == "utc-calendar"
+                else "This rolling run assesses the complete canonical ledger."
+            ),
             "Use each required level-two heading exactly once, with substantive reasoning beneath it. Discuss reservations only when a canonical contribution actually provides specific evidence of one.",
             f"Required headings in ledger order:\n{headings}",
             f"Rubric:\n{json.dumps(spec['rubric'], indent=2, ensure_ascii=False)}",
@@ -653,7 +713,8 @@ def run_credit_assignment_bundle(
             "Return exactly one assignment per transaction in ledger order. Sort roles alphabetically, knowledgeRefs by nodeId then revisionId, and reservationTransactionIds by ledger order.",
             "Do not return report-section headings; trusted runner code derives each exact heading from its transaction ID.",
             "A knowledge reference must use the exact current revision shown below. A reservation reference must be a canonical transaction no later than the transaction being assessed.",
-            f"Transactions in ledger order:\n{json.dumps(transaction_ids, indent=2)}",
+            "Transactions in assignment scope and ledger order:\n"
+            + json.dumps(assignment_transaction_ids, indent=2),
             f"Current knowledge references:\n{json.dumps(node_index, indent=2)}",
             f"Report:\n<credit-report>\n{report}</credit-report>",
         ]
@@ -668,7 +729,11 @@ def run_credit_assignment_bundle(
             },
             {"role": "user", "content": extract_prompt},
         ],
-        _credit_schema(transaction_ids, node_revisions),
+        _credit_schema(
+            assignment_transaction_ids,
+            node_revisions,
+            reservation_transaction_ids=transaction_ids,
+        ),
     )
     extract_response = send(extract_request)
     _reject_truncated_response(extract_response, "extract")
@@ -679,6 +744,7 @@ def run_credit_assignment_bundle(
         transactions,
         node_revisions,
         report,
+        assignment_transaction_ids=assignment_transaction_ids,
     )
 
     bundle = ArtifactBundle(output_dir)
@@ -712,6 +778,7 @@ def run_credit_assignment_bundle(
             "dependencyRunDigests": [
                 item["runDigest"] for item in dependency_lock["dependencies"]
             ],
+            "schedule": schedule,
         },
     )
     return bundle.finalize(envelope)

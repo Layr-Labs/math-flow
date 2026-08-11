@@ -328,6 +328,51 @@ class GovernanceRepositoryTests(unittest.TestCase):
         with self.assertRaisesRegex(MathFlowError, "unsupported runner"):
             validate_projection_registry(self.root)
 
+    def test_overlay_calendar_cadence_is_governed_and_fail_closed(self) -> None:
+        write_json(
+            self.root / "protocol/projections/research-v1.json",
+            projection_spec(),
+        )
+        calendar = overlay_projection_spec()
+        calendar["scheduling"]["utcCalendarPeriod"] = {"unit": "day"}
+        write_json(
+            self.root / "protocol/projections/credit-v1.json", calendar
+        )
+        head = self.commit("Add daily credit cadence")
+        resolved = resolve_projection(self.root, "credit-v1", "demo", head)
+        self.assertEqual(
+            resolved["scheduling"],
+            {
+                "minimumIntervalSeconds": 60,
+                "utcCalendarPeriod": {"unit": "day"},
+            },
+        )
+
+        for invalid_period in (
+            {"unit": "week"},
+            {"unit": "day", "timeZone": "America/Los_Angeles"},
+            "day",
+        ):
+            invalid = overlay_projection_spec()
+            invalid["scheduling"]["utcCalendarPeriod"] = invalid_period
+            write_json(
+                self.root / "protocol/projections/credit-v1.json", invalid
+            )
+            with self.assertRaisesRegex(MathFlowError, "utcCalendarPeriod"):
+                validate_projection_registry(self.root)
+
+        invalid_interval = overlay_projection_spec()
+        invalid_interval["scheduling"] = {
+            "minimumIntervalSeconds": 3_601,
+            "utcCalendarPeriod": {"unit": "hour"},
+        }
+        write_json(
+            self.root / "protocol/projections/credit-v1.json",
+            invalid_interval,
+        )
+        with self.assertRaisesRegex(MathFlowError, "cannot exceed"):
+            validate_projection_registry(self.root)
+
     def test_projection_dependency_graph_rejects_unknown_cycles_and_gaps(self) -> None:
         consumer = projection_spec("consumer-v1")
         consumer["dependencies"] = [
@@ -475,6 +520,21 @@ class CurrentRegistryTests(unittest.TestCase):
             root, "openrouter-research-v1", "triangle-midpoints", "WORKTREE"
         )
         self.assertEqual(resolved["problemId"], "triangle-midpoints")
+
+    def test_credit_workflow_rechecks_canonical_and_projection_state(self) -> None:
+        root = Path(__file__).parents[1]
+        workflow = (
+            root / ".github/workflows/project-credit.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "git fetch origin +refs/heads/main:refs/remotes/origin/main",
+            workflow,
+        )
+        self.assertIn("--head refs/remotes/origin/main", workflow)
+        self.assertIn("--canonical-ref refs/remotes/origin/main", workflow)
+        self.assertIn("dependencyStateDigest", workflow)
+        self.assertIn("problemLedgerDigest", workflow)
+        self.assertIn("runnerSpecDigest", workflow)
 
 
 if __name__ == "__main__":

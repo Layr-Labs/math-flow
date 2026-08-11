@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-11 (`640f41a`).
+Last reconciled with `main`: 2026-08-11 (`d23b00c`).
 
 ## Product thesis
 
@@ -142,7 +142,7 @@ automatic squash merge to main
 | Non-UI agent context command | Implemented; deterministically reports verified credit assignments or explicit pending/stale/invalid/unavailable status without model calls | `math_flow/context.py`, `math_flow/credit_context.py` |
 | Solver-facing repository skill | Implemented; requires repository tools and explains qualitative scoring semantics and exact-reference inspection | `.agents/skills/math-flow-solver/` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
-| Credit overlay runner, profile, and publication transport | Active governed example plus local two-stage qualitative runner and independent `credit-assignment` bundles implemented; hosted scheduling not yet implemented | `math_flow/credit.py`, `protocol/projections/openrouter-no-three-in-line-credit-v1.json`, `protocol/profiles/credit-assignment-markdown-v1.json` |
+| Credit overlay runner, profile, cadence, and publication transport | Governed local/hosted runner, provider-free eligibility planner, bounded semantic retries, rolling coalescing, catch-up over closed UTC periods, predecessor-chain terminals, and independent `credit-assignment` bundles implemented | `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
 | Objective verifier attestations | Not yet implemented as durable protocol artifacts | `docs/MVP.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
 
@@ -171,11 +171,21 @@ The deployed Sites viewer reads the personal repository through its explicit
 `MATH_FLOW_CATALOG_URL` binding, so projection publication updates the UI
 without a viewer redeploy.
 
-The credit overlay was admitted in PR #22 at `640f41a`. It has no published
-credit-assignment bundle yet. The local runner and publisher are ready, while
-hosted scheduling and terminal publication remain outstanding. Non-UI agents
-can already distinguish that state from stale or invalid scoring through
-`math_flow context`; the command never invokes the credit model.
+The credit overlay was admitted in PR #22 at `640f41a`; its first qualitative
+assignment was published at projection commit `e0c6fc8` (run-digest prefix
+`sha256:11da3274`). Non-UI agents resolve the verified predecessor-chain
+terminal through `math_flow context`; that command never invokes the credit
+model. The governed cadence layer wakes every five minutes, plans without a
+provider, and dispatches only eligible overlays. The existing projection keeps
+its rolling/all-ledger behavior until a separate governed spec change opts into
+UTC calendar allocation windows.
+
+Automatic credit retries are keyed to the exact rolling dependency state or UTC
+allocation window. Active duplicates are suppressed and five consecutive
+failures stop automatic spend until state changes or a matching run succeeds;
+manual dispatch remains an explicit escape hatch. Credit planning errors are
+reported per overlay after knowledge queues have already been dispatched, so a
+broken overlay cannot starve unrelated formation work.
 
 Credit applicability compares the governed consumer projection, problem ledger,
 producer runs, and locked artifacts. The immutable dependency-lock digest still
@@ -321,16 +331,12 @@ the task requires an end-to-end check.
 
 These are the most important gaps as of this document's reconciliation date:
 
-1. **Host and schedule the credit overlay runner.** The dependency
-   foundation now lets a governed consumer name a producer and artifact role,
-   then lock `knowledge-state` to an exact verified scheduler-authoritative run.
-   A qualitative, non-zero-sum Markdown/index profile, local two-stage runner,
-   report/index validation, and independent published run kind now define the
-   first output example, and an active governed no-three-in-line overlay now
-   declares the research-program state dependency. The next slice should
-   dispatch that runner only after declared inputs are current and publish its
-   terminal. Credit must never mutate mathematical knowledge. Additional typed
-   resolvers can be added as new overlay inputs are introduced.
+1. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
+   exact UTC transaction windows, and predecessor-chain terminals are now
+   implemented, while the admitted example remains qualitative and non-zero-sum.
+   A future runner can allocate a finite hourly/daily award without changing
+   the scheduling envelope. Strict boundary-time knowledge would additionally
+   require historical dependency resolution.
 2. **Add reservations as canonical research transactions.** A reservation must
    be participant-authored evidence rather than an adjudication field. The
    credit overlay can consider priority, specificity, overlap, completion

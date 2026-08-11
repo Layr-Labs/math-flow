@@ -633,6 +633,15 @@ def publish_batch(projection_root: Path, bundle_dirs: list[Path]) -> dict[str, o
             "legacy-projection",
         }:
             raise MathFlowError(f"unsupported run kind for publication: {run_kind}")
+        manifest_inputs = manifest.get("inputs")
+        if (
+            run_kind == "credit-assignment"
+            and isinstance(manifest_inputs, dict)
+            and manifest_inputs.get("schedule") is not None
+        ):
+            from .credit_schedule import assert_credit_publication_unique
+
+            assert_credit_publication_unique(root, bundle_dir)
         digest_hex = manifest_digest.removeprefix("sha256:")
         relative = Path("objects") / str(run_kind) / digest_hex[:2] / digest_hex
         target = root / relative

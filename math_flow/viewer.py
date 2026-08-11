@@ -6,6 +6,7 @@ from pathlib import Path
 from .artifacts import load_manifest, read_verified_artifact, sha256_bytes, verify_bundle
 from .coordination import load_scheduler
 from .credit import load_credit_assignment_bundle
+from .credit_schedule import ordered_credit_runs
 from .errors import MathFlowError
 from .governance import projection_registry_index
 from .knowledge import validate_state_v2, validate_state_v3
@@ -296,6 +297,7 @@ def _viewer_credit_assignment(
         "dependencyLock": dependency_lock,
         "models": models,
         "cost": cost,
+        "schedule": inputs.get("schedule"),
     }
 
 
@@ -844,21 +846,21 @@ def export_viewer_catalog(
     ):
         group_runs.sort(
             key=lambda item: (
+                int(item["schedule"]["evaluatedAt"])
+                if isinstance(item.get("schedule"), dict)
+                else -1,
                 len(item["creditInput"]["transactions"]),
                 str(item["problemLedgerHead"]),
                 str(item["runDigest"]),
             )
         )
-        current_runs = [item for item in group_runs if item["stale"] is False]
-        if len(current_runs) == 1:
-            latest = current_runs[0]
-            selection_status = "current"
-        elif len(current_runs) > 1:
-            latest = None
-            selection_status = "ambiguous"
-        elif len(group_runs) == 1:
-            latest = group_runs[0]
-            selection_status = "historical"
+        try:
+            ordered_group = ordered_credit_runs(group_runs)
+        except MathFlowError:
+            ordered_group = []
+        if ordered_group:
+            latest = ordered_group[-1]
+            selection_status = "current" if latest["stale"] is False else "historical"
         elif group_runs:
             latest = None
             selection_status = "ambiguous"

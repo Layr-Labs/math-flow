@@ -224,6 +224,19 @@ def _commit_author(root: Path, commit: str) -> dict[str, str]:
     return {"displayName": name, "email": email}
 
 
+def commit_timestamp(root: Path, commit: str) -> int:
+    """Return the immutable Git committer timestamp for a canonical commit."""
+
+    rendered = _run_git(root.resolve(), "show", "-s", "--format=%ct", commit).stdout.strip()
+    try:
+        value = int(rendered)
+    except ValueError as exc:  # pragma: no cover - Git itself supplies this value
+        raise MathFlowError(f"commit has an invalid committer timestamp: {commit}") from exc
+    if value < 0:
+        raise MathFlowError(f"commit has a negative committer timestamp: {commit}")
+    return value
+
+
 def ledger(root: Path, problem: str, head: str = "HEAD") -> dict[str, object]:
     root = root.resolve()
     validate_slug(problem, "problem id")

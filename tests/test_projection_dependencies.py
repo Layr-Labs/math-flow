@@ -22,8 +22,16 @@ from math_flow.artifacts import (
 from math_flow.cli import main
 from math_flow.coordination import lane_id, publish_batch, record_completed_inputs
 from math_flow.credit import (
+    _credit_schema,
+    _validate_credit_index,
     load_credit_assignment_bundle,
     run_credit_assignment_bundle,
+)
+from math_flow.credit_schedule import (
+    filter_credit_dispatch_history,
+    next_calendar_allocation_window,
+    plan_credit_run,
+    plan_due_credit_dispatches,
 )
 from math_flow.credit_context import build_credit_context
 from math_flow.errors import MathFlowError
@@ -33,7 +41,7 @@ from math_flow.projection_dependencies import (
     resolve_projection_dependencies,
     same_projection_dependency_state,
 )
-from math_flow.repository import ledger, sha256_json
+from math_flow.repository import commit_timestamp, ledger, sha256_json
 from math_flow.viewer import export_viewer_catalog
 
 
@@ -259,7 +267,12 @@ class ProjectionDependencyTests(unittest.TestCase):
         }
         write_json(scheduler, state)
 
-    def _publish_credit_assignment(self) -> tuple[Path, str]:
+    def _publish_credit_assignment(
+        self,
+        *,
+        as_of: int | None = None,
+        bundle_name: str = "published-credit-bundle",
+    ) -> tuple[Path, str]:
         transaction_id = str(
             ledger(self.root, "demo", self.head)["transactions"][0][
                 "transactionId"
@@ -307,7 +320,7 @@ class ProjectionDependencyTests(unittest.TestCase):
                 },
             }
 
-        bundle = self.root / "published-credit-bundle"
+        bundle = self.root / bundle_name
         run_credit_assignment_bundle(
             self.root,
             self.projection_root,
@@ -316,6 +329,7 @@ class ProjectionDependencyTests(unittest.TestCase):
             self.head,
             bundle,
             transport=transport,
+            as_of=as_of,
         )
         batch = publish_batch(self.projection_root, [bundle])
         return bundle, str(batch["objects"][0]["runDigest"])
@@ -366,6 +380,514 @@ class ProjectionDependencyTests(unittest.TestCase):
             0,
         )
         self.assertEqual(json.loads(output.read_text(encoding="utf-8")), first)
+
+    def test_rolling_credit_plan_is_provider_free_and_coalesces_current_state(self) -> None:
+        initial = plan_credit_run(
+            self.root,
+            self.projection_root,
+            "credit-v1",
+            "demo",
+            self.head,
+            as_of=123,
+        )
+        self.assertTrue(initial["eligible"])
+        self.assertEqual(initial["schedule"]["mode"], "rolling")
+        self.assertIsNone(initial["schedule"]["allocationWindow"])
+
+        due = plan_due_credit_dispatches(
+            self.root, self.projection_root, self.head, as_of=123
+        )
+        self.assertEqual(
+            [(item["projectionId"], item["problemId"]) for item in due["dispatches"]],
+            [("credit-v1", "demo")],
+        )
+
+        self._publish_credit_assignment()
+        covered = plan_credit_run(
+            self.root,
+            self.projection_root,
+            "credit-v1",
+            "demo",
+            self.head,
+            as_of=999_999,
+        )
+        self.assertFalse(covered["eligible"])
+        self.assertEqual(
+            covered["reasonCode"], "dependency-state-already-covered"
+        )
+        calls = 0
+
+        def forbidden_transport(_: dict[str, object]) -> dict[str, object]:
+            nonlocal calls
+            calls += 1
+            raise AssertionError("ineligible credit run reached its provider")
+
+        with self.assertRaisesRegex(MathFlowError, "not eligible"):
+            run_credit_assignment_bundle(
+                self.root,
+                self.projection_root,
+                "credit-v1",
+                "demo",
+                self.head,
+                self.root / "ineligible-credit-run",
+                transport=forbidden_transport,
+                as_of=999_999,
+            )
+        self.assertEqual(calls, 0)
+
+    def test_automatic_credit_retry_history_is_semantic_bounded_and_resettable(self) -> None:
+        plan = plan_due_credit_dispatches(
+            self.root, self.projection_root, self.head, as_of=123
+        )
+        dispatch = plan["dispatches"][0]
+        title = (
+            f"Credit {dispatch['projectionId']}/{dispatch['problemId']} "
+            f"[{dispatch['automaticRetryKey']}]"
+        )
+
+        def run(
+            run_id: int,
+            *,
+            status: str = "completed",
+            conclusion: str | None = "failure",
+            display_title: str = title,
+            head: str = "f" * 40,
+        ) -> dict[str, object]:
+            return {
+                "conclusion": conclusion,
+                "databaseId": run_id,
+                "displayTitle": display_title,
+                "headSha": head,
+                "status": status,
+            }
+
+        active = filter_credit_dispatch_history(
+            plan, [run(1, status="in_progress", conclusion=None)]
+        )
+        self.assertEqual(active["dispatches"], [])
+        capped = filter_credit_dispatch_history(
+            plan, [run(index) for index in range(1, 6)]
+        )
+        self.assertEqual(capped["dispatches"], [])
+        non_success_terminal = filter_credit_dispatch_history(
+            plan,
+            [run(index, conclusion="timed_out") for index in range(1, 6)],
+        )
+        self.assertEqual(non_success_terminal["dispatches"], [])
+        reset = filter_credit_dispatch_history(
+            plan,
+            [
+                *[run(index) for index in range(1, 6)],
+                run(6, conclusion="success"),
+            ],
+        )
+        self.assertEqual(reset["dispatches"], [dispatch])
+        unrelated = filter_credit_dispatch_history(
+            plan,
+            [
+                run(
+                    index,
+                    display_title=(
+                        f"Credit {dispatch['projectionId']}/{dispatch['problemId']} "
+                        f"[sha256:{'0' * 64}]"
+                    ),
+                )
+                for index in range(1, 6)
+            ],
+        )
+        self.assertEqual(unrelated["dispatches"], [dispatch])
+
+    def test_due_credit_planning_isolates_one_overlay_error(self) -> None:
+        second = overlay_projection_spec(
+            [
+                {
+                    "name": "knowledge",
+                    "projectionId": "knowledge-v1",
+                    "artifactRole": "knowledge-state",
+                }
+            ]
+        )
+        second["id"] = "credit-second-v1"
+        write_json(
+            self.root / "protocol/projections/credit-second-v1.json", second
+        )
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Add a second credit overlay")
+        self.head = git(self.root, "rev-parse", "HEAD")
+        real_plan = plan_credit_run
+
+        def isolated_plan(
+            root: Path,
+            projection_root: Path,
+            projection: str,
+            problem: str,
+            head: str,
+            as_of: int,
+        ) -> dict[str, object]:
+            if projection == "credit-v1":
+                raise MathFlowError("fixture corrupt credit history")
+            return real_plan(
+                root, projection_root, projection, problem, head, as_of
+            )
+
+        with patch(
+            "math_flow.credit_schedule.plan_credit_run",
+            side_effect=isolated_plan,
+        ):
+            plan = plan_due_credit_dispatches(
+                self.root, self.projection_root, self.head, as_of=123
+            )
+        self.assertEqual(
+            [item["projectionId"] for item in plan["dispatches"]],
+            ["credit-second-v1"],
+        )
+        self.assertEqual(
+            plan["planningErrors"],
+            [
+                {
+                    "problemId": "demo",
+                    "projectionId": "credit-v1",
+                    "message": "fixture corrupt credit history",
+                }
+            ],
+        )
+
+    def test_daily_credit_plan_scopes_latest_closed_utc_period(self) -> None:
+        projection = overlay_projection_spec(
+            [
+                {
+                    "name": "knowledge",
+                    "projectionId": "knowledge-v1",
+                    "artifactRole": "knowledge-state",
+                }
+            ]
+        )
+        projection["scheduling"]["utcCalendarPeriod"] = {"unit": "day"}
+        write_json(
+            self.root / "protocol/projections/credit-v1.json", projection
+        )
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Use daily credit allocation windows")
+        self.head = git(self.root, "rev-parse", "HEAD")
+
+        transaction_id = str(
+            ledger(self.root, "demo", self.head)["transactions"][0]["transactionId"]
+        )
+        transaction_time = commit_timestamp(self.root, transaction_id)
+        period_end = ((transaction_time // 86_400) + 1) * 86_400
+        as_of = period_end + 60
+        plan = plan_credit_run(
+            self.root,
+            self.projection_root,
+            "credit-v1",
+            "demo",
+            self.head,
+            as_of=as_of,
+        )
+        self.assertTrue(plan["eligible"])
+        self.assertEqual(
+            plan["schedule"]["allocationWindow"],
+            {
+                "unit": "day",
+                "startAt": period_end - 86_400,
+                "endAt": period_end,
+                "transactionIds": [transaction_id],
+            },
+        )
+
+        report = (
+            "# Daily credit\n\n"
+            f"## Contribution: {transaction_id}\n\n"
+            "This contribution is in the governed daily allocation window.\n"
+        )
+        extracted = {
+            "assignments": [
+                {
+                    "transactionId": transaction_id,
+                    "significance": "major",
+                    "roles": ["proof"],
+                    "knowledgeRefs": [{"nodeId": "root", "revisionId": None}],
+                    "reservationTransactionIds": [],
+                }
+            ]
+        }
+        calls = 0
+        requests: list[dict[str, object]] = []
+
+        def transport(payload: dict[str, object]) -> dict[str, object]:
+            nonlocal calls
+            calls += 1
+            requests.append(payload)
+            return {
+                "id": f"daily-credit-{calls}",
+                "model": "openai/gpt-5.6-sol",
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": report if calls == 1 else json.dumps(extracted),
+                        },
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 10,
+                    "completion_tokens": 10,
+                    "total_tokens": 20,
+                },
+            }
+
+        bundle = self.root / "daily-credit-run"
+        manifest = run_credit_assignment_bundle(
+            self.root,
+            self.projection_root,
+            "credit-v1",
+            "demo",
+            self.head,
+            bundle,
+            transport=transport,
+            as_of=as_of,
+        )
+        self.assertEqual(manifest["inputs"]["schedule"], plan["schedule"])
+        report_prompt = str(requests[0]["messages"][-1]["content"])
+        self.assertNotIn("every canonical contribution", report_prompt)
+        self.assertIn("governed UTC allocation window", report_prompt)
+        publish_batch(self.projection_root, [bundle])
+        covered = plan_credit_run(
+            self.root,
+            self.projection_root,
+            "credit-v1",
+            "demo",
+            self.head,
+            as_of=as_of,
+        )
+        self.assertEqual(covered["reasonCode"], "no-new-closed-calendar-period")
+        empty = plan_credit_run(
+            self.root,
+            self.projection_root,
+            "credit-v1",
+            "demo",
+            self.head,
+            as_of=period_end + 86_400 + 60,
+        )
+        self.assertEqual(empty["reasonCode"], "calendar-periods-empty")
+
+    def test_calendar_chain_catches_up_earliest_nonempty_closed_period(self) -> None:
+        transactions = [
+            {"transactionId": "1" * 40},
+            {"transactionId": "2" * 40},
+            {"transactionId": "3" * 40},
+        ]
+        timestamps = {
+            "1" * 40: 100,
+            "2" * 40: 2 * 86_400 + 100,
+            "3" * 40: 3 * 86_400 + 100,
+        }
+        with patch(
+            "math_flow.credit_schedule.commit_timestamp",
+            side_effect=lambda _root, transaction_id: timestamps[transaction_id],
+        ):
+            window = next_calendar_allocation_window(
+                self.root,
+                transactions,
+                "day",
+                latest_closed_end=4 * 86_400,
+                previous_end=86_400,
+            )
+            following = next_calendar_allocation_window(
+                self.root,
+                transactions,
+                "day",
+                latest_closed_end=4 * 86_400,
+                previous_end=3 * 86_400,
+            )
+        self.assertEqual(
+            window,
+            {
+                "unit": "day",
+                "startAt": 2 * 86_400,
+                "endAt": 3 * 86_400,
+                "transactionIds": ["2" * 40],
+            },
+        )
+        self.assertEqual(
+            following,
+            {
+                "unit": "day",
+                "startAt": 3 * 86_400,
+                "endAt": 4 * 86_400,
+                "transactionIds": ["3" * 40],
+            },
+        )
+
+    def test_calendar_assignment_scope_allows_prior_ledger_reservations(self) -> None:
+        prior = "1" * 40
+        current = "2" * 40
+        schema = _credit_schema(
+            [current],
+            {"root": None},
+            reservation_transaction_ids=[prior, current],
+        )
+        assignment_schema = schema["properties"]["assignments"]["items"]
+        self.assertEqual(
+            assignment_schema["properties"]["transactionId"]["enum"],
+            [current],
+        )
+        self.assertEqual(
+            assignment_schema["properties"]["reservationTransactionIds"]
+            ["items"]["enum"],
+            [prior, current],
+        )
+        result = _validate_credit_index(
+            {
+                "assignments": [
+                    {
+                        "transactionId": current,
+                        "significance": "major",
+                        "roles": ["proof"],
+                        "knowledgeRefs": [
+                            {"nodeId": "root", "revisionId": None}
+                        ],
+                        "reservationTransactionIds": [prior],
+                    }
+                ]
+            },
+            "demo",
+            "sha256:" + "a" * 64,
+            [
+                {"transactionId": prior, "ordinal": 1},
+                {"transactionId": current, "ordinal": 2},
+            ],
+            {"root": None},
+            f"## Contribution: {current}\n\nWindow-scoped credit.\n",
+            assignment_transaction_ids=[current],
+        )
+        self.assertEqual(
+            result["assignments"][0]["reservationTransactionIds"], [prior]
+        )
+
+    def test_rolling_minimum_interval_coalesces_a_changed_dependency(self) -> None:
+        projection = overlay_projection_spec(
+            [
+                {
+                    "name": "knowledge",
+                    "projectionId": "knowledge-v1",
+                    "artifactRole": "knowledge-state",
+                }
+            ]
+        )
+        projection["scheduling"]["minimumIntervalSeconds"] = 60
+        write_json(
+            self.root / "protocol/projections/credit-v1.json", projection
+        )
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Coalesce credit for one minute")
+        self.head = git(self.root, "rev-parse", "HEAD")
+        _, first_credit = self._publish_credit_assignment(as_of=100)
+
+        scheduler_path = self.projection_root / "coordination/scheduler.json"
+        scheduler = json.loads(scheduler_path.read_text(encoding="utf-8"))
+        lane = next(iter(scheduler["lanes"].values()))
+        old_digest = str(lane["latestStateRun"])
+        old_hex = old_digest.removeprefix("sha256:")
+        old_bundle = (
+            self.projection_root
+            / "objects"
+            / "knowledge-build"
+            / old_hex[:2]
+            / old_hex
+        )
+        advanced = self.root / "advanced-knowledge-bundle"
+        shutil.copytree(old_bundle, advanced)
+        run = json.loads((advanced / "run.json").read_text(encoding="utf-8"))
+        run["baseRun"] = old_digest
+        run["inputs"]["testGeneration"] = 2
+        write_json(advanced / "run.json", run)
+        _, advanced_digest = load_manifest(advanced)
+        advanced_hex = advanced_digest.removeprefix("sha256:")
+        target = (
+            self.projection_root
+            / "objects"
+            / "knowledge-build"
+            / advanced_hex[:2]
+            / advanced_hex
+        )
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(advanced, target)
+        index_path = self.projection_root / "indexes/problems/demo/runs.json"
+        index = json.loads(index_path.read_text(encoding="utf-8"))
+        index.append(
+            {
+                "runDigest": advanced_digest,
+                "runKind": "knowledge-build",
+                "problemId": "demo",
+                "path": target.relative_to(self.projection_root).as_posix(),
+            }
+        )
+        write_json(index_path, index)
+        lane["latestStateRun"] = advanced_digest
+        lane["lastCompletedAt"] = 20
+        write_json(scheduler_path, scheduler)
+
+        waiting = plan_credit_run(
+            self.root,
+            self.projection_root,
+            "credit-v1",
+            "demo",
+            self.head,
+            as_of=159,
+        )
+        self.assertFalse(waiting["eligible"])
+        self.assertEqual(waiting["reasonCode"], "minimum-interval-not-elapsed")
+        self.assertEqual(waiting["nextEligibleAt"], 160)
+        due = plan_credit_run(
+            self.root,
+            self.projection_root,
+            "credit-v1",
+            "demo",
+            self.head,
+            as_of=160,
+        )
+        self.assertTrue(due["eligible"])
+        self.assertEqual(due["schedule"]["previousRunDigest"], first_credit)
+        _, second_credit = self._publish_credit_assignment(
+            as_of=160, bundle_name="second-published-credit-bundle"
+        )
+        catalog = export_viewer_catalog(
+            self.root,
+            self.projection_root,
+            "example/math-flow",
+            canonical_ref="HEAD",
+        )
+        overlay = catalog["creditProjections"][0]
+        self.assertEqual(overlay["runCount"], 2)
+        self.assertEqual(overlay["selectionStatus"], "current")
+        self.assertEqual(overlay["latestRunDigest"], second_credit)
+        current_context, _ = build_credit_context(
+            self.root,
+            self.projection_root,
+            "demo",
+            self.head,
+            list(ledger(self.root, "demo", self.head)["transactions"]),
+        )
+        self.assertEqual(current_context["status"], "current")
+        self.assertEqual(current_context["run"]["runDigest"], second_credit)
+        projection["scheduling"]["minimumIntervalSeconds"] = 61
+        write_json(
+            self.root / "protocol/projections/credit-v1.json", projection
+        )
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Revise the governed credit cadence")
+        self.head = git(self.root, "rev-parse", "HEAD")
+        stale_context, _ = build_credit_context(
+            self.root,
+            self.projection_root,
+            "demo",
+            self.head,
+            list(ledger(self.root, "demo", self.head)["transactions"]),
+        )
+        self.assertEqual(stale_context["status"], "stale")
+        self.assertEqual(stale_context["run"]["runDigest"], second_credit)
 
     def test_catalog_exposes_admitted_credit_projection_before_first_run(self) -> None:
         catalog = export_viewer_catalog(
@@ -682,7 +1204,7 @@ class ProjectionDependencyTests(unittest.TestCase):
         )
         self.assertEqual(credit["selectionStatus"], "current")
 
-    def test_catalog_and_context_refuse_an_arbitrary_credit_terminal(self) -> None:
+    def test_publisher_refuses_an_arbitrary_scheduled_credit_terminal(self) -> None:
         first_bundle, first_digest = self._publish_credit_assignment()
         second_bundle = self.root / "second-credit-bundle"
         shutil.copytree(first_bundle, second_bundle)
@@ -691,9 +1213,8 @@ class ProjectionDependencyTests(unittest.TestCase):
         )
         second_manifest["providerRuns"][0]["responseId"] = "independent-rerun"
         write_json(second_bundle / "run.json", second_manifest)
-        second_batch = publish_batch(self.projection_root, [second_bundle])
-        second_digest = str(second_batch["objects"][0]["runDigest"])
-        self.assertNotEqual(first_digest, second_digest)
+        with self.assertRaisesRegex(MathFlowError, "previousRunDigest"):
+            publish_batch(self.projection_root, [second_bundle])
 
         catalog = export_viewer_catalog(
             self.root,
@@ -702,9 +1223,9 @@ class ProjectionDependencyTests(unittest.TestCase):
             canonical_ref="HEAD",
         )
         credit = catalog["creditProjections"][0]
-        self.assertEqual(credit["runCount"], 2)
-        self.assertEqual(credit["selectionStatus"], "ambiguous")
-        self.assertIsNone(credit["latestRunDigest"])
+        self.assertEqual(credit["runCount"], 1)
+        self.assertEqual(credit["selectionStatus"], "current")
+        self.assertEqual(credit["latestRunDigest"], first_digest)
 
         source = ledger(self.root, "demo", self.head)
         context, report = build_credit_context(
@@ -714,11 +1235,9 @@ class ProjectionDependencyTests(unittest.TestCase):
             self.head,
             list(source["transactions"]),
         )
-        self.assertEqual(context["status"], "ambiguous")
-        self.assertCountEqual(
-            context["applicableRunDigests"], [first_digest, second_digest]
-        )
-        self.assertIsNone(report)
+        self.assertEqual(context["status"], "current")
+        self.assertEqual(context["run"]["runDigest"], first_digest)
+        self.assertIsNotNone(report)
 
     def test_agent_credit_context_selects_unique_current_verified_run(self) -> None:
         _, run_digest = self._publish_credit_assignment()

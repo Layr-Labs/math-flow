@@ -161,10 +161,28 @@ python -m math_flow credit \
   --output-dir /tmp/math-flow-credit-run
 ```
 
+Check eligibility without spending provider credits first:
+
+```bash
+python -m math_flow credit-plan \
+  --projection <credit-projection-id> \
+  --problem <problem-id> \
+  --head HEAD \
+  --projection-dir /path/to/projection-worktree
+```
+
 The report call is unconstrained Markdown. A second control call indexes one
 qualitative assignment per transaction, linked to exact knowledge revisions and
 prior reservation transactions. This is an example credit policy rather than a
-core formula. Hosted scheduling and viewer presentation are not active yet.
+core formula. The five-minute wake-up workflow plans governed overlay eligibility
+without a provider call and dispatches the allowlisted credit runner only when
+eligible. Rolling overlays coalesce dependency changes behind
+`minimumIntervalSeconds`; an optional closed UTC hour/day window can instead
+scope assignments to the transactions merged during that reproducible period.
+After the first calendar run, missed nonempty periods are processed oldest-first
+and empty periods are skipped. Automatic retries are keyed to the exact semantic
+state or window, suppress active duplicates, and stop after five consecutive
+failures; manual workflow dispatch remains available for diagnosis and repair.
 
 ### Interactive research atlas
 

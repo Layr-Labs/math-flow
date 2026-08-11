@@ -79,6 +79,12 @@ def same_projection_dependency_state(candidate: object, current: object) -> bool
         return False
 
 
+def projection_dependency_state_digest(lock: object) -> str:
+    """Digest semantic dependency state while excluding only audit-head provenance."""
+
+    return f"sha256:{sha256_json(_semantic_dependency_state(lock))}"
+
+
 def _artifact_for_role(
     manifest: dict[str, object], role: str
 ) -> dict[str, object]:

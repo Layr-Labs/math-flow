@@ -42,7 +42,8 @@ OVERLAY_PROJECTION_FIELDS = {
     "scheduling",
 }
 OVERLAY_RUNNER_FIELDS = {"implementation", "spec"}
-OVERLAY_SCHEDULING_FIELDS = {"minimumIntervalSeconds"}
+OVERLAY_SCHEDULING_REQUIRED_FIELDS = {"minimumIntervalSeconds"}
+OVERLAY_SCHEDULING_OPTIONAL_FIELDS = {"utcCalendarPeriod"}
 OVERLAY_IMPLEMENTATIONS = {"openrouter-credit-assignment-v1"}
 PROJECTION_DEPENDENCY_FIELDS = {"name", "projectionId", "artifactRole"}
 ARTIFACT_ROLE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
@@ -224,7 +225,10 @@ def validate_projection_spec(
         scheduling = value.get("scheduling")
         if (
             not isinstance(scheduling, dict)
-            or set(scheduling) != OVERLAY_SCHEDULING_FIELDS
+            or not OVERLAY_SCHEDULING_REQUIRED_FIELDS <= set(scheduling)
+            or not set(scheduling)
+            <= OVERLAY_SCHEDULING_REQUIRED_FIELDS
+            | OVERLAY_SCHEDULING_OPTIONAL_FIELDS
         ):
             raise MathFlowError(
                 f"overlay projection {projection_id!r} has invalid scheduling policy"
@@ -238,6 +242,25 @@ def validate_projection_spec(
             raise MathFlowError(
                 f"overlay projection {projection_id!r} minimumIntervalSeconds "
                 "must be between 0 and 86400"
+            )
+        period = scheduling.get("utcCalendarPeriod")
+        if period is not None and (
+            not isinstance(period, dict)
+            or set(period) != {"unit"}
+            or period.get("unit") not in {"hour", "day"}
+        ):
+            raise MathFlowError(
+                f"overlay projection {projection_id!r} utcCalendarPeriod must "
+                "select exactly one of 'hour' or 'day'"
+            )
+        if (
+            isinstance(period, dict)
+            and period.get("unit") == "hour"
+            and interval > 3_600
+        ):
+            raise MathFlowError(
+                f"overlay projection {projection_id!r} minimumIntervalSeconds "
+                "cannot exceed its UTC calendar period"
             )
         return value
 
@@ -401,6 +424,8 @@ def projection_registry_index(root: Path) -> dict[str, dict[str, object]]:
             "engine": spec["engine"],
             "allowedProblems": spec["allowedProblems"],
             "dependencies": spec.get("dependencies", []),
+            "scheduling": spec["scheduling"],
+            "runner": spec.get("runner"),
         }
     return indexed
 

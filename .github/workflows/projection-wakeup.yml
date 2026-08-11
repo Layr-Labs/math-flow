@@ -1,4 +1,4 @@
-name: Wake due knowledge projections
+name: Wake due projections
 
 on:
   schedule:
@@ -86,3 +86,57 @@ jobs:
               sleep 2
             done
           done < <(jq -c '.problems[]' "$plan")
+      - id: credit_plan
+        name: Plan bounded automatic credit retries
+        env:
+          GH_TOKEN: "${{ github.token }}"
+        run: |
+          set -euo pipefail
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          as_of="$(date +%s)"
+          unfiltered="${RUNNER_TEMP}/due-credit-unfiltered.json"
+          history="${RUNNER_TEMP}/credit-run-history.json"
+          python -m math_flow due-credit-plan \
+            --projection-dir "$projection_dir" \
+            --head HEAD \
+            --as-of "$as_of" \
+            --output "$unfiltered"
+          jq -r '.planningErrors[]? | "Credit planning error for \(.projectionId)/\(.problemId): \(.message)"' \
+            "$unfiltered" >&2
+          gh run list \
+            --workflow project-credit.yml \
+            --branch main \
+            --limit 1000 \
+            --json conclusion,databaseId,displayTitle,headSha,status \
+            > "$history"
+          python -m math_flow filter-credit-plan \
+            --plan "$unfiltered" \
+            --run-history "$history" \
+            --output "${RUNNER_TEMP}/due-credit.json"
+      - if: steps.credit_plan.outcome == 'success'
+        name: Dispatch eligible credit overlays
+        env:
+          GH_TOKEN: "${{ github.token }}"
+        run: |
+          set -euo pipefail
+          plan="${RUNNER_TEMP}/due-credit.json"
+          while IFS= read -r dispatch; do
+            problem="$(jq -r '.problemId' <<< "$dispatch")"
+            projection="$(jq -r '.projectionId' <<< "$dispatch")"
+            as_of="$(jq -r '.asOf' <<< "$dispatch")"
+            retry_key="$(jq -r '.automaticRetryKey' <<< "$dispatch")"
+            for attempt in {1..5}; do
+              if gh workflow run project-credit.yml \
+                --ref main \
+                -f projection="$projection" \
+                -f problem="$problem" \
+                -f as_of="$as_of" \
+                -f retry_key="$retry_key"; then
+                break
+              fi
+              if [[ "$attempt" -eq 5 ]]; then
+                exit 1
+              fi
+              sleep 2
+            done
+          done < <(jq -c '.dispatches[]' "$plan")

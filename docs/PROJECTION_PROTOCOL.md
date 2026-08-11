@@ -338,7 +338,54 @@ ordered prior reservation references, and a unique non-empty matching report
 section. The published bundle contains the dependency lock, complete structured
 input (including the locked knowledge state), Markdown report, and credit index.
 The publisher accepts it as an independent immutable `credit-assignment` object.
-Hosted scheduling and viewer presentation are the next implementation slice.
+Every new-format credit run also carries an immutable scheduling envelope:
+evaluation epoch, governed minimum interval, optional closed UTC allocation
+window, and previous run digest. That predecessor link orders legitimate
+successive overlays without treating independent reruns as interchangeable
+terminals. The planner and runner both resolve current dependencies, and the
+runner refuses to call the provider when the plan is ineligible. Publication
+rechecks the predecessor and rejects a duplicate dependency state or UTC bucket.
+
+Rolling mode assesses the full canonical ledger after a dependency change and
+coalesces changes until `minimumIntervalSeconds` elapses. Calendar mode targets
+the latest closed UTC hour or day when starting a new chain. Later runs advance
+from the predecessor window end, select the earliest subsequent closed nonempty
+bucket, and skip empty buckets deterministically. The governed minimum interval
+may not exceed the calendar period. Calendar runs emit assignments only for
+transactions whose Git *committer* timestamps fall in `[startAt, endAt)`.
+GitHub squash-merge
+committer time is therefore the trusted admission time for hosted contribution
+transactions; imported or administrator-authored history must preserve credible
+committer metadata. The full ledger remains in the locked input so earlier
+reservations and provenance can still be audited. In particular, structured
+assignments remain window-scoped while reservation references may name any
+canonical prior transaction.
+
+Automatic retries use a semantic key rather than wall-clock evaluation time:
+all keys bind the governed projection, runner, and dependency state, while
+calendar keys additionally bind the exact allocation window. The wake-up planner suppresses an active
+matching run and stops after five consecutive failures, with a matching success
+resetting the count. Manual `project-credit.yml` dispatches use a separate
+`manual` key and bypass this automatic cap. Planning failures are recorded per
+overlay and do not suppress unrelated credit or knowledge dispatches.
+
+After the paid call, the hosted workflow refetches both canonical `main` and the
+projection branch. It republishes only if the governed projection, referenced
+runner specification, problem ledger, and semantic dependency state still match
+the preflight plan; otherwise
+the now-superseded bundle is discarded. An explicitly supplied hosted `as_of`
+may not be more than five minutes in the future, while local deterministic CLI
+tests may use any nonnegative epoch.
+
+Calendar candidate scope is frozen, but the locked knowledge dependency is the
+cumulative state available when the run is evaluated. If knowledge formation
+lags across the boundary, that state can include later information. Strict
+historical-state awards would require a dependency resolver capable of locking
+the producer terminal as of the window boundary. The current qualitative
+profile remains non-zero-sum; a future numerical profile can allocate a finite
+per-period award while reusing this schedule envelope. Before a calendar chain
+has its first run, older periods are not backfilled; deployment should therefore
+activate the projection before the first intended award period.
 
 Research-direction reservations belong in participant-authored canonical
 transactions, not in judge or knowledge state. A credit profile may treat an

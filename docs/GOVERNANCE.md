@@ -21,6 +21,24 @@ the wrong execution engine, and refuse a dispatch from any other ref. A digest
 of the entire specification is part of run and lane identity, so projections do
 not share logical state merely because they reuse one component.
 
+Overlay cadence is governed projection identity, not an advisory runner hint.
+With only `minimumIntervalSeconds`, a rolling overlay becomes eligible when its
+verified dependency state changes and the interval after the preceding run has
+elapsed; changes arriving during the interval coalesce. An optional
+`utcCalendarPeriod` of `{ "unit": "hour" }` or `{ "unit": "day" }` targets
+the latest closed UTC period instead. Each period has one immutable allocation
+window and at most one published run. A rolling interval controls execution
+pressure but does not itself define an award period. For a calendar policy,
+`minimumIntervalSeconds` cannot exceed the selected hour/day, preventing a
+configuration that necessarily accumulates backlog faster than it can drain.
+
+A new calendar chain considers only the latest closed period and remains
+unstarted when that period is empty. Thereafter
+the predecessor window is its durable cursor: recovery selects the earliest
+subsequent closed period containing transactions and skips intervening empty
+periods deterministically. Thus downtime does not permanently omit an earlier
+nonempty award period once the chain exists.
+
 Validate or inspect the registry without making a provider call:
 
 ```bash

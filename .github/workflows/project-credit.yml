@@ -1,0 +1,203 @@
+name: Governed credit overlay
+run-name: "Credit ${{ inputs.projection }}/${{ inputs.problem }} [${{ inputs.retry_key }}]"
+
+on:
+  workflow_dispatch:
+    inputs:
+      projection:
+        description: Approved credit projection id
+        required: true
+      problem:
+        description: Problem id
+        required: true
+      as_of:
+        description: Internal eligibility epoch; blank uses dispatch time
+        required: false
+        default: ""
+      retry_key:
+        description: Internal automatic retry key; manual dispatches keep the default
+        required: false
+        default: "manual"
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: "credit-overlay-${{ inputs.projection }}-${{ inputs.problem }}"
+  cancel-in-progress: false
+
+env:
+  MATH_FLOW_PROJECTION_ID: "${{ inputs.projection }}"
+  MATH_FLOW_PROBLEM_ID: "${{ inputs.problem }}"
+  MATH_FLOW_AS_OF: "${{ inputs.as_of }}"
+  MATH_FLOW_RETRY_KEY: "${{ inputs.retry_key }}"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require canonical main dispatch
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "Credit overlays may only be dispatched from canonical main." >&2
+            exit 1
+          fi
+          if [[ -n "$MATH_FLOW_AS_OF" && ! "$MATH_FLOW_AS_OF" =~ ^[0-9]+$ ]]; then
+            echo "as_of must be a nonnegative epoch." >&2
+            exit 1
+          fi
+          if [[ "${#MATH_FLOW_AS_OF}" -gt 18 ]]; then
+            echo "as_of is outside the supported epoch range." >&2
+            exit 1
+          fi
+          if [[ "$MATH_FLOW_RETRY_KEY" != "manual" && ! "$MATH_FLOW_RETRY_KEY" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "retry_key must be 'manual' or a SHA-256 digest." >&2
+            exit 1
+          fi
+          if [[ -n "$MATH_FLOW_AS_OF" ]]; then
+            maximum_as_of="$(( $(date +%s) + 300 ))"
+            if (( MATH_FLOW_AS_OF > maximum_as_of )); then
+              echo "as_of cannot be more than five minutes in the future." >&2
+              exit 1
+            fi
+          fi
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          ref: main
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - id: preflight
+        name: Verify governed eligibility without a provider call
+        shell: bash
+        run: |
+          set -euo pipefail
+          projection_dir="${RUNNER_TEMP}/projection-preflight"
+          if git ls-remote --exit-code origin refs/heads/projections >/dev/null 2>&1; then
+            git fetch origin refs/heads/projections:refs/remotes/origin/projections
+            git worktree add --detach "$projection_dir" refs/remotes/origin/projections
+          else
+            mkdir -p "$projection_dir"
+          fi
+          as_of="$MATH_FLOW_AS_OF"
+          if [[ -z "$as_of" ]]; then
+            as_of="$(date +%s)"
+          fi
+          plan="${RUNNER_TEMP}/credit-plan.json"
+          python -m math_flow credit-plan \
+            --projection "$MATH_FLOW_PROJECTION_ID" \
+            --problem "$MATH_FLOW_PROBLEM_ID" \
+            --head HEAD \
+            --projection-dir "$projection_dir" \
+            --as-of "$as_of" \
+            --output "$plan"
+          eligible="$(jq -r '.eligible' "$plan")"
+          planned_retry_key="$(jq -r '.automaticRetryKey // empty' "$plan")"
+          if [[ "$MATH_FLOW_RETRY_KEY" != "manual" && "$planned_retry_key" != "$MATH_FLOW_RETRY_KEY" ]]; then
+            echo "No provider call: the automatic retry key was superseded."
+            eligible=false
+          fi
+          echo "eligible=$eligible" >> "$GITHUB_OUTPUT"
+          echo "as_of=$as_of" >> "$GITHUB_OUTPUT"
+          echo "dependency_lock=$(jq -r '.dependencyLockDigest // empty' "$plan")" >> "$GITHUB_OUTPUT"
+          echo "dependency_state=$(jq -r '.dependencyStateDigest // empty' "$plan")" >> "$GITHUB_OUTPUT"
+          echo "problem_ledger=$(jq -r '.problemLedgerDigest // empty' "$plan")" >> "$GITHUB_OUTPUT"
+          echo "projection_digest=$(jq -r '.projectionSpecDigest' "$plan")" >> "$GITHUB_OUTPUT"
+          echo "runner_spec_digest=$(jq -r '.runnerSpecDigest' "$plan")" >> "$GITHUB_OUTPUT"
+          if [[ "$eligible" != "true" ]]; then
+            jq -r '"No provider call: \(.reasonCode): \(.message)"' "$plan"
+          fi
+      - if: steps.preflight.outputs.eligible == 'true'
+        name: Form the immutable credit bundle
+        env:
+          OPENROUTER_API_KEY: "${{ secrets.OPENROUTER_API_KEY }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$OPENROUTER_API_KEY" ]]; then
+            echo "The OPENROUTER_API_KEY repository secret is not configured." >&2
+            exit 1
+          fi
+          python -m math_flow credit \
+            --projection "$MATH_FLOW_PROJECTION_ID" \
+            --problem "$MATH_FLOW_PROBLEM_ID" \
+            --head HEAD \
+            --projection-dir "${RUNNER_TEMP}/projection-preflight" \
+            --as-of "${{ steps.preflight.outputs.as_of }}" \
+            --output-dir "${RUNNER_TEMP}/credit-bundle"
+      - if: steps.preflight.outputs.eligible == 'true'
+        name: Recheck and publish against the latest projection head
+        env:
+          GITHUB_TOKEN: "${{ github.token }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in {1..8}; do
+            git fetch origin +refs/heads/main:refs/remotes/origin/main
+            projection_dir="${RUNNER_TEMP}/projection-publish-${attempt}"
+            if git ls-remote --exit-code origin refs/heads/projections >/dev/null 2>&1; then
+              git fetch origin +refs/heads/projections:refs/remotes/origin/projections
+              git worktree add --detach "$projection_dir" refs/remotes/origin/projections
+            else
+              git worktree add --detach "$projection_dir" HEAD
+              git -C "$projection_dir" switch --orphan projection-publish
+            fi
+            current_plan="${RUNNER_TEMP}/credit-publish-plan-${attempt}.json"
+            if ! python -m math_flow credit-plan \
+              --projection "$MATH_FLOW_PROJECTION_ID" \
+              --problem "$MATH_FLOW_PROBLEM_ID" \
+              --head refs/remotes/origin/main \
+              --projection-dir "$projection_dir" \
+              --as-of "${{ steps.preflight.outputs.as_of }}" \
+              --output "$current_plan"; then
+              echo "Discarding bundle because canonical main changed its governed inputs."
+              exit 0
+            fi
+            if [[ "$(jq -r '.eligible' "$current_plan")" != "true" ]]; then
+              jq -r '"Discarding superseded bundle: \(.reasonCode): \(.message)"' "$current_plan"
+              exit 0
+            fi
+            if [[ "$(jq -r '.dependencyLockDigest' "$current_plan")" != "${{ steps.preflight.outputs.dependency_lock }}" ]]; then
+              if [[ "$(jq -r '.dependencyStateDigest' "$current_plan")" != "${{ steps.preflight.outputs.dependency_state }}" ]]; then
+                echo "Discarding bundle because its dependency state was superseded."
+                exit 0
+              fi
+            fi
+            if [[ "$(jq -r '.problemLedgerDigest' "$current_plan")" != "${{ steps.preflight.outputs.problem_ledger }}" ]]; then
+              echo "Discarding bundle because its problem ledger was superseded."
+              exit 0
+            fi
+            if [[ "$(jq -r '.projectionSpecDigest' "$current_plan")" != "${{ steps.preflight.outputs.projection_digest }}" ]]; then
+              echo "Discarding bundle because its governed projection changed."
+              exit 0
+            fi
+            if [[ "$(jq -r '.runnerSpecDigest' "$current_plan")" != "${{ steps.preflight.outputs.runner_spec_digest }}" ]]; then
+              echo "Discarding bundle because its governed runner specification changed."
+              exit 0
+            fi
+            python -m math_flow publish-batch \
+              --projection-dir "$projection_dir" \
+              --bundle "${RUNNER_TEMP}/credit-bundle"
+            python -m math_flow export-viewer-catalog \
+              --projection-dir "$projection_dir" \
+              --repository "${{ github.repository }}" \
+              --canonical-ref refs/remotes/origin/main \
+              --projection-ref projections \
+              --output "$projection_dir/viewer/catalog.json"
+            if python -m math_flow github-publish-projection \
+              --projection-dir "$projection_dir" \
+              --repository "$GITHUB_REPOSITORY" \
+              --branch projections \
+              --message "Publish ${MATH_FLOW_PROJECTION_ID}/${MATH_FLOW_PROBLEM_ID} credit from run ${GITHUB_RUN_ID}"; then
+              exit 0
+            fi
+            if [[ "$attempt" -eq 8 ]]; then
+              echo "Credit publication did not converge after ${attempt} attempts." >&2
+              exit 1
+            fi
+            sleep $((attempt * 2))
+          done

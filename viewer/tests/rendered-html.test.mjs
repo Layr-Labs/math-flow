@@ -3,6 +3,7 @@ import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 import { collectProgramContributionIds } from "../app/programContributions.mjs";
 import { createViewerReferenceResolver } from "../app/referenceLinks.mjs";
+import { preferredTransactionDetailMode, resolveTransactionDetailMode } from "../app/transactionDetailMode.mjs";
 import { applyViewerStateToSearch, parseViewerState } from "../app/viewerState.mjs";
 
 const templateRoot = new URL("../", import.meta.url);
@@ -55,6 +56,12 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /Judgment<\/button>/);
   assert.match(viewer, /Credit<\/button>/);
   assert.match(viewer, /Credit overlay/);
+  assert.equal((viewer.match(/<OverlayStateSelector/g) ?? []).length, 3);
+  assert.doesNotMatch(viewer, /className="run-strip"/);
+  assert.match(viewer, /label="Knowledge state"/);
+  assert.match(viewer, /Historical state/);
+  assert.match(viewer, /Historical input lock/);
+  assert.match(viewer, /detailMode: preferredTransactionDetailMode\(viewerState\.detailMode\)/);
   assert.match(viewer, /No published credit yet/);
   assert.match(viewer, /Qualitative credit · separate overlay/);
   assert.match(viewer, /Knowledge references/);
@@ -82,6 +89,8 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(styles, /\.action-update/);
   assert.match(styles, /\.action-retire/);
   assert.match(styles, /\.action-restore/);
+  assert.match(styles, /\.overlay-state-selector select/);
+  assert.doesNotMatch(styles, /\.run-strip/);
 
   const parsed = JSON.parse(data);
   assert.equal(parsed.runs.length, 3);
@@ -97,6 +106,20 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
     throw error;
   });
   assert.deepEqual(previewAssets, []);
+});
+
+test("preserves transaction detail tabs with an explicit availability fallback", () => {
+  assert.equal(preferredTransactionDetailMode("credit"), "credit");
+  assert.equal(preferredTransactionDetailMode("judgment"), "judgment");
+  assert.equal(preferredTransactionDetailMode("transaction"), "transaction");
+  assert.equal(preferredTransactionDetailMode("node"), "transaction");
+  assert.equal(preferredTransactionDetailMode(undefined), "transaction");
+
+  assert.equal(resolveTransactionDetailMode("credit", { hasJudgment: true, hasCredit: true }), "credit");
+  assert.equal(resolveTransactionDetailMode("credit", { hasJudgment: true, hasCredit: false }), "transaction");
+  assert.equal(resolveTransactionDetailMode("judgment", { hasJudgment: true, hasCredit: false }), "judgment");
+  assert.equal(resolveTransactionDetailMode("judgment", { hasJudgment: false, hasCredit: true }), "transaction");
+  assert.equal(resolveTransactionDetailMode("transaction", { hasJudgment: true, hasCredit: true }), "transaction");
 });
 
 test("derives related contributions from every node in a program subtree", () => {

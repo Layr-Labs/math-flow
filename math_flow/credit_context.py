@@ -5,6 +5,7 @@ from pathlib import Path, PurePosixPath
 
 from .artifacts import read_verified_artifact, verify_bundle
 from .credit import load_credit_assignment_bundle
+from .credit_schedule import ordered_credit_runs
 from .errors import MathFlowError
 from .governance import list_active_projections
 from .projection_dependencies import (
@@ -174,6 +175,7 @@ def _candidate_summary(candidate: dict[str, object]) -> dict[str, object]:
         "dependencyConsumer": dependency_lock["consumer"],
         "dependencyRunDigests": list(inputs["dependencyRunDigests"]),
         "dependencies": list(dependency_lock["dependencies"]),
+        "schedule": inputs.get("schedule"),
     }
 
 
@@ -243,7 +245,29 @@ def _select_stale_candidate(
         return None, False
     latest_progress = max(progress(item) for item in usable)
     latest = [item for item in usable if progress(item) == latest_progress]
-    return (latest[0], False) if len(latest) == 1 else (None, True)
+    if len(latest) == 1:
+        return latest[0], False
+    projection_digests = {
+        str(item["manifest"]["inputs"].get("projectionSpecDigest"))
+        for item in latest
+    }
+    if len(projection_digests) == 1:
+        digest = next(iter(projection_digests))
+        chain_candidates = [
+            {
+                **item,
+                "schedule": item["manifest"]["inputs"].get("schedule"),
+            }
+            for item in usable
+            if item["manifest"]["inputs"].get("projectionSpecDigest") == digest
+        ]
+        try:
+            chain = ordered_credit_runs(chain_candidates)
+        except MathFlowError:
+            chain = []
+        if chain and progress(chain[-1]) == latest_progress:
+            return chain[-1], False
+    return None, True
 
 
 def build_credit_context(
@@ -339,7 +363,7 @@ def build_credit_context(
         "validPublishedRuns": len(candidates),
         "invalidPublishedRuns": invalid,
         "bundleValidation": "math_flow.credit.load_credit_assignment_bundle",
-        "terminalSemantics": "unique-same-governed-projection-and-dependency-state",
+        "terminalSemantics": "verified-scheduled-predecessor-chain-or-unique-legacy-run",
     }
     applicable: list[dict[str, object]] = []
     if expected_lock is not None:
@@ -356,26 +380,56 @@ def build_credit_context(
         ]
 
     chosen: dict[str, object] | None = None
-    if len(applicable) == 1:
-        result.update(
+    if applicable:
+        governed_candidates = [
             {
-                "status": "current",
-                "reasonCode": "unique-current-dependency-state-run",
-                "message": "One verified run matches the governed projection and current dependency state.",
+                **candidate,
+                "schedule": candidate["manifest"]["inputs"].get("schedule"),
             }
-        )
-        chosen = applicable[0]
-    elif len(applicable) > 1:
-        result.update(
-            {
-                "status": "ambiguous",
-                "reasonCode": "multiple-current-dependency-state-runs",
-                "message": "Multiple verified runs match the governed projection and current dependency state; no overlay terminal selects one.",
-                "applicableRunDigests": sorted(
-                    str(item["runDigest"]) for item in applicable
-                ),
-            }
-        )
+            for candidate in candidates
+            if candidate["manifest"]["inputs"].get("projectionSpecDigest")
+            == projection_digest
+        ]
+        try:
+            ordered_governed = ordered_credit_runs(governed_candidates)
+        except MathFlowError:
+            ordered_governed = []
+        terminal = ordered_governed[-1] if ordered_governed else None
+        applicable_digests = {
+            str(candidate["runDigest"]) for candidate in applicable
+        }
+        if terminal is not None and str(terminal["runDigest"]) in applicable_digests:
+            chosen = terminal
+            legacy_single = (
+                len(ordered_governed) == 1
+                and ordered_governed[0]["schedule"] is None
+            )
+            result.update(
+                {
+                    "status": "current",
+                    "reasonCode": (
+                        "unique-current-dependency-state-run"
+                        if legacy_single
+                        else "scheduled-chain-terminal-current"
+                    ),
+                    "message": (
+                        "One verified run matches the governed projection and current dependency state."
+                        if legacy_single
+                        else "The latest run in one verified overlay predecessor chain matches the current governed dependency state."
+                    ),
+                }
+            )
+        else:
+            result.update(
+                {
+                    "status": "ambiguous",
+                    "reasonCode": "multiple-current-dependency-state-runs",
+                    "message": "Current verified runs do not form one scheduled predecessor chain; no overlay terminal is selected.",
+                    "applicableRunDigests": sorted(
+                        str(item["runDigest"]) for item in applicable
+                    ),
+                }
+            )
     else:
         canonical_ids = [
             str(item["transactionId"]) for item in canonical_transactions
@@ -430,7 +484,9 @@ def build_credit_context(
         **_candidate_summary(chosen),
         "authoritative": result["status"] == "current",
         "selectionBasis": (
-            "unique same governed projection and dependency state"
+            "verified scheduled predecessor-chain terminal"
+            if result.get("reasonCode") == "scheduled-chain-terminal-current"
+            else "unique same governed projection and dependency state"
             if result["status"] == "current"
             else "unique latest verified historical ledger coverage"
         ),

@@ -17,6 +17,11 @@ from .coordination import (
 )
 from .context import materialize_agent_context
 from .credit import run_credit_assignment_bundle
+from .credit_schedule import (
+    filter_credit_dispatch_history,
+    plan_credit_run,
+    plan_due_credit_dispatches,
+)
 from .errors import MathFlowError
 from .formation import run_knowledge_build_bundle
 from .governance import (
@@ -102,6 +107,39 @@ def build_parser() -> argparse.ArgumentParser:
         "--projection-dir", required=True, type=Path
     )
     credit_parser.add_argument("--output-dir", required=True, type=Path)
+    credit_parser.add_argument(
+        "--as-of",
+        type=int,
+        help="eligibility evaluation epoch (default: current time)",
+    )
+
+    credit_plan_parser = commands.add_parser(
+        "credit-plan",
+        help="plan governed credit eligibility without calling a provider",
+    )
+    credit_plan_parser.add_argument("--projection", required=True)
+    credit_plan_parser.add_argument("--problem", required=True)
+    credit_plan_parser.add_argument("--head", default="HEAD")
+    credit_plan_parser.add_argument("--projection-dir", required=True, type=Path)
+    credit_plan_parser.add_argument("--as-of", type=int)
+    credit_plan_parser.add_argument("--output")
+
+    due_credit_parser = commands.add_parser(
+        "due-credit-plan",
+        help="plan all eligible governed credit overlay dispatches",
+    )
+    due_credit_parser.add_argument("--projection-dir", required=True, type=Path)
+    due_credit_parser.add_argument("--head", default="HEAD")
+    due_credit_parser.add_argument("--as-of", type=int)
+    due_credit_parser.add_argument("--output")
+
+    filter_credit_parser = commands.add_parser(
+        "filter-credit-plan",
+        help="suppress active or repeatedly failing automatic credit retries",
+    )
+    filter_credit_parser.add_argument("--plan", required=True, type=Path)
+    filter_credit_parser.add_argument("--run-history", required=True, type=Path)
+    filter_credit_parser.add_argument("--output", required=True)
 
     active_projections_parser = commands.add_parser(
         "list-active-projections",
@@ -502,7 +540,38 @@ def main(argv: list[str] | None = None) -> int:
                 args.problem,
                 args.head,
                 args.output_dir,
+                as_of=args.as_of,
             )
+        elif args.command == "credit-plan":
+            result = plan_credit_run(
+                root,
+                args.projection_dir,
+                args.projection,
+                args.problem,
+                args.head,
+                args.as_of,
+            )
+            _write_json(result, args.output)
+            return 0
+        elif args.command == "due-credit-plan":
+            result = plan_due_credit_dispatches(
+                root, args.projection_dir, args.head, args.as_of
+            )
+            _write_json(result, args.output)
+            return 0
+        elif args.command == "filter-credit-plan":
+            try:
+                plan = json.loads(args.plan.read_text(encoding="utf-8"))
+                run_history = json.loads(
+                    args.run_history.read_text(encoding="utf-8")
+                )
+            except (OSError, json.JSONDecodeError) as exc:
+                raise MathFlowError(
+                    f"could not read credit dispatch history inputs: {exc}"
+                ) from exc
+            result = filter_credit_dispatch_history(plan, run_history)
+            _write_json(result, args.output)
+            return 0
         elif args.command == "list-active-projections":
             result = list_active_projections(
                 root, args.problem, args.head, args.engine
