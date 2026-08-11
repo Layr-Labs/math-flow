@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from .coordination import load_scheduler
+from .credit_context import build_credit_context
 from .errors import MathFlowError
 from .repository import is_ancestor, ledger
 from .viewer import export_viewer_catalog
@@ -183,6 +184,7 @@ def _markdown(context: dict[str, object], scoped_nodes: list[dict[str, object]])
     freshness = context["freshness"]
     coverage = context["coverage"]
     coordination = context["coordination"]
+    credit = context["credit"]
     scope = context["scope"]
     lines = [
         f"# Agent context: {problem['title']}",
@@ -212,6 +214,52 @@ def _markdown(context: dict[str, object], scoped_nodes: list[dict[str, object]])
                 "",
             ]
         )
+    lines.extend(
+        [
+            "## Qualitative credit",
+            "",
+            "Credit is a non-zero-sum attribution overlay. It does not change mathematical validity or the knowledge-state assessment.",
+            "",
+            f"- Status: **{credit['status']}**",
+            f"- Detail: {credit['message']}",
+        ]
+    )
+    credit_projection = credit.get("projection")
+    if isinstance(credit_projection, dict):
+        lines.append(f"- Credit projection: `{credit_projection['id']}`")
+    credit_run = credit.get("run")
+    if isinstance(credit_run, dict):
+        lines.extend(
+            [
+                f"- Credit run: `{credit_run['runDigest']}`",
+                f"- Credit run dependency lock: `{credit_run['dependencyLockDigest']}`",
+                f"- Run is authoritative for this snapshot: {'yes' if credit_run['authoritative'] else 'no'}",
+                "- Full verified rationale: `credit-report.md`",
+            ]
+        )
+        dependency = credit.get("dependency")
+        if isinstance(dependency, dict) and isinstance(
+            dependency.get("lockDigest"), str
+        ):
+            lines.append(
+                f"- Current equivalent dependency lock: `{dependency['lockDigest']}`"
+            )
+    assignments = credit.get("assignments")
+    if isinstance(assignments, list):
+        lines.extend(["", "### Contribution assignments", ""])
+        for assignment in assignments:
+            roles = ", ".join(f"`{role}`" for role in assignment["roles"]) or "none"
+            refs = ", ".join(
+                f"`{item['nodeId']}`@`{item['revisionId']}`"
+                for item in assignment["knowledgeRefs"]
+            ) or "none"
+            lines.extend(
+                [
+                    f"- `{assignment['transactionId']}` ({assignment['contributionId']}): "
+                    f"**{assignment['significance']}**; roles {roles}; knowledge refs {refs}",
+                ]
+            )
+    lines.append("")
     lines.extend(["## Queue and coverage", ""])
     unjudged = coverage["canonicalTransactionsWithoutBuiltPrimaryJudgment"]
     unformed = coverage["canonicalTransactionsNotRepresentedInState"]
@@ -269,6 +317,7 @@ def materialize_agent_context(
     projection_id: str | None = None,
     head: str = "HEAD",
     node_ids: list[str] | None = None,
+    credit_projection_id: str | None = None,
 ) -> dict[str, object]:
     """Write a deterministic, verified agent snapshot without calling a model."""
 
@@ -327,6 +376,14 @@ def materialize_agent_context(
     problem_data = data.get("problem")
     if not isinstance(problem_data, dict):
         raise MathFlowError("selected projection has no problem statement")
+    credit, credit_report = build_credit_context(
+        root,
+        projection_root,
+        problem,
+        head,
+        list(canonical["transactions"]),
+        credit_projection_id=credit_projection_id,
+    )
 
     context: dict[str, object] = {
         "schemaVersion": 1,
@@ -370,12 +427,18 @@ def materialize_agent_context(
             ],
         },
         "coordination": coordination,
+        "credit": credit,
         "scope": {
             "requestedNodeIds": requested,
             "includedNodeIds": [str(node["id"]) for node in scoped_nodes],
             "stateFileContainsCompleteState": True,
         },
-        "files": {"state": "state.json", "context": "context.md"},
+        "files": {
+            "state": "state.json",
+            "context": "context.md",
+            "credit": "credit.json",
+            **({"creditReport": "credit-report.md"} if credit_report is not None else {}),
+        },
     }
 
     output = output_dir.resolve()
@@ -388,6 +451,13 @@ def materialize_agent_context(
     (output / "context.json").write_text(
         json.dumps(context, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
+    (output / "credit.json").write_text(
+        json.dumps(credit, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    if credit_report is not None:
+        (output / "credit-report.md").write_text(
+            credit_report, encoding="utf-8"
+        )
     (output / "context.md").write_text(
         _markdown(context, scoped_nodes), encoding="utf-8"
     )
@@ -396,5 +466,6 @@ def materialize_agent_context(
         "projectionId": selected["id"],
         "freshness": freshness_status,
         "stateDigest": state.get("stateDigest"),
+        "creditStatus": credit["status"],
         "outputDir": str(output),
     }

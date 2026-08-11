@@ -123,6 +123,47 @@ type PublishedJudgment = {
   record: JudgmentRecord;
 };
 
+type CreditKnowledgeRef = {
+  nodeId: string;
+  revisionId: string | null;
+};
+
+type CreditAssignment = {
+  transactionId: string;
+  significance: "foundational" | "major" | "supporting" | "minor" | "none" | "uncertain";
+  roles: string[];
+  knowledgeRefs: CreditKnowledgeRef[];
+  reservationTransactionIds: string[];
+  reportSection: string;
+};
+
+type CreditRun = {
+  id: string;
+  runDigest: string;
+  ledgerHead: string;
+  problemLedgerHead: string;
+  problemLedgerDigest: string;
+  projectionId: string;
+  projectionSpecDigest: string;
+  dependencyLockDigest: string;
+  dependency: {
+    projectionId: string;
+    runDigest: string;
+    artifact: { digest: string; path: string; role: string };
+  };
+  assignments: CreditAssignment[];
+  reportMarkdown: string;
+  creditInput: Record<string, unknown>;
+  dependencyLock: Record<string, unknown>;
+  models: string[];
+  cost: number;
+  knowledgeProjectionIds: string[];
+  currentProblemLedger: boolean;
+  currentKnowledgeDependency: boolean;
+  stale: boolean;
+  staleReasons: string[];
+};
+
 export type ViewerData = {
   problem: { id: string; title: string; statementMarkdown: string };
   ledgerHead: string;
@@ -144,18 +185,32 @@ type RepositoryProjection = {
   data: ViewerData;
 };
 
+type RepositoryCreditProjection = {
+  id: string;
+  problemId: string;
+  label: string;
+  knowledgeProjectionIds: string[];
+  latestRunDigest: string | null;
+  selectionStatus: "pending" | "current" | "historical" | "ambiguous";
+  runCount: number;
+  runs: CreditRun[];
+};
+
 export type ViewerCatalog = {
   schemaVersion: number;
   repository: { slug: string; canonicalRef: string; projectionRef: string };
   projections: RepositoryProjection[];
+  creditProjections?: RepositoryCreditProjection[];
   defaultProjectionId: string | null;
 };
 
-type DetailMode = "node" | "transaction" | "judgment" | "report";
+type DetailMode = "node" | "transaction" | "judgment" | "credit" | "report";
 
 type ViewerState = {
   problemId?: string;
   projectionId?: string;
+  creditProjectionId?: string;
+  creditRunId?: string;
   runId?: string;
   nodeId?: string;
   transactionId?: string;
@@ -203,6 +258,25 @@ function judgmentMentionsTransaction(judgment: PublishedJudgment, transactionId:
 function isViewerCatalog(value: unknown): value is ViewerCatalog {
   if (!value || typeof value !== "object") return false;
   const catalog = value as Partial<ViewerCatalog>;
+  const validCredits = catalog.creditProjections === undefined || (
+    Array.isArray(catalog.creditProjections) &&
+    catalog.creditProjections.every((projection) =>
+      typeof projection?.id === "string" &&
+      typeof projection?.problemId === "string" &&
+      Array.isArray(projection?.knowledgeProjectionIds) &&
+      Array.isArray(projection?.runs) &&
+      (projection.latestRunDigest === null || typeof projection.latestRunDigest === "string") &&
+      typeof projection.selectionStatus === "string" &&
+      ["pending", "current", "historical", "ambiguous"].includes(projection.selectionStatus) &&
+      projection.runs.every((run) =>
+        run?.id === run?.runDigest &&
+        Array.isArray(run?.assignments) &&
+        typeof run?.reportMarkdown === "string" &&
+        typeof run?.dependencyLockDigest === "string" &&
+        typeof run?.stale === "boolean",
+      ),
+    )
+  );
   return catalog.schemaVersion === 1 &&
     !!catalog.repository &&
     Array.isArray(catalog.projections) &&
@@ -212,7 +286,7 @@ function isViewerCatalog(value: unknown): value is ViewerCatalog {
       typeof projection?.problemId === "string" &&
       Array.isArray(projection?.data?.runs) &&
       projection.data.runs.length > 0,
-    );
+    ) && validCredits;
 }
 
 export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: ViewerData }) {
@@ -229,6 +303,7 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
     schemaVersion: 1,
     repository: { slug: "Layr-Labs/math-flow", canonicalRef: "main", projectionRef: "projections" },
     projections: [fallbackProjection],
+    creditProjections: [],
     defaultProjectionId: fallbackProjection.id,
   };
   const [catalog, setCatalog] = useState(fallbackCatalog);
@@ -282,6 +357,13 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
     (viewerState.problemId && problems.includes(viewerState.problemId) ? viewerState.problemId : preferredProjection.problemId);
   const problemProjections = catalog.projections.filter((item) => item.problemId === effectiveProblem);
   const projection = requestedProjection ?? problemProjections[0];
+  const compatibleCreditProjections = (catalog.creditProjections ?? []).filter((item) =>
+    item.problemId === effectiveProblem && item.knowledgeProjectionIds.includes(projection.id),
+  );
+  const requestedCreditProjection = compatibleCreditProjections.find(
+    (item) => item.id === viewerState.creditProjectionId,
+  );
+  const creditProjection = requestedCreditProjection ?? compatibleCreditProjections[0];
 
   function chooseProblem(nextProblem: string) {
     const nextProjection = catalog.projections.find((item) => item.problemId === nextProblem);
@@ -289,6 +371,8 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
     updateViewerState({
       problemId: nextProblem,
       projectionId: nextProjection.id,
+      creditProjectionId: undefined,
+      creditRunId: undefined,
       runId: undefined,
       nodeId: undefined,
       transactionId: undefined,
@@ -304,12 +388,25 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
     updateViewerState({
       problemId: nextProjection.problemId,
       projectionId: nextProjection.id,
+      creditProjectionId: undefined,
+      creditRunId: undefined,
       runId: undefined,
       nodeId: undefined,
       transactionId: undefined,
       judgmentId: undefined,
       query: undefined,
       detailMode: undefined,
+    });
+  }
+
+  function chooseCreditProjection(nextProjectionId: string) {
+    const nextProjection = compatibleCreditProjections.find(
+      (item) => item.id === nextProjectionId,
+    );
+    updateViewerState({
+      creditProjectionId: nextProjection?.id,
+      creditRunId: nextProjection?.latestRunDigest ?? undefined,
+      detailMode: viewerState.detailMode === "credit" ? "transaction" : viewerState.detailMode,
     });
   }
 
@@ -342,9 +439,28 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
           </select>
         </label>
         <label>
-          <span>Projection</span>
+          <span>Knowledge projection</span>
           <select value={projection.id} onChange={(event) => chooseProjection(event.target.value)}>
             {problemProjections.map((item) => <option value={item.id} key={item.id}>{item.label} · {short(item.latestRunDigest)}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>Credit overlay</span>
+          <select
+            value={creditProjection?.id ?? ""}
+            onChange={(event) => chooseCreditProjection(event.target.value)}
+            disabled={!compatibleCreditProjections.length}
+          >
+            {!compatibleCreditProjections.length && <option value="">No published credit</option>}
+            {compatibleCreditProjections.map((item) => (
+              <option value={item.id} key={item.id}>
+                {item.label} · {item.latestRunDigest
+                  ? short(item.latestRunDigest)
+                  : item.runCount
+                    ? `${item.runCount} runs · choose`
+                    : "not run"}
+              </option>
+            ))}
           </select>
         </label>
       </nav>
@@ -353,6 +469,7 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
         data={projection.data}
         problemId={effectiveProblem}
         projectionId={projection.id}
+        creditProjection={creditProjection}
         viewerState={viewerState}
         onViewerStateChange={updateViewerState}
       />
@@ -420,6 +537,15 @@ function Markdown({ value, actions }: { value: string; actions?: ReferenceAction
   );
 }
 
+function markdownSection(markdown: string, heading: string) {
+  const lines = markdown.split("\n");
+  const start = lines.findIndex((line) => line.trim() === heading);
+  if (start < 0) return markdown;
+  const relativeEnd = lines.slice(start + 1).findIndex((line) => line.trim().startsWith("## "));
+  const end = relativeEnd < 0 ? lines.length : start + 1 + relativeEnd;
+  return lines.slice(start, end).join("\n").trim();
+}
+
 function TypeMark({ type }: { type: string }) {
   const marks: Record<string, string> = {
     root: "◎",
@@ -438,18 +564,25 @@ export function KnowledgeViewer({
   data,
   problemId,
   projectionId,
+  creditProjection,
   viewerState,
   onViewerStateChange,
 }: {
   data: ViewerData;
   problemId: string;
   projectionId: string;
+  creditProjection?: RepositoryCreditProjection;
   viewerState: ViewerState;
   onViewerStateChange(patch: Partial<ViewerState>): void;
 }) {
   const judgments = useMemo(() => data.judgments ?? [], [data.judgments]);
   const query = viewerState.query ?? "";
   const run = data.runs.find((item) => item.id === viewerState.runId) ?? data.runs.at(-1)!;
+  const creditRun = creditProjection?.runs.find(
+    (item) => item.runDigest === viewerState.creditRunId,
+  ) ?? creditProjection?.runs.find(
+    (item) => item.runDigest === creditProjection.latestRunDigest,
+  );
   const runLedgerPosition = data.transactions.find(
     (item) => item.transactionId === (run.problemLedgerHead ?? run.ledgerHead),
   )?.ordinal ?? data.transactions.length;
@@ -505,6 +638,12 @@ export function KnowledgeViewer({
       : [],
     [data.transactions, programContributionIds, runLedgerPosition, selectedNode.type],
   );
+  const nodeCreditAssignments = useMemo(
+    () => creditRun?.assignments.filter((assignment) =>
+      assignment.knowledgeRefs.some((reference) => reference.nodeId === selectedNode.id),
+    ) ?? [],
+    [creditRun, selectedNode.id],
+  );
 
   const children = useMemo(() => {
     const result: Record<string, string[]> = {};
@@ -540,25 +679,34 @@ export function KnowledgeViewer({
     item.transactionId === viewerState.transactionId && item.ordinal <= runLedgerPosition,
   );
   const transactionId = selectedTransaction?.transactionId;
+  const selectedCreditAssignment = creditRun?.assignments.find(
+    (item) => item.transactionId === transactionId,
+  );
   const transactionJudgments = selectedTransaction
     ? runJudgments.filter((item) => judgmentMentionsTransaction(item, selectedTransaction.transactionId))
     : [];
   const selectedJudgment = transactionJudgments.find((item) => item.judgmentId === viewerState.judgmentId) ?? transactionJudgments.at(-1);
   const detailMode: DetailMode = selectedTransaction
-    ? viewerState.detailMode === "judgment" && transactionJudgments.length ? "judgment" : "transaction"
+    ? viewerState.detailMode === "judgment" && transactionJudgments.length
+      ? "judgment"
+      : viewerState.detailMode === "credit" && selectedCreditAssignment
+        ? "credit"
+        : "transaction"
     : viewerState.detailMode === "report" ? "report" : "node";
 
   useEffect(() => {
     onViewerStateChange({
       problemId,
       projectionId,
+      creditProjectionId: creditProjection?.id,
+      creditRunId: creditRun?.runDigest,
       runId: run.id,
       nodeId: selectedNode.id,
       transactionId,
       judgmentId: selectedTransaction ? selectedJudgment?.judgmentId : undefined,
       detailMode,
     });
-  }, [detailMode, onViewerStateChange, problemId, projectionId, run.id, selectedJudgment?.judgmentId, selectedNode.id, selectedTransaction, transactionId]);
+  }, [creditProjection?.id, creditRun?.runDigest, detailMode, onViewerStateChange, problemId, projectionId, run.id, selectedJudgment?.judgmentId, selectedNode.id, selectedTransaction, transactionId]);
 
   const transactionDirectIds = useMemo(() => new Set(
     transactionId
@@ -596,6 +744,29 @@ export function KnowledgeViewer({
     onViewerStateChange({
       runId: nextId,
       nodeId: next.state.nodes[selectedNode.id] ? selectedNode.id : "root",
+      transactionId: undefined,
+      judgmentId: undefined,
+      detailMode: "node",
+    });
+  }
+
+  function chooseCreditRun(nextDigest: string) {
+    onViewerStateChange({ creditRunId: nextDigest });
+  }
+
+  function openCreditKnowledgeRef(reference: CreditKnowledgeRef) {
+    const dependencyRun = data.runs.find(
+      (item) => item.runDigest === creditRun?.dependency.runDigest,
+    );
+    const targetRun = dependencyRun?.state.nodes[reference.nodeId]
+      ? dependencyRun
+      : run.state.nodes[reference.nodeId]
+        ? run
+        : undefined;
+    if (!targetRun) return;
+    onViewerStateChange({
+      runId: targetRun.id,
+      nodeId: reference.nodeId,
       transactionId: undefined,
       judgmentId: undefined,
       detailMode: "node",
@@ -677,6 +848,57 @@ export function KnowledgeViewer({
             </button>
           ))}
         </div>
+        {creditProjection && creditRun && (
+          <div className="credit-strip" aria-label="Credit assignment projection">
+            <span className="eyebrow">Credit assignment · separate overlay</span>
+            <label>
+              <span>{creditProjection.label}</span>
+              <select
+                value={creditRun.runDigest}
+                onChange={(event) => chooseCreditRun(event.target.value)}
+              >
+                {creditProjection.runs.map((item, index) => (
+                  <option value={item.runDigest} key={item.runDigest}>
+                    Assessment {String(index + 1).padStart(2, "0")} · {short(item.runDigest)}{item.stale ? " · stale" : " · current"}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <span className={`credit-freshness ${creditRun.stale ? "stale" : "current"}`}>
+              {creditRun.stale ? "Historical input lock" : "Current input lock"}
+            </span>
+            <small>
+              Knowledge {short(creditRun.dependency.runDigest)} · {creditRun.assignments.length} assignments
+            </small>
+          </div>
+        )}
+        {creditProjection && !creditRun && (
+          <div className="credit-strip credit-strip-empty" aria-label="Credit assignment projection">
+            <span className="eyebrow">Credit assignment · separate overlay</span>
+            {creditProjection.runs.length ? (
+              <>
+                <strong>No credit run selected</strong>
+                <label>
+                  <span>{creditProjection.selectionStatus === "ambiguous" ? "Multiple equally applicable runs" : "Published assessments"}</span>
+                  <select value="" onChange={(event) => chooseCreditRun(event.target.value)}>
+                    <option value="" disabled>Choose an assessment</option>
+                    {creditProjection.runs.map((item, index) => (
+                      <option value={item.runDigest} key={item.runDigest}>
+                        Assessment {String(index + 1).padStart(2, "0")} · {short(item.runDigest)}{item.stale ? " · stale" : " · current"}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <small>No projection terminal chooses one automatically.</small>
+              </>
+            ) : (
+              <>
+                <strong>No published credit yet</strong>
+                <small>{creditProjection.label} is admitted and waiting for its first verified run.</small>
+              </>
+            )}
+          </div>
+        )}
         <div className="run-metrics">
           <span><strong>{Object.keys(nodes).length}</strong> nodes</span>
           <span><strong>{run.revisionIds.length}</strong> revisions</span>
@@ -705,6 +927,9 @@ export function KnowledgeViewer({
                   finding.evidenceTransactionIds.includes(transaction.transactionId),
                 ),
               );
+              const creditAssignment = creditRun?.assignments.find(
+                (item) => item.transactionId === transaction.transactionId,
+              );
               return (
                 <button
                   className={`transaction-card ${active ? "selected" : ""} ${available ? "" : "future"}`}
@@ -730,6 +955,11 @@ export function KnowledgeViewer({
                           ? `unjudged · evidence in ${evidenceJudgments.length}`
                           : "unjudged"}
                     </small>
+                    {creditAssignment && (
+                      <small className={`credit-badge significance-${creditAssignment.significance}`}>
+                        credit · {creditAssignment.significance}
+                      </small>
+                    )}
                   </span>
                 </button>
               );
@@ -778,6 +1008,7 @@ export function KnowledgeViewer({
             <div className="detail-tabs detail-tabs-transaction" role="tablist" aria-label="Transaction details">
               <button role="tab" aria-selected={detailMode === "transaction"} onClick={() => onViewerStateChange({ detailMode: "transaction" })}>Submission</button>
               <button role="tab" aria-selected={detailMode === "judgment"} disabled={!transactionJudgments.length} onClick={() => onViewerStateChange({ detailMode: "judgment" })}>Judgment</button>
+              <button role="tab" aria-selected={detailMode === "credit"} disabled={!selectedCreditAssignment} onClick={() => onViewerStateChange({ detailMode: "credit" })}>Credit</button>
             </div>
           ) : (
             <div className="detail-tabs detail-tabs-node" role="tablist" aria-label="Knowledge node details">
@@ -815,6 +1046,34 @@ export function KnowledgeViewer({
                     </button>
                   ))}
                   {!relatedProgramContributions.length && <p className="muted">No transaction provenance appears in this program subtree yet.</p>}
+                </section>
+              )}
+              {creditRun && (
+                <section className="node-credit-links">
+                  <div className="section-label"><h3>Credit references</h3><span>{nodeCreditAssignments.length}</span></div>
+                  {nodeCreditAssignments.map((assignment) => {
+                    const transaction = data.transactions.find(
+                      (item) => item.transactionId === assignment.transactionId,
+                    );
+                    return (
+                      <button
+                        key={assignment.transactionId}
+                        onClick={() => onViewerStateChange({
+                          transactionId: assignment.transactionId,
+                          detailMode: "credit",
+                        })}
+                      >
+                        <span className={`significance significance-${assignment.significance}`}>
+                          {assignment.significance}
+                        </span>
+                        <strong>{transaction ? label(transaction.contributionId) : short(assignment.transactionId)}</strong>
+                        <small>{assignment.roles.join(" · ") || "no classified role"}</small>
+                      </button>
+                    );
+                  })}
+                  {!nodeCreditAssignments.length && (
+                    <p className="muted">The selected credit run does not cite this node.</p>
+                  )}
                 </section>
               )}
               <section className="revision-section">
@@ -910,6 +1169,78 @@ export function KnowledgeViewer({
               <details className="raw-artifact structured-record">
                 <summary>Structured judgment JSON</summary>
                 <pre>{JSON.stringify(selectedJudgment.record, null, 2)}</pre>
+              </details>
+            </section>
+          ) : detailMode === "credit" && selectedCreditAssignment && creditRun && selectedTransaction ? (
+            <section className="artifact-detail credit-detail">
+              <span className="eyebrow">Qualitative credit · separate overlay</span>
+              <h2>{label(selectedTransaction.contributionId)}</h2>
+              <div className="credit-assessment-heading">
+                <span className={`significance significance-${selectedCreditAssignment.significance}`}>
+                  {selectedCreditAssignment.significance}
+                </span>
+                <div className="role-row">
+                  {selectedCreditAssignment.roles.map((role) => <span key={role}>{label(role)}</span>)}
+                  {!selectedCreditAssignment.roles.length && <span>no classified role</span>}
+                </div>
+              </div>
+              <div className="provenance-grid artifact-provenance">
+                <div><span>Credit run</span><code>{short(creditRun.runDigest, 12)}</code></div>
+                <div><span>Dependency lock</span><code>{short(creditRun.dependencyLockDigest, 12)}</code></div>
+                <div><span>Model</span><strong>{creditRun.models.join(", ") || "unreported"}</strong></div>
+                <div><span>Assessment cost</span><strong>${creditRun.cost.toFixed(4)}</strong></div>
+              </div>
+              <article className={`credit-lock-card ${creditRun.stale ? "stale" : "current"}`}>
+                <strong>{creditRun.stale ? "Historical input lock" : "Current input lock"}</strong>
+                <span>Knowledge run {short(creditRun.dependency.runDigest, 12)}</span>
+                {creditRun.staleReasons.map((reason) => (
+                  <small key={reason}>{label(reason)}</small>
+                ))}
+              </article>
+              <section className="credit-reference-list">
+                <div className="section-label"><h3>Knowledge references</h3><span>{selectedCreditAssignment.knowledgeRefs.length}</span></div>
+                {selectedCreditAssignment.knowledgeRefs.map((reference) => (
+                  <button
+                    key={`${reference.nodeId}:${reference.revisionId ?? "structural"}`}
+                    onClick={() => openCreditKnowledgeRef(reference)}
+                  >
+                    <strong>{reference.nodeId}</strong>
+                    <code>{reference.revisionId ? `r ${short(reference.revisionId, 12)}` : "structural node"}</code>
+                  </button>
+                ))}
+                {!selectedCreditAssignment.knowledgeRefs.length && <p className="muted">No knowledge node was cited for this assignment.</p>}
+              </section>
+              <section className="credit-reference-list">
+                <div className="section-label"><h3>Prior reservations</h3><span>{selectedCreditAssignment.reservationTransactionIds.length}</span></div>
+                {selectedCreditAssignment.reservationTransactionIds.map((reservationId) => {
+                  const reservation = data.transactions.find((item) => item.transactionId === reservationId);
+                  return (
+                    <button key={reservationId} onClick={() => openTransaction(reservationId)}>
+                      <strong>{reservation ? label(reservation.contributionId) : short(reservationId)}</strong>
+                      <code>{short(reservationId, 12)}</code>
+                    </button>
+                  );
+                })}
+                {!selectedCreditAssignment.reservationTransactionIds.length && <p className="muted">No prior reservation was credited.</p>}
+              </section>
+              <details className="raw-artifact" open>
+                <summary>Credit rationale for this contribution</summary>
+                <Markdown
+                  value={markdownSection(creditRun.reportMarkdown, selectedCreditAssignment.reportSection)}
+                  actions={referenceActions}
+                />
+              </details>
+              <details className="raw-artifact">
+                <summary>Full raw credit report</summary>
+                <Markdown value={creditRun.reportMarkdown} actions={referenceActions} />
+              </details>
+              <details className="raw-artifact structured-record">
+                <summary>Locked credit input</summary>
+                <pre>{JSON.stringify(creditRun.creditInput, null, 2)}</pre>
+              </details>
+              <details className="raw-artifact structured-record">
+                <summary>Projection dependency lock</summary>
+                <pre>{JSON.stringify(creditRun.dependencyLock, null, 2)}</pre>
               </details>
             </section>
           ) : (

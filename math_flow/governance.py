@@ -399,6 +399,8 @@ def projection_registry_index(root: Path) -> dict[str, dict[str, object]]:
             "description": spec["description"],
             "digest": digest,
             "engine": spec["engine"],
+            "allowedProblems": spec["allowedProblems"],
+            "dependencies": spec.get("dependencies", []),
         }
     return indexed
 

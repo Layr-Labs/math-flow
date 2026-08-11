@@ -12,6 +12,71 @@ from .repository import ledger, read_at, sha256_json
 
 
 SUPPORTED_DEPENDENCY_ROLES = {"knowledge-state"}
+DEPENDENCY_LOCK_FIELDS = {
+    "schemaVersion",
+    "consumer",
+    "problemLedger",
+    "dependencies",
+    "dependencyLockDigest",
+}
+DEPENDENCY_CONSUMER_FIELDS = {
+    "projectionId",
+    "projectionSpecDigest",
+    "problemId",
+    "canonicalHead",
+}
+
+
+def _semantic_dependency_state(lock: object) -> dict[str, object]:
+    if not isinstance(lock, dict) or set(lock) != DEPENDENCY_LOCK_FIELDS:
+        raise MathFlowError("projection dependency lock has an invalid envelope")
+    if lock.get("schemaVersion") != 1:
+        raise MathFlowError("projection dependency lock has an invalid schema version")
+    core = {
+        key: value for key, value in lock.items() if key != "dependencyLockDigest"
+    }
+    if lock.get("dependencyLockDigest") != f"sha256:{sha256_json(core)}":
+        raise MathFlowError("projection dependency lock digest is invalid")
+    consumer = lock.get("consumer")
+    problem_ledger = lock.get("problemLedger")
+    dependencies = lock.get("dependencies")
+    if (
+        not isinstance(consumer, dict)
+        or set(consumer) != DEPENDENCY_CONSUMER_FIELDS
+        or any(not isinstance(consumer.get(field), str) for field in consumer)
+        or not isinstance(problem_ledger, dict)
+        or set(problem_ledger) != {"problemLedgerHead", "problemLedgerDigest"}
+        or any(not isinstance(value, str) for value in problem_ledger.values())
+        or not isinstance(dependencies, list)
+        or any(not isinstance(item, dict) for item in dependencies)
+    ):
+        raise MathFlowError("projection dependency lock is malformed")
+    return {
+        "schemaVersion": 1,
+        "consumer": {
+            key: consumer[key]
+            for key in sorted(DEPENDENCY_CONSUMER_FIELDS - {"canonicalHead"})
+        },
+        "problemLedger": problem_ledger,
+        "dependencies": dependencies,
+    }
+
+
+def same_projection_dependency_state(candidate: object, current: object) -> bool:
+    """Compare verified lock semantics while preserving audit-head provenance.
+
+    Each immutable lock digest still covers ``consumer.canonicalHead``. For
+    applicability, that audit head is the sole ignored field: unrelated
+    canonical commits do not change the governed consumer, problem ledger, or
+    resolved dependency runs and artifacts.
+    """
+
+    try:
+        return _semantic_dependency_state(candidate) == _semantic_dependency_state(
+            current
+        )
+    except MathFlowError:
+        return False
 
 
 def _artifact_for_role(

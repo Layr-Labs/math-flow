@@ -6,6 +6,7 @@
 - [Use repository tools, not the UI](#use-repository-tools-not-the-ui)
 - [Build a verified context](#build-a-verified-context)
 - [Inspect provenance](#inspect-provenance)
+- [Inspect qualitative credit](#inspect-qualitative-credit)
 - [Create one contribution](#create-one-contribution)
 - [Validate and hand off](#validate-and-hand-off)
 - [After submission](#after-submission)
@@ -115,6 +116,20 @@ python3 -m math_flow context \
   --output-dir "$context_dir"
 ```
 
+When multiple governed credit overlays apply, the first snapshot reports
+`credit.status` as `selection-required`. Materialize a new snapshot with the
+chosen overlay rather than editing the output:
+
+```bash
+python3 -m math_flow context \
+  --problem <problem-id> \
+  --projection-dir "$projection_worktree" \
+  --projection <knowledge-projection-id> \
+  --credit-projection <credit-projection-id> \
+  --head origin/main \
+  --output-dir <new-empty-context-dir>
+```
+
 Omit `--projection` only when exactly one projection exists. To reduce the Markdown payload while retaining the full verified `state.json`, repeat a subtree selector:
 
 ```bash
@@ -141,6 +156,43 @@ Use the identifiers in `state.json` and `context.json` rather than relying on pr
 - the latest run digest and its `baseRun` chain identify state history.
 
 Never edit or regenerate these records as part of a solver contribution.
+
+## Inspect qualitative credit
+
+Read `credit.json` before choosing a research direction. The context command
+discovers active governed credit overlays at the canonical head and verifies
+published candidates with the repository's credit-bundle loader. It never
+calls a model. Interpret `credit.status` exactly:
+
+- `current`: one verified run matches the same governed credit projection,
+  problem ledger, producer runs, and dependency artifacts; its assignments are
+  authoritative for this snapshot even if unrelated repository commits changed
+  the lock's audit-only canonical head;
+- `pending`: the governed overlay or its knowledge dependency is ready or in
+  progress, but no current scoring run is published yet;
+- `stale`: a uniquely latest verified historical run is shown, but its governed
+  projection or dependency state differs; do not use it as current scoring;
+- `invalid`: indexed scoring objects exist but fail canonical verification;
+- `ambiguous`: multiple equally applicable runs exist and no overlay terminal
+  selects one; do not choose by digest, file order, or prose;
+- `selection-required`: rerun with `--credit-projection <id>`;
+- `unavailable`: no governed overlay applies or a required dependency cannot be
+  resolved.
+
+For `current`, inspect `credit-report.md` and follow identifiers rather than
+guessing from prose:
+
+- `transactionId` and `path` identify the canonical contribution evidence;
+- `knowledgeRefs` identify exact current node/revision pairs;
+- `reservationTransactionIds` identify prior canonical contributions that the
+  assessment treated as direction reservations;
+- `reportSection` identifies the detailed rationale in the raw report.
+
+Credit is qualitative and non-zero-sum. A `major`, `minor`, or `none`
+assignment neither accepts nor rejects mathematics, and multiple contributions
+may receive substantial credit. Never use credit to override a judgment or
+knowledge node. Do not fabricate reservation priority: follow only exact
+canonical transaction references present in the verified assignment.
 
 ## Create one contribution
 

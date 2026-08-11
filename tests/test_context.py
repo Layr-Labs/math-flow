@@ -186,6 +186,12 @@ class AgentContextTests(unittest.TestCase):
         )
         self.assertEqual(len(context["coverage"]["canonicalTransactionsWithoutBuiltPrimaryJudgment"]), 1)
         self.assertEqual(context["coordination"]["pendingJudgmentIds"], ["sha256:" + "b" * 64])
+        self.assertEqual(context["credit"]["status"], "unavailable")
+        self.assertEqual(
+            context["credit"]["reasonCode"], "no-governed-credit-projection"
+        )
+        self.assertTrue((output / "credit.json").is_file())
+        self.assertFalse((output / "credit-report.md").exists())
         markdown = (output / "context.md").read_text()
         self.assertIn("Program assessment.", markdown)
         self.assertIn("Detailed claim assessment.", markdown)

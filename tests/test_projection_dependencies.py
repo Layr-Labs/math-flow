@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import contextlib
+import copy
 import io
 import json
 import shutil
 import subprocess
 import tempfile
 import unittest
+from collections.abc import Callable
 from pathlib import Path
+from unittest.mock import patch
 
 from math_flow.artifacts import (
     ArtifactBundle,
@@ -22,11 +25,16 @@ from math_flow.credit import (
     load_credit_assignment_bundle,
     run_credit_assignment_bundle,
 )
+from math_flow.credit_context import build_credit_context
 from math_flow.errors import MathFlowError
 from math_flow.governance import resolve_projection
 from math_flow.knowledge import empty_state_v3
-from math_flow.projection_dependencies import resolve_projection_dependencies
+from math_flow.projection_dependencies import (
+    resolve_projection_dependencies,
+    same_projection_dependency_state,
+)
 from math_flow.repository import ledger, sha256_json
+from math_flow.viewer import export_viewer_catalog
 
 
 def write(path: Path, value: str) -> None:
@@ -173,6 +181,20 @@ class ProjectionDependencyTests(unittest.TestCase):
             "knowledge-revisions",
             "application/x-ndjson",
         )
+        writer.add_text(
+            "report.md", "# Knowledge state\n", "report", "text/markdown"
+        )
+        writer.add_json(
+            "control/selection.json",
+            {"selectedNodeIds": [], "rationale": "No knowledge revisions."},
+            "node-selection",
+        )
+        writer.add_json(
+            "control/normalizations.json",
+            {"normalizations": []},
+            "adapter-normalizations",
+        )
+        writer.add_json("state/delta.json", {"operations": []}, "knowledge-delta")
         writer.finalize(
             {
                 "protocolVersion": 1,
@@ -183,6 +205,9 @@ class ProjectionDependencyTests(unittest.TestCase):
                 "problemLedgerDigest": source["problemLedgerDigest"],
                 "outputProfile": "math-flow/knowledge-build-markdown-v2",
                 "judgeSpec": {"id": "builder", "digest": builder_digest},
+                "runner": {"implementation": "fixture", "mathFlowVersion": "test"},
+                "baseRun": None,
+                "providerRuns": [],
                 "inputs": {
                     "laneId": identifier,
                     "problemId": "demo",
@@ -202,6 +227,17 @@ class ProjectionDependencyTests(unittest.TestCase):
         )
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(bundle, target)
+        write_json(
+            self.projection_root / "indexes/problems/demo/runs.json",
+            [
+                {
+                    "runDigest": run_digest,
+                    "runKind": "knowledge-build",
+                    "problemId": "demo",
+                    "path": target.relative_to(self.projection_root).as_posix(),
+                }
+            ],
+        )
 
         scheduler = self.projection_root / "coordination/scheduler.json"
         lane = record_completed_inputs(
@@ -222,6 +258,68 @@ class ProjectionDependencyTests(unittest.TestCase):
             "lanes": {identifier: lane},
         }
         write_json(scheduler, state)
+
+    def _publish_credit_assignment(self) -> tuple[Path, str]:
+        transaction_id = str(
+            ledger(self.root, "demo", self.head)["transactions"][0][
+                "transactionId"
+            ]
+        )
+        report = (
+            "# Credit assessment\n\n"
+            f"## Contribution: {transaction_id}\n\n"
+            "This transaction supplies the fixture proof.\n"
+        )
+        extracted = {
+            "assignments": [
+                {
+                    "transactionId": transaction_id,
+                    "significance": "major",
+                    "roles": ["proof"],
+                    "knowledgeRefs": [
+                        {"nodeId": "root", "revisionId": None}
+                    ],
+                    "reservationTransactionIds": [],
+                    "reportSection": f"## Contribution: {transaction_id}",
+                }
+            ]
+        }
+        calls = 0
+
+        def transport(payload: dict[str, object]) -> dict[str, object]:
+            nonlocal calls
+            calls += 1
+            return {
+                "id": f"credit-context-{calls}",
+                "model": "openai/gpt-5.6-sol",
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": report if calls == 1 else json.dumps(extracted),
+                        },
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 100,
+                    "completion_tokens": 50,
+                    "total_tokens": 150,
+                },
+            }
+
+        bundle = self.root / "published-credit-bundle"
+        run_credit_assignment_bundle(
+            self.root,
+            self.projection_root,
+            "credit-v1",
+            "demo",
+            self.head,
+            bundle,
+            transport=transport,
+        )
+        batch = publish_batch(self.projection_root, [bundle])
+        return bundle, str(batch["objects"][0]["runDigest"])
 
     def test_resolves_exact_verified_dependency_lock_and_cli(self) -> None:
         first = resolve_projection_dependencies(
@@ -269,6 +367,77 @@ class ProjectionDependencyTests(unittest.TestCase):
             0,
         )
         self.assertEqual(json.loads(output.read_text(encoding="utf-8")), first)
+
+    def test_catalog_exposes_admitted_credit_projection_before_first_run(self) -> None:
+        catalog = export_viewer_catalog(
+            self.root,
+            self.projection_root,
+            "example/math-flow",
+            canonical_ref="HEAD",
+        )
+        self.assertEqual(len(catalog["creditProjections"]), 1)
+        credit = catalog["creditProjections"][0]
+        self.assertEqual(credit["id"], "credit-v1")
+        self.assertEqual(credit["knowledgeProjectionIds"], ["knowledge-v1"])
+        self.assertIsNone(credit["latestRunDigest"])
+        self.assertEqual(credit["selectionStatus"], "pending")
+        self.assertEqual(credit["runCount"], 0)
+        self.assertEqual(credit["runs"], [])
+
+    def test_dependency_state_comparison_ignores_only_consumer_audit_head(self) -> None:
+        lock = resolve_projection_dependencies(
+            self.root,
+            self.projection_root,
+            "credit-v1",
+            "demo",
+            self.head,
+        )
+
+        def revised(
+            mutator: Callable[[dict[str, object]], None]
+        ) -> dict[str, object]:
+            value = copy.deepcopy(lock)
+            mutator(value)
+            core = {
+                key: item
+                for key, item in value.items()
+                if key != "dependencyLockDigest"
+            }
+            value["dependencyLockDigest"] = f"sha256:{sha256_json(core)}"
+            return value
+
+        unrelated_head = revised(
+            lambda value: value["consumer"].__setitem__(
+                "canonicalHead", "f" * 40
+            )
+        )
+        changed_projection = revised(
+            lambda value: value["consumer"].__setitem__(
+                "projectionSpecDigest", "sha256:" + "a" * 64
+            )
+        )
+        changed_problem = revised(
+            lambda value: value["problemLedger"].__setitem__(
+                "problemLedgerDigest", "sha256:" + "b" * 64
+            )
+        )
+        changed_dependency = revised(
+            lambda value: value["dependencies"][0].__setitem__(
+                "runDigest", "sha256:" + "c" * 64
+            )
+        )
+
+        self.assertTrue(same_projection_dependency_state(lock, unrelated_head))
+        self.assertFalse(
+            same_projection_dependency_state(lock, changed_projection)
+        )
+        self.assertFalse(same_projection_dependency_state(lock, changed_problem))
+        self.assertFalse(
+            same_projection_dependency_state(lock, changed_dependency)
+        )
+        invalid = copy.deepcopy(lock)
+        invalid["consumer"]["canonicalHead"] = "e" * 40
+        self.assertFalse(same_projection_dependency_state(lock, invalid))
 
     def test_rejects_stale_or_unfinished_dependency(self) -> None:
         write(
@@ -470,6 +639,253 @@ class ProjectionDependencyTests(unittest.TestCase):
         self.assertEqual(
             index["dependencyLockDigest"], lock["dependencyLockDigest"]
         )
+        publish_batch(self.projection_root, [output])
+        write(self.root / "docs/viewer-note.md", "Unrelated viewer documentation.\n")
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Add unrelated viewer documentation")
+        self.assertNotEqual(git(self.root, "rev-parse", "HEAD"), self.head)
+        with patch(
+            "math_flow.viewer.load_credit_assignment_bundle",
+            wraps=load_credit_assignment_bundle,
+        ) as load_credit:
+            catalog = export_viewer_catalog(
+                self.root,
+                self.projection_root,
+                "example/math-flow",
+                canonical_ref="HEAD",
+            )
+        load_credit.assert_called_once()
+        credit = catalog["creditProjections"][0]
+        self.assertEqual(credit["latestRunDigest"], run_digest)
+        self.assertEqual(credit["runCount"], 1)
+        viewer_run = credit["runs"][0]
+        self.assertFalse(viewer_run["stale"])
+        self.assertEqual(viewer_run["staleReasons"], [])
+        self.assertEqual(viewer_run["assignments"], extracted["assignments"])
+        self.assertEqual(viewer_run["reportMarkdown"], report)
+        self.assertEqual(
+            viewer_run["dependency"]["runDigest"],
+            lock["dependencies"][0]["runDigest"],
+        )
+        self.assertEqual(
+            viewer_run["creditInput"]["dependencyLockDigest"],
+            lock["dependencyLockDigest"],
+        )
+        self.assertEqual(credit["selectionStatus"], "current")
+
+    def test_catalog_and_context_refuse_an_arbitrary_credit_terminal(self) -> None:
+        first_bundle, first_digest = self._publish_credit_assignment()
+        second_bundle = self.root / "second-credit-bundle"
+        shutil.copytree(first_bundle, second_bundle)
+        second_manifest = json.loads(
+            (second_bundle / "run.json").read_text(encoding="utf-8")
+        )
+        second_manifest["providerRuns"][0]["responseId"] = "independent-rerun"
+        write_json(second_bundle / "run.json", second_manifest)
+        second_batch = publish_batch(self.projection_root, [second_bundle])
+        second_digest = str(second_batch["objects"][0]["runDigest"])
+        self.assertNotEqual(first_digest, second_digest)
+
+        catalog = export_viewer_catalog(
+            self.root,
+            self.projection_root,
+            "example/math-flow",
+            canonical_ref="HEAD",
+        )
+        credit = catalog["creditProjections"][0]
+        self.assertEqual(credit["runCount"], 2)
+        self.assertEqual(credit["selectionStatus"], "ambiguous")
+        self.assertIsNone(credit["latestRunDigest"])
+
+        source = ledger(self.root, "demo", self.head)
+        context, report = build_credit_context(
+            self.root,
+            self.projection_root,
+            "demo",
+            self.head,
+            list(source["transactions"]),
+        )
+        self.assertEqual(context["status"], "ambiguous")
+        self.assertCountEqual(
+            context["applicableRunDigests"], [first_digest, second_digest]
+        )
+        self.assertIsNone(report)
+
+    def test_agent_credit_context_selects_unique_current_verified_run(self) -> None:
+        _, run_digest = self._publish_credit_assignment()
+        source = ledger(self.root, "demo", self.head)
+        context, report = build_credit_context(
+            self.root,
+            self.projection_root,
+            "demo",
+            self.head,
+            list(source["transactions"]),
+        )
+
+        self.assertEqual(context["status"], "current")
+        self.assertEqual(context["run"]["runDigest"], run_digest)
+        self.assertTrue(context["run"]["authoritative"])
+        self.assertEqual(context["assignments"][0]["significance"], "major")
+        self.assertEqual(context["assignments"][0]["roles"], ["proof"])
+        self.assertIn("fixture proof", report)
+        self.assertEqual(context["dependency"]["status"], "current")
+
+    def test_agent_credit_context_survives_unrelated_canonical_commit(self) -> None:
+        _, run_digest = self._publish_credit_assignment()
+        write(self.root / "docs/unrelated.md", "# Unrelated documentation\n")
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Document unrelated behavior")
+        later_head = git(self.root, "rev-parse", "HEAD")
+        source = ledger(self.root, "demo", later_head)
+
+        context, report = build_credit_context(
+            self.root,
+            self.projection_root,
+            "demo",
+            later_head,
+            list(source["transactions"]),
+        )
+
+        self.assertEqual(context["status"], "current")
+        self.assertEqual(context["run"]["runDigest"], run_digest)
+        self.assertTrue(context["run"]["authoritative"])
+        self.assertNotEqual(
+            context["dependency"]["lockDigest"],
+            context["run"]["dependencyLockDigest"],
+        )
+        self.assertEqual(
+            context["dependency"]["consumer"]["canonicalHead"], later_head
+        )
+        self.assertEqual(
+            context["run"]["dependencyConsumer"]["canonicalHead"], self.head
+        )
+        self.assertIsNotNone(report)
+
+    def test_agent_credit_context_stales_after_consumer_projection_change(self) -> None:
+        self._publish_credit_assignment()
+        projection_path = self.root / "protocol/projections/credit-v1.json"
+        projection = json.loads(projection_path.read_text(encoding="utf-8"))
+        projection["scheduling"]["minimumIntervalSeconds"] = 1
+        write_json(projection_path, projection)
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Revise credit projection")
+        later_head = git(self.root, "rev-parse", "HEAD")
+        source = ledger(self.root, "demo", later_head)
+
+        context, report = build_credit_context(
+            self.root,
+            self.projection_root,
+            "demo",
+            later_head,
+            list(source["transactions"]),
+        )
+
+        self.assertEqual(context["status"], "stale")
+        self.assertFalse(context["run"]["authoritative"])
+        self.assertIsNotNone(report)
+
+    def test_agent_credit_context_reports_governed_projection_without_run(self) -> None:
+        source = ledger(self.root, "demo", self.head)
+        context, report = build_credit_context(
+            self.root,
+            self.projection_root,
+            "demo",
+            self.head,
+            list(source["transactions"]),
+        )
+
+        self.assertEqual(context["status"], "pending")
+        self.assertEqual(context["reasonCode"], "no-published-credit-run")
+        self.assertEqual(context["dependency"]["status"], "current")
+        self.assertNotIn("run", context)
+        self.assertNotIn("assignments", context)
+        self.assertIsNone(report)
+
+    def test_agent_credit_context_marks_historical_run_stale(self) -> None:
+        self._publish_credit_assignment()
+        write(
+            self.root / "problems/demo/contributions/later/README.md",
+            "# Later evidence\n",
+        )
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Add later evidence")
+        later_head = git(self.root, "rev-parse", "HEAD")
+        source = ledger(self.root, "demo", later_head)
+
+        context, report = build_credit_context(
+            self.root,
+            self.projection_root,
+            "demo",
+            later_head,
+            list(source["transactions"]),
+        )
+
+        self.assertEqual(context["status"], "stale")
+        self.assertEqual(context["dependency"]["status"], "stale")
+        self.assertFalse(context["run"]["authoritative"])
+        self.assertIsNotNone(report)
+
+    def test_agent_credit_context_reports_invalid_published_run(self) -> None:
+        _, run_digest = self._publish_credit_assignment()
+        digest_hex = run_digest.removeprefix("sha256:")
+        report = (
+            self.projection_root
+            / "objects"
+            / "credit-assignment"
+            / digest_hex[:2]
+            / digest_hex
+            / "report.md"
+        )
+        report.write_text("tampered\n", encoding="utf-8")
+        source = ledger(self.root, "demo", self.head)
+
+        context, selected_report = build_credit_context(
+            self.root,
+            self.projection_root,
+            "demo",
+            self.head,
+            list(source["transactions"]),
+        )
+
+        self.assertEqual(context["status"], "invalid")
+        self.assertIsNone(selected_report)
+        self.assertEqual(
+            len(context["verification"]["invalidPublishedRuns"]), 1
+        )
+
+    def test_agent_credit_context_requires_selection_for_multiple_overlays(self) -> None:
+        second = overlay_projection_spec(
+            [
+                {
+                    "name": "knowledge",
+                    "projectionId": "knowledge-v1",
+                    "artifactRole": "knowledge-state",
+                }
+            ]
+        )
+        second["id"] = "credit-second-v1"
+        write_json(
+            self.root / "protocol/projections/credit-second-v1.json", second
+        )
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Add second credit overlay")
+        head = git(self.root, "rev-parse", "HEAD")
+        source = ledger(self.root, "demo", head)
+
+        context, report = build_credit_context(
+            self.root,
+            self.projection_root,
+            "demo",
+            head,
+            list(source["transactions"]),
+        )
+
+        self.assertEqual(context["status"], "selection-required")
+        self.assertEqual(
+            context["availableProjectionIds"],
+            ["credit-second-v1", "credit-v1"],
+        )
+        self.assertIsNone(report)
 
     def test_publisher_accepts_credit_assignment_as_an_independent_run_kind(self) -> None:
         transaction_id = str(

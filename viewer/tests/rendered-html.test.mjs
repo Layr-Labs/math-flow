@@ -53,6 +53,16 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /detail-tabs-transaction/);
   assert.match(viewer, /Submission<\/button>/);
   assert.match(viewer, /Judgment<\/button>/);
+  assert.match(viewer, /Credit<\/button>/);
+  assert.match(viewer, /Credit overlay/);
+  assert.match(viewer, /No published credit yet/);
+  assert.match(viewer, /Qualitative credit · separate overlay/);
+  assert.match(viewer, /Knowledge references/);
+  assert.match(viewer, /Prior reservations/);
+  assert.match(viewer, /Full raw credit report/);
+  assert.match(viewer, /Locked credit input/);
+  assert.match(viewer, /Projection dependency lock/);
+  assert.match(viewer, /openCreditKnowledgeRef/);
   assert.match(viewer, /detail-tabs-node/);
   assert.match(viewer, /Node<\/button>/);
   assert.match(viewer, /Build report<\/button>/);
@@ -170,6 +180,8 @@ test("round-trips viewer state through the query string", () => {
   const search = applyViewerStateToSearch("?campaign=atlas&run=stale", {
     problemId: "triangle-problem",
     projectionId: "builder:main",
+    creditProjectionId: "credit:main",
+    creditRunId: "sha256:credit-run",
     runId: "run-3",
     nodeId: "claim/midpoint",
     transactionId: "abc123",
@@ -181,6 +193,8 @@ test("round-trips viewer state through the query string", () => {
   assert.deepEqual(parseViewerState(search), {
     problemId: "triangle-problem",
     projectionId: "builder:main",
+    creditProjectionId: "credit:main",
+    creditRunId: "sha256:credit-run",
     runId: "run-3",
     nodeId: "claim/midpoint",
     transactionId: "abc123",

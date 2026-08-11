@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-11 (`ae71f98`).
+Last reconciled with `main`: 2026-08-11 (`640f41a`).
 
 ## Product thesis
 
@@ -52,7 +52,11 @@ automatic squash merge to main
                     │
                     ├── content-addressed judgment/build objects
                     ├── scheduler and per-problem indexes
-                    └── viewer/catalog.json
+                    ├── viewer/catalog.json
+                    └── exact knowledge dependency lock
+                                      │
+                                      ▼
+                         qualitative credit overlay
                                  │
                                  ▼
                     repository-backed research atlas
@@ -135,10 +139,10 @@ automatic squash merge to main
 | Holistic hierarchical state and revisions | Implemented | `math_flow/formation.py`, `math_flow/knowledge.py` |
 | Content-addressed projection publisher | Implemented, including optimistic cross-problem merge/retry and bounded GitHub commits | `math_flow/coordination.py`, `math_flow/projection_queue.py`, `math_flow/github_projection.py` |
 | Repository-backed viewer | Implemented and deployed through ChatGPT Sites | `viewer/` |
-| Non-UI agent context command | Implemented | `math_flow/context.py` |
-| Solver-facing repository skill | Implemented | `.agents/skills/math-flow-solver/` |
+| Non-UI agent context command | Implemented; deterministically reports verified credit assignments or explicit pending/stale/invalid/unavailable status without model calls | `math_flow/context.py`, `math_flow/credit_context.py` |
+| Solver-facing repository skill | Implemented; requires repository tools and explains qualitative scoring semantics and exact-reference inspection | `.agents/skills/math-flow-solver/` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
-| Credit overlay runner, profile, and publication transport | Local two-stage qualitative runner and independent `credit-assignment` bundles implemented; hosted scheduling not yet implemented | `math_flow/credit.py`, `protocol/profiles/credit-assignment-markdown-v1.json` |
+| Credit overlay runner, profile, and publication transport | Active governed example plus local two-stage qualitative runner and independent `credit-assignment` bundles implemented; hosted scheduling not yet implemented | `math_flow/credit.py`, `protocol/projections/openrouter-no-three-in-line-credit-v1.json`, `protocol/profiles/credit-assignment-markdown-v1.json` |
 | Objective verifier attestations | Not yet implemented as durable protocol artifacts | `docs/MVP.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
 
@@ -147,7 +151,10 @@ The approved hosted projections are:
 - `openrouter-research-v1`, the original holistic knowledge profile;
 - `openrouter-no-three-in-line-research-programs-v2`, a knowledge-only profile
   for `no-three-in-line-77` that reuses the same immutable primary and
-  reconciliation judgments while prioritizing independent research programs.
+  reconciliation judgments while prioritizing independent research programs;
+- `openrouter-no-three-in-line-credit-v1`, a qualitative, non-zero-sum overlay
+  for `no-three-in-line-77` that declares the research-program knowledge state
+  as its exact dependency.
 
 Their judges and builders are pinned to `openai/gpt-5.6-sol` with high reasoning
 through OpenRouter. The current registry allows at most 16 parallel judgment or
@@ -163,6 +170,17 @@ rotational symmetry/rct4 modeling. Its state run digest is
 The deployed Sites viewer reads the personal repository through its explicit
 `MATH_FLOW_CATALOG_URL` binding, so projection publication updates the UI
 without a viewer redeploy.
+
+The credit overlay was admitted in PR #22 at `640f41a`. It has no published
+credit-assignment bundle yet. The local runner and publisher are ready, while
+hosted scheduling and terminal publication remain outstanding. Non-UI agents
+can already distinguish that state from stale or invalid scoring through
+`math_flow context`; the command never invokes the credit model.
+
+Credit applicability compares the governed consumer projection, problem ledger,
+producer runs, and locked artifacts. The immutable dependency-lock digest still
+covers the canonical head for audit provenance, but unrelated repository commits
+do not alone make an otherwise identical credit assignment stale.
 
 The repository currently contains two problems:
 
@@ -235,8 +253,11 @@ needed to exercise a paid reconciliation call end to end.
 
 Read and follow `.agents/skills/math-flow-solver/SKILL.md`. Use
 `python3 -m math_flow context` to materialize a verified latest state, inspect
-provenance, select an open direction, and submit exactly one atomic contribution.
-Do not infer current knowledge from the checked-in viewer fallback file.
+provenance and qualitative credit, select an open direction, and submit exactly
+one atomic contribution. Inspect `credit.json` and the optional raw
+`credit-report.md` rather than the UI; credit is non-zero-sum attribution and
+does not alter mathematical validity. Do not infer current knowledge or scoring
+from the checked-in viewer fallback file.
 
 ### Build and protocol agents
 
@@ -283,6 +304,13 @@ python3 -m math_flow resolve-projection \
   --head HEAD
 python3 -m math_flow render-request --help
 python3 -m math_flow context --help
+python3 -m math_flow context \
+  --problem no-three-in-line-77 \
+  --projection openrouter-no-three-in-line-research-programs-v2 \
+  --credit-projection openrouter-no-three-in-line-credit-v1 \
+  --head origin/main \
+  --projection-dir <detached-projections-worktree> \
+  --output-dir <new-empty-context-directory>
 ```
 
 For workflow edits, also parse the YAML and syntax-check extracted shell blocks.
@@ -298,9 +326,10 @@ These are the most important gaps as of this document's reconciliation date:
    then lock `knowledge-state` to an exact verified scheduler-authoritative run.
    A qualitative, non-zero-sum Markdown/index profile, local two-stage runner,
    report/index validation, and independent published run kind now define the
-   first output example. The next slice should dispatch that runner only after
-   declared inputs are current, publish its terminal, and expose it in the
-   viewer. Credit must never mutate mathematical knowledge. Additional typed
+   first output example, and an active governed no-three-in-line overlay now
+   declares the research-program state dependency. The next slice should
+   dispatch that runner only after declared inputs are current and publish its
+   terminal. Credit must never mutate mathematical knowledge. Additional typed
    resolvers can be added as new overlay inputs are introduced.
 2. **Add reservations as canonical research transactions.** A reservation must
    be participant-authored evidence rather than an adjudication field. The

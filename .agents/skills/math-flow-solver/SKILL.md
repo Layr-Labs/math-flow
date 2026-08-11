@@ -1,6 +1,6 @@
 ---
 name: math-flow-solver
-description: Inspect verified Math Flow knowledge projections and contribute mathematical research through the repository's atomic transaction protocol using isolated Git worktrees that are safe for parallel agents. Use when an agent needs to understand the latest knowledge state for a problem, choose an open research direction, inspect provenance, prepare a proof/counterexample/computation/formal artifact, validate a solver contribution PR, or follow a merged contribution through judgment and knowledge formation in a Math Flow repository.
+description: Inspect verified Math Flow knowledge and qualitative credit projections, then contribute mathematical research through the repository's atomic transaction protocol using isolated Git worktrees that are safe for parallel agents. Use when an agent needs to understand the latest knowledge state or contribution scoring for a problem, choose an open research direction, inspect provenance, prepare a proof/counterexample/computation/formal artifact, validate a solver contribution PR, or follow a merged contribution through judgment, knowledge formation, and credit assignment in a Math Flow repository.
 ---
 
 # Math Flow Solver
@@ -8,10 +8,12 @@ description: Inspect verified Math Flow knowledge projections and contribute mat
 Use the deterministic `math_flow context` command before reasoning from a projection. It verifies published bundles and their base chain, compares the projection with the canonical ledger, and writes:
 
 - `state.json`: the complete exact knowledge state;
-- `context.json`: projection identity, freshness, queue/coverage information, and scope metadata;
+- `credit.json`: verified qualitative assignments or an explicit pending, stale, invalid, ambiguous, selection-required, or unavailable status;
+- `credit-report.md`: the full scoring rationale when one uniquely applicable verified run exists;
+- `context.json`: projection identity, freshness, queue/coverage, credit, and scope metadata;
 - `context.md`: an agent-readable problem and knowledge summary.
 
-The command makes no model calls. Require an explicit projection ID when more than one exists. Use repeated `--node` options to limit only the Markdown view to selected subtrees; `state.json` intentionally remains complete.
+The command makes no model calls. Require an explicit knowledge projection ID when more than one exists. If `credit.json` reports `selection-required`, repeat the command with `--credit-projection <id>`. Use repeated `--node` options to limit only the Markdown view to selected subtrees; `state.json` intentionally remains complete.
 
 ## Use tools, not web interfaces
 
@@ -25,12 +27,13 @@ Web research is allowed when the mathematical task needs external sources; it is
 2. Fetch the canonical and projection refs, then create two uniquely named worktrees for this agent: a writable solver worktree branched from `origin/main`, and a detached read-only projection worktree at `origin/projections`. Never reuse another agent's branch, directory, or projection worktree. Never treat the checked-in `projections/` staging directory as authoritative.
 3. Run every edit, artifact command, validation, commit, and push from the writable solver worktree. Materialize context using the detached projection worktree. Stop and refresh if `context.json` reports `stale`, `ahead`, or `diverged`, unless historical work is intentional.
 4. Read node provenance before relying on an assessment. Follow transaction and judgment IDs to the immutable source records when a conclusion matters.
-5. Select one bounded research objective. Prefer resolving an explicit question, improving a bound, supplying independent evidence, formalizing a claim, or refuting an existing assessment.
-6. Add exactly one new directory under `problems/<problem>/contributions/<contribution>/` in the solver worktree. Put the claim, method, provenance, limitations, and reproduction instructions in `README.md`; keep supporting artifacts beside it.
-7. Validate the artifact and repository from the solver worktree. Commit only the contribution, then validate the committed PR diff against `origin/main`. Do not edit past contributions, judgments, knowledge state, projection indexes, or scheduler data.
-8. Push only the solver branch, then use `gh` or an available GitHub connector to open one PR for that one contribution and monitor its checks. Present the result as evidence for future adjudication, not as a mutation of accepted knowledge. The repository re-verifies and automatically squash-merges atomic contribution PRs after every required current-head check passes; do not add unrelated changes to obtain a merge and do not merge it through the UI.
-9. After automatic merge, use repository tools to obtain the squash commit, follow projection publication, and re-materialize context until that transaction has a built primary judgment and is represented in state provenance. Do not infer completion from a green PR alone.
-10. Keep the solver worktree until its work is safely pushed and handed off. Remove only worktrees created by this agent, only after confirming they are clean, and never use forced removal.
+5. Inspect `credit.status` before choosing work. Use assignments only when it is `current`; follow their exact transaction, node, revision, reservation, and report-section references. Treat qualitative, non-zero-sum credit as attribution context—not mathematical adjudication, a numeric score, or a command to optimize for superficial novelty.
+6. Select one bounded research objective. Prefer resolving an explicit question, improving a bound, supplying independent evidence, formalizing a claim, or refuting an existing assessment.
+7. Add exactly one new directory under `problems/<problem>/contributions/<contribution>/` in the solver worktree. Put the claim, method, provenance, limitations, and reproduction instructions in `README.md`; keep supporting artifacts beside it.
+8. Validate the artifact and repository from the solver worktree. Commit only the contribution, then validate the committed PR diff against `origin/main`. Do not edit past contributions, judgments, knowledge state, credit assignments, projection indexes, or scheduler data.
+9. Push only the solver branch, then use `gh` or an available GitHub connector to open one PR for that one contribution and monitor its checks. Present the result as evidence for future adjudication, not as a mutation of accepted knowledge. The repository re-verifies and automatically squash-merges atomic contribution PRs after every required current-head check passes; do not add unrelated changes to obtain a merge and do not merge it through the UI.
+10. After automatic merge, use repository tools to obtain the squash commit, follow projection publication, and re-materialize context until that transaction has a built primary judgment and is represented in state provenance. Credit may update later through its separate dependent projection; do not infer either lifecycle from a green PR alone.
+11. Keep the solver worktree until its work is safely pushed and handed off. Remove only worktrees created by this agent, only after confirming they are clean, and never use forced removal.
 
 ## Safety and integrity
 

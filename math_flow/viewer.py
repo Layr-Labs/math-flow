@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .artifacts import load_manifest, read_verified_artifact, sha256_bytes, verify_bundle
 from .coordination import load_scheduler
+from .credit import load_credit_assignment_bundle
 from .errors import MathFlowError
 from .governance import projection_registry_index
 from .knowledge import validate_state_v2, validate_state_v3
@@ -187,6 +188,114 @@ def _viewer_judgment(bundle: Path, problem: str) -> dict[str, object]:
         "reportDigest": record.get("reportDigest"),
         "reportMarkdown": report,
         "record": record,
+    }
+
+
+def _viewer_credit_assignment(
+    bundle: Path,
+    expected_digest: str,
+    published_objects: dict[str, dict[str, object]],
+) -> dict[str, object]:
+    """Load a credit overlay through its canonical verifier and bind its dependency."""
+
+    manifest, credit_index, run_digest = load_credit_assignment_bundle(bundle)
+    if run_digest != expected_digest:
+        raise MathFlowError(
+            f"viewer credit assignment digest does not match its index: {bundle}"
+        )
+    credit_input = _json_artifact(bundle, manifest, "credit-input")
+    dependency_lock = _json_artifact(bundle, manifest, "dependency-lock")
+    try:
+        report = read_verified_artifact(
+            bundle, manifest, "credit-report"
+        ).decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise MathFlowError("viewer credit report is not UTF-8") from exc
+
+    dependencies = dependency_lock.get("dependencies")
+    knowledge_dependencies = [
+        item
+        for item in dependencies
+        if isinstance(item, dict) and item.get("artifactRole") == "knowledge-state"
+    ] if isinstance(dependencies, list) else []
+    if len(knowledge_dependencies) != 1:
+        raise MathFlowError(
+            "viewer credit assignment must lock exactly one knowledge state"
+        )
+    dependency = knowledge_dependencies[0]
+    dependency_digest = dependency.get("runDigest")
+    dependency_object = (
+        published_objects.get(dependency_digest)
+        if isinstance(dependency_digest, str)
+        else None
+    )
+    if dependency_object is None:
+        raise MathFlowError(
+            "viewer credit assignment references an unpublished knowledge run"
+        )
+    dependency_manifest = dependency_object["manifest"]
+    dependency_inputs = dependency_manifest.get("inputs")
+    dependency_artifact = dependency.get("artifact")
+    artifacts = dependency_manifest.get("artifacts")
+    matching_artifacts = [
+        item
+        for item in artifacts
+        if isinstance(item, dict) and item.get("role") == "knowledge-state"
+    ] if isinstance(artifacts, list) else []
+    if (
+        dependency_manifest.get("runKind") != "knowledge-build"
+        or dependency_manifest.get("problemId") != manifest.get("problemId")
+        or not isinstance(dependency_inputs, dict)
+        or dependency_inputs.get("projectionSpecDigest")
+        != dependency.get("projectionSpecDigest")
+        or dependency_manifest.get("problemLedgerDigest")
+        != dependency.get("problemLedgerDigest")
+        or len(matching_artifacts) != 1
+        or matching_artifacts[0] != dependency_artifact
+    ):
+        raise MathFlowError(
+            "viewer credit assignment knowledge dependency is inconsistent"
+        )
+
+    cost = sum(
+        float(provider_run.get("usage", {}).get("cost", 0))
+        for provider_run in manifest.get("providerRuns", [])
+        if isinstance(provider_run, dict)
+        and provider_run.get("cacheHit") is not True
+        and isinstance(provider_run.get("usage"), dict)
+        and isinstance(provider_run["usage"].get("cost", 0), (int, float))
+    )
+    models = sorted(
+        {
+            str(provider_run.get("resolvedModel") or provider_run.get("requestedModel"))
+            for provider_run in manifest.get("providerRuns", [])
+            if isinstance(provider_run, dict)
+            and isinstance(
+                provider_run.get("resolvedModel") or provider_run.get("requestedModel"),
+                str,
+            )
+        }
+    )
+    inputs = manifest.get("inputs")
+    consumer = dependency_lock.get("consumer")
+    if not isinstance(inputs, dict) or not isinstance(consumer, dict):
+        raise MathFlowError("viewer credit assignment has no projection identity")
+    return {
+        "id": run_digest,
+        "runDigest": run_digest,
+        "ledgerHead": manifest["ledgerHead"],
+        "problemLedgerHead": manifest["problemLedgerHead"],
+        "problemLedgerDigest": manifest["problemLedgerDigest"],
+        "projectionId": consumer["projectionId"],
+        "projectionSpecDigest": consumer["projectionSpecDigest"],
+        "dependencyLockDigest": dependency_lock["dependencyLockDigest"],
+        "dependency": dependency,
+        "assignments": credit_index["assignments"],
+        "reportMarkdown": report,
+        "creditInput": credit_input,
+        "dependencyLock": dependency_lock,
+        "models": models,
+        "cost": cost,
     }
 
 
@@ -584,6 +693,226 @@ def export_viewer_catalog(
             )
 
     projections.sort(key=lambda item: (str(item["problemId"]), str(item["label"]), str(item["id"])))
+
+    projection_specs_by_id = {
+        str(spec["id"]): spec for spec in projection_specs.values()
+    }
+    credit_runs: list[dict[str, object]] = []
+    for digest, item in sorted(published_objects.items()):
+        if item["manifest"].get("runKind") != "credit-assignment":
+            continue
+        credit_run = _viewer_credit_assignment(
+            item["path"], digest, published_objects
+        )
+        problem = str(item["manifest"]["problemId"])
+        current_ledger = ledger(root, problem, canonical_ref)
+        associated = [
+            projection
+            for projection in projections
+            if projection["problemId"] == problem
+            and any(
+                run.get("runDigest") == credit_run["dependency"]["runDigest"]
+                for run in projection["data"]["runs"]
+            )
+        ]
+        if not associated:
+            raise MathFlowError(
+                "viewer credit assignment dependency is absent from every knowledge projection"
+            )
+        consumer_spec = projection_specs.get(
+            str(credit_run["projectionSpecDigest"])
+        )
+        locked_dependency = credit_run["dependency"]
+        declared_dependencies = (
+            consumer_spec.get("dependencies", [])
+            if isinstance(consumer_spec, dict)
+            else []
+        )
+        declared_dependency = next(
+            (
+                dependency
+                for dependency in declared_dependencies
+                if isinstance(dependency, dict)
+                and dependency.get("name") == locked_dependency.get("name")
+            ),
+            None,
+        )
+        producer_spec = projection_specs_by_id.get(
+            str(locked_dependency.get("projectionId"))
+        )
+        current_consumer = (
+            isinstance(consumer_spec, dict)
+            and consumer_spec.get("id") == credit_run["projectionId"]
+            and consumer_spec.get("engine") == "overlay-repository-v1"
+        )
+        current_dependency_declaration = (
+            isinstance(declared_dependency, dict)
+            and declared_dependency.get("projectionId")
+            == locked_dependency.get("projectionId")
+            and declared_dependency.get("artifactRole")
+            == locked_dependency.get("artifactRole")
+            and isinstance(producer_spec, dict)
+            and producer_spec.get("digest")
+            == locked_dependency.get("projectionSpecDigest")
+        )
+        current_knowledge = current_dependency_declaration and any(
+            projection["latestRunDigest"] == locked_dependency["runDigest"]
+            and isinstance(projection.get("projectionSpec"), dict)
+            and projection["projectionSpec"].get("digest")
+            == locked_dependency.get("projectionSpecDigest")
+            for projection in associated
+        )
+        current_problem_ledger = (
+            credit_run["problemLedgerHead"] == current_ledger["problemLedgerHead"]
+            and credit_run["problemLedgerDigest"]
+            == current_ledger["problemLedgerDigest"]
+        )
+        stale_reasons = []
+        # canonicalHead is intentionally excluded: unrelated repository commits
+        # do not change the semantic applicability of an exact credit lock.
+        if not current_consumer:
+            stale_reasons.append("credit-projection-changed")
+        if not current_problem_ledger:
+            stale_reasons.append("canonical-ledger-advanced")
+        if not current_dependency_declaration:
+            stale_reasons.append("knowledge-dependency-changed")
+        elif not current_knowledge:
+            stale_reasons.append("knowledge-projection-advanced")
+        credit_runs.append(
+            {
+                **credit_run,
+                "knowledgeProjectionIds": [
+                    str(projection["id"]) for projection in associated
+                ],
+                "currentProblemLedger": current_problem_ledger,
+                "currentKnowledgeDependency": current_knowledge,
+                "stale": bool(stale_reasons),
+                "staleReasons": stale_reasons,
+            }
+        )
+
+    grouped_credit: dict[tuple[str, str, str], list[dict[str, object]]] = {}
+    for credit_run in credit_runs:
+        key = (
+            str(credit_run["creditInput"]["problemId"]),
+            str(credit_run["projectionId"]),
+            str(credit_run["projectionSpecDigest"]),
+        )
+        grouped_credit.setdefault(key, []).append(credit_run)
+
+    for projection_digest, spec in projection_specs.items():
+        if spec.get("engine") != "overlay-repository-v1":
+            continue
+        dependencies = spec.get("dependencies")
+        knowledge_dependencies = [
+            dependency
+            for dependency in dependencies
+            if isinstance(dependency, dict)
+            and dependency.get("artifactRole") == "knowledge-state"
+        ] if isinstance(dependencies, list) else []
+        if len(knowledge_dependencies) != 1:
+            continue
+        producer_id = knowledge_dependencies[0].get("projectionId")
+        allowed = spec.get("allowedProblems")
+        for knowledge_projection in projections:
+            registered_knowledge = knowledge_projection.get("projectionSpec")
+            if (
+                not isinstance(registered_knowledge, dict)
+                or registered_knowledge.get("id") != producer_id
+                or not isinstance(allowed, list)
+                or (
+                    "*" not in allowed
+                    and knowledge_projection["problemId"] not in allowed
+                )
+            ):
+                continue
+            grouped_credit.setdefault(
+                (
+                    str(knowledge_projection["problemId"]),
+                    str(spec["id"]),
+                    projection_digest,
+                ),
+                [],
+            )
+
+    credit_projections: list[dict[str, object]] = []
+    projection_id_counts: dict[str, int] = {}
+    for _, projection_id, _ in grouped_credit:
+        projection_id_counts[projection_id] = projection_id_counts.get(projection_id, 0) + 1
+    for (problem, projection_id, projection_digest), group_runs in sorted(
+        grouped_credit.items()
+    ):
+        group_runs.sort(
+            key=lambda item: (
+                len(item["creditInput"]["transactions"]),
+                str(item["problemLedgerHead"]),
+                str(item["runDigest"]),
+            )
+        )
+        current_runs = [item for item in group_runs if item["stale"] is False]
+        if len(current_runs) == 1:
+            latest = current_runs[0]
+            selection_status = "current"
+        elif len(current_runs) > 1:
+            latest = None
+            selection_status = "ambiguous"
+        elif len(group_runs) == 1:
+            latest = group_runs[0]
+            selection_status = "historical"
+        elif group_runs:
+            latest = None
+            selection_status = "ambiguous"
+        else:
+            latest = None
+            selection_status = "pending"
+        registered = projection_specs.get(projection_digest)
+        if registered is not None and registered.get("engine") != "overlay-repository-v1":
+            raise MathFlowError(
+                f"viewer credit assignment uses a non-overlay projection: {projection_id}"
+            )
+        catalog_id = (
+            projection_id
+            if projection_id_counts[projection_id] == 1
+            else f"{projection_id}@{projection_digest}"
+        )
+        declared_dependency_ids = {
+            str(knowledge_projection["id"])
+            for knowledge_projection in projections
+            if knowledge_projection["problemId"] == problem
+            and isinstance(knowledge_projection.get("projectionSpec"), dict)
+            and registered is not None
+            and any(
+                isinstance(dependency, dict)
+                and dependency.get("artifactRole") == "knowledge-state"
+                and dependency.get("projectionId")
+                == knowledge_projection["projectionSpec"].get("id")
+                for dependency in registered.get("dependencies", [])
+            )
+        }
+        credit_projections.append(
+            {
+                "id": catalog_id,
+                "problemId": problem,
+                "label": projection_id,
+                "projectionSpec": registered,
+                "knowledgeProjectionIds": sorted(
+                    {
+                        knowledge_projection_id
+                        for item in group_runs
+                        for knowledge_projection_id in item["knowledgeProjectionIds"]
+                    }
+                    | declared_dependency_ids
+                ),
+                "latestRunDigest": latest["runDigest"] if latest else None,
+                "selectionStatus": selection_status,
+                "runCount": len(group_runs),
+                "runs": group_runs,
+            }
+        )
+
+    credit_projections.sort(
+        key=lambda item: (str(item["problemId"]), str(item["label"]), str(item["id"]))
+    )
     return {
         "schemaVersion": 1,
         "repository": {
@@ -592,5 +921,6 @@ def export_viewer_catalog(
             "projectionRef": projection_ref,
         },
         "projections": projections,
+        "creditProjections": credit_projections,
         "defaultProjectionId": projections[0]["id"] if projections else None,
     }

@@ -451,6 +451,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--projection",
         help="projection ID; required when the problem has multiple projections",
     )
+    context_parser.add_argument(
+        "--credit-projection",
+        help=(
+            "qualitative credit projection ID; when omitted, the sole applicable "
+            "credit projection is selected and multiple choices are reported in context.json"
+        ),
+    )
     context_parser.add_argument("--head", default="HEAD", help="canonical Git revision")
     context_parser.add_argument(
         "--node",
@@ -827,6 +834,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.problem,
                 args.output_dir,
                 projection_id=args.projection,
+                credit_projection_id=args.credit_projection,
                 head=args.head,
                 node_ids=args.nodes,
             )
