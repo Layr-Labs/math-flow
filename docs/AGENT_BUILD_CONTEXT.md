@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-10.
+Last reconciled with `main`: 2026-08-11 (`2e99f7a`).
 
 ## Product thesis
 
@@ -35,7 +35,7 @@ automatic squash merge to main
         │
         ├── canonical transaction commit
         ├── baseline projection
-        └── approved OpenRouter projection
+        └── approved OpenRouter projections
                     │
                     ├── parallel primary judgments
                     ├── deterministic conflict detection
@@ -45,7 +45,7 @@ automatic squash merge to main
               coalesced builder claim
                     │
                     ▼
-          serialized knowledge formation
+      serialized formation per knowledge profile
                     │
                     ▼
     GitHub-signed commit on orphan projections branch
@@ -128,6 +128,7 @@ automatic squash merge to main
 | Repository validator and ledger | Implemented | `math_flow/repository.py` |
 | Generic run/artifact envelope | Implemented | `math_flow/runs.py`, `math_flow/artifacts.py` |
 | Approved projection registry | Implemented | `math_flow/governance.py`, `protocol/projections/` |
+| Permissioned governed admission | Implemented; native reviews or exact `/approve-admission <full-head-SHA>` comments | `math_flow/governance.py`, `.github/workflows/admission-control.yml` |
 | Parallel primary judgments | Implemented | `math_flow/judgments.py` |
 | Conflict detection and reconciliation | Implemented locally and in the hosted projection workflow | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
 | Coalescing, leased formation lanes | Implemented | `math_flow/coordination.py` |
@@ -136,14 +137,31 @@ automatic squash merge to main
 | Repository-backed viewer | Implemented and deployed through ChatGPT Sites | `viewer/` |
 | Non-UI agent context command | Implemented | `math_flow/context.py` |
 | Solver-facing repository skill | Implemented | `.agents/skills/math-flow-solver/` |
+| Typed dependencies and credit overlays | Not yet implemented; current active build | This document, `docs/PROJECTION_PROTOCOL.md` |
 | Objective verifier attestations | Not yet implemented as durable protocol artifacts | `docs/MVP.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
 
-The approved hosted projection is `openrouter-research-v1`. Its primary judge,
-reconciliation judge, and knowledge builder are pinned to
-`openai/gpt-5.6-sol` with high reasoning through OpenRouter. The current registry
-allows at most 16 primary judgment jobs in parallel and 500 judgments in one
-formation batch.
+The approved hosted projections are:
+
+- `openrouter-research-v1`, the original holistic knowledge profile;
+- `openrouter-no-three-in-line-research-programs-v2`, a knowledge-only profile
+  for `no-three-in-line-77` that reuses the same immutable primary and
+  reconciliation judgments while prioritizing independent research programs.
+
+Their judges and builders are pinned to `openai/gpt-5.6-sol` with high reasoning
+through OpenRouter. The current registry allows at most 16 parallel judgment or
+reconciliation jobs and 500 dependency-connected judgments in one formation
+batch.
+
+The first research-program build published successfully in hosted run
+`31519191523`. It reused all three existing primary judgments, found no current
+conflicts, skipped both paid judgment stages, and produced a 16-node state with
+two top-level programs: known-record certification/local perturbation, and
+rotational symmetry/rct4 modeling. Its state run digest is
+`sha256:8e1bfea136ad3b78c2720269e984b5f807179533ea8a1b112952fc41a34b31df`.
+The deployed Sites viewer reads the personal repository through its explicit
+`MATH_FLOW_CATALOG_URL` binding, so projection publication updates the UI
+without a viewer redeploy.
 
 The repository currently contains two problems:
 
@@ -156,6 +174,10 @@ The ordinary solver path is fully automatic:
 
 1. `Validate repository`, `Validate transaction`, and
    `Admin admission approval` report on the PR's current head.
+   Governed one-file PRs can be approved by an allowlisted administrator using
+   either a native current-head review or an exact
+   `/approve-admission <full-40-character-head-SHA>` comment. A new commit,
+   comment edit, or deletion triggers revalidation against the current head.
 2. `Auto-merge validated contribution` re-fetches the candidate as inert Git
    data and re-runs the trusted atomic validator against current `main`.
 3. If the PR is still open, non-draft, targets `main`, and every required check
@@ -198,6 +220,13 @@ retained judgment artifacts and skips the judgment matrix.
 Formation caches successful provider stages by exact request digest. Empty
 assistant messages are retried up to three times and are never checkpointed;
 length-truncated responses are also non-cacheable.
+
+Hosted reconciliation is implemented and fail-closed. Deterministic and
+fake-provider tests cover opposed primaries, conflict derivation, reconciliation
+reuse, dependency-atomic formation, and rejection of missing conflict inputs.
+The hosted research-program run exercised the no-conflict branch successfully;
+a real repository event containing opposed current primary judgments is still
+needed to exercise a paid reconciliation call end to end.
 
 ## Agent roles and working conventions
 
@@ -263,20 +292,23 @@ the task requires an end-to-end check.
 
 These are the most important gaps as of this document's reconciliation date:
 
-1. **Add typed projection dependencies.** Judgment reuse now decouples a
-   knowledge profile from its primary judge, but credit and other overlays need
-   governed, typed dependencies on published projection artifacts.
-2. **Add reservations and credit overlays.** Reservations should remain
-   canonical participant transactions; a later credit projection can consume
-   them together with judgment and knowledge dependencies without contaminating
-   mathematical assessment.
+1. **Add typed projection dependencies and a credit overlay.** This is the
+   active build. Judgment reuse currently decouples a knowledge profile from its
+   primary judge by pinned judge identity, but credit and future overlays need
+   governed, typed dependencies on verified published artifacts. A credit run
+   should execute after its declared judgment/knowledge dependencies, append
+   content-addressed credit assessments, and never mutate mathematical knowledge.
+2. **Add reservations as canonical research transactions.** A reservation must
+   be participant-authored evidence rather than an adjudication field. The
+   credit overlay can consider priority, specificity, overlap, completion
+   quality, and abandonment without making a reservation itself mathematical
+   truth or permanent exclusive ownership.
 3. **Add durable objective attestations.** Lean, exact certificate checkers, and
    reproducible computation should become content-addressed evidence with pinned
    environments rather than only ephemeral CI checks.
-4. **Admit and exercise the second knowledge projection.** The neutral
-   research-program builder and comparison UX are implemented, but its
-   problem-scoped projection definition must land through the separate governed
-   one-file admission flow.
+4. **Exercise paid hosted reconciliation.** The hosted planner and no-conflict
+   path are live, but a genuine opposed primary set has not yet generated a paid
+   reconciliation artifact in the repository workflow.
 5. **Improve GitHub identity and contributor UX.** A GitHub App can record stable
    user identity, add richer PR summaries and projection links, and scaffold
    valid contribution directories.
@@ -284,6 +316,12 @@ These are the most important gaps as of this document's reconciliation date:
    the current test target. Required checks, CODEOWNER review, bypass controls,
    and projection-branch restrictions must be configured when organization
    access becomes available.
+
+GitHub currently emits a non-blocking Node 20 deprecation annotation for the
+account-required `actions/checkout@v5` and `actions/setup-python@v5`; GitHub is
+successfully forcing those actions onto Node 24. Keep the v5 pins until the
+Layr-Labs account constraint changes or the pinned actions provide a compatible
+upgrade path.
 
 ## Detailed references
 
