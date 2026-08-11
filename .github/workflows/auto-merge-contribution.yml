@@ -41,11 +41,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          associated="${RUNNER_TEMP}/associated-prs.json"
+          workflow_run="${RUNNER_TEMP}/workflow-run.json"
           gh api \
-            "repos/${REPOSITORY}/actions/runs/${WORKFLOW_RUN_ID}/pull_requests" \
-            > "$associated"
-          mapfile -t pr_numbers < <(jq -r '.[].number' "$associated")
+            "repos/${REPOSITORY}/actions/runs/${WORKFLOW_RUN_ID}" \
+            > "$workflow_run"
+          mapfile -t pr_numbers < <(jq -r '.pull_requests[].number' "$workflow_run")
           if [[ "${#pr_numbers[@]}" -ne 1 ]]; then
             echo "eligible=false" >> "$GITHUB_OUTPUT"
             echo "Expected one associated pull request; found ${#pr_numbers[@]}."
