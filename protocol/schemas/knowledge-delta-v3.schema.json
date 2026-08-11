@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/knowledge-delta-v3.schema.json",
+  "title": "Neutral Facet-Aware Hierarchical Knowledge Delta",
+  "type": "object",
+  "required": ["operations"],
+  "properties": {
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "action", "nodeId", "parentId", "nodeType", "title", "summary",
+          "reportSection", "changeSection", "baseDigest", "baseRevisionId", "subjects", "evidence"
+        ],
+        "properties": {
+          "action": { "enum": ["create", "update", "retire", "restore"] },
+          "nodeId": { "type": "string" },
+          "parentId": { "type": ["string", "null"] },
+          "nodeType": {
+            "enum": ["root", "program", "claim", "lemma", "question", "dispute", "method", "result"]
+          },
+          "title": { "type": "string", "minLength": 1 },
+          "summary": { "type": "string", "minLength": 1 },
+          "reportSection": { "type": "string", "minLength": 1 },
+          "changeSection": { "type": "string", "minLength": 1 },
+          "baseDigest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+          "baseRevisionId": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["kind", "id"],
+              "properties": {
+                "kind": { "const": "transaction" },
+                "id": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["kind", "id", "digest", "relation"],
+              "properties": {
+                "kind": { "enum": ["transaction", "artifact", "verifier-attestation", "judge-run", "judgment", "conflict"] },
+                "id": { "type": "string" },
+                "digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+                "relation": { "enum": ["supports", "refutes", "qualifies", "context", "formalizes", "supersedes"] }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

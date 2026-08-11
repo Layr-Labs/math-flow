@@ -15,6 +15,9 @@ from .repository import sha256_json, validate_slug
 
 
 DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
+FAILURE_INITIAL_RETRY_SECONDS = 300
+FAILURE_MAX_RETRY_SECONDS = 21_600
+MAX_AUTOMATIC_FAILURES = 5
 
 
 def _scheduler_locked(function):
@@ -88,6 +91,246 @@ def lane_id(
     return f"sha256:{sha256_json(identity)}"
 
 
+def _validated_input_dependencies(
+    judgment_ids: list[str],
+    conflict_ids: list[str],
+    conflict_dependencies: dict[str, list[str]] | None,
+    reconciliation_dependencies: dict[str, dict[str, object]] | None,
+) -> tuple[dict[str, set[str]], dict[str, tuple[str, set[str]]]]:
+    judgments = set(judgment_ids)
+    conflicts = set(conflict_ids)
+    if len(judgments) != len(judgment_ids):
+        raise MathFlowError("knowledge trigger contains duplicate judgments")
+    if len(conflicts) != len(conflict_ids):
+        raise MathFlowError("knowledge trigger contains duplicate conflicts")
+    if conflict_dependencies is None and reconciliation_dependencies is None:
+        return {}, {}
+    if conflict_dependencies is None:
+        raise MathFlowError(
+            "reconciliation dependencies require conflict dependency records"
+        )
+    if set(conflict_dependencies) != conflicts:
+        raise MathFlowError(
+            "conflict dependency records do not match the triggered conflicts"
+        )
+
+    validated_conflicts: dict[str, set[str]] = {}
+    for conflict_id, input_ids in conflict_dependencies.items():
+        _digest(conflict_id, "conflict dependency ID")
+        if (
+            not isinstance(input_ids, list)
+            or len(input_ids) < 2
+            or len(input_ids) != len(set(input_ids))
+        ):
+            raise MathFlowError(
+                f"conflict dependency must name distinct primary judgments: {conflict_id}"
+            )
+        inputs = {_digest(item, "conflict dependency judgment ID") for item in input_ids}
+        if not inputs <= judgments:
+            missing = sorted(inputs - judgments)[0]
+            raise MathFlowError(
+                f"conflict dependency judgment is absent from the trigger: {missing}"
+            )
+        validated_conflicts[conflict_id] = inputs
+
+    validated_reconciliations: dict[str, tuple[str, set[str]]] = {}
+    for reconciliation_id, dependency in (reconciliation_dependencies or {}).items():
+        _digest(reconciliation_id, "reconciliation judgment ID")
+        if reconciliation_id not in judgments:
+            raise MathFlowError(
+                "reconciliation dependency judgment is absent from the trigger: "
+                f"{reconciliation_id}"
+            )
+        if not isinstance(dependency, dict) or set(dependency) != {
+            "conflictId",
+            "inputJudgmentIds",
+        }:
+            raise MathFlowError(
+                f"reconciliation dependency is invalid: {reconciliation_id}"
+            )
+        conflict_id = _digest(
+            dependency.get("conflictId"), "reconciliation conflict ID"
+        )
+        raw_inputs = dependency.get("inputJudgmentIds")
+        if (
+            not isinstance(raw_inputs, list)
+            or len(raw_inputs) != len(set(raw_inputs))
+        ):
+            raise MathFlowError(
+                f"reconciliation dependency inputs are invalid: {reconciliation_id}"
+            )
+        inputs = {
+            _digest(item, "reconciliation input judgment ID") for item in raw_inputs
+        }
+        if conflict_id not in validated_conflicts:
+            raise MathFlowError(
+                f"reconciliation dependency conflict is absent from the trigger: {conflict_id}"
+            )
+        if inputs != validated_conflicts[conflict_id]:
+            raise MathFlowError(
+                "reconciliation dependency inputs do not match its conflict: "
+                f"{reconciliation_id}"
+            )
+        validated_reconciliations[reconciliation_id] = (conflict_id, inputs)
+    return validated_conflicts, validated_reconciliations
+
+
+def _lane_input_dependencies(
+    lane: dict[str, object],
+) -> tuple[dict[str, set[str]], dict[str, tuple[str, set[str]]]]:
+    raw_conflicts = lane.get("conflictDependencies")
+    raw_reconciliations = lane.get("reconciliationDependencies")
+    if raw_conflicts is None and raw_reconciliations is None:
+        return {}, {}
+    if not isinstance(raw_conflicts, dict) or not isinstance(
+        raw_reconciliations, dict
+    ):
+        raise MathFlowError("knowledge-build lane has invalid dependency records")
+    judgments = lane.get("observedJudgmentIds")
+    conflicts = lane.get("observedConflictIds")
+    if not isinstance(judgments, list) or not isinstance(conflicts, list):
+        raise MathFlowError("knowledge-build lane has invalid observed inputs")
+    if not set(raw_conflicts) <= set(conflicts):
+        raise MathFlowError(
+            "knowledge-build lane has a dependency for an unobserved conflict"
+        )
+    return _validated_input_dependencies(
+        judgments,
+        list(raw_conflicts),
+        raw_conflicts,
+        raw_reconciliations,
+    )
+
+
+def _persist_input_dependencies(
+    lane: dict[str, object],
+    conflicts: dict[str, set[str]],
+    reconciliations: dict[str, tuple[str, set[str]]],
+    received: bool,
+) -> None:
+    if not received:
+        return
+    stored_conflicts, stored_reconciliations = _lane_input_dependencies(lane)
+    for conflict_id, input_ids in conflicts.items():
+        existing = stored_conflicts.get(conflict_id)
+        if existing is not None and existing != input_ids:
+            raise MathFlowError(
+                "conflict dependency changed for content-addressed ID: "
+                f"{conflict_id}"
+            )
+        stored_conflicts[conflict_id] = set(input_ids)
+    for reconciliation_id, dependency in reconciliations.items():
+        existing = stored_reconciliations.get(reconciliation_id)
+        if existing is not None and existing != dependency:
+            raise MathFlowError(
+                "reconciliation dependency changed for content-addressed ID: "
+                f"{reconciliation_id}"
+            )
+        conflict_id, input_ids = dependency
+        stored_reconciliations[reconciliation_id] = (
+            conflict_id,
+            set(input_ids),
+        )
+    lane["conflictDependencies"] = {
+        conflict_id: sorted(input_ids)
+        for conflict_id, input_ids in sorted(stored_conflicts.items())
+    }
+    lane["reconciliationDependencies"] = {
+        reconciliation_id: {
+            "conflictId": conflict_id,
+            "inputJudgmentIds": sorted(input_ids),
+        }
+        for reconciliation_id, (conflict_id, input_ids) in sorted(
+            stored_reconciliations.items()
+        )
+    }
+
+
+def _pending_dependency_components(
+    lane: dict[str, object],
+    pending_judgments: list[str],
+    pending_conflicts: list[str],
+) -> list[tuple[set[tuple[str, str]], bool]]:
+    conflict_dependencies, reconciliation_dependencies = (
+        _lane_input_dependencies(lane)
+    )
+    missing_conflicts = set(pending_conflicts) - set(conflict_dependencies)
+    if missing_conflicts:
+        raise MathFlowError(
+            "pending conflict has no persisted primary-judgment dependencies: "
+            f"{sorted(missing_conflicts)[0]}"
+        )
+    pending_nodes = {
+        *(("judgment", judgment_id) for judgment_id in pending_judgments),
+        *(("conflict", conflict_id) for conflict_id in pending_conflicts),
+    }
+    pending_judgment_set = set(pending_judgments)
+    pending_conflict_set = set(pending_conflicts)
+    for conflict_id in pending_conflicts:
+        missing_inputs = conflict_dependencies[conflict_id] - pending_judgment_set
+        if missing_inputs:
+            raise MathFlowError(
+                "pending conflict is missing a named primary judgment: "
+                f"{sorted(missing_inputs)[0]}"
+            )
+    for reconciliation_id in pending_judgment_set & set(
+        reconciliation_dependencies
+    ):
+        conflict_id, input_ids = reconciliation_dependencies[reconciliation_id]
+        if conflict_id not in pending_conflict_set:
+            raise MathFlowError(
+                "pending reconciliation is missing its named conflict: "
+                f"{conflict_id}"
+            )
+        missing_inputs = input_ids - pending_judgment_set
+        if missing_inputs:
+            raise MathFlowError(
+                "pending reconciliation is missing a named primary judgment: "
+                f"{sorted(missing_inputs)[0]}"
+            )
+    adjacency: dict[tuple[str, str], set[tuple[str, str]]] = {}
+    dependency_nodes: set[tuple[str, str]] = set()
+
+    def connect(left: tuple[str, str], right: tuple[str, str]) -> None:
+        adjacency.setdefault(left, set()).add(right)
+        adjacency.setdefault(right, set()).add(left)
+        dependency_nodes.update((left, right))
+
+    for conflict_id, input_ids in conflict_dependencies.items():
+        conflict_node = ("conflict", conflict_id)
+        for judgment_id in input_ids:
+            connect(conflict_node, ("judgment", judgment_id))
+    for reconciliation_id, (conflict_id, input_ids) in (
+        reconciliation_dependencies.items()
+    ):
+        reconciliation_node = ("judgment", reconciliation_id)
+        conflict_node = ("conflict", conflict_id)
+        connect(reconciliation_node, conflict_node)
+        for judgment_id in input_ids:
+            connect(reconciliation_node, ("judgment", judgment_id))
+
+    remaining = set(pending_nodes)
+    components: list[tuple[set[tuple[str, str]], bool]] = []
+    while remaining:
+        start = min(remaining, key=lambda item: (item[1], item[0]))
+        component: set[tuple[str, str]] = set()
+        frontier = [start]
+        while frontier:
+            node = frontier.pop()
+            if node in component:
+                continue
+            component.add(node)
+            frontier.extend(
+                (adjacency.get(node, set()) & pending_nodes) - component
+            )
+        remaining.difference_update(component)
+        components.append((component, bool(component & dependency_nodes)))
+    return sorted(
+        components,
+        key=lambda item: tuple(sorted(item[0], key=lambda node: (node[1], node[0]))),
+    )
+
+
 @_scheduler_locked
 def record_completed_inputs(
     path: Path,
@@ -98,6 +341,9 @@ def record_completed_inputs(
     minimum_interval_seconds: int,
     now: int,
     projection_spec_digest: str | None = None,
+    conflict_dependencies: dict[str, list[str]] | None = None,
+    reconciliation_dependencies: dict[str, dict[str, object]] | None = None,
+    problem_ledger_digest: str | None = None,
 ) -> dict[str, object]:
     if minimum_interval_seconds < 0:
         raise MathFlowError("minimum knowledge-build interval cannot be negative")
@@ -107,6 +353,14 @@ def record_completed_inputs(
         _digest(judgment_id, "judgment ID")
     for conflict_id in conflict_ids:
         _digest(conflict_id, "conflict ID")
+    if problem_ledger_digest is not None:
+        _digest(problem_ledger_digest, "problem ledger digest")
+    validated_conflicts, validated_reconciliations = _validated_input_dependencies(
+        judgment_ids,
+        conflict_ids,
+        conflict_dependencies,
+        reconciliation_dependencies,
+    )
     state = load_scheduler(path)
     lanes = state["lanes"]
     identifier = lane_id(problem, builder_spec_digest, projection_spec_digest)
@@ -133,10 +387,28 @@ def record_completed_inputs(
         raise MathFlowError("knowledge-build lane projection does not match its existing policy")
     elif lane.get("minimumIntervalSeconds") != minimum_interval_seconds:
         raise MathFlowError("knowledge-build lane interval does not match its existing policy")
+    _persist_input_dependencies(
+        lane,
+        validated_conflicts,
+        validated_reconciliations,
+        conflict_dependencies is not None or reconciliation_dependencies is not None,
+    )
     observed_judgments = set(lane.setdefault("observedJudgmentIds", []))
     observed_conflicts = set(lane.setdefault("observedConflictIds", []))
     new_judgments = set(judgment_ids) - observed_judgments
     new_conflicts = set(conflict_ids) - observed_conflicts
+    prior_failure = lane.get("lastFailure")
+    ledger_changed = (
+        isinstance(prior_failure, dict)
+        and problem_ledger_digest is not None
+        and prior_failure.get("problemLedgerDigest") != problem_ledger_digest
+    )
+    if (
+        new_judgments or new_conflicts or ledger_changed
+    ) and prior_failure is not None:
+        lane.pop("lastFailure", None)
+        if lane.get("activeBuild") is None:
+            lane["nextEligibleAt"] = now
     observed_judgments.update(judgment_ids)
     observed_conflicts.update(conflict_ids)
     lane["observedJudgmentIds"] = sorted(observed_judgments)
@@ -145,6 +417,15 @@ def record_completed_inputs(
     pending_judgments.update(new_judgments)
     pending_conflicts = set(lane["pendingConflictIds"])
     pending_conflicts.update(new_conflicts)
+    for conflict_id in new_conflicts:
+        pending_judgments.update(validated_conflicts.get(conflict_id, set()))
+    for reconciliation_id in new_judgments:
+        dependency = validated_reconciliations.get(reconciliation_id)
+        if dependency is None:
+            continue
+        conflict_id, input_judgment_ids = dependency
+        pending_conflicts.add(conflict_id)
+        pending_judgments.update(input_judgment_ids)
     lane["pendingJudgmentIds"] = sorted(pending_judgments)
     lane["pendingConflictIds"] = sorted(pending_conflicts)
     if (
@@ -185,8 +466,34 @@ def claim_due_build(
         or now < eligible
     ):
         return None
-    selected_judgments = pending[:maximum_judgments]
-    selected_conflicts = list(conflicts)
+    components = _pending_dependency_components(lane, pending, conflicts)
+    for component, dependency_bearing in components:
+        judgment_count = sum(kind == "judgment" for kind, _ in component)
+        if dependency_bearing and judgment_count > maximum_judgments:
+            component_ids = sorted(identifier for _, identifier in component)
+            raise MathFlowError(
+                "knowledge-build dependency component exceeds maximum judgments "
+                f"per build ({judgment_count} > {maximum_judgments}): "
+                f"{component_ids[0]}"
+            )
+
+    selected_nodes: set[tuple[str, str]] = set()
+    remaining_capacity = maximum_judgments
+    for component, _ in components:
+        judgment_count = sum(kind == "judgment" for kind, _ in component)
+        if judgment_count <= remaining_capacity:
+            selected_nodes.update(component)
+            remaining_capacity -= judgment_count
+    selected_judgments = sorted(
+        identifier
+        for kind, identifier in selected_nodes
+        if kind == "judgment"
+    )
+    selected_conflicts = sorted(
+        identifier
+        for kind, identifier in selected_nodes
+        if kind == "conflict"
+    )
     request_core: dict[str, object] = {
         "schemaVersion": 1,
         "laneId": identifier,
@@ -204,8 +511,12 @@ def claim_due_build(
         "buildToken": f"sha256:{sha256_json(request_core)}",
         "claimedAt": now,
     }
-    lane["pendingJudgmentIds"] = pending[len(selected_judgments) :]
-    lane["pendingConflictIds"] = []
+    lane["pendingJudgmentIds"] = sorted(
+        set(pending) - set(selected_judgments)
+    )
+    lane["pendingConflictIds"] = sorted(
+        set(conflicts) - set(selected_conflicts)
+    )
     lane["activeBuild"] = request
     lane["nextEligibleAt"] = None
     _atomic_json(path, state)
@@ -232,6 +543,7 @@ def complete_build(
     lane["latestStateRun"] = state_run_digest
     lane["lastCompletedAt"] = now
     lane["activeBuild"] = None
+    lane.pop("lastFailure", None)
     has_pending = bool(lane["pendingJudgmentIds"] or lane["pendingConflictIds"])
     lane["nextEligibleAt"] = now + int(lane["minimumIntervalSeconds"]) if has_pending else None
     _atomic_json(path, state)
@@ -239,8 +551,18 @@ def complete_build(
 
 
 @_scheduler_locked
-def fail_build(path: Path, identifier: str, build_token: str, now: int) -> dict[str, object]:
+def fail_build(
+    path: Path,
+    identifier: str,
+    build_token: str,
+    now: int,
+    problem_ledger_digest: str | None = None,
+) -> dict[str, object]:
     _digest(build_token, "build token")
+    if now < 0:
+        raise MathFlowError("knowledge build failure time cannot be negative")
+    if problem_ledger_digest is not None:
+        _digest(problem_ledger_digest, "problem ledger digest")
     state = load_scheduler(path)
     lane = state["lanes"].get(identifier)
     if not isinstance(lane, dict):
@@ -255,8 +577,42 @@ def fail_build(path: Path, identifier: str, build_token: str, now: int) -> dict[
         set(lane["pendingConflictIds"]) | set(active["conflictIds"])
     )
     lane["activeBuild"] = None
+    prior = lane.get("lastFailure")
+    consecutive = 1
+    if (
+        isinstance(prior, dict)
+        and prior.get("buildToken") == build_token
+        and prior.get("problemLedgerDigest") == problem_ledger_digest
+    ):
+        prior_failed_at = prior.get("failedAt")
+        if not isinstance(prior_failed_at, int) or now < prior_failed_at:
+            raise MathFlowError("knowledge build failure time precedes its prior failure")
+        prior_count = prior.get("consecutiveFailures")
+        if not isinstance(prior_count, int) or isinstance(prior_count, bool):
+            raise MathFlowError("knowledge build lane has an invalid prior failure")
+        consecutive = prior_count + 1
+    exponent = min(consecutive - 1, 30)
+    retry_delay = min(
+        FAILURE_INITIAL_RETRY_SECONDS * (2**exponent),
+        FAILURE_MAX_RETRY_SECONDS,
+    )
     last = lane["lastCompletedAt"]
-    lane["nextEligibleAt"] = max(now, int(last) + int(lane["minimumIntervalSeconds"])) if last is not None else now
+    retry_not_before = now + retry_delay
+    if last is not None:
+        retry_not_before = max(
+            retry_not_before,
+            int(last) + int(lane["minimumIntervalSeconds"]),
+        )
+    lane["nextEligibleAt"] = retry_not_before
+    lane["lastFailure"] = {
+        "schemaVersion": 1,
+        "laneId": identifier,
+        "buildToken": build_token,
+        "problemLedgerDigest": problem_ledger_digest,
+        "failedAt": now,
+        "consecutiveFailures": consecutive,
+        "retryNotBefore": retry_not_before,
+    }
     _atomic_json(path, state)
     return lane
 

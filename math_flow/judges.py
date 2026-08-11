@@ -22,6 +22,7 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-markdown-judgment-v1",
     "openrouter-markdown-reconciliation-v1",
     "openrouter-knowledge-builder-v1",
+    "openrouter-knowledge-builder-v2",
 }
 SUPPORTED_INPUT_BUILDERS = {
     "ledger-index-v1",
@@ -35,6 +36,7 @@ SUPPORTED_OUTPUT_PROFILES = {
     "math-flow/hierarchical-markdown-v2",
     "math-flow/judgment-markdown-v1",
     "math-flow/knowledge-build-markdown-v1",
+    "math-flow/knowledge-build-markdown-v2",
 }
 SUPPORTED_OUTPUT_ADAPTERS = {
     "flat-json-v1",
@@ -44,8 +46,14 @@ SUPPORTED_OUTPUT_ADAPTERS = {
     "report-extract-findings-v1",
     "report-extract-reconciliation-v1",
     "select-form-extract-revisions-v1",
+    "select-form-extract-knowledge-revisions-v2",
 }
-SUPPORTED_REDUCERS = {None, "hierarchical-delta-v1", "hierarchical-revisions-v2"}
+SUPPORTED_REDUCERS = {
+    None,
+    "hierarchical-delta-v1",
+    "hierarchical-revisions-v2",
+    "hierarchical-knowledge-revisions-v3",
+}
 TEXT_ARTIFACT_SUFFIXES = {
     ".c",
     ".cpp",
@@ -130,6 +138,12 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputAdapter": "select-form-extract-revisions-v1",
             "reducer": "hierarchical-revisions-v2",
         },
+        "openrouter-knowledge-builder-v2": {
+            "inputBuilder": "judgment-batch-v1",
+            "outputProfile": "math-flow/knowledge-build-markdown-v2",
+            "outputAdapter": "select-form-extract-knowledge-revisions-v2",
+            "reducer": "hierarchical-knowledge-revisions-v3",
+        },
     }
     expected_components = hierarchical_components.get(str(spec["implementation"]))
     if expected_components is not None:
@@ -145,6 +159,7 @@ def load_judge_spec(path: Path) -> dict[str, object]:
         "openrouter-markdown-judgment-v1",
         "openrouter-markdown-reconciliation-v1",
         "openrouter-knowledge-builder-v1",
+        "openrouter-knowledge-builder-v2",
     }:
         for field in ("model", "systemPrompt", "rubric", "parameters", "provider"):
             if field not in spec:

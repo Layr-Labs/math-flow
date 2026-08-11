@@ -1,0 +1,88 @@
+name: Wake due knowledge projections
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: math-flow-projection-wakeup
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          ref: main
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Plan eligible serialized knowledge lanes
+        env:
+          GH_TOKEN: "${{ github.token }}"
+        run: |
+          set -euo pipefail
+          scheduler="${RUNNER_TEMP}/scheduler.json"
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          if git ls-remote --exit-code origin refs/heads/projections >/dev/null 2>&1; then
+            git fetch origin refs/heads/projections:refs/remotes/origin/projections
+            git worktree add --detach "$projection_dir" \
+              refs/remotes/origin/projections
+            if [[ -f "$projection_dir/coordination/scheduler.json" ]]; then
+              cp "$projection_dir/coordination/scheduler.json" "$scheduler"
+            else
+              printf '{"schemaVersion":1,"lanes":{}}\n' > "$scheduler"
+            fi
+          else
+            mkdir -p "$projection_dir"
+            printf '{"schemaVersion":1,"lanes":{}}\n' > "$scheduler"
+          fi
+          python -m math_flow due-projection-plan \
+            --scheduler-file "$scheduler" \
+            --projection-dir "$projection_dir" \
+            --head HEAD \
+            --output "${RUNNER_TEMP}/due-projections.json"
+          gh run list \
+            --workflow project-openrouter.yml \
+            --branch main \
+            --commit "$(git rev-parse HEAD)" \
+            --limit 1000 \
+            --json conclusion,databaseId,displayTitle,headSha,status \
+            > "${RUNNER_TEMP}/projection-run-history.json"
+          python -m math_flow filter-projection-plan \
+            --plan "${RUNNER_TEMP}/due-projections.json" \
+            --run-history "${RUNNER_TEMP}/projection-run-history.json" \
+            --output "${RUNNER_TEMP}/filtered-due-projections.json"
+          mv "${RUNNER_TEMP}/filtered-due-projections.json" \
+            "${RUNNER_TEMP}/due-projections.json"
+      - name: Dispatch one recoverable queue per problem
+        env:
+          GH_TOKEN: "${{ github.token }}"
+        run: |
+          set -euo pipefail
+          plan="${RUNNER_TEMP}/due-projections.json"
+          while IFS= read -r queue; do
+            problem="$(jq -r '.problemId' <<< "$queue")"
+            first_projection="$(jq -r '.projections[0].projectionId' <<< "$queue")"
+            remaining="$(jq -c '[.projections[1:][].projectionId]' <<< "$queue")"
+            for attempt in {1..5}; do
+              if gh workflow run project-openrouter.yml \
+                --ref main \
+                -f projection="$first_projection" \
+                -f problem="$problem" \
+                -f remaining_projections="$remaining"; then
+                break
+              fi
+              if [[ "$attempt" -eq 5 ]]; then
+                exit 1
+              fi
+              sleep 2
+            done
+          done < <(jq -c '.problems[]' "$plan")

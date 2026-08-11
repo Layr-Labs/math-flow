@@ -7,9 +7,11 @@ import unittest
 from pathlib import Path
 
 from math_flow.coordination import claim_due_build, record_completed_inputs
+from math_flow.cli import main
 from math_flow.errors import MathFlowError
 from math_flow.formation import validate_build_claim
 from math_flow.governance import (
+    list_active_projections,
     resolve_projection,
     validate_admission_pr,
     validate_projection_registry,
@@ -141,6 +143,48 @@ class GovernanceRepositoryTests(unittest.TestCase):
         self.assertEqual(resolved["primaryJudge"], "protocol/judges/primary.json")
         self.assertEqual(resolved["scheduling"]["judgmentMaxParallel"], 8)
         self.assertRegex(resolved["projectionSpecDigest"], r"^sha256:[0-9a-f]{64}$")
+
+    def test_lists_only_active_projections_allowed_for_problem_deterministically(self) -> None:
+        wildcard = projection_spec("wildcard-v1")
+        restricted = projection_spec("restricted-v1")
+        restricted["allowedProblems"] = ["demo"]
+        disabled = projection_spec("disabled-v1")
+        disabled["status"] = "disabled"
+        elsewhere = projection_spec("elsewhere-v1")
+        elsewhere["allowedProblems"] = ["another-problem"]
+        for spec in [wildcard, restricted, disabled, elsewhere]:
+            write_json(
+                self.root / f"protocol/projections/{spec['id']}.json",
+                spec,
+            )
+        head = self.commit("Add projection matrix")
+
+        first = list_active_projections(self.root, "demo", head)
+        second = list_active_projections(self.root, "demo", head)
+        self.assertEqual(first, second)
+        self.assertEqual(
+            [item["projectionId"] for item in first["projections"]],
+            ["restricted-v1", "wildcard-v1"],
+        )
+
+        output = self.root / "active-projections.json"
+        self.assertEqual(
+            main(
+                [
+                    "--root",
+                    str(self.root),
+                    "list-active-projections",
+                    "--problem",
+                    "demo",
+                    "--head",
+                    head,
+                    "--output",
+                    str(output),
+                ]
+            ),
+            0,
+        )
+        self.assertEqual(json.loads(output.read_text(encoding="utf-8")), first)
 
     def test_projection_cannot_reference_an_arbitrary_path(self) -> None:
         invalid = projection_spec()

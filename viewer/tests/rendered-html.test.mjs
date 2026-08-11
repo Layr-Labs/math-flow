@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
+import { collectProgramContributionIds } from "../app/programContributions.mjs";
 import { createViewerReferenceResolver } from "../app/referenceLinks.mjs";
 import { applyViewerStateToSearch, parseViewerState } from "../app/viewerState.mjs";
 
@@ -35,12 +36,13 @@ test("server-renders a stable loading state before repository data arrives", asy
 });
 
 test("keeps the viewer data-driven with contextual artifact details", async () => {
-  const [page, layout, packageJson, data, viewer] = await Promise.all([
+  const [page, layout, packageJson, data, viewer, styles] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     readFile(new URL("../app/math-flow-data.json", import.meta.url), "utf8"),
     readFile(new URL("../app/KnowledgeViewer.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /math-flow-data\.json/);
@@ -58,6 +60,18 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /the full state remains visible/);
   assert.match(viewer, /markdown-reference/);
   assert.match(viewer, /createViewerReferenceResolver/);
+  assert.match(viewer, /currentRevision \?\? node\.currentAdjudication/);
+  assert.match(viewer, /Knowledge revision lineage/);
+  assert.match(viewer, /Changed knowledge facets/);
+  assert.match(viewer, /Change rationale/);
+  assert.match(viewer, /inline\(revision\.changeRationale, referenceActions\)/);
+  assert.match(viewer, /revision\.changeRef\.section/);
+  assert.match(viewer, /Related contributions/);
+  assert.match(viewer, /collectProgramContributionIds/);
+  assert.match(styles, /\.action-create/);
+  assert.match(styles, /\.action-update/);
+  assert.match(styles, /\.action-retire/);
+  assert.match(styles, /\.action-restore/);
 
   const parsed = JSON.parse(data);
   assert.equal(parsed.runs.length, 3);
@@ -73,6 +87,48 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
     throw error;
   });
   assert.deepEqual(previewAssets, []);
+});
+
+test("derives related contributions from every node in a program subtree", () => {
+  const nodes = {
+    root: { id: "root", parentId: null, type: "root", subjects: [], evidence: [] },
+    program: {
+      id: "program",
+      parentId: "root",
+      type: "program",
+      subjects: [{ kind: "transaction", id: "tx-program" }],
+      evidence: [],
+    },
+    "program/method": {
+      id: "program/method",
+      parentId: "program",
+      type: "method",
+      subjects: [{ kind: "transaction", id: "tx-method" }],
+      evidence: [{ kind: "transaction", id: "tx-shared" }],
+    },
+    "program/method/claim": {
+      id: "program/method/claim",
+      parentId: "program/method",
+      type: "claim",
+      subjects: [{ kind: "transaction", id: "tx-shared" }],
+      evidence: [{ kind: "transaction", id: "tx-claim" }],
+    },
+    "other-program": {
+      id: "other-program",
+      parentId: "root",
+      type: "program",
+      subjects: [{ kind: "transaction", id: "tx-other" }],
+      evidence: [],
+    },
+  };
+
+  assert.deepEqual(collectProgramContributionIds(nodes, "program"), [
+    "tx-claim",
+    "tx-method",
+    "tx-program",
+    "tx-shared",
+  ]);
+  assert.deepEqual(collectProgramContributionIds(nodes, "program/method"), []);
 });
 
 test("links only unique repository-known transaction and judgment references", () => {

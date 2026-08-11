@@ -9,6 +9,7 @@ from .errors import MathFlowError
 from .repository import (
     _parse_name_status,
     _run_git,
+    list_files_at,
     read_at,
     resolve_commit,
     sha256_json,
@@ -34,9 +35,12 @@ SCHEDULING_FIELDS = {
     "maximumJudgmentsPerBuild",
 }
 EXPECTED_IMPLEMENTATIONS = {
-    "primaryJudge": "openrouter-markdown-judgment-v1",
-    "reconciliationJudge": "openrouter-markdown-reconciliation-v1",
-    "knowledgeBuilder": "openrouter-knowledge-builder-v1",
+    "primaryJudge": {"openrouter-markdown-judgment-v1"},
+    "reconciliationJudge": {"openrouter-markdown-reconciliation-v1"},
+    "knowledgeBuilder": {
+        "openrouter-knowledge-builder-v1",
+        "openrouter-knowledge-builder-v2",
+    },
 }
 LOGIN = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$")
 
@@ -101,12 +105,13 @@ def validate_projection_spec(
         if problem != "*":
             validate_slug(problem, "allowed problem id")
 
-    for field, implementation in EXPECTED_IMPLEMENTATIONS.items():
+    for field, implementations in EXPECTED_IMPLEMENTATIONS.items():
         reference = _projection_reference(value.get(field), field)
         judge = _json_object(read_text(reference), f"judge specification {reference}")
-        if judge.get("implementation") != implementation:
+        if judge.get("implementation") not in implementations:
             raise MathFlowError(
-                f"projection {projection_id!r} {field} must use {implementation}"
+                f"projection {projection_id!r} {field} must use one of "
+                f"{', '.join(sorted(implementations))}"
             )
 
     scheduling = value.get("scheduling")
@@ -223,6 +228,55 @@ def resolve_projection(
         "reconciliationJudge": spec["reconciliationJudge"],
         "knowledgeBuilder": spec["knowledgeBuilder"],
         "scheduling": scheduling,
+    }
+
+
+def list_active_projections(
+    root: Path, problem: str, head: str = "HEAD"
+) -> dict[str, object]:
+    """Resolve every active projection approved for a problem at one commit."""
+
+    root = root.resolve()
+    validate_slug(problem, "problem id")
+    resolved_head = "WORKTREE" if head == "WORKTREE" else resolve_commit(root, head)
+    read_at(root, resolved_head, f"problems/{problem}/problem.md")
+    prefix = "protocol/projections"
+    paths = list_files_at(root, resolved_head, prefix)
+    projection_ids: list[str] = []
+    for path in paths:
+        parts = PurePosixPath(path).parts
+        if len(parts) != 3 or parts[:2] != ("protocol", "projections"):
+            raise MathFlowError(
+                f"projection registry may only contain JSON files: {path}"
+            )
+        filename = parts[2]
+        if not filename.endswith(".json"):
+            raise MathFlowError(
+                f"projection registry may only contain JSON files: {path}"
+            )
+        projection_id = filename[:-5]
+        validate_slug(projection_id, "projection id")
+        value = _json_object(
+            read_at(root, resolved_head, path),
+            f"projection specification {path}",
+        )
+        spec = validate_projection_spec(
+            value,
+            projection_id,
+            lambda relative: read_at(root, resolved_head, relative),
+        )
+        allowed = spec["allowedProblems"]
+        if spec["status"] == "active" and ("*" in allowed or problem in allowed):
+            projection_ids.append(projection_id)
+    projections = [
+        resolve_projection(root, projection_id, problem, resolved_head)
+        for projection_id in sorted(projection_ids)
+    ]
+    return {
+        "schemaVersion": 1,
+        "problemId": problem,
+        "canonicalHead": resolved_head,
+        "projections": projections,
     }
 
 

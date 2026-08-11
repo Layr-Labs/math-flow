@@ -20,6 +20,8 @@ _PUBLISHED_PATHS = (
     "viewer/catalog.json",
 )
 _TRANSIENT_PATHS = {"coordination/scheduler.json.lock"}
+_IMMUTABLE_PATH_PREFIXES = ("objects/", "publication-batches/")
+_MAX_FILES_PER_COMMIT = 100
 _GRAPHQL = """
 mutation PublishProjection(
   $repository: String!
@@ -114,33 +116,44 @@ def _changed_files(worktree: Path) -> tuple[list[dict[str, str]], list[dict[str,
     deletions.sort(key=lambda item: item["path"])
     if not additions and not deletions:
         raise MathFlowError("projection publication has no file changes")
-    if len(additions) + len(deletions) > 100:
-        raise MathFlowError("projection publication exceeds GitHub's 100-file commit limit")
     return additions, deletions
 
 
-def publish_github_projection(
-    projection_dir: Path,
+def _is_immutable_addition(path: str) -> bool:
+    return path.startswith(_IMMUTABLE_PATH_PREFIXES)
+
+
+def _publication_plan(
+    additions: list[dict[str, str]],
+    deletions: list[dict[str, str]],
+) -> list[tuple[str, list[dict[str, str]], list[dict[str, str]]]]:
+    immutable = [item for item in additions if _is_immutable_addition(item["path"])]
+    mutable = [item for item in additions if not _is_immutable_addition(item["path"])]
+    if len(mutable) + len(deletions) > _MAX_FILES_PER_COMMIT:
+        raise MathFlowError(
+            "projection mutable metadata exceeds GitHub's 100-file commit limit"
+        )
+
+    plan: list[tuple[str, list[dict[str, str]], list[dict[str, str]]]] = []
+    for start in range(0, len(immutable), _MAX_FILES_PER_COMMIT):
+        plan.append(
+            ("immutable", immutable[start : start + _MAX_FILES_PER_COMMIT], [])
+        )
+    if mutable or deletions:
+        plan.append(("metadata", mutable, deletions))
+    return plan
+
+
+def _publish_commit(
+    endpoint: str,
     repository: str,
     branch: str,
+    expected_head: str,
     message: str,
     token: str,
-    *,
-    endpoint: str = "https://api.github.com/graphql",
-) -> dict[str, object]:
-    if not projection_dir.is_dir():
-        raise MathFlowError(f"projection worktree does not exist: {projection_dir}")
-    if not _REPOSITORY_RE.fullmatch(repository):
-        raise MathFlowError("repository must be an owner/name GitHub slug")
-    if not branch or branch.startswith("-") or ".." in branch:
-        raise MathFlowError("projection branch name is invalid")
-    if not message.strip():
-        raise MathFlowError("projection commit message must not be empty")
-    if not token.strip():
-        raise MathFlowError("GITHUB_TOKEN is required for projection publication")
-
-    expected_head = _git(projection_dir, "rev-parse", "HEAD")
-    additions, deletions = _changed_files(projection_dir)
+    additions: list[dict[str, str]],
+    deletions: list[dict[str, str]],
+) -> tuple[dict[str, object], dict[str, object]]:
     payload = {
         "query": _GRAPHQL,
         "variables": {
@@ -168,10 +181,13 @@ def publish_github_projection(
         with urllib.request.urlopen(request, timeout=60) as response:
             response_body = response.read().decode("utf-8")
     except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")
-        raise MathFlowError(f"GitHub projection publication failed: HTTP {exc.code}: {detail}") from exc
+        detail = exc.read().decode("utf-8", errors="replace").replace(token, "[REDACTED]")
+        raise MathFlowError(
+            f"GitHub projection publication failed: HTTP {exc.code}: {detail}"
+        ) from exc
     except urllib.error.URLError as exc:
-        raise MathFlowError(f"GitHub projection publication failed: {exc.reason}") from exc
+        reason = str(exc.reason).replace(token, "[REDACTED]")
+        raise MathFlowError(f"GitHub projection publication failed: {reason}") from exc
 
     try:
         response_value = json.loads(response_body)
@@ -180,7 +196,7 @@ def publish_github_projection(
     errors = response_value.get("errors") if isinstance(response_value, dict) else None
     if errors:
         messages = [
-            str(error.get("message", "unknown GraphQL error"))
+            str(error.get("message", "unknown GraphQL error")).replace(token, "[REDACTED]")
             for error in errors
             if isinstance(error, dict)
         ]
@@ -194,22 +210,85 @@ def publish_github_projection(
         raise MathFlowError("GitHub projection publication response omitted commit metadata") from exc
     if not isinstance(commit.get("oid"), str) or not isinstance(commit.get("url"), str):
         raise MathFlowError("GitHub projection publication response contained an invalid commit")
-    if not isinstance(signature, dict) or not signature.get("isValid") or not signature.get(
-        "wasSignedByGitHub"
+    if (
+        not isinstance(signature, dict)
+        or signature.get("isValid") is not True
+        or signature.get("wasSignedByGitHub") is not True
     ):
         raise MathFlowError("GitHub did not return a valid GitHub-signed projection commit")
+    signer = signature.get("signer")
+    verified_signature: dict[str, object] = {
+        "isValid": True,
+        "wasSignedByGitHub": True,
+        "signer": signer.get("login") if isinstance(signer, dict) else None,
+        "state": signature.get("state"),
+    }
+    return commit, verified_signature
+
+
+def publish_github_projection(
+    projection_dir: Path,
+    repository: str,
+    branch: str,
+    message: str,
+    token: str,
+    *,
+    endpoint: str = "https://api.github.com/graphql",
+) -> dict[str, object]:
+    if not projection_dir.is_dir():
+        raise MathFlowError(f"projection worktree does not exist: {projection_dir}")
+    if not _REPOSITORY_RE.fullmatch(repository):
+        raise MathFlowError("repository must be an owner/name GitHub slug")
+    if not branch or branch.startswith("-") or ".." in branch:
+        raise MathFlowError("projection branch name is invalid")
+    if not message.strip():
+        raise MathFlowError("projection commit message must not be empty")
+    if not token.strip():
+        raise MathFlowError("GITHUB_TOKEN is required for projection publication")
+
+    initial_head = _git(projection_dir, "rev-parse", "HEAD")
+    additions, deletions = _changed_files(projection_dir)
+    plan = _publication_plan(additions, deletions)
+    expected_head = initial_head
+    commits: list[dict[str, object]] = []
+    for phase, commit_additions, commit_deletions in plan:
+        commit, signature = _publish_commit(
+            endpoint,
+            repository,
+            branch,
+            expected_head,
+            message,
+            token,
+            commit_additions,
+            commit_deletions,
+        )
+        commits.append(
+            {
+                "phase": phase,
+                "previousHead": expected_head,
+                "commit": commit["oid"],
+                "url": commit["url"],
+                "filesAddedOrUpdated": len(commit_additions),
+                "filesDeleted": len(commit_deletions),
+                "signature": signature,
+            }
+        )
+        expected_head = commit["oid"]
+
+    final_commit = commits[-1]
     return {
         "repository": repository,
         "branch": branch,
-        "previousHead": expected_head,
-        "commit": commit["oid"],
-        "url": commit["url"],
+        "previousHead": initial_head,
+        "commit": final_commit["commit"],
+        "url": final_commit["url"],
         "filesAddedOrUpdated": len(additions),
         "filesDeleted": len(deletions),
-        "signature": {
-            "isValid": True,
-            "wasSignedByGitHub": True,
-            "signer": (signature.get("signer") or {}).get("login"),
-            "state": signature.get("state"),
-        },
+        "signature": final_commit["signature"],
+        "commitCount": len(commits),
+        "immutableCommitCount": sum(item["phase"] == "immutable" for item in commits),
+        "metadataCommit": next(
+            (item["commit"] for item in commits if item["phase"] == "metadata"), None
+        ),
+        "commits": commits,
     }

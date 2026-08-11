@@ -129,7 +129,7 @@ automatic squash merge to main
 | Conflict detection and reconciliation commands | Implemented locally/CLI; not scheduled by the hosted projection workflow | `math_flow/judgments.py` |
 | Coalescing, leased formation lanes | Implemented | `math_flow/coordination.py` |
 | Holistic hierarchical state and revisions | Implemented | `math_flow/formation.py`, `math_flow/knowledge.py` |
-| Content-addressed projection publisher | Implemented | `math_flow/publisher.py`, `math_flow/github_projection.py` |
+| Content-addressed projection publisher | Implemented, including optimistic cross-problem merge/retry and bounded GitHub commits | `math_flow/coordination.py`, `math_flow/projection_queue.py`, `math_flow/github_projection.py` |
 | Repository-backed viewer | Implemented and deployed through ChatGPT Sites | `viewer/` |
 | Non-UI agent context command | Implemented | `math_flow/context.py` |
 | Solver-facing repository skill | Implemented | `.agents/skills/math-flow-solver/` |
@@ -162,7 +162,15 @@ The ordinary solver path is fully automatic:
 5. OpenRouter coverage planning fans out one judgment for each transaction not
    covered by the active judge-spec digest.
 6. Completed judgments are claimed into one serialized knowledge build, then
-   published with the updated scheduler, indexes, and viewer catalog.
+   published with the updated scheduler, indexes, and viewer catalog. Published
+   judgments are reused by later knowledge projections using the same judge.
+7. Cross-problem publications three-way merge disjoint scheduler lanes against
+   the latest orphan-branch head and retry expected-head races. A scheduled
+   wake-up pass redispatches due coalesced lanes every five minutes. Formation
+   failures publish their claim rollback and an exponential retry marker;
+   automatic retry stops after five failures on one problem ledger. Same-head
+   workflow history applies the same cap to failures before formation begins,
+   while leaving unrelated projections eligible.
 
 The explicit dispatch in step 4 is intentional. A merge made with the workflow's
 `GITHUB_TOKEN` does not normally cause a second workflow through a `push` event.
@@ -251,18 +259,20 @@ These are the most important gaps as of this document's reconciliation date:
 1. **Schedule reconciliation.** The registry and CLI support it, but the hosted
    workflow does not yet detect opposed published judgments, fan out conflict
    adjudications, or feed their outcomes into formation.
-2. **Harden multi-problem publication.** Knowledge lanes serialize per problem
-   and projection, while every result publishes to one Git ref. Concurrent
-   cross-problem publications can lose the GitHub expected-head race and need a
-   safe rebase/retry or a dedicated publication queue.
-3. **Make formation cadence operational.** The scheduler supports a minimum
-   interval, but the example registry uses zero during testing. Add delayed
-   wake-up/coalescing semantics before high-volume solver access.
+2. **Add typed projection dependencies.** Judgment reuse now decouples a
+   knowledge profile from its primary judge, but credit and other overlays need
+   governed, typed dependencies on published projection artifacts.
+3. **Add reservations and credit overlays.** Reservations should remain
+   canonical participant transactions; a later credit projection can consume
+   them together with judgment and knowledge dependencies without contaminating
+   mathematical assessment.
 4. **Add durable objective attestations.** Lean, exact certificate checkers, and
    reproducible computation should become content-addressed evidence with pinned
    environments rather than only ephemeral CI checks.
-5. **Add a second logical judge projection and comparison UX.** Pluralism is a
-   protocol capability but has not yet been exercised as a product workflow.
+5. **Admit and exercise the second knowledge projection.** The neutral
+   research-program builder and comparison UX are implemented, but its
+   problem-scoped projection definition must land through the separate governed
+   one-file admission flow.
 6. **Improve GitHub identity and contributor UX.** A GitHub App can record stable
    user identity, add richer PR summaries and projection links, and scaffold
    valid contribution directories.

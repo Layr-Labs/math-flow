@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from math_flow.errors import MathFlowError
+from math_flow.cli import main
 from math_flow.artifacts import verify_bundle
 from math_flow.coordination import (
     claim_due_build,
@@ -26,7 +27,9 @@ from math_flow.judges import load_judge_spec, project, render_request
 from math_flow.judgments import (
     detect_conflicts,
     load_judgment_bundle,
+    plan_primary_judgment_inputs,
     plan_primary_judgment_coverage,
+    plan_reconciliation_inputs,
     run_primary_judgment_bundle,
     run_reconciliation_judgment_bundle,
     verify_primary_judgment_artifacts,
@@ -471,7 +474,7 @@ class GitProtocolTests(unittest.TestCase):
             self.root,
             "demo",
             judge,
-            refuting_head,
+            supporting_head,
             [supporting_head],
             supporting_bundle,
             transport=transport_for(supporting_head, "supports"),
@@ -491,6 +494,67 @@ class GitProtocolTests(unittest.TestCase):
         self.assertNotEqual(supporting["judgmentId"], refuting["judgmentId"])
         self.assertEqual(
             [item["id"] for item in refuting["subjects"]], [refuting_head]
+        )
+
+        reusable_projection = self.root / "reusable-projection"
+        publish_batch(reusable_projection, [supporting_bundle])
+        input_plan = plan_primary_judgment_inputs(
+            self.root,
+            reusable_projection,
+            "demo",
+            judge,
+            refuting_head,
+            [refuting_bundle],
+            [refuting_head],
+        )
+        self.assertEqual(
+            [item["judgmentId"] for item in input_plan["publishedBundles"]],
+            [supporting["judgmentId"]],
+        )
+        self.assertEqual(
+            [item["judgmentId"] for item in input_plan["newBundles"]],
+            [refuting["judgmentId"]],
+        )
+        self.assertEqual(
+            input_plan["coveredSubjectTransactionIds"],
+            sorted([supporting_head, refuting_head]),
+        )
+
+        publish_batch(reusable_projection, [refuting_bundle])
+        inherited_plan = plan_primary_judgment_inputs(
+            self.root,
+            reusable_projection,
+            "demo",
+            judge,
+            refuting_head,
+            [],
+            [],
+        )
+        self.assertEqual(len(inherited_plan["publishedBundles"]), 2)
+        self.assertEqual(inherited_plan["newBundles"], [])
+        input_plan_path = self.root / "judgment-input-plan.json"
+        self.assertEqual(
+            main(
+                [
+                    "--root",
+                    str(self.root),
+                    "judgment-input-plan",
+                    "--problem",
+                    "demo",
+                    "--judge",
+                    str(judge),
+                    "--head",
+                    refuting_head,
+                    "--projection-dir",
+                    str(reusable_projection),
+                    "--output",
+                    str(input_plan_path),
+                ]
+            ),
+            0,
+        )
+        self.assertEqual(
+            json.loads(input_plan_path.read_text(encoding="utf-8")), inherited_plan
         )
 
         conflicts = detect_conflicts([supporting_bundle, refuting_bundle])
@@ -569,11 +633,134 @@ class GitProtocolTests(unittest.TestCase):
             {supporting["judgmentId"], refuting["judgmentId"]},
         )
 
+        reconciliation_judge = (
+            Path(__file__).parents[1]
+            / "protocol/judges/openrouter-markdown-reconciliation-v1.json"
+        )
+        missing_reconciliation = plan_reconciliation_inputs(
+            self.root,
+            reusable_projection,
+            "demo",
+            judge,
+            reconciliation_judge,
+            refuting_head,
+            [supporting_bundle, refuting_bundle],
+        )
+        self.assertEqual(
+            [item["conflictId"] for item in missing_reconciliation["missingConflicts"]],
+            [conflicts[0]["conflictId"]],
+        )
+        self.assertEqual(missing_reconciliation["publishedBundles"], [])
+        complete_reconciliation = plan_reconciliation_inputs(
+            self.root,
+            reusable_projection,
+            "demo",
+            judge,
+            reconciliation_judge,
+            refuting_head,
+            [supporting_bundle, refuting_bundle],
+            [reconciliation_bundle],
+            [conflicts[0]["conflictId"]],
+        )
+        self.assertEqual(complete_reconciliation["missingConflicts"], [])
+        self.assertEqual(
+            [item["judgmentId"] for item in complete_reconciliation["newBundles"]],
+            [reconciliation["judgmentId"]],
+        )
+        publish_batch(reusable_projection, [reconciliation_bundle])
+        inherited_reconciliation = plan_reconciliation_inputs(
+            self.root,
+            reusable_projection,
+            "demo",
+            judge,
+            reconciliation_judge,
+            refuting_head,
+            [supporting_bundle, refuting_bundle],
+        )
+        self.assertEqual(inherited_reconciliation["missingConflicts"], [])
+        self.assertEqual(len(inherited_reconciliation["publishedBundles"]), 1)
+        reconciliation_plan_path = self.root / "reconciliation-plan.json"
+        self.assertEqual(
+            main(
+                [
+                    "--root",
+                    str(self.root),
+                    "reconciliation-plan",
+                    "--problem",
+                    "demo",
+                    "--primary-judge",
+                    str(judge),
+                    "--reconciliation-judge",
+                    str(reconciliation_judge),
+                    "--head",
+                    refuting_head,
+                    "--projection-dir",
+                    str(reusable_projection),
+                    "--primary-judgment-dir",
+                    str(supporting_bundle),
+                    "--primary-judgment-dir",
+                    str(refuting_bundle),
+                    "--output",
+                    str(reconciliation_plan_path),
+                ]
+            ),
+            0,
+        )
+        self.assertEqual(
+            json.loads(reconciliation_plan_path.read_text(encoding="utf-8")),
+            inherited_reconciliation,
+        )
+
         builder_path = (
             Path(__file__).parents[1]
             / "protocol/judges/openrouter-knowledge-builder-v1.json"
         )
         builder_digest = f"sha256:{sha256_json(load_judge_spec(builder_path))}"
+        unsafe_scheduler = self.root / "coordination/unsafe-scheduler.json"
+        unsafe_lane = record_completed_inputs(
+            unsafe_scheduler,
+            "demo",
+            builder_digest,
+            [supporting["judgmentId"], refuting["judgmentId"]],
+            [],
+            minimum_interval_seconds=0,
+            now=90,
+        )
+        unsafe_claim = claim_due_build(
+            unsafe_scheduler, unsafe_lane["laneId"], 90, 500
+        )
+        with self.assertRaisesRegex(
+            MathFlowError, "opposed primary judgments without their conflict record"
+        ):
+            run_knowledge_build_bundle(
+                self.root,
+                "demo",
+                builder_path,
+                refuting_head,
+                unsafe_claim,
+                [supporting_bundle, refuting_bundle],
+                None,
+                self.root / "unsafe-knowledge-build",
+                transport=lambda _: self.fail("formation called provider before conflict check"),
+            )
+        incomplete_scheduler = self.root / "coordination/incomplete-scheduler.json"
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "conflict dependency must name distinct primary judgments",
+        ):
+            record_completed_inputs(
+                incomplete_scheduler,
+                "demo",
+                builder_digest,
+                [supporting["judgmentId"]],
+                [conflicts[0]["conflictId"]],
+                minimum_interval_seconds=0,
+                now=95,
+                conflict_dependencies={
+                    conflicts[0]["conflictId"]: [supporting["judgmentId"]]
+                },
+                reconciliation_dependencies={},
+            )
         formation_scheduler = self.root / "coordination/formation-scheduler.json"
         formation_lane = record_completed_inputs(
             formation_scheduler,
@@ -587,6 +774,19 @@ class GitProtocolTests(unittest.TestCase):
             [conflicts[0]["conflictId"]],
             minimum_interval_seconds=60,
             now=100,
+            conflict_dependencies={
+                conflicts[0]["conflictId"]: sorted(
+                    [supporting["judgmentId"], refuting["judgmentId"]]
+                )
+            },
+            reconciliation_dependencies={
+                reconciliation["judgmentId"]: {
+                    "conflictId": conflicts[0]["conflictId"],
+                    "inputJudgmentIds": sorted(
+                        [supporting["judgmentId"], refuting["judgmentId"]]
+                    ),
+                }
+            },
         )
         formation_claim = claim_due_build(
             formation_scheduler, formation_lane["laneId"], 100, 500
@@ -810,15 +1010,31 @@ class GitProtocolTests(unittest.TestCase):
         first_build = claimed[0]
         self.assertEqual(first_build["judgmentIds"], [supporting["judgmentId"]])
 
-        record_completed_inputs(
-            scheduler,
-            "demo",
-            scheduler_builder_digest,
-            [refuting["judgmentId"], reconciliation["judgmentId"]],
-            [conflicts[0]["conflictId"]],
-            minimum_interval_seconds=60,
-            now=110,
-        )
+        def trigger_with_dependencies(bundle_dirs: list[Path], now: int) -> None:
+            arguments = [
+                "--root",
+                str(self.root),
+                "knowledge-trigger",
+                "--scheduler-file",
+                str(scheduler),
+                "--problem",
+                "demo",
+                "--builder-digest",
+                scheduler_builder_digest,
+                "--minimum-interval",
+                "60",
+                "--now",
+                str(now),
+                "--conflicts",
+                str(conflicts_path),
+                "--output",
+                str(self.root / "knowledge-trigger.json"),
+            ]
+            for bundle_dir in bundle_dirs:
+                arguments.extend(["--judgment-dir", str(bundle_dir)])
+            self.assertEqual(main(arguments), 0)
+
+        trigger_with_dependencies([supporting_bundle, refuting_bundle], 110)
         complete_build(
             scheduler,
             first_lane["laneId"],
@@ -830,34 +1046,54 @@ class GitProtocolTests(unittest.TestCase):
         second_build = claim_due_build(scheduler, first_lane["laneId"], 180, 500)
         self.assertEqual(
             second_build["judgmentIds"],
-            sorted([refuting["judgmentId"], reconciliation["judgmentId"]]),
+            sorted([supporting["judgmentId"], refuting["judgmentId"]]),
         )
         self.assertEqual(second_build["conflictIds"], [conflicts[0]["conflictId"]])
-        fail_build(
+        complete_build(
             scheduler,
             first_lane["laneId"],
             second_build["buildToken"],
-            now=180,
+            "sha256:" + "c" * 64,
+            now=190,
         )
-        retried_build = claim_due_build(scheduler, first_lane["laneId"], 180, 500)
-        self.assertEqual(retried_build["buildToken"], second_build["buildToken"])
+        trigger_with_dependencies(
+            [supporting_bundle, refuting_bundle, reconciliation_bundle], 200
+        )
+        self.assertIsNone(claim_due_build(scheduler, first_lane["laneId"], 249, 500))
+        third_build = claim_due_build(scheduler, first_lane["laneId"], 250, 500)
+        self.assertEqual(
+            third_build["judgmentIds"],
+            sorted(
+                [
+                    supporting["judgmentId"],
+                    refuting["judgmentId"],
+                    reconciliation["judgmentId"],
+                ]
+            ),
+        )
+        self.assertEqual(third_build["conflictIds"], [conflicts[0]["conflictId"]])
+        fail_build(
+            scheduler,
+            first_lane["laneId"],
+            third_build["buildToken"],
+            now=250,
+        )
+        self.assertIsNone(
+            claim_due_build(scheduler, first_lane["laneId"], 549, 500)
+        )
+        retried_build = claim_due_build(scheduler, first_lane["laneId"], 550, 500)
+        self.assertEqual(retried_build["buildToken"], third_build["buildToken"])
         complete_build(
             scheduler,
             first_lane["laneId"],
             retried_build["buildToken"],
-            "sha256:" + "c" * 64,
-            now=190,
+            "sha256:" + "d" * 64,
+            now=560,
         )
-        record_completed_inputs(
-            scheduler,
-            "demo",
-            scheduler_builder_digest,
-            [refuting["judgmentId"], reconciliation["judgmentId"]],
-            [conflicts[0]["conflictId"]],
-            minimum_interval_seconds=60,
-            now=200,
+        trigger_with_dependencies(
+            [supporting_bundle, refuting_bundle, reconciliation_bundle], 570
         )
-        self.assertIsNone(claim_due_build(scheduler, first_lane["laneId"], 300, 500))
+        self.assertIsNone(claim_due_build(scheduler, first_lane["laneId"], 700, 500))
 
         projection = self.root / "projection-worktree"
         empty_coverage = plan_primary_judgment_coverage(

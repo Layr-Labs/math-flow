@@ -3,11 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .artifacts import load_manifest, read_verified_artifact, verify_bundle
+from .artifacts import load_manifest, read_verified_artifact, sha256_bytes, verify_bundle
 from .coordination import load_scheduler
 from .errors import MathFlowError
 from .governance import projection_registry_index
-from .knowledge import validate_state_v2
+from .knowledge import validate_state_v2, validate_state_v3
 from .repository import ledger, read_at
 
 
@@ -26,16 +26,36 @@ def _json_artifact(
 def _revision_artifact(
     bundle: Path, manifest: dict[str, object]
 ) -> list[dict[str, object]]:
+    artifacts = manifest.get("artifacts")
+    roles = {
+        str(item.get("role"))
+        for item in artifacts
+        if isinstance(item, dict) and isinstance(item.get("role"), str)
+    } if isinstance(artifacts, list) else set()
+    revision_roles = roles & {"knowledge-revisions", "adjudication-revisions"}
+    if len(revision_roles) != 1:
+        raise MathFlowError("viewer source run must have one revision-history artifact")
+    role = next(iter(revision_roles))
     try:
-        text = read_verified_artifact(bundle, manifest, "adjudication-revisions").decode(
-            "utf-8"
-        )
+        text = read_verified_artifact(bundle, manifest, role).decode("utf-8")
         values = [json.loads(line) for line in text.splitlines() if line.strip()]
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise MathFlowError("viewer revision history is not valid JSON Lines") from exc
     if any(not isinstance(item, dict) for item in values):
         raise MathFlowError("viewer revision history contains a non-object record")
     return values
+
+
+def _validate_revision_state(
+    output_profile: object,
+    state: dict[str, object],
+    revisions: list[dict[str, object]],
+    problem: str,
+) -> None:
+    if output_profile == "math-flow/knowledge-build-markdown-v2":
+        validate_state_v3(state, revisions, problem)
+    else:
+        validate_state_v2(state, revisions, problem)
 
 
 def _report_artifact(
@@ -56,6 +76,73 @@ def _report_artifact(
     if len(matches) != 1 or not isinstance(matches[0].get("digest"), str):
         raise MathFlowError("viewer source run has no unique report digest")
     return report, str(matches[0]["digest"])
+
+
+def _validate_new_revision_report_links(
+    revisions: list[dict[str, object]],
+    start: int,
+    report: str,
+    report_digest: str,
+) -> None:
+    """Bind newly appended neutral revisions to this run's exact report bytes."""
+
+    lines = report.splitlines()
+
+    def exact_section(heading: object, label: str) -> str:
+        matches = [
+            index
+            for index, line in enumerate(lines)
+            if isinstance(heading, str) and line.strip() == heading
+        ]
+        if len(matches) != 1:
+            raise MathFlowError(
+                f"viewer knowledge revision {label} section is missing or ambiguous"
+            )
+        start_line = matches[0]
+        end_line = len(lines)
+        for index in range(start_line + 1, len(lines)):
+            if lines[index].strip().startswith("## "):
+                end_line = index
+                break
+        return "\n".join(lines[start_line:end_line]).strip() + "\n"
+
+    for revision in revisions[start:]:
+        report_ref = revision.get("reportRef")
+        if not isinstance(report_ref, dict) or report_ref.get("digest") != report_digest:
+            raise MathFlowError(
+                "viewer knowledge revision does not reference its run report"
+            )
+        node_id = revision.get("nodeId")
+        heading = report_ref.get("section")
+        if not isinstance(node_id, str) or heading != f"## Node: {node_id}":
+            raise MathFlowError(
+                "viewer knowledge revision report section does not match its node"
+            )
+        section = exact_section(heading, "report")
+        if revision.get("contentDigest") != sha256_bytes(section.encode("utf-8")):
+            raise MathFlowError(
+                "viewer knowledge revision content does not match its report section"
+            )
+        change_ref = revision.get("changeRef")
+        if (
+            not isinstance(change_ref, dict)
+            or change_ref.get("artifact") != "report.md"
+            or change_ref.get("digest") != report_digest
+        ):
+            raise MathFlowError(
+                "viewer knowledge revision does not reference its change report"
+            )
+        change_heading = change_ref.get("section")
+        if change_heading != f"## Change: {node_id}":
+            raise MathFlowError(
+                "viewer knowledge revision change section does not match its node"
+            )
+        change_section = exact_section(change_heading, "change")
+        change_rationale = "\n".join(change_section.splitlines()[1:]).strip()
+        if revision.get("changeRationale") != change_rationale:
+            raise MathFlowError(
+                "viewer knowledge revision rationale does not match its change section"
+            )
 
 
 def _viewer_judgment(bundle: Path, problem: str) -> dict[str, object]:
@@ -137,6 +224,7 @@ def export_viewer_data(
     runs: list[dict[str, object]] = []
     reports: list[dict[str, object]] = []
     previous_manifest_digest: str | None = None
+    previous_output_profile: object = None
     previous_revision_ids: list[str] = []
     previous_nodes: dict[str, object] = {}
     latest_revisions: list[dict[str, object]] = []
@@ -148,19 +236,36 @@ def export_viewer_data(
         if manifest.get("outputProfile") not in {
             "math-flow/hierarchical-markdown-v2",
             "math-flow/knowledge-build-markdown-v1",
+            "math-flow/knowledge-build-markdown-v2",
         }:
             raise MathFlowError(f"viewer run is not revision-aware hierarchical Markdown: {bundle}")
+        if (
+            previous_output_profile is not None
+            and manifest.get("outputProfile") != previous_output_profile
+        ):
+            raise MathFlowError(
+                f"viewer projection chain changes output profile: {bundle}"
+            )
         if previous_manifest_digest is not None and manifest.get("baseRun") != previous_manifest_digest:
             raise MathFlowError(f"viewer judge runs do not form a base-run chain: {bundle}")
 
         state = _json_artifact(bundle, manifest, "knowledge-state")
         revisions = _revision_artifact(bundle, manifest)
-        validate_state_v2(state, revisions, problem)
+        neutral_revisions = (
+            manifest.get("outputProfile") == "math-flow/knowledge-build-markdown-v2"
+        )
+        _validate_revision_state(
+            manifest.get("outputProfile"), state, revisions, problem
+        )
         revision_ids = [str(item["revisionId"]) for item in revisions]
         if revision_ids[: len(previous_revision_ids)] != previous_revision_ids:
             raise MathFlowError(f"viewer judge run rewrites prior revision history: {bundle}")
         added_revision_ids = revision_ids[len(previous_revision_ids) :]
         report, report_digest = _report_artifact(bundle, manifest)
+        if neutral_revisions:
+            _validate_new_revision_report_links(
+                revisions, len(previous_revision_ids), report, report_digest
+            )
         selection = _json_artifact(bundle, manifest, "node-selection")
         normalizations = _json_artifact(bundle, manifest, "adapter-normalizations")
         delta = _json_artifact(bundle, manifest, "knowledge-delta")
@@ -206,10 +311,14 @@ def export_viewer_data(
                 "addedRevisionIds": added_revision_ids,
                 "changedNodeIds": changed_node_ids,
                 "reportDigest": report_digest,
+                "revisionSemantics": (
+                    "neutral-knowledge" if neutral_revisions else "legacy-adjudication"
+                ),
             }
         )
         reports.append({"runId": run_id, "digest": report_digest, "markdown": report})
         previous_manifest_digest = manifest_digest
+        previous_output_profile = manifest.get("outputProfile")
         previous_revision_ids = revision_ids
         previous_nodes = nodes
         latest_revisions = revisions
@@ -366,6 +475,7 @@ def export_viewer_catalog(
         in {
             "math-flow/hierarchical-markdown-v2",
             "math-flow/knowledge-build-markdown-v1",
+            "math-flow/knowledge-build-markdown-v2",
         }
     }
     published_judgments = _projection_judgment_index(published_objects)

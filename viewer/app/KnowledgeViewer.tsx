@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { collectProgramContributionIds } from "./programContributions.mjs";
 import { createViewerReferenceResolver } from "./referenceLinks.mjs";
 import { applyViewerStateToSearch, parseViewerState } from "./viewerState.mjs";
 
@@ -12,10 +13,13 @@ type Ref = {
   relation?: string;
 };
 
-type Adjudication = {
-  adjudicationId: string;
+type RevisionPointer = {
   revisionId: string;
   revisionNumber: number;
+};
+
+type AdjudicationPointer = RevisionPointer & {
+  adjudicationId: string;
 };
 
 type KnowledgeNode = {
@@ -28,21 +32,26 @@ type KnowledgeNode = {
   contentMarkdown: string;
   subjects: Ref[];
   evidence: Ref[];
-  currentAdjudication: Adjudication | null;
+  currentRevision?: RevisionPointer | null;
+  currentAdjudication?: AdjudicationPointer | null;
   reportRef: { digest: string; section: string } | null;
   digest: string;
 };
 
 type Revision = {
   revisionId: string;
-  adjudicationId: string;
+  adjudicationId?: string;
   revisionNumber: number;
   action: string;
   baseRevisionId: string | null;
   nodeId: string;
   subjects: Ref[];
   evidence: Ref[];
-  issuedAtLedgerHead: string;
+  facets?: Array<"topology" | "content" | "lifecycle" | "provenance">;
+  issuedAtLedgerHead?: string;
+  recordedAtLedgerHead?: string;
+  changeRationale?: string;
+  changeRef?: { digest: string; section: string };
   summary: string;
 };
 
@@ -61,6 +70,7 @@ type Run = {
   addedRevisionIds: string[];
   changedNodeIds: string[];
   reportDigest: string;
+  revisionSemantics?: "neutral-knowledge" | "legacy-adjudication";
   runKind?: string;
   inputs?: { judgmentIds?: string[] } | null;
 };
@@ -158,6 +168,12 @@ const short = (value: string | null, size = 7) =>
   value ? value.replace(/^sha256:/, "").slice(0, size) : "genesis";
 
 const label = (value: string) => value.replaceAll("-", " ");
+
+const currentRevision = (node: KnowledgeNode) =>
+  node.currentRevision ?? node.currentAdjudication ?? null;
+
+const revisionLedgerHead = (revision: Revision) =>
+  revision.recordedAtLedgerHead ?? revision.issuedAtLedgerHead ?? null;
 
 type ViewerReference = {
   kind: "transaction" | "judgment";
@@ -477,6 +493,18 @@ export function KnowledgeViewer({
     (item) => item.nodeId === selectedNode.id && runRevisionSet.has(item.revisionId),
   );
   const report = data.reports.find((item) => item.digest === selectedNode.reportRef?.digest);
+  const programContributionIds = useMemo(
+    () => new Set(collectProgramContributionIds(nodes, selectedNode.id)),
+    [nodes, selectedNode.id],
+  );
+  const relatedProgramContributions = useMemo(
+    () => selectedNode.type === "program"
+      ? data.transactions.filter((item) =>
+        item.ordinal <= runLedgerPosition && programContributionIds.has(item.transactionId),
+      )
+      : [],
+    [data.transactions, programContributionIds, runLedgerPosition, selectedNode.type],
+  );
 
   const children = useMemo(() => {
     const result: Record<string, string[]> = {};
@@ -621,7 +649,7 @@ export function KnowledgeViewer({
             <strong>{node.title}</strong>
             <span className="node-summary">{node.summary}</span>
           </span>
-          <span className="revision-number">r{node.currentAdjudication?.revisionNumber ?? 0}</span>
+          <span className="revision-number">r{currentRevision(node)?.revisionNumber ?? 0}</span>
         </button>
         {(children[id] ?? []).map((child) => <TreeNode id={child} depth={depth + 1} key={child} />)}
       </div>
@@ -766,7 +794,7 @@ export function KnowledgeViewer({
               <p className="detail-summary">{selectedNode.summary}</p>
               <div className="provenance-grid">
                 <div><span>Node digest</span><code>{short(selectedNode.digest, 12)}</code></div>
-                <div><span>Current revision</span><strong>r{selectedNode.currentAdjudication?.revisionNumber ?? 0}</strong></div>
+                <div><span>Current revision</span><strong>r{currentRevision(selectedNode)?.revisionNumber ?? 0}</strong></div>
               </div>
               <div className="relation-block">
                 <h3>Subjects</h3>
@@ -774,19 +802,45 @@ export function KnowledgeViewer({
                 <h3>Evidence</h3>
                 <div className="chip-row">{selectedNode.evidence.length ? selectedNode.evidence.map((item) => item.kind === "transaction" ? <button key={`${item.id}-${item.relation}`} onClick={() => openTransaction(item.id)}>{item.relation} · {short(item.id)}</button> : item.kind === "judgment" && referenceResolver.resolve(item.id)?.kind === "judgment" ? <button key={`${item.id}-${item.relation}`} onClick={() => openJudgment(item.id)}>judgment · {short(item.id)}</button> : <span className="reference-chip" key={`${item.id}-${item.relation}`}>{item.kind} · {short(item.id)}</span>) : <span className="muted">No linked evidence</span>}</div>
               </div>
+              {selectedNode.type === "program" && (
+                <section className="program-contributions">
+                  <div className="section-label"><h3>Related contributions</h3><span>{relatedProgramContributions.length}</span></div>
+                  {relatedProgramContributions.map((transaction) => (
+                    <button key={transaction.transactionId} onClick={() => openTransaction(transaction.transactionId)}>
+                      <span className="ordinal">{String(transaction.ordinal).padStart(2, "0")}</span>
+                      <span>
+                        <strong>{label(transaction.contributionId)}</strong>
+                        <small>{transaction.author.displayName} · {short(transaction.transactionId)}</small>
+                      </span>
+                    </button>
+                  ))}
+                  {!relatedProgramContributions.length && <p className="muted">No transaction provenance appears in this program subtree yet.</p>}
+                </section>
+              )}
               <section className="revision-section">
-                <div className="section-label"><h3>Revision lineage</h3><span>{nodeRevisions.length}</span></div>
+                <div className="section-label"><h3>Knowledge revision lineage</h3><span>{nodeRevisions.length}</span></div>
                 {[...nodeRevisions].reverse().map((revision) => (
                   <article className="revision-card" key={revision.revisionId}>
                     <div><span className={`action action-${revision.action}`}>{revision.action}</span><strong>Revision {revision.revisionNumber}</strong><code>{short(revision.revisionId)}</code></div>
-                    <p>{revision.summary}</p>
-                    <small>Issued at ledger {short(revision.issuedAtLedgerHead)}</small>
+                    {!!revision.facets?.length && (
+                      <div className="facet-row" aria-label="Changed knowledge facets">
+                        {revision.facets.map((facet) => <span className={`facet facet-${facet}`} key={facet}>{facet}</span>)}
+                      </div>
+                    )}
+                    {revision.changeRationale ? (
+                      <div className="revision-rationale">
+                        <span>Change rationale</span>
+                        <p>{inline(revision.changeRationale, referenceActions)}</p>
+                        {revision.changeRef && <code>{revision.changeRef.section}</code>}
+                      </div>
+                    ) : <p>{inline(revision.summary, referenceActions)}</p>}
+                    <small>Recorded at ledger {short(revisionLedgerHead(revision))}</small>
                   </article>
                 ))}
-                {!nodeRevisions.length && <p className="muted">Structural node; no adjudication yet.</p>}
+                {!nodeRevisions.length && <p className="muted">Structural node; no knowledge revision yet.</p>}
               </section>
               <details className="node-body" open>
-                <summary>Current mathematical assessment</summary>
+                <summary>{run.revisionSemantics === "neutral-knowledge" ? "Current knowledge" : "Current mathematical assessment"}</summary>
                 <Markdown value={selectedNode.contentMarkdown} actions={referenceActions} />
               </details>
             </>

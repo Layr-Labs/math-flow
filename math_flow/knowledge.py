@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import re
 
 from .errors import MathFlowError
@@ -87,6 +88,36 @@ REVISION_FIELDS = {
     "issuedAtLedgerHead",
     "reportRef",
     "summary",
+    "status",
+}
+
+# Version 3 is an additive, epistemically neutral revision profile.  Unlike the
+# v2 example, it does not describe every knowledge-state edit as an
+# "adjudication".  Facets are reducer output, never model-provided input.
+KNOWLEDGE_REVISION_FACETS = ("topology", "content", "lifecycle", "provenance")
+KNOWLEDGE_REVISION_ACTIONS = {"create", "update", "retire", "restore"}
+V3_OPERATION_FIELDS = (V2_OPERATION_FIELDS - {"adjudicationId"}) | {
+    "changeSection"
+}
+V3_NODE_FIELDS = (V2_NODE_FIELDS - {"currentAdjudication"}) | {"currentRevision"}
+KNOWLEDGE_REVISION_FIELDS = {
+    "revisionId",
+    "revisionNumber",
+    "action",
+    "baseRevisionId",
+    "nodeId",
+    "facets",
+    "parentId",
+    "nodeType",
+    "title",
+    "subjects",
+    "evidence",
+    "recordedAtLedgerHead",
+    "reportRef",
+    "changeRef",
+    "contentDigest",
+    "summary",
+    "changeRationale",
     "status",
 }
 
@@ -721,4 +752,637 @@ def apply_revision_deltas(
             parent_id = nodes[parent_id]["parentId"]
     next_state = _with_state_digest(result)
     validate_state_v2(next_state, history)
+    return next_state, history
+
+
+def _markdown_digest(markdown: str) -> str:
+    return f"sha256:{hashlib.sha256(markdown.encode('utf-8')).hexdigest()}"
+
+
+def _knowledge_revision_id(revision: dict[str, object]) -> str:
+    content = {
+        key: copy.deepcopy(value)
+        for key, value in revision.items()
+        if key != "revisionId"
+    }
+    return f"sha256:{sha256_json(content)}"
+
+
+def _knowledge_revision_facets(
+    prior: dict[str, object] | None,
+    revision: dict[str, object],
+) -> list[str]:
+    """Derive the material facets changed by one knowledge revision.
+
+    `reportRef` and ledger time are audit metadata rather than knowledge-state
+    facets.  The report's actual node section is represented by contentDigest,
+    so moving a node cannot be mislabeled topology-only while changing its text.
+    """
+
+    if prior is None:
+        return list(KNOWLEDGE_REVISION_FACETS)
+    changed = {
+        "topology": any(
+            revision[field] != prior[field] for field in ("parentId", "nodeType")
+        ),
+        "content": any(
+            revision[field] != prior[field]
+            for field in ("title", "summary", "contentDigest")
+        ),
+        "lifecycle": revision["status"] != prior["status"],
+        "provenance": any(
+            revision[field] != prior[field] for field in ("subjects", "evidence")
+        ),
+    }
+    return [facet for facet in KNOWLEDGE_REVISION_FACETS if changed[facet]]
+
+
+def empty_state_v3(problem: str) -> dict[str, object]:
+    """Create a neutral, facet-aware knowledge state with no invented revision."""
+
+    root = _with_node_digest(
+        {
+            "id": "root",
+            "parentId": None,
+            "type": "root",
+            "title": f"Research state for {problem}",
+            "summary": "No research programs have been established yet.",
+            "status": "active",
+            "reportRef": None,
+            "contentMarkdown": "No research programs have been established yet.",
+            "subjects": [],
+            "evidence": [],
+            "currentRevision": None,
+        }
+    )
+    return _with_state_digest(
+        {
+            "schemaVersion": 3,
+            "problemId": problem,
+            "rootId": "root",
+            "nodes": {"root": root},
+        }
+    )
+
+
+def _validate_knowledge_subjects_evidence(revision: dict[str, object]) -> None:
+    subjects = revision.get("subjects")
+    if not isinstance(subjects, list) or any(
+        not isinstance(item, dict)
+        or set(item) != {"kind", "id", "ledgerPosition"}
+        or item.get("kind") != "transaction"
+        or not isinstance(item.get("id"), str)
+        or not isinstance(item.get("ledgerPosition"), int)
+        or isinstance(item.get("ledgerPosition"), bool)
+        or int(item["ledgerPosition"]) < 1
+        for item in subjects
+    ):
+        raise MathFlowError("invalid knowledge revision subjects")
+    if len({str(item["id"]) for item in subjects}) != len(subjects):
+        raise MathFlowError("knowledge revision subjects must not contain duplicates")
+
+    evidence = revision.get("evidence")
+    if not isinstance(evidence, list):
+        raise MathFlowError("invalid knowledge revision evidence")
+    for item in evidence:
+        if (
+            not isinstance(item, dict)
+            or set(item) != {"kind", "id", "digest", "relation"}
+            or item.get("kind") not in REVISION_EVIDENCE_KINDS
+            or item.get("relation") not in REVISION_RELATIONS
+            or not isinstance(item.get("id"), str)
+            or not item["id"]
+        ):
+            raise MathFlowError("invalid knowledge revision evidence")
+        digest = item.get("digest")
+        if item["kind"] == "transaction" and digest is not None:
+            raise MathFlowError(
+                "transaction evidence must use its commit ID, not a second digest"
+            )
+        if item["kind"] != "transaction" and not (
+            isinstance(digest, str)
+            and re.fullmatch(r"sha256:[0-9a-f]{64}", digest)
+        ):
+            raise MathFlowError(
+                "content-addressed evidence must have a SHA-256 digest"
+            )
+
+
+def validate_knowledge_revisions(
+    revisions: object,
+    problem: str | None = None,
+) -> list[dict[str, object]]:
+    """Validate an immutable neutral knowledge-revision history.
+
+    `problem` is accepted for API symmetry with earlier validators; revisions
+    remain portable because their problem identity lives in the enclosing run.
+    """
+
+    del problem
+    if not isinstance(revisions, list):
+        raise MathFlowError("invalid knowledge revision history")
+    latest: dict[str, dict[str, object]] = {}
+    revision_ids: set[str] = set()
+    for raw in revisions:
+        if not isinstance(raw, dict) or set(raw) != KNOWLEDGE_REVISION_FIELDS:
+            raise MathFlowError("invalid knowledge revision record")
+        revision = raw
+        revision_id = revision.get("revisionId")
+        if (
+            revision_id != _knowledge_revision_id(revision)
+            or revision_id in revision_ids
+        ):
+            raise MathFlowError("invalid or duplicate knowledge revision ID")
+        revision_ids.add(str(revision_id))
+
+        node_id = revision.get("nodeId")
+        if not isinstance(node_id, str) or not NODE_ID.fullmatch(node_id):
+            raise MathFlowError("knowledge revision has an invalid node ID")
+        prior = latest.get(node_id)
+        expected_number = 1 if prior is None else int(prior["revisionNumber"]) + 1
+        expected_base = None if prior is None else prior["revisionId"]
+        if (
+            not isinstance(revision.get("revisionNumber"), int)
+            or isinstance(revision.get("revisionNumber"), bool)
+            or revision.get("revisionNumber") != expected_number
+            or revision.get("baseRevisionId") != expected_base
+        ):
+            raise MathFlowError(f"broken knowledge revision chain: {node_id}")
+
+        action = revision.get("action")
+        if action not in KNOWLEDGE_REVISION_ACTIONS:
+            raise MathFlowError(f"invalid knowledge revision action: {action}")
+        if prior is None and action != "create":
+            raise MathFlowError(f"first knowledge revision must create: {node_id}")
+        if prior is not None:
+            if action == "create":
+                raise MathFlowError(f"knowledge node may only be created once: {node_id}")
+            if action in {"update", "retire"} and prior["status"] != "active":
+                raise MathFlowError(f"cannot {action} inactive knowledge node: {node_id}")
+            if action == "restore" and prior["status"] != "retired":
+                raise MathFlowError(f"cannot restore active knowledge node: {node_id}")
+        expected_status = "retired" if action == "retire" else "active"
+        if revision.get("status") != expected_status:
+            raise MathFlowError(
+                f"knowledge revision has inconsistent status: {node_id}"
+            )
+
+        recorded_head = revision.get("recordedAtLedgerHead")
+        if not isinstance(recorded_head, str) or not recorded_head:
+            raise MathFlowError("knowledge revision is missing its ledger head")
+        parent_id = revision.get("parentId")
+        if parent_id is not None and (
+            not isinstance(parent_id, str) or not NODE_ID.fullmatch(parent_id)
+        ):
+            raise MathFlowError("invalid knowledge revision parent")
+        if revision.get("nodeType") not in NODE_TYPES:
+            raise MathFlowError("invalid knowledge revision node type")
+        if not isinstance(revision.get("title"), str) or not revision["title"].strip():
+            raise MathFlowError("knowledge revision title must be non-empty")
+        if not isinstance(revision.get("summary"), str) or not revision["summary"].strip():
+            raise MathFlowError("knowledge revision summary must be non-empty")
+        if (
+            not isinstance(revision.get("changeRationale"), str)
+            or not revision["changeRationale"].strip()
+        ):
+            raise MathFlowError("knowledge revision change rationale must be non-empty")
+        content_digest = revision.get("contentDigest")
+        if not isinstance(content_digest, str) or not re.fullmatch(
+            r"sha256:[0-9a-f]{64}", content_digest
+        ):
+            raise MathFlowError("knowledge revision content digest is invalid")
+        report_ref = revision.get("reportRef")
+        if (
+            not isinstance(report_ref, dict)
+            or set(report_ref) != {"artifact", "digest", "section"}
+            or report_ref.get("artifact") != "report.md"
+            or not isinstance(report_ref.get("digest"), str)
+            or not re.fullmatch(r"sha256:[0-9a-f]{64}", str(report_ref["digest"]))
+            or not isinstance(report_ref.get("section"), str)
+            or not report_ref["section"]
+        ):
+            raise MathFlowError("invalid knowledge revision report reference")
+        change_ref = revision.get("changeRef")
+        if (
+            not isinstance(change_ref, dict)
+            or set(change_ref) != {"artifact", "digest", "section"}
+            or change_ref.get("artifact") != "report.md"
+            or not isinstance(change_ref.get("digest"), str)
+            or not re.fullmatch(r"sha256:[0-9a-f]{64}", str(change_ref["digest"]))
+            or change_ref.get("digest") != report_ref.get("digest")
+            or change_ref.get("section") != f"## Change: {node_id}"
+            or report_ref.get("section") != f"## Node: {node_id}"
+        ):
+            raise MathFlowError("invalid knowledge revision change reference")
+        _validate_knowledge_subjects_evidence(revision)
+
+        expected_facets = _knowledge_revision_facets(prior, revision)
+        if not expected_facets:
+            raise MathFlowError(f"knowledge revision makes no material change: {node_id}")
+        if revision.get("facets") != expected_facets:
+            raise MathFlowError(
+                f"knowledge revision facets do not match changed fields: {node_id}"
+            )
+        latest[node_id] = revision
+    return revisions
+
+
+def validate_state_v3(
+    state: object,
+    revisions: object,
+    problem: str | None = None,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    history = validate_knowledge_revisions(revisions, problem)
+    if not isinstance(state, dict) or state.get("schemaVersion") != 3:
+        raise MathFlowError("invalid neutral hierarchical knowledge state")
+    state_problem = state.get("problemId")
+    if not isinstance(state_problem, str) or not state_problem:
+        raise MathFlowError("neutral knowledge state has an invalid problem ID")
+    if problem is not None and state_problem != problem:
+        raise MathFlowError("base knowledge state belongs to a different problem")
+    nodes = state.get("nodes")
+    if not isinstance(nodes, dict) or "root" not in nodes:
+        raise MathFlowError("hierarchical knowledge state is missing its root node")
+    if state.get("rootId") != "root":
+        raise MathFlowError("hierarchical knowledge state has an invalid root ID")
+    if state.get("stateDigest") != _with_state_digest(state)["stateDigest"]:
+        raise MathFlowError("hierarchical knowledge state digest mismatch")
+
+    latest = {str(item["nodeId"]): item for item in history}
+    represented: set[str] = set()
+    for node_id, node in nodes.items():
+        if (
+            not isinstance(node, dict)
+            or set(node) != V3_NODE_FIELDS
+            or node.get("id") != node_id
+        ):
+            raise MathFlowError(f"invalid neutral knowledge node: {node_id}")
+        if node.get("type") not in NODE_TYPES or node.get("status") not in {
+            "active",
+            "retired",
+        }:
+            raise MathFlowError(f"invalid knowledge node type or status: {node_id}")
+        if not isinstance(node.get("contentMarkdown"), str):
+            raise MathFlowError(f"knowledge node content must be Markdown text: {node_id}")
+        if node.get("digest") != _with_node_digest(node)["digest"]:
+            raise MathFlowError(f"knowledge node digest mismatch: {node_id}")
+
+        current = node.get("currentRevision")
+        if current is None:
+            if node_id != "root":
+                raise MathFlowError(f"knowledge node has no revision: {node_id}")
+            expected_seed = empty_state_v3(state_problem)["nodes"]["root"]
+            if node != expected_seed:
+                raise MathFlowError(
+                    "unrevised root knowledge node does not match the canonical seed"
+                )
+            continue
+        if not isinstance(current, dict) or set(current) != {
+            "revisionId",
+            "revisionNumber",
+        }:
+            raise MathFlowError(f"invalid current knowledge revision pointer: {node_id}")
+        revision = latest.get(str(node_id))
+        if (
+            revision is None
+            or current.get("revisionId") != revision["revisionId"]
+            or current.get("revisionNumber") != revision["revisionNumber"]
+        ):
+            raise MathFlowError(
+                f"knowledge node does not point to its latest revision: {node_id}"
+            )
+        represented.add(str(node_id))
+        if node.get("status") != revision["status"]:
+            raise MathFlowError(f"knowledge node status disagrees with its revision: {node_id}")
+        for field in ("subjects", "evidence", "reportRef", "summary"):
+            if node.get(field) != revision[field]:
+                raise MathFlowError(
+                    f"knowledge node {field} disagrees with its current revision: {node_id}"
+                )
+        if (
+            node.get("parentId") != revision["parentId"]
+            or node.get("type") != revision["nodeType"]
+            or node.get("title") != revision["title"]
+        ):
+            raise MathFlowError(
+                f"knowledge node structure disagrees with its current revision: {node_id}"
+            )
+        if _markdown_digest(str(node["contentMarkdown"])) != revision["contentDigest"]:
+            raise MathFlowError(
+                f"knowledge node content disagrees with its current revision: {node_id}"
+            )
+    if set(latest) != represented:
+        raise MathFlowError("revision history contains an unrepresented knowledge node")
+
+    root = nodes["root"]
+    if root.get("parentId") is not None or root.get("type") != "root":
+        raise MathFlowError("the root knowledge node has invalid topology")
+    for node_id, node in nodes.items():
+        parent_id = node["parentId"]
+        visited = {node_id}
+        while parent_id is not None:
+            if parent_id not in nodes:
+                raise MathFlowError(f"knowledge node has missing parent: {node_id}")
+            if parent_id in visited:
+                raise MathFlowError(f"knowledge hierarchy contains a cycle at: {node_id}")
+            visited.add(parent_id)
+            parent_id = nodes[parent_id]["parentId"]
+    return state, history
+
+
+def state_index_v3(
+    state: dict[str, object],
+    revisions: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    validate_state_v3(state, revisions)
+    return [
+        {
+            "id": node["id"],
+            "parentId": node["parentId"],
+            "type": node["type"],
+            "title": node["title"],
+            "summary": node["summary"],
+            "status": node["status"],
+            "currentRevision": node["currentRevision"],
+            "digest": node["digest"],
+        }
+        for _, node in sorted(state["nodes"].items())
+    ]
+
+
+def selected_nodes_v3(
+    state: dict[str, object],
+    revisions: list[dict[str, object]],
+    node_ids: list[str],
+) -> list[dict[str, object]]:
+    validate_state_v3(state, revisions)
+    nodes = state["nodes"]
+    missing = [node_id for node_id in node_ids if node_id not in nodes]
+    if missing:
+        raise MathFlowError(f"knowledge builder selected an unknown node: {missing[0]}")
+    return [copy.deepcopy(nodes[node_id]) for node_id in node_ids]
+
+
+def _validate_v3_operation(operation: object) -> dict[str, object]:
+    if not isinstance(operation, dict) or set(operation) != V3_OPERATION_FIELDS:
+        raise MathFlowError("knowledge builder returned an invalid revision operation")
+    if operation["action"] not in KNOWLEDGE_REVISION_ACTIONS:
+        raise MathFlowError(f"invalid knowledge revision action: {operation['action']}")
+    node_id = operation["nodeId"]
+    if not isinstance(node_id, str) or not NODE_ID.fullmatch(node_id):
+        raise MathFlowError(f"invalid knowledge node id: {node_id}")
+    if operation["nodeType"] not in NODE_TYPES:
+        raise MathFlowError(f"invalid knowledge node type: {operation['nodeType']}")
+    for field in ("title", "summary", "reportSection", "changeSection"):
+        if not isinstance(operation[field], str) or not operation[field].strip():
+            raise MathFlowError(f"knowledge delta {field} must be non-empty")
+    if operation["reportSection"] != f"## Node: {node_id}":
+        raise MathFlowError(
+            "knowledge operation report heading does not match its stable node ID"
+        )
+    if operation["changeSection"] != f"## Change: {node_id}":
+        raise MathFlowError(
+            "knowledge operation change heading does not match its stable node ID"
+        )
+    parent_id = operation["parentId"]
+    if parent_id is not None and (
+        not isinstance(parent_id, str) or not NODE_ID.fullmatch(parent_id)
+    ):
+        raise MathFlowError(f"invalid parent knowledge node id: {parent_id}")
+    for field in ("baseDigest", "baseRevisionId"):
+        value = operation[field]
+        if value is not None and not (
+            isinstance(value, str) and re.fullmatch(r"sha256:[0-9a-f]{64}", value)
+        ):
+            raise MathFlowError(f"knowledge delta {field} must be null or a SHA-256 digest")
+    subjects = operation["subjects"]
+    if not isinstance(subjects, list) or any(
+        not isinstance(item, dict)
+        or set(item) != {"kind", "id"}
+        or item.get("kind") != "transaction"
+        or not isinstance(item.get("id"), str)
+        for item in subjects
+    ):
+        raise MathFlowError("knowledge subjects must be transaction references")
+    if len({str(item["id"]) for item in subjects}) != len(subjects):
+        raise MathFlowError("knowledge subjects must not contain duplicates")
+    evidence = operation["evidence"]
+    if not isinstance(evidence, list):
+        raise MathFlowError("knowledge evidence must be an array")
+    for item in evidence:
+        if not isinstance(item, dict) or set(item) != {
+            "kind",
+            "id",
+            "digest",
+            "relation",
+        }:
+            raise MathFlowError("invalid knowledge evidence reference")
+        if (
+            item.get("kind") not in REVISION_EVIDENCE_KINDS
+            or item.get("relation") not in REVISION_RELATIONS
+        ):
+            raise MathFlowError("invalid knowledge evidence kind or relation")
+        if not isinstance(item.get("id"), str) or not item["id"]:
+            raise MathFlowError("knowledge evidence ID must be non-empty")
+        digest = item.get("digest")
+        if digest is not None and not (
+            isinstance(digest, str) and re.fullmatch(r"sha256:[0-9a-f]{64}", digest)
+        ):
+            raise MathFlowError("knowledge evidence digest must be null or SHA-256")
+        if item["kind"] != "transaction" and digest is None:
+            raise MathFlowError("non-transaction evidence must have a content digest")
+        if item["kind"] == "transaction" and digest is not None:
+            raise MathFlowError(
+                "transaction evidence must use its commit ID, not a second digest"
+            )
+    return operation
+
+
+def apply_knowledge_revision_deltas(
+    state: dict[str, object],
+    revisions: list[dict[str, object]],
+    selected_node_ids: list[str],
+    operations: list[object],
+    report_digest: str,
+    report_markdown: str,
+    recorded_at_ledger_head: str,
+    transaction_positions: dict[str, int],
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    """Apply full-snapshot operations and derive honest multi-facet revisions."""
+
+    validate_state_v3(state, revisions)
+    if len(selected_node_ids) != len(set(selected_node_ids)):
+        raise MathFlowError("knowledge builder selected duplicate nodes")
+    selected_nodes_v3(state, revisions, selected_node_ids)
+    if not re.fullmatch(r"sha256:[0-9a-f]{64}", report_digest):
+        raise MathFlowError("knowledge report digest must be a SHA-256 digest")
+    if not recorded_at_ledger_head:
+        raise MathFlowError("knowledge revision ledger head must be non-empty")
+
+    result = copy.deepcopy(state)
+    history = copy.deepcopy(revisions)
+    nodes = result["nodes"]
+    initial_node_ids = set(nodes)
+
+    def report_section(heading: str) -> str:
+        lines = report_markdown.splitlines()
+        matches = [
+            index for index, line in enumerate(lines) if line.strip() == heading
+        ]
+        if len(matches) != 1:
+            raise MathFlowError(
+                f"knowledge delta references a missing or ambiguous report heading: {heading}"
+            )
+        start = matches[0]
+        end = len(lines)
+        for index in range(start + 1, len(lines)):
+            if lines[index].strip().startswith("## "):
+                end = index
+                break
+        return "\n".join(lines[start:end]).strip() + "\n"
+
+    for raw_operation in operations:
+        operation = _validate_v3_operation(raw_operation)
+        node_id = str(operation["nodeId"])
+        existing = nodes.get(node_id)
+        current = existing.get("currentRevision") if existing is not None else None
+        action = str(operation["action"])
+        if existing is not None:
+            if node_id not in selected_node_ids:
+                raise MathFlowError(
+                    f"knowledge builder updated a node it did not select: {node_id}"
+                )
+            if action == "create" and current is not None:
+                raise MathFlowError(f"knowledge node may only be created once: {node_id}")
+            if action != "create" and current is None:
+                raise MathFlowError(f"knowledge node has no revision to {action}: {node_id}")
+            if operation["baseDigest"] != existing["digest"]:
+                raise MathFlowError(f"stale knowledge delta for node: {node_id}")
+            expected_revision = None if current is None else current["revisionId"]
+            if operation["baseRevisionId"] != expected_revision:
+                raise MathFlowError(f"stale knowledge revision for node: {node_id}")
+            if action in {"update", "retire"} and existing["status"] != "active":
+                raise MathFlowError(f"cannot {action} inactive knowledge node: {node_id}")
+            if action == "restore" and existing["status"] != "retired":
+                raise MathFlowError(f"cannot restore active knowledge node: {node_id}")
+        else:
+            if action != "create":
+                raise MathFlowError(f"new knowledge node must use create: {node_id}")
+            if operation["baseDigest"] is not None or operation["baseRevisionId"] is not None:
+                raise MathFlowError(
+                    f"new knowledge node must have null base references: {node_id}"
+                )
+
+        subject_ids = [str(item["id"]) for item in operation["subjects"]]
+        unknown_subjects = [
+            value for value in subject_ids if value not in transaction_positions
+        ]
+        if unknown_subjects:
+            raise MathFlowError(
+                f"knowledge subject is outside the ledger: {unknown_subjects[0]}"
+            )
+        subjects = [
+            {
+                "kind": "transaction",
+                "id": value,
+                "ledgerPosition": transaction_positions[value],
+            }
+            for value in subject_ids
+        ]
+        evidence = copy.deepcopy(operation["evidence"])
+        for item in evidence:
+            if item["kind"] == "transaction" and item["id"] not in transaction_positions:
+                raise MathFlowError(
+                    f"knowledge evidence is outside the ledger: {item['id']}"
+                )
+
+        parent_id = operation["parentId"]
+        if node_id == "root":
+            if operation["nodeType"] != "root":
+                raise MathFlowError("the root knowledge node must keep type root")
+            parent_id = None
+            if action == "retire":
+                raise MathFlowError("cannot retire the root knowledge node")
+        elif parent_id not in nodes:
+            raise MathFlowError(
+                f"knowledge node parent must be created first: {parent_id!r} for {node_id}"
+            )
+        elif (
+            existing is None
+            and parent_id in initial_node_ids
+            and parent_id not in selected_node_ids
+        ):
+            raise MathFlowError(
+                f"new knowledge node parent was not selected: {parent_id!r} for {node_id}"
+            )
+
+        status = "retired" if action == "retire" else "active"
+        section_ref = {
+            "artifact": "report.md",
+            "digest": report_digest,
+            "section": operation["reportSection"],
+        }
+        content_markdown = report_section(str(operation["reportSection"]))
+        change_section = str(operation["changeSection"])
+        change_markdown = report_section(change_section)
+        change_rationale = "\n".join(change_markdown.splitlines()[1:]).strip()
+        if not change_rationale:
+            raise MathFlowError(
+                f"knowledge revision change rationale is empty: {node_id}"
+            )
+        change_ref = {
+            "artifact": "report.md",
+            "digest": report_digest,
+            "section": change_section,
+        }
+        revision_number = 1 if current is None else int(current["revisionNumber"]) + 1
+        revision: dict[str, object] = {
+            "revisionNumber": revision_number,
+            "action": action,
+            "baseRevisionId": None if current is None else current["revisionId"],
+            "nodeId": node_id,
+            "facets": [],
+            "parentId": parent_id,
+            "nodeType": operation["nodeType"],
+            "title": operation["title"],
+            "subjects": subjects,
+            "evidence": evidence,
+            "recordedAtLedgerHead": recorded_at_ledger_head,
+            "reportRef": section_ref,
+            "changeRef": change_ref,
+            "contentDigest": _markdown_digest(content_markdown),
+            "summary": operation["summary"],
+            "changeRationale": change_rationale,
+            "status": status,
+        }
+        prior_revision = None
+        if current is not None:
+            prior_revision = next(
+                item for item in reversed(history) if item["revisionId"] == current["revisionId"]
+            )
+        revision["facets"] = _knowledge_revision_facets(prior_revision, revision)
+        if not revision["facets"]:
+            raise MathFlowError(f"knowledge revision makes no material change: {node_id}")
+        revision["revisionId"] = _knowledge_revision_id(revision)
+        history.append(revision)
+        updated = {
+            "id": node_id,
+            "parentId": parent_id,
+            "type": operation["nodeType"],
+            "title": operation["title"],
+            "summary": operation["summary"],
+            "status": status,
+            "reportRef": section_ref,
+            "contentMarkdown": content_markdown,
+            "subjects": subjects,
+            "evidence": evidence,
+            "currentRevision": {
+                "revisionId": revision["revisionId"],
+                "revisionNumber": revision_number,
+            },
+        }
+        nodes[node_id] = _with_node_digest(updated)
+
+    next_state = _with_state_digest(result)
+    validate_state_v3(next_state, history)
     return next_state, history

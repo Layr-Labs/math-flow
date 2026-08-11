@@ -551,6 +551,153 @@ def load_judgment_bundle(bundle_dir: Path) -> tuple[dict[str, object], dict[str,
     return manifest, judgment, manifest_digest
 
 
+def _reusable_judgment_history(
+    root: Path,
+    problem: str,
+    head: str,
+    source: dict[str, object],
+    judgment: dict[str, object],
+) -> bool:
+    """Verify that a historical judgment remains an input to this ledger.
+
+    A judgment's problem-ledger digest intentionally describes the ledger at the
+    time of judgment.  Requiring it to equal the current digest would prevent an
+    append-only ledger from reusing any earlier judgment.  Instead, reconstruct
+    and verify that historical ledger, require it to be an ancestor of the
+    current ledger, and confirm that its problem statement, subjects, and cited
+    transaction evidence still have the same meaning in the current ledger.
+    """
+
+    if judgment.get("problemId") != problem:
+        return False
+    judgment_head = judgment.get("ledgerHead")
+    if not isinstance(judgment_head, str):  # load_judgment_bundle is stricter; defensive here.
+        raise MathFlowError("published judgment has no ledger head")
+    if head == "WORKTREE":
+        return judgment_head == source["ledgerHead"]
+    if not is_ancestor(root, judgment_head, str(source["ledgerHead"])):
+        return False
+
+    historical = load_source(root, problem, judgment_head)
+    if historical["problemLedgerDigest"] != judgment.get("problemLedgerDigest"):
+        raise MathFlowError("published judgment does not match its historical problem ledger")
+    current_statement = read_at(
+        root, str(source["ledgerHead"]), f"problems/{problem}/problem.md"
+    )
+    historical_statement = read_at(
+        root, judgment_head, f"problems/{problem}/problem.md"
+    )
+    if current_statement != historical_statement:
+        return False
+
+    historical_positions = {
+        str(item["transactionId"]): int(item["ordinal"])
+        for item in historical["transactions"]
+    }
+    current_positions = {
+        str(item["transactionId"]): int(item["ordinal"])
+        for item in source["transactions"]
+    }
+    for subject in judgment["subjects"]:
+        subject_id = str(subject["id"])
+        position = subject["ledgerPosition"]
+        if historical_positions.get(subject_id) != position:
+            raise MathFlowError(
+                f"published judgment subject is outside its historical ledger: {subject_id}"
+            )
+        if current_positions.get(subject_id) != position:
+            return False
+    evidence_ids = {
+        str(transaction_id)
+        for finding in judgment["findings"]
+        for transaction_id in finding["evidenceTransactionIds"]
+    }
+    if not evidence_ids <= historical_positions.keys():
+        raise MathFlowError("published judgment cites evidence outside its historical ledger")
+    return evidence_ids <= current_positions.keys()
+
+
+def _published_primary_judgment_bundles(
+    root: Path,
+    projection_root: Path,
+    problem: str,
+    judge_path: Path,
+    head: str,
+) -> tuple[dict[str, object], dict[str, object], list[dict[str, object]]]:
+    """Load verified reusable primary judgments from the published object index."""
+
+    root = root.resolve()
+    projection_root = projection_root.resolve()
+    spec = load_judge_spec(judge_path)
+    if spec["implementation"] != "openrouter-markdown-judgment-v1":
+        raise MathFlowError("judgment planning requires a primary Markdown judge spec")
+    judge_identity = {"id": spec["id"], "digest": f"sha256:{sha256_json(spec)}"}
+    source = load_source(root, problem, head)
+    index_path = projection_root / "indexes" / "problems" / problem / "runs.json"
+    if not index_path.exists():
+        return source, spec, []
+    try:
+        entries = json.loads(index_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise MathFlowError(f"could not read projection judgment index: {exc}") from exc
+    if not isinstance(entries, list) or any(not isinstance(item, dict) for item in entries):
+        raise MathFlowError("projection judgment index must be an object array")
+
+    by_judgment_id: dict[str, dict[str, object]] = {}
+    for entry in sorted(
+        entries,
+        key=lambda item: (str(item.get("runDigest", "")), str(item.get("path", ""))),
+    ):
+        if entry.get("runKind") != "judgment":
+            continue
+        relative = entry.get("path")
+        expected_digest = entry.get("runDigest")
+        if not isinstance(relative, str) or not isinstance(expected_digest, str):
+            raise MathFlowError("projection judgment index entry is incomplete")
+        target = (projection_root / relative).resolve()
+        try:
+            target.relative_to(projection_root)
+        except ValueError as exc:
+            raise MathFlowError(
+                f"projection judgment path escapes its root: {relative}"
+            ) from exc
+        _, judgment, run_digest = load_judgment_bundle(target)
+        if run_digest != expected_digest:
+            raise MathFlowError(
+                f"projection judgment digest does not match its index: {relative}"
+            )
+        if (
+            judgment.get("judgmentKind") != "primary"
+            or judgment.get("judgeSpec") != judge_identity
+            or not _reusable_judgment_history(root, problem, head, source, judgment)
+        ):
+            continue
+        judgment_id = str(judgment["judgmentId"])
+        candidate = {
+            "source": "published",
+            "path": str(target),
+            "publishedPath": relative,
+            "runDigest": run_digest,
+            "judgmentId": judgment_id,
+            "ledgerHead": judgment["ledgerHead"],
+            "problemLedgerDigest": judgment["problemLedgerDigest"],
+            "subjectTransactionIds": [
+                str(subject["id"]) for subject in judgment["subjects"]
+            ],
+        }
+        existing = by_judgment_id.get(judgment_id)
+        if existing is None or (str(candidate["runDigest"]), str(candidate["path"])) < (
+            str(existing["runDigest"]),
+            str(existing["path"]),
+        ):
+            by_judgment_id[judgment_id] = candidate
+    bundles = sorted(
+        by_judgment_id.values(),
+        key=lambda item: (str(item["judgmentId"]), str(item["runDigest"])),
+    )
+    return source, spec, bundles
+
+
 def plan_primary_judgment_coverage(
     root: Path,
     projection_root: Path,
@@ -562,56 +709,16 @@ def plan_primary_judgment_coverage(
 
     root = root.resolve()
     projection_root = projection_root.resolve()
-    spec = load_judge_spec(judge_path)
-    if spec["implementation"] != "openrouter-markdown-judgment-v1":
-        raise MathFlowError("judgment planning requires a primary Markdown judge spec")
+    source, spec, published_bundles = _published_primary_judgment_bundles(
+        root, projection_root, problem, judge_path, head
+    )
     judge_digest = f"sha256:{sha256_json(spec)}"
-    source = load_source(root, problem, head)
     transactions = list(source["transactions"])
-    ledger_ids = {str(item["transactionId"]) for item in transactions}
-    covered: set[str] = set()
-
-    index_path = projection_root / "indexes" / "problems" / problem / "runs.json"
-    if index_path.exists():
-        try:
-            entries = json.loads(index_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            raise MathFlowError(f"could not read projection judgment index: {exc}") from exc
-        if not isinstance(entries, list) or any(
-            not isinstance(item, dict) for item in entries
-        ):
-            raise MathFlowError("projection judgment index must be an object array")
-        for entry in entries:
-            if entry.get("runKind") != "judgment":
-                continue
-            relative = entry.get("path")
-            expected_digest = entry.get("runDigest")
-            if not isinstance(relative, str) or not isinstance(expected_digest, str):
-                raise MathFlowError("projection judgment index entry is incomplete")
-            target = (projection_root / relative).resolve()
-            try:
-                target.relative_to(projection_root)
-            except ValueError as exc:
-                raise MathFlowError(
-                    f"projection judgment path escapes its root: {relative}"
-                ) from exc
-            _, judgment, run_digest = load_judgment_bundle(target)
-            if run_digest != expected_digest:
-                raise MathFlowError(
-                    f"projection judgment digest does not match its index: {relative}"
-                )
-            if (
-                judgment.get("problemId") != problem
-                or judgment.get("judgmentKind") != "primary"
-                or not isinstance(judgment.get("judgeSpec"), dict)
-                or judgment["judgeSpec"].get("digest") != judge_digest
-            ):
-                continue
-            covered.update(
-                str(subject["id"])
-                for subject in judgment["subjects"]
-                if isinstance(subject, dict) and subject.get("id") in ledger_ids
-            )
+    covered = {
+        subject_id
+        for bundle in published_bundles
+        for subject_id in bundle["subjectTransactionIds"]
+    }
 
     missing = [
         {
@@ -628,6 +735,7 @@ def plan_primary_judgment_coverage(
         "ledgerHead": source["ledgerHead"],
         "judgeSpec": {"id": spec["id"], "digest": judge_digest},
         "coveredTransactionIds": sorted(covered),
+        "publishedBundles": published_bundles,
         "missingTransactions": missing,
         "matrix": {
             "include": [
@@ -638,6 +746,112 @@ def plan_primary_judgment_coverage(
                 for item in missing
             ]
         },
+    }
+
+
+def plan_primary_judgment_inputs(
+    root: Path,
+    projection_root: Path,
+    problem: str,
+    judge_path: Path,
+    head: str,
+    additional_roots: list[Path] | None = None,
+    expected_new_subject_ids: list[str] | None = None,
+) -> dict[str, object]:
+    """Plan the complete verified primary-judgment input set for formation.
+
+    Published judgments are reusable across knowledge lanes.  Additional roots
+    hold newly produced workflow artifacts and must cover exactly the subjects
+    from the preceding coverage plan when that expectation is supplied.
+    """
+
+    root = root.resolve()
+    projection_root = projection_root.resolve()
+    source, spec, published = _published_primary_judgment_bundles(
+        root, projection_root, problem, judge_path, head
+    )
+    expected = None if expected_new_subject_ids is None else list(expected_new_subject_ids)
+    if expected is not None and len(expected) != len(set(expected)):
+        raise MathFlowError("expected new judgment subjects contain duplicates")
+
+    additional: list[dict[str, object]] = []
+    for search_root in additional_roots or []:
+        verified = verify_primary_judgment_artifacts(
+            root, search_root, problem, judge_path, head
+        )
+        for bundle in verified["bundles"]:
+            bundle_dir = Path(str(bundle["path"]))
+            _, judgment, _ = load_judgment_bundle(bundle_dir)
+            additional.append(
+                {
+                    "source": "additional",
+                    "path": str(bundle_dir.resolve()),
+                    "runDigest": bundle["runDigest"],
+                    "judgmentId": bundle["judgmentId"],
+                    "ledgerHead": judgment["ledgerHead"],
+                    "problemLedgerDigest": judgment["problemLedgerDigest"],
+                    "subjectTransactionIds": list(bundle["subjectTransactionIds"]),
+                }
+            )
+
+    additional_ids = [str(item["judgmentId"]) for item in additional]
+    if len(additional_ids) != len(set(additional_ids)):
+        raise MathFlowError("additional judgment inputs contain a duplicate judgment")
+    additional_subjects = {
+        str(subject_id)
+        for bundle in additional
+        for subject_id in bundle["subjectTransactionIds"]
+    }
+    if expected is not None and additional_subjects != set(expected):
+        difference = set(expected) - additional_subjects or additional_subjects - set(expected)
+        raise MathFlowError(
+            f"additional judgment subjects do not match the current plan: {sorted(difference)[0]}"
+        )
+
+    published_subjects = {
+        str(subject_id)
+        for bundle in published
+        for subject_id in bundle["subjectTransactionIds"]
+    }
+    overlap = published_subjects & additional_subjects
+    if overlap:
+        raise MathFlowError(
+            f"new judgment duplicates a published subject: {sorted(overlap)[0]}"
+        )
+    combined_by_id = {str(item["judgmentId"]): item for item in published}
+    for item in additional:
+        judgment_id = str(item["judgmentId"])
+        if judgment_id in combined_by_id:
+            raise MathFlowError(f"new judgment is already published: {judgment_id}")
+        combined_by_id[judgment_id] = item
+    combined = sorted(
+        combined_by_id.values(),
+        key=lambda item: (str(item["judgmentId"]), str(item["runDigest"])),
+    )
+    ledger_ids = {str(item["transactionId"]) for item in source["transactions"]}
+    combined_subjects = published_subjects | additional_subjects
+    missing = ledger_ids - combined_subjects
+    if missing:
+        raise MathFlowError(
+            f"formation judgment inputs do not cover the current ledger: {sorted(missing)[0]}"
+        )
+    return {
+        "schemaVersion": 1,
+        "problemId": problem,
+        "ledgerHead": source["ledgerHead"],
+        "problemLedgerDigest": source["problemLedgerDigest"],
+        "judgeSpec": {
+            "id": spec["id"],
+            "digest": f"sha256:{sha256_json(spec)}",
+        },
+        "expectedNewSubjectTransactionIds": expected or [],
+        "coveredSubjectTransactionIds": sorted(combined_subjects),
+        "publishedBundles": published,
+        "newBundles": sorted(
+            additional,
+            key=lambda item: (str(item["judgmentId"]), str(item["runDigest"])),
+        ),
+        "bundles": combined,
     }
 
 
@@ -808,3 +1022,362 @@ def detect_conflicts(bundle_dirs: list[Path]) -> list[dict[str, object]]:
         }
         conflicts.append({**core, "conflictId": f"sha256:{sha256_json(core)}"})
     return conflicts
+
+
+def _published_reconciliation_bundles(
+    root: Path,
+    projection_root: Path,
+    problem: str,
+    head: str,
+    source: dict[str, object],
+    judge_identity: dict[str, str],
+    conflicts: dict[str, dict[str, object]],
+) -> list[dict[str, object]]:
+    index_path = projection_root / "indexes" / "problems" / problem / "runs.json"
+    if not index_path.exists():
+        return []
+    try:
+        entries = json.loads(index_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise MathFlowError(f"could not read projection reconciliation index: {exc}") from exc
+    if not isinstance(entries, list) or any(not isinstance(item, dict) for item in entries):
+        raise MathFlowError("projection reconciliation index must be an object array")
+
+    by_judgment_id: dict[str, dict[str, object]] = {}
+    for entry in sorted(
+        entries,
+        key=lambda item: (str(item.get("runDigest", "")), str(item.get("path", ""))),
+    ):
+        if entry.get("runKind") != "judgment":
+            continue
+        relative = entry.get("path")
+        expected_digest = entry.get("runDigest")
+        if not isinstance(relative, str) or not isinstance(expected_digest, str):
+            raise MathFlowError("projection reconciliation index entry is incomplete")
+        target = (projection_root / relative).resolve()
+        try:
+            target.relative_to(projection_root)
+        except ValueError as exc:
+            raise MathFlowError(
+                f"projection reconciliation path escapes its root: {relative}"
+            ) from exc
+        _, judgment, run_digest = load_judgment_bundle(target)
+        if run_digest != expected_digest:
+            raise MathFlowError(
+                f"projection reconciliation digest does not match its index: {relative}"
+            )
+        reconciliation = judgment.get("reconciliation")
+        if (
+            judgment.get("judgmentKind") != "reconciliation"
+            or judgment.get("judgeSpec") != judge_identity
+            or not isinstance(reconciliation, dict)
+            or not _reusable_judgment_history(root, problem, head, source, judgment)
+        ):
+            continue
+        conflict_id = str(reconciliation["conflictId"])
+        conflict = conflicts.get(conflict_id)
+        if conflict is None:
+            continue
+        required_ids = {
+            str(item["judgmentId"]) for item in conflict["judgments"]
+        }
+        if set(reconciliation["inputJudgmentIds"]) != required_ids:
+            raise MathFlowError(
+                f"published reconciliation inputs do not match its conflict: {conflict_id}"
+            )
+        if any(
+            finding.get("claimKey") != conflict["claimKey"]
+            for finding in judgment["findings"]
+        ):
+            raise MathFlowError(
+                f"published reconciliation finding does not match its conflict: {conflict_id}"
+            )
+        judgment_id = str(judgment["judgmentId"])
+        candidate = {
+            "source": "published",
+            "path": str(target),
+            "publishedPath": relative,
+            "runDigest": run_digest,
+            "judgmentId": judgment_id,
+            "conflictId": conflict_id,
+            "ledgerHead": judgment["ledgerHead"],
+            "problemLedgerDigest": judgment["problemLedgerDigest"],
+            "subjectTransactionIds": [
+                str(subject["id"]) for subject in judgment["subjects"]
+            ],
+        }
+        existing = by_judgment_id.get(judgment_id)
+        if existing is None or (str(candidate["runDigest"]), str(candidate["path"])) < (
+            str(existing["runDigest"]),
+            str(existing["path"]),
+        ):
+            by_judgment_id[judgment_id] = candidate
+    return sorted(
+        by_judgment_id.values(),
+        key=lambda item: (
+            str(item["conflictId"]),
+            str(item["judgmentId"]),
+            str(item["runDigest"]),
+        ),
+    )
+
+
+def _additional_reconciliation_bundles(
+    root: Path,
+    search_roots: list[Path],
+    problem: str,
+    head: str,
+    source: dict[str, object],
+    judge_identity: dict[str, str],
+    conflicts: dict[str, dict[str, object]],
+) -> list[dict[str, object]]:
+    candidates: set[Path] = set()
+    for raw_root in search_roots:
+        search_root = raw_root.resolve()
+        if not search_root.is_dir():
+            raise MathFlowError(
+                f"reconciliation artifact directory does not exist: {search_root}"
+            )
+        candidates.update(
+            manifest.parent.resolve()
+            for manifest in search_root.rglob("run.json")
+            if manifest.is_file() and not manifest.is_symlink()
+        )
+    if search_roots and not candidates:
+        raise MathFlowError("no reconciliation bundles were found in the artifacts")
+
+    bundles: list[dict[str, object]] = []
+    observed_judgments: set[str] = set()
+    observed_conflicts: set[str] = set()
+    for bundle_dir in sorted(candidates, key=str):
+        _, judgment, run_digest = load_judgment_bundle(bundle_dir)
+        reconciliation = judgment.get("reconciliation")
+        if judgment.get("judgmentKind") != "reconciliation" or not isinstance(
+            reconciliation, dict
+        ):
+            raise MathFlowError(
+                f"additional artifact is not a reconciliation judgment: {bundle_dir}"
+            )
+        if judgment.get("problemId") != problem:
+            raise MathFlowError("additional reconciliation belongs to another problem")
+        if judgment.get("judgeSpec") != judge_identity:
+            raise MathFlowError(
+                "additional reconciliation does not match the approved judge"
+            )
+        if judgment.get("problemLedgerDigest") != source["problemLedgerDigest"]:
+            raise MathFlowError(
+                "additional reconciliation is stale for the current problem ledger"
+            )
+        judgment_head = str(judgment["ledgerHead"])
+        if head != "WORKTREE" and not is_ancestor(
+            root, judgment_head, str(source["ledgerHead"])
+        ):
+            raise MathFlowError(
+                "additional reconciliation ledger is not an ancestor of the current head"
+            )
+        conflict_id = str(reconciliation["conflictId"])
+        conflict = conflicts.get(conflict_id)
+        if conflict is None:
+            raise MathFlowError(
+                f"additional reconciliation targets a non-current conflict: {conflict_id}"
+            )
+        required_ids = {
+            str(item["judgmentId"]) for item in conflict["judgments"]
+        }
+        if set(reconciliation["inputJudgmentIds"]) != required_ids:
+            raise MathFlowError(
+                f"additional reconciliation inputs do not match its conflict: {conflict_id}"
+            )
+        if any(
+            finding.get("claimKey") != conflict["claimKey"]
+            for finding in judgment["findings"]
+        ):
+            raise MathFlowError(
+                f"additional reconciliation finding does not match its conflict: {conflict_id}"
+            )
+        judgment_id = str(judgment["judgmentId"])
+        if judgment_id in observed_judgments:
+            raise MathFlowError(
+                f"additional reconciliations contain a duplicate judgment: {judgment_id}"
+            )
+        if conflict_id in observed_conflicts:
+            raise MathFlowError(
+                f"additional reconciliations assess the same conflict twice: {conflict_id}"
+            )
+        observed_judgments.add(judgment_id)
+        observed_conflicts.add(conflict_id)
+        bundles.append(
+            {
+                "source": "additional",
+                "path": str(bundle_dir),
+                "runDigest": run_digest,
+                "judgmentId": judgment_id,
+                "conflictId": conflict_id,
+                "ledgerHead": judgment["ledgerHead"],
+                "problemLedgerDigest": judgment["problemLedgerDigest"],
+                "subjectTransactionIds": [
+                    str(subject["id"]) for subject in judgment["subjects"]
+                ],
+            }
+        )
+    return sorted(
+        bundles,
+        key=lambda item: (
+            str(item["conflictId"]),
+            str(item["judgmentId"]),
+            str(item["runDigest"]),
+        ),
+    )
+
+
+def plan_reconciliation_inputs(
+    root: Path,
+    projection_root: Path,
+    problem: str,
+    primary_judge_path: Path,
+    reconciliation_judge_path: Path,
+    head: str,
+    primary_bundle_dirs: list[Path],
+    additional_roots: list[Path] | None = None,
+    expected_new_conflict_ids: list[str] | None = None,
+) -> dict[str, object]:
+    """Derive current conflicts and bind their published/new reconciliations."""
+
+    root = root.resolve()
+    projection_root = projection_root.resolve()
+    source = load_source(root, problem, head)
+    primary_spec = load_judge_spec(primary_judge_path)
+    if primary_spec.get("implementation") != "openrouter-markdown-judgment-v1":
+        raise MathFlowError("reconciliation planning requires a primary judge spec")
+    primary_identity = {
+        "id": str(primary_spec["id"]),
+        "digest": f"sha256:{sha256_json(primary_spec)}",
+    }
+    primary_ids: set[str] = set()
+    covered_subjects: set[str] = set()
+    for bundle_dir in primary_bundle_dirs:
+        _, judgment, _ = load_judgment_bundle(bundle_dir)
+        judgment_id = str(judgment["judgmentId"])
+        if (
+            judgment.get("judgmentKind") != "primary"
+            or judgment.get("judgeSpec") != primary_identity
+            or not _reusable_judgment_history(root, problem, head, source, judgment)
+        ):
+            raise MathFlowError(
+                f"reconciliation planner received an invalid primary judgment: {bundle_dir}"
+            )
+        if judgment_id in primary_ids:
+            raise MathFlowError(
+                f"reconciliation planner received a duplicate primary judgment: {judgment_id}"
+            )
+        primary_ids.add(judgment_id)
+        covered_subjects.update(str(subject["id"]) for subject in judgment["subjects"])
+    ledger_ids = {str(item["transactionId"]) for item in source["transactions"]}
+    if covered_subjects != ledger_ids:
+        difference = ledger_ids - covered_subjects or covered_subjects - ledger_ids
+        raise MathFlowError(
+            f"reconciliation primary inputs do not cover the current ledger: {sorted(difference)[0]}"
+        )
+
+    conflicts_list = detect_conflicts(primary_bundle_dirs)
+    conflicts = {str(item["conflictId"]): item for item in conflicts_list}
+    reconciliation_spec = load_judge_spec(reconciliation_judge_path)
+    if reconciliation_spec.get("implementation") != "openrouter-markdown-reconciliation-v1":
+        raise MathFlowError("reconciliation planning requires a reconciliation judge spec")
+    reconciliation_identity = {
+        "id": str(reconciliation_spec["id"]),
+        "digest": f"sha256:{sha256_json(reconciliation_spec)}",
+    }
+    published = _published_reconciliation_bundles(
+        root,
+        projection_root,
+        problem,
+        head,
+        source,
+        reconciliation_identity,
+        conflicts,
+    )
+    additional = _additional_reconciliation_bundles(
+        root,
+        additional_roots or [],
+        problem,
+        head,
+        source,
+        reconciliation_identity,
+        conflicts,
+    )
+    expected = (
+        None
+        if expected_new_conflict_ids is None
+        else list(expected_new_conflict_ids)
+    )
+    if expected is not None:
+        if len(expected) != len(set(expected)):
+            raise MathFlowError("expected reconciliation conflicts contain duplicates")
+        unknown = set(expected) - conflicts.keys()
+        if unknown:
+            raise MathFlowError(
+                f"expected reconciliation targets a non-current conflict: {sorted(unknown)[0]}"
+            )
+        observed = {str(item["conflictId"]) for item in additional}
+        if observed != set(expected):
+            difference = set(expected) - observed or observed - set(expected)
+            raise MathFlowError(
+                f"additional reconciliation conflicts do not match the current plan: {sorted(difference)[0]}"
+            )
+
+    published_conflicts = {str(item["conflictId"]) for item in published}
+    additional_conflicts = {str(item["conflictId"]) for item in additional}
+    overlap = published_conflicts & additional_conflicts
+    if overlap:
+        raise MathFlowError(
+            f"new reconciliation duplicates a published conflict: {sorted(overlap)[0]}"
+        )
+    combined_by_id = {str(item["judgmentId"]): item for item in published}
+    for item in additional:
+        judgment_id = str(item["judgmentId"])
+        if judgment_id in combined_by_id:
+            raise MathFlowError(
+                f"new reconciliation is already published: {judgment_id}"
+            )
+        combined_by_id[judgment_id] = item
+    combined = sorted(
+        combined_by_id.values(),
+        key=lambda item: (
+            str(item["conflictId"]),
+            str(item["judgmentId"]),
+            str(item["runDigest"]),
+        ),
+    )
+    covered_conflicts = published_conflicts | additional_conflicts
+    missing = [
+        conflicts[conflict_id]
+        for conflict_id in sorted(set(conflicts) - covered_conflicts)
+    ]
+    if expected is not None and missing:
+        raise MathFlowError(
+            f"reconciliation inputs do not cover current conflict: {missing[0]['conflictId']}"
+        )
+    return {
+        "schemaVersion": 1,
+        "problemId": problem,
+        "ledgerHead": source["ledgerHead"],
+        "problemLedgerDigest": source["problemLedgerDigest"],
+        "primaryJudgeSpec": primary_identity,
+        "reconciliationJudgeSpec": reconciliation_identity,
+        "primaryJudgmentIds": sorted(primary_ids),
+        "conflicts": conflicts_list,
+        "publishedBundles": published,
+        "newBundles": additional,
+        "bundles": combined,
+        "missingConflicts": missing,
+        "matrix": {
+            "include": [
+                {
+                    "conflictId": item["conflictId"],
+                    "claimKey": item["claimKey"],
+                }
+                for item in missing
+            ]
+        },
+    }

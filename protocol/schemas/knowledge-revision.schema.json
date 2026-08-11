@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/knowledge-revision.schema.json",
+  "title": "Immutable Facet-Aware Knowledge Revision",
+  "$defs": {
+    "subject": {
+      "type": "object",
+      "required": ["kind", "id", "ledgerPosition"],
+      "properties": {
+        "kind": { "const": "transaction" },
+        "id": { "type": "string" },
+        "ledgerPosition": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["kind", "id", "digest", "relation"],
+      "properties": {
+        "kind": { "enum": ["transaction", "artifact", "verifier-attestation", "judge-run", "judgment", "conflict"] },
+        "id": { "type": "string" },
+        "digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+        "relation": { "enum": ["supports", "refutes", "qualifies", "context", "formalizes", "supersedes"] }
+      },
+      "additionalProperties": false
+    },
+    "reportRef": {
+      "type": "object",
+      "required": ["artifact", "digest", "section"],
+      "properties": {
+        "artifact": { "const": "report.md" },
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "section": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "required": [
+    "revisionId", "revisionNumber", "action", "baseRevisionId", "nodeId",
+    "facets", "parentId", "nodeType", "title", "subjects", "evidence",
+    "recordedAtLedgerHead", "reportRef", "changeRef", "contentDigest",
+    "summary", "changeRationale", "status"
+  ],
+  "properties": {
+    "revisionId": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "revisionNumber": { "type": "integer", "minimum": 1 },
+    "action": { "enum": ["create", "update", "retire", "restore"] },
+    "baseRevisionId": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+    "nodeId": { "type": "string" },
+    "facets": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["topology", "content", "lifecycle", "provenance"] }
+    },
+    "parentId": { "type": ["string", "null"] },
+    "nodeType": {
+      "enum": ["root", "program", "claim", "lemma", "question", "dispute", "method", "result"]
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "subjects": { "type": "array", "items": { "$ref": "#/$defs/subject" } },
+    "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidence" } },
+    "recordedAtLedgerHead": { "type": "string", "minLength": 1 },
+    "reportRef": { "$ref": "#/$defs/reportRef" },
+    "changeRef": { "$ref": "#/$defs/reportRef" },
+    "contentDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "summary": { "type": "string", "minLength": 1 },
+    "changeRationale": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["active", "retired"] }
+  },
+  "additionalProperties": false
+}

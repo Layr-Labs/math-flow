@@ -134,6 +134,43 @@ summary, lifecycle status, transaction links, and source-report digest. Selected
 nodes therefore carry their full prior body into the next writer call, while the
 long-form mathematical content remains absent from the structured model response.
 
+### Neutral facet-aware knowledge revisions
+
+`math-flow/knowledge-build-markdown-v2` is an additive knowledge-formation
+profile. It does not describe every edit to a knowledge view as an adjudication.
+Its state uses `schemaVersion: 3`, nodes point to `currentRevision`, and the
+immutable `knowledge-revisions` artifact contains neutral knowledge revisions.
+Version 1 knowledge-build bundles and version 2 adjudication-revision state remain
+valid and replayable; there is no in-place conversion of their histories.
+
+Builder operations use the lifecycle verbs `create`, `update`, `retire`, and
+`restore`. An operation is a full proposed node snapshot and does not declare
+what kind of change it made. The `hierarchical-knowledge-revisions-v3` reducer
+compares the materialized snapshot with the prior revision and deterministically
+records one or more ordered facets:
+
+- `topology`: `parentId` or node type changed;
+- `content`: title, summary, or the exact materialized Markdown changed;
+- `lifecycle`: active/retired status changed;
+- `provenance`: subjects or evidence changed.
+
+Every neutral operation names two exact, node-specific report sections.
+`reportSection` identifies `## Node: <nodeId>`, the holistic snapshot that becomes
+the node's current Markdown. `changeSection` identifies the separate, unique
+`## Change: <nodeId>` audit explanation. The reducer copies that change section's
+non-empty body verbatim into immutable `changeRationale` and records its report
+digest and heading in `changeRef`; the extractor cannot supply a second rationale
+that might drift from the report. `reportRef` continues to point only to the
+materialized node section.
+
+The revision stores a digest of the exact materialized Markdown. Validators bind
+both report references to the exact report bytes and recompute the facets from the
+revision chain rather than trusting the builder or the recorded facet list.
+Consequently, a topology-only revision is possible only when content, lifecycle,
+and provenance are byte-for-byte and structurally unchanged. A change rationale,
+report pointer, or timestamp change by itself is audit metadata, not a material
+knowledge revision, and is rejected as a no-op.
+
 ## Judge-builder flexibility
 
 Judge specs declare four allowlisted components:
@@ -174,11 +211,17 @@ resolved toward one side, synthesized, unresolved, or awaiting evidence. They do
 not mutate knowledge state and never rewrite their input judgments.
 
 Completed primary and reconciliation judgments mark a knowledge-builder lane
-dirty. Each lane is keyed by `(problem id, builder-spec digest)`, admits one
-active build, coalesces pending inputs, and enforces a minimum interval between
-completed builds. A claimed build records its exact base-state run, judgment IDs,
-conflict IDs, and judgment-set digest. New completions during the build remain
-pending for the next eligible interval.
+dirty. A governed lane is keyed by `(problem id, projection-spec digest)`; the
+builder digest remains bound inside the lane and legacy ungoverned lanes retain
+their `(problem id, builder-spec digest)` identity. Each lane admits one active
+build, coalesces pending inputs, and enforces a minimum interval between completed
+builds. Conflict, primary-judgment, and reconciliation dependencies are claimed
+as one connected component so batching cannot separate a dispute from the
+evidence needed to interpret it. A claimed build records its exact base-state
+run, judgment IDs, conflict IDs, and judgment-set digest. New completions during
+the build remain pending for the next eligible interval. Failed claims are
+returned atomically and carry a bounded exponential-retry marker tied to the
+claim and problem ledger.
 
 Knowledge formation is intentionally not implemented by the primary or
 reconciliation judge adapters. The example `openrouter-knowledge-builder-v1`
@@ -196,8 +239,9 @@ topology or output profile while preserving the same immutable run envelope and
 serialized state-chain semantics.
 
 Projection publication is independent of computation. Workers produce verified
-run bundles; a single publisher copies them into content-addressed object paths
-and records an idempotent publication batch. A deployment can periodically
-commit that worktree to one orphan `projections` branch without allowing parallel
-workers to contend on a Git ref. Git publication order has no semantic meaning;
+run bundles; publisher jobs copy them into content-addressed object paths and
+record idempotent publication batches. Disjoint problem lanes may publish in
+parallel: each publisher refetches the orphan `projections` branch, three-way
+merges its scheduler lane, and retries an expected-head race. Git publication
+order has no semantic meaning;
 judgment, reconciliation, and state relationships are always explicit digests.

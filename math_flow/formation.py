@@ -7,7 +7,7 @@ import re
 import tempfile
 from pathlib import Path
 
-from .artifacts import ArtifactBundle, read_verified_artifact, sha256_bytes
+from .artifacts import ArtifactBundle, load_manifest, read_verified_artifact, sha256_bytes
 from .errors import MathFlowError
 from .hierarchical import (
     _assistant_content,
@@ -20,8 +20,17 @@ from .hierarchical import (
     load_base_revision_state,
 )
 from .judges import load_judge_spec, load_source
-from .judgments import load_judgment_bundle
-from .knowledge import apply_revision_deltas, selected_nodes_v2, state_index_v2
+from .judgments import detect_conflicts, load_judgment_bundle
+from .knowledge import (
+    apply_knowledge_revision_deltas,
+    apply_revision_deltas,
+    empty_state_v3,
+    selected_nodes_v2,
+    selected_nodes_v3,
+    state_index_v2,
+    state_index_v3,
+    validate_state_v3,
+)
 from .openrouter import OpenRouterTransport, send_chat_completion
 from .repository import is_ancestor, read_at, sha256_json
 from .runs import run_envelope
@@ -231,8 +240,22 @@ def _unresolved_conflict_ids(
         if not isinstance(reconciliation, dict):
             continue
         conflict_id = reconciliation.get("conflictId")
+        if conflict_id not in conflicts:
+            raise MathFlowError(
+                "knowledge formation received a reconciliation without its "
+                f"current conflict record: {conflict_id}"
+            )
+        required_ids = {
+            str(conflict_judgment["judgmentId"])
+            for conflict_judgment in conflicts[str(conflict_id)]["judgments"]
+        }
+        if set(reconciliation.get("inputJudgmentIds", [])) != required_ids:
+            raise MathFlowError(
+                "knowledge formation reconciliation inputs do not match conflict: "
+                f"{conflict_id}"
+            )
         outcome = reconciliation.get("outcome")
-        if conflict_id in outcomes and isinstance(outcome, str):
+        if isinstance(outcome, str):
             outcomes[str(conflict_id)].add(outcome)
     return {
         conflict_id
@@ -349,7 +372,7 @@ def _normalize_new_node_ids_from_report_headings(
                 if heading.startswith(prefix)
                 and heading_key(heading) in aliases
             ]
-            if len(matches) == 1 and operation.get("action") == "issue":
+            if len(matches) == 1 and operation.get("action") in {"issue", "create"}:
                 prior_section = section
                 operation["reportSection"] = matches[0]
                 section = matches[0]
@@ -366,7 +389,7 @@ def _normalize_new_node_ids_from_report_headings(
         if heading_id == old_id:
             continue
         if (
-            operation.get("action") != "issue"
+            operation.get("action") not in {"issue", "create"}
             or operation.get("baseDigest") is not None
             or operation.get("baseRevisionId") is not None
             or old_id in nodes
@@ -380,7 +403,14 @@ def _normalize_new_node_ids_from_report_headings(
             )
         mapping[old_id] = heading_id
         operation["nodeId"] = heading_id
-        operation["adjudicationId"] = heading_id
+        if "adjudicationId" in operation:
+            operation["adjudicationId"] = heading_id
+        expected_change_heading = f"## Change: {heading_id}"
+        if (
+            "changeSection" in operation
+            and expected_change_heading in report_headings
+        ):
+            operation["changeSection"] = expected_change_heading
         normalizations.append(
             {
                 "kind": "new-node-id-from-report-heading",
@@ -394,6 +424,204 @@ def _normalize_new_node_ids_from_report_headings(
         if isinstance(operation, dict) and operation.get("parentId") in mapping:
             operation["parentId"] = mapping[str(operation["parentId"])]
     return canonical, normalizations
+
+
+def _knowledge_revision_delta_schema(
+    transaction_ids: list[str],
+    evidence_kinds: list[str],
+    evidence_ids: list[str],
+    evidence_digests: list[str | None],
+) -> dict[str, object]:
+    """Return the v3 control schema without model-declared revision facets."""
+
+    schema = _revision_delta_schema(
+        transaction_ids,
+        evidence_kinds=evidence_kinds,
+        evidence_ids=evidence_ids,
+        evidence_digests=evidence_digests,
+    )
+    operation = schema["properties"]["operations"]["items"]
+    operation["properties"].pop("adjudicationId")
+    operation["required"].remove("adjudicationId")
+    operation["properties"]["changeSection"] = {
+        "type": "string",
+        "minLength": 1,
+    }
+    operation["required"].append("changeSection")
+    operation["properties"]["action"]["enum"] = [
+        "create",
+        "update",
+        "retire",
+        "restore",
+    ]
+    return schema
+
+
+def _canonicalize_knowledge_revision_delta(
+    state: dict[str, object],
+    selected_node_ids: list[str],
+    delta: dict[str, object],
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    """Canonicalize only state-derived controls for the neutral v3 reducer."""
+
+    canonical = copy.deepcopy(delta)
+    normalizations: list[dict[str, object]] = []
+    operations = canonical.get("operations")
+    nodes = state.get("nodes")
+    if not isinstance(operations, list) or not isinstance(nodes, dict):
+        return canonical, normalizations
+
+    def record(kind: str, node_id: object, reason: str, **fields: object) -> None:
+        normalizations.append(
+            {"kind": kind, "nodeId": node_id, "reason": reason, **fields}
+        )
+
+    for operation in operations:
+        if not isinstance(operation, dict):
+            continue
+        node_id = operation.get("nodeId")
+        existing = nodes.get(node_id) if isinstance(node_id, str) else None
+        current = (
+            existing.get("currentRevision") if isinstance(existing, dict) else None
+        )
+        action = operation.get("action")
+        if existing is None:
+            if action == "update":
+                operation["action"] = "create"
+                record(
+                    "new-node-first-revision",
+                    node_id,
+                    "A node absent from the base state must be created before it can be updated.",
+                    fromAction="update",
+                    toAction="create",
+                )
+            if operation.get("baseDigest") is not None or operation.get(
+                "baseRevisionId"
+            ) is not None:
+                operation["baseDigest"] = None
+                operation["baseRevisionId"] = None
+                record(
+                    "new-node-null-base",
+                    node_id,
+                    "A new node has no prior node or knowledge revision.",
+                )
+            if (
+                node_id != "root"
+                and operation.get("parentId") in {None, "", "None", "null"}
+                and "root" in selected_node_ids
+            ):
+                operation["parentId"] = "root"
+                record(
+                    "top-level-node-parent",
+                    node_id,
+                    "A top-level node is a child of the selected structural root.",
+                    toParentId="root",
+                )
+            continue
+
+        expected_digest = existing.get("digest")
+        expected_revision_id = (
+            current.get("revisionId") if isinstance(current, dict) else None
+        )
+        if (
+            operation.get("baseDigest") != expected_digest
+            or operation.get("baseRevisionId") != expected_revision_id
+        ):
+            operation["baseDigest"] = expected_digest
+            operation["baseRevisionId"] = expected_revision_id
+            record(
+                "attach-current-base",
+                node_id,
+                "Concurrency guards come from the authoritative selected state.",
+            )
+        if action == "update" and current is None:
+            operation["action"] = "create"
+            record(
+                "structural-root-first-revision",
+                node_id,
+                "The seed root exists structurally but has no prior knowledge revision.",
+                fromAction="update",
+                toAction="create",
+            )
+        elif (
+            action == "create"
+            and isinstance(current, dict)
+            and existing.get("status") == "active"
+        ):
+            operation["action"] = "update"
+            record(
+                "existing-node-subsequent-revision",
+                node_id,
+                "An active knowledge node can be updated but cannot be created twice.",
+                fromAction="create",
+                toAction="update",
+            )
+
+    available = set(nodes)
+    pending = list(operations)
+    ordered: list[object] = []
+    while pending:
+        next_pending: list[object] = []
+        progressed = False
+        for operation in pending:
+            if not isinstance(operation, dict):
+                next_pending.append(operation)
+                continue
+            node_id = operation.get("nodeId")
+            parent_id = operation.get("parentId")
+            if node_id == "root" or parent_id in available:
+                ordered.append(operation)
+                if isinstance(node_id, str):
+                    available.add(node_id)
+                progressed = True
+            else:
+                next_pending.append(operation)
+        if not progressed:
+            ordered.extend(next_pending)
+            break
+        pending = next_pending
+    if ordered != operations:
+        canonical["operations"] = ordered
+        record(
+            "parent-before-child-order",
+            None,
+            "Parent node creations must precede their children.",
+        )
+    return canonical, normalizations
+
+
+def _load_base_knowledge_revision_state(
+    base_run: Path | None,
+    problem: str,
+) -> tuple[dict[str, object], list[dict[str, object]], str | None, str | None]:
+    if base_run is None:
+        return empty_state_v3(problem), [], None, None
+    manifest, manifest_digest = load_manifest(base_run)
+    if manifest.get("problemId") != problem:
+        raise MathFlowError("base knowledge run belongs to a different problem")
+    if manifest.get("outputProfile") != "math-flow/knowledge-build-markdown-v2":
+        raise MathFlowError(
+            "base knowledge run does not contain neutral facet-aware state"
+        )
+    try:
+        state = json.loads(
+            read_verified_artifact(base_run, manifest, "knowledge-state")
+        )
+        revision_text = read_verified_artifact(
+            base_run, manifest, "knowledge-revisions"
+        ).decode("utf-8")
+        revisions = [
+            json.loads(line) for line in revision_text.splitlines() if line.strip()
+        ]
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise MathFlowError(
+            "base neutral knowledge-state artifacts are not valid JSON"
+        ) from exc
+    ledger_head = manifest.get("ledgerHead")
+    if not isinstance(ledger_head, str):
+        raise MathFlowError("base knowledge run has no ledger head")
+    valid_state, valid_revisions = validate_state_v3(state, revisions, problem)
+    return valid_state, valid_revisions, manifest_digest, ledger_head
 
 
 def run_knowledge_build_bundle(
@@ -411,8 +639,13 @@ def run_knowledge_build_bundle(
 ) -> dict[str, object]:
     root = root.resolve()
     spec = load_judge_spec(builder_path)
-    if spec["implementation"] != "openrouter-knowledge-builder-v1":
+    implementation = spec["implementation"]
+    if implementation not in {
+        "openrouter-knowledge-builder-v1",
+        "openrouter-knowledge-builder-v2",
+    }:
         raise MathFlowError("knowledge-build command requires a knowledge builder spec")
+    neutral_revisions = implementation == "openrouter-knowledge-builder-v2"
     builder_digest = f"sha256:{sha256_json(spec)}"
     build_input = validate_build_claim(claim, problem, builder_digest)
     judgments = _load_judgments(
@@ -421,6 +654,22 @@ def run_knowledge_build_bundle(
     conflicts = _load_conflicts(
         conflicts_path, problem, list(build_input["conflictIds"])
     )
+    derived_conflicts = {
+        str(item["conflictId"]): item
+        for item in detect_conflicts(judgment_bundle_dirs)
+    }
+    missing_conflicts = set(derived_conflicts) - set(conflicts)
+    if missing_conflicts:
+        raise MathFlowError(
+            "knowledge formation received opposed primary judgments without their "
+            f"conflict record: {sorted(missing_conflicts)[0]}"
+        )
+    extra_conflicts = set(conflicts) - set(derived_conflicts)
+    if extra_conflicts:
+        raise MathFlowError(
+            "knowledge formation received a conflict record without its opposed "
+            f"primary judgments: {sorted(extra_conflicts)[0]}"
+        )
     unresolved_conflicts = _unresolved_conflict_ids(conflicts, judgments)
     source = load_source(root, problem, head)
     transaction_positions = {
@@ -445,9 +694,14 @@ def run_knowledge_build_bundle(
                     f"knowledge-build judgment subject is outside the current ledger: {subject['id']}"
                 )
 
-    state, revisions, base_digest, base_ledger_head = load_base_revision_state(
-        base_run, problem
-    )
+    if neutral_revisions:
+        state, revisions, base_digest, base_ledger_head = (
+            _load_base_knowledge_revision_state(base_run, problem)
+        )
+    else:
+        state, revisions, base_digest, base_ledger_head = load_base_revision_state(
+            base_run, problem
+        )
     if build_input["baseStateRun"] != base_digest:
         raise MathFlowError("knowledge build base run does not match its claim")
     if base_ledger_head is not None and head != "WORKTREE":
@@ -458,7 +712,11 @@ def run_knowledge_build_bundle(
 
     resolved_head = "WORKTREE" if head == "WORKTREE" else str(source["ledgerHead"])
     problem_statement = read_at(root, resolved_head, f"problems/{problem}/problem.md")
-    index = state_index_v2(state, revisions)
+    index = (
+        state_index_v3(state, revisions)
+        if neutral_revisions
+        else state_index_v2(state, revisions)
+    )
     node_ids = [str(node["id"]) for node in index]
     judgment_index = [
         {
@@ -526,7 +784,11 @@ def run_knowledge_build_bundle(
         or not selection["rationale"].strip()
     ):
         raise MathFlowError("knowledge builder selector returned an invalid selection")
-    selected = selected_nodes_v2(state, revisions, selected_ids)
+    selected = (
+        selected_nodes_v3(state, revisions, selected_ids)
+        if neutral_revisions
+        else selected_nodes_v2(state, revisions, selected_ids)
+    )
 
     judgment_reports = "\n\n".join(
         "\n".join(
@@ -538,6 +800,14 @@ def run_knowledge_build_bundle(
         )
         for judgment_id, item in sorted(judgments.items())
     )
+    change_report_guidance = (
+        "For every changed node, follow its holistic `## Node: <stable-id>` section "
+        "with one unique `## Change: <stable-id>` section. Its body must be a concise, "
+        "self-contained audit rationale explaining why this build changes the node; "
+        "do not repeat the holistic node assessment there."
+        if neutral_revisions
+        else "Put historical explanation under a separate `## Change: <stable-id>` heading so it remains in the report but outside materialized node content."
+    )
     writer_prompt = "\n\n".join(
         [
             "Write a detailed Markdown knowledge-formation report. Do not output JSON and do not redo, extend, or overturn any mathematical judgment.",
@@ -546,7 +816,8 @@ def run_knowledge_build_bundle(
             "When a judgment changes an existing mathematical concept, update that concept's selected stable node. Propose a new node only for a distinct durable concept that would remain meaningful if transaction names and chronology were removed.",
             "A reconciliation outcome may resolve its named conflict. If a conflict has no reconciliation, has an unresolved or needs-evidence outcome, or has incompatible reconciliation outcomes, preserve it as an active dispute node and do not choose a side.",
             "Use explicit headings of the form `## Node: <stable-id>` for every existing or proposed node that should change.",
-            "Each `## Node:` section must be a self-contained statement of the complete current knowledge after the proposed update. Do not title or frame it as a submission, correction, revision, or change log. Put historical explanation under a separate `## Change: <stable-id>` heading so it remains in the report but outside materialized node content.",
+            "Each `## Node:` section must be a self-contained statement of the complete current knowledge after the proposed update. Do not title or frame it as a submission, correction, revision, or change log.",
+            change_report_guidance,
             "Explain organizational changes and provenance in enough detail for an auditor. Stable IDs use lowercase letters, numbers, slashes, underscores, and hyphens.",
             f"Formation rubric:\n{json.dumps(spec['rubric'], indent=2, ensure_ascii=False)}",
             f"Problem:\n{problem_statement}",
@@ -569,10 +840,13 @@ def run_knowledge_build_bundle(
     writer_response = send_stage("report", writer_request)
     report = _assistant_content(writer_response).rstrip() + "\n"
 
-    unadjudicated_selected_ids = [
+    unrevised_selected_ids = [
         str(node["id"])
         for node in selected
-        if node.get("currentAdjudication") is None
+        if node.get(
+            "currentRevision" if neutral_revisions else "currentAdjudication"
+        )
+        is None
     ]
     selected_subject_ids = {
         str(subject["id"])
@@ -580,32 +854,145 @@ def run_knowledge_build_bundle(
         for subject in node.get("subjects", [])
         if isinstance(subject, dict) and isinstance(subject.get("id"), str)
     }
+    selected_evidence = [
+        evidence
+        for node in selected
+        for evidence in node.get("evidence", [])
+        if isinstance(evidence, dict)
+        and isinstance(evidence.get("kind"), str)
+        and isinstance(evidence.get("id"), str)
+    ]
     allowed_subject_ids = claimed_subject_ids | selected_subject_ids
-    allowed_transaction_evidence_ids = (
-        claimed_transaction_evidence_ids | selected_subject_ids
+    allowed_transaction_evidence_ids = claimed_transaction_evidence_ids | {
+        str(evidence["id"])
+        for evidence in selected_evidence
+        if evidence["kind"] == "transaction"
+    }
+    allowed_judgment_evidence_ids = set(judgments) | {
+        str(evidence["id"])
+        for evidence in selected_evidence
+        if evidence["kind"] == "judgment"
+    }
+    allowed_conflict_evidence_ids = set(conflicts) | {
+        str(evidence["id"])
+        for evidence in selected_evidence
+        if evidence["kind"] == "conflict"
+    }
+    if neutral_revisions:
+        action_guidance = (
+            "Use create for a first node revision, update for a material change to an "
+            "active node, retire to make an active node inactive, and restore only for "
+            "a retired node. Do not classify revision facets; the reducer derives them "
+            "from actual topology, content, lifecycle, and provenance changes."
+        )
+        base_guidance = (
+            "For an existing node copy its exact digest and current revisionId into "
+            "the base fields; use null base fields for a first revision."
+        )
+        first_revision_guidance = (
+            "Selected structural nodes without a prior revision must use create: "
+            f"{json.dumps(unrevised_selected_ids)}"
+        )
+    else:
+        action_guidance = (
+            "Use issue for a first node adjudication, revise for an active node update, "
+            "retract to retire an active node, and reinstate only for a retired node."
+        )
+        base_guidance = (
+            "adjudicationId must equal nodeId. For an existing node copy its exact "
+            "digest and current revisionId into the base fields; use null base fields "
+            "for a first adjudication."
+        )
+        first_revision_guidance = (
+            "Selected structural nodes without a prior adjudication must use issue: "
+            f"{json.dumps(unrevised_selected_ids)}"
+        )
+    event_node_guidance = (
+        "The state is a holistic current view. Do not create an event-shaped node "
+        "merely to record a submission, judgment, correction, or revision. When the "
+        "report corrects an existing concept, emit only the operation on that stable "
+        "node unless the report also states a genuinely distinct durable concept."
+        if neutral_revisions
+        else "The state is a holistic current view. Do not issue an event-shaped node merely to record a submission, judgment, correction, or revision. When the report corrects an existing concept, emit only the operation on that stable node unless the report also states a genuinely distinct durable concept."
+    )
+    conflict_action_guidance = (
+        "Every conflict listed as requiring an active dispute must be cited by a "
+        "non-retire dispute operation. Do not create an active dispute node merely "
+        "to say that no conflict exists. Every active dispute operation must cite at "
+        "least one conflict from the required unresolved dispute list. A resolved "
+        "existing dispute may instead be retired."
+        if neutral_revisions
+        else "Every conflict listed as requiring an active dispute must be cited by a non-retract dispute operation. Do not create an active dispute node merely to say that no conflict exists. Every active dispute operation must cite at least one conflict from the required unresolved dispute list. A resolved existing dispute may instead be retracted."
+    )
+    report_reference_guidance = (
+        "reportSection must exactly equal `## Node: <nodeId>` and changeSection "
+        "must exactly equal `## Change: <nodeId>`, both using the operation's exact "
+        "nodeId. The reducer copies the exact Change-section body into immutable "
+        "revision provenance; do not place a change rationale in summary."
+        if neutral_revisions
+        else "reportSection must exactly equal `## Node: <nodeId>` using the operation's exact nodeId."
     )
     extractor_prompt = "\n\n".join(
         [
             "Extract only the sparse knowledge-state delta stated by the formation report. Do not perform mathematical reasoning or change any judgment outcome.",
             "Existing nodes may change only when selected. New nodes must be parented under a selected or newly created node. Create parents before children.",
-            "The state is a holistic current view. Do not issue an event-shaped node merely to record a submission, judgment, correction, or revision. When the report corrects an existing concept, emit only the operation on that stable node unless the report also states a genuinely distinct durable concept.",
-            "Use issue for a first node adjudication, revise for an active node update, retract to retire an active node, and reinstate only for a retired node.",
-            "adjudicationId must equal nodeId. For an existing node copy its exact digest and current revisionId into the base fields; use null base fields for a first adjudication.",
-            f"Selected structural nodes without a prior adjudication must use issue: {json.dumps(unadjudicated_selected_ids)}",
+            event_node_guidance,
+            action_guidance,
+            base_guidance,
+            first_revision_guidance,
             "Every non-root node needs a parentId. A new top-level node uses parentId root when root was selected.",
             "Subjects are ledger transactions represented by the durable mathematical node. On an existing node, preserve its prior subjects unless a supplied judgment changes what that node represents. A corrective transaction normally belongs in evidence rather than becoming a new subject. Evidence may reference an allowed transaction, judgment, or conflict. For transaction evidence use null digest. For judgment or conflict evidence set digest equal to its content-addressed ID.",
             "A new node may name as a subject only a transaction that was a subject of a claimed judgment; context-only evidence must remain evidence and must not be promoted to a subject.",
-            "Every conflict listed as requiring an active dispute must be cited by a non-retract dispute operation.",
-            "Do not create an active dispute node merely to say that no conflict exists. Every active dispute operation must cite at least one conflict from the required unresolved dispute list. A resolved existing dispute may instead be retracted.",
-            "reportSection must exactly equal `## Node: <nodeId>` using the operation's exact nodeId. Return no operation only when the report specifies no state change.",
+            conflict_action_guidance,
+            f"{report_reference_guidance} Return no operation only when the report specifies no state change.",
             f"Selected nodes:\n{json.dumps(selected, indent=2, ensure_ascii=False)}",
             f"Allowed subject transaction IDs (claimed subjects plus subjects already represented by selected nodes):\n{json.dumps(sorted(allowed_subject_ids), indent=2)}",
-            f"Allowed transaction evidence IDs:\n{json.dumps(sorted(claimed_transaction_evidence_ids), indent=2)}",
-            f"Allowed judgment IDs:\n{json.dumps(sorted(judgments), indent=2)}",
-            f"Allowed conflict IDs:\n{json.dumps(sorted(conflicts), indent=2)}",
+            f"Allowed transaction evidence IDs:\n{json.dumps(sorted(allowed_transaction_evidence_ids), indent=2)}",
+            f"Allowed judgment IDs:\n{json.dumps(sorted(allowed_judgment_evidence_ids), indent=2)}",
+            f"Allowed conflict IDs:\n{json.dumps(sorted(allowed_conflict_evidence_ids), indent=2)}",
+            f"Existing selected-node evidence that may be preserved exactly:\n{json.dumps(selected_evidence, indent=2, ensure_ascii=False)}",
             f"Required unresolved dispute IDs:\n{json.dumps(sorted(unresolved_conflicts), indent=2)}",
             f"Report:\n<report>\n{report}\n</report>",
         ]
+    )
+    selected_evidence_kinds = {str(item["kind"]) for item in selected_evidence}
+    selected_evidence_ids = {str(item["id"]) for item in selected_evidence}
+    selected_evidence_digests = {item.get("digest") for item in selected_evidence}
+    core_evidence_kinds = ["transaction", "judgment", "conflict"]
+    delta_schema_args = {
+        "evidence_kinds": [
+            *core_evidence_kinds,
+            *sorted(selected_evidence_kinds - set(core_evidence_kinds)),
+        ],
+        "evidence_ids": sorted(
+            allowed_transaction_evidence_ids
+            | allowed_judgment_evidence_ids
+            | allowed_conflict_evidence_ids
+            | selected_evidence_ids
+        ),
+        "evidence_digests": [
+            None,
+            *sorted(
+                {
+                    *allowed_judgment_evidence_ids,
+                    *allowed_conflict_evidence_ids,
+                    *(
+                        value
+                        for value in selected_evidence_digests
+                        if isinstance(value, str)
+                    ),
+                }
+            ),
+        ],
+    }
+    delta_schema = (
+        _knowledge_revision_delta_schema(
+            sorted(allowed_subject_ids), **delta_schema_args
+        )
+        if neutral_revisions
+        else _revision_delta_schema(
+            sorted(allowed_subject_ids), **delta_schema_args
+        )
     )
     extractor_request = _request(
         spec,
@@ -617,16 +1004,7 @@ def run_knowledge_build_bundle(
             },
             {"role": "user", "content": extractor_prompt},
         ],
-        _revision_delta_schema(
-            sorted(allowed_subject_ids),
-            evidence_kinds=["transaction", "judgment", "conflict"],
-            evidence_ids=[
-                *sorted(claimed_transaction_evidence_ids),
-                *sorted(judgments),
-                *sorted(conflicts),
-            ],
-            evidence_digests=[None, *sorted(judgments), *sorted(conflicts)],
-        ),
+        delta_schema,
     )
     report_headings = {
         line.strip() for line in report.splitlines() if line.strip().startswith("## ")
@@ -639,9 +1017,14 @@ def run_knowledge_build_bundle(
         extracted, heading_normalizations = _normalize_new_node_ids_from_report_headings(
             state, extracted, report_headings
         )
-        extracted, state_normalizations = _canonicalize_revision_delta(
-            state, selected_ids, extracted
-        )
+        if neutral_revisions:
+            extracted, state_normalizations = _canonicalize_knowledge_revision_delta(
+                state, selected_ids, extracted
+            )
+        else:
+            extracted, state_normalizations = _canonicalize_revision_delta(
+                state, selected_ids, extracted
+            )
         return extracted, [*heading_normalizations, *state_normalizations]
 
     extractor_response = send_stage("extract", extractor_request)
@@ -649,12 +1032,17 @@ def run_knowledge_build_bundle(
     if any(
         not isinstance(operation, dict)
         or operation.get("reportSection") not in report_headings
+        or (
+            neutral_revisions
+            and operation.get("changeSection") not in report_headings
+        )
         for operation in delta["operations"]
     ):
         invalidate_stage("extract", extractor_request)
         extractor_response = send_stage("extract", extractor_request)
         delta, normalizations = normalized_delta(extractor_response)
     observed_unresolved: set[str] = set()
+    inactive_action = "retire" if neutral_revisions else "retract"
     for operation in delta["operations"]:
         if not isinstance(operation, dict):
             raise MathFlowError("knowledge builder extractor returned a non-object operation")
@@ -664,11 +1052,34 @@ def run_knowledge_build_bundle(
             raise MathFlowError(
                 "knowledge operation report heading does not match its stable node ID"
             )
+        if neutral_revisions:
+            if operation.get("changeSection") not in report_headings:
+                raise MathFlowError(
+                    "knowledge delta references a missing Markdown change heading"
+                )
+            if operation.get("changeSection") != f"## Change: {operation.get('nodeId')}":
+                raise MathFlowError(
+                    "knowledge operation change heading does not match its stable node ID"
+                )
         subjects = operation.get("subjects")
         evidence = operation.get("evidence")
         if not isinstance(subjects, list) or not isinstance(evidence, list):
             raise MathFlowError("knowledge operation must distinguish subjects and evidence")
         existing_node = state["nodes"].get(operation.get("nodeId"))
+        existing_evidence = {
+            (
+                item.get("kind"),
+                item.get("id"),
+                item.get("digest"),
+                item.get("relation"),
+            )
+            for item in (
+                existing_node.get("evidence", [])
+                if isinstance(existing_node, dict)
+                else []
+            )
+            if isinstance(item, dict)
+        }
         permitted_subject_ids = (
             allowed_subject_ids if isinstance(existing_node, dict) else claimed_subject_ids
         )
@@ -685,6 +1096,7 @@ def run_knowledge_build_bundle(
             kind = item.get("kind")
             identifier = item.get("id")
             digest = item.get("digest")
+            relation = item.get("relation")
             if kind == "transaction":
                 valid = identifier in claimed_transaction_evidence_ids and digest is None
             elif kind == "judgment":
@@ -693,6 +1105,7 @@ def run_knowledge_build_bundle(
                 valid = identifier in conflicts and digest == identifier
             else:
                 valid = False
+            valid = valid or (kind, identifier, digest, relation) in existing_evidence
             if not valid:
                 raise MathFlowError(
                     "knowledge operation references evidence outside its claimed inputs: "
@@ -702,10 +1115,13 @@ def run_knowledge_build_bundle(
                 kind == "conflict"
                 and identifier in unresolved_conflicts
                 and operation.get("nodeType") == "dispute"
-                and operation.get("action") != "retract"
+                and operation.get("action") != inactive_action
             ):
                 observed_unresolved.add(str(identifier))
-        if operation.get("nodeType") == "dispute" and operation.get("action") != "retract":
+        if (
+            operation.get("nodeType") == "dispute"
+            and operation.get("action") != inactive_action
+        ):
             cited_conflicts = {
                 str(item.get("id"))
                 for item in evidence
@@ -723,7 +1139,12 @@ def run_knowledge_build_bundle(
         )
 
     report_digest = sha256_bytes(report.encode("utf-8"))
-    next_state, next_revisions = apply_revision_deltas(
+    apply_delta = (
+        apply_knowledge_revision_deltas
+        if neutral_revisions
+        else apply_revision_deltas
+    )
+    next_state, next_revisions = apply_delta(
         state,
         revisions,
         selected_ids,
@@ -767,7 +1188,7 @@ def run_knowledge_build_bundle(
     bundle.add_text(
         "state/revisions.jsonl",
         revision_lines,
-        "adjudication-revisions",
+        "knowledge-revisions" if neutral_revisions else "adjudication-revisions",
         "application/x-ndjson",
     )
     envelope = run_envelope(

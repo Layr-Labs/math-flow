@@ -153,8 +153,12 @@ python -m math_flow knowledge-complete \
 ```
 
 A failed builder calls `knowledge-fail`, which safely returns the exact batch to
-pending work. `knowledge-complete --state-run-dir` verifies the bundle and derives
-its manifest digest, avoiding a manual digest-copy step.
+pending work and records a durable failure marker. Automatic retries start after
+five minutes, back off exponentially to a six-hour ceiling, and stop after five
+failures for the same claim and problem ledger. A successful build, new inputs,
+or a changed problem ledger resets the marker. `knowledge-complete
+--state-run-dir` verifies the bundle and derives its manifest digest, avoiding a
+manual digest-copy step.
 
 ## Batch projection publication
 
@@ -169,6 +173,12 @@ The publisher verifies every manifest, digest, byte count, undeclared file, and
 symlink before creating content-addressed objects, per-problem indexes, and an
 idempotent publication-batch record. One automation process can commit these
 batches to an orphan projection branch at its own cadence.
+
+GitHub limits one `createCommitOnBranch` call to 100 file changes. The repository
+publisher therefore writes large sets of immutable object and batch files in
+bounded GitHub-signed commits, then writes mutable indexes, scheduler state, and
+the viewer catalog in a final commit. A partial attempt can leave only harmless
+unindexed immutable objects; retrying from the newest branch head is idempotent.
 
 After updating the scheduler's authoritative state tip, the publisher can build
 the repository viewer catalog from those indexes:
@@ -186,6 +196,24 @@ The catalog follows `baseRun` content digests and uses each scheduler lane's
 `latestStateRun` as its authoritative terminal. Git publication order therefore
 does not become knowledge-state order. The included OpenRouter repository
 projection workflow fans out every missing primary judgment, coalesces the
-resulting artifacts into one formation claim, and serializes formation and
-projection publication per problem. A second dispatch is a no-op when the
-active judge already covers every transaction.
+resulting artifacts into one formation claim, and serializes formation per
+problem. This problem-wide serialization is a conservative compatibility
+boundary: each later knowledge projection replans after the preceding one and
+can inherit its verified judgments. Cross-problem judgment and formation work
+remains parallel. Publication snapshots its lane update, three-way merges that
+disjoint lane onto the newest orphan-branch scheduler, and retries optimistic
+GitHub-signed publication when another problem wins the expected-head race.
+Automatic dispatch passes the sorted active projection list as a one-at-a-time
+queue; each workflow dispatches its independent successor even when its own
+formation or publication fails. A five-minute repository wake-up pass
+rediscovers eligible, never-started, and stale active lanes from repository
+state, so minimum intervals, multi-batch formation, interrupted queues, failed
+builders, and replaced GitHub pending runs recover without an unrelated
+contribution. The wake-up pass also checks same-head workflow history: an active
+run suppresses a duplicate dispatch, and five consecutive pre-formation failures
+stop automatic retries for that projection without blocking other projections.
+Direct workflow dispatch remains available for an operator retry.
+Redispatching an already-current lane is a successful no-op. A newly registered
+knowledge lane still forms from the complete inherited judgment set even when
+the missing-judgment count is zero, and a dirtied but temporarily ineligible
+lane publishes its pending scheduler state without invoking the builder.

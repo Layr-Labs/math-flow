@@ -19,6 +19,7 @@ from .context import materialize_agent_context
 from .errors import MathFlowError
 from .formation import run_knowledge_build_bundle
 from .governance import (
+    list_active_projections,
     resolve_projection,
     validate_admission_pr,
     validate_projection_registry,
@@ -27,12 +28,19 @@ from .github_projection import publish_github_projection
 from .judgments import (
     detect_conflicts,
     load_judgment_bundle,
+    plan_primary_judgment_inputs,
     plan_primary_judgment_coverage,
+    plan_reconciliation_inputs,
     run_primary_judgment_bundle,
     run_reconciliation_judgment_bundle,
     verify_primary_judgment_artifacts,
 )
 from .judges import load_judge_spec, project, render_request
+from .projection_queue import (
+    filter_projection_dispatch_history,
+    merge_scheduler_states,
+    plan_due_projection_dispatches,
+)
 from .repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
 from .runs import run_judge_bundle
 from .viewer import export_viewer_catalog, export_viewer_data
@@ -68,6 +76,14 @@ def build_parser() -> argparse.ArgumentParser:
     resolve_projection_parser.add_argument("--problem", required=True)
     resolve_projection_parser.add_argument("--head", default="HEAD")
     resolve_projection_parser.add_argument("--output")
+
+    active_projections_parser = commands.add_parser(
+        "list-active-projections",
+        help="list approved active projections for one problem at a Git commit",
+    )
+    active_projections_parser.add_argument("--problem", required=True)
+    active_projections_parser.add_argument("--head", default="HEAD")
+    active_projections_parser.add_argument("--output")
 
     admission_parser = commands.add_parser(
         "validate-admission-pr",
@@ -151,6 +167,66 @@ def build_parser() -> argparse.ArgumentParser:
     judgment_plan_parser.add_argument("--projection-dir", required=True, type=Path)
     judgment_plan_parser.add_argument("--output", type=Path)
 
+    judgment_input_parser = commands.add_parser(
+        "judgment-input-plan",
+        help="combine verified published and newly produced primary judgments",
+    )
+    judgment_input_parser.add_argument("--problem", required=True)
+    judgment_input_parser.add_argument("--judge", required=True, type=Path)
+    judgment_input_parser.add_argument("--head", default="HEAD")
+    judgment_input_parser.add_argument("--projection-dir", required=True, type=Path)
+    judgment_input_parser.add_argument(
+        "--additional-root",
+        action="append",
+        default=[],
+        type=Path,
+        dest="additional_roots",
+    )
+    judgment_input_parser.add_argument(
+        "--expected-new-subject",
+        action="append",
+        default=[],
+        dest="expected_new_subjects",
+    )
+    judgment_input_parser.add_argument("--output", type=Path)
+
+    reconciliation_plan_parser = commands.add_parser(
+        "reconciliation-plan",
+        help="derive current conflicts and bind published/new reconciliations",
+    )
+    reconciliation_plan_parser.add_argument("--problem", required=True)
+    reconciliation_plan_parser.add_argument(
+        "--primary-judge", required=True, type=Path
+    )
+    reconciliation_plan_parser.add_argument(
+        "--reconciliation-judge", required=True, type=Path
+    )
+    reconciliation_plan_parser.add_argument("--head", default="HEAD")
+    reconciliation_plan_parser.add_argument(
+        "--projection-dir", required=True, type=Path
+    )
+    reconciliation_plan_parser.add_argument(
+        "--primary-judgment-dir",
+        required=True,
+        action="append",
+        type=Path,
+        dest="primary_judgment_dirs",
+    )
+    reconciliation_plan_parser.add_argument(
+        "--additional-root",
+        action="append",
+        default=[],
+        type=Path,
+        dest="reconciliation_additional_roots",
+    )
+    reconciliation_plan_parser.add_argument(
+        "--expected-new-conflict",
+        action="append",
+        default=None,
+        dest="expected_new_conflicts",
+    )
+    reconciliation_plan_parser.add_argument("--output", type=Path)
+
     verify_judgments_parser = commands.add_parser(
         "verify-judgment-artifacts",
         help="discover and verify downloaded primary-judgment bundles",
@@ -193,6 +269,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     trigger_parser.add_argument("--scheduler-file", required=True, type=Path)
     trigger_parser.add_argument("--problem", required=True)
+    trigger_parser.add_argument("--head", default="HEAD")
     builder_identity = trigger_parser.add_mutually_exclusive_group(required=True)
     builder_identity.add_argument("--builder-digest")
     builder_identity.add_argument("--builder", type=Path)
@@ -249,6 +326,7 @@ def build_parser() -> argparse.ArgumentParser:
     fail_parser.add_argument("--scheduler-file", required=True, type=Path)
     fail_parser.add_argument("--lane-id", required=True)
     fail_parser.add_argument("--build-token", required=True)
+    fail_parser.add_argument("--problem-ledger-digest")
     fail_parser.add_argument("--now", type=int)
 
     publish_parser = commands.add_parser(
@@ -267,6 +345,39 @@ def build_parser() -> argparse.ArgumentParser:
     github_publish_parser.add_argument("--repository", required=True)
     github_publish_parser.add_argument("--branch", default="projections")
     github_publish_parser.add_argument("--message", required=True)
+
+    merge_scheduler_parser = commands.add_parser(
+        "merge-schedulers",
+        help="three-way merge disjoint knowledge-scheduler lane updates",
+    )
+    merge_scheduler_parser.add_argument("--base", required=True, type=Path)
+    merge_scheduler_parser.add_argument("--ours", required=True, type=Path)
+    merge_scheduler_parser.add_argument("--theirs", required=True, type=Path)
+    merge_scheduler_parser.add_argument("--output", required=True, type=Path)
+
+    due_projection_parser = commands.add_parser(
+        "due-projection-plan",
+        help="plan governed projection dispatches for eligible knowledge lanes",
+    )
+    due_projection_parser.add_argument("--scheduler-file", required=True, type=Path)
+    due_projection_parser.add_argument(
+        "--projection-dir",
+        type=Path,
+        help="published projection root used to recover missing or stale lanes",
+    )
+    due_projection_parser.add_argument("--head", default="HEAD")
+    due_projection_parser.add_argument("--now", type=int)
+    due_projection_parser.add_argument("--output", type=Path)
+
+    filter_projection_parser = commands.add_parser(
+        "filter-projection-plan",
+        help="suppress duplicate or repeatedly failing same-head projection runs",
+    )
+    filter_projection_parser.add_argument("--plan", required=True, type=Path)
+    filter_projection_parser.add_argument(
+        "--run-history", required=True, type=Path
+    )
+    filter_projection_parser.add_argument("--output", required=True, type=Path)
 
     viewer_parser = commands.add_parser(
         "export-viewer", help="export a hierarchical run chain for the interactive viewer"
@@ -332,6 +443,10 @@ def main(argv: list[str] | None = None) -> int:
             )
             _write_json(result, args.output)
             return 0
+        elif args.command == "list-active-projections":
+            result = list_active_projections(root, args.problem, args.head)
+            _write_json(result, args.output)
+            return 0
         elif args.command == "validate-admission-pr":
             result = validate_admission_pr(
                 root, args.base, args.head, args.approver
@@ -383,6 +498,32 @@ def main(argv: list[str] | None = None) -> int:
             )
             _write_json(result, str(args.output) if args.output else None)
             return 0
+        elif args.command == "judgment-input-plan":
+            result = plan_primary_judgment_inputs(
+                root,
+                args.projection_dir,
+                args.problem,
+                args.judge,
+                args.head,
+                args.additional_roots,
+                args.expected_new_subjects,
+            )
+            _write_json(result, str(args.output) if args.output else None)
+            return 0
+        elif args.command == "reconciliation-plan":
+            result = plan_reconciliation_inputs(
+                root,
+                args.projection_dir,
+                args.problem,
+                args.primary_judge,
+                args.reconciliation_judge,
+                args.head,
+                args.primary_judgment_dirs,
+                args.reconciliation_additional_roots,
+                args.expected_new_conflicts,
+            )
+            _write_json(result, str(args.output) if args.output else None)
+            return 0
         elif args.command == "verify-judgment-artifacts":
             result = verify_primary_judgment_artifacts(
                 root,
@@ -426,12 +567,23 @@ def main(argv: list[str] | None = None) -> int:
                 else args.builder_digest
             )
             judgment_ids = []
+            reconciliation_dependencies: dict[str, dict[str, object]] = {}
             for bundle_dir in args.judgment_dirs:
                 _, judgment, _ = load_judgment_bundle(bundle_dir)
                 if judgment.get("problemId") != args.problem:
                     raise MathFlowError("knowledge trigger judgment belongs to another problem")
-                judgment_ids.append(str(judgment["judgmentId"]))
+                judgment_id = str(judgment["judgmentId"])
+                judgment_ids.append(judgment_id)
+                reconciliation = judgment.get("reconciliation")
+                if isinstance(reconciliation, dict):
+                    reconciliation_dependencies[judgment_id] = {
+                        "conflictId": reconciliation["conflictId"],
+                        "inputJudgmentIds": list(
+                            reconciliation["inputJudgmentIds"]
+                        ),
+                    }
             conflict_ids = []
+            conflict_dependencies: dict[str, list[str]] = {}
             if args.conflicts:
                 value = json.loads(args.conflicts.read_text(encoding="utf-8"))
                 records = value.get("conflicts") if isinstance(value, dict) else None
@@ -440,7 +592,24 @@ def main(argv: list[str] | None = None) -> int:
                 for record in records:
                     if not isinstance(record, dict) or record.get("problemId") != args.problem:
                         raise MathFlowError("knowledge trigger conflict belongs to another problem")
-                    conflict_ids.append(str(record.get("conflictId")))
+                    conflict_id = str(record.get("conflictId"))
+                    conflict_judgments = record.get("judgments")
+                    if not isinstance(conflict_judgments, list) or any(
+                        not isinstance(item, dict)
+                        or not isinstance(item.get("judgmentId"), str)
+                        for item in conflict_judgments
+                    ):
+                        raise MathFlowError(
+                            "knowledge trigger conflict has invalid judgment dependencies"
+                        )
+                    if conflict_id in conflict_dependencies:
+                        raise MathFlowError(
+                            "knowledge trigger conflict input contains duplicates"
+                        )
+                    conflict_ids.append(conflict_id)
+                    conflict_dependencies[conflict_id] = sorted(
+                        {str(item["judgmentId"]) for item in conflict_judgments}
+                    )
             result = record_completed_inputs(
                 args.scheduler_file,
                 args.problem,
@@ -450,6 +619,9 @@ def main(argv: list[str] | None = None) -> int:
                 args.minimum_interval,
                 args.now if args.now is not None else int(time.time()),
                 args.projection_digest,
+                conflict_dependencies,
+                reconciliation_dependencies,
+                str(ledger(root, args.problem, args.head)["problemLedgerDigest"]),
             )
             _write_json(result, str(args.output) if args.output else None)
             return 0
@@ -496,6 +668,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.lane_id,
                 args.build_token,
                 args.now if args.now is not None else int(time.time()),
+                args.problem_ledger_digest,
             )
         elif args.command == "publish-batch":
             result = publish_batch(args.projection_dir, args.bundles)
@@ -507,6 +680,49 @@ def main(argv: list[str] | None = None) -> int:
                 args.message,
                 os.environ.get("GITHUB_TOKEN", ""),
             )
+        elif args.command == "merge-schedulers":
+            states = []
+            for path in (args.base, args.ours, args.theirs):
+                try:
+                    states.append(json.loads(path.read_text(encoding="utf-8")))
+                except json.JSONDecodeError as exc:
+                    raise MathFlowError(
+                        f"scheduler merge input is not valid JSON: {path}"
+                    ) from exc
+            result = merge_scheduler_states(*states)
+            _write_json(result, str(args.output))
+            return 0
+        elif args.command == "due-projection-plan":
+            try:
+                scheduler = json.loads(
+                    args.scheduler_file.read_text(encoding="utf-8")
+                )
+            except json.JSONDecodeError as exc:
+                raise MathFlowError(
+                    "due projection scheduler is not valid JSON"
+                ) from exc
+            result = plan_due_projection_dispatches(
+                root,
+                scheduler,
+                args.now if args.now is not None else int(time.time()),
+                args.head,
+                args.projection_dir,
+            )
+            _write_json(result, str(args.output) if args.output else None)
+            return 0
+        elif args.command == "filter-projection-plan":
+            try:
+                plan = json.loads(args.plan.read_text(encoding="utf-8"))
+                run_history = json.loads(
+                    args.run_history.read_text(encoding="utf-8")
+                )
+            except json.JSONDecodeError as exc:
+                raise MathFlowError(
+                    "projection plan or workflow history is not valid JSON"
+                ) from exc
+            result = filter_projection_dispatch_history(plan, run_history)
+            _write_json(result, str(args.output))
+            return 0
         elif args.command == "export-viewer":
             result = export_viewer_data(
                 root,
