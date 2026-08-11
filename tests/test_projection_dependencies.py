@@ -280,7 +280,6 @@ class ProjectionDependencyTests(unittest.TestCase):
                         {"nodeId": "root", "revisionId": None}
                     ],
                     "reservationTransactionIds": [],
-                    "reportSection": f"## Contribution: {transaction_id}",
                 }
             ]
         }
@@ -576,7 +575,6 @@ class ProjectionDependencyTests(unittest.TestCase):
                         {"nodeId": "root", "revisionId": None}
                     ],
                     "reservationTransactionIds": [],
-                    "reportSection": f"## Contribution: {transaction_id}",
                 }
             ]
         }
@@ -614,6 +612,9 @@ class ProjectionDependencyTests(unittest.TestCase):
         self.assertEqual(len(requests), 2)
         self.assertNotIn("response_format", requests[0])
         self.assertIn("response_format", requests[1])
+        self.assertNotIn(
+            '"reportSection"', json.dumps(requests[1]["response_format"])
+        )
         self.assertEqual(manifest["runKind"], "credit-assignment")
         self.assertEqual(manifest["baseRun"], None)
         self.assertEqual(
@@ -631,7 +632,15 @@ class ProjectionDependencyTests(unittest.TestCase):
         index = json.loads(
             read_verified_artifact(output, manifest, "credit-index")
         )
-        self.assertEqual(index["assignments"], extracted["assignments"])
+        self.assertEqual(
+            index["assignments"],
+            [
+                {
+                    **extracted["assignments"][0],
+                    "reportSection": f"## Contribution: {transaction_id}",
+                }
+            ],
+        )
         self.assertEqual(loaded_index, index)
         lock = json.loads(
             read_verified_artifact(output, manifest, "dependency-lock")
@@ -661,7 +670,7 @@ class ProjectionDependencyTests(unittest.TestCase):
         viewer_run = credit["runs"][0]
         self.assertFalse(viewer_run["stale"])
         self.assertEqual(viewer_run["staleReasons"], [])
-        self.assertEqual(viewer_run["assignments"], extracted["assignments"])
+        self.assertEqual(viewer_run["assignments"], index["assignments"])
         self.assertEqual(viewer_run["reportMarkdown"], report)
         self.assertEqual(
             viewer_run["dependency"]["runDigest"],

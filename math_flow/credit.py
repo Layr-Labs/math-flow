@@ -173,7 +173,6 @@ def _credit_schema(
                 "type": "array",
                 "items": transaction,
             },
-            "reportSection": {"type": "string"},
         },
         "required": [
             "transactionId",
@@ -181,7 +180,6 @@ def _credit_schema(
             "roles",
             "knowledgeRefs",
             "reservationTransactionIds",
-            "reportSection",
         ],
         "additionalProperties": False,
     }
@@ -237,6 +235,8 @@ def _validate_credit_index(
     transactions: list[dict[str, object]],
     node_revisions: dict[str, str | None],
     report: str,
+    *,
+    materialized: bool = False,
 ) -> dict[str, object]:
     if not isinstance(value, dict) or set(value) != {"assignments"}:
         raise MathFlowError("credit extractor returned an invalid assignments envelope")
@@ -255,8 +255,9 @@ def _validate_credit_index(
         "roles",
         "knowledgeRefs",
         "reservationTransactionIds",
-        "reportSection",
     }
+    if materialized:
+        expected_fields.add("reportSection")
     for assignment in assignments:
         if not isinstance(assignment, dict) or set(assignment) != expected_fields:
             raise MathFlowError("credit extractor returned an invalid assignment")
@@ -317,10 +318,15 @@ def _validate_credit_index(
                 "credit reservation references must be unique prior ledger transactions"
             )
         heading = f"## Contribution: {transaction_id}"
-        if assignment.get("reportSection") != heading:
-            raise MathFlowError("credit assignment report section does not match its transaction")
+        if materialized and assignment.get("reportSection") != heading:
+            raise MathFlowError(
+                "credit assignment report section does not match its transaction"
+            )
         _report_section(report, heading)
-        by_transaction[transaction_id] = assignment
+        by_transaction[transaction_id] = {
+            **assignment,
+            "reportSection": heading,
+        }
 
     if set(by_transaction) != set(transaction_ids):
         raise MathFlowError("credit extractor omitted a canonical transaction")
@@ -519,6 +525,7 @@ def load_credit_assignment_bundle(
         transactions,
         _current_revisions(state),
         report,
+        materialized=True,
     )
     if validated_index != credit_index:
         raise MathFlowError("credit bundle index is not canonical")
@@ -644,6 +651,7 @@ def run_credit_assignment_bundle(
         [
             "Extract a faithful qualitative credit index from the report. Do not redo, summarize, or extend its assessment.",
             "Return exactly one assignment per transaction in ledger order. Sort roles alphabetically, knowledgeRefs by nodeId then revisionId, and reservationTransactionIds by ledger order.",
+            "Do not return report-section headings; trusted runner code derives each exact heading from its transaction ID.",
             "A knowledge reference must use the exact current revision shown below. A reservation reference must be a canonical transaction no later than the transaction being assessed.",
             f"Transactions in ledger order:\n{json.dumps(transaction_ids, indent=2)}",
             f"Current knowledge references:\n{json.dumps(node_index, indent=2)}",
