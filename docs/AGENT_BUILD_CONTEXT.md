@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-11 (`d23b00c`).
+Last reconciled with `main`: 2026-08-11 (`4e9d723`).
 
 ## Product thesis
 
@@ -143,6 +143,7 @@ automatic squash merge to main
 | Solver-facing repository skill | Implemented; requires repository tools and explains qualitative scoring semantics and exact-reference inspection | `.agents/skills/math-flow-solver/` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Governed local/hosted runner, provider-free eligibility planner, bounded semantic retries, rolling coalescing, catch-up over closed UTC periods, predecessor-chain terminals, and independent `credit-assignment` bundles implemented | `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
+| Research direction registration | Proposed next slice; no canonical transaction schema, reducer, tooling, or viewer surface exists yet | This document, near-term priorities |
 | Objective verifier attestations | Not yet implemented as durable protocol artifacts | `docs/MVP.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
 
@@ -169,7 +170,10 @@ rotational symmetry/rct4 modeling. Its state run digest is
 `sha256:8e1bfea136ad3b78c2720269e984b5f807179533ea8a1b112952fc41a34b31df`.
 The deployed Sites viewer reads the personal repository through its explicit
 `MATH_FLOW_CATALOG_URL` binding, so projection publication updates the UI
-without a viewer redeploy.
+without a viewer redeploy. Its top controls now group the knowledge projection
+and state selectors in one vertical control bubble and the credit projection
+and state selectors in a parallel bubble, with the problem selector to their
+left. Selector state remains URL-backed and repository-catalog-driven.
 
 The credit overlay was admitted in PR #22 at `640f41a`; its first qualitative
 assignment was published at projection commit `e0c6fc8` (run-digest prefix
@@ -331,17 +335,17 @@ the task requires an end-to-end check.
 
 These are the most important gaps as of this document's reconciliation date:
 
-1. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
+1. **Add research direction registration as a canonical participant event.**
+   The user-facing noun should be *research direction* and the act should be
+   *registration*, not reservation. Registration records priority and intent;
+   it does not grant exclusivity, block overlapping work, or establish
+   mathematical truth. See the proposed MVP contract below.
+2. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
    exact UTC transaction windows, and predecessor-chain terminals are now
    implemented, while the admitted example remains qualitative and non-zero-sum.
    A future runner can allocate a finite hourly/daily award without changing
    the scheduling envelope. Strict boundary-time knowledge would additionally
    require historical dependency resolution.
-2. **Add reservations as canonical research transactions.** A reservation must
-   be participant-authored evidence rather than an adjudication field. The
-   credit overlay can consider priority, specificity, overlap, completion
-   quality, and abandonment without making a reservation itself mathematical
-   truth or permanent exclusive ownership.
 3. **Add durable objective attestations.** Lean, exact certificate checkers, and
    reproducible computation should become content-addressed evidence with pinned
    environments rather than only ephemeral CI checks.
@@ -355,6 +359,57 @@ These are the most important gaps as of this document's reconciliation date:
    the current test target. Required checks, CODEOWNER review, bypass controls,
    and projection-branch restrictions must be configured when organization
    access becomes available.
+
+### Proposed research direction registration MVP
+
+Research direction registration should be a new participant-authored canonical
+event stream, separate from submissions, judgments, knowledge formation, and
+credit assignment. The concise protocol name can be `direction-registration`;
+the UI should call the resulting objects **Research directions**. Existing
+published credit-v1 artifacts that use `reservationTransactionIds` remain
+immutable and readable, but a new credit profile should use
+`directionRegistrationTransactionIds` or another explicitly versioned field.
+
+The MVP should support immutable events equivalent to:
+
+- `register`: describe a specific intended direction, motivation, proposed
+  evidence or method, and optional related knowledge-node IDs;
+- `update`: supersede a prior registration with a more precise scope or plan;
+- `release`: state that the participant is no longer actively pursuing it; and
+- `complete`: connect the registration to a submitted contribution without
+  claiming that the contribution is correct or sufficient.
+
+Each event should identify its registration and predecessor where applicable;
+author identity and priority time come from the canonical squash transaction.
+Current status is derived deterministically from the append-only event history,
+not stored as mutable repository state. Overlapping registrations are valid and
+must be shown explicitly. An optional review horizon may inform the credit
+policy, but expiry must not erase history.
+
+The first credit policy that consumes these events may consider priority,
+specificity, meaningful progress, overlap, release or abandonment, and the
+quality of the eventual contribution. It must treat registration only as
+evidence: early vague registrations should be discountable, low-quality work
+should not be rewarded merely for being first, and no solver should be prevented
+from pursuing a registered direction.
+
+Implementation should be phased:
+
+1. Add a versioned event schema, repository validator, and atomic-PR validation
+   for registering, updating, releasing, or completing one direction event.
+2. Add provider-free CLI/context output that lists active, overlapping,
+   released, and completed directions; update the solver skill to inspect the
+   list and optionally register before beginning substantial work.
+3. Add a repository-backed viewer surface for research directions without
+   folding them into holistic mathematical knowledge.
+4. Add a new credit profile that receives verified direction events as typed
+   inputs and cites their canonical transaction IDs. Keep the existing credit-v1
+   profile compatible rather than changing the meaning of published bundles.
+
+Automatic merge may be extended to a valid one-event direction PR using the same
+trusted revalidation pattern as solver contributions. Direction registration
+must not initially introduce locks, exclusive claims, or a requirement to
+register before submitting mathematics.
 
 GitHub currently emits a non-blocking Node 20 deprecation annotation for the
 account-required `actions/checkout@v5` and `actions/setup-python@v5`; GitHub is
