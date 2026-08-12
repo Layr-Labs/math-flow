@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 3,
+  "problemId": "maximal-determinant-23",
+  "rootId": "root",
+  "nodes": {
+    "root": {
+      "id": "root",
+      "parentId": null,
+      "type": "root",
+      "title": "Research state for maximal-determinant-23",
+      "summary": "For D_23, the supplied knowledge state retains the certified bounds 2^22·3·5^6·67·211 = 2,779,447,296,000,000 ≤ D_23 ≤ 2^22·3·5^6·675√505; because D_23 is an integer, the upper endpoint may be replaced by its floor. No stronger divisibility rounding or smaller upper endpoint is established. An explicit admissible 23×23 sign matrix certifies the lower endpoint, reproducing rather than improving the published bound. The exact value remains unresolved: the assessed evidence provides neither an optimality proof, a larger witness, nor a lower upper bound. The root retains these global bounds and the exact-value question and has one established program, exact-witness-certification.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:6ac5be05f5171b01eb96cf06ccabe4ae5cc8e9885d47b6ebff3ace229cd7f55c",
+        "section": "## Node: root"
+      },
+      "contentMarkdown": "## Node: root\n\n**Title:** Research state for maximal-determinant-23  \n**Type:** Root  \n**Status:** Active\n\nFor\n\n\\[\nD_{23}=\\max\\left\\{|\\det A|:A\\in\\{-1,+1\\}^{23\\times23}\\right\\},\n\\]\n\nthe current supplied knowledge state retains the certified bounds\n\n\\[\n2^{22}\\,3\\,5^6\\,67\\,211\n=\n2{,}779{,}447{,}296{,}000{,}000\n\\le D_{23}\n\\le\n2^{22}\\,3\\,5^6\\,675\\sqrt{505}.\n\\]\n\nBecause \\(D_{23}\\) is an integer, the supplied problem statement permits replacing the real-valued upper endpoint by its floor. No stronger divisibility rounding or smaller upper endpoint has been established by the assessed evidence.\n\nThe immutable primary judgment\n\n`sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`\n\nsupports the lower endpoint through an explicit admissible \\(23\\times23\\) sign matrix whose absolute determinant is exactly\n\n\\[\n2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThat judgment expressly finds that the assessed artifact reproduces the already published lower endpoint rather than improving it.\n\nThe exact value of \\(D_{23}\\) remains unresolved in the supplied knowledge state. In particular, the primary judgment does not support\n\n\\[\nD_{23}=2{,}779{,}447{,}296{,}000{,}000,\n\\]\n\nbecause the assessed artifact verifies only one matrix and provides no exhaustive classification, exhaustive search certificate, Gram-matrix impossibility argument, or other proof excluding larger determinants. It likewise supplies neither a witness strictly above the current lower endpoint nor an argument lowering the stated upper endpoint.\n\nThe root has one established program:\n\n- `exact-witness-certification` — exact, independently replayable certification of explicit sign-matrix witnesses and their determinants.\n\nThe global bound interval and the unresolved exact-value question remain at this root rather than being assigned to that program, since they are relevant to every prospective analytic, arithmetic, computational, classification, or search approach.\n\n**Provenance**\n\n- Frontier source supplied with the problem: William P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith, *New lower bounds for the maximal determinant problem* (2003), arXiv:`math/0304410`.\n- Immutable primary judgment: `sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`.\n- Assessed subject and evidence transaction: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n- No conflict records or reconciliation judgments were supplied.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:6cf9afce99e73d0d759b9e2b70159a4b119cee7986bea38da08b880b2b31cb1e",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:074e45ad0f6828598c324c2b2b834d918e6a461bcd94801c2ac3d2ddf62bda7e"
+    },
+    "exact-witness-certification": {
+      "id": "exact-witness-certification",
+      "parentId": "root",
+      "type": "program",
+      "title": "Exact certification of explicit maximal-determinant witnesses",
+      "summary": "This program organizes exact, independently replayable certification of explicit sign matrices offered as lower-bound witnesses for D_23. Its scope includes validating 23×23 dimensions and ±1 entries, computing determinants with exact arithmetic, retaining replayable artifacts, and distinguishing certification of a witness from proof of global optimality. It contains the certified order-23 record witness and its fraction-free Bareiss replay method. The assessed artifact is valid, exact, and replayable, but does not improve either numerical frontier or establish optimality. Matrix and determinant-record credit is carried forward to William P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith; Robert Raynor is credited with transcription, documentation, and construction of the compact exact verifier.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:6ac5be05f5171b01eb96cf06ccabe4ae5cc8e9885d47b6ebff3ace229cd7f55c",
+        "section": "## Node: exact-witness-certification"
+      },
+      "contentMarkdown": "## Node: exact-witness-certification\n\n**Title:** Exact certification of explicit maximal-determinant witnesses  \n**Type:** Program  \n**Parent:** `root`  \n**Status:** Active\n\nThis program organizes exact and independently replayable certification of explicit sign matrices offered as witnesses for lower bounds on \\(D_{23}\\). Its scope includes:\n\n- checking that a supplied matrix has exactly \\(23\\) rows and \\(23\\) columns;\n- checking that all entries belong to \\(\\{-1,+1\\}\\);\n- evaluating the determinant using exact rather than floating-point arithmetic;\n- retaining sufficient artifacts for independent replay; and\n- distinguishing certification of a particular witness from proof that the witness is globally optimal.\n\nThe program currently contains two durable concepts:\n\n1. `exact-witness-certification/order-23-record-witness`, representing the explicit order-\\(23\\) sign matrix certified at the published lower endpoint; and\n2. `exact-witness-certification/bareiss-replay-method`, representing the fraction-free exact verification method supplied for that matrix.\n\nAccording to primary judgment\n\n`sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`,\n\nthe current artifact is valid, exact, and independently replayable. Its mathematical role is reproducibility and certification of the published witness. It does not improve either numerical frontier and does not establish optimality.\n\nThe judgment carries forward the artifact’s allocation of credit: the matrix and determinant record are attributed to William P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith, while Robert Raynor is credited with transcription, documentation, and construction of the compact exact verifier. The judgment does not independently reassess discovery or priority.\n\n**Provenance**\n\n- Immutable primary judgment: `sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`.\n- Subject and evidence transaction: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n- The complete matrix and verifier are reported by the judgment as included in that transaction.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:a1123e2f8ff2f8eae3e5c205f4c95eccc274af6e5c124299198bcb52b60288f4",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:06a5cb110440f3d8787fbf86648b273e81855466bb81484101780ec47995e743"
+    },
+    "exact-witness-certification/order-23-record-witness": {
+      "id": "exact-witness-certification/order-23-record-witness",
+      "parentId": "exact-witness-certification",
+      "type": "result",
+      "title": "Certified order-23 record witness",
+      "summary": "The transaction preserves an explicit 23×23 matrix A with entries in {−1,+1} and |det A| = 2^22·3·5^6·67·211 = 2,779,447,296,000,000. With high confidence, the judgment finds that the complete matrix and deterministic exact verifier certify D_23 ≥ 2,779,447,296,000,000. This reproduces the published lower endpoint and neither proves optimality nor improves the upper bound. No generated execution transcript or intermediate Bareiss pivot list is included, but the complete matrix and verifier permit independent execution. Attribution to Orrick, Solomon, Dowdeswell, and Smith is carried forward. External source files referenced by included hashes are not part of the transaction, so row-for-row transcription from a particular external version is not independently established; this does not weaken certification of the included matrix’s determinant.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:6ac5be05f5171b01eb96cf06ccabe4ae5cc8e9885d47b6ebff3ace229cd7f55c",
+        "section": "## Node: exact-witness-certification/order-23-record-witness"
+      },
+      "contentMarkdown": "## Node: exact-witness-certification/order-23-record-witness\n\n**Title:** Certified order-\\(23\\) record witness  \n**Type:** Result  \n**Parent:** `exact-witness-certification`  \n**Status:** Supported with high confidence\n\nThe explicit matrix preserved in transaction\n\n`fb88b7832c0fa7e84c1583110a7df800571bca02`\n\nis assessed by primary judgment\n\n`sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`\n\nas a \\(23\\times23\\) matrix \\(A\\) with entries in \\(\\{-1,+1\\}\\) and\n\n\\[\n|\\det A|\n=\n2^{22}\\,3\\,5^6\\,67\\,211\n=\n2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThe judgment supports this claim with high confidence because the transaction supplies both the complete sign matrix and a deterministic exact verifier. The verifier enforces the dimensions and admissible entries and compares the determinant computed from the parsed matrix with the stated factor product.\n\nAs an admissible matrix with that determinant, the witness certifies\n\n\\[\nD_{23}\\ge 2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThis is the published lower endpoint already present in the problem statement. The witness therefore certifies the known record but does not establish a strictly larger lower bound.\n\nThe witness does not establish that its determinant equals \\(D_{23}\\). The primary judgment records that the artifact contains no exhaustive enumeration, Gram-matrix classification, replayable nonexistence certificate, or other optimality proof excluding matrices with larger determinants. No upper-bound improvement follows from this witness.\n\n**Evidentiary qualification**\n\nThe transaction does not include a generated execution transcript or a list of intermediate Bareiss pivots. Consequently, the large determinant arithmetic is not displayed step by step in the preserved report. The primary judgment does not treat this as a material defect because the complete matrix and deterministic exact verifier are supplied and can be independently executed.\n\n**Attribution and source qualification**\n\nThe judgment carries forward the README attribution of the matrix and determinant record to William P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith.\n\nThe included hashes can assist in checking an externally retrieved arXiv archive and `matData.tex`, but those external source files are not themselves included in the assessed transaction. The judgment therefore does not regard row-for-row transcription from that particular external source version as independently established solely by the included files. This provenance qualification does not weaken the determinant certification, which depends on the matrix and exact verifier actually included in the transaction.\n\n**Provenance**\n\n- Immutable primary judgment: `sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`.\n- Subject and evidence transaction: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n- Frontier attribution carried by the judgment: Orrick, Solomon, Dowdeswell, and Smith.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:8c93fa121021f2ff19b6951f48b3e6c12aed53e5d7b27408273ecacb9c2c8e65",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:541154086098a6ba1290aa3588818be45d97d308b6f49381788b1b97280450c1"
+    },
+    "exact-witness-certification/bareiss-replay-method": {
+      "id": "exact-witness-certification/bareiss-replay-method",
+      "parentId": "exact-witness-certification",
+      "type": "method",
+      "title": "Fraction-free exact determinant replay for the order-23 witness",
+      "summary": "The supplied verifier is a high-confidence, exact, deterministic replay method for the explicit order-23 witness, using fraction-free Bareiss elimination with Python integers. It validates exactly 23 rows of 23 sign characters, converts signs to ±1, copies the input, searches for nonzero pivots, tracks row-swap sign, performs exact integer elimination, aborts on inexact required divisions, and compares the resulting absolute determinant with the expected factor product. The method is independently replayable from the supplied matrix and standard-library Python. Its scope is certification of this witness’s determinant, not exhaustive search, Gram-matrix classification, an upper-bound argument, or an optimality proof. No execution transcript or intermediate pivot list is included. Credit for transcription, documentation, and construction of the compact verifier is carried forward to Robert Raynor.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:6ac5be05f5171b01eb96cf06ccabe4ae5cc8e9885d47b6ebff3ace229cd7f55c",
+        "section": "## Node: exact-witness-certification/bareiss-replay-method"
+      },
+      "contentMarkdown": "## Node: exact-witness-certification/bareiss-replay-method\n\n**Title:** Fraction-free exact determinant replay for the order-\\(23\\) witness  \n**Type:** Method  \n**Parent:** `exact-witness-certification`  \n**Status:** Supported with high confidence\n\nThe verifier assessed in transaction\n\n`fb88b7832c0fa7e84c1583110a7df800571bca02`\n\nprovides an exact, deterministic replay method for the determinant of the explicit order-\\(23\\) witness. Primary judgment\n\n`sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`\n\ncharacterizes the implementation as a standard fraction-free Bareiss elimination using Python integers rather than floating-point arithmetic.\n\nAs recorded by the judgment, the verifier:\n\n1. requires exactly \\(23\\) matrix rows;\n2. requires exactly \\(23\\) sign characters in every row;\n3. rejects characters other than `+` and `-`;\n4. converts those characters to \\(+1\\) and \\(-1\\);\n5. copies the input before determinant elimination;\n6. searches for a nonzero pivot in the active column;\n7. tracks the determinant sign resulting from row interchanges;\n8. performs elimination using exact integer operations;\n9. uses `divmod` and aborts if a required Bareiss division is not exact;\n10. returns the final Bareiss entry with the accumulated row-swap sign correction; and\n11. compares the absolute determinant computed from the matrix against the expected factor product.\n\nThe judgment finds that row pivoting among active rows is handled consistently through the recorded row-swap sign and that failure to find a required pivot would result in a zero determinant, which would fail the expected nonzero comparison.\n\nThe verifier is independently replayable using the supplied matrix and the Python standard library. Its supported scope is exact certification of the determinant of the supplied witness. It is not an exhaustive search, a Gram-matrix classification, an upper-bound argument, or a proof that the witness is optimal.\n\nNo execution transcript or intermediate pivot list is included. The primary judgment treats this as a non-material evidentiary qualification because the complete deterministic verifier is available for direct audit and execution.\n\n**Credit**\n\nThe judgment carries forward credit to Robert Raynor for transcription, documentation, and construction of the compact exact verifier. It does not attribute discovery of the matrix or determinant record to him.\n\n**Provenance**\n\n- Immutable primary judgment: `sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`.\n- Subject and evidence transaction containing the matrix and verifier: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:ab35abfef39120bf11cbe4b95afb4e84df0c6da4cd3ab3edccdab267e152d144",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:3e9cb1df9551a178feab6bc696ab488258bdee9f90a2525161d4e296be57e4ed"
+    }
+  },
+  "stateDigest": "sha256:9166632e60dcb03096523e5545cb7d62842c7e469aec5a8b96b3e80269883365"
+}

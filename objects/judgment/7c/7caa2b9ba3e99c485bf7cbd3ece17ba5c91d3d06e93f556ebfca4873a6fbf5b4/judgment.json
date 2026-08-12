@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "maximal-determinant-23",
+  "ledgerHead": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+  "problemLedgerDigest": "sha256:2cabf3dee15d394fb7a2de0bd40a25da2fe11ea05f69023b01e2351458dd9bd2",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+      "ledgerPosition": 1
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "determinant-of-the-displayed-order-23-sign-matrix",
+      "stance": "supports",
+      "summary": "The supplied artifact supports with high confidence that the displayed 23×23 matrix has entries in {-1,+1} and absolute determinant 2,779,447,296,000,000. The verifier checks the matrix dimensions and entries, uses exact integer Bareiss elimination with pivoting, row-swap sign correction, and exact-division checks, and compares the computed determinant with the stated factor product.",
+      "subjectTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02"
+      ],
+      "evidenceTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02"
+      ]
+    },
+    {
+      "claimKey": "determinant-of-the-displayed-order-23-sign-matrix",
+      "stance": "qualifies",
+      "summary": "No execution transcript or intermediate Bareiss pivots are included, so the large determinant arithmetic is not displayed step by step in the transaction. This is not considered a material defect because the complete matrix and deterministic exact verifier are supplied and independently replayable.",
+      "subjectTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02"
+      ],
+      "evidenceTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02"
+      ]
+    },
+    {
+      "claimKey": "d23-at-least-2779447296000000",
+      "stance": "supports",
+      "summary": "The verified matrix is an admissible 23×23 sign matrix, so its absolute determinant establishes D23 ≥ 2,779,447,296,000,000. This certifies the already published lower endpoint rather than improving it.",
+      "subjectTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02"
+      ],
+      "evidenceTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02"
+      ]
+    },
+    {
+      "claimKey": "d23-equals-2779447296000000",
+      "stance": "uncertain",
+      "summary": "The transaction does not determine whether 2,779,447,296,000,000 is the exact value of D23. It verifies only one matrix and supplies no exhaustive enumeration, Gram-matrix classification, search certificate, impossibility proof for larger determinants, or other optimality argument.",
+      "subjectTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02"
+      ],
+      "evidenceTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02"
+      ]
+    },
+    {
+      "claimKey": "d23-lower-bound-strictly-above-2779447296000000",
+      "stance": "uncertain",
+      "summary": "The transaction supplies no witness exceeding 2,779,447,296,000,000. Its determinant equals the published lower endpoint, so it does not establish a strictly improved lower bound.",
+      "subjectTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02"
+      ],
+      "evidenceTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02"
+      ]
+    },
+    {
+      "claimKey": "d23-upper-bound-strictly-below-the-stated-general-upper-endpoint",
+      "stance": "uncertain",
+      "summary": "The transaction gives no argument concerning the stated real-valued upper estimate, its floor, determinant divisibility restrictions, or any other improved upper bound, and therefore does not establish a strictly lower upper endpoint.",
+      "subjectTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02"
+      ],
+      "evidenceTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:db2191a5f46b989c60930a859e05b847bece9b9e967de5ff6b45ac460fbe39c1",
+  "judgmentId": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d"
+}

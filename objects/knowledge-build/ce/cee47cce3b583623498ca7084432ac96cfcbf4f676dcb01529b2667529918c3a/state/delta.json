@@ -1,0 +1,132 @@
+{
+  "operations": [
+    {
+      "action": "create",
+      "nodeId": "root",
+      "parentId": null,
+      "nodeType": "root",
+      "title": "Research state for maximal-determinant-23",
+      "summary": "For D_23, the supplied knowledge state retains the certified bounds 2^22·3·5^6·67·211 = 2,779,447,296,000,000 ≤ D_23 ≤ 2^22·3·5^6·675√505; because D_23 is an integer, the upper endpoint may be replaced by its floor. No stronger divisibility rounding or smaller upper endpoint is established. An explicit admissible 23×23 sign matrix certifies the lower endpoint, reproducing rather than improving the published bound. The exact value remains unresolved: the assessed evidence provides neither an optimality proof, a larger witness, nor a lower upper bound. The root retains these global bounds and the exact-value question and has one established program, exact-witness-certification.",
+      "reportSection": "## Node: root",
+      "baseDigest": "sha256:74a49b08ff7812e824267cf393e3ef6cd487d6ee8b377b3eb1d88cd4ca5025f0",
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: root"
+    },
+    {
+      "action": "create",
+      "nodeId": "exact-witness-certification",
+      "parentId": "root",
+      "nodeType": "program",
+      "title": "Exact certification of explicit maximal-determinant witnesses",
+      "summary": "This program organizes exact, independently replayable certification of explicit sign matrices offered as lower-bound witnesses for D_23. Its scope includes validating 23×23 dimensions and ±1 entries, computing determinants with exact arithmetic, retaining replayable artifacts, and distinguishing certification of a witness from proof of global optimality. It contains the certified order-23 record witness and its fraction-free Bareiss replay method. The assessed artifact is valid, exact, and replayable, but does not improve either numerical frontier or establish optimality. Matrix and determinant-record credit is carried forward to William P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith; Robert Raynor is credited with transcription, documentation, and construction of the compact exact verifier.",
+      "reportSection": "## Node: exact-witness-certification",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: exact-witness-certification"
+    },
+    {
+      "action": "create",
+      "nodeId": "exact-witness-certification/order-23-record-witness",
+      "parentId": "exact-witness-certification",
+      "nodeType": "result",
+      "title": "Certified order-23 record witness",
+      "summary": "The transaction preserves an explicit 23×23 matrix A with entries in {−1,+1} and |det A| = 2^22·3·5^6·67·211 = 2,779,447,296,000,000. With high confidence, the judgment finds that the complete matrix and deterministic exact verifier certify D_23 ≥ 2,779,447,296,000,000. This reproduces the published lower endpoint and neither proves optimality nor improves the upper bound. No generated execution transcript or intermediate Bareiss pivot list is included, but the complete matrix and verifier permit independent execution. Attribution to Orrick, Solomon, Dowdeswell, and Smith is carried forward. External source files referenced by included hashes are not part of the transaction, so row-for-row transcription from a particular external version is not independently established; this does not weaken certification of the included matrix’s determinant.",
+      "reportSection": "## Node: exact-witness-certification/order-23-record-witness",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: exact-witness-certification/order-23-record-witness"
+    },
+    {
+      "action": "create",
+      "nodeId": "exact-witness-certification/bareiss-replay-method",
+      "parentId": "exact-witness-certification",
+      "nodeType": "method",
+      "title": "Fraction-free exact determinant replay for the order-23 witness",
+      "summary": "The supplied verifier is a high-confidence, exact, deterministic replay method for the explicit order-23 witness, using fraction-free Bareiss elimination with Python integers. It validates exactly 23 rows of 23 sign characters, converts signs to ±1, copies the input, searches for nonzero pivots, tracks row-swap sign, performs exact integer elimination, aborts on inexact required divisions, and compares the resulting absolute determinant with the expected factor product. The method is independently replayable from the supplied matrix and standard-library Python. Its scope is certification of this witness’s determinant, not exhaustive search, Gram-matrix classification, an upper-bound argument, or an optimality proof. No execution transcript or intermediate pivot list is included. Credit for transcription, documentation, and construction of the compact verifier is carried forward to Robert Raynor.",
+      "reportSection": "## Node: exact-witness-certification/bareiss-replay-method",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: exact-witness-certification/bareiss-replay-method"
+    }
+  ]
+}
