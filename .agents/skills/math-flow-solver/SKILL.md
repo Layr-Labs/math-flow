@@ -1,11 +1,34 @@
 ---
 name: math-flow-solver
-description: Inspect verified Math Flow knowledge, research-direction registrations, and qualitative credit projections, then register intent or contribute mathematics through the repository's atomic transaction protocol using isolated Git worktrees that are safe for parallel agents. Use when an agent needs to understand the latest state or scoring, find or register an open research direction, inspect provenance, prepare a proof/counterexample/computation/formal artifact, validate an atomic participant PR, or follow merged work through judgment, knowledge formation, and credit assignment.
+description: Discover every canonical Math Flow problem, including admitted problems with no contributions or projections; inspect verified knowledge, research-direction registrations, and qualitative credit; then register intent or contribute mathematics through the atomic repository protocol using isolated Git worktrees. Use when an agent needs to recommend problems, understand current state or scoring, find or register a research direction, inspect provenance, prepare a proof/counterexample/computation/formal artifact, validate a participant PR, or follow merged work through judgment, knowledge formation, and credit assignment.
 ---
 
 # Math Flow Solver
 
-Use the deterministic `math_flow context` command before reasoning from a projection. It verifies published bundles and their base chain, compares the projection with the canonical ledger, and writes:
+After creating the worktrees below, start problem discovery from canonical
+`main`, not from the projection branch. A
+newly admitted problem has no projection object until its first contribution is
+judged and formed, so projection-only discovery will omit exactly the problems
+most likely to need initial work. Run:
+
+```bash
+python3 -m math_flow list-problems \
+  --head origin/main \
+  --projection-dir "$projection_worktree"
+```
+
+Use `stage: ready-for-first-contribution` to find admitted, unstarted problems.
+Read each candidate's exact `statementPath` from `origin/main` before
+recommending work. `knowledge-pending` and `knowledge-stale` are operational
+states; `knowledge-current` means a verified context can be materialized. Omit
+`--projection-dir` only when no trusted projection ref is available; every
+canonical problem is still listed, but initialized problems report
+`projection-unchecked`.
+
+After selecting an initialized problem, use the deterministic `math_flow
+context` command before reasoning from a projection. It verifies published
+bundles and their base chain, compares the projection with the canonical ledger,
+and writes:
 
 - `state.json`: the complete exact knowledge state;
 - `directions.json`: the canonical append-only direction-event ledger and derived current statuses;
@@ -26,8 +49,14 @@ Web research is allowed when the mathematical task needs external sources; it is
 ## Workflow
 
 1. Treat the checkout you were given as a shared control checkout. Inspect it, but do not switch its branch, edit files, commit, reset, clean, or remove anything there.
-2. Fetch the canonical and projection refs, then create two uniquely named worktrees for this agent: a writable solver worktree branched from `origin/main`, and a detached read-only projection worktree at `origin/projections`. Never reuse another agent's branch, directory, or projection worktree. Never treat the checked-in `projections/` staging directory as authoritative.
-3. Run every edit, artifact command, validation, commit, and push from the writable solver worktree. Materialize context using the detached projection worktree. Stop and refresh if `context.json` reports `stale`, `ahead`, or `diverged`, unless historical work is intentional.
+2. Fetch the canonical and projection refs, then create two uniquely named worktrees for this agent: a writable solver worktree branched from `origin/main`, and, when the trusted ref exists, a detached read-only projection worktree at `origin/projections`. If it does not exist, continue canonical discovery without `--projection-dir`; only verified context is unavailable. Never reuse another agent's branch, directory, or projection worktree. Never treat the checked-in `projections/` staging directory as authoritative.
+3. Run `list-problems` from the writable worktree and use canonical admissions
+   as the complete problem set. Run every edit, artifact command, validation,
+   commit, and push from that worktree. Materialize context for initialized
+   problems using the detached projection worktree. Do not call `context` for a
+   problem whose stage is `ready-for-first-contribution`; no knowledge run exists
+   yet. Stop and refresh if `context.json` reports `stale`, `ahead`, or
+   `diverged`, unless historical work is intentional.
 4. Read node provenance before relying on an assessment. Follow transaction and judgment IDs to the immutable source records when a conclusion matters.
 5. Inspect `directions.json` before choosing work. Registrations are non-exclusive participant intent, not ownership or mathematical truth. Consider active overlap, released work, and completed links; never avoid a promising direction solely because it was registered.
 6. Inspect `credit.status` before choosing work. Use assignments only when it is `current`; follow their exact transaction, node, revision, direction-registration, legacy-reservation, and report-section references. Treat qualitative, non-zero-sum credit as attribution context—not mathematical adjudication, a numeric score, or a command to optimize for superficial novelty.
@@ -37,6 +66,28 @@ Web research is allowed when the mathematical task needs external sources; it is
 10. Push only the solver branch, then use `gh` or an available GitHub connector to open one PR for that atomic participant event and monitor its checks. The repository re-verifies and automatically squash-merges valid contribution and direction-event PRs after every required current-head check passes; do not add unrelated changes or merge through the UI.
 11. After a contribution merges, use repository tools to obtain the squash commit, follow projection publication, and re-materialize context until that transaction has a built primary judgment and is represented in state provenance. If it requested objective verification, also require its `objectiveVerification.attestations` entry to leave `pending`; treat a pass as evidence about the encoded predicate, not mathematical adjudication. Credit may update later through its separate dependent projection. If the work finishes a registered direction, submit a separate `complete` event referencing the canonical contribution transaction.
 12. Keep the solver worktree until its work is safely pushed and handed off. Remove only worktrees created by this agent, only after confirming they are clean, and never use forced removal.
+
+## CLI guide
+
+Use `python3 -m math_flow <command> --help` for exact flags. The solver-facing
+commands are:
+
+- `list-problems`: enumerate every canonical admission and annotate its
+  contribution/projection lifecycle; use this before selecting work;
+- `list-active-projections`: inspect governed projections approved for one
+  problem, including projections with no published run;
+- `context`: materialize verified knowledge, provenance, directions,
+  attestations, credit, freshness, and queue status for an initialized problem;
+- `ledger`: derive canonical contribution transactions for one problem;
+- `directions`: inspect canonical registrations and lifecycle states;
+- `validate-tree`: validate repository structure before committing;
+- `validate-pr --base origin/main --head HEAD`: validate one committed atomic
+  participant event.
+
+The repository README's “Agent context and solver skill” section has concise
+invocation examples. Read
+[references/repository-workflow.md](references/repository-workflow.md) for the
+complete worktree, context, contribution, PR, and post-merge recipes.
 
 ## Safety and integrity
 
