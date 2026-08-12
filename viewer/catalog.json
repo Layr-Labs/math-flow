@@ -2,10 +2,1452 @@
   "schemaVersion": 1,
   "repository": {
     "slug": "Layr-Labs/math-flow",
-    "canonicalRef": "refs/remotes/origin/main",
+    "canonicalRef": "main",
     "projectionRef": "projections"
   },
   "projections": [
+    {
+      "id": "openrouter-research-v1",
+      "problemId": "bssc-sum-capacity",
+      "label": "openrouter-research-v1",
+      "projectionSpec": {
+        "id": "openrouter-research-v1",
+        "description": "The default parallel OpenRouter judgment projection with serialized, program-oriented hierarchical knowledge formation.",
+        "digest": "sha256:eb2e997ae1f7ee8a619c0c7cd0362f696ab6c70682ffb12a856407a43684abd3",
+        "engine": "openrouter-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [],
+        "scheduling": {
+          "judgmentMaxParallel": 16,
+          "knowledgeMinimumIntervalSeconds": 300,
+          "maximumJudgmentsPerBuild": 500
+        },
+        "runner": null
+      },
+      "builder": {
+        "id": "openrouter-research-program-builder-v2",
+        "digest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c"
+      },
+      "latestRunDigest": "sha256:d5ae563f02d46f64b1789ad22637ef8c9d7bf20039fbeacd9e312caa1c086ec4",
+      "runCount": 1,
+      "data": {
+        "schemaVersion": 1,
+        "problem": {
+          "id": "bssc-sum-capacity",
+          "title": "Half-skew BSSC private-message sum-capacity",
+          "statementMarkdown": "# Half-skew BSSC private-message sum-capacity\n\nConsider the binary-input, two-receiver discrete memoryless broadcast channel\nwith \\(X,Y,Z\\in\\{0,1\\}\\) and marginal transition matrices, whose rows are\nindexed by \\(x=0,1\\) and columns by the output symbol \\(0,1\\),\n\n\\[\nP_{Y|X}=\\begin{pmatrix}\\tfrac12&\\tfrac12\\\\0&1\\end{pmatrix},\n\\qquad\nP_{Z|X}=\\begin{pmatrix}1&0\\\\\\tfrac12&\\tfrac12\\end{pmatrix}.\n\\]\n\nThere are two independent private messages: receiver \\(Y\\) must decode the\nfirst and receiver \\(Z\\) the second. There is no common message and no\nfeedback. A nonnegative rate pair \\((R_1,R_2)\\) is *achievable* if there is a\nsequence of length-\\(n\\) broadcast codes with message-set sizes\n\\(2^{n(R_i-o(1))}\\) whose average decoding error at both receivers tends to\nzero. Only the two displayed marginals affect this private-message capacity;\nany fixed joint coupling \\(P_{Y,Z|X}\\) with those marginals gives the same\nobjective. All logarithms are base two and rates are in bits per channel use.\nDefine\n\n\\[\nC_{\\mathrm{sum}}\n=\\sup\\{R_1+R_2:(R_1,R_2)\\text{ is achievable}\\}.\n\\]\n\nDetermine \\(C_{\\mathrm{sum}}\\), or rigorously improve either side of the\npublished benchmark interval\n\n\\[\n0.361642884421954615663441578150587\\ldots\n\\le C_{\\mathrm{sum}}\\le\n0.369316568803963.\n\\]\n\nThe lower endpoint is the randomized-time-division value within Marton's inner\nbound. The January 2026 Gohari--Liu--Nair manuscript records the displayed\nupper endpoint and reports the smaller numerical value\n\\(0.369296340638082\\) from a simplified two-auxiliary-receiver calculation.\nA numerical minimization or finite posterior grid alone does not certify a\nconverse over every admissible auxiliary law, so the latter decimal is a lead\nrather than the governed baseline here.\n\nThis problem is ported from `Layr-Labs/bssc-challenge`. Its public `main`\nbaseline is commit `2e11491b10730ec601cea363cf2565cc13cf2892`. The source\nworktree's local `local-yukon/canonical` commit\n`1af4e641fcfd4c76ec382c4e7cd5bed32af15e9c` records later accepted artifacts,\nincluding a fixed-pair continuous certificate\n\\(C_{\\mathrm{sum}}\\le0.369296945969202842443\\). Those artifacts are candidates\nfor separate governed contributions; this admission neither copies nor\npre-accepts them.\n\nUseful contributions include:\n\n- an achievable coding scheme with a rigorously evaluated larger sum rate;\n- a converse proving a smaller universal upper bound;\n- an exact or globally certified optimization of a named inner- or\n  outer-bound functional;\n- a cardinality, extremal, tensorization, or multiletter theorem with its\n  precise scope stated;\n- an auditable formal or interval-arithmetic certificate covering every point\n  in the claimed continuous domain;\n- an independent port and verification of a source-challenge artifact; or\n- a reproducible numerical lead or non-finding clearly labeled as non-proof.\n\n## Frontier sources\n\n- Layr Labs,\n  [BSSC challenge public baseline](https://github.com/Layr-Labs/bssc-challenge/tree/2e11491b10730ec601cea363cf2565cc13cf2892).\n- Amin Gohari, Yi Liu, and Chandra Nair,\n  [A Two Auxiliary Receiver Outer Bound to the Capacity Region of a Two-Receiver Discrete Memoryless Broadcast Channel](https://chandra.ie.cuhk.edu.hk/pub/papers/BC/GK-outer.pdf),\n  manuscript, 2026-01.\n- Yanlin Geng, Varun Jog, Chandra Nair, and Zizhou Vincent Wang,\n  [An Information Inequality and Evaluation of Marton's Inner Bound for Binary Input Broadcast Channels](https://arxiv.org/abs/1001.1468),\n  IEEE Transactions on Information Theory 59 (2013).\n- Varun Jog and Chandra Nair,\n  [An information inequality for the BSSC channel](https://arxiv.org/abs/0901.1492),\n  2009.\n"
+        },
+        "ledgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+        "transactions": [
+          {
+            "ordinal": 1,
+            "transactionId": "d638c346212db3e75f6a53dcebcfd09f55125852",
+            "contributionId": "gk-input-reduction-and-q0-foundations",
+            "path": "problems/bssc-sum-capacity/contributions/gk-input-reduction-and-q0-foundations",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# GK input reduction and three-posterior foundations\n\n## Claims\n\nThis contribution is an attributed port of three accepted artifacts from the\nlocal Yukon BSSC challenge. The verbatim accepted submissions and their exact\ncheckers are retained under `source-artifacts/`.\n\n1. In the Gohari--Liu--Nair Theorem 9 equations (19a)--(19p), including\n   their two side conditions, every arbitrary finite auxiliary channel\n   \\(T_{G,K\\mid X,Y,Z}\\) may be replaced pointwise by\n   \\[\n   T'_{G,K\\mid X,Y,Z}=\\bar T_{G\\mid X}\\bar T_{K\\mid X},\n   \\]\n   where the two factors are its input-conditioned marginals. Every displayed\n   constraint branch and side condition is unchanged. Thus output dependence\n   and conditional \\(G\\)--\\(K\\) correlation are redundant for this system.\n\n2. At the fair input, represent a finite-output binary-input receiver by its\n   posterior measure \\(m=\\sum_a m_a\\delta_{\\rho_a}\\), whose mean is \\(1/2\\).\n   For a finite posterior grid \\(Q\\) of size \\(N\\), containing\n   \\(\\{0,1/2,1\\}\\), each receiver may be replaced without changing the\n   grid-restricted 30-row value \\(V_Q\\) by one with at most \\(N\\) outputs.\n   If \\(Q\\) is reflection closed, the replacement preserves reflected pairs.\n\n3. On \\(Q_0=\\{0,1/2,1\\}\\), with\n   \\[\n   c=h_2(1/4)-\\tfrac12,\n   \\]\n   the unrestricted and reflected receiver optima agree exactly:\n   \\[\n   \\inf_{G,K}V_{Q_0}(G,K)=\\inf_mV_{Q_0}(m,m^\\circ)=c.\n   \\]\n\n4. The same rung has the pointwise coercive strengthening\n   \\[\n   B(G,K)\\ge V_0(g,k)\\ge \\max\\{F(g),F(k)\\},\\qquad\n   F(x)=\\frac{2c\\max\\{c,x\\}}{c+x},\n   \\]\n   where \\(g=I_G(1/2)\\), \\(k=I_K(1/2)\\), and \\(B(G,K)\\) is the full\n   Theorem 9 sum-rate value. Hence, if \\(c\\le U<2c\\) and\n   \\(B(G,K)\\le U\\), then necessarily\n   \\[\n   \\frac{2c^2}{U}-c\\le g,k\\le\\frac{Uc}{2c-U}.\n   \\]\n\nThese are structural and finite-grid results. They do not improve either\ncapacity frontier by themselves.\n\n## Argument\n\nLet \\(A=(A_a,A_b,A_c)\\) denote the three auxiliary groups. The Theorem 9\nfactorization gives \\(A-X-(Y,Z,G,K)\\). Every mutual-information term in the\ncited rows and side conditions contains exactly one of \\(Y,Z,G,K\\) as its\noutput; none contains \\((G,K)\\) jointly or conditions one output on another.\nFor any auxiliary subtuple \\(D\\),\n\\[\np(d,x,g)=p_X(x)p_{D\\mid X}(d\\mid x)\n \\sum_{y,z,k}T_{Y,Z\\mid X}(y,z\\mid x)\n T_{G,K\\mid X,Y,Z}(g,k\\mid x,y,z),\n\\]\nand the final sum is \\(\\bar T_{G\\mid X}(g\\mid x)\\). The product replacement\ntherefore preserves the entire law of \\((D,X,G)\\); likewise for \\(K\\), while\nthe \\(Y,Z\\) laws are unchanged directly. This proves the first claim in both\ndirections.\n\nFor the receiver reduction, define\n\\[\n\\psi(q,\\rho)=\n2(1-q)(1-\\rho)\\log_2\\frac{1-\\rho}{(1-q)(1-\\rho)+q\\rho}\n+2q\\rho\\log_2\\frac{\\rho}{(1-q)(1-\\rho)+q\\rho}.\n\\]\nThen \\(I_m(q)=\\int\\psi(q,\\rho)\\,dm(\\rho)\\). Preserving the mean and the\n\\(N-2\\) nonendpoint grid samples is a convex-hull problem in\n\\(\\mathbb R^{N-1}\\); Caratheodory's theorem supplies a measure with at most\n\\(N\\) atoms. The identities\n\\[\nI(S;A)=I_A(1/2)-\\mathbb E I_A(q_S),\\qquad\nI(X;A\\mid S)=\\mathbb E I_A(q_S)\n\\]\nand their conditional versions show that these samples determine every\nreceiver term in the grid-restricted rows. Reflection covariance\n\\(I_{m^\\circ}(q)=I_m(1-q)\\) proves the reflected statement.\n\nOn \\(Q_0\\), choosing \\(W=X\\) and \\(U,V\\) constant in every group makes\n\\((R_1,R_2)=(c,0)\\) feasible for all \\(G,K\\), proving the universal lower\nbound. The reflection-invariant revealing-erasure posterior measure\n\\[\n\\frac c2\\delta_0+(1-c)\\delta_{1/2}+\\frac c2\\delta_1\n\\]\nhas the same sampled curve as \\(Y,Z\\). In the audited sum row `SL(1,U)`, the\ncross differences vanish and\n\\(I(U,W;G)+I(X;G\\mid U,W)=I(X;G)=c\\), giving the matching upper bound.\n\nFinally, each \\(Q_0\\)-supported hierarchy block is exactly parameterized by\n\\[\nA,U,V\\ge0,\\qquad A+U\\le1,\\quad A+V\\le1.\n\\]\nIf the receiver midpoint information is \\(x\\), its seven row terms are\n\\(Ax,Ux,Vx,(A+U)x,(A+V)x,(1-A-U)x,(1-A-V)x\\). The accepted H, L, and X\nwitness families cover the cases above, below, and straddling \\(c\\). The\nexact checker rebuilds all 30 rows and verifies all row and block-box slacks\nas coefficientwise nonnegative polynomials after the stated substitutions.\nSkew exchange supplies the complementary branch of \\(F\\), and exact\ninversion of \\(F(x)\\le U\\) gives the midpoint window.\n\n## Reproduction\n\nFrom this contribution directory, run both accepted standard-library exact\ncheckers:\n\n```bash\nPYTHONDONTWRITEBYTECODE=1 python3 source-artifacts/frontier-global-bridge/verify_q0.py\nPYTHONDONTWRITEBYTECODE=1 python3 source-artifacts/frontier-q0-coercive/verify_q0.py\n```\n\nBoth retained source commits contain the same checker and end with\n\n```text\nPASS: exact three-posterior coercive-floor certificate complete\n```\n\nThe first source submission is symbolic and records no executable command.\nIts audit is the displayed factorization, complete single-output term list,\nand marginal-law calculation in `source-artifacts/agent-01/FULL.md`.\n\nThe original source commands, preserved verbatim in the accepted `FULL.md`\nfiles, use the source-repository prefix `submission/`; the commands above are\nthe path-adjusted replay commands for this port. No mathematical or executable\ncontent in the source artifacts has been changed.\n\n## Provenance and authorship\n\nThe read-only source checkout is `Layr-Labs/bssc-challenge`. Its accepted\nlocal state is branch `local-yukon/canonical` at\n`1af4e641fcfd4c76ec382c4e7cd5bed32af15e9c`. All three source submissions\nwere authored by Robert (`robert.raynor@gmail.com`); this port does not claim\nnew authorship.\n\n| accepted artifact | source ref | source commit | judgment commit and ID | canonical acceptance commit |\n|---|---|---|---|---|\n| input-only marginalization | `local-yukon/submissions/agent-01` | `886748411d9e5b4533ca886fffd5d396f42ffec2` | `35666e5a0f715e868581db119102d2c4ea0ad9ed`, `fc56cf03d3802f89de673c56b293728561e1e7eeea38a468ad1186b995e56314` | `ee4e6796f889368e4d9ebbf88b5cdf16113b420d` |\n| finite-grid reduction and solved \\(Q_0\\) rung | `local-yukon/submissions/frontier-global-bridge` | `37f890c29f3bc05796fdf99caa41e04c61f7de03` | `d20e7b6eaaa09cf7139e607f9e6a07fdb133aaa9`, `2d0cf3b6fe7e7d843a1834bdb75adc2afa82a3e08f93928d159333aa25098950` | `3945fd6038b359f9b1ff71eefb1b7f3f80e499d6` |\n| midpoint coercivity | `local-yukon/submissions/frontier-q0-coercive` | `8d9516c0c44931b6ccff5927342f38e93fd345a8` | `8db34d65483fdbc9bcdab75dbaccad795d6a0ed6`, `9b8cbe42199241a600929ef1cfc0decc72f432f37ae8514b1581c66f15f9d6e1` | `54a9b21c9870e2c3ef8248b833e5ad7e8fd5b586` |\n\nThe files below `source-artifacts/` are byte-for-byte copies from the stated\nsource commits. The accepted judgment records report `outcome: accepted` for\nall three artifacts.\n\n## Limitations\n\n- The marginalization applies only to the displayed Theorem 9 system; it does\n  not cover bounds with joint-output or output-conditioned terms.\n- The \\(N\\)-output reduction is for a fixed \\(N\\)-point posterior grid. It\n  gives no continuum cardinality theorem or limit interchange.\n- The solved \\(Q_0\\) rung is a lower approximation to the continuum receiver\n  optimization, not a capacity bound.\n- The midpoint window is necessary, not sufficient. It gives no off-midpoint\n  control, reflected sufficiency, global auxiliary optimum, or capacity\n  formula.\n\n## Reference\n\nA. A. Gohari, G. Liu, and C. Nair, *A Two Auxiliary Receiver Outer Bound to\nthe Capacity Region of a Two-Receiver Discrete Memoryless Broadcast Channel*,\nJanuary 2026, Theorem 9 and equations (19a)--(19p).\n"
+          }
+        ],
+        "judgments": [
+          {
+            "judgmentId": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+            "runDigest": "sha256:0fae0de67ef2025087fca27542e1316a67fd63c30ead1b1a92860efc5ad42e3d",
+            "judgmentKind": "primary",
+            "ledgerHead": "d638c346212db3e75f6a53dcebcfd09f55125852",
+            "problemLedgerHead": "d638c346212db3e75f6a53dcebcfd09f55125852",
+            "judgeSpec": {
+              "id": "openrouter-markdown-judgment-v1",
+              "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.52597625,
+            "reportDigest": "sha256:ea3f1ec52805c6faee507ee5c5c99ca187cf1feb69fc5f2084ba352c9b535265",
+            "reportMarkdown": "# Judgment of transaction `d638c346212db3e75f6a53dcebcfd09f55125852`\n\n## Overall assessment\n\nThe transaction contains four mathematically distinct results:\n\n1. a reduction of the Gohari–Liu–Nair auxiliary receivers \\(G,K\\) to conditionally independent input-only channels;\n2. a finite-cardinality reduction for receiver channels when the auxiliary posterior optimization is restricted to a finite grid;\n3. an exact evaluation of the three-point-grid receiver optimization;\n4. a pointwise coercive lower bound depending only on the midpoint informations \\(I_G(1/2)\\) and \\(I_K(1/2)\\).\n\nThe supplied arguments for these results are logically strong and, for the finite-grid claims, are accompanied by inspectable exact symbolic code. The principal qualification is that the full equations (19a)–(19p) of the cited outer bound are not included. Consequently, the algebraic arguments can be checked from the supplied material, but the assertion that the term list and the hard-coded 30 rows exactly reproduce the manuscript cannot be independently established from this transaction alone.\n\nNone of the results changes either endpoint of the stated capacity interval. The contribution correctly describes the finite-grid values as lower approximations to the fixed-receiver outer-bound functional, not as converse bounds on \\(C_{\\mathrm{sum}}\\).\n\nThere is also a concrete reproducibility inconsistency: the checker included under `frontier-global-bridge` is the same coercivity checker included under `frontier-q0-coercive`, while the former artifact describes a different expected output and claims a direct audit of the \\(W=X\\) witness table. This does not invalidate the mathematical conclusions, because the included checker verifies a stronger coercive lower bound and the matching upper row, but the two commands are not independent checks and the documentation of the first checker is inaccurate.\n\n---\n\n## Finding 1: Input-only marginalization of the two auxiliary receivers\n\n**Claim key:** `GK-Theorem-9-input-only-auxiliary-receiver-reduction`\n\n### Proposition assessed\n\nFor the displayed Gohari–Liu–Nair Theorem 9 constraint system, any finite channel\n\\[\nT_{G,K\\mid X,Y,Z}\n\\]\ncan be replaced by\n\\[\nT'_{G,K\\mid X,Y,Z}(g,k\\mid x,y,z)\n=\\bar T_{G\\mid X}(g\\mid x)\\bar T_{K\\mid X}(k\\mid x)\n\\]\nwithout changing any branch of equations (19a)–(19p) or either side condition.\n\n### Decisive reasoning\n\nThe proof correctly isolates the relevant invariant. Under the asserted factorization, for any auxiliary subtuple \\(D\\),\n\\[\np(d,x,g)\n=p_X(x)p_{D\\mid X}(d\\mid x)\n  \\sum_{y,z,k}T_{Y,Z\\mid X}(y,z\\mid x)\n  T_{G,K\\mid X,Y,Z}(g,k\\mid x,y,z).\n\\]\nThe sum is precisely the induced channel \\(\\bar T_{G\\mid X}(g\\mid x)\\). Under the proposed product replacement, marginalizing \\(Y,Z,K\\) produces the same expression. Thus the complete joint law of \\((D,X,G)\\) is preserved. The analogous statement holds for \\((D,X,K)\\), while the \\(Y\\) and \\(Z\\) marginal laws are unchanged directly.\n\nIt follows that every mutual information of the forms\n\\[\nI(S;G\\mid R),\\qquad I(S;K\\mid R),\n\\]\nwith \\(S,R\\) made from \\(X\\) and the auxiliary variables, is unchanged. Signed sums and minima of unchanged quantities are also unchanged. The reverse attainable-set inclusion is immediate because every pair \\(Q_{G\\mid X},Q_{K\\mid X}\\) can be embedded in the original family by ignoring \\(Y,Z\\).\n\nConditional \\(G\\)-\\(K\\) correlation is therefore indeed irrelevant whenever the constraint system contains no joint terms involving both outputs and no terms conditioning one output on another.\n\n### Missing evidence and scope qualification\n\nThe proof depends critically on the syntactic assertion that the supplied audit table exhausts equations (19a)–(19p) and the two side conditions. The actual equations are not reproduced in the transaction, so this exhaustiveness cannot be independently compared against the manuscript using only the supplied evidence.\n\nAccordingly:\n\n- the marginal-law argument itself is correct;\n- the theorem applies to any constraint system having the stated single-output structure;\n- its identification with the complete cited Theorem 9 system is well supported by the detailed term audit, but not fully self-contained here.\n\nThe stated limitation is appropriate: a bound containing a term such as \\(I(S;G,K\\mid R)\\), \\(I(S;Y\\mid G)\\), or any other joint/output-conditioned term would not be covered.\n\n### Judgment\n\n**Supported with high confidence, conditional on the supplied term audit being a faithful transcription of Theorem 9.**\n\n---\n\n## Finding 2: Finite-grid receiver-cardinality reduction\n\n**Claim key:** `finite-posterior-grid-receiver-cardinality-at-most-grid-size`\n\n### Proposition assessed\n\nLet \\(Q\\subset[0,1]\\) be an \\(N\\)-point grid containing \\(0,\\tfrac12,1\\). For the fair-input posterior LP in which every auxiliary posterior is restricted to \\(Q\\), each finite-output binary-input receiver can be replaced, without changing the LP value, by a receiver with at most \\(N\\) outputs. If \\(Q\\) is reflection closed, the same reduction preserves reflected receiver pairs.\n\n### Decisive reasoning\n\nThe posterior-measure representation is correct. Under the fair input, a finite-output binary-input channel is represented by\n\\[\nm=\\sum_a m_a\\delta_{\\rho_a},\\qquad\n\\sum_a m_a\\rho_a=\\frac12,\n\\]\nand conversely this measure determines a valid channel through\n\\[\nP(A=a\\mid X=0)=2m_a(1-\\rho_a),\\qquad\nP(A=a\\mid X=1)=2m_a\\rho_a.\n\\]\n\nThe displayed function \\(\\psi(q,\\rho)\\) is linear in the posterior measure and gives\n\\[\nI_m(q)=\\int\\psi(q,\\rho)\\,dm(\\rho).\n\\]\nTo preserve the receiver on the grid, it suffices to preserve:\n\n- the posterior mean \\(\\int\\rho\\,dm=\\frac12\\);\n- the \\(N-2\\) mutual-information samples at the nonendpoint grid points.\n\nThese form a vector in \\(\\mathbb R^{N-1}\\). Carathéodory’s theorem therefore gives a representing measure with at most \\(N\\) atoms. The mean coordinate ensures that the replacement remains a valid binary-input channel.\n\nThe identities\n\\[\nI(S;A)=I_A(1/2)-\\mathbb E I_A(q_S),\n\\qquad\nI(X;A\\mid S)=\\mathbb E I_A(q_S)\n\\]\nfollow from the Markov relation \\(S-X-A\\) and the chain rule. Their conditional variants similarly express all single-receiver mutual-information terms through samples \\(I_A(q)\\). Thus, if every posterior appearing in the restricted auxiliary hierarchy lies in \\(Q\\), equality of the receiver curves on \\(Q\\) preserves every such row value.\n\nThe reflected-pair statement also follows:\n\\[\nI_{m^\\circ}(q)=I_m(1-q).\n\\]\nFor reflection-closed \\(Q\\), matching \\(m\\) on \\(Q\\) automatically matches \\(m^\\circ\\) through the reflected replacement.\n\n### Important scope distinctions\n\nThis is a cardinality theorem for the **receiver outputs** in a fixed finite-grid auxiliary optimization. It is not:\n\n- a cardinality theorem for the continuum posterior problem;\n- a proof that receiver posterior atoms themselves belong to \\(Q\\);\n- an interchange of an infimum with a grid limit;\n- a proof that reflected pairs suffice among arbitrary continuum receiver pairs.\n\nThe contribution states these limitations correctly.\n\nAs in Finding 1, applying the result specifically to the named 30-row LP assumes that all relevant terms have the asserted single-receiver posterior-sample form. The general Carathéodory argument is independently sound.\n\n### Judgment\n\n**Supported with high confidence.** The proof is concise, exact, and uses the correct ambient dimension, giving the claimed bound of \\(N\\), not \\(N+1\\).\n\n---\n\n## Finding 3: Exact solution of the three-point grid \\(Q_0\\)\n\n**Claim key:** `three-point-grid-GK-receiver-optimum-equals-BSSC-midpoint-information`\n\n### Proposition assessed\n\nFor\n\\[\nQ_0=\\left\\{0,\\frac12,1\\right\\},\\qquad\nc=h_2(1/4)-\\frac12,\n\\]\nthe unrestricted finite-output receiver-pair infimum and the reflected-pair infimum both equal \\(c\\):\n\\[\n\\inf_{G,K}V_{Q_0}(G,K)\n=\n\\inf_mV_{Q_0}(m,m^\\circ)\n=\nc.\n\\]\n\n### Lower bound\n\nAt the fair input,\n\\[\nI(X;Y)=I(X;Z)=c.\n\\]\nChoosing \\(W=X\\) and \\(U,V\\) constant in each auxiliary group uses only endpoint posteriors and is therefore admissible on \\(Q_0\\). The supplied table asserts that \\((R_1,R_2)=(c,0)\\) satisfies all 30 rows for every \\(G,K\\). This gives\n\\[\nV_{Q_0}(G,K)\\ge c\n\\]\nfor every receiver pair.\n\nThe table is consistent with the usual identities for \\(W=X\\): all conditional terms below \\(W\\) vanish, while \\(I(W;A)=I(X;A)\\). The side-condition rows also reduce to zero.\n\n### Matching upper construction\n\nThe revealing-erasure posterior measure\n\\[\nm_E=\\frac c2\\delta_0+(1-c)\\delta_{1/2}+\\frac c2\\delta_1\n\\]\nhas mean \\(1/2\\), is reflection invariant, and satisfies\n\\[\nI_E(0)=I_E(1)=0,\\qquad I_E(1/2)=c.\n\\]\nHence \\(Y,G,K,Z\\) have identical sampled curves on \\(Q_0\\) when \\(G=K=E\\).\n\nFor the supplied `SL(1,U)` row, identical receiver samples cancel the two cross differences. The remaining terms telescope:\n\\[\nI(U,W;G)+I(X;G\\mid U,W)=I(X;G)=c.\n\\]\nThus every feasible point obeys\n\\[\nR_1+R_2\\le c\n\\]\nfor this reflected receiver pair. Combined with the universal lower bound and inclusion of the reflected class in the unrestricted class, this proves the stated equality.\n\n### Certification qualification\n\nThe exact script verifies that the hard-coded `SL(1,U)` coefficient becomes identically one when all four sampled curves coincide. The included coercivity audit also implies the universal lower bound, since the coercive function satisfies \\(F(x)\\ge c\\).\n\nHowever, the checker under `frontier-global-bridge` is not the checker described in that artifact’s reproduction section. In particular, it does not print the claimed direct `W=X` audit messages. Thus the prose proof and row table, rather than the described executable output, carry the direct \\(W=X\\) argument.\n\nThe supplied code still supports the mathematical conclusion for the encoded 30-row system, but it does not independently certify that those rows are an exact transcription of the external manuscript.\n\n### Relation to capacity\n\nSince the grid restriction lowers the inner auxiliary maximization,\n\\[\nV_{Q_0}(G,K)\\le B(G,K).\n\\]\nTherefore the value \\(c\\approx0.311278\\) is not a capacity upper bound and does not conflict with the much larger known achievable sum rate. The contribution states this direction correctly.\n\n### Judgment\n\n**Supported with high confidence for the supplied 30-row formulation, with a documentation and source-transcription qualification.**\n\n---\n\n## Finding 4: Midpoint coercivity for arbitrary receiver pairs\n\n**Claim key:** `three-point-grid-midpoint-coercive-lower-bound`\n\n### Proposition assessed\n\nFor\n\\[\ng=I_G(1/2),\\qquad k=I_K(1/2),\n\\]\ndefine\n\\[\nF(x)=\\frac{2c\\max\\{c,x\\}}{c+x}.\n\\]\nThen\n\\[\nB(G,K)\\ge V_0(g,k)\\ge\\max\\{F(g),F(k)\\}.\n\\]\nConsequently, if \\(c\\le U<2c\\) and \\(B(G,K)\\le U\\), then\n\\[\n\\frac{2c^2}{U}-c\\le g,k\\le\\frac{Uc}{2c-U}.\n\\]\n\n### Reduction of the \\(Q_0\\) hierarchy\n\nOn \\(Q_0\\), a mean-\\(\\tfrac12\\) posterior law has equal endpoint masses. The claimed block parameterization\n\\[\nA,U,V\\ge0,\\qquad A+U\\le1,\\qquad A+V\\le1\n\\]\ntherefore gives the seven row-term coefficients\n\\[\nA,\\ U,\\ V,\\ A+U,\\ A+V,\\ 1-A-U,\\ 1-A-V.\n\\]\nMultiplying these coefficients by a receiver’s midpoint information correctly determines all its \\(Q_0\\) mutual-information terms. Thus the receiver dependence of the grid problem reduces to the two scalars \\(g,k\\).\n\n### Witness families\n\nThe three supplied cases cover the square of possible midpoint values.\n\n#### High case\n\nFor a selected value \\(x\\ge c\\), the H witness gives symmetric rates\n\\[\nR_1=R_2=\\frac{cx}{c+x},\n\\]\nhence sum\n\\[\n\\frac{2cx}{c+x}=F(x),\n\\]\nindependently of the other middle-letter value.\n\n#### Low case\n\nFor \\(0\\le x\\le y\\le c\\), the L witness gives\n\\[\nR_1=R_2=\\frac{c^2}{c+x},\n\\]\nhence\n\\[\nR_1+R_2=\\frac{2c^2}{c+x}=F(x).\n\\]\nSince \\(F\\) is decreasing on \\([0,c]\\), choosing \\(x=\\min\\{g,k\\}\\) gives the larger of \\(F(g)\\) and \\(F(k)\\).\n\n#### Crossing case\n\nFor \\(x<c<y\\), the X witness gives the low-side value\n\\[\nF(x)=\\frac{2c^2}{c+x}.\n\\]\nThe H witness, after exchanging the middle receivers, separately gives \\(F(y)\\). Since lower bounds may be established by different feasible witnesses, these two constructions together prove the maximum of the two values.\n\nThe X denominator is positive in the strict crossing case. Boundary cases are covered by H or L, so the apparent singularity when both offsets vanish creates no gap.\n\n### Exact row audit\n\nThe included Python script:\n\n- rebuilds 30 labeled rows from hard-coded path formulas;\n- checks all H, L, and X block-box constraints;\n- computes every row slack as an exact rational polynomial;\n- verifies coefficientwise nonnegativity after substitutions by formal nonnegative variables;\n- verifies the complete set of distinct slack polynomials claimed in the prose.\n\nNo floating-point or numerical optimizer is involved. Treating \\(c\\) as a formal nonnegative variable is legitimate here because the certificates establish stronger polynomial statements valid for all nonnegative parameter values satisfying the case substitutions.\n\nAgain, this certifies the hard-coded row system, while fidelity of those rows to the external manuscript remains an unverified transcription step.\n\n### Passage to the full functional\n\nThe direction\n\\[\nB(G,K)\\ge V(1/2;G,K)\\ge V_0(g,k)\n\\]\nis correct:\n\n- \\(B\\) takes a supremum over input priors, so it dominates the fair-prior value;\n- the continuum fair-prior optimization includes all \\(Q_0\\)-supported witnesses, so it dominates the restricted-grid value.\n\nNo converse equality is asserted.\n\n### Inversion to the midpoint window\n\nFor \\(x\\le c\\),\n\\[\nF(x)=\\frac{2c^2}{c+x}\\le U\n\\iff\nx\\ge\\frac{2c^2}{U}-c.\n\\]\nFor \\(x\\ge c\\),\n\\[\nF(x)=\\frac{2cx}{c+x}\\le U\n\\iff\nx\\le\\frac{Uc}{2c-U},\n\\]\nwhere \\(U<2c\\) ensures a positive denominator. Since the lower endpoint is at most \\(c\\) and the upper endpoint is at least \\(c\\) when \\(U\\ge c\\), these branchwise inequalities combine into the claimed interval.\n\n### Judgment\n\n**Supported with high confidence for the encoded 30-row \\(Q_0\\) problem.** It is a useful necessary localization condition, not a sufficiency result and not a proof of reflected optimality.\n\n---\n\n## Finding 5: Effect on the BSSC sum-capacity frontier\n\n**Claim key:** `BSSC-sum-capacity-frontier-effect-of-Q0-foundations`\n\nThe transaction does not prove a new achievable rate or a smaller universal converse. In particular, it does not establish either\n\\[\nC_{\\mathrm{sum}}>0.3616428844\\ldots\n\\]\nor\n\\[\nC_{\\mathrm{sum}}<0.3693165688\\ldots.\n\\]\n\nThe exact \\(Q_0\\) value \\(c\\) is a value of a restricted receiver optimization lying below the full fixed-receiver functional. It therefore cannot be substituted as a capacity converse. The midpoint window only eliminates receiver pairs whose midpoint informations are incompatible with a separately supplied upper threshold \\(U\\); it does not certify the global infimum of the full functional.\n\nThe transaction is consequently best classified as a structural and finite-grid foundation for a future converse calculation. Its own statement that it does not improve the capacity frontier is correct.\n\n---\n\n## Contradictions and missing evidence\n\n### 1. Checker/documentation mismatch\n\nThe `frontier-global-bridge/FULL.md` reproduction section says its checker directly verifies the \\(W=X\\) table and prints messages such as:\n\n> `PASS: W=X witness makes every RHS 0, I(X;Y), or I(X;Z)`\n\nThe supplied `frontier-global-bridge/verify_q0.py` is instead byte-for-byte the coercivity checker and prints H/L/X messages. Therefore:\n\n- the reproduction description in `frontier-global-bridge/FULL.md` is inaccurate for the supplied file;\n- running the two README commands executes duplicate mathematical content;\n- the two runs are not independent corroborations.\n\nThis is a documentation contradiction, not a contradiction between the mathematical propositions.\n\n### 2. Missing manuscript equations\n\nNeither the complete equations (19a)–(19p) nor an externally checkable copy of the manuscript formulation is included. Thus the following remain asserted rather than independently certified by the transaction:\n\n- that the single-output term audit is exhaustive;\n- that the 30 hard-coded rows are exactly the manuscript rows;\n- that the side-condition orientation and all row coefficients were transcribed correctly.\n\nThe symbolic calculations are exact after those rows are accepted.\n\n### 3. Provenance assertions are not mathematical verification\n\nThe commit hashes, acceptance records, and byte-for-byte provenance are reported in the contribution, but the corresponding repository objects and judgment records are not supplied for independent comparison. They should not be used as substitutes for checking the proofs.\n\n### 4. No continuum bridge\n\nThere is no proof of:\n\n- a continuum receiver-cardinality bound;\n- convergence of finite posterior grids to the full functional;\n- interchange of a receiver infimum with a grid limit;\n- reflected optimality for the full receiver optimization;\n- a global certified minimization of \\(B(G,K)\\).\n\nThese are correctly listed as limitations and remain decisive missing ingredients for a new capacity converse.\n\n---\n\n## Contribution and attribution\n\nThe transaction attributes all three source artifacts and the port to Robert Raynor and expressly disclaims new authorship arising merely from the port. The supplied mathematical content is substantial: the marginalization argument, Carathéodory reduction, exact \\(Q_0\\) solution, and coercive witnesses are distinct contributions rather than numerical leads.\n\nThe reported historical acceptance and commit provenance cannot be independently verified from the supplied files, but there is no internal evidence contradicting the stated authorship.\n\n---\n\n## Final judgment\n\nThe mathematical claims are **substantively supported within their carefully limited scope**. The marginalization and finite-grid cardinality arguments are analytically convincing. The \\(Q_0\\) equality and coercivity theorem are backed by explicit witnesses and exact polynomial row checks.\n\nThe warranted qualifications are:\n\n1. the connection to the external Theorem 9 formulation depends on an unverified row and term transcription;\n2. the two supplied checker commands run the same checker, contrary to the first artifact’s reproduction description;\n3. none of the results improves the governed capacity interval or resolves the continuum auxiliary-receiver optimization.\n\nSubject to those qualifications, the transaction provides valid structural progress rather than a capacity-frontier result.\n",
+            "record": {
+              "schemaVersion": 1,
+              "judgmentKind": "primary",
+              "problemId": "bssc-sum-capacity",
+              "ledgerHead": "d638c346212db3e75f6a53dcebcfd09f55125852",
+              "problemLedgerDigest": "sha256:587bcac7c801bcc477bce09ce4a5a160fbbe442681d5890ea3880af63c6baa47",
+              "judgeSpec": {
+                "id": "openrouter-markdown-judgment-v1",
+                "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                  "ledgerPosition": 1
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "gk-theorem-9/input-only-auxiliary-receiver-reduction",
+                  "stance": "supports",
+                  "summary": "The marginal-law argument supports replacing any finite T_{G,K|X,Y,Z} by conditionally independent input-only channels T'_{G,K|X,Y,Z}=bar T_{G|X}bar T_{K|X} without changing constraint systems containing only the stated single-output mutual-information terms. The joint laws needed for G-terms and K-terms are preserved, and the reverse attainable-set inclusion is immediate.",
+                  "subjectTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ],
+                  "evidenceTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ]
+                },
+                {
+                  "claimKey": "gk-theorem-9/input-only-auxiliary-receiver-reduction",
+                  "stance": "qualifies",
+                  "summary": "Identification of the reduction with every branch of the cited equations (19a)–(19p) and both side conditions is conditional on the supplied term audit being a faithful and exhaustive transcription. The manuscript equations are not included, and the reduction would not cover joint-output or output-conditioned terms such as I(S;G,K|R) or I(S;Y|G).",
+                  "subjectTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ],
+                  "evidenceTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ]
+                },
+                {
+                  "claimKey": "finite-posterior-grid/receiver-cardinality-at-most-grid-size",
+                  "stance": "supports",
+                  "summary": "For an N-point posterior grid containing 0, 1/2, and 1, the posterior-measure representation and Carathéodory’s theorem support replacing each finite-output binary-input receiver by one with at most N outputs while preserving the restricted LP value. The mean plus N−2 nonendpoint information samples lie in dimension N−1, yielding N rather than N+1 atoms; reflection-closed grids also preserve reflected receiver pairs.",
+                  "subjectTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ],
+                  "evidenceTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ]
+                },
+                {
+                  "claimKey": "finite-posterior-grid/receiver-cardinality-at-most-grid-size",
+                  "stance": "qualifies",
+                  "summary": "The result is only a receiver-output cardinality theorem for a fixed finite-grid auxiliary optimization. It does not place receiver posterior atoms on the grid, establish a continuum cardinality bound, interchange an infimum with a grid limit, or prove reflected sufficiency for arbitrary continuum receiver pairs. Application to the named 30-row LP also assumes the asserted single-receiver posterior-sample form of every relevant term.",
+                  "subjectTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ],
+                  "evidenceTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ]
+                },
+                {
+                  "claimKey": "three-point-grid/gk-receiver-optimum-equals-bssc-midpoint-information",
+                  "stance": "supports",
+                  "summary": "For Q0={0,1/2,1} and c=h2(1/4)−1/2, the supplied W=X witness gives the universal lower bound V_{Q0}(G,K)≥c, while the reflection-invariant revealing-erasure receiver makes the sampled Y,G,K,Z curves identical and the supplied SL(1,U) row telescope to R1+R2≤c. This supports both the unrestricted and reflected-pair infima being exactly c for the encoded 30-row formulation.",
+                  "subjectTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ],
+                  "evidenceTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ]
+                },
+                {
+                  "claimKey": "three-point-grid/gk-receiver-optimum-equals-bssc-midpoint-information",
+                  "stance": "qualifies",
+                  "summary": "The exact conclusion is qualified by a checker/documentation mismatch and an unverified source-transcription step. The checker supplied under frontier-global-bridge is the coercivity checker rather than the described direct W=X audit, so the prose proof and row table carry that argument; the code certifies the hard-coded rows but not their exact fidelity to the external manuscript.",
+                  "subjectTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ],
+                  "evidenceTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ]
+                },
+                {
+                  "claimKey": "three-point-grid/midpoint-coercive-lower-bound",
+                  "stance": "supports",
+                  "summary": "The H, L, and X witness families and exact rational-polynomial row audit support B(G,K)≥V0(g,k)≥max{F(g),F(k)}, where g=I_G(1/2), k=I_K(1/2), and F(x)=2c max{c,x}/(c+x). The passage from Q0 witnesses to the full functional has the correct direction, and inversion for c≤U<2c yields 2c²/U−c≤g,k≤Uc/(2c−U).",
+                  "subjectTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ],
+                  "evidenceTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ]
+                },
+                {
+                  "claimKey": "three-point-grid/midpoint-coercive-lower-bound",
+                  "stance": "qualifies",
+                  "summary": "The coercive bound is a necessary midpoint-localization condition for the encoded 30-row Q0 problem, not a sufficiency theorem, a proof of reflected optimality, or a global minimization of the full receiver functional. Exact symbolic certification begins only after accepting the hard-coded rows as the intended manuscript system.",
+                  "subjectTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ],
+                  "evidenceTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ]
+                },
+                {
+                  "claimKey": "bssc-sum-capacity/frontier-effect-of-q0-foundations",
+                  "stance": "supports",
+                  "summary": "The transaction supports its stated conclusion that it does not improve either endpoint of the BSSC sum-capacity interval. The exact Q0 value is a lower approximation to the fixed-receiver outer-bound functional and cannot be used as a capacity converse; the midpoint window only excludes receiver pairs relative to a separately supplied threshold and does not certify the full global infimum.",
+                  "subjectTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ],
+                  "evidenceTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ]
+                },
+                {
+                  "claimKey": "artifact-checker/frontier-global-bridge-direct-wx-audit",
+                  "stance": "refutes",
+                  "summary": "The supplied frontier-global-bridge checker refutes the artifact documentation’s claim that this file directly audits the W=X table and prints the described W=X messages. It is instead byte-for-byte the coercivity checker, so the two reproduction commands execute duplicate mathematical content and are not independent corroborations.",
+                  "subjectTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ],
+                  "evidenceTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ]
+                },
+                {
+                  "claimKey": "theorem-9/source-transcription-fidelity",
+                  "stance": "uncertain",
+                  "summary": "Because the complete equations (19a)–(19p) and an externally checkable manuscript formulation are absent, the transaction cannot independently decide whether the single-output audit is exhaustive, all 30 hard-coded rows exactly match the manuscript, or every side-condition orientation and row coefficient was transcribed correctly.",
+                  "subjectTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ],
+                  "evidenceTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ]
+                },
+                {
+                  "claimKey": "continuum/full-functional-bridge",
+                  "stance": "qualifies",
+                  "summary": "The structural and finite-grid results do not provide a continuum receiver-cardinality bound, finite-grid convergence to the full functional, interchange of receiver infimum with grid limit, reflected optimality for the full optimization, or a certified global minimization of B(G,K). These remain necessary missing ingredients for a new capacity converse.",
+                  "subjectTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ],
+                  "evidenceTransactionIds": [
+                    "d638c346212db3e75f6a53dcebcfd09f55125852"
+                  ]
+                }
+              ],
+              "reportDigest": "sha256:ea3f1ec52805c6faee507ee5c5c99ca187cf1feb69fc5f2084ba352c9b535265",
+              "judgmentId": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99"
+            }
+          }
+        ],
+        "runs": [
+          {
+            "id": "d5ae563f02d46f64b1789ad22637ef8c9d7bf20039fbeacd9e312caa1c086ec4",
+            "ordinal": 1,
+            "ledgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "problemLedgerHead": "d638c346212db3e75f6a53dcebcfd09f55125852",
+            "runDigest": "sha256:d5ae563f02d46f64b1789ad22637ef8c9d7bf20039fbeacd9e312caa1c086ec4",
+            "baseRun": null,
+            "runKind": "knowledge-build",
+            "inputs": {
+              "projectionSpecDigest": "sha256:eb2e997ae1f7ee8a619c0c7cd0362f696ab6c70682ffb12a856407a43684abd3",
+              "schemaVersion": 1,
+              "baseStateRun": null,
+              "judgmentSetDigest": "sha256:7b7c2f42145b20821e380196d71401685eb2b9499688d0ae2af8932a37ce173b",
+              "laneId": "sha256:f585795e3b0d82d5d964fe31255065725e43549244c076a5d8a56dca291d3001",
+              "problemId": "bssc-sum-capacity",
+              "conflictIds": [],
+              "builderSpecDigest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c",
+              "judgmentIds": [
+                "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99"
+              ],
+              "buildToken": "sha256:78d7749737cfad5820681d2f328dece71568f492d429ce16ab16aa5274143ddf"
+            },
+            "judgeSpec": {
+              "id": "openrouter-research-program-builder-v2",
+              "digest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c"
+            },
+            "runner": {
+              "implementation": "openrouter-knowledge-builder-v2",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.51472125,
+            "selection": {
+              "selectedNodeIds": [
+                "root"
+              ],
+              "rationale": "The state has no established programs. This batch introduces a durable auxiliary-receiver outer-bound program with finite-grid/cardinality results, three-point-grid foundations, source-transcription uncertainty, an artifact-documentation defect, and an unresolved continuum bridge. Root-level organization is therefore required; the global capacity interval itself is unchanged."
+            },
+            "normalizations": [
+              {
+                "kind": "attach-current-base",
+                "nodeId": "root",
+                "reason": "Concurrency guards come from the authoritative selected state."
+              }
+            ],
+            "delta": {
+              "operations": [
+                {
+                  "action": "create",
+                  "nodeId": "root",
+                  "parentId": null,
+                  "nodeType": "root",
+                  "title": "Research state for BSSC private-message sum-capacity",
+                  "summary": "For the stated binary-input broadcast channel, the exact private-message sum-capacity remains open. The governed benchmark is 0.361642884421954615663441578150587… ≤ C_sum ≤ 0.369316568803963. The accepted structural and finite-grid auxiliary-receiver results improve neither endpoint; the three-point-grid value is not a capacity upper bound, and midpoint localization is only a necessary condition relative to a supplied threshold.",
+                  "reportSection": "## Node: root",
+                  "baseDigest": "sha256:f2c295c77349aa136fa4d21d398bd22852b93889c44ec1ac828d9c4708e74632",
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "changeSection": "## Change: root"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/auxiliary_receiver_outer_bound",
+                  "parentId": "root",
+                  "nodeType": "program",
+                  "title": "Auxiliary-receiver outer-bound program",
+                  "summary": "This program studies the Gohari–Liu–Nair two-auxiliary-receiver outer-bound formulation through input-only structural reductions, finite-posterior-grid receiver cardinality, exact symbolic finite-grid certificates, midpoint coercivity, and a possible bridge to the full continuum functional. It currently establishes no continuum cardinality theorem, grid-convergence or infimum-interchange theorem, reflected-pair sufficiency, certified global minimization of B(G,K), improved achievable rate, or improved universal converse. Identification with the external manuscript remains conditional on source transcription fidelity.",
+                  "reportSection": "## Node: programs/auxiliary_receiver_outer_bound",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/auxiliary_receiver_outer_bound"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/auxiliary_receiver_outer_bound/input_only_reduction",
+                  "parentId": "programs/auxiliary_receiver_outer_bound",
+                  "nodeType": "result",
+                  "title": "Input-only reduction for the auxiliary receivers",
+                  "summary": "For finite auxiliary-receiver laws whose constraints use only audited single-output quantities, replacing T_{G,K|X,Y,Z} by the product of its induced input-only marginals preserves the relevant G- and K-based mutual informations, leaves the Y- and Z-marginal terms unchanged, and preserves constraint systems formed from those quantities. The reduction does not cover joint or output-conditioned terms such as I(S;G,K|R) or I(S;Y|G), and its application to every cited manuscript branch remains conditional on transcription fidelity.",
+                  "reportSection": "## Node: programs/auxiliary_receiver_outer_bound/input_only_reduction",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/auxiliary_receiver_outer_bound/input_only_reduction"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality",
+                  "parentId": "programs/auxiliary_receiver_outer_bound",
+                  "nodeType": "result",
+                  "title": "Receiver cardinality on a finite posterior grid",
+                  "summary": "For a fixed N-point posterior grid Q containing 0, 1/2, and 1, each finite-output binary-input receiver in the fair-input grid-restricted auxiliary optimization can be replaced by one with at most N outputs without changing the restricted LP value. The result follows by preserving the posterior mean and the N−2 nonendpoint information samples and applying Carathéodory in dimension N−1. It does not require the replacement atoms to lie on Q and does not establish continuum cardinality, grid convergence, infimum interchange, or continuum reflected-pair sufficiency.",
+                  "reportSection": "## Node: programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/auxiliary_receiver_outer_bound/three_point_grid_optimum",
+                  "parentId": "programs/auxiliary_receiver_outer_bound",
+                  "nodeType": "result",
+                  "title": "Exact auxiliary-receiver optimum on the three-point posterior grid",
+                  "summary": "For Q₀={0,1/2,1} and c=h₂(1/4)−1/2, the supplied encoded 30-row formulation has exact receiver infimum inf_{G,K} V_{Q₀}(G,K)=inf_m V_{Q₀}(m,m°)=c. A W=X witness supplies the universal lower bound, while a reflection-invariant revealing-erasure posterior measure supplies the matching reflected-pair construction. The direct W=X checker is missing as documented, manuscript-row fidelity is unverified, and the result is only a lower approximation to the fixed-receiver functional rather than a capacity converse.",
+                  "reportSection": "## Node: programs/auxiliary_receiver_outer_bound/three_point_grid_optimum",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/auxiliary_receiver_outer_bound/three_point_grid_optimum"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/auxiliary_receiver_outer_bound/midpoint_coercivity",
+                  "parentId": "programs/auxiliary_receiver_outer_bound",
+                  "nodeType": "result",
+                  "title": "Midpoint-information coercive lower bound",
+                  "summary": "For g=I_G(1/2), k=I_K(1/2), c=h₂(1/4)−1/2, and F(x)=2c·max{c,x}/(c+x), the encoded 30-row Q₀ problem satisfies B(G,K)≥V₀(g,k)≥max{F(g),F(k)}. For c≤U<2c, B(G,K)≤U necessarily implies 2c²/U−c≤g,k≤Uc/(2c−U). The result is an exact-symbolically audited necessary localization bound for the encoded rows, not a sufficient condition, global minimization, reflected-optimality theorem, or capacity converse; external row fidelity remains unverified.",
+                  "reportSection": "## Node: programs/auxiliary_receiver_outer_bound/midpoint_coercivity",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/auxiliary_receiver_outer_bound/midpoint_coercivity"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/auxiliary_receiver_outer_bound/source_transcription_fidelity",
+                  "parentId": "programs/auxiliary_receiver_outer_bound",
+                  "nodeType": "question",
+                  "title": "Fidelity of the external Theorem 9 transcription",
+                  "summary": "The supplied evidence does not include the complete external equations (19a)–(19p) or an independently checkable manuscript formulation. It therefore remains unresolved whether the single-output audit is exhaustive, all 30 encoded rows reproduce the manuscript, side-condition orientations are correct, and every coefficient was transcribed correctly. The structural arguments remain supported for systems with the stated form, and the symbolic code certifies the encoded rows only after accepting their transcription.",
+                  "reportSection": "## Node: programs/auxiliary_receiver_outer_bound/source_transcription_fidelity",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/auxiliary_receiver_outer_bound/source_transcription_fidelity"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/auxiliary_receiver_outer_bound/certificate_reproducibility",
+                  "parentId": "programs/auxiliary_receiver_outer_bound",
+                  "nodeType": "result",
+                  "title": "Reproducibility status of the three-point-grid certificates",
+                  "summary": "The supplied frontier-global-bridge checker does not directly audit the documented W=X witness table; it is byte-for-byte the coercivity checker supplied as frontier-q0-coercive. The two commands therefore execute duplicate mathematical content and are not independent corroborations. This documentation defect does not invalidate the encoded finite-grid conclusions: the checker verifies the stronger coercive bound and matching upper row, while the prose and row table carry the direct W=X argument. Certification remains limited to the hard-coded rows.",
+                  "reportSection": "## Node: programs/auxiliary_receiver_outer_bound/certificate_reproducibility",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "refutes"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/auxiliary_receiver_outer_bound/certificate_reproducibility"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/auxiliary_receiver_outer_bound/continuum_bridge",
+                  "parentId": "programs/auxiliary_receiver_outer_bound",
+                  "nodeType": "question",
+                  "title": "Bridge from finite posterior grids to the full receiver functional",
+                  "summary": "No supplied result bridges the accepted structural and finite-grid analysis to a certified global optimization of the full receiver functional B(G,K). Missing ingredients include a continuum receiver-output cardinality bound, convergence of finite-grid optimizations, interchange of the receiver infimum with the grid limit, reflected-pair sufficiency or optimality, and certified global minimization. The finite-grid optimum and midpoint coercivity remain lower approximations or necessary localization tools and do not yield a universal capacity converse.",
+                  "reportSection": "## Node: programs/auxiliary_receiver_outer_bound/continuum_bridge",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/auxiliary_receiver_outer_bound/continuum_bridge"
+                }
+              ]
+            },
+            "state": {
+              "schemaVersion": 3,
+              "problemId": "bssc-sum-capacity",
+              "rootId": "root",
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "root",
+                  "title": "Research state for BSSC private-message sum-capacity",
+                  "summary": "For the stated binary-input broadcast channel, the exact private-message sum-capacity remains open. The governed benchmark is 0.361642884421954615663441578150587… ≤ C_sum ≤ 0.369316568803963. The accepted structural and finite-grid auxiliary-receiver results improve neither endpoint; the three-point-grid value is not a capacity upper bound, and midpoint localization is only a necessary condition relative to a supplied threshold.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+                    "section": "## Node: root"
+                  },
+                  "contentMarkdown": "## Node: root\n\n- **Title:** Research state for BSSC private-message sum-capacity\n- **Type:** Root\n- **Status:** Active\n- **Parent:** None\n\n### Current knowledge\n\nFor the binary-input broadcast channel with marginals\n\n\\[\nP_{Y|X}=\n\\begin{pmatrix}\n\\tfrac12&\\tfrac12\\\\\n0&1\n\\end{pmatrix},\n\\qquad\nP_{Z|X}=\n\\begin{pmatrix}\n1&0\\\\\n\\tfrac12&\\tfrac12\n\\end{pmatrix},\n\\]\n\nthe central unresolved question is the exact private-message sum-capacity\n\n\\[\nC_{\\mathrm{sum}}\n=\\sup\\{R_1+R_2:(R_1,R_2)\\text{ is achievable}\\}.\n\\]\n\nThe governed current benchmark remains\n\n\\[\n0.361642884421954615663441578150587\\ldots\n\\le C_{\\mathrm{sum}}\\le\n0.369316568803963.\n\\]\n\nThe supplied problem statement identifies the lower endpoint as the randomized-time-division value within Marton’s inner bound. It treats the reported decimal \\(0.369296340638082\\) as a numerical lead rather than a certified universal converse and does not pre-accept the separate fixed-pair artifact value \\(0.369296945969202842443\\).\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` concludes that the structural and finite-grid results assessed in this build improve neither endpoint. In particular:\n\n- the exact three-point-grid value is a lower approximation to a fixed-receiver outer-bound functional, not a capacity upper bound;\n- the midpoint localization result only excludes receiver pairs relative to a separately supplied threshold;\n- no new achievable rate or smaller universal converse was established.\n\nThe exact value of \\(C_{\\mathrm{sum}}\\) therefore remains open under the supplied judgments.\n\n### Durable program structure\n\nOne research program is established directly beneath the root:\n\n- `programs/auxiliary_receiver_outer_bound` — structural reduction, finite-grid analysis, exact three-point-grid results, certification status, and the unresolved continuum bridge for the Gohari–Liu–Nair auxiliary-receiver outer bound.\n\nNo conflict records or reconciliation outcomes were supplied. The source-transcription and continuum issues are active evidence gaps, not conflicts between opposed judgments.\n\n### Provenance\n\n- **Primary judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Judged transaction and evidence:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Global benchmark:** Supplied problem statement\n- **Conflict status:** No supplied conflict records\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:1370a5172f034fb17d700ab1eb62e32dc041142f9864f606b2b0879531dbd815",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:c6e6c59efb09688f02a8b8f53f2e3035ea713a88d78079833523128e9329f855"
+                },
+                "programs/auxiliary_receiver_outer_bound": {
+                  "id": "programs/auxiliary_receiver_outer_bound",
+                  "parentId": "root",
+                  "type": "program",
+                  "title": "Auxiliary-receiver outer-bound program",
+                  "summary": "This program studies the Gohari–Liu–Nair two-auxiliary-receiver outer-bound formulation through input-only structural reductions, finite-posterior-grid receiver cardinality, exact symbolic finite-grid certificates, midpoint coercivity, and a possible bridge to the full continuum functional. It currently establishes no continuum cardinality theorem, grid-convergence or infimum-interchange theorem, reflected-pair sufficiency, certified global minimization of B(G,K), improved achievable rate, or improved universal converse. Identification with the external manuscript remains conditional on source transcription fidelity.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+                    "section": "## Node: programs/auxiliary_receiver_outer_bound"
+                  },
+                  "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound\n\n- **Title:** Auxiliary-receiver outer-bound program\n- **Type:** Program\n- **Status:** Active\n- **Parent:** `root`\n\n### Program scope\n\nThis program studies the Gohari–Liu–Nair two-auxiliary-receiver outer-bound formulation through structural reductions of the receiver channels \\(G,K\\), finite-posterior-grid optimization, exact symbolic certificates, and possible bridges to the full continuum receiver functional.\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` supports, within their stated scopes:\n\n1. reducing suitable finite \\(T_{G,K|X,Y,Z}\\) laws to conditionally independent input-only channels;\n2. reducing each receiver to at most the grid size in a fixed finite-grid auxiliary optimization;\n3. evaluating the encoded three-point-grid receiver infimum exactly;\n4. obtaining a midpoint-information coercive lower bound for arbitrary receiver pairs.\n\nThe program does **not** currently provide:\n\n- a continuum receiver-cardinality theorem;\n- convergence of finite posterior grids to the full functional;\n- interchange of the receiver infimum with a grid limit;\n- reflected-pair sufficiency for the continuum optimization;\n- a certified global minimization of the full functional \\(B(G,K)\\);\n- an improved achievable sum rate or universal capacity converse.\n\nIdentification of the structural and exact symbolic results with every branch and side condition of the external manuscript remains conditional on the supplied term and row transcription. The hard-coded rows can be checked exactly after that transcription is accepted, but the absent manuscript equations prevent independent comparison within the supplied evidence.\n\n### Current program nodes\n\n- `programs/auxiliary_receiver_outer_bound/input_only_reduction`\n- `programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality`\n- `programs/auxiliary_receiver_outer_bound/three_point_grid_optimum`\n- `programs/auxiliary_receiver_outer_bound/midpoint_coercivity`\n- `programs/auxiliary_receiver_outer_bound/source_transcription_fidelity`\n- `programs/auxiliary_receiver_outer_bound/certificate_reproducibility`\n- `programs/auxiliary_receiver_outer_bound/continuum_bridge`\n\n### Credit and provenance\n\nThe immutable judgment reports that the transaction attributes the three source artifacts and their port to Robert Raynor and disclaims new authorship arising merely from the port. That credit statement is carried forward without independent reassessment. The judgment also notes that the reported repository and historical acceptance provenance was not independently verifiable from the supplied files.\n\n- **Primary judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:78932f559a6e6cabe7521ea53048234ff493257f31c9382da0658997db9665af",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:bded2a185ea27a6d684750884d9141757dc12db5a19ae7670972c441cba4f2be"
+                },
+                "programs/auxiliary_receiver_outer_bound/input_only_reduction": {
+                  "id": "programs/auxiliary_receiver_outer_bound/input_only_reduction",
+                  "parentId": "programs/auxiliary_receiver_outer_bound",
+                  "type": "result",
+                  "title": "Input-only reduction for the auxiliary receivers",
+                  "summary": "For finite auxiliary-receiver laws whose constraints use only audited single-output quantities, replacing T_{G,K|X,Y,Z} by the product of its induced input-only marginals preserves the relevant G- and K-based mutual informations, leaves the Y- and Z-marginal terms unchanged, and preserves constraint systems formed from those quantities. The reduction does not cover joint or output-conditioned terms such as I(S;G,K|R) or I(S;Y|G), and its application to every cited manuscript branch remains conditional on transcription fidelity.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+                    "section": "## Node: programs/auxiliary_receiver_outer_bound/input_only_reduction"
+                  },
+                  "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/input_only_reduction\n\n- **Title:** Input-only reduction for the auxiliary receivers\n- **Type:** Structural result\n- **Status:** Supported with qualification\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` supports the following reduction with high confidence for constraint systems having the audited single-output structure.\n\nFor any finite channel \\(T_{G,K|X,Y,Z}\\), let \\(\\bar T_{G|X}\\) and \\(\\bar T_{K|X}\\) be its induced single-receiver channels. Replacing it by\n\n\\[\nT'_{G,K|X,Y,Z}(g,k|x,y,z)\n=\n\\bar T_{G|X}(g|x)\\bar T_{K|X}(k|x)\n\\]\n\npreserves the joint laws needed to evaluate terms of the forms\n\n\\[\nI(S;G|R)\n\\qquad\\text{and}\\qquad\nI(S;K|R),\n\\]\n\nwhere \\(S\\) and \\(R\\) are formed from \\(X\\) and the auxiliary variables. The \\(Y\\)- and \\(Z\\)-marginal terms are unchanged as well. Signed sums and minima made only from those preserved quantities therefore remain unchanged. Conversely, any input-only pair \\(Q_{G|X},Q_{K|X}\\) is already admissible in the original family by ignoring \\(Y,Z\\).\n\nUnder that syntactic condition, conditional correlation between \\(G\\) and \\(K\\), and output dependence beyond \\(X\\), are irrelevant to the attainable constraint set.\n\n### Scope and uncertainty\n\nThe reduction does not cover formulations containing joint or output-conditioned terms such as\n\n\\[\nI(S;G,K|R)\n\\quad\\text{or}\\quad\nI(S;Y|G).\n\\]\n\nIts application to every branch of the cited equations (19a)–(19p) and both side conditions remains conditional on the supplied term audit being faithful and exhaustive. The complete manuscript equations were not included in the evidence, so that external identification is not independently certified.\n\n### Provenance\n\n- **Supporting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Confidence recorded by judgment:** High, conditional on transcription fidelity\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:f165b9da963f1251ee563ea11a35672084b803b714590a41bb41251ae0b14fcc",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:dc725b05a447f007ebb79c3d05d2f05f0c336ef51764b0f109e69a8b4a5a3b9b"
+                },
+                "programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality": {
+                  "id": "programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality",
+                  "parentId": "programs/auxiliary_receiver_outer_bound",
+                  "type": "result",
+                  "title": "Receiver cardinality on a finite posterior grid",
+                  "summary": "For a fixed N-point posterior grid Q containing 0, 1/2, and 1, each finite-output binary-input receiver in the fair-input grid-restricted auxiliary optimization can be replaced by one with at most N outputs without changing the restricted LP value. The result follows by preserving the posterior mean and the N−2 nonendpoint information samples and applying Carathéodory in dimension N−1. It does not require the replacement atoms to lie on Q and does not establish continuum cardinality, grid convergence, infimum interchange, or continuum reflected-pair sufficiency.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+                    "section": "## Node: programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality"
+                  },
+                  "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality\n\n- **Title:** Receiver cardinality on a finite posterior grid\n- **Type:** Cardinality theorem\n- **Status:** Supported with qualification\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nLet \\(Q\\subset[0,1]\\) be an \\(N\\)-point posterior grid containing\n\n\\[\n0,\\quad \\frac12,\\quad 1.\n\\]\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` supports with high confidence that, for the fair-input auxiliary optimization in which every auxiliary posterior is restricted to \\(Q\\), each finite-output binary-input receiver can be replaced by a receiver with at most \\(N\\) outputs without changing the restricted LP value.\n\nThe judgment records the following basis for the cardinality count:\n\n- a finite-output receiver is represented by a posterior measure of mean \\(1/2\\);\n- preserving the mean and the \\(N-2\\) nonendpoint information samples gives a vector in dimension \\(N-1\\);\n- Carathéodory’s theorem therefore yields a representing measure with at most \\(N\\) atoms, rather than \\(N+1\\);\n- preserving receiver information samples on \\(Q\\) preserves the relevant single-receiver mutual-information terms for auxiliary posteriors in \\(Q\\).\n\nIf \\(Q\\) is closed under \\(q\\mapsto1-q\\), the reduction also preserves reflected receiver pairs through the relation between a receiver and its reflected posterior measure.\n\n### Scope\n\nThis result is only a receiver-output cardinality theorem for a **fixed finite-grid auxiliary optimization**. It does not establish that:\n\n- the replacement receiver’s posterior atoms lie on \\(Q\\);\n- a comparable output-cardinality bound holds for the continuum problem;\n- finite-grid values converge to the full receiver functional;\n- a receiver infimum can be interchanged with a grid limit;\n- reflected pairs suffice among arbitrary continuum receiver pairs.\n\nApplication to the named 30-row LP also depends on the asserted fact that every relevant row can be expressed using the audited single-receiver posterior samples.\n\n### Provenance\n\n- **Supporting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Confidence recorded by judgment:** High for the finite-grid theorem\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:f24903eeda6cd62068de9b467377a303cc017828fe919765a51280dd8320b0ba",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:9d59f776e94c7acfed20e9ae2c730928c2667f71790e6c3baa9940dbe01ed4dc"
+                },
+                "programs/auxiliary_receiver_outer_bound/three_point_grid_optimum": {
+                  "id": "programs/auxiliary_receiver_outer_bound/three_point_grid_optimum",
+                  "parentId": "programs/auxiliary_receiver_outer_bound",
+                  "type": "result",
+                  "title": "Exact auxiliary-receiver optimum on the three-point posterior grid",
+                  "summary": "For Q₀={0,1/2,1} and c=h₂(1/4)−1/2, the supplied encoded 30-row formulation has exact receiver infimum inf_{G,K} V_{Q₀}(G,K)=inf_m V_{Q₀}(m,m°)=c. A W=X witness supplies the universal lower bound, while a reflection-invariant revealing-erasure posterior measure supplies the matching reflected-pair construction. The direct W=X checker is missing as documented, manuscript-row fidelity is unverified, and the result is only a lower approximation to the fixed-receiver functional rather than a capacity converse.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+                    "section": "## Node: programs/auxiliary_receiver_outer_bound/three_point_grid_optimum"
+                  },
+                  "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/three_point_grid_optimum\n\n- **Title:** Exact auxiliary-receiver optimum on the three-point posterior grid\n- **Type:** Exact finite-grid result\n- **Status:** Supported with documentation and transcription qualifications\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nDefine\n\n\\[\nQ_0=\\left\\{0,\\frac12,1\\right\\},\n\\qquad\nc=h_2(1/4)-\\frac12.\n\\]\n\nFor the supplied encoded 30-row formulation, primary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` supports with high confidence that\n\n\\[\n\\inf_{G,K}V_{Q_0}(G,K)\n=\n\\inf_m V_{Q_0}(m,m^\\circ)\n=\nc.\n\\]\n\nThe first infimum ranges over finite-output receiver pairs, while the second is restricted to reflected pairs.\n\nThe judgment records two matching components:\n\n- A \\(W=X\\) witness, with \\(U,V\\) constant in each auxiliary group, supports the universal lower bound\n  \\[\n  V_{Q_0}(G,K)\\ge c\n  \\]\n  for every receiver pair in the encoded system.\n- The reflection-invariant revealing-erasure posterior measure\n  \\[\n  m_E=\\frac c2\\delta_0+(1-c)\\delta_{1/2}+\\frac c2\\delta_1\n  \\]\n  gives identical sampled curves for \\(Y,G,K,Z\\) on \\(Q_0\\). The supplied `SL(1,U)` row then yields\n  \\[\n  R_1+R_2\\le c,\n  \\]\n  providing the matching upper construction in the reflected class.\n\n### Certification and scope\n\nThe exact symbolic code checks the hard-coded row system, including the cancellation used for the matching upper row. The supplied checker described as a direct `W=X` audit is not actually that checker; consequently, the direct lower-witness argument is carried by the prose and row table, with additional support from the coercivity certificate.\n\nThe result’s identification with the external manuscript remains conditional on row-transcription fidelity.\n\nThis exact value is not a capacity converse. The judgment expressly records\n\n\\[\nV_{Q_0}(G,K)\\le B(G,K),\n\\]\n\nbecause restricting auxiliary posteriors lowers the inner maximization. Thus the value \\(c\\) cannot replace the governed upper bound on \\(C_{\\mathrm{sum}}\\).\n\n### Provenance\n\n- **Supporting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Confidence recorded by judgment:** High for the encoded 30-row formulation\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:98c9a49c7163bd04aea4f028c90dd05d431b0abc436f70f6e0e2564b92032528",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:98953a37a7f7dec8ba622d6aa4e25918b34834212af0ab9bef4e69f5f8ed10f7"
+                },
+                "programs/auxiliary_receiver_outer_bound/midpoint_coercivity": {
+                  "id": "programs/auxiliary_receiver_outer_bound/midpoint_coercivity",
+                  "parentId": "programs/auxiliary_receiver_outer_bound",
+                  "type": "result",
+                  "title": "Midpoint-information coercive lower bound",
+                  "summary": "For g=I_G(1/2), k=I_K(1/2), c=h₂(1/4)−1/2, and F(x)=2c·max{c,x}/(c+x), the encoded 30-row Q₀ problem satisfies B(G,K)≥V₀(g,k)≥max{F(g),F(k)}. For c≤U<2c, B(G,K)≤U necessarily implies 2c²/U−c≤g,k≤Uc/(2c−U). The result is an exact-symbolically audited necessary localization bound for the encoded rows, not a sufficient condition, global minimization, reflected-optimality theorem, or capacity converse; external row fidelity remains unverified.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+                    "section": "## Node: programs/auxiliary_receiver_outer_bound/midpoint_coercivity"
+                  },
+                  "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/midpoint_coercivity\n\n- **Title:** Midpoint-information coercive lower bound\n- **Type:** Finite-grid lower-bound theorem\n- **Status:** Supported with scope qualification\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nLet\n\n\\[\ng=I_G(1/2),\\qquad k=I_K(1/2),\n\\qquad\nc=h_2(1/4)-\\frac12,\n\\]\n\nand define\n\n\\[\nF(x)=\\frac{2c\\max\\{c,x\\}}{c+x}.\n\\]\n\nFor the encoded 30-row \\(Q_0\\) problem, primary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` supports with high confidence that\n\n\\[\nB(G,K)\\ge V_0(g,k)\\ge \\max\\{F(g),F(k)\\}.\n\\]\n\nThe judgment attributes this lower bound to the supplied H, L, and X witness families and their exact rational-polynomial row audit. It records that the three witness regimes cover high, low, and crossing configurations of the two midpoint informations. The symbolic checker:\n\n- rebuilds the 30 labeled rows from hard-coded path formulas;\n- verifies the witness block constraints;\n- computes exact rational-polynomial slacks;\n- verifies their coefficientwise nonnegativity after the stated substitutions;\n- uses no floating-point optimizer.\n\nThe passage from the restricted \\(Q_0\\) witnesses to the full fixed-receiver functional has the supported direction\n\n\\[\nB(G,K)\\ge V(1/2;G,K)\\ge V_0(g,k).\n\\]\n\nFor any \\(U\\) satisfying\n\n\\[\nc\\le U<2c,\n\\]\n\nthe judgment also supports the necessary implication\n\n\\[\nB(G,K)\\le U\n\\quad\\Longrightarrow\\quad\n\\frac{2c^2}{U}-c\n\\le g,k\\le\n\\frac{Uc}{2c-U}.\n\\]\n\n### Scope\n\nThe midpoint interval is a necessary localization condition. It is not:\n\n- a sufficient condition for \\(B(G,K)\\le U\\);\n- a global minimization of \\(B(G,K)\\);\n- a proof of reflected optimality;\n- a capacity converse.\n\nThe exact symbolic certification begins after accepting the hard-coded rows as the intended manuscript constraint system. External row fidelity remains unverified.\n\n### Provenance\n\n- **Supporting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Confidence recorded by judgment:** High for the encoded \\(Q_0\\) row system\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:223122bf355610c7546559cccf6f0224145e9d3f14d999d7fdec03bcff7dd507",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:eda237dafcc7cdef86cd13f63f751fa827f094b822d5c68545c8ee6b019b4198"
+                },
+                "programs/auxiliary_receiver_outer_bound/source_transcription_fidelity": {
+                  "id": "programs/auxiliary_receiver_outer_bound/source_transcription_fidelity",
+                  "parentId": "programs/auxiliary_receiver_outer_bound",
+                  "type": "question",
+                  "title": "Fidelity of the external Theorem 9 transcription",
+                  "summary": "The supplied evidence does not include the complete external equations (19a)–(19p) or an independently checkable manuscript formulation. It therefore remains unresolved whether the single-output audit is exhaustive, all 30 encoded rows reproduce the manuscript, side-condition orientations are correct, and every coefficient was transcribed correctly. The structural arguments remain supported for systems with the stated form, and the symbolic code certifies the encoded rows only after accepting their transcription.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+                    "section": "## Node: programs/auxiliary_receiver_outer_bound/source_transcription_fidelity"
+                  },
+                  "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/source_transcription_fidelity\n\n- **Title:** Fidelity of the external Theorem 9 transcription\n- **Type:** Active evidence gap\n- **Status:** Unresolved\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nThe complete external equations (19a)–(19p) and an independently checkable copy of the cited manuscript formulation were not included in the judged evidence.\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` therefore does not decide whether:\n\n- the supplied single-output term audit exhausts every manuscript branch and side condition;\n- all 30 hard-coded rows exactly reproduce the manuscript;\n- every side-condition orientation is correct;\n- every row coefficient was transcribed correctly.\n\nThe marginal-law and finite-grid arguments are independently supported for systems possessing the stated structure. The exact symbolic code certifies the hard-coded rows after those rows are accepted. What remains uncertain is the identification of that encoded system with the complete external source.\n\nNo opposing primary judgments or reconciliation outcomes were supplied. This node is therefore an unresolved evidence dependency, not an adjudicated dispute.\n\n### Provenance\n\n- **Uncertainty judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Conflict status:** No supplied conflict record or reconciliation\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:6292be6f7c2242bf9dbf1abe02942bc0ef64f301519c78281847df266a598da7",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:8e6435663956cbca849f3a2ede1efffb9a9b328d19dcd098ed10eaa5eb974aef"
+                },
+                "programs/auxiliary_receiver_outer_bound/certificate_reproducibility": {
+                  "id": "programs/auxiliary_receiver_outer_bound/certificate_reproducibility",
+                  "parentId": "programs/auxiliary_receiver_outer_bound",
+                  "type": "result",
+                  "title": "Reproducibility status of the three-point-grid certificates",
+                  "summary": "The supplied frontier-global-bridge checker does not directly audit the documented W=X witness table; it is byte-for-byte the coercivity checker supplied as frontier-q0-coercive. The two commands therefore execute duplicate mathematical content and are not independent corroborations. This documentation defect does not invalidate the encoded finite-grid conclusions: the checker verifies the stronger coercive bound and matching upper row, while the prose and row table carry the direct W=X argument. Certification remains limited to the hard-coded rows.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+                    "section": "## Node: programs/auxiliary_receiver_outer_bound/certificate_reproducibility"
+                  },
+                  "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/certificate_reproducibility\n\n- **Title:** Reproducibility status of the three-point-grid certificates\n- **Type:** Certification finding\n- **Status:** Confirmed documentation defect with mathematical scope preserved\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` refutes the documentation claim that the supplied `frontier-global-bridge` checker directly audits the \\(W=X\\) witness table and prints the described \\(W=X\\) messages.\n\nThe judgment finds that this checker is instead byte-for-byte the coercivity checker supplied under `frontier-q0-coercive`. Consequently:\n\n- the two documented reproduction commands execute duplicate mathematical content;\n- they are not independent corroborations;\n- the `frontier-global-bridge` reproduction description is inaccurate;\n- the supplied executable does not perform the specifically described direct \\(W=X\\) audit.\n\nThe judgment does not treat this defect as invalidating the finite-grid mathematical conclusions. The included checker verifies the stronger coercive lower bound and the matching upper row for the hard-coded system, while the prose proof and row table carry the direct \\(W=X\\) argument.\n\nThe executable certification remains subject to the separate source-transcription uncertainty: it checks the encoded rows, not their fidelity to the absent external manuscript equations.\n\n### Provenance\n\n- **Refuting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "refutes"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:77670654a816132e09f1d8cbbb834b9148edf8ddfc7f802ebd58d80b91ddd170",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:be3678e413727b0d2cb3fc3b1df52ae96335213f3013190065ff6671e568f538"
+                },
+                "programs/auxiliary_receiver_outer_bound/continuum_bridge": {
+                  "id": "programs/auxiliary_receiver_outer_bound/continuum_bridge",
+                  "parentId": "programs/auxiliary_receiver_outer_bound",
+                  "type": "question",
+                  "title": "Bridge from finite posterior grids to the full receiver functional",
+                  "summary": "No supplied result bridges the accepted structural and finite-grid analysis to a certified global optimization of the full receiver functional B(G,K). Missing ingredients include a continuum receiver-output cardinality bound, convergence of finite-grid optimizations, interchange of the receiver infimum with the grid limit, reflected-pair sufficiency or optimality, and certified global minimization. The finite-grid optimum and midpoint coercivity remain lower approximations or necessary localization tools and do not yield a universal capacity converse.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+                    "section": "## Node: programs/auxiliary_receiver_outer_bound/continuum_bridge"
+                  },
+                  "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/continuum_bridge\n\n- **Title:** Bridge from finite posterior grids to the full receiver functional\n- **Type:** Open research question\n- **Status:** Active and unresolved\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` concludes that the accepted structural and finite-grid results do not establish a bridge to a certified global optimization of the full receiver functional \\(B(G,K)\\).\n\nIn particular, the supplied evidence contains no proof of:\n\n1. a receiver-output cardinality bound for the continuum problem;\n2. convergence of finite posterior-grid optimizations to the full functional;\n3. interchange of the receiver infimum with a posterior-grid limit;\n4. sufficiency or optimality of reflected receiver pairs in the full optimization;\n5. a certified global minimization of \\(B(G,K)\\).\n\nThe exact three-point-grid value and midpoint coercive bound remain lower approximations or necessary localization tools for fixed receiver pairs. They do not by themselves yield a universal converse on \\(C_{\\mathrm{sum}}\\).\n\nAccording to the judgment, these missing continuum ingredients remain decisive obstacles to turning the finite-grid foundations into an improved capacity upper bound. No reconciliation or later supplied judgment resolves them.\n\n### Provenance\n\n- **Qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Conflict status:** No supplied conflict record or reconciliation; the question remains open for lack of evidence\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:d81fde63ee92babae8bf52b58c2771d3785d612c704b9f134ebde822d4026bd2",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:9001d7bb9e5140f7e1472de53bb65d135bcb8b0af1e41dc052cd5d6dc577c0b7"
+                }
+              },
+              "stateDigest": "sha256:226a21215af2ccbde2a92660c352b54a17502666e8a71bd87468c0ca994a80f7"
+            },
+            "revisionIds": [
+              "sha256:1370a5172f034fb17d700ab1eb62e32dc041142f9864f606b2b0879531dbd815",
+              "sha256:78932f559a6e6cabe7521ea53048234ff493257f31c9382da0658997db9665af",
+              "sha256:f165b9da963f1251ee563ea11a35672084b803b714590a41bb41251ae0b14fcc",
+              "sha256:f24903eeda6cd62068de9b467377a303cc017828fe919765a51280dd8320b0ba",
+              "sha256:98c9a49c7163bd04aea4f028c90dd05d431b0abc436f70f6e0e2564b92032528",
+              "sha256:223122bf355610c7546559cccf6f0224145e9d3f14d999d7fdec03bcff7dd507",
+              "sha256:6292be6f7c2242bf9dbf1abe02942bc0ef64f301519c78281847df266a598da7",
+              "sha256:77670654a816132e09f1d8cbbb834b9148edf8ddfc7f802ebd58d80b91ddd170",
+              "sha256:d81fde63ee92babae8bf52b58c2771d3785d612c704b9f134ebde822d4026bd2"
+            ],
+            "addedRevisionIds": [
+              "sha256:1370a5172f034fb17d700ab1eb62e32dc041142f9864f606b2b0879531dbd815",
+              "sha256:78932f559a6e6cabe7521ea53048234ff493257f31c9382da0658997db9665af",
+              "sha256:f165b9da963f1251ee563ea11a35672084b803b714590a41bb41251ae0b14fcc",
+              "sha256:f24903eeda6cd62068de9b467377a303cc017828fe919765a51280dd8320b0ba",
+              "sha256:98c9a49c7163bd04aea4f028c90dd05d431b0abc436f70f6e0e2564b92032528",
+              "sha256:223122bf355610c7546559cccf6f0224145e9d3f14d999d7fdec03bcff7dd507",
+              "sha256:6292be6f7c2242bf9dbf1abe02942bc0ef64f301519c78281847df266a598da7",
+              "sha256:77670654a816132e09f1d8cbbb834b9148edf8ddfc7f802ebd58d80b91ddd170",
+              "sha256:d81fde63ee92babae8bf52b58c2771d3785d612c704b9f134ebde822d4026bd2"
+            ],
+            "changedNodeIds": [
+              "root",
+              "programs/auxiliary_receiver_outer_bound",
+              "programs/auxiliary_receiver_outer_bound/input_only_reduction",
+              "programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality",
+              "programs/auxiliary_receiver_outer_bound/three_point_grid_optimum",
+              "programs/auxiliary_receiver_outer_bound/midpoint_coercivity",
+              "programs/auxiliary_receiver_outer_bound/source_transcription_fidelity",
+              "programs/auxiliary_receiver_outer_bound/certificate_reproducibility",
+              "programs/auxiliary_receiver_outer_bound/continuum_bridge"
+            ],
+            "reportDigest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+            "revisionSemantics": "neutral-knowledge"
+          }
+        ],
+        "revisions": [
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "The previous root stated that no research programs existed. This build retains the unchanged global capacity question and benchmark interval while adding the first durable program for the accepted structural and finite-grid auxiliary-receiver results. No numerical frontier change is recorded because the governing judgment expressly found none.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Change: root"
+            },
+            "contentDigest": "sha256:e93df3ee4fb55e4afcd116e4fbf395f75c1b2959c2f45e01123814ae7cba3ff2",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "kind": "judgment",
+                "relation": "qualifies"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "root",
+            "nodeType": "root",
+            "parentId": null,
+            "recordedAtLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Node: root"
+            },
+            "revisionId": "sha256:1370a5172f034fb17d700ab1eb62e32dc041142f9864f606b2b0879531dbd815",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "For the stated binary-input broadcast channel, the exact private-message sum-capacity remains open. The governed benchmark is 0.361642884421954615663441578150587… ≤ C_sum ≤ 0.369316568803963. The accepted structural and finite-grid auxiliary-receiver results improve neither endpoint; the three-point-grid value is not a capacity upper bound, and midpoint localization is only a necessary condition relative to a supplied threshold.",
+            "title": "Research state for BSSC private-message sum-capacity"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This new program preserves a coherent long-lived agenda centered on auxiliary-receiver outer bounds. It groups the accepted structural and finite-grid results with their certification limits and unresolved continuum dependency without treating the underlying transaction or artifacts as knowledge nodes.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Change: programs/auxiliary_receiver_outer_bound"
+            },
+            "contentDigest": "sha256:34c84d3ff1712d312cd089287520828ac61d44ab846e314055af2a4a70c30e5c",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "kind": "judgment",
+                "relation": "qualifies"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/auxiliary_receiver_outer_bound",
+            "nodeType": "program",
+            "parentId": "root",
+            "recordedAtLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Node: programs/auxiliary_receiver_outer_bound"
+            },
+            "revisionId": "sha256:78932f559a6e6cabe7521ea53048234ff493257f31c9382da0658997db9665af",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "This program studies the Gohari–Liu–Nair two-auxiliary-receiver outer-bound formulation through input-only structural reductions, finite-posterior-grid receiver cardinality, exact symbolic finite-grid certificates, midpoint coercivity, and a possible bridge to the full continuum functional. It currently establishes no continuum cardinality theorem, grid-convergence or infimum-interchange theorem, reflected-pair sufficiency, certified global minimization of B(G,K), improved achievable rate, or improved universal converse. Identification with the external manuscript remains conditional on source transcription fidelity.",
+            "title": "Auxiliary-receiver outer-bound program"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This new node records the durable marginal-law reduction separately from the finite-grid results. It preserves the judgment’s high-confidence support while retaining the explicit dependence on an unverified audit of the external manuscript’s term structure.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Change: programs/auxiliary_receiver_outer_bound/input_only_reduction"
+            },
+            "contentDigest": "sha256:26578dea727281ef52ba7f30a33b9bd92dcee6c6df96549a17788e6e2f89a9ef",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "kind": "judgment",
+                "relation": "qualifies"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/auxiliary_receiver_outer_bound/input_only_reduction",
+            "nodeType": "result",
+            "parentId": "programs/auxiliary_receiver_outer_bound",
+            "recordedAtLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Node: programs/auxiliary_receiver_outer_bound/input_only_reduction"
+            },
+            "revisionId": "sha256:f165b9da963f1251ee563ea11a35672084b803b714590a41bb41251ae0b14fcc",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "For finite auxiliary-receiver laws whose constraints use only audited single-output quantities, replacing T_{G,K|X,Y,Z} by the product of its induced input-only marginals preserves the relevant G- and K-based mutual informations, leaves the Y- and Z-marginal terms unchanged, and preserves constraint systems formed from those quantities. The reduction does not cover joint or output-conditioned terms such as I(S;G,K|R) or I(S;Y|G), and its application to every cited manuscript branch remains conditional on transcription fidelity.",
+            "title": "Input-only reduction for the auxiliary receivers"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This new node isolates the durable finite-grid receiver-cardinality theorem. Its scope is limited to fixed finite-grid optimization so that it is not misread as a continuum cardinality or convergence result.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Change: programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality"
+            },
+            "contentDigest": "sha256:e85cdcdc4ce570caa65ef4f001d615480b58c1967333e367d3414c52011d73f4",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "kind": "judgment",
+                "relation": "qualifies"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality",
+            "nodeType": "result",
+            "parentId": "programs/auxiliary_receiver_outer_bound",
+            "recordedAtLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Node: programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality"
+            },
+            "revisionId": "sha256:f24903eeda6cd62068de9b467377a303cc017828fe919765a51280dd8320b0ba",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "For a fixed N-point posterior grid Q containing 0, 1/2, and 1, each finite-output binary-input receiver in the fair-input grid-restricted auxiliary optimization can be replaced by one with at most N outputs without changing the restricted LP value. The result follows by preserving the posterior mean and the N−2 nonendpoint information samples and applying Carathéodory in dimension N−1. It does not require the replacement atoms to lie on Q and does not establish continuum cardinality, grid convergence, infimum interchange, or continuum reflected-pair sufficiency.",
+            "title": "Receiver cardinality on a finite posterior grid"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This new node records the exact three-point-grid receiver optimization as a finite-grid result rather than a capacity bound. The node retains both the checker mismatch and the unverified manuscript-transcription dependency attached by the judgment.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Change: programs/auxiliary_receiver_outer_bound/three_point_grid_optimum"
+            },
+            "contentDigest": "sha256:ec50e008eafd6df7f60512383dab08bbaf6d36651c83e05dfdac3c22e8619ebe",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "kind": "judgment",
+                "relation": "qualifies"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/auxiliary_receiver_outer_bound/three_point_grid_optimum",
+            "nodeType": "result",
+            "parentId": "programs/auxiliary_receiver_outer_bound",
+            "recordedAtLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Node: programs/auxiliary_receiver_outer_bound/three_point_grid_optimum"
+            },
+            "revisionId": "sha256:98c9a49c7163bd04aea4f028c90dd05d431b0abc436f70f6e0e2564b92032528",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "For Q₀={0,1/2,1} and c=h₂(1/4)−1/2, the supplied encoded 30-row formulation has exact receiver infimum inf_{G,K} V_{Q₀}(G,K)=inf_m V_{Q₀}(m,m°)=c. A W=X witness supplies the universal lower bound, while a reflection-invariant revealing-erasure posterior measure supplies the matching reflected-pair construction. The direct W=X checker is missing as documented, manuscript-row fidelity is unverified, and the result is only a lower approximation to the fixed-receiver functional rather than a capacity converse.",
+            "title": "Exact auxiliary-receiver optimum on the three-point posterior grid"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This new node preserves the coercive midpoint theorem and its inversion as a distinct localization tool. It explicitly prevents the necessary condition from being promoted to reflected optimality, global minimization, or a capacity bound.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Change: programs/auxiliary_receiver_outer_bound/midpoint_coercivity"
+            },
+            "contentDigest": "sha256:e02b5fab850a708e08f8fdf45475cf9c6b2dd4becd89491d9ab58d7fdb2c7bb6",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "kind": "judgment",
+                "relation": "qualifies"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/auxiliary_receiver_outer_bound/midpoint_coercivity",
+            "nodeType": "result",
+            "parentId": "programs/auxiliary_receiver_outer_bound",
+            "recordedAtLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Node: programs/auxiliary_receiver_outer_bound/midpoint_coercivity"
+            },
+            "revisionId": "sha256:223122bf355610c7546559cccf6f0224145e9d3f14d999d7fdec03bcff7dd507",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "For g=I_G(1/2), k=I_K(1/2), c=h₂(1/4)−1/2, and F(x)=2c·max{c,x}/(c+x), the encoded 30-row Q₀ problem satisfies B(G,K)≥V₀(g,k)≥max{F(g),F(k)}. For c≤U<2c, B(G,K)≤U necessarily implies 2c²/U−c≤g,k≤Uc/(2c−U). The result is an exact-symbolically audited necessary localization bound for the encoded rows, not a sufficient condition, global minimization, reflected-optimality theorem, or capacity converse; external row fidelity remains unverified.",
+            "title": "Midpoint-information coercive lower bound"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This new node preserves the judgment’s unresolved source-comparison issue as a durable validation dependency. It prevents exact checks of the encoded rows from being silently treated as certification of the absent manuscript equations.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Change: programs/auxiliary_receiver_outer_bound/source_transcription_fidelity"
+            },
+            "contentDigest": "sha256:323f3de21ebf98237cdd0fcf82514f4b3046cfd12dc3e2cd00e67f14ea779111",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "kind": "judgment",
+                "relation": "qualifies"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/auxiliary_receiver_outer_bound/source_transcription_fidelity",
+            "nodeType": "question",
+            "parentId": "programs/auxiliary_receiver_outer_bound",
+            "recordedAtLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Node: programs/auxiliary_receiver_outer_bound/source_transcription_fidelity"
+            },
+            "revisionId": "sha256:6292be6f7c2242bf9dbf1abe02942bc0ef64f301519c78281847df266a598da7",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "The supplied evidence does not include the complete external equations (19a)–(19p) or an independently checkable manuscript formulation. It therefore remains unresolved whether the single-output audit is exhaustive, all 30 encoded rows reproduce the manuscript, side-condition orientations are correct, and every coefficient was transcribed correctly. The structural arguments remain supported for systems with the stated form, and the symbolic code certifies the encoded rows only after accepting their transcription.",
+            "title": "Fidelity of the external Theorem 9 transcription"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This new node records the confirmed checker/documentation mismatch without turning it into a mathematical refutation. It also prevents the duplicated checker commands from being counted as independent evidence.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Change: programs/auxiliary_receiver_outer_bound/certificate_reproducibility"
+            },
+            "contentDigest": "sha256:ad42b37c96435f8077d16cbb578109019b3c8046adc336858552fd9d599eee4d",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "kind": "judgment",
+                "relation": "refutes"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/auxiliary_receiver_outer_bound/certificate_reproducibility",
+            "nodeType": "result",
+            "parentId": "programs/auxiliary_receiver_outer_bound",
+            "recordedAtLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Node: programs/auxiliary_receiver_outer_bound/certificate_reproducibility"
+            },
+            "revisionId": "sha256:77670654a816132e09f1d8cbbb834b9148edf8ddfc7f802ebd58d80b91ddd170",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "The supplied frontier-global-bridge checker does not directly audit the documented W=X witness table; it is byte-for-byte the coercivity checker supplied as frontier-q0-coercive. The two commands therefore execute duplicate mathematical content and are not independent corroborations. This documentation defect does not invalidate the encoded finite-grid conclusions: the checker verifies the stronger coercive bound and matching upper row, while the prose and row table carry the direct W=X argument. Certification remains limited to the hard-coded rows.",
+            "title": "Reproducibility status of the three-point-grid certificates"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This new node preserves the missing continuum step as an explicit research dependency. It separates valid finite-grid progress from the unproved limit, symmetry, and global-minimization statements needed for a new capacity converse.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Change: programs/auxiliary_receiver_outer_bound/continuum_bridge"
+            },
+            "contentDigest": "sha256:36d3222d81799eea977e3ce6b2698a5508586df0bb27dde2ce78e9be13ac601a",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+                "kind": "judgment",
+                "relation": "qualifies"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/auxiliary_receiver_outer_bound/continuum_bridge",
+            "nodeType": "question",
+            "parentId": "programs/auxiliary_receiver_outer_bound",
+            "recordedAtLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+              "section": "## Node: programs/auxiliary_receiver_outer_bound/continuum_bridge"
+            },
+            "revisionId": "sha256:d81fde63ee92babae8bf52b58c2771d3785d612c704b9f134ebde822d4026bd2",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "No supplied result bridges the accepted structural and finite-grid analysis to a certified global optimization of the full receiver functional B(G,K). Missing ingredients include a continuum receiver-output cardinality bound, convergence of finite-grid optimizations, interchange of the receiver infimum with the grid limit, reflected-pair sufficiency or optimality, and certified global minimization. The finite-grid optimum and midpoint coercivity remain lower approximations or necessary localization tools and do not yield a universal capacity converse.",
+            "title": "Bridge from finite posterior grids to the full receiver functional"
+          }
+        ],
+        "reports": [
+          {
+            "runId": "d5ae563f02d46f64b1789ad22637ef8c9d7bf20039fbeacd9e312caa1c086ec4",
+            "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+            "markdown": "# Knowledge-Formation Report\n\nThe existing root is updated to retain the global capacity question and governed benchmark interval while establishing one durable research program. The supplied batch contains no conflict records or reconciliation outcomes, so no active dispute node is required. Its unresolved matters are preserved as evidence gaps and open research questions rather than adjudicated.\n\nAll mathematical assessments below are attributed to primary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`, concerning transaction `d638c346212db3e75f6a53dcebcfd09f55125852`.\n\n## Node: root\n\n- **Title:** Research state for BSSC private-message sum-capacity\n- **Type:** Root\n- **Status:** Active\n- **Parent:** None\n\n### Current knowledge\n\nFor the binary-input broadcast channel with marginals\n\n\\[\nP_{Y|X}=\n\\begin{pmatrix}\n\\tfrac12&\\tfrac12\\\\\n0&1\n\\end{pmatrix},\n\\qquad\nP_{Z|X}=\n\\begin{pmatrix}\n1&0\\\\\n\\tfrac12&\\tfrac12\n\\end{pmatrix},\n\\]\n\nthe central unresolved question is the exact private-message sum-capacity\n\n\\[\nC_{\\mathrm{sum}}\n=\\sup\\{R_1+R_2:(R_1,R_2)\\text{ is achievable}\\}.\n\\]\n\nThe governed current benchmark remains\n\n\\[\n0.361642884421954615663441578150587\\ldots\n\\le C_{\\mathrm{sum}}\\le\n0.369316568803963.\n\\]\n\nThe supplied problem statement identifies the lower endpoint as the randomized-time-division value within Marton’s inner bound. It treats the reported decimal \\(0.369296340638082\\) as a numerical lead rather than a certified universal converse and does not pre-accept the separate fixed-pair artifact value \\(0.369296945969202842443\\).\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` concludes that the structural and finite-grid results assessed in this build improve neither endpoint. In particular:\n\n- the exact three-point-grid value is a lower approximation to a fixed-receiver outer-bound functional, not a capacity upper bound;\n- the midpoint localization result only excludes receiver pairs relative to a separately supplied threshold;\n- no new achievable rate or smaller universal converse was established.\n\nThe exact value of \\(C_{\\mathrm{sum}}\\) therefore remains open under the supplied judgments.\n\n### Durable program structure\n\nOne research program is established directly beneath the root:\n\n- `programs/auxiliary_receiver_outer_bound` — structural reduction, finite-grid analysis, exact three-point-grid results, certification status, and the unresolved continuum bridge for the Gohari–Liu–Nair auxiliary-receiver outer bound.\n\nNo conflict records or reconciliation outcomes were supplied. The source-transcription and continuum issues are active evidence gaps, not conflicts between opposed judgments.\n\n### Provenance\n\n- **Primary judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Judged transaction and evidence:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Global benchmark:** Supplied problem statement\n- **Conflict status:** No supplied conflict records\n\n## Change: root\n\nThe previous root stated that no research programs existed. This build retains the unchanged global capacity question and benchmark interval while adding the first durable program for the accepted structural and finite-grid auxiliary-receiver results. No numerical frontier change is recorded because the governing judgment expressly found none.\n\n## Node: programs/auxiliary_receiver_outer_bound\n\n- **Title:** Auxiliary-receiver outer-bound program\n- **Type:** Program\n- **Status:** Active\n- **Parent:** `root`\n\n### Program scope\n\nThis program studies the Gohari–Liu–Nair two-auxiliary-receiver outer-bound formulation through structural reductions of the receiver channels \\(G,K\\), finite-posterior-grid optimization, exact symbolic certificates, and possible bridges to the full continuum receiver functional.\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` supports, within their stated scopes:\n\n1. reducing suitable finite \\(T_{G,K|X,Y,Z}\\) laws to conditionally independent input-only channels;\n2. reducing each receiver to at most the grid size in a fixed finite-grid auxiliary optimization;\n3. evaluating the encoded three-point-grid receiver infimum exactly;\n4. obtaining a midpoint-information coercive lower bound for arbitrary receiver pairs.\n\nThe program does **not** currently provide:\n\n- a continuum receiver-cardinality theorem;\n- convergence of finite posterior grids to the full functional;\n- interchange of the receiver infimum with a grid limit;\n- reflected-pair sufficiency for the continuum optimization;\n- a certified global minimization of the full functional \\(B(G,K)\\);\n- an improved achievable sum rate or universal capacity converse.\n\nIdentification of the structural and exact symbolic results with every branch and side condition of the external manuscript remains conditional on the supplied term and row transcription. The hard-coded rows can be checked exactly after that transcription is accepted, but the absent manuscript equations prevent independent comparison within the supplied evidence.\n\n### Current program nodes\n\n- `programs/auxiliary_receiver_outer_bound/input_only_reduction`\n- `programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality`\n- `programs/auxiliary_receiver_outer_bound/three_point_grid_optimum`\n- `programs/auxiliary_receiver_outer_bound/midpoint_coercivity`\n- `programs/auxiliary_receiver_outer_bound/source_transcription_fidelity`\n- `programs/auxiliary_receiver_outer_bound/certificate_reproducibility`\n- `programs/auxiliary_receiver_outer_bound/continuum_bridge`\n\n### Credit and provenance\n\nThe immutable judgment reports that the transaction attributes the three source artifacts and their port to Robert Raynor and disclaims new authorship arising merely from the port. That credit statement is carried forward without independent reassessment. The judgment also notes that the reported repository and historical acceptance provenance was not independently verifiable from the supplied files.\n\n- **Primary judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n\n## Change: programs/auxiliary_receiver_outer_bound\n\nThis new program preserves a coherent long-lived agenda centered on auxiliary-receiver outer bounds. It groups the accepted structural and finite-grid results with their certification limits and unresolved continuum dependency without treating the underlying transaction or artifacts as knowledge nodes.\n\n## Node: programs/auxiliary_receiver_outer_bound/input_only_reduction\n\n- **Title:** Input-only reduction for the auxiliary receivers\n- **Type:** Structural result\n- **Status:** Supported with qualification\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` supports the following reduction with high confidence for constraint systems having the audited single-output structure.\n\nFor any finite channel \\(T_{G,K|X,Y,Z}\\), let \\(\\bar T_{G|X}\\) and \\(\\bar T_{K|X}\\) be its induced single-receiver channels. Replacing it by\n\n\\[\nT'_{G,K|X,Y,Z}(g,k|x,y,z)\n=\n\\bar T_{G|X}(g|x)\\bar T_{K|X}(k|x)\n\\]\n\npreserves the joint laws needed to evaluate terms of the forms\n\n\\[\nI(S;G|R)\n\\qquad\\text{and}\\qquad\nI(S;K|R),\n\\]\n\nwhere \\(S\\) and \\(R\\) are formed from \\(X\\) and the auxiliary variables. The \\(Y\\)- and \\(Z\\)-marginal terms are unchanged as well. Signed sums and minima made only from those preserved quantities therefore remain unchanged. Conversely, any input-only pair \\(Q_{G|X},Q_{K|X}\\) is already admissible in the original family by ignoring \\(Y,Z\\).\n\nUnder that syntactic condition, conditional correlation between \\(G\\) and \\(K\\), and output dependence beyond \\(X\\), are irrelevant to the attainable constraint set.\n\n### Scope and uncertainty\n\nThe reduction does not cover formulations containing joint or output-conditioned terms such as\n\n\\[\nI(S;G,K|R)\n\\quad\\text{or}\\quad\nI(S;Y|G).\n\\]\n\nIts application to every branch of the cited equations (19a)–(19p) and both side conditions remains conditional on the supplied term audit being faithful and exhaustive. The complete manuscript equations were not included in the evidence, so that external identification is not independently certified.\n\n### Provenance\n\n- **Supporting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Confidence recorded by judgment:** High, conditional on transcription fidelity\n\n## Change: programs/auxiliary_receiver_outer_bound/input_only_reduction\n\nThis new node records the durable marginal-law reduction separately from the finite-grid results. It preserves the judgment’s high-confidence support while retaining the explicit dependence on an unverified audit of the external manuscript’s term structure.\n\n## Node: programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality\n\n- **Title:** Receiver cardinality on a finite posterior grid\n- **Type:** Cardinality theorem\n- **Status:** Supported with qualification\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nLet \\(Q\\subset[0,1]\\) be an \\(N\\)-point posterior grid containing\n\n\\[\n0,\\quad \\frac12,\\quad 1.\n\\]\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` supports with high confidence that, for the fair-input auxiliary optimization in which every auxiliary posterior is restricted to \\(Q\\), each finite-output binary-input receiver can be replaced by a receiver with at most \\(N\\) outputs without changing the restricted LP value.\n\nThe judgment records the following basis for the cardinality count:\n\n- a finite-output receiver is represented by a posterior measure of mean \\(1/2\\);\n- preserving the mean and the \\(N-2\\) nonendpoint information samples gives a vector in dimension \\(N-1\\);\n- Carathéodory’s theorem therefore yields a representing measure with at most \\(N\\) atoms, rather than \\(N+1\\);\n- preserving receiver information samples on \\(Q\\) preserves the relevant single-receiver mutual-information terms for auxiliary posteriors in \\(Q\\).\n\nIf \\(Q\\) is closed under \\(q\\mapsto1-q\\), the reduction also preserves reflected receiver pairs through the relation between a receiver and its reflected posterior measure.\n\n### Scope\n\nThis result is only a receiver-output cardinality theorem for a **fixed finite-grid auxiliary optimization**. It does not establish that:\n\n- the replacement receiver’s posterior atoms lie on \\(Q\\);\n- a comparable output-cardinality bound holds for the continuum problem;\n- finite-grid values converge to the full receiver functional;\n- a receiver infimum can be interchanged with a grid limit;\n- reflected pairs suffice among arbitrary continuum receiver pairs.\n\nApplication to the named 30-row LP also depends on the asserted fact that every relevant row can be expressed using the audited single-receiver posterior samples.\n\n### Provenance\n\n- **Supporting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Confidence recorded by judgment:** High for the finite-grid theorem\n\n## Change: programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality\n\nThis new node isolates the durable finite-grid receiver-cardinality theorem. Its scope is limited to fixed finite-grid optimization so that it is not misread as a continuum cardinality or convergence result.\n\n## Node: programs/auxiliary_receiver_outer_bound/three_point_grid_optimum\n\n- **Title:** Exact auxiliary-receiver optimum on the three-point posterior grid\n- **Type:** Exact finite-grid result\n- **Status:** Supported with documentation and transcription qualifications\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nDefine\n\n\\[\nQ_0=\\left\\{0,\\frac12,1\\right\\},\n\\qquad\nc=h_2(1/4)-\\frac12.\n\\]\n\nFor the supplied encoded 30-row formulation, primary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` supports with high confidence that\n\n\\[\n\\inf_{G,K}V_{Q_0}(G,K)\n=\n\\inf_m V_{Q_0}(m,m^\\circ)\n=\nc.\n\\]\n\nThe first infimum ranges over finite-output receiver pairs, while the second is restricted to reflected pairs.\n\nThe judgment records two matching components:\n\n- A \\(W=X\\) witness, with \\(U,V\\) constant in each auxiliary group, supports the universal lower bound\n  \\[\n  V_{Q_0}(G,K)\\ge c\n  \\]\n  for every receiver pair in the encoded system.\n- The reflection-invariant revealing-erasure posterior measure\n  \\[\n  m_E=\\frac c2\\delta_0+(1-c)\\delta_{1/2}+\\frac c2\\delta_1\n  \\]\n  gives identical sampled curves for \\(Y,G,K,Z\\) on \\(Q_0\\). The supplied `SL(1,U)` row then yields\n  \\[\n  R_1+R_2\\le c,\n  \\]\n  providing the matching upper construction in the reflected class.\n\n### Certification and scope\n\nThe exact symbolic code checks the hard-coded row system, including the cancellation used for the matching upper row. The supplied checker described as a direct `W=X` audit is not actually that checker; consequently, the direct lower-witness argument is carried by the prose and row table, with additional support from the coercivity certificate.\n\nThe result’s identification with the external manuscript remains conditional on row-transcription fidelity.\n\nThis exact value is not a capacity converse. The judgment expressly records\n\n\\[\nV_{Q_0}(G,K)\\le B(G,K),\n\\]\n\nbecause restricting auxiliary posteriors lowers the inner maximization. Thus the value \\(c\\) cannot replace the governed upper bound on \\(C_{\\mathrm{sum}}\\).\n\n### Provenance\n\n- **Supporting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Confidence recorded by judgment:** High for the encoded 30-row formulation\n\n## Change: programs/auxiliary_receiver_outer_bound/three_point_grid_optimum\n\nThis new node records the exact three-point-grid receiver optimization as a finite-grid result rather than a capacity bound. The node retains both the checker mismatch and the unverified manuscript-transcription dependency attached by the judgment.\n\n## Node: programs/auxiliary_receiver_outer_bound/midpoint_coercivity\n\n- **Title:** Midpoint-information coercive lower bound\n- **Type:** Finite-grid lower-bound theorem\n- **Status:** Supported with scope qualification\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nLet\n\n\\[\ng=I_G(1/2),\\qquad k=I_K(1/2),\n\\qquad\nc=h_2(1/4)-\\frac12,\n\\]\n\nand define\n\n\\[\nF(x)=\\frac{2c\\max\\{c,x\\}}{c+x}.\n\\]\n\nFor the encoded 30-row \\(Q_0\\) problem, primary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` supports with high confidence that\n\n\\[\nB(G,K)\\ge V_0(g,k)\\ge \\max\\{F(g),F(k)\\}.\n\\]\n\nThe judgment attributes this lower bound to the supplied H, L, and X witness families and their exact rational-polynomial row audit. It records that the three witness regimes cover high, low, and crossing configurations of the two midpoint informations. The symbolic checker:\n\n- rebuilds the 30 labeled rows from hard-coded path formulas;\n- verifies the witness block constraints;\n- computes exact rational-polynomial slacks;\n- verifies their coefficientwise nonnegativity after the stated substitutions;\n- uses no floating-point optimizer.\n\nThe passage from the restricted \\(Q_0\\) witnesses to the full fixed-receiver functional has the supported direction\n\n\\[\nB(G,K)\\ge V(1/2;G,K)\\ge V_0(g,k).\n\\]\n\nFor any \\(U\\) satisfying\n\n\\[\nc\\le U<2c,\n\\]\n\nthe judgment also supports the necessary implication\n\n\\[\nB(G,K)\\le U\n\\quad\\Longrightarrow\\quad\n\\frac{2c^2}{U}-c\n\\le g,k\\le\n\\frac{Uc}{2c-U}.\n\\]\n\n### Scope\n\nThe midpoint interval is a necessary localization condition. It is not:\n\n- a sufficient condition for \\(B(G,K)\\le U\\);\n- a global minimization of \\(B(G,K)\\);\n- a proof of reflected optimality;\n- a capacity converse.\n\nThe exact symbolic certification begins after accepting the hard-coded rows as the intended manuscript constraint system. External row fidelity remains unverified.\n\n### Provenance\n\n- **Supporting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Confidence recorded by judgment:** High for the encoded \\(Q_0\\) row system\n\n## Change: programs/auxiliary_receiver_outer_bound/midpoint_coercivity\n\nThis new node preserves the coercive midpoint theorem and its inversion as a distinct localization tool. It explicitly prevents the necessary condition from being promoted to reflected optimality, global minimization, or a capacity bound.\n\n## Node: programs/auxiliary_receiver_outer_bound/source_transcription_fidelity\n\n- **Title:** Fidelity of the external Theorem 9 transcription\n- **Type:** Active evidence gap\n- **Status:** Unresolved\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nThe complete external equations (19a)–(19p) and an independently checkable copy of the cited manuscript formulation were not included in the judged evidence.\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` therefore does not decide whether:\n\n- the supplied single-output term audit exhausts every manuscript branch and side condition;\n- all 30 hard-coded rows exactly reproduce the manuscript;\n- every side-condition orientation is correct;\n- every row coefficient was transcribed correctly.\n\nThe marginal-law and finite-grid arguments are independently supported for systems possessing the stated structure. The exact symbolic code certifies the hard-coded rows after those rows are accepted. What remains uncertain is the identification of that encoded system with the complete external source.\n\nNo opposing primary judgments or reconciliation outcomes were supplied. This node is therefore an unresolved evidence dependency, not an adjudicated dispute.\n\n### Provenance\n\n- **Uncertainty judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Conflict status:** No supplied conflict record or reconciliation\n\n## Change: programs/auxiliary_receiver_outer_bound/source_transcription_fidelity\n\nThis new node preserves the judgment’s unresolved source-comparison issue as a durable validation dependency. It prevents exact checks of the encoded rows from being silently treated as certification of the absent manuscript equations.\n\n## Node: programs/auxiliary_receiver_outer_bound/certificate_reproducibility\n\n- **Title:** Reproducibility status of the three-point-grid certificates\n- **Type:** Certification finding\n- **Status:** Confirmed documentation defect with mathematical scope preserved\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` refutes the documentation claim that the supplied `frontier-global-bridge` checker directly audits the \\(W=X\\) witness table and prints the described \\(W=X\\) messages.\n\nThe judgment finds that this checker is instead byte-for-byte the coercivity checker supplied under `frontier-q0-coercive`. Consequently:\n\n- the two documented reproduction commands execute duplicate mathematical content;\n- they are not independent corroborations;\n- the `frontier-global-bridge` reproduction description is inaccurate;\n- the supplied executable does not perform the specifically described direct \\(W=X\\) audit.\n\nThe judgment does not treat this defect as invalidating the finite-grid mathematical conclusions. The included checker verifies the stronger coercive lower bound and the matching upper row for the hard-coded system, while the prose proof and row table carry the direct \\(W=X\\) argument.\n\nThe executable certification remains subject to the separate source-transcription uncertainty: it checks the encoded rows, not their fidelity to the absent external manuscript equations.\n\n### Provenance\n\n- **Refuting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n\n## Change: programs/auxiliary_receiver_outer_bound/certificate_reproducibility\n\nThis new node records the confirmed checker/documentation mismatch without turning it into a mathematical refutation. It also prevents the duplicated checker commands from being counted as independent evidence.\n\n## Node: programs/auxiliary_receiver_outer_bound/continuum_bridge\n\n- **Title:** Bridge from finite posterior grids to the full receiver functional\n- **Type:** Open research question\n- **Status:** Active and unresolved\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` concludes that the accepted structural and finite-grid results do not establish a bridge to a certified global optimization of the full receiver functional \\(B(G,K)\\).\n\nIn particular, the supplied evidence contains no proof of:\n\n1. a receiver-output cardinality bound for the continuum problem;\n2. convergence of finite posterior-grid optimizations to the full functional;\n3. interchange of the receiver infimum with a posterior-grid limit;\n4. sufficiency or optimality of reflected receiver pairs in the full optimization;\n5. a certified global minimization of \\(B(G,K)\\).\n\nThe exact three-point-grid value and midpoint coercive bound remain lower approximations or necessary localization tools for fixed receiver pairs. They do not by themselves yield a universal converse on \\(C_{\\mathrm{sum}}\\).\n\nAccording to the judgment, these missing continuum ingredients remain decisive obstacles to turning the finite-grid foundations into an improved capacity upper bound. No reconciliation or later supplied judgment resolves them.\n\n### Provenance\n\n- **Qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Conflict status:** No supplied conflict record or reconciliation; the question remains open for lack of evidence\n\n## Change: programs/auxiliary_receiver_outer_bound/continuum_bridge\n\nThis new node preserves the missing continuum step as an explicit research dependency. It separates valid finite-grid progress from the unproved limit, symmetry, and global-minimization statements needed for a new capacity converse.\n"
+          }
+        ],
+        "latestRunId": "d5ae563f02d46f64b1789ad22637ef8c9d7bf20039fbeacd9e312caa1c086ec4"
+      }
+    },
     {
       "id": "openrouter-research-v1",
       "problemId": "maximal-determinant-23",
@@ -30102,6 +31544,15 @@
     }
   ],
   "researchDirections": [
+    {
+      "schemaVersion": 1,
+      "problemId": "bssc-sum-capacity",
+      "ledgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+      "directionLedgerHead": null,
+      "directionLedgerDigest": "sha256:a468d6764b505dd3000014aa672a34ce3b6d92c06b7ca069b72c6489bc67abd5",
+      "events": [],
+      "directions": []
+    },
     {
       "schemaVersion": 1,
       "problemId": "maximal-determinant-23",
