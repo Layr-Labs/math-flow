@@ -3,12 +3,15 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from copy import deepcopy
 from pathlib import Path
+from unittest.mock import patch
 
 from math_flow.judgments import (
     plan_reconciliation_inputs,
     run_reconciliation_judgment_bundle,
 )
+from math_flow.judges import load_source
 from math_flow.hosted_reconciliation_smoke import (
     CLAIM_KEY,
     PRIMARY_JUDGE,
@@ -18,6 +21,37 @@ from math_flow.hosted_reconciliation_smoke import (
 
 
 class HostedReconciliationFixtureTests(unittest.TestCase):
+    def test_fixture_pins_reviewed_prefix_when_later_contributions_exist(self) -> None:
+        root = Path(__file__).parents[1]
+        current = load_source(root, PROBLEM_ID, "HEAD")
+        extended = deepcopy(current)
+        extended["transactions"].append(
+            {
+                **extended["transactions"][-1],
+                "ordinal": len(extended["transactions"]) + 1,
+                "contributionId": "later-contribution",
+            }
+        )
+        calls = 0
+
+        def source_at(
+            source_root: Path, problem: str, head: str
+        ) -> dict[str, object]:
+            nonlocal calls
+            calls += 1
+            return extended if calls == 1 else load_source(source_root, problem, head)
+
+        with tempfile.TemporaryDirectory() as temporary, patch(
+            "math_flow.hosted_reconciliation_smoke.load_source",
+            side_effect=source_at,
+        ):
+            plan = prepare_fixture(root, Path(temporary) / "staging")
+
+        self.assertEqual(len(plan["primaryBundlePaths"]), 4)
+        self.assertEqual(
+            plan["ledgerHead"], current["transactions"][-1]["transactionId"]
+        )
+
     def test_fixture_covers_ledger_and_derives_one_current_conflict(self) -> None:
         root = Path(__file__).parents[1]
         with tempfile.TemporaryDirectory() as temporary:
@@ -32,7 +66,7 @@ class HostedReconciliationFixtureTests(unittest.TestCase):
                 root / PRIMARY_JUDGE,
                 root
                 / "protocol/judges/openrouter-markdown-reconciliation-v1.json",
-                "HEAD",
+                str(plan["ledgerHead"]),
                 [Path(item) for item in plan["primaryBundlePaths"]],
             )
             conflict = json.loads(
@@ -100,7 +134,7 @@ class HostedReconciliationFixtureTests(unittest.TestCase):
                 PROBLEM_ID,
                 root
                 / "protocol/judges/openrouter-markdown-reconciliation-v1.json",
-                "HEAD",
+                str(plan["ledgerHead"]),
                 conflict,
                 [Path(item) for item in plan["primaryBundlePaths"]],
                 reconciliation_bundle,
@@ -113,7 +147,7 @@ class HostedReconciliationFixtureTests(unittest.TestCase):
                 root / PRIMARY_JUDGE,
                 root
                 / "protocol/judges/openrouter-markdown-reconciliation-v1.json",
-                "HEAD",
+                str(plan["ledgerHead"]),
                 [Path(item) for item in plan["primaryBundlePaths"]],
                 [reconciliation_bundle],
                 [str(plan["conflictId"])],

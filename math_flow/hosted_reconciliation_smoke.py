@@ -116,14 +116,29 @@ def prepare_fixture(
 ) -> dict[str, object]:
     root = root.resolve()
     output_dir = output_dir.resolve()
-    source = load_source(root, PROBLEM_ID, head)
-    transactions = list(source["transactions"])
-    observed = {str(item["contributionId"]) for item in transactions}
+    current_source = load_source(root, PROBLEM_ID, head)
+    current_transactions = list(current_source["transactions"])
     expected = set(SCENARIOS)
+    expected_transactions = [
+        item
+        for item in current_transactions
+        if str(item["contributionId"]) in expected
+    ]
+    observed = {str(item["contributionId"]) for item in expected_transactions}
     if observed != expected:
-        difference = sorted(expected - observed or observed - expected)[0]
+        difference = sorted(expected - observed)[0]
         raise MathFlowError(
-            "hosted reconciliation fixture must be reviewed for the current ledger: "
+            "hosted reconciliation fixture is missing reviewed evidence: "
+            f"{difference}"
+        )
+    fixture_head = str(expected_transactions[-1]["transactionId"])
+    source = load_source(root, PROBLEM_ID, fixture_head)
+    transactions = list(source["transactions"])
+    prefix_ids = {str(item["contributionId"]) for item in transactions}
+    if prefix_ids != expected:
+        difference = sorted(expected - prefix_ids or prefix_ids - expected)[0]
+        raise MathFlowError(
+            "hosted reconciliation fixture must be reviewed for its historical prefix: "
             f"{difference}"
         )
 
@@ -138,7 +153,7 @@ def prepare_fixture(
             root,
             PROBLEM_ID,
             root / PRIMARY_JUDGE,
-            head,
+            fixture_head,
             [transaction_id],
             bundle_dir,
             context_transaction_ids=preceding,
