@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-11 (`68b96b5`).
+Last reconciled with `main`: 2026-08-11 (`0aecc95`).
 
 ## Product thesis
 
@@ -163,7 +163,9 @@ The approved hosted projections are:
   as its exact dependency;
 - `openrouter-no-three-in-line-credit-directions-v2`, the registration-aware
   qualitative overlay admitted in PR #29, with the same exact knowledge
-  dependency and a one-hour rolling minimum interval.
+  dependency and a one-hour rolling minimum interval. It is currently disabled
+  by PR #31 pending explicit approval to send canonical contribution evidence,
+  the locked knowledge state, and the direction-event ledger to OpenRouter.
 
 The `openrouter-credit-assignment-v2` runner/profile embeds the verified
 direction-event ledger and lets assignments cite exact prior canonical
@@ -358,10 +360,11 @@ the task requires an end-to-end check.
 These are the most important gaps as of this document's reconciliation date:
 
 1. **Exercise registration end to end.** The runtime and governed credit-v2
-   projection are admitted. Submit `register` → contribution → `complete`, verify
-   the provider-free catalog refresh after direction events, and confirm that a
-   later v2 credit run cites only exact canonically prior registrations. Keep
-   credit v1 readable and avoid treating registration as exclusivity.
+   projection are admitted. After the provider-data approval above, enable v2 in
+   a one-file governed PR. Then submit `register` → contribution → `complete`,
+   verify the provider-free catalog refresh after direction events, and confirm
+   that a later v2 credit run cites only exact canonically prior registrations.
+   Keep credit v1 readable and avoid treating registration as exclusivity.
 2. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
    exact UTC transaction windows, and predecessor-chain terminals are now
    implemented, while the admitted example remains qualitative and non-zero-sum.
