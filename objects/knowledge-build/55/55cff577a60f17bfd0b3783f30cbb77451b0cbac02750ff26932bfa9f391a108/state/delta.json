@@ -1,0 +1,132 @@
+{
+  "operations": [
+    {
+      "action": "create",
+      "nodeId": "root",
+      "parentId": null,
+      "nodeType": "root",
+      "title": "Research state for the sixth Schur number",
+      "summary": "The exact value of S(6) remains unresolved, with the current interval 536 ≤ S(6) ≤ 1836. A complete explicit six-coloring and exact checker support S(6) ≥ 536 with high confidence, but the supplied evidence provides no coloring through 537, no upper-bound improvement, and no exact determination. Explicit coloring certificates and exact verification are organized under a dedicated research program.",
+      "reportSection": "## Node: root",
+      "baseDigest": "sha256:601071f7faad1258ed8eb4dd8130d1a489dbf88a9e2f6bf471c8976d4ab78481",
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+          "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: root"
+    },
+    {
+      "action": "create",
+      "nodeId": "programs/explicit-coloring-certificates",
+      "parentId": "root",
+      "nodeType": "program",
+      "title": "Explicit coloring certificates and exact verification",
+      "summary": "This program organizes complete finite Schur-coloring witnesses, compact and expanded encodings, exact representation and coverage checks, exhaustive verification of the Schur condition, and replay qualifications. It contains the certified coloring through 536 and the specialized deterministic checker for that certificate, but no coloring beyond 536, upper-bound proof, or determination of S(6).",
+      "reportSection": "## Node: programs/explicit-coloring-certificates",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+          "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: programs/explicit-coloring-certificates"
+    },
+    {
+      "action": "create",
+      "nodeId": "programs/explicit-coloring-certificates/coloring-1-536",
+      "parentId": "programs/explicit-coloring-certificates",
+      "nodeType": "result",
+      "title": "Certified six-coloring of {1,...,536}",
+      "summary": "A complete six-coloring of {1,...,536} with no monochromatic solution of x+y=z certifies S(6) ≥ 536 with high confidence. Compact and canonical expanded representations agree, including exceptional assignments 179↦4 and 358↦1. The certificate has complete source and is independently replayable, but no execution transcript or hosted attestation was supplied. It establishes no coloring through 537 or larger interval and does not improve the published lower endpoint.",
+      "reportSection": "## Node: programs/explicit-coloring-certificates/coloring-1-536",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+          "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: programs/explicit-coloring-certificates/coloring-1-536"
+    },
+    {
+      "action": "create",
+      "nodeId": "programs/explicit-coloring-certificates/exact-checker-536",
+      "parentId": "programs/explicit-coloring-certificates",
+      "nodeType": "method",
+      "title": "Exact exhaustive verifier for the fixed 536-integer coloring certificate",
+      "summary": "The deterministic Python checker is logically correct for the supplied fixed certificate format. It validates the compact witness and canonical expanded CSV, enforces exact agreement between them, and exhaustively tests all 71,824 relevant pairs with 1 ≤ x ≤ y and x+y ≤ 536, including x=y. It uses exact integer arithmetic and no heuristic or external-package behavior. Its scope is specialized to n=536, six colors, and symmetry modulus 537; source and expected output are supplied, but no independent replay transcript or hosted attestation is recorded.",
+      "reportSection": "## Node: programs/explicit-coloring-certificates/exact-checker-536",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+          "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: programs/explicit-coloring-certificates/exact-checker-536"
+    }
+  ]
+}
