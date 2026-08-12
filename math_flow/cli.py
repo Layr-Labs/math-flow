@@ -30,6 +30,7 @@ from .credit_schedule import (
     plan_due_credit_dispatches,
 )
 from .directions import research_direction_ledger
+from .discovery import discover_problems
 from .errors import MathFlowError
 from .formation import run_knowledge_build_bundle
 from .governance import (
@@ -169,6 +170,30 @@ def build_parser() -> argparse.ArgumentParser:
         "--engine", help="only list projections executed by this engine"
     )
     active_projections_parser.add_argument("--output")
+
+    problems_parser = commands.add_parser(
+        "list-problems",
+        help="list all canonical problems and their contribution/projection stage",
+    )
+    problems_parser.add_argument("--head", default="HEAD")
+    problems_parser.add_argument(
+        "--projection-dir",
+        type=Path,
+        help="verify and annotate published knowledge state from this projection checkout",
+    )
+    problems_parser.add_argument(
+        "--stage",
+        action="append",
+        choices=[
+            "ready-for-first-contribution",
+            "projection-unchecked",
+            "knowledge-pending",
+            "knowledge-stale",
+            "knowledge-current",
+        ],
+        help="only return this lifecycle stage (repeatable)",
+    )
+    problems_parser.add_argument("--output")
 
     admission_parser = commands.add_parser(
         "validate-admission-pr",
@@ -666,6 +691,18 @@ def main(argv: list[str] | None = None) -> int:
             result = list_active_projections(
                 root, args.problem, args.head, args.engine
             )
+            _write_json(result, args.output)
+            return 0
+        elif args.command == "list-problems":
+            result = discover_problems(root, args.head, args.projection_dir)
+            if args.stage:
+                stages = set(args.stage)
+                result = {
+                    **result,
+                    "problems": [
+                        item for item in result["problems"] if item["stage"] in stages
+                    ],
+                }
             _write_json(result, args.output)
             return 0
         elif args.command == "validate-admission-pr":

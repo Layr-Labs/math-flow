@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-12 (`a7acd1e`).
+Last reconciled with `main`: 2026-08-12 (`fa6eaf7`).
 
 ## Product thesis
 
@@ -162,7 +162,7 @@ automatic squash merge to main
 | Content-addressed projection publisher | Implemented, including optimistic cross-problem merge/retry and bounded GitHub commits | `math_flow/coordination.py`, `math_flow/projection_queue.py`, `math_flow/github_projection.py` |
 | Provider-free congestion probe | Implemented; models concurrent problems, solvers, judge streams, projection lanes, atomic reconciliations, throttling, failure recovery, optimistic publication, chunking, catalog export, and agent context with zero provider calls | `math_flow/scale_probe.py`, `tests/test_scale_probe.py` |
 | Repository-backed viewer | Implemented and deployed through ChatGPT Sites | `viewer/` |
-| Non-UI agent context command | Implemented; deterministically reports verified credit assignments or explicit pending/stale/invalid/unavailable status without model calls | `math_flow/context.py`, `math_flow/credit_context.py` |
+| Non-UI agent discovery and context commands | Implemented; canonical problem discovery includes admitted problems with no projection, while context deterministically reports verified state and credit or explicit pending/stale/invalid/unavailable status without model calls | `math_flow/discovery.py`, `math_flow/context.py`, `math_flow/credit_context.py` |
 | Solver-facing repository skill | Implemented; requires repository tools and explains qualitative scoring semantics and exact-reference inspection | `.agents/skills/math-flow-solver/` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Governed local/hosted runner, provider-free eligibility planner, bounded semantic retries, rolling coalescing, catch-up over closed UTC periods, predecessor-chain terminals, and independent `credit-assignment` bundles implemented | `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
@@ -484,6 +484,9 @@ npm run lint
 Useful read-only diagnostics include:
 
 ```bash
+python3 -m math_flow list-problems \
+  --head origin/main \
+  --projection-dir <detached-projections-worktree>
 python3 -m math_flow ledger --problem no-three-in-line-77 --head HEAD
 python3 -m math_flow directions --problem no-three-in-line-77 --head HEAD
 python3 -m math_flow resolve-projection \
