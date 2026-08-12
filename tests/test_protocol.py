@@ -568,6 +568,30 @@ class GitProtocolTests(unittest.TestCase):
             {"supports", "refutes"},
         )
 
+        forged_conflict = copy.deepcopy(conflicts[0])
+        forged_conflict["judgments"][0]["summary"] = "A forged routing summary."
+        forged_core = {
+            key: value for key, value in forged_conflict.items() if key != "conflictId"
+        }
+        forged_conflict["conflictId"] = f"sha256:{sha256_json(forged_core)}"
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "conflict does not match the supplied primary judgments",
+        ):
+            run_reconciliation_judgment_bundle(
+                self.root,
+                "demo",
+                Path(__file__).parents[1]
+                / "protocol/judges/openrouter-markdown-reconciliation-v1.json",
+                refuting_head,
+                forged_conflict,
+                [supporting_bundle, refuting_bundle],
+                self.root / "forged-reconciliation",
+                transport=lambda _: self.fail(
+                    "a forged conflict reached the reconciliation provider"
+                ),
+            )
+
         reconciliation_responses = iter(
             [
                 {
