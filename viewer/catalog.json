@@ -5774,8 +5774,8 @@
         "id": "openrouter-knowledge-builder-v1",
         "digest": "sha256:1f6d47f03f3e4804e25095754a7aa800e155ded9d1c2783937411b9faa861008"
       },
-      "latestRunDigest": "sha256:406cdc3047e2d3e38f8e0f60e4b3b2c2dbedc9b1f520fd838e8d753344f9f05f",
-      "runCount": 4,
+      "latestRunDigest": "sha256:50ec53657f7372d57a345507ddefb8a977c558582c2fce91d218439b0f897f61",
+      "runCount": 5,
       "data": {
         "schemaVersion": 1,
         "problem": {
@@ -5783,7 +5783,7 @@
           "title": "No-three-in-line at grid size 77",
           "statementMarkdown": "# No-three-in-line at grid size 77\n\nFor a positive integer `n`, let\n\n\\[\nG_n = \\{0,1,\\ldots,n-1\\}^2,\n\\]\n\nand let `D(n)` be the largest cardinality of a subset of `G_n` containing no\nthree distinct collinear points.\n\nDetermine `D(77)`, or improve either side of the current certified interval\n\n\\[\n152 \\le D(77) \\le 154.\n\\]\n\nThe upper bound is elementary: each of the 77 horizontal grid lines contains at\nmost two selected points. For the lower bound, a 152-point configuration on the\n`76 x 76` grid can be embedded unchanged in `G_77`. The initial contribution\nrecords and independently checks such a configuration.\n\nUseful contributions include:\n\n- an exact coordinate certificate with 153 or 154 points;\n- a small, reproducible verifier or SAT/CP-SAT encoding;\n- a symmetry-restricted result with its precise scope stated;\n- a structural lemma constraining hypothetical 153- or 154-point sets;\n- a reproducible search improvement or negative search result, clearly\n  distinguished from a global impossibility proof; or\n- a proof improving the upper bound.\n\nAll computational claims should include enough data and code to verify the\nclaimed implication with exact integer arithmetic. The frontier is active, so a\nlater contribution may update these baseline bounds without rewriting this\nhistorical statement.\n\n## Frontier sources\n\n- Achim Flammenkamp's maintained\n  [No-Three-in-Line database](https://wwwhomes.uni-bielefeld.de/achim/no3in/readme.html),\n  updated 2026-08-10, records the first `n = 76` configuration.\n- Thomas Prellberg,\n  [Constraint Satisfaction Programming for the No-three-in-line Problem](https://arxiv.org/abs/2602.07751),\n  describes the recent constraint-programming approach and its earlier advance\n  through `n = 60`.\n\n"
         },
-        "ledgerHead": "11cd457dc42c6df0d146161a9635ab1607135933",
+        "ledgerHead": "943082dcee7ace42336179cd608fe941e7137db6",
         "transactions": [
           {
             "ordinal": 1,
@@ -5828,6 +5828,17 @@
               "email": "35671663+mooselumph@users.noreply.github.com"
             },
             "contentMarkdown": "# Arbitrary-center rotational symmetry at cardinalities 153 and 154\n\n## Result\n\nThis contribution closes the specific arbitrary-center gap recorded in\n`d77/rotational-classification-scope`.\n\n**Finite-rotation lemma.** Let \\(S\\subset\\mathbb Z^2\\) be finite and\nnoncollinear. If a nonidentity Euclidean rotation \\(T\\) satisfies \\(T(S)=S\\),\nthen \\(T\\) is a half-turn or a quarter-turn (in either orientation). This\nallows an arbitrary center; no assumption is made that the rotation preserves\nthe whole ambient square or the whole integer lattice.\n\nConsequently, for a no-three-in-line set \\(S\\subset G_{77}\\):\n\n1. if \\(|S|=153\\), then \\(S\\) has no nontrivial rotational symmetry;\n2. if \\(|S|=154\\) and \\(S\\) has nontrivial rotational symmetry, it is invariant\n   under the half-turn about \\((38,38)\\), and \\((38,38)\\notin S\\).\n\nThis classifies rotations only. It says nothing about reflection symmetry and\ndoes not identify the strict rct4 subclass with the full centered half-turn\nclass. In particular, it does **not** improve the certified interval\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\n## Proof of the finite-rotation lemma\n\nWrite the rotation as\n\n\\[\nT(x)=z+Q(x-z),\\qquad\nQ=\\begin{pmatrix}c&-s\\\\s&c\\end{pmatrix},\n\\qquad c^2+s^2=1.\n\\]\n\nHere \\(z\\in\\mathbb R^2\\) is arbitrary. We prove first that both \\(c\\) and\n\\(s\\) are rational.\n\nChoose noncollinear \\(p_0,p_1,p_2\\in S\\), and form the matrices whose columns\nare two differences and their rotated images:\n\n\\[\nB=\\begin{pmatrix}|&|\\\\p_1-p_0&p_2-p_0\\\\|&|\\end{pmatrix},\n\\qquad\nC=\\begin{pmatrix}|&|\\\\T(p_1)-T(p_0)&T(p_2)-T(p_0)\\\\|&|\\end{pmatrix}.\n\\]\n\nThe columns of \\(B\\) and \\(C\\) are integer vectors because all six relevant\npoints lie in \\(S\\subset\\mathbb Z^2\\). Noncollinearity gives\n\\(\\det(B)\\ne0\\). The translational part of \\(T\\) cancels in differences, so\n\n\\[\nC=QB,\n\\qquad Q=CB^{-1}.\n\\]\n\nThe inverse of the nonsingular integer matrix \\(B\\) has rational entries.\nThus \\(Q\\) has rational entries, and in particular \\(c,s\\in\\mathbb Q\\).\nThis step does not require the center \\(z\\) to be a lattice point.\n\nNext, \\(T\\) acts as a permutation of the finite set \\(S\\). Some positive\npower of that permutation is the identity, so for some \\(m\\ge1\\), \\(T^m\\)\nfixes every point of \\(S\\). Since \\(S\\) contains three noncollinear points,\nthe Euclidean isometry \\(T^m\\) is the identity. Hence \\(Q\\) has finite order.\n\nLet \\(\\lambda,\\lambda^{-1}\\) be the complex eigenvalues of \\(Q\\). They are\nroots of unity, so\n\n\\[\nt=\\operatorname{tr}(Q)=\\lambda+\\lambda^{-1}=2c\n\\]\n\nis an algebraic integer. But \\(Q\\) is rational, hence \\(t\\in\\mathbb Q\\); a\nrational algebraic integer is an integer. Since \\(|t|\\le2\\),\n\n\\[\nt\\in\\{-2,-1,0,1,2\\}.\n\\]\n\nThe cases \\(t=\\pm1\\) would give \\(c=\\pm\\tfrac12\\), and then\n\\(s^2=1-c^2=\\tfrac34\\). This is impossible because \\(s\\) was proved rational\nwhereas \\(\\sqrt3/2\\) is irrational. The case \\(t=2\\) is the identity rotation,\nwhich was excluded. If \\(t=-2\\), then \\((c,s)=(-1,0)\\), a half-turn. If\n\\(t=0\\), then \\((c,s)=(0,\\pm1)\\), a quarter-turn. These are all cases, proving\nthe lemma.\n\n## Application to \\(G_{77}\\)\n\nA 153- or 154-point no-three-in-line set is noncollinear, so the lemma applies.\nIt remains only to combine it with the orbit arguments already represented in\n`rotational-symmetry/cardinality-obstructions`; they are repeated here to make\nthe corollary self-contained.\n\nUnder a half-turn, noncentral points occur in opposite pairs. If an invariant\nset has odd size, it contains the center. Any other opposite pair together with\nthat center would be three collinear points. Therefore a half-turn-invariant\nno-three-in-line set of odd size has at most one point, excluding size 153.\n\nUnder a quarter-turn, every noncentral orbit has size four. If the center is\nselected, the same half-turn argument excludes every other orbit; otherwise the\ncardinality is divisible by four. Thus neither 153 nor 154 is compatible with\na quarter-turn.\n\nThe only remaining nontrivial rotation at size 154 is a half-turn. A\n154-point no-three-in-line subset of \\(G_{77}\\) has exactly two selected points\nin every row and, independently, exactly two in every column: each of the 77\nrows or columns contains at most two points, and equality holds in the total\nbound \\(154=2\\cdot77\\). Its coordinatewise bounding box is therefore all of\n\\([0,76]^2\\). A half-turn maps the bounding box of an invariant set to itself,\nso its center is the center of that box, \\((38,38)\\). The rotation has no\nselected fixed point: otherwise every opposite pair and the center would be a\ncollinear triple (and, equivalently here, 154 is even while all noncentral\norbits have size two). Hence \\((38,38)\\notin S\\).\n\nThis proves both stated consequences.\n\n## Provenance and relationship to prior work\n\n- Research-direction registration:\n  `a9552d14dcd11d394a0ae9672b6d81dae033f127`.\n- The qualified knowledge node addressed is\n  `d77/rotational-classification-scope`, revision\n  `sha256:49933934edbd64cdd3484e6a987ffcb1a4bde2c1beb63aaddad89d78736e22db`.\n- The accepted half-turn and quarter-turn orbit facts are represented by\n  `rotational-symmetry/cardinality-obstructions`, revision\n  `sha256:586ea4ca1f07e8217cbd39b0496d0330f895b088623f0429c214c93a88b1aa83`.\n- Both nodes arose from transaction\n  `c98dd877ad81611a9a469b1bd790cd909b56b1ce` and its primary judgment\n  `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5`.\n  That judgment explicitly identified the finite-order classification step as\n  plausible but omitted. This contribution supplies that step and reuses the\n  already established orbit and occupancy arguments; it claims no priority for\n  those prior results or for the rct4 model.\n\nNo external mathematical source or computational result is used.\n\n## Verification and limitations\n\nThe evidence is the exact proof above, not a bounded computation. Repository\nvalidation can be reproduced from the repository root with:\n\n```bash\npython3 -m math_flow validate-tree\npython3 -m unittest discover -s tests -v\ngit diff --check\n```\n\nKnown limitations are deliberate:\n\n- the theorem classifies Euclidean rotations preserving a finite noncollinear\n  lattice set, not reflections, general affine maps, or approximate symmetry;\n- the 154-point conclusion is conditional and constructs no configuration;\n- no 153- or 154-point existence or global nonexistence result is obtained;\n- the rct4 model remains a strict subclass of centered half-turn symmetry; and\n- the certified bounds remain unchanged.\n\n## Authorship\n\nProof and exposition by an OpenAI Codex research agent working through the\nMath Flow solver protocol at Robert Raynor's request. Prior results and their\nimmutable provenance are credited above.\n"
+          },
+          {
+            "ordinal": 5,
+            "transactionId": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "contributionId": "record-152-objective-verification",
+            "path": "problems/no-three-in-line-77/contributions/record-152-objective-verification",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Replayable objective verification of the 152-point record\n\nThis contribution republishes the exact `record-152-certificate` checker and\ncertificate bytes with a canonical `verification.json` request. Its purpose is\nto produce a durable, independently replayable objective attestation through\nMath Flow's trusted hosted verifier path.\n\n## Scope\n\nThe encoded configuration is byte-for-byte identical, and the checker logic is\nidentical, to the artifacts in the earlier canonical contribution\n`record-152-certificate` (transaction\n`dfc0cc40d1193b8d5ca25e7f177fa48ff9a1b38d`). The checker establishes that the\npayload decodes to 152 distinct points in the `76 x 76` grid and that every\ntriple has nonzero integer determinant. Since that grid embeds into the\n`77 x 77` grid, this re-verifies the existing lower bound\n\n\\[\nD(77) \\ge 152.\n\\]\n\nThis is independent verification infrastructure, not a new bound and not a\nclaim about optimality. A successful attestation proves only that the pinned\nchecker accepted these pinned bytes in the governed environment; judgment of\nwhether the encoding captures the stated mathematics remains separate.\n\n## Reproduction\n\nRun locally with Python 3 and the standard library:\n\n```bash\npython3 -I -B verify.py configuration.txt\n```\n\nThe expected output is:\n\n```text\nverified 152 points on a 76 x 76 grid; no collinear triple\n```\n\nAfter canonical merge, `verification.json` requests the repository-approved\n`python-stdlib-3-13-v1` verifier. The trusted workflow should execute it in the\ndigest-pinned, networkless, read-only OCI environment and publish the resulting\ncontent-addressed attestation separately on the `projections` branch.\n"
           }
         ],
         "judgments": [
@@ -6298,6 +6309,103 @@
               ],
               "reportDigest": "sha256:b15c373fd12a011d552275634f2f0377377ed2da469086dfedbd0d02f4ace485",
               "judgmentId": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca"
+            }
+          },
+          {
+            "judgmentId": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+            "runDigest": "sha256:1abe01b8906cf0098a63123a51ed45b5c5f17521bf3197f96f5a24345f039485",
+            "judgmentKind": "primary",
+            "ledgerHead": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "problemLedgerHead": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "judgeSpec": {
+              "id": "openrouter-markdown-judgment-v1",
+              "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.3902,
+            "reportDigest": "sha256:529d59c621060d2c14c7a2fa5bf61a3053181720d6ad23d1697a6690c5b1490c",
+            "reportMarkdown": "# Judgment of transaction `0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0`\n\n## Overall assessment\n\nThe transaction supplies a self-contained, deterministic replay package for the already known 152-point configuration. The copied verifier is mathematically appropriate: it decodes the certificate, checks distinctness and range, and exhaustively tests all triples by an exact integer determinant. If run on the supplied file and producing the stated output, it conclusively verifies a 152-point no-three-in-line subset of \\(G_{76}\\), and hence the established lower bound\n\n\\[\nD(77)\\ge 152.\n\\]\n\nThis transaction does **not** provide a new configuration, a new verification algorithm, a new bound, or evidence about optimality. It also does not itself contain the result of the proposed trusted hosted verification; `verification.json` is a request for such a run, not an attestation that the run occurred.\n\nThere is one concrete provenance error: the README identifies the earlier certificate transaction by a hash that contradicts the supplied transaction record. This does not affect the mathematical validity of the copied certificate but should be corrected for reproducibility and credit.\n\nThe certified interval remains\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\n---\n\n## Finding 1 — Validity of the supplied 152-point certificate\n\n**Claim key:** `no-three-in-line/g76-152-point-set`\n\n**Claim:** The supplied encoded configuration represents 152 distinct points of \\(G_{76}\\) with no three collinear.\n\n**Judgment:** **Strongly supported by a complete, reproducible exact verifier.**\n\n### Decisive reasoning\n\nThe supplied `verify.py` performs the necessary checks:\n\n1. It removes the initial symmetry marker and reads the remaining payload in pairs.\n2. If the payload has length \\(152\\), it infers `size = 76` and produces exactly two points in each row \\(y=0,\\ldots,75\\).\n3. It maps each payload character to an integer \\(x\\)-coordinate using the explicitly supplied alphabet.\n4. It checks that all decoded points are distinct.\n5. It checks that every coordinate satisfies\n   \\[\n   0\\le x<76,\\qquad 0\\le y<76.\n   \\]\n6. It examines every unordered triple and evaluates\n   \\[\n   (x_2-x_1)(y_3-y_1)-(x_3-x_1)(y_2-y_1).\n   \\]\n   For three distinct planar points, this determinant vanishes exactly when the points are collinear.\n\nAll arithmetic is integer arithmetic. There is no floating-point tolerance, heuristic sampling, random search, or external dependency. For 152 points, the exhaustive loop covers\n\n\\[\n\\binom{152}{3}=573{,}800\n\\]\n\ntriples, which is computationally modest.\n\nThe same configuration text and checker logic appear in the earlier supplied baseline contribution. The separate local-rigidity contribution also reads the same baseline configuration and includes another exhaustive no-three-in-line check. Those earlier artifacts corroborate the intended decoding and mathematical interpretation.\n\n### Qualification\n\nThe subject transaction contains the claimed expected output, but it does not include an execution log or hosted-verifier result demonstrating that this particular replay was actually executed. Thus the evidence is best characterized as a complete executable certificate rather than a supplied attestation of execution.\n\nThe checker also does not contain a hard-coded assertion `size == 76` or `count == 152`; it infers both from the payload. That is not a soundness problem for the pinned file, because the reported output exposes the inferred values and the supplied certificate is the object being verified. A hard-coded expectation would nevertheless make the intended claim more explicit.\n\n---\n\n## Finding 2 — Consequence for \\(D(77)\\)\n\n**Claim key:** `no-three-in-line/d77-lower-bound-152`\n\n**Claim:** \\(D(77)\\ge 152\\).\n\n**Judgment:** **Accepted, conditional only on the executable certificate verification described above.**\n\n### Decisive reasoning\n\nOnce the supplied points are verified to lie in\n\n\\[\nG_{76}=\\{0,\\ldots,75\\}^2\n\\]\n\nand to contain no collinear triple, the embedding argument is immediate:\n\n\\[\nG_{76}\\subset G_{77}=\\{0,\\ldots,76\\}^2.\n\\]\n\nKeeping the same coordinates therefore gives a 152-point no-three-in-line subset of \\(G_{77}\\). Hence\n\n\\[\nD(77)\\ge152.\n\\]\n\nNo geometric transformation or boundary adjustment is needed.\n\n### Scope\n\nThis is a re-verification of the existing lower bound, not an improvement. It supplies no 153- or 154-point configuration.\n\n---\n\n## Finding 3 — Hosted objective verification has not yet been evidenced\n\n**Claim key:** `no-three-in-line/g76-152-certificate-hosted-replay-acceptance`\n\n**Claim:** The pinned checker and certificate were accepted in the specified governed hosted-verifier environment.\n\n**Judgment:** **Not established by the supplied transaction.**\n\n### Missing evidence\n\nThe transaction supplies `verification.json` with:\n\n- a verifier identifier,\n- a verifier specification digest,\n- the checker entry point, and\n- the certificate argument.\n\nThat is enough to express a verification request, assuming the external workflow interprets the schema as described. It is not itself evidence that the workflow ran successfully. No content-addressed attestation, exit status, execution transcript, or hosted output is included in the subject evidence.\n\nThe README is appropriately future-oriented: it says that the workflow “should execute” the checker and publish the resulting attestation separately. Therefore the transaction does not materially overclaim successful hosted execution, but its title should not be read as evidence that such execution has already occurred.\n\nThe verifier specification digest pins the stated verifier specification. The supplied evidence does not include the external schema or workflow rules needed to determine exactly how the checker and certificate bytes are bound into a future attestation. That infrastructure claim cannot be independently adjudicated here.\n\n### Independence qualification\n\nBecause `verify.py` is copied from the earlier contribution, this is not an independent implementation of the mathematical check. A future run in an independently governed environment would provide execution independence, not algorithmic independence. Any common software defect would be inherited. In this case the checker is sufficiently simple and its determinant criterion is correct, so this limitation does not undermine the certificate itself.\n\n---\n\n## Finding 4 — Artifact identity is supported, but the prior transaction reference is wrong\n\n**Claim key:** `no-three-in-line/g76-152-certificate-artifact-identity-and-provenance`\n\n**Claim:** The subject republishes the earlier baseline configuration and verifier unchanged and correctly identifies their provenance.\n\n**Judgment:** **Artifact identity is supported; the transaction identifier is contradicted by the supplied record.**\n\n### Supported part\n\nThe displayed `configuration.txt` content is textually the same as the earlier baseline certificate supplied in the evidence. The displayed `verify.py` is likewise the same checker logic. Thus the mathematical artifact being replayed is clearly the existing 152-point certificate rather than a mutated configuration.\n\nStrict byte-for-byte identity, including details such as terminal newlines or line-ending encoding, is not independently demonstrated by a checksum in this transaction. It is nevertheless strongly supported by the displayed artifacts.\n\n### Contradiction\n\nThe subject README says the earlier canonical contribution was in transaction\n\n```text\ndfc0cc40d1193b8d5ca25e7f177fa48ff9a1b38d\n```\n\nbut the supplied earlier baseline contribution is identified as\n\n```text\ndfc0cc40d41105292a119840dcdbe6f22860cf43\n```\n\nThese are different hashes, not merely alternate abbreviations of the same hash. The provenance pointer in the subject README is therefore erroneous on the supplied evidence.\n\nThis appears to be a clerical metadata error. It does not change the points, the verifier, or the lower-bound implication, but it should be corrected so that the claimed canonical source can be located reliably.\n\n---\n\n## Finding 5 — No determination or improvement of the exact value\n\n**Claim key:** `no-three-in-line/d77-exact-value`\n\n**Claim:** The transaction determines \\(D(77)\\) or improves the certified interval.\n\n**Judgment:** **No such result is supplied or claimed.**\n\nThe transaction contains neither:\n\n- a 153- or 154-point certificate,\n- a proof excluding 153 or 154 points,\n- nor a new upper-bound argument.\n\nThe elementary upper bound remains\n\n\\[\nD(77)\\le 2\\cdot77=154,\n\\]\n\nbecause each horizontal row contains at most two selected points. Combined with the replayed lower-bound certificate, the state supported by the supplied mathematics is still\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nThe exact value remains unresolved by this transaction.\n\n---\n\n## Contribution and priority assessment\n\nThe underlying configuration and the mathematical lower bound predate this transaction and are attributed in the supplied history to the earlier database certificate and baseline contribution. The checker is also expressly copied from that earlier contribution. Accordingly, this transaction should receive credit for packaging a canonical hosted-verification request and republishing the artifacts in a replayable form, not for discovering the 152-point configuration, devising a new verifier, or improving the bound.\n\nThe incorrect prior transaction hash weakens the provenance record but does not create a competing mathematical priority claim.\n",
+            "record": {
+              "schemaVersion": 1,
+              "judgmentKind": "primary",
+              "problemId": "no-three-in-line-77",
+              "ledgerHead": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+              "problemLedgerDigest": "sha256:19f6c665fde2bc17b138f06566def8a8901d35b2f952061f4ddcfdb95b04b2bc",
+              "judgeSpec": {
+                "id": "openrouter-markdown-judgment-v1",
+                "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                  "ledgerPosition": 5
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "no-three-in-line/g76-152-point-set",
+                  "stance": "supports",
+                  "summary": "The supplied encoded configuration is strongly supported as representing 152 distinct points of G_76 with no three collinear by a complete, reproducible exact integer verifier. The transaction supplies an executable certificate rather than an execution attestation, and the checker infers rather than hard-codes the intended size and count, neither of which undermines soundness for the pinned artifact.",
+                  "subjectTransactionIds": [
+                    "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+                  ],
+                  "evidenceTransactionIds": [
+                    "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                    "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+                  ]
+                },
+                {
+                  "claimKey": "no-three-in-line/d77-lower-bound-152",
+                  "stance": "supports",
+                  "summary": "The transaction supports D(77) >= 152, conditional only on the described executable certificate verification: the verified 152-point subset of G_76 embeds unchanged into G_77. This re-verifies the existing lower bound and does not improve it.",
+                  "subjectTransactionIds": [
+                    "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+                  ],
+                  "evidenceTransactionIds": [
+                    "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                    "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+                  ]
+                },
+                {
+                  "claimKey": "no-three-in-line/g76-152-certificate-hosted-replay-acceptance",
+                  "stance": "uncertain",
+                  "summary": "Acceptance of the pinned checker and certificate in the specified governed hosted-verifier environment is not established. The transaction provides a verification request but no attestation, exit status, execution transcript, or hosted output; the external schema and binding rules also cannot be independently adjudicated from the supplied evidence. A future hosted run would provide execution independence, not algorithmic independence.",
+                  "subjectTransactionIds": [
+                    "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+                  ],
+                  "evidenceTransactionIds": [
+                    "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+                  ]
+                },
+                {
+                  "claimKey": "no-three-in-line/g76-152-certificate-artifact-identity-and-provenance",
+                  "stance": "qualifies",
+                  "summary": "The displayed configuration and verifier support that the subject republishes the earlier mathematical artifacts unchanged in substance, although strict byte-for-byte identity is not independently shown by a checksum. The provenance component is contradicted: the README names dfc0cc40d1193b8d5ca25e7f177fa48ff9a1b38d, while the supplied earlier baseline record is dfc0cc40d41105292a119840dcdbe6f22860cf43. This clerical error does not affect the certificate or lower-bound implication but should be corrected.",
+                  "subjectTransactionIds": [
+                    "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+                  ],
+                  "evidenceTransactionIds": [
+                    "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                    "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+                  ]
+                },
+                {
+                  "claimKey": "no-three-in-line/d77-exact-value",
+                  "stance": "refutes",
+                  "summary": "The transaction does not determine D(77) or improve the certified interval: it supplies neither a 153- or 154-point certificate, nor an exclusion proof, nor a new upper-bound argument. The supported state remains 152 <= D(77) <= 154, so the exact value is unresolved by this transaction.",
+                  "subjectTransactionIds": [
+                    "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+                  ],
+                  "evidenceTransactionIds": [
+                    "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+                  ]
+                }
+              ],
+              "reportDigest": "sha256:529d59c621060d2c14c7a2fa5bf61a3053181720d6ad23d1697a6690c5b1490c",
+              "judgmentId": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a"
             }
           }
         ],
@@ -9302,6 +9410,954 @@
             ],
             "reportDigest": "sha256:93e1ce237868d6551e326fa2694304b7a482eded97043db267c02bb17bca790b",
             "revisionSemantics": "legacy-adjudication"
+          },
+          {
+            "id": "50ec53657f7372d57a345507ddefb8a977c558582c2fce91d218439b0f897f61",
+            "ordinal": 5,
+            "ledgerHead": "943082dcee7ace42336179cd608fe941e7137db6",
+            "problemLedgerHead": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "runDigest": "sha256:50ec53657f7372d57a345507ddefb8a977c558582c2fce91d218439b0f897f61",
+            "baseRun": "sha256:406cdc3047e2d3e38f8e0f60e4b3b2c2dbedc9b1f520fd838e8d753344f9f05f",
+            "runKind": "knowledge-build",
+            "inputs": {
+              "conflictIds": [],
+              "judgmentIds": [
+                "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a"
+              ],
+              "projectionSpecDigest": "sha256:1829481fcaf17e2063d438127df82a247508953cd4e78b812ac1f4c2a462ffa2",
+              "builderSpecDigest": "sha256:1f6d47f03f3e4804e25095754a7aa800e155ded9d1c2783937411b9faa861008",
+              "baseStateRun": "sha256:406cdc3047e2d3e38f8e0f60e4b3b2c2dbedc9b1f520fd838e8d753344f9f05f",
+              "schemaVersion": 1,
+              "problemId": "no-three-in-line-77",
+              "laneId": "sha256:bc8e1bea18c5d81414f189f8d0e5653e374e0524e37850bf448d315e22c23a97",
+              "judgmentSetDigest": "sha256:81b602c49527873cc679598c4639786ce4811d3e1eb52ca72d7cd8b0a0906979",
+              "buildToken": "sha256:c389ec0ae25114f50797591d728b541c69d6f749daf85f81beade65b7bcb311c"
+            },
+            "judgeSpec": {
+              "id": "openrouter-knowledge-builder-v1",
+              "digest": "sha256:1f6d47f03f3e4804e25095754a7aa800e155ded9d1c2783937411b9faa861008"
+            },
+            "runner": {
+              "implementation": "openrouter-knowledge-builder-v1",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.45394625,
+            "selection": {
+              "selectedNodeIds": [
+                "no-three-in-line/g76-152-point-set",
+                "no-three-in-line/d77-certified-interval",
+                "no-three-in-line/d77-exact-value"
+              ],
+              "rationale": "The batch directly re-supports the certified G_76 152-point set, thereby re-verifying the represented lower bound within the certified D(77) interval, and explicitly preserves the unresolved exact-value state. The hosted-replay and artifact-provenance findings concern verification/provenance qualifications rather than distinct durable mathematical concepts, so they should be organized with the G_76 certificate node rather than create new nodes. No new top-level claim or active dispute is introduced, so root is not selected."
+            },
+            "normalizations": [],
+            "delta": {
+              "operations": [
+                {
+                  "action": "revise",
+                  "adjudicationId": "no-three-in-line/g76-152-point-set",
+                  "nodeId": "no-three-in-line/g76-152-point-set",
+                  "parentId": "root",
+                  "nodeType": "claim",
+                  "title": "Verified 152-point no-three-in-line subset of G_76 and its specified symmetry orbit",
+                  "summary": "An exact certificate supports a particular 152-point no-three-in-line subset C of G_76, its quarter-turn invariance, exactly two distinct dihedral images, and eight specified embeddings in G_77. The replay artifacts re-support the certificate, but governed hosted execution and strict byte identity remain unevidenced; an incorrect provenance hash in the replay README is a clerical error, with dfc0cc40d41105292a119840dcdbe6f22860cf43 retained as the canonical baseline reference.",
+                  "reportSection": "## Node: no-three-in-line/g76-152-point-set",
+                  "baseDigest": "sha256:23c6dd8fd1c52b9c0cb8dd1121f01788e2b6801999a673d39de836200e3e012a",
+                  "baseRevisionId": "sha256:72857ef1fe0e6931f58d9ef904840a510375ff177846875d356561a698ad5046",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                      "digest": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                      "relation": "qualifies"
+                    }
+                  ]
+                },
+                {
+                  "action": "revise",
+                  "adjudicationId": "no-three-in-line/d77-certified-interval",
+                  "nodeId": "no-three-in-line/d77-certified-interval",
+                  "parentId": "root",
+                  "nodeType": "result",
+                  "title": "Certified interval for D(77)",
+                  "summary": "The strongest supported current bound remains 152 ≤ D(77) ≤ 154. The verified 152-point subset of G_76 supplies the lower bound by inclusion in G_77, while row capacity supplies the upper bound. The replay judgment re-supports the lower-bound implication but provides no hosted execution attestation and does not improve either endpoint.",
+                  "reportSection": "## Node: no-three-in-line/d77-certified-interval",
+                  "baseDigest": "sha256:56dbcde4c9499961d38e15c6ac6c7f1ec39f8900749b12fe461fea76575df587",
+                  "baseRevisionId": "sha256:6280a7e1d1b917612c221cdee7170fecee2bf38949998915128a4550c4149db0",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+                      "digest": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                      "digest": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                      "relation": "supports"
+                    }
+                  ]
+                },
+                {
+                  "action": "revise",
+                  "adjudicationId": "no-three-in-line/d77-exact-value",
+                  "nodeId": "no-three-in-line/d77-exact-value",
+                  "parentId": "root",
+                  "nodeType": "question",
+                  "title": "Exact value of D(77)",
+                  "summary": "The exact value remains unresolved with 152 ≤ D(77) ≤ 154. Existing local and rotational restrictions remain supported, while the replay package supplies no 153-point or 154-point certificate, exclusion proof, global search certificate, or improved bound. Its hosted-verification request concerns only the known 152-point certificate and does not determine optimality.",
+                  "reportSection": "## Node: no-three-in-line/d77-exact-value",
+                  "baseDigest": "sha256:74d0a08a4879c5527242960ebbb799cfa5fcd6ea03a1bed7d8559d0f058710c9",
+                  "baseRevisionId": "sha256:aeb817f44a1d8f0b02fe88ecabcc9b62a0b629315b17b6e94fd6328821521999",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                      "digest": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                      "relation": "qualifies"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "qualifies"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                      "digest": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                      "relation": "qualifies"
+                    }
+                  ]
+                }
+              ]
+            },
+            "state": {
+              "schemaVersion": 2,
+              "problemId": "no-three-in-line-77",
+              "rootId": "root",
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "root",
+                  "title": "Research state for no-three-in-line-77",
+                  "summary": "The current state retains the verified 152-point configuration, certified interval 152 ≤ D(77) ≤ 154, occupancy constraints, embedding-rigidity results, and unresolved rct4 model. It now includes the accepted arbitrary-center classification that every nonidentity rotation preserving a finite noncollinear lattice set is a half-turn or quarter-turn, completing the rotational restrictions at cardinalities 153 and 154. No active adjudicative conflicts are present.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:93e1ce237868d6551e326fa2694304b7a482eded97043db267c02bb17bca790b",
+                    "section": "## Node: root"
+                  },
+                  "contentMarkdown": "## Node: root\n\n- **Type:** Root research state\n- **Status:** Active\n- **Parent:** None\n- **Primary judgment provenance:**\n  - `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n  - `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n  - `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5`\n  - `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- **Evidence transactions:**\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n  - `c98dd877ad81611a9a469b1bd790cd909b56b1ce`\n  - `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n\nFor\n\n\\[\nG_n=\\{0,1,\\ldots,n-1\\}^2,\n\\]\n\nlet \\(D(n)\\) be the largest cardinality of a subset of \\(G_n\\) containing no three distinct collinear points.\n\nAccording to the supplied immutable judgments, the complete current research state at grid size \\(77\\) is as follows.\n\n### Certified configuration and global bounds\n\n1. A particular 152-point no-three-in-line subset \\(C\\subseteq G_{76}\\) has an exact coordinate certificate. Its no-three-in-line property was checked over all\n\n   \\[\n   \\binom{152}{3}=573{,}800\n   \\]\n\n   triples using exact integer determinants.\n\n2. The configuration is invariant under the quarter-turn\n\n   \\[\n   (x,y)\\longmapsto(75-y,x).\n   \\]\n\n   It has exactly two distinct images under the eight dihedral symmetries of the square. Applying the four translations in \\(\\{0,1\\}^2\\) to those images gives exactly eight distinct specified embeddings in \\(G_{77}\\).\n\n3. The globally certified interval is\n\n   \\[\n   152\\le D(77)\\le154.\n   \\]\n\n   The lower bound follows from embedding the verified 152-point configuration. The upper bound follows because each of the 77 horizontal rows contains at most two selected points.\n\n4. The necessary row and column occupancy constraints for hypothetical 153- and 154-point sets remain active.\n\n### Local rigidity around the specified embeddings\n\n5. Each of the eight specified embeddings is saturated in \\(G_{77}\\): every one of its 5,777 outside cells is blocked by at least two pairs of embedded points. Each embedding is therefore inclusion-maximal, but this does not establish maximum cardinality.\n\n6. Removing one point from a specified embedding makes no originally outside cell addable. The removed point itself can still be restored.\n\n7. Removing any two points from a specified embedding frees at most one originally outside cell. For each embedding, exactly 16 unordered removal pairs free a cell, distributed over four cells with four removal pairs per cell.\n\n8. For every specified embedding \\(E\\), any no-three-in-line set \\(S\\subseteq G_{77}\\) satisfying\n\n   \\[\n   |E\\setminus S|\\le2\n   \\]\n\n   also satisfies\n\n   \\[\n   |S\\setminus E|\\le1\n   \\quad\\text{and}\\quad\n   |S|\\le152.\n   \\]\n\n   Consequently, every no-three-in-line set \\(S\\subseteq G_{77}\\) with \\(|S|\\ge153\\) must satisfy, relative to each specified embedding,\n\n   \\[\n   |E\\setminus S|\\ge3,\\qquad\n   |S\\setminus E|\\ge4,\\qquad\n   |E\\triangle S|\\ge7.\n   \\]\n\n   These are local restrictions around the eight embeddings, not a global exclusion of larger configurations.\n\n### Rotations of finite lattice sets\n\n9. Judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts as proved that if a finite noncollinear subset of \\(\\mathbb Z^2\\) is preserved by a nonidentity Euclidean rotation about an arbitrary center, then the rotation is a half-turn or a quarter-turn.\n\n10. The accepted classification is limited to exact Euclidean rotations. Noncollinearity is essential. It does not classify reflections, affine transformations, approximate symmetries, or collinear finite sets.\n\n### Rotational restrictions at cardinalities 153 and 154\n\n11. An odd-cardinality no-three-in-line set invariant under a half-turn has at most one point. In particular, a 153-point no-three-in-line set cannot have half-turn symmetry.\n\n12. A quarter-turn-invariant no-three-in-line set has cardinality divisible by four or equal to one. Thus neither a 153-point nor a 154-point no-three-in-line set can be quarter-turn invariant.\n\n13. Combining these orbit-cardinality results with the accepted arbitrary-center rotation classification, any 153-point no-three-in-line subset of \\(G_{77}\\), if one exists, has no nonidentity rotational symmetry about any center. This does not exclude reflection-symmetric or asymmetric 153-point sets.\n\n14. If a 154-point no-three-in-line subset of \\(G_{77}\\) has any nontrivial rotational symmetry, judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts that the symmetry must be the half-turn about\n\n    \\[\n    (38,38),\n    \\]\n\n    and that \\((38,38)\\) is unselected.\n\n    The center is forced because a 154-point set attains equality in both the row and column capacity bounds, giving exactly two selected points in every row and every column and bounding box \\([0,76]^2\\).\n\n15. The rotational classification does not classify reflections and does not imply that a 153- or 154-point configuration exists.\n\n### Restricted `rct4` model\n\n16. The `rct4` subclass is strictly narrower than the class of all centered half-turn-invariant configurations. It additionally requires:\n\n    - an empty anti-diagonal;\n    - complete quarter-turn orbits away from the diagonals;\n    - exactly one selected half-turn pair on the main diagonal.\n\n17. Static inspection in judgment `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5` supports, with high confidence, that the supplied \\(n=77\\) model is sound and complete for the stated 154-point `rct4` subclass.\n\n18. The model has:\n\n    - 1,444 off-diagonal quarter-turn-orbit variables;\n    - 38 main-diagonal half-turn-pair variables;\n    - exact cardinality conditions selecting 38 off-diagonal orbits and one diagonal pair;\n    - 388,148 deduplicated weighted line constraints generated with exact integer arithmetic.\n\n    Every feasible assignment represents\n\n    \\[\n    4\\cdot38+2=154\n    \\]\n\n    selected points satisfying the `rct4` pattern. Within that subclass, feasibility is accepted as equivalent to the no-three-in-line property.\n\n19. Five committed calibration certificates at\n\n    \\[\n    n=41,47,57,65,69\n    \\]\n\n    provide exact implementation regression checks at those sizes. The judgments do not treat them as proof of a broader historical range claim, external provenance, or discovery priority.\n\n20. The satisfiability of the \\(n=77\\) `rct4` instance remains unresolved. Reported `UNKNOWN` results and timeouts establish neither satisfiability nor unsatisfiability. They therefore have no negative mathematical force.\n\n### Global unresolved question\n\n21. The exact value of \\(D(77)\\) remains unresolved. The supported possibilities are\n\n    \\[\n    D(77)\\in\\{152,153,154\\}.\n    \\]\n\n22. The supplied evidence contains no 153- or 154-point certificate and no global impossibility proof for either cardinality.\n\n23. The accepted rotational restrictions constrain only possible symmetry classes:\n\n    - a hypothetical 153-point set has no nontrivial rotational symmetry;\n    - a rotationally symmetric 154-point set must have the centered half-turn about \\((38,38)\\);\n    - asymmetric and reflection-symmetric cases remain possible in principle;\n    - general centered-half-turn configurations are not exhausted by the `rct4` model.\n\n### Current node inventory\n\n- `finite-lattice-sets/nontrivial-rotation-classification`\n- `no-three-in-line/g76-152-point-set`\n- `no-three-in-line/d77-certified-interval`\n- `no-three-in-line/d77-near-capacity-occupancy`\n- `no-three-in-line/d77-saturation-of-embedded-g76-152-record`\n- `no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record`\n- `no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record`\n- `no-three-in-line/d77-distance-from-embedded-g76-152-record`\n- `no-three-in-line/rotational-cardinality-obstructions`\n- `no-three-in-line/d77-154-centered-half-turn-condition`\n- `no-three-in-line/d77-rotational-symmetry-at-153-154`\n- `no-three-in-line/d77-rct4-154-model`\n- `no-three-in-line/d77-exact-value`\n\nThere are no active adjudicative conflicts in the supplied record.\n\n---\n",
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                      "digest": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "root",
+                    "revisionId": "sha256:4563863ee621792a64038fcca756cb668ee0156a4cdb9ed83da400fe94eb12d9",
+                    "revisionNumber": 4
+                  },
+                  "digest": "sha256:c6d6aa4d857edf5585504f9144e4a0f3fe5e428c412a1f473f91061ba1f3562e"
+                },
+                "no-three-in-line/g76-152-point-set": {
+                  "id": "no-three-in-line/g76-152-point-set",
+                  "parentId": "root",
+                  "type": "claim",
+                  "title": "Verified 152-point no-three-in-line subset of G_76 and its specified symmetry orbit",
+                  "summary": "An exact certificate supports a particular 152-point no-three-in-line subset C of G_76, its quarter-turn invariance, exactly two distinct dihedral images, and eight specified embeddings in G_77. The replay artifacts re-support the certificate, but governed hosted execution and strict byte identity remain unevidenced; an incorrect provenance hash in the replay README is a clerical error, with dfc0cc40d41105292a119840dcdbe6f22860cf43 retained as the canonical baseline reference.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:016c9d2bb9c420bd36f28753c9e59bce8d9d4a46c52738f1eb7eed9f367a6d99",
+                    "section": "## Node: no-three-in-line/g76-152-point-set"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/g76-152-point-set\n\n- **Type:** Verified existence, symmetry, and finite-orbit claim\n- **Status:** Supported; hosted execution remains unevidenced\n- **Parent:** `root`\n- **Primary judgment provenance:**\n  - `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n  - `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n  - `sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a`\n- **Evidence transactions:**\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n  - `0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0`\n\nThe immutable judgments support the existence of a particular subset\n\n\\[\nC\\subseteq G_{76}=\\{0,\\ldots,75\\}^2\n\\]\n\nhaving exactly 152 distinct points and containing no three distinct collinear points.\n\n### Certificate and exact verification\n\nThe judgments report that the encoded certificate is decoded deterministically into 76 pairs of points, with two points in every row \\(y=0,\\ldots,75\\). The supplied standard-library checker:\n\n- decodes exactly 152 points from the pinned payload;\n- checks that the decoded points are distinct;\n- checks that every coordinate lies in \\(G_{76}\\);\n- examines all\n  \\[\n  \\binom{152}{3}=573{,}800\n  \\]\n  unordered triples; and\n- tests collinearity by the exact integer determinant\n  \\[\n  (x_2-x_1)(y_3-y_1)-(x_3-x_1)(y_2-y_1).\n  \\]\n\nThe judgments characterize this as a complete, deterministic, reproducible exact verifier rather than a heuristic or floating-point test. No defect was identified in the decoding, range checks, distinctness checks, or exhaustive collinearity test.\n\nThe checker infers the intended grid size and point count from the supplied payload rather than hard-coding assertions that the size is 76 and the count is 152. The current judgment says that this does not undermine soundness for the pinned artifact because the inferred values are exposed by the reported output, although hard-coded expectations would make the intended claim more explicit.\n\n### Symmetry and specified embeddings\n\nThe judgment at\n\n`sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n\nadditionally supports with high confidence that \\(C\\) is invariant under the quarter-turn\n\n\\[\nq(x,y)=(75-y,x).\n\\]\n\nEnumeration and deduplication of the eight dihedral transformations of the \\(76\\times76\\) square produce exactly two distinct images of \\(C\\).\n\nFor each of those two images, applying each translation\n\n\\[\n(t_x,t_y)\\in\\{0,1\\}^2\n\\]\n\nproduces exactly eight distinct subsets of \\(G_{77}\\) in total.\n\nThese symmetry and orbit conclusions concern only the certified configuration and the stated family of transformations. They do not establish that every optimal or near-optimal configuration in \\(G_{76}\\) or \\(G_{77}\\) has quarter-turn symmetry.\n\nThe count of eight embeddings is limited to:\n\n1. the two distinct dihedral images of \\(C\\); and\n2. the four placements obtained from translations in \\(\\{0,1\\}^2\\).\n\nIt does not count unrelated affine images or embeddings of other 152-point configurations.\n\n### Execution and hosted-replay qualification\n\nThe mathematical support rests on static inspection of a finite, exact, deterministic checker and its pinned certificate. The newer replay transaction supplies the executable artifacts and a claimed expected output, but it does not include an execution log or attestation proving that this particular replay was run.\n\nIn particular, acceptance by the specified governed hosted-verifier environment is not established. The transaction includes a `verification.json` request containing a verifier identifier, specification digest, checker entry point, and certificate argument, but no content-addressed hosted attestation, exit status, transcript, or hosted output is supplied.\n\nThe external schema and workflow rules needed to determine exactly how artifact bytes would be bound into a future attestation are also absent from the adjudicated evidence. A future hosted execution would provide execution independence, not algorithmic independence, because the checker is copied from the earlier contribution rather than independently reimplemented.\n\nThese hosted-execution limitations do not overturn the judgments’ support for the certificate itself.\n\n### Artifact identity and provenance qualification\n\nThe displayed configuration and verifier in transaction\n\n`0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0`\n\nare judged to reproduce the earlier mathematical artifacts unchanged in substance. Strict byte-for-byte identity, including details such as line endings and terminal newlines, is not independently established by a checksum.\n\nThe replay README contains an erroneous provenance pointer. It names the earlier transaction as\n\n`dfc0cc40d1193b8d5ca25e7f177fa48ff9a1b38d`,\n\nwhereas the supplied baseline record is\n\n`dfc0cc40d41105292a119840dcdbe6f22860cf43`.\n\nThe primary judgment treats this as a clerical metadata error. It does not affect the coordinates, verifier, no-three-in-line implication, or resulting lower bound, but the incorrect pointer should not be used as the canonical provenance reference.\n\n### Credit\n\nThe underlying coordinate set is attributed in the supplied materials to Achim Flammenkamp’s maintained database. Robert is credited with reproducing and independently checking the baseline certificate, not with originating the construction. The finer priority or authorship history of the 152-point construction remains undetermined by the supplied evidence.\n\nThe local symmetry analysis, code, and accompanying text are attributed by the earlier judgment to an AI research agent working at Robert Raynor’s request.\n\nThe newer transaction is credited with packaging a canonical hosted-verification request and republishing the existing artifacts in replayable form. It is not credited with discovering the configuration, devising a new verification algorithm, or improving the bound.\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                      "digest": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "no-three-in-line/g76-152-point-set",
+                    "revisionId": "sha256:1d0aa26fc334c859b6cd1f08a2305d2460d02d0afd0c1d70d281073d2d25cafc",
+                    "revisionNumber": 3
+                  },
+                  "digest": "sha256:82d4360441df126a140bbbfca6046902bb22d2f10f3461ceba3e304e7545d7ee"
+                },
+                "no-three-in-line/d77-certified-interval": {
+                  "id": "no-three-in-line/d77-certified-interval",
+                  "parentId": "root",
+                  "type": "result",
+                  "title": "Certified interval for D(77)",
+                  "summary": "The strongest supported current bound remains 152 ≤ D(77) ≤ 154. The verified 152-point subset of G_76 supplies the lower bound by inclusion in G_77, while row capacity supplies the upper bound. The replay judgment re-supports the lower-bound implication but provides no hosted execution attestation and does not improve either endpoint.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:016c9d2bb9c420bd36f28753c9e59bce8d9d4a46c52738f1eb7eed9f367a6d99",
+                    "section": "## Node: no-three-in-line/d77-certified-interval"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-certified-interval\n\n- **Type:** Certified bound\n- **Status:** Supported with high confidence\n- **Parent:** `root`\n- **Primary judgment provenance:**\n  - `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n  - `sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a`\n- **Evidence transactions:**\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0`\n- **Related certificate:** `no-three-in-line/g76-152-point-set`\n\nFor\n\n\\[\nG_{77}=\\{0,\\ldots,76\\}^2,\n\\]\n\nlet \\(D(77)\\) be the largest cardinality of a subset containing no three distinct collinear points. The immutable judgments support the certified interval\n\n\\[\n\\boxed{152\\le D(77)\\le154}.\n\\]\n\n### Certified lower bound\n\nThe exact certificate represented by `no-three-in-line/g76-152-point-set` supplies 152 no-three-in-line points in\n\n\\[\nG_{76}=\\{0,\\ldots,75\\}^2.\n\\]\n\nThe judgments accept that the same coordinates form a subset of \\(G_{77}\\), since \\(G_{76}\\subset G_{77}\\). They therefore support\n\n\\[\nD(77)\\ge152.\n\\]\n\nThe newer replay judgment independently re-supports this implication conditional only on the executable certificate verification it describes. Its absence of a hosted execution attestation does not supply a stronger lower bound, but neither does it overturn the existing certified lower bound.\n\n### Certified upper bound\n\nThe earlier primary judgment accepts the elementary row-capacity argument: every one of the 77 horizontal grid lines contains at most two selected points in a no-three-in-line set. It therefore supports\n\n\\[\nD(77)\\le 2\\cdot77=154.\n\\]\n\nThe newer transaction supplies no new upper-bound argument and does not alter this side of the interval.\n\n### Scope\n\nThe current interval is the strongest globally certified bound in the supplied judgment record. The replay package:\n\n- does not supply a 153-point or 154-point configuration;\n- does not prove that 153 or 154 points are impossible;\n- does not improve the lower bound beyond 152; and\n- does not improve the upper bound below 154.\n\nThus the supported interval remains exactly\n\n\\[\n152\\le D(77)\\le154.\n\\]\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+                      "digest": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                      "digest": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "no-three-in-line/d77-certified-interval",
+                    "revisionId": "sha256:792f4157391080dcf48fe9ada3dd35b25dad13055684800773b5d44ad947b3a4",
+                    "revisionNumber": 2
+                  },
+                  "digest": "sha256:c5cf6d391805a6c9f33616b2fd868c35de892865aa3bf83c9bd02a31a2911052"
+                },
+                "no-three-in-line/d77-near-capacity-occupancy": {
+                  "id": "no-three-in-line/d77-near-capacity-occupancy",
+                  "parentId": "root",
+                  "type": "lemma",
+                  "title": "Near-capacity occupancy constraints in G_77",
+                  "summary": "Any hypothetical 154-point no-three-in-line subset of G_77 must contain exactly two points in every row and column. Any hypothetical 153-point subset must contain two points in 76 rows and columns and one point in the remaining row and column. These are necessary conditions only and establish neither existence nor nonexistence.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:2c1aed768dca909e7aa4d3b2be31da2d717c599e8cf692ae8755822942791931",
+                    "section": "## Node: no-three-in-line/d77-near-capacity-occupancy"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-near-capacity-occupancy\n\n- **Type:** Structural necessary conditions\n- **Status:** Supported\n- **Parent:** `root`\n- **Primary provenance:** `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n- **Evidence transaction:** `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n\nThe primary judgment supports the following necessary occupancy conditions for no-three-in-line subsets of \\(G_{77}\\) near the upper capacity of 154 points.\n\n### Hypothetical 154-point set\n\nAny valid 154-point subset of \\(G_{77}\\) must have:\n\n- exactly two selected points in each of the 77 rows; and\n- exactly two selected points in each of the 77 columns.\n\nThe judgment identifies this as the equality case of the row and column capacity bounds.\n\n### Hypothetical 153-point set\n\nAny valid 153-point subset of \\(G_{77}\\) must have:\n\n- exactly 76 rows containing two selected points and one row containing one selected point; and\n- exactly 76 columns containing two selected points and one column containing one selected point.\n\nThe judgment describes this as the precise occupancy pattern associated with a total deficiency of one from the 154-point row and column capacities.\n\n### Scope\n\nThese occupancy statements are necessary conditions only. The primary judgment expressly qualifies them as establishing neither existence nor nonexistence of a 153- or 154-point no-three-in-line set. They therefore do not resolve the exact value of \\(D(77)\\).\n\n---\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+                      "digest": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "no-three-in-line/d77-near-capacity-occupancy",
+                    "revisionId": "sha256:75ad911947d619b1e665c551b90d6f251d96ea13f8edd1328c8b6ff209e1f1ae",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:b95c782bf2e13123dac9ae5e436a45354fb7f4cda3a46e64a6e12d36fd0137b4"
+                },
+                "no-three-in-line/d77-exact-value": {
+                  "id": "no-three-in-line/d77-exact-value",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Exact value of D(77)",
+                  "summary": "The exact value remains unresolved with 152 ≤ D(77) ≤ 154. Existing local and rotational restrictions remain supported, while the replay package supplies no 153-point or 154-point certificate, exclusion proof, global search certificate, or improved bound. Its hosted-verification request concerns only the known 152-point certificate and does not determine optimality.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:016c9d2bb9c420bd36f28753c9e59bce8d9d4a46c52738f1eb7eed9f367a6d99",
+                    "section": "## Node: no-three-in-line/d77-exact-value"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-exact-value\n\n- **Type:** Open mathematical question\n- **Status:** Unresolved\n- **Parent:** `root`\n- **Primary judgment provenance:**\n  - `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n  - `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n  - `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5`\n  - `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n  - `sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a`\n- **Evidence transactions:**\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n  - `c98dd877ad81611a9a469b1bd790cd909b56b1ce`\n  - `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n  - `0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0`\n- **Related bound:** `no-three-in-line/d77-certified-interval`\n- **Related structural nodes:**\n  - `no-three-in-line/d77-near-capacity-occupancy`\n  - `no-three-in-line/d77-distance-from-embedded-g76-152-record`\n  - `finite-lattice-sets/nontrivial-rotation-classification`\n  - `no-three-in-line/rotational-cardinality-obstructions`\n  - `no-three-in-line/d77-154-centered-half-turn-condition`\n  - `no-three-in-line/d77-rotational-symmetry-at-153-154`\n  - `no-three-in-line/d77-rct4-154-model`\n\nThe exact value of \\(D(77)\\) remains unresolved under the supplied immutable judgments. The strongest globally certified conclusion is\n\n\\[\n152\\le D(77)\\le154,\n\\]\n\nso the supported possibilities remain\n\n\\[\nD(77)\\in\\{152,153,154\\}.\n\\]\n\n### Certified bounds\n\nThe lower bound is supported by the exactly checked 152-point no-three-in-line configuration in \\(G_{76}\\), embedded unchanged into \\(G_{77}\\).\n\nThe upper bound is supported by the judgment accepting that each of the 77 rows contains at most two selected points.\n\nNo supplied judgment improves either side.\n\n### Restrictions near the known embeddings\n\nFor each of the eight specified embeddings \\(E\\) of the verified 152-point configuration, the existing judgments support that every no-three-in-line set \\(S\\subseteq G_{77}\\) with \\(|S|\\ge153\\) must satisfy\n\n\\[\n|E\\setminus S|\\ge3,\n\\qquad\n|S\\setminus E|\\ge4,\n\\qquad\n|E\\triangle S|\\ge7.\n\\]\n\nThese restrictions concern the eight specified embeddings only. They do not constrain all configurations beyond that distance and do not cover every possible 152-point configuration.\n\n### Rotational restrictions\n\nThe supplied judgments establish the following limited structural conclusions:\n\n- any hypothetical 153-point no-three-in-line subset of \\(G_{77}\\) has no nonidentity rotational symmetry about any center;\n- if a hypothetical 154-point no-three-in-line subset has nontrivial rotational symmetry, that symmetry must be the half-turn about \\((38,38)\\); and\n- the center \\((38,38)\\) must be unselected in such a 154-point set.\n\nThese conclusions do not classify or exclude reflection symmetry. Consequently, the judgment record leaves open:\n\n- reflection-symmetric or asymmetric 153-point configurations;\n- asymmetric or reflection-symmetric 154-point configurations; and\n- 154-point configurations in the general centered-half-turn class.\n\n### Restricted computational result\n\nThe \\(n=77\\) `rct4` model is accepted by the relevant judgment as an exact encoding of its stated 154-point subclass, but the satisfiability of that instance remains unresolved. Reported timeout and `UNKNOWN` outcomes establish neither satisfiability nor unsatisfiability.\n\nThe `rct4` class is strictly narrower than the class of all configurations invariant under the half-turn about \\((38,38)\\). Thus even a future `rct4` infeasibility certificate would not by itself exclude:\n\n- other centered-half-turn 154-point configurations;\n- reflection-symmetric 154-point configurations; or\n- asymmetric 154-point configurations.\n\n### Replay package and optimality\n\nThe replay package adjudicated at\n\n`sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a`\n\ndoes not determine \\(D(77)\\) and does not improve the certified interval. It provides no 153-point or 154-point certificate, no exclusion proof, no global search certificate, and no new upper-bound argument.\n\nIts hosted-verification request concerns re-execution of the known 152-point certificate. Whether that future hosted execution succeeds has no supplied implication establishing optimality at 152 or excluding either 153 or 154.\n\n### Missing decisive evidence\n\nThe supplied evidence contains none of the following:\n\n- a 153-point coordinate certificate;\n- a 154-point coordinate certificate;\n- a global impossibility proof for 153 points;\n- a global impossibility proof for 154 points;\n- a globally exhaustive search;\n- a satisfiability or unsatisfiability certificate for the \\(n=77\\) `rct4` instance;\n- an exclusion of every general centered-half-turn 154-point configuration;\n- an exclusion of all reflection-symmetric candidates; or\n- an exclusion of all asymmetric candidates.\n\nThe exact value remains unresolved because decisive evidence is absent. The supplied records do not present incompatible judgments about the value of \\(D(77)\\), and no active dispute or reconciliation record exists.\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                      "digest": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                      "relation": "qualifies"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "qualifies"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                      "digest": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "no-three-in-line/d77-exact-value",
+                    "revisionId": "sha256:e7ccf34955f026c9088f92f948ca83ee9b6b05d97dd677e453c09ebd747d7540",
+                    "revisionNumber": 5
+                  },
+                  "digest": "sha256:30179420dd23fa3338138217e834f4377405458ef40331e12e453771f1cc4fed"
+                },
+                "no-three-in-line/d77-saturation-of-embedded-g76-152-record": {
+                  "id": "no-three-in-line/d77-saturation-of-embedded-g76-152-record",
+                  "parentId": "root",
+                  "type": "claim",
+                  "title": "Saturation of the specified embedded G_76 152-point configurations",
+                  "summary": "Each of the eight specified embeddings E in G_77 is inclusion-maximal: all 5,777 outside cells are blocked by at least two pairs of points of E, with 51,449 total blocking incidences per embedding. This does not establish maximum cardinality or constrain unrelated configurations.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:e31f2ee45062e97daaee63a38716f5d2ea4c6d50f02e9f3f5714c515e8b37ce6",
+                    "section": "## Node: no-three-in-line/d77-saturation-of-embedded-g76-152-record"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-saturation-of-embedded-g76-152-record\n\n- **Type:** Exact computational structural claim\n- **Status:** Supported with high confidence\n- **Parent:** `root`\n- **Primary provenance:** `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- **Evidence transactions:**\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n- **Related configuration:** `no-three-in-line/g76-152-point-set`\n\nLet \\(E\\subseteq G_{77}\\) be any one of the eight specified subsets obtained from the two distinct dihedral images of the certified 152-point configuration in \\(G_{76}\\), followed by a translation in \\(\\{0,1\\}^2\\).\n\nThe current primary judgment supports with high confidence that every cell of\n\n\\[\nG_{77}\\setminus E\n\\]\n\nis collinear with a pair of points of \\(E\\). More precisely, for every specified embedding:\n\n- there are\n  \\[\n  77^2-152=5{,}777\n  \\]\n  outside cells;\n- every outside cell has at least two distinct blocking pairs from \\(E\\); and\n- the total blocking incidence is \\(51{,}449\\).\n\nThe judgment therefore concludes that each specified embedding is inclusion-maximal in \\(G_{77}\\): no additional point can be added to it while retaining the no-three-in-line property.\n\n### Certificate basis\n\nThe judgment reports two complementary exact enumerations:\n\n- a primitive-direction census through each outside cell; and\n- a pair-based primitive line walk through the grid.\n\nThe checker requires exact agreement between the two enumerations in both the set of blocked cells and the number of blocking pairs at every cell.\n\n### Scope\n\nInclusion-maximality is not maximum cardinality. This claim does not exclude:\n\n- unrelated 153- or 154-point sets;\n- other 152-point configurations;\n- affine images outside the specified dihedral-and-translation family; or\n- configurations reached after removing points from \\(E\\) before adding others.\n\n### Evidentiary qualification and credit\n\nThe supporting judgment assigns high confidence based on static inspection of deterministic exact code and the committed result file, without a separately documented independent execution.\n\nThe coordinate configuration is attributed to Achim Flammenkamp’s maintained database. The saturation analysis, code, and text are attributed to an AI research agent working at Robert Raynor’s request.\n\n---\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "no-three-in-line/d77-saturation-of-embedded-g76-152-record",
+                    "revisionId": "sha256:7c20f530dc66e05fc76d1c4c5f1bcc9c24ffbd53c53af3d4b8c776b81b1add65",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:e8bf888a36ab9512f686ab7b3480c41309260cd1d9e8181948148b5203bb822d"
+                },
+                "no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record": {
+                  "id": "no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record",
+                  "parentId": "root",
+                  "type": "claim",
+                  "title": "One-removal robustness of the specified embedded G_76 configurations",
+                  "summary": "For every specified embedding E and every r in E, each cell originally outside E remains blocked after removing r. The removed point itself can still be restored, and the result is restricted to the eight specified embeddings.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:e31f2ee45062e97daaee63a38716f5d2ea4c6d50f02e9f3f5714c515e8b37ce6",
+                    "section": "## Node: no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record\n\n- **Type:** Exact computational local-rigidity claim\n- **Status:** Supported with high confidence\n- **Parent:** `root`\n- **Primary provenance:** `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- **Evidence transactions:**\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n- **Related configuration:** `no-three-in-line/g76-152-point-set`\n- **Related saturation claim:** `no-three-in-line/d77-saturation-of-embedded-g76-152-record`\n\nFor every one of the eight specified embeddings \\(E\\subseteq G_{77}\\) and every point \\(r\\in E\\), the current primary judgment supports with high confidence that removing \\(r\\) does not make any cell that was originally outside \\(E\\) addable.\n\nEquivalently, every\n\n\\[\nc\\in G_{77}\\setminus E\n\\]\n\nremains blocked by a surviving pair of points from \\(E\\setminus\\{r\\}\\).\n\n### Scope\n\nThe claim concerns cells that were outside the original embedding. It does not say that \\(E\\setminus\\{r\\}\\) has no addable cell at all: the removed point \\(r\\) can be restored.\n\nThe result is restricted to the eight specified embeddings of the particular certified configuration. It is not a statement about all 152-point no-three-in-line subsets of \\(G_{77}\\).\n\n### Certificate basis and qualification\n\nThe judgment reports that the checker exhaustively enumerates removal sets of size at most two capable of destroying all blocking pairs through an outside cell. It reports no singleton removal freeing an originally outside cell, and the complementary line-walk/hitting-set reconstruction is required to agree cell by cell.\n\nThe judgment assigns high confidence based on exact deterministic computation and source inspection, while noting the absence of a separately documented execution in an independent environment.\n\n### Credit\n\nThe underlying coordinate set is attributed to Achim Flammenkamp’s maintained database. The one-removal analysis, code, and text are attributed to an AI research agent working at Robert Raynor’s request.\n\n---\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record",
+                    "revisionId": "sha256:044e5d1c4601910d33bd22de54bd73f57c0df8f26da2751c46a9684c70d9c699",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:965e207dca3da8e76131e69974d862fe41aa5849514bb5a63ad94ea63c8a4174"
+                },
+                "no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record": {
+                  "id": "no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record",
+                  "parentId": "root",
+                  "type": "claim",
+                  "title": "Two-removal rigidity of the specified embedded G_76 configurations",
+                  "summary": "For each specified embedding, removing two embedded points frees at most one originally outside cell. Exactly 16 removal pairs free a cell, distributed over four cells with four pairs per cell, and every freeing uses the reported two-lines-of-two mechanism. Removal depth three or greater is not addressed.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:e31f2ee45062e97daaee63a38716f5d2ea4c6d50f02e9f3f5714c515e8b37ce6",
+                    "section": "## Node: no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record\n\n- **Type:** Exact computational local-rigidity claim\n- **Status:** Supported with high confidence\n- **Parent:** `root`\n- **Primary provenance:** `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- **Evidence transactions:**\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n- **Related configuration:** `no-three-in-line/g76-152-point-set`\n\nFor every one of the eight specified embeddings \\(E\\subseteq G_{77}\\), the current primary judgment supports with high confidence the following complete accounting of two-point removals:\n\n- removing any unordered pair of points of \\(E\\) frees at most one cell that was originally in \\(G_{77}\\setminus E\\);\n- exactly 16 unordered removal pairs per embedding free an outside cell;\n- those 16 pairs are distributed over exactly four outside cells;\n- each of the four cells is freed by exactly four removal pairs; and\n- every reported freeing uses the “two-lines-of-two” mechanism identified by the computation.\n\nThe judgment reports that each claimed freeing was directly simulated against all pairs among the 150 surviving embedded points.\n\n### Certificate basis\n\nThe primary judgment attributes the result to exhaustive finite computation using:\n\n1. a direction census that determines the blocking lines through each outside cell;\n2. a line-walk reconstruction of the blocking-pair table;\n3. a hitting-set enumeration of removal sets of size at most two;\n4. direct simulation of every reported freed cell; and\n5. an exact required match between recomputed output and the committed result file.\n\nThe direction-census and line-walk methods are structurally different cross-checks, but the judgment qualifies their independence because they share the decoded configuration and a small primitive-direction routine.\n\n### Scope\n\nThe result concerns removal of exactly two embedded points and addability of cells that were originally outside the embedding. It does not address removal sets of size three or greater.\n\nIt also does not establish a global restriction on all 152-, 153-, or 154-point configurations in \\(G_{77}\\).\n\n### Evidentiary qualification and credit\n\nThe judgment assigns high confidence based on deterministic exact source inspection and the supplied output, without a separately documented independent execution.\n\nThe underlying coordinate set is attributed to Achim Flammenkamp’s maintained database. The two-removal analysis, code, and text are attributed to an AI research agent working at Robert Raynor’s request.\n\n---\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record",
+                    "revisionId": "sha256:008360e597690ed395d0931f7c87f8f7324c8b4815dea535d656570b73aed92b",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:62f0835133d660b45db7b1c0d663b09610fce22b94b1152b847174fc26899c01"
+                },
+                "no-three-in-line/d77-distance-from-embedded-g76-152-record": {
+                  "id": "no-three-in-line/d77-distance-from-embedded-g76-152-record",
+                  "parentId": "root",
+                  "type": "lemma",
+                  "title": "Distance constraint from the specified embedded G_76 152-point configurations",
+                  "summary": "For each specified embedding E, any no-three-in-line set S with at most two removals from E has at most one addition and size at most 152. Consequently, every such set of size at least 153 requires at least three removals and four additions relative to every specified embedding, hence symmetric-difference distance at least seven. This is a local constraint, not a global impossibility result.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:e31f2ee45062e97daaee63a38716f5d2ea4c6d50f02e9f3f5714c515e8b37ce6",
+                    "section": "## Node: no-three-in-line/d77-distance-from-embedded-g76-152-record"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-distance-from-embedded-g76-152-record\n\n- **Type:** Structural consequence for nearby configurations\n- **Status:** Proved from the supported local computations\n- **Parent:** `root`\n- **Primary provenance:** `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- **Evidence transactions:**\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n- **Related local claims:**\n  - `no-three-in-line/d77-saturation-of-embedded-g76-152-record`\n  - `no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record`\n  - `no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record`\n\nLet \\(E\\) be any one of the eight specified embeddings of the certified 152-point configuration, and let \\(S\\subseteq G_{77}\\) be no-three-in-line.\n\nThe current primary judgment concludes from the supported saturation and removal computations that if\n\n\\[\n|E\\setminus S|\\le2,\n\\]\n\nthen\n\n\\[\n|S\\setminus E|\\le1\n\\quad\\text{and}\\quad\n|S|\\le152.\n\\]\n\nConsequently, every no-three-in-line set \\(S\\) with\n\n\\[\n|S|\\ge153\n\\]\n\nmust satisfy, relative to every specified embedding \\(E\\),\n\n\\[\n|E\\setminus S|\\ge3,\n\\qquad\n|S\\setminus E|\\ge4,\n\\]\n\nand therefore\n\n\\[\n|E\\triangle S|\\ge7.\n\\]\n\nThus no 153- or 154-point configuration can be obtained from any specified embedding after removing at most two of its points.\n\n### Scope\n\nThe judgment expressly does not extend this exclusion to the entire strategy of perturbing the known configuration. In particular, it does not rule out:\n\n- removing three embedded points and adding four;\n- any other modification of removal depth at least three;\n- perturbations of other 152-point configurations; or\n- configurations lying at symmetric-difference distance at least seven from every specified embedding.\n\nThis is a local distance constraint, not a global impossibility theorem and not an improvement to the certified interval for \\(D(77)\\).\n\n### Credit\n\nThe underlying coordinate set is attributed to Achim Flammenkamp’s maintained database. The local computations and resulting symmetric-difference analysis are attributed to an AI research agent working at Robert Raynor’s request.\n\n---\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "no-three-in-line/d77-distance-from-embedded-g76-152-record",
+                    "revisionId": "sha256:114e0f062873037df5c0105c0fbad9f70ec5974da486808872eafe8408d4f90d",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:f54b0ad833b411e5307aabc33fe7bb486e1baea0ac8e497e590162e99a90964d"
+                },
+                "no-three-in-line/rotational-cardinality-obstructions": {
+                  "id": "no-three-in-line/rotational-cardinality-obstructions",
+                  "parentId": "root",
+                  "type": "lemma",
+                  "title": "Half-turn and quarter-turn cardinality obstructions",
+                  "summary": "An odd-cardinality no-three-in-line set invariant under a half-turn has at most one point, so a 153-point set cannot have half-turn symmetry. A quarter-turn-invariant no-three-in-line set has cardinality divisible by four or equal to one, excluding quarter-turn symmetry at cardinalities 153 and 154.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:3159760c2a8bb17234632dba5ffdb7c9471f65d7eddb341154cca0d186c91b82",
+                    "section": "## Node: no-three-in-line/rotational-cardinality-obstructions"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/rotational-cardinality-obstructions\n\n- **Type:** Structural theorem\n- **Status:** Accepted\n- **Parent:** `root`\n- **Primary judgment provenance:** `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5`\n- **Evidence transaction:** `c98dd877ad81611a9a469b1bd790cd909b56b1ce`\n- **Related nodes:**\n  - `no-three-in-line/d77-154-centered-half-turn-condition`\n  - `no-three-in-line/d77-rotational-symmetry-at-153-154`\n  - `no-three-in-line/d77-exact-value`\n\nJudgment `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5` accepts the following two cardinality obstructions for no-three-in-line sets.\n\n### Half-turn obstruction\n\nLet \\(S\\) be a finite no-three-in-line set invariant under the half-turn\n\n\\[\np\\longmapsto2z-p\n\\]\n\nabout a point \\(z\\). If \\(|S|\\) is odd, then\n\n\\[\n|S|\\le1.\n\\]\n\nThe judgment therefore accepts the specific consequence that a 153-point no-three-in-line set cannot be invariant under a half-turn about any center. The conclusion does not require the center to have been assumed to be a grid point.\n\n### Quarter-turn obstruction\n\nA no-three-in-line set invariant under a quarter-turn has cardinality either divisible by four or equal to one. Consequently, neither cardinality\n\n\\[\n153\\quad\\text{nor}\\quad154\n\\]\n\nis possible for a quarter-turn-invariant no-three-in-line set.\n\nThese are symmetry-conditional obstructions. They do not exclude asymmetric configurations, reflection-symmetric configurations, or every configuration covered by a broader notion of rotational symmetry whose lattice-rotation classification has not been supplied.\n\n---\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+                      "ledgerPosition": 3
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                      "digest": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "no-three-in-line/rotational-cardinality-obstructions",
+                    "revisionId": "sha256:0c6485529418bc632ed59ad26b472349b6cc032121a0f08032a2d34417ac055a",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:42441b38f1bb8d9eaa5b91d1ec6001b3285c05ca057508723d7658a7de9cf38b"
+                },
+                "no-three-in-line/d77-154-centered-half-turn-condition": {
+                  "id": "no-three-in-line/d77-154-centered-half-turn-condition",
+                  "parentId": "root",
+                  "type": "lemma",
+                  "title": "Centered half-turn condition for a 154-point subset of G_77",
+                  "summary": "If a 154-point no-three-in-line subset of G_77 is half-turn invariant, every row and column contains exactly two selected points, the half-turn is centered at (38,38), and that center is unoccupied. The condition does not assert existence or require every hypothetical 154-point set to have half-turn symmetry.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:3159760c2a8bb17234632dba5ffdb7c9471f65d7eddb341154cca0d186c91b82",
+                    "section": "## Node: no-three-in-line/d77-154-centered-half-turn-condition"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-154-centered-half-turn-condition\n\n- **Type:** Necessary structural condition\n- **Status:** Accepted\n- **Parent:** `root`\n- **Primary judgment provenance:** `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5`\n- **Evidence transaction:** `c98dd877ad81611a9a469b1bd790cd909b56b1ce`\n- **Related nodes:**\n  - `no-three-in-line/rotational-cardinality-obstructions`\n  - `no-three-in-line/d77-rotational-symmetry-at-153-154`\n  - `no-three-in-line/d77-rct4-154-model`\n  - `no-three-in-line/d77-exact-value`\n\nJudgment `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5` accepts the following necessary condition.\n\nIf \\(S\\subseteq G_{77}\\) is a 154-point no-three-in-line set invariant under a half-turn, then:\n\n1. every one of the 77 rows contains exactly two points of \\(S\\);\n2. every one of the 77 columns contains exactly two points of \\(S\\);\n3. the half-turn is centered at the grid center\n\n   \\[\n   (38,38);\n   \\]\n\n4. the center \\((38,38)\\) is not selected.\n\nThis result constrains every half-turn-invariant 154-point configuration, not merely the rct4 subclass. It does not assert that such a configuration exists or that every hypothetical 154-point configuration must have half-turn symmetry.\n\n---\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+                      "ledgerPosition": 3
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                      "digest": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "no-three-in-line/d77-154-centered-half-turn-condition",
+                    "revisionId": "sha256:6144825a3263d937c7dbde8488ba6a01040b99434199bc145f8d64eaf9738698",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:94dff21b910a96320a0bd430d19b16c34b12eb706ceea58c0f4134b424b94fdf"
+                },
+                "no-three-in-line/d77-rotational-symmetry-at-153-154": {
+                  "id": "no-three-in-line/d77-rotational-symmetry-at-153-154",
+                  "parentId": "root",
+                  "type": "claim",
+                  "title": "Rotational-symmetry classification at cardinalities 153 and 154",
+                  "summary": "A hypothetical 153-point no-three-in-line subset of G_77 has no nonidentity rotational symmetry about any center. Any nontrivial rotational symmetry of a hypothetical 154-point set must be the half-turn about (38,38), with that center unselected. Reflections are not classified, and the rct4 class remains strictly narrower than centered half-turn symmetry.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:93e1ce237868d6551e326fa2694304b7a482eded97043db267c02bb17bca790b",
+                    "section": "## Node: no-three-in-line/d77-rotational-symmetry-at-153-154"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-rotational-symmetry-at-153-154\n\n- **Type:** Structural classification\n- **Status:** Active; accepted as proved within the stated rotational scope\n- **Parent:** `root`\n- **Primary judgment provenance:**\n  - `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5`\n  - `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- **Evidence transactions:**\n  - `c98dd877ad81611a9a469b1bd790cd909b56b1ce`\n  - `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n- **Related nodes:**\n  - `finite-lattice-sets/nontrivial-rotation-classification`\n  - `no-three-in-line/rotational-cardinality-obstructions`\n  - `no-three-in-line/d77-154-centered-half-turn-condition`\n  - `no-three-in-line/d77-rct4-154-model`\n  - `no-three-in-line/d77-exact-value`\n\nThe supplied judgments establish a complete classification of nontrivial rotational symmetry for hypothetical 153- and 154-point no-three-in-line subsets of \\(G_{77}\\), where rotation means an exact Euclidean rotation about any plane center.\n\n### Cardinality 153\n\nIf a 153-point no-three-in-line subset of \\(G_{77}\\) exists, it has no nonidentity rotational symmetry about any center.\n\nThe accepted classification of finite noncollinear lattice-set rotations leaves only half-turns and quarter-turns:\n\n- half-turn symmetry is impossible because an invariant set of odd cardinality must contain the fixed center, and any selected noncentral opposite pair together with that center would give three collinear points;\n- quarter-turn symmetry is impossible because \\(153\\equiv1\\pmod4\\), so the center would have to be selected, while the squared rotation supplies the same opposite-pair collinearity obstruction.\n\nThis is a symmetry restriction only. It does not establish that a 153-point set is impossible. Reflection-symmetric and asymmetric possibilities remain open.\n\n### Cardinality 154\n\nIf a 154-point no-three-in-line subset \\(S\\subseteq G_{77}\\) has a nontrivial rotational symmetry, that symmetry must be the half-turn about\n\n\\[\n(38,38),\n\\]\n\nand\n\n\\[\n(38,38)\\notin S.\n\\]\n\nThe judgments accept the following components:\n\n- quarter-turn symmetry is excluded because 154 is neither divisible by four nor equal to one;\n- the arbitrary-center rotation classification leaves only a half-turn;\n- equality in the row bound forces exactly two selected points in every row;\n- equality in the column bound forces exactly two selected points in every column;\n- the bounding box is therefore \\([0,76]^2\\);\n- invariance of that bounding box forces the half-turn center to be \\((38,38)\\);\n- the unique fixed point is unselected because the invariant set has even cardinality.\n\nThis does not establish the existence of a 154-point set. Asymmetric and reflection-symmetric 154-point configurations remain possible in principle.\n\n### Rotations versus reflections\n\nThe classification concerns rotations only. It supplies no classification or exclusion of reflection symmetry.\n\n### Centered half-turn symmetry versus `rct4`\n\nThe class of centered half-turn-invariant 154-point configurations is strictly broader than the `rct4` subclass.\n\nThe `rct4` model additionally requires:\n\n- an empty anti-diagonal;\n- complete quarter-turn orbits away from the diagonals;\n- exactly one selected half-turn pair on the main diagonal.\n\nTherefore, an infeasibility result for the `rct4` instance would not eliminate every centered-half-turn configuration.\n\n---\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+                      "ledgerPosition": 3
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                      "digest": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                      "relation": "qualifies"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "no-three-in-line/d77-rotational-symmetry-at-153-154",
+                    "revisionId": "sha256:91e221aa3256340ffaf5edabce7793bb2efd969a9f02359ed9ffa579b73a9b6c",
+                    "revisionNumber": 2
+                  },
+                  "digest": "sha256:17730c5aebc854df4e45f7e4077c3d8dd025083182ba68d18566bab1e89e9e39"
+                },
+                "no-three-in-line/d77-rct4-154-model": {
+                  "id": "no-three-in-line/d77-rct4-154-model",
+                  "parentId": "root",
+                  "type": "method",
+                  "title": "Exact rct4 model for 154-point configurations in G_77",
+                  "summary": "The accepted model exactly encodes the stated 154-point rct4 subclass using 1,444 off-diagonal quarter-turn-orbit variables, 38 main-diagonal half-turn-pair variables, exact cardinality constraints, and 388,148 deduplicated weighted line constraints. Its satisfiability remains unresolved; timeouts and UNKNOWN results establish neither satisfiability nor unsatisfiability, and infeasibility would exclude only the strict rct4 subclass.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:3159760c2a8bb17234632dba5ffdb7c9471f65d7eddb341154cca0d186c91b82",
+                    "section": "## Node: no-three-in-line/d77-rct4-154-model"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-rct4-154-model\n\n- **Type:** Exact restricted computational model and open satisfiability question\n- **Status:** Model equivalence accepted; satisfiability unresolved\n- **Parent:** `root`\n- **Primary judgment provenance:** `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5`\n- **Evidence transaction:** `c98dd877ad81611a9a469b1bd790cd909b56b1ce`\n- **Related nodes:**\n  - `no-three-in-line/d77-154-centered-half-turn-condition`\n  - `no-three-in-line/d77-rotational-symmetry-at-153-154`\n  - `no-three-in-line/d77-exact-value`\n\nJudgment `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5` supports with high confidence, based on static inspection of the supplied argument and code, that the \\(n=77\\) model exactly encodes the stated 154-point rct4 subclass.\n\n### Encoded subclass\n\nLet\n\n\\[\n\\rho(i,j)=(j,76-i)\n\\]\n\nbe the quarter-turn about \\((38,38)\\). The encoded configurations satisfy:\n\n1. the anti-diagonal is empty;\n2. away from the main and anti-diagonals, occupied cells form complete \\(\\rho\\)-orbits;\n3. exactly one half-turn pair on the main diagonal is occupied.\n\nThese restrictions define a strict subclass of centered half-turn-invariant configurations.\n\n### Orbit variables and cardinality\n\nAfter removing the two diagonals, the grid has\n\n\\[\n77^2-(2\\cdot77-1)=5776\n\\]\n\nremaining cells. The model groups these into 1,444 quarter-turn orbits of four cells each.\n\nThe 76 noncentral main-diagonal cells form 38 half-turn pairs. The model therefore contains:\n\n- 1,444 off-diagonal orbit variables;\n- 38 main-diagonal pair variables.\n\nIt imposes the exact cardinality conditions\n\n\\[\n\\sum y_{\\mathrm{off}}=38,\n\\qquad\n\\sum y_{\\mathrm{diag}}=1.\n\\]\n\nEvery feasible assignment consequently represents\n\n\\[\n4\\cdot38+2=154\n\\]\n\nselected cells.\n\n### Line constraints and model equivalence\n\nThe accepted model enumeration uses primitive lattice directions with canonical sign and coordinate increments bounded by 38. It starts each maximal grid line at a point whose predecessor in the chosen direction lies outside the grid.\n\nFor each enumerated line, a variable’s coefficient is the number of cells from its orbit lying on that line. The weighted inequality\n\n\\[\n\\sum_v c_vy_v\\le2\n\\]\n\ntherefore limits that line to at most two selected cells.\n\nThe judgment accepts that:\n\n- every feasible assignment yields a 154-point no-three-in-line set in the stated rct4 class;\n- every 154-point no-three-in-line set satisfying the rct4 conditions induces a feasible assignment.\n\nThe deterministic \\(n=77\\) model statistics are:\n\n- 1,444 off-orbit variables;\n- 38 diagonal-pair variables;\n- 388,148 deduplicated weighted line constraints.\n\nThe exact line-constraint count is a reproducible computational census rather than a separately hand-derived theorem.\n\n### CNF translation\n\nThe judgment accepts the CNF translation of each weighted at-most-two constraint:\n\n- a variable of coefficient at least three is forced false;\n- two coefficient-two variables cannot both be true;\n- a coefficient-two variable cannot coexist with a coefficient-one variable;\n- every triple of coefficient-one variables is forbidden.\n\nTogether with the exact-cardinality encoding, these clauses are accepted as equivalent to the model’s weighted constraints.\n\n### Calibration scope\n\nFive committed certificates at\n\n\\[\nn=41,47,57,65,69\n\\]\n\nare checked using exact operations. The checks include:\n\n- coordinate decoding;\n- distinctness and grid membership;\n- exact determinant tests over all point triples;\n- the empty anti-diagonal condition;\n- the required orbit structure;\n- satisfaction of the generated model constraints.\n\nThe judgment treats these certificates as exact regression checks for the five listed sizes only. They do not establish a broader historical range claim, external provenance, or discovery priority. File hashes establish file identity but not external provenance.\n\n### Current satisfiability status\n\nThe \\(n=77\\) rct4 instance remains unresolved.\n\nThe reported CP-SAT `UNKNOWN` outcomes and SAT timeouts establish neither satisfiability nor unsatisfiability. No committed solver logs, proof traces, or exact CaDiCaL invocation were supplied. Comparable failures on known satisfiable calibration sizes show that these timeouts have no negative mathematical force.\n\nAccordingly, the evidence establishes none of the following:\n\n- that the \\(n=77\\) rct4 instance is satisfiable;\n- that it is unsatisfiable;\n- that no centered half-turn 154-point configuration exists;\n- that \\(D(77)<154\\).\n\nA feasible assignment would provide a 154-point certificate and hence establish \\(D(77)=154\\). A proof of rct4 infeasibility would exclude only the rct4 subclass.\n\n### Attribution carried forward\n\nThe judgment attributes the new symmetry observations, the \\(n=77\\) model implementation, its validation machinery, and the bounded search report to Robert Raynor and the disclosed AI research agent. It also records that the contribution attributes the underlying rct4 class and symmetry-reduction method to “Thomas”; the supplied judgment text ends at that name. No broader provenance or priority determination is made here.\n\n---\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+                      "ledgerPosition": 3
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                      "digest": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                      "relation": "formalizes"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "no-three-in-line/d77-rct4-154-model",
+                    "revisionId": "sha256:1a675fb492dd2edffde577cfbeefd241b1b907b0e920b318786669b0e8884d65",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:f1689cbefcc85ed6aa545b5ba62c58acb3adf94466f5085bb58c6538e5227c2c"
+                },
+                "finite-lattice-sets/nontrivial-rotation-classification": {
+                  "id": "finite-lattice-sets/nontrivial-rotation-classification",
+                  "parentId": "root",
+                  "type": "lemma",
+                  "title": "Nontrivial rotations preserving finite noncollinear lattice sets",
+                  "summary": "If a finite noncollinear subset of the integer lattice is preserved by a nonidentity Euclidean rotation about an arbitrary center, the rotation is a half-turn or quarter-turn. The result concerns exact rotations and does not classify reflections, affine or approximate symmetries, or collinear finite sets.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:93e1ce237868d6551e326fa2694304b7a482eded97043db267c02bb17bca790b",
+                    "section": "## Node: finite-lattice-sets/nontrivial-rotation-classification"
+                  },
+                  "contentMarkdown": "## Node: finite-lattice-sets/nontrivial-rotation-classification\n\n- **Type:** Structural lemma\n- **Status:** Active; accepted as proved\n- **Parent:** `root`\n- **Primary judgment provenance:** `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- **Evidence transaction:** `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n- **Related nodes:**\n  - `no-three-in-line/rotational-cardinality-obstructions`\n  - `no-three-in-line/d77-rotational-symmetry-at-153-154`\n  - `no-three-in-line/d77-exact-value`\n\nJudgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts the following statement as proved:\n\n> If \\(S\\subset\\mathbb Z^2\\) is finite and noncollinear, and a nonidentity Euclidean rotation \\(T\\) about an arbitrary center satisfies \\(T(S)=S\\), then the rotation angle is \\(180^\\circ\\) or \\(\\pm90^\\circ\\).\n\nEquivalently, the only possible nonidentity rotational symmetry types of a finite noncollinear lattice set are a half-turn and a quarter-turn.\n\n### Accepted basis\n\nThe source judgment identifies three decisive components in the supplied proof:\n\n1. Images of three noncollinear lattice points show that the rotation matrix has rational entries, even when the center is arbitrary and the rotation does not preserve the whole lattice.\n2. Because the rotation permutes a finite set, an appropriate positive power fixes three noncollinear points and is therefore the identity isometry; hence the rotation has finite order.\n3. The matrix trace is both rational and an algebraic integer. The resulting possible trace values, together with rationality of both matrix parameters, leave only the identity, half-turn, and quarter-turn cases. Excluding the identity gives the stated classification.\n\nThese points record the grounds accepted by the immutable judgment; they are not an independent proof assessment by this report.\n\n### Scope\n\nThe judgment expressly limits the result as follows:\n\n- noncollinearity is essential;\n- the center of rotation may be arbitrary;\n- the theorem concerns exact Euclidean rotations;\n- it does not classify reflections;\n- it does not classify affine automorphisms or approximate symmetries;\n- it does not extend to arbitrary collinear finite lattice sets.\n\nThe theorem is a general lattice-symmetry lemma independent of the particular grid size \\(77\\).\n\n---\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentAdjudication": {
+                    "adjudicationId": "finite-lattice-sets/nontrivial-rotation-classification",
+                    "revisionId": "sha256:585b3c6f259141ae194a4ff0440130335aeed37d08a9453685c488c9ba19778b",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:84746102f1ba9cedf18c7069a5f3146ee29e07ced70a8da544ebd506182f9447"
+                }
+              },
+              "stateDigest": "sha256:d0b13012e203b11527a6df661bf00c544fea0d14b199934c985f8304998edab8"
+            },
+            "revisionIds": [
+              "sha256:29427e61b6fc7131de2cd0e63e933b87e8905f0909ce4b84255c19221ae0abfd",
+              "sha256:76864191d97f36d99465ffa1a063a8eb65f9f34dc9c5dbcca28751f65d90e401",
+              "sha256:6280a7e1d1b917612c221cdee7170fecee2bf38949998915128a4550c4149db0",
+              "sha256:75ad911947d619b1e665c551b90d6f251d96ea13f8edd1328c8b6ff209e1f1ae",
+              "sha256:c1fa94da976e885e587f595a3a3ae91d3f05aeab06bbea99738ab02a64bc94c8",
+              "sha256:483d25b0d0b27cedde14cdb702c8266ab075b5b11d9c7b82dc1d698a0a240484",
+              "sha256:72857ef1fe0e6931f58d9ef904840a510375ff177846875d356561a698ad5046",
+              "sha256:7c20f530dc66e05fc76d1c4c5f1bcc9c24ffbd53c53af3d4b8c776b81b1add65",
+              "sha256:044e5d1c4601910d33bd22de54bd73f57c0df8f26da2751c46a9684c70d9c699",
+              "sha256:008360e597690ed395d0931f7c87f8f7324c8b4815dea535d656570b73aed92b",
+              "sha256:114e0f062873037df5c0105c0fbad9f70ec5974da486808872eafe8408d4f90d",
+              "sha256:59d94b5fed6f97cc9140cd8f10de26e8f8e2b0c371ccde049e36686246d1eb61",
+              "sha256:c90fede64ce538953ec338803e3ff8cc2bf8fcc3f35b8b66ff981beeeea1a676",
+              "sha256:0c6485529418bc632ed59ad26b472349b6cc032121a0f08032a2d34417ac055a",
+              "sha256:6144825a3263d937c7dbde8488ba6a01040b99434199bc145f8d64eaf9738698",
+              "sha256:6f9d6f30fb5ed361a7cea40e2b6cbdce97865e699b52995a19537089ff411ae3",
+              "sha256:1a675fb492dd2edffde577cfbeefd241b1b907b0e920b318786669b0e8884d65",
+              "sha256:8bbaa255c3ba1f6fc7ff1a7d9903935f14b9f616041b1fd2e6c32593dae0dc84",
+              "sha256:4563863ee621792a64038fcca756cb668ee0156a4cdb9ed83da400fe94eb12d9",
+              "sha256:585b3c6f259141ae194a4ff0440130335aeed37d08a9453685c488c9ba19778b",
+              "sha256:91e221aa3256340ffaf5edabce7793bb2efd969a9f02359ed9ffa579b73a9b6c",
+              "sha256:aeb817f44a1d8f0b02fe88ecabcc9b62a0b629315b17b6e94fd6328821521999",
+              "sha256:1d0aa26fc334c859b6cd1f08a2305d2460d02d0afd0c1d70d281073d2d25cafc",
+              "sha256:792f4157391080dcf48fe9ada3dd35b25dad13055684800773b5d44ad947b3a4",
+              "sha256:e7ccf34955f026c9088f92f948ca83ee9b6b05d97dd677e453c09ebd747d7540"
+            ],
+            "addedRevisionIds": [
+              "sha256:1d0aa26fc334c859b6cd1f08a2305d2460d02d0afd0c1d70d281073d2d25cafc",
+              "sha256:792f4157391080dcf48fe9ada3dd35b25dad13055684800773b5d44ad947b3a4",
+              "sha256:e7ccf34955f026c9088f92f948ca83ee9b6b05d97dd677e453c09ebd747d7540"
+            ],
+            "changedNodeIds": [
+              "no-three-in-line/g76-152-point-set",
+              "no-three-in-line/d77-certified-interval",
+              "no-three-in-line/d77-exact-value"
+            ],
+            "reportDigest": "sha256:016c9d2bb9c420bd36f28753c9e59bce8d9d4a46c52738f1eb7eed9f367a6d99",
+            "revisionSemantics": "legacy-adjudication"
           }
         ],
         "revisions": [
@@ -10286,6 +11342,192 @@
             ],
             "summary": "The exact value remains unresolved with 152 ≤ D(77) ≤ 154. A hypothetical 153-point set has no nontrivial rotational symmetry, while a rotationally symmetric 154-point set must use the half-turn about (38,38), with the center unselected. These restrictions do not exclude asymmetric, reflection-symmetric, or general centered-half-turn cases, and the rct4 instance remains unresolved.",
             "title": "Exact value of D(77)"
+          },
+          {
+            "action": "revise",
+            "adjudicationId": "no-three-in-line/g76-152-point-set",
+            "baseRevisionId": "sha256:72857ef1fe0e6931f58d9ef904840a510375ff177846875d356561a698ad5046",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                "id": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                "kind": "judgment",
+                "relation": "qualifies"
+              }
+            ],
+            "issuedAtLedgerHead": "943082dcee7ace42336179cd608fe941e7137db6",
+            "nodeId": "no-three-in-line/g76-152-point-set",
+            "nodeType": "claim",
+            "parentId": "root",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:016c9d2bb9c420bd36f28753c9e59bce8d9d4a46c52738f1eb7eed9f367a6d99",
+              "section": "## Node: no-three-in-line/g76-152-point-set"
+            },
+            "revisionId": "sha256:1d0aa26fc334c859b6cd1f08a2305d2460d02d0afd0c1d70d281073d2d25cafc",
+            "revisionNumber": 3,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "An exact certificate supports a particular 152-point no-three-in-line subset C of G_76, its quarter-turn invariance, exactly two distinct dihedral images, and eight specified embeddings in G_77. The replay artifacts re-support the certificate, but governed hosted execution and strict byte identity remain unevidenced; an incorrect provenance hash in the replay README is a clerical error, with dfc0cc40d41105292a119840dcdbe6f22860cf43 retained as the canonical baseline reference.",
+            "title": "Verified 152-point no-three-in-line subset of G_76 and its specified symmetry orbit"
+          },
+          {
+            "action": "revise",
+            "adjudicationId": "no-three-in-line/d77-certified-interval",
+            "baseRevisionId": "sha256:6280a7e1d1b917612c221cdee7170fecee2bf38949998915128a4550c4149db0",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+                "id": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                "id": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "issuedAtLedgerHead": "943082dcee7ace42336179cd608fe941e7137db6",
+            "nodeId": "no-three-in-line/d77-certified-interval",
+            "nodeType": "result",
+            "parentId": "root",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:016c9d2bb9c420bd36f28753c9e59bce8d9d4a46c52738f1eb7eed9f367a6d99",
+              "section": "## Node: no-three-in-line/d77-certified-interval"
+            },
+            "revisionId": "sha256:792f4157391080dcf48fe9ada3dd35b25dad13055684800773b5d44ad947b3a4",
+            "revisionNumber": 2,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "The strongest supported current bound remains 152 ≤ D(77) ≤ 154. The verified 152-point subset of G_76 supplies the lower bound by inclusion in G_77, while row capacity supplies the upper bound. The replay judgment re-supports the lower-bound implication but provides no hosted execution attestation and does not improve either endpoint.",
+            "title": "Certified interval for D(77)"
+          },
+          {
+            "action": "revise",
+            "adjudicationId": "no-three-in-line/d77-exact-value",
+            "baseRevisionId": "sha256:aeb817f44a1d8f0b02fe88ecabcc9b62a0b629315b17b6e94fd6328821521999",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                "id": "sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5",
+                "kind": "judgment",
+                "relation": "qualifies"
+              },
+              {
+                "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "kind": "judgment",
+                "relation": "qualifies"
+              },
+              {
+                "digest": null,
+                "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                "id": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a",
+                "kind": "judgment",
+                "relation": "qualifies"
+              }
+            ],
+            "issuedAtLedgerHead": "943082dcee7ace42336179cd608fe941e7137db6",
+            "nodeId": "no-three-in-line/d77-exact-value",
+            "nodeType": "question",
+            "parentId": "root",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:016c9d2bb9c420bd36f28753c9e59bce8d9d4a46c52738f1eb7eed9f367a6d99",
+              "section": "## Node: no-three-in-line/d77-exact-value"
+            },
+            "revisionId": "sha256:e7ccf34955f026c9088f92f948ca83ee9b6b05d97dd677e453c09ebd747d7540",
+            "revisionNumber": 5,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "The exact value remains unresolved with 152 ≤ D(77) ≤ 154. Existing local and rotational restrictions remain supported, while the replay package supplies no 153-point or 154-point certificate, exclusion proof, global search certificate, or improved bound. Its hosted-verification request concerns only the known 152-point certificate and does not determine optimality.",
+            "title": "Exact value of D(77)"
           }
         ],
         "reports": [
@@ -10308,9 +11550,14 @@
             "runId": "406cdc3047e2d3e38f8e0f60e4b3b2c2dbedc9b1f520fd838e8d753344f9f05f",
             "digest": "sha256:93e1ce237868d6551e326fa2694304b7a482eded97043db267c02bb17bca790b",
             "markdown": "# Knowledge-Formation Report\n\n## Formation scope\n\nThis report materializes the conclusions accepted by the supplied immutable judgments without independently reassessing their mathematics.\n\nThe organizational actions are:\n\n- revise `root` to include the accepted arbitrary-center rotation classification and its consequences;\n- create `finite-lattice-sets/nontrivial-rotation-classification` for the distinct, durable lattice-rotation lemma;\n- revise `no-three-in-line/d77-rotational-symmetry-at-153-154` because the formerly qualified arbitrary-center classification is now accepted as complete;\n- revise `no-three-in-line/d77-exact-value` to record the stronger symmetry restrictions while retaining the unresolved interval.\n\nThe following remain substantively unchanged and do not require separate node sections:\n\n- the verified 152-point certificate;\n- the certified interval \\(152\\le D(77)\\le154\\);\n- the near-capacity row and column occupancy constraints;\n- the saturation and local-rigidity results around the eight specified embeddings;\n- the general half-turn and quarter-turn cardinality obstructions;\n- the centered-half-turn condition already established for a hypothetical 154-point set;\n- the scope and unresolved satisfiability of the restricted `rct4` model.\n\nNo conflict records or reconciliation outcomes were supplied. Consequently, no active dispute node is required.\n\n---\n\n## Node: root\n\n- **Type:** Root research state\n- **Status:** Active\n- **Parent:** None\n- **Primary judgment provenance:**\n  - `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n  - `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n  - `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5`\n  - `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- **Evidence transactions:**\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n  - `c98dd877ad81611a9a469b1bd790cd909b56b1ce`\n  - `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n\nFor\n\n\\[\nG_n=\\{0,1,\\ldots,n-1\\}^2,\n\\]\n\nlet \\(D(n)\\) be the largest cardinality of a subset of \\(G_n\\) containing no three distinct collinear points.\n\nAccording to the supplied immutable judgments, the complete current research state at grid size \\(77\\) is as follows.\n\n### Certified configuration and global bounds\n\n1. A particular 152-point no-three-in-line subset \\(C\\subseteq G_{76}\\) has an exact coordinate certificate. Its no-three-in-line property was checked over all\n\n   \\[\n   \\binom{152}{3}=573{,}800\n   \\]\n\n   triples using exact integer determinants.\n\n2. The configuration is invariant under the quarter-turn\n\n   \\[\n   (x,y)\\longmapsto(75-y,x).\n   \\]\n\n   It has exactly two distinct images under the eight dihedral symmetries of the square. Applying the four translations in \\(\\{0,1\\}^2\\) to those images gives exactly eight distinct specified embeddings in \\(G_{77}\\).\n\n3. The globally certified interval is\n\n   \\[\n   152\\le D(77)\\le154.\n   \\]\n\n   The lower bound follows from embedding the verified 152-point configuration. The upper bound follows because each of the 77 horizontal rows contains at most two selected points.\n\n4. The necessary row and column occupancy constraints for hypothetical 153- and 154-point sets remain active.\n\n### Local rigidity around the specified embeddings\n\n5. Each of the eight specified embeddings is saturated in \\(G_{77}\\): every one of its 5,777 outside cells is blocked by at least two pairs of embedded points. Each embedding is therefore inclusion-maximal, but this does not establish maximum cardinality.\n\n6. Removing one point from a specified embedding makes no originally outside cell addable. The removed point itself can still be restored.\n\n7. Removing any two points from a specified embedding frees at most one originally outside cell. For each embedding, exactly 16 unordered removal pairs free a cell, distributed over four cells with four removal pairs per cell.\n\n8. For every specified embedding \\(E\\), any no-three-in-line set \\(S\\subseteq G_{77}\\) satisfying\n\n   \\[\n   |E\\setminus S|\\le2\n   \\]\n\n   also satisfies\n\n   \\[\n   |S\\setminus E|\\le1\n   \\quad\\text{and}\\quad\n   |S|\\le152.\n   \\]\n\n   Consequently, every no-three-in-line set \\(S\\subseteq G_{77}\\) with \\(|S|\\ge153\\) must satisfy, relative to each specified embedding,\n\n   \\[\n   |E\\setminus S|\\ge3,\\qquad\n   |S\\setminus E|\\ge4,\\qquad\n   |E\\triangle S|\\ge7.\n   \\]\n\n   These are local restrictions around the eight embeddings, not a global exclusion of larger configurations.\n\n### Rotations of finite lattice sets\n\n9. Judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts as proved that if a finite noncollinear subset of \\(\\mathbb Z^2\\) is preserved by a nonidentity Euclidean rotation about an arbitrary center, then the rotation is a half-turn or a quarter-turn.\n\n10. The accepted classification is limited to exact Euclidean rotations. Noncollinearity is essential. It does not classify reflections, affine transformations, approximate symmetries, or collinear finite sets.\n\n### Rotational restrictions at cardinalities 153 and 154\n\n11. An odd-cardinality no-three-in-line set invariant under a half-turn has at most one point. In particular, a 153-point no-three-in-line set cannot have half-turn symmetry.\n\n12. A quarter-turn-invariant no-three-in-line set has cardinality divisible by four or equal to one. Thus neither a 153-point nor a 154-point no-three-in-line set can be quarter-turn invariant.\n\n13. Combining these orbit-cardinality results with the accepted arbitrary-center rotation classification, any 153-point no-three-in-line subset of \\(G_{77}\\), if one exists, has no nonidentity rotational symmetry about any center. This does not exclude reflection-symmetric or asymmetric 153-point sets.\n\n14. If a 154-point no-three-in-line subset of \\(G_{77}\\) has any nontrivial rotational symmetry, judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts that the symmetry must be the half-turn about\n\n    \\[\n    (38,38),\n    \\]\n\n    and that \\((38,38)\\) is unselected.\n\n    The center is forced because a 154-point set attains equality in both the row and column capacity bounds, giving exactly two selected points in every row and every column and bounding box \\([0,76]^2\\).\n\n15. The rotational classification does not classify reflections and does not imply that a 153- or 154-point configuration exists.\n\n### Restricted `rct4` model\n\n16. The `rct4` subclass is strictly narrower than the class of all centered half-turn-invariant configurations. It additionally requires:\n\n    - an empty anti-diagonal;\n    - complete quarter-turn orbits away from the diagonals;\n    - exactly one selected half-turn pair on the main diagonal.\n\n17. Static inspection in judgment `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5` supports, with high confidence, that the supplied \\(n=77\\) model is sound and complete for the stated 154-point `rct4` subclass.\n\n18. The model has:\n\n    - 1,444 off-diagonal quarter-turn-orbit variables;\n    - 38 main-diagonal half-turn-pair variables;\n    - exact cardinality conditions selecting 38 off-diagonal orbits and one diagonal pair;\n    - 388,148 deduplicated weighted line constraints generated with exact integer arithmetic.\n\n    Every feasible assignment represents\n\n    \\[\n    4\\cdot38+2=154\n    \\]\n\n    selected points satisfying the `rct4` pattern. Within that subclass, feasibility is accepted as equivalent to the no-three-in-line property.\n\n19. Five committed calibration certificates at\n\n    \\[\n    n=41,47,57,65,69\n    \\]\n\n    provide exact implementation regression checks at those sizes. The judgments do not treat them as proof of a broader historical range claim, external provenance, or discovery priority.\n\n20. The satisfiability of the \\(n=77\\) `rct4` instance remains unresolved. Reported `UNKNOWN` results and timeouts establish neither satisfiability nor unsatisfiability. They therefore have no negative mathematical force.\n\n### Global unresolved question\n\n21. The exact value of \\(D(77)\\) remains unresolved. The supported possibilities are\n\n    \\[\n    D(77)\\in\\{152,153,154\\}.\n    \\]\n\n22. The supplied evidence contains no 153- or 154-point certificate and no global impossibility proof for either cardinality.\n\n23. The accepted rotational restrictions constrain only possible symmetry classes:\n\n    - a hypothetical 153-point set has no nontrivial rotational symmetry;\n    - a rotationally symmetric 154-point set must have the centered half-turn about \\((38,38)\\);\n    - asymmetric and reflection-symmetric cases remain possible in principle;\n    - general centered-half-turn configurations are not exhausted by the `rct4` model.\n\n### Current node inventory\n\n- `finite-lattice-sets/nontrivial-rotation-classification`\n- `no-three-in-line/g76-152-point-set`\n- `no-three-in-line/d77-certified-interval`\n- `no-three-in-line/d77-near-capacity-occupancy`\n- `no-three-in-line/d77-saturation-of-embedded-g76-152-record`\n- `no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record`\n- `no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record`\n- `no-three-in-line/d77-distance-from-embedded-g76-152-record`\n- `no-three-in-line/rotational-cardinality-obstructions`\n- `no-three-in-line/d77-154-centered-half-turn-condition`\n- `no-three-in-line/d77-rotational-symmetry-at-153-154`\n- `no-three-in-line/d77-rct4-154-model`\n- `no-three-in-line/d77-exact-value`\n\nThere are no active adjudicative conflicts in the supplied record.\n\n---\n\n## Change: root\n\nThe root research state is revised to incorporate judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`, concerning transaction `29ccbd396781fd36d436ed2e6d0952a4730361b9`.\n\nThat judgment accepts an arbitrary-center finite-lattice rotation classification and thereby closes the scope qualification formerly attached to the rotational conclusions for cardinalities 153 and 154. The root inventory consequently adds the durable lemma node `finite-lattice-sets/nontrivial-rotation-classification`.\n\nThe certified interval, local-rigidity conclusions, and restricted `rct4` status are retained without substantive alteration. In particular, the stronger symmetry classification does not change the unresolved status of \\(D(77)\\).\n\nNo conflict resolution was needed because the judgment characterizes the new proof as completing an earlier gap rather than contradicting an earlier accepted mathematical conclusion.\n\n---\n\n## Node: finite-lattice-sets/nontrivial-rotation-classification\n\n- **Type:** Structural lemma\n- **Status:** Active; accepted as proved\n- **Parent:** `root`\n- **Primary judgment provenance:** `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- **Evidence transaction:** `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n- **Related nodes:**\n  - `no-three-in-line/rotational-cardinality-obstructions`\n  - `no-three-in-line/d77-rotational-symmetry-at-153-154`\n  - `no-three-in-line/d77-exact-value`\n\nJudgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts the following statement as proved:\n\n> If \\(S\\subset\\mathbb Z^2\\) is finite and noncollinear, and a nonidentity Euclidean rotation \\(T\\) about an arbitrary center satisfies \\(T(S)=S\\), then the rotation angle is \\(180^\\circ\\) or \\(\\pm90^\\circ\\).\n\nEquivalently, the only possible nonidentity rotational symmetry types of a finite noncollinear lattice set are a half-turn and a quarter-turn.\n\n### Accepted basis\n\nThe source judgment identifies three decisive components in the supplied proof:\n\n1. Images of three noncollinear lattice points show that the rotation matrix has rational entries, even when the center is arbitrary and the rotation does not preserve the whole lattice.\n2. Because the rotation permutes a finite set, an appropriate positive power fixes three noncollinear points and is therefore the identity isometry; hence the rotation has finite order.\n3. The matrix trace is both rational and an algebraic integer. The resulting possible trace values, together with rationality of both matrix parameters, leave only the identity, half-turn, and quarter-turn cases. Excluding the identity gives the stated classification.\n\nThese points record the grounds accepted by the immutable judgment; they are not an independent proof assessment by this report.\n\n### Scope\n\nThe judgment expressly limits the result as follows:\n\n- noncollinearity is essential;\n- the center of rotation may be arbitrary;\n- the theorem concerns exact Euclidean rotations;\n- it does not classify reflections;\n- it does not classify affine automorphisms or approximate symmetries;\n- it does not extend to arbitrary collinear finite lattice sets.\n\nThe theorem is a general lattice-symmetry lemma independent of the particular grid size \\(77\\).\n\n---\n\n## Change: finite-lattice-sets/nontrivial-rotation-classification\n\nThis is a proposed new node because the accepted theorem is a distinct, durable mathematical concept that remains meaningful without the transaction name or the chronology of the \\(D(77)\\) investigation. It applies to every finite noncollinear subset of \\(\\mathbb Z^2\\), not only to no-three-in-line configurations in \\(G_{77}\\).\n\nJudgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` attributes the decisive arbitrary-center finite-rotation argument to transaction `29ccbd396781fd36d436ed2e6d0952a4730361b9`. It also states that the half-turn and quarter-turn orbit-counting arguments used in the \\(D(77)\\) application, along with the row and column occupancy observation, were already present in earlier supplied evidence.\n\nThe judgment does not adjudicate broader historical priority for the finite-rotation theorem. This report carries that limitation forward and makes no independent priority claim.\n\n---\n\n## Node: no-three-in-line/d77-rotational-symmetry-at-153-154\n\n- **Type:** Structural classification\n- **Status:** Active; accepted as proved within the stated rotational scope\n- **Parent:** `root`\n- **Primary judgment provenance:**\n  - `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5`\n  - `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- **Evidence transactions:**\n  - `c98dd877ad81611a9a469b1bd790cd909b56b1ce`\n  - `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n- **Related nodes:**\n  - `finite-lattice-sets/nontrivial-rotation-classification`\n  - `no-three-in-line/rotational-cardinality-obstructions`\n  - `no-three-in-line/d77-154-centered-half-turn-condition`\n  - `no-three-in-line/d77-rct4-154-model`\n  - `no-three-in-line/d77-exact-value`\n\nThe supplied judgments establish a complete classification of nontrivial rotational symmetry for hypothetical 153- and 154-point no-three-in-line subsets of \\(G_{77}\\), where rotation means an exact Euclidean rotation about any plane center.\n\n### Cardinality 153\n\nIf a 153-point no-three-in-line subset of \\(G_{77}\\) exists, it has no nonidentity rotational symmetry about any center.\n\nThe accepted classification of finite noncollinear lattice-set rotations leaves only half-turns and quarter-turns:\n\n- half-turn symmetry is impossible because an invariant set of odd cardinality must contain the fixed center, and any selected noncentral opposite pair together with that center would give three collinear points;\n- quarter-turn symmetry is impossible because \\(153\\equiv1\\pmod4\\), so the center would have to be selected, while the squared rotation supplies the same opposite-pair collinearity obstruction.\n\nThis is a symmetry restriction only. It does not establish that a 153-point set is impossible. Reflection-symmetric and asymmetric possibilities remain open.\n\n### Cardinality 154\n\nIf a 154-point no-three-in-line subset \\(S\\subseteq G_{77}\\) has a nontrivial rotational symmetry, that symmetry must be the half-turn about\n\n\\[\n(38,38),\n\\]\n\nand\n\n\\[\n(38,38)\\notin S.\n\\]\n\nThe judgments accept the following components:\n\n- quarter-turn symmetry is excluded because 154 is neither divisible by four nor equal to one;\n- the arbitrary-center rotation classification leaves only a half-turn;\n- equality in the row bound forces exactly two selected points in every row;\n- equality in the column bound forces exactly two selected points in every column;\n- the bounding box is therefore \\([0,76]^2\\);\n- invariance of that bounding box forces the half-turn center to be \\((38,38)\\);\n- the unique fixed point is unselected because the invariant set has even cardinality.\n\nThis does not establish the existence of a 154-point set. Asymmetric and reflection-symmetric 154-point configurations remain possible in principle.\n\n### Rotations versus reflections\n\nThe classification concerns rotations only. It supplies no classification or exclusion of reflection symmetry.\n\n### Centered half-turn symmetry versus `rct4`\n\nThe class of centered half-turn-invariant 154-point configurations is strictly broader than the `rct4` subclass.\n\nThe `rct4` model additionally requires:\n\n- an empty anti-diagonal;\n- complete quarter-turn orbits away from the diagonals;\n- exactly one selected half-turn pair on the main diagonal.\n\nTherefore, an infeasibility result for the `rct4` instance would not eliminate every centered-half-turn configuration.\n\n---\n\n## Change: no-three-in-line/d77-rotational-symmetry-at-153-154\n\nThe selected node formerly preserved a scope qualification because the earlier supplied argument explicitly treated only half-turns and quarter-turns and did not exclude arbitrary-center rotations of other finite orders.\n\nJudgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`, based on transaction `29ccbd396781fd36d436ed2e6d0952a4730361b9`, accepts a proof excluding all other nonidentity rotation orders for finite noncollinear lattice sets. The arbitrary-center qualification is therefore removed from the materialized classification.\n\nThe resulting current conclusions are:\n\n- no nontrivial rotational symmetry is possible at cardinality 153;\n- any nontrivial rotational symmetry at cardinality 154 is the half-turn about \\((38,38)\\), with that point unselected.\n\nThe limits concerning reflections, existence, and the narrower scope of `rct4` remain unchanged.\n\nThe judgment treats the new evidence as completing previously insufficient justification, not as contradicting an earlier mathematical conclusion. No dispute node is therefore formed.\n\n---\n\n## Node: no-three-in-line/d77-exact-value\n\n- **Type:** Open mathematical question\n- **Status:** Unresolved\n- **Parent:** `root`\n- **Primary judgment provenance:**\n  - `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n  - `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n  - `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5`\n  - `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- **Evidence transactions:**\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n  - `c98dd877ad81611a9a469b1bd790cd909b56b1ce`\n  - `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n- **Related bound:** `no-three-in-line/d77-certified-interval`\n- **Related structural nodes:**\n  - `no-three-in-line/d77-near-capacity-occupancy`\n  - `no-three-in-line/d77-distance-from-embedded-g76-152-record`\n  - `finite-lattice-sets/nontrivial-rotation-classification`\n  - `no-three-in-line/rotational-cardinality-obstructions`\n  - `no-three-in-line/d77-154-centered-half-turn-condition`\n  - `no-three-in-line/d77-rotational-symmetry-at-153-154`\n  - `no-three-in-line/d77-rct4-154-model`\n\nThe exact value of \\(D(77)\\) remains unresolved under the supplied immutable judgments. The strongest globally certified conclusion is\n\n\\[\n152\\le D(77)\\le154,\n\\]\n\nso the currently supported possibilities are\n\n\\[\nD(77)\\in\\{152,153,154\\}.\n\\]\n\n### Certified lower and upper bounds\n\nThe lower bound is supported by an exactly verified 152-point no-three-in-line configuration embedded into \\(G_{77}\\).\n\nThe upper bound follows because each of the 77 rows contains at most two selected points.\n\nNo supplied judgment improves either side of this interval.\n\n### Local restrictions around the known embeddings\n\nFor each of the eight specified embeddings \\(E\\) of the verified 152-point configuration, every no-three-in-line set \\(S\\subseteq G_{77}\\) with \\(|S|\\ge153\\) must satisfy\n\n\\[\n|E\\setminus S|\\ge3,\\qquad\n|S\\setminus E|\\ge4,\\qquad\n|E\\triangle S|\\ge7.\n\\]\n\nThese computations do not constrain all configurations at or beyond that distance and do not address every possible 152-point configuration.\n\n### Complete current rotational restrictions\n\nThe supplied judgments establish:\n\n- any hypothetical 153-point no-three-in-line set has no nonidentity rotational symmetry about any center;\n- if a hypothetical 154-point no-three-in-line set has nontrivial rotational symmetry, that symmetry is the half-turn about \\((38,38)\\);\n- the center \\((38,38)\\) is unselected in such a 154-point set.\n\nThese conclusions do not classify or exclude reflections. Accordingly:\n\n- a 153-point set could still be reflection-symmetric or asymmetric;\n- a 154-point set could still be asymmetric or reflection-symmetric;\n- a rotationally symmetric 154-point set remains possible only within the general centered-half-turn class.\n\n### Restricted computational result\n\nThe \\(n=77\\) `rct4` model is accepted as an exact encoding of its stated 154-point subclass, but its satisfiability remains unresolved. Reported timeouts and `UNKNOWN` outcomes establish neither satisfiability nor unsatisfiability.\n\nThe `rct4` class is strictly narrower than centered half-turn symmetry. Even an `rct4` infeasibility certificate would not by itself rule out:\n\n- other centered-half-turn 154-point configurations;\n- reflection-symmetric 154-point configurations;\n- asymmetric 154-point configurations.\n\n### Missing decisive evidence\n\nThe supplied evidence contains none of the following:\n\n- a 153-point coordinate certificate;\n- a 154-point coordinate certificate;\n- a global impossibility proof for 153 points;\n- a global impossibility proof for 154 points;\n- a global exhaustive search;\n- a satisfiability or unsatisfiability certificate for the \\(n=77\\) `rct4` instance;\n- an exclusion of all general centered-half-turn 154-point configurations;\n- an exclusion of reflection-symmetric or asymmetric candidates.\n\nThe unresolved exact value reflects the absence of decisive evidence. It is not an active dispute between incompatible judgments.\n\n---\n\n## Change: no-three-in-line/d77-exact-value\n\nJudgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` strengthens the accepted symmetry restrictions by closing the formerly missing arbitrary-center rotation classification.\n\nThe exact-value node is revised to state without qualification that:\n\n- a hypothetical 153-point set has no nontrivial rotational symmetry;\n- a rotationally symmetric 154-point set must use the centered half-turn about \\((38,38)\\).\n\nThe same judgment expressly finds that no bound improvement follows. It supplies neither a larger coordinate certificate nor an impossibility proof, and it leaves asymmetric, reflection-symmetric, and general centered-half-turn cases open. The materialized status therefore remains unresolved with\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nNo separate event-shaped node is created for the new judgment. Its role is retained here as revision provenance for the enduring exact-value question.\n"
+          },
+          {
+            "runId": "50ec53657f7372d57a345507ddefb8a977c558582c2fce91d218439b0f897f61",
+            "digest": "sha256:016c9d2bb9c420bd36f28753c9e59bce8d9d4a46c52738f1eb7eed9f367a6d99",
+            "markdown": "# Knowledge-Formation Report\n\nThe supplied primary judgment re-supports the existing 152-point certificate and the resulting lower bound, while adding qualifications about hosted execution and artifact provenance. It does not alter the certified interval or resolve the exact value of \\(D(77)\\).\n\nAccordingly:\n\n- the certificate, hosted-replay qualification, artifact-identity qualification, and provenance correction are consolidated into `no-three-in-line/g76-152-point-set`;\n- the re-verified lower-bound implication is consolidated into `no-three-in-line/d77-certified-interval`;\n- the absence of any improvement or exact determination is incorporated into `no-three-in-line/d77-exact-value`;\n- no event-shaped node is created for the replay package, hosted-verification request, or clerical correction;\n- no new mathematical claim or dispute node is warranted; and\n- the supplied conflict record set is empty, so no reconciliation outcome or active conflict requires separate representation.\n\n## Node: no-three-in-line/g76-152-point-set\n\n- **Type:** Verified existence, symmetry, and finite-orbit claim\n- **Status:** Supported; hosted execution remains unevidenced\n- **Parent:** `root`\n- **Primary judgment provenance:**\n  - `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n  - `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n  - `sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a`\n- **Evidence transactions:**\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n  - `0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0`\n\nThe immutable judgments support the existence of a particular subset\n\n\\[\nC\\subseteq G_{76}=\\{0,\\ldots,75\\}^2\n\\]\n\nhaving exactly 152 distinct points and containing no three distinct collinear points.\n\n### Certificate and exact verification\n\nThe judgments report that the encoded certificate is decoded deterministically into 76 pairs of points, with two points in every row \\(y=0,\\ldots,75\\). The supplied standard-library checker:\n\n- decodes exactly 152 points from the pinned payload;\n- checks that the decoded points are distinct;\n- checks that every coordinate lies in \\(G_{76}\\);\n- examines all\n  \\[\n  \\binom{152}{3}=573{,}800\n  \\]\n  unordered triples; and\n- tests collinearity by the exact integer determinant\n  \\[\n  (x_2-x_1)(y_3-y_1)-(x_3-x_1)(y_2-y_1).\n  \\]\n\nThe judgments characterize this as a complete, deterministic, reproducible exact verifier rather than a heuristic or floating-point test. No defect was identified in the decoding, range checks, distinctness checks, or exhaustive collinearity test.\n\nThe checker infers the intended grid size and point count from the supplied payload rather than hard-coding assertions that the size is 76 and the count is 152. The current judgment says that this does not undermine soundness for the pinned artifact because the inferred values are exposed by the reported output, although hard-coded expectations would make the intended claim more explicit.\n\n### Symmetry and specified embeddings\n\nThe judgment at\n\n`sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n\nadditionally supports with high confidence that \\(C\\) is invariant under the quarter-turn\n\n\\[\nq(x,y)=(75-y,x).\n\\]\n\nEnumeration and deduplication of the eight dihedral transformations of the \\(76\\times76\\) square produce exactly two distinct images of \\(C\\).\n\nFor each of those two images, applying each translation\n\n\\[\n(t_x,t_y)\\in\\{0,1\\}^2\n\\]\n\nproduces exactly eight distinct subsets of \\(G_{77}\\) in total.\n\nThese symmetry and orbit conclusions concern only the certified configuration and the stated family of transformations. They do not establish that every optimal or near-optimal configuration in \\(G_{76}\\) or \\(G_{77}\\) has quarter-turn symmetry.\n\nThe count of eight embeddings is limited to:\n\n1. the two distinct dihedral images of \\(C\\); and\n2. the four placements obtained from translations in \\(\\{0,1\\}^2\\).\n\nIt does not count unrelated affine images or embeddings of other 152-point configurations.\n\n### Execution and hosted-replay qualification\n\nThe mathematical support rests on static inspection of a finite, exact, deterministic checker and its pinned certificate. The newer replay transaction supplies the executable artifacts and a claimed expected output, but it does not include an execution log or attestation proving that this particular replay was run.\n\nIn particular, acceptance by the specified governed hosted-verifier environment is not established. The transaction includes a `verification.json` request containing a verifier identifier, specification digest, checker entry point, and certificate argument, but no content-addressed hosted attestation, exit status, transcript, or hosted output is supplied.\n\nThe external schema and workflow rules needed to determine exactly how artifact bytes would be bound into a future attestation are also absent from the adjudicated evidence. A future hosted execution would provide execution independence, not algorithmic independence, because the checker is copied from the earlier contribution rather than independently reimplemented.\n\nThese hosted-execution limitations do not overturn the judgments’ support for the certificate itself.\n\n### Artifact identity and provenance qualification\n\nThe displayed configuration and verifier in transaction\n\n`0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0`\n\nare judged to reproduce the earlier mathematical artifacts unchanged in substance. Strict byte-for-byte identity, including details such as line endings and terminal newlines, is not independently established by a checksum.\n\nThe replay README contains an erroneous provenance pointer. It names the earlier transaction as\n\n`dfc0cc40d1193b8d5ca25e7f177fa48ff9a1b38d`,\n\nwhereas the supplied baseline record is\n\n`dfc0cc40d41105292a119840dcdbe6f22860cf43`.\n\nThe primary judgment treats this as a clerical metadata error. It does not affect the coordinates, verifier, no-three-in-line implication, or resulting lower bound, but the incorrect pointer should not be used as the canonical provenance reference.\n\n### Credit\n\nThe underlying coordinate set is attributed in the supplied materials to Achim Flammenkamp’s maintained database. Robert is credited with reproducing and independently checking the baseline certificate, not with originating the construction. The finer priority or authorship history of the 152-point construction remains undetermined by the supplied evidence.\n\nThe local symmetry analysis, code, and accompanying text are attributed by the earlier judgment to an AI research agent working at Robert Raynor’s request.\n\nThe newer transaction is credited with packaging a canonical hosted-verification request and republishing the existing artifacts in replayable form. It is not credited with discovering the configuration, devising a new verification algorithm, or improving the bound.\n\n## Change: no-three-in-line/g76-152-point-set\n\nThe stable certificate node is retained rather than creating separate nodes for the replay transaction, hosted-verifier request, artifact comparison, or provenance typo. Those matters qualify the verification and provenance of the same durable mathematical certificate.\n\nThe current account incorporates primary judgment\n\n`sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a`\n\nand evidence transaction\n\n`0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0`.\n\nThat judgment:\n\n- strongly re-supports the 152-point certificate through the supplied executable exact checker;\n- distinguishes an executable certificate from an execution attestation;\n- leaves governed hosted-verifier acceptance unestablished;\n- supports unchanged-in-substance artifact identity without asserting independently proven byte identity;\n- identifies the incorrect prior transaction hash as a clerical provenance error; and\n- preserves the existing mathematical validity, symmetry conclusions, and credit allocation.\n\nThe canonical baseline transaction reference in the materialized account is therefore the supplied record\n\n`dfc0cc40d41105292a119840dcdbe6f22860cf43`.\n\nThe immutable erroneous README text is not rewritten or treated as a competing mathematical claim.\n\n## Node: no-three-in-line/d77-certified-interval\n\n- **Type:** Certified bound\n- **Status:** Supported with high confidence\n- **Parent:** `root`\n- **Primary judgment provenance:**\n  - `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n  - `sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a`\n- **Evidence transactions:**\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0`\n- **Related certificate:** `no-three-in-line/g76-152-point-set`\n\nFor\n\n\\[\nG_{77}=\\{0,\\ldots,76\\}^2,\n\\]\n\nlet \\(D(77)\\) be the largest cardinality of a subset containing no three distinct collinear points. The immutable judgments support the certified interval\n\n\\[\n\\boxed{152\\le D(77)\\le154}.\n\\]\n\n### Certified lower bound\n\nThe exact certificate represented by `no-three-in-line/g76-152-point-set` supplies 152 no-three-in-line points in\n\n\\[\nG_{76}=\\{0,\\ldots,75\\}^2.\n\\]\n\nThe judgments accept that the same coordinates form a subset of \\(G_{77}\\), since \\(G_{76}\\subset G_{77}\\). They therefore support\n\n\\[\nD(77)\\ge152.\n\\]\n\nThe newer replay judgment independently re-supports this implication conditional only on the executable certificate verification it describes. Its absence of a hosted execution attestation does not supply a stronger lower bound, but neither does it overturn the existing certified lower bound.\n\n### Certified upper bound\n\nThe earlier primary judgment accepts the elementary row-capacity argument: every one of the 77 horizontal grid lines contains at most two selected points in a no-three-in-line set. It therefore supports\n\n\\[\nD(77)\\le 2\\cdot77=154.\n\\]\n\nThe newer transaction supplies no new upper-bound argument and does not alter this side of the interval.\n\n### Scope\n\nThe current interval is the strongest globally certified bound in the supplied judgment record. The replay package:\n\n- does not supply a 153-point or 154-point configuration;\n- does not prove that 153 or 154 points are impossible;\n- does not improve the lower bound beyond 152; and\n- does not improve the upper bound below 154.\n\nThus the supported interval remains exactly\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\n## Change: no-three-in-line/d77-certified-interval\n\nThe finding routed under `no-three-in-line/d77-lower-bound-152` is consolidated into the existing interval node rather than represented as a parallel lower-bound node. It is another evidentiary basis for one side of the same durable certified interval.\n\nPrimary judgment\n\n`sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a`\n\nre-verifies the existing implication \\(D(77)\\ge152\\) from the executable \\(G_{76}\\) certificate. It expressly states that this is not an improved lower bound. No new evidence changes the established upper bound \\(D(77)\\le154\\).\n\nThe mathematical interval is therefore unchanged. The organizational update adds the replay judgment and its execution qualification to the provenance supporting the lower side of the existing node.\n\n## Node: no-three-in-line/d77-exact-value\n\n- **Type:** Open mathematical question\n- **Status:** Unresolved\n- **Parent:** `root`\n- **Primary judgment provenance:**\n  - `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n  - `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n  - `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5`\n  - `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n  - `sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a`\n- **Evidence transactions:**\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n  - `c98dd877ad81611a9a469b1bd790cd909b56b1ce`\n  - `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n  - `0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0`\n- **Related bound:** `no-three-in-line/d77-certified-interval`\n- **Related structural nodes:**\n  - `no-three-in-line/d77-near-capacity-occupancy`\n  - `no-three-in-line/d77-distance-from-embedded-g76-152-record`\n  - `finite-lattice-sets/nontrivial-rotation-classification`\n  - `no-three-in-line/rotational-cardinality-obstructions`\n  - `no-three-in-line/d77-154-centered-half-turn-condition`\n  - `no-three-in-line/d77-rotational-symmetry-at-153-154`\n  - `no-three-in-line/d77-rct4-154-model`\n\nThe exact value of \\(D(77)\\) remains unresolved under the supplied immutable judgments. The strongest globally certified conclusion is\n\n\\[\n152\\le D(77)\\le154,\n\\]\n\nso the supported possibilities remain\n\n\\[\nD(77)\\in\\{152,153,154\\}.\n\\]\n\n### Certified bounds\n\nThe lower bound is supported by the exactly checked 152-point no-three-in-line configuration in \\(G_{76}\\), embedded unchanged into \\(G_{77}\\).\n\nThe upper bound is supported by the judgment accepting that each of the 77 rows contains at most two selected points.\n\nNo supplied judgment improves either side.\n\n### Restrictions near the known embeddings\n\nFor each of the eight specified embeddings \\(E\\) of the verified 152-point configuration, the existing judgments support that every no-three-in-line set \\(S\\subseteq G_{77}\\) with \\(|S|\\ge153\\) must satisfy\n\n\\[\n|E\\setminus S|\\ge3,\n\\qquad\n|S\\setminus E|\\ge4,\n\\qquad\n|E\\triangle S|\\ge7.\n\\]\n\nThese restrictions concern the eight specified embeddings only. They do not constrain all configurations beyond that distance and do not cover every possible 152-point configuration.\n\n### Rotational restrictions\n\nThe supplied judgments establish the following limited structural conclusions:\n\n- any hypothetical 153-point no-three-in-line subset of \\(G_{77}\\) has no nonidentity rotational symmetry about any center;\n- if a hypothetical 154-point no-three-in-line subset has nontrivial rotational symmetry, that symmetry must be the half-turn about \\((38,38)\\); and\n- the center \\((38,38)\\) must be unselected in such a 154-point set.\n\nThese conclusions do not classify or exclude reflection symmetry. Consequently, the judgment record leaves open:\n\n- reflection-symmetric or asymmetric 153-point configurations;\n- asymmetric or reflection-symmetric 154-point configurations; and\n- 154-point configurations in the general centered-half-turn class.\n\n### Restricted computational result\n\nThe \\(n=77\\) `rct4` model is accepted by the relevant judgment as an exact encoding of its stated 154-point subclass, but the satisfiability of that instance remains unresolved. Reported timeout and `UNKNOWN` outcomes establish neither satisfiability nor unsatisfiability.\n\nThe `rct4` class is strictly narrower than the class of all configurations invariant under the half-turn about \\((38,38)\\). Thus even a future `rct4` infeasibility certificate would not by itself exclude:\n\n- other centered-half-turn 154-point configurations;\n- reflection-symmetric 154-point configurations; or\n- asymmetric 154-point configurations.\n\n### Replay package and optimality\n\nThe replay package adjudicated at\n\n`sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a`\n\ndoes not determine \\(D(77)\\) and does not improve the certified interval. It provides no 153-point or 154-point certificate, no exclusion proof, no global search certificate, and no new upper-bound argument.\n\nIts hosted-verification request concerns re-execution of the known 152-point certificate. Whether that future hosted execution succeeds has no supplied implication establishing optimality at 152 or excluding either 153 or 154.\n\n### Missing decisive evidence\n\nThe supplied evidence contains none of the following:\n\n- a 153-point coordinate certificate;\n- a 154-point coordinate certificate;\n- a global impossibility proof for 153 points;\n- a global impossibility proof for 154 points;\n- a globally exhaustive search;\n- a satisfiability or unsatisfiability certificate for the \\(n=77\\) `rct4` instance;\n- an exclusion of every general centered-half-turn 154-point configuration;\n- an exclusion of all reflection-symmetric candidates; or\n- an exclusion of all asymmetric candidates.\n\nThe exact value remains unresolved because decisive evidence is absent. The supplied records do not present incompatible judgments about the value of \\(D(77)\\), and no active dispute or reconciliation record exists.\n\n## Change: no-three-in-line/d77-exact-value\n\nPrimary judgment\n\n`sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a`\n\nis added to the provenance of the unresolved exact-value question. Its routed `refutes` stance addresses the proposition that transaction `0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0` determines \\(D(77)\\) or improves the interval; it does not refute or resolve the open question itself.\n\nThe judgment confirms that the transaction supplies none of the evidence needed to select among \\(152\\), \\(153\\), and \\(154\\). The materialized state therefore continues to record the exact value as unresolved, with all previously supported local and rotational restrictions preserved.\n\nNo dispute node is created. The unresolved state results from missing decisive evidence, not from incompatible primary judgments, and the supplied conflict-record list is empty.\n"
           }
         ],
-        "latestRunId": "406cdc3047e2d3e38f8e0f60e4b3b2c2dbedc9b1f520fd838e8d753344f9f05f"
+        "latestRunId": "50ec53657f7372d57a345507ddefb8a977c558582c2fce91d218439b0f897f61"
       }
     },
     {
@@ -18894,7 +20141,7 @@
     {
       "schemaVersion": 1,
       "problemId": "no-three-in-line-77",
-      "ledgerHead": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+      "ledgerHead": "943082dcee7ace42336179cd608fe941e7137db6",
       "directionLedgerHead": "bbf27430c8b61446236371c57c58e3b8d6278921",
       "directionLedgerDigest": "sha256:07ee521c46e228157b5de06a87c30bbfc736710b5f1f210a75f1a1bfb8ecae95",
       "events": [
@@ -18987,7 +20234,7 @@
     {
       "schemaVersion": 1,
       "problemId": "triangle-midpoints",
-      "ledgerHead": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+      "ledgerHead": "943082dcee7ace42336179cd608fe941e7137db6",
       "directionLedgerHead": null,
       "directionLedgerDigest": "sha256:ecdcbed4ec39db1bdd46bb93855ea58bb55304e05282df274a0ea2877a935a0b",
       "events": [],
