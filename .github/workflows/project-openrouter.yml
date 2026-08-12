@@ -20,12 +20,20 @@ on:
         description: Internal JSON queue of active projections to run afterward
         required: false
         default: "[]"
+      judgment_stream_id:
+        description: Internal verified problem/primary-judge stream identity
+        required: false
+        default: ""
 
 concurrency:
-  # One problem's knowledge projections share mathematical inputs and state
-  # ancestry. Cross-problem judgment and formation work remains parallel; the
-  # publisher below uses optimistic lane merging against the shared orphan ref.
-  group: "openrouter-projection-${{ inputs.problem }}"
+  # Profiles with independent primary judges must not block each other's paid
+  # judgment matrices. Profiles sharing one judge stream remain serialized so
+  # the later profile reuses the first profile's published judgments instead of
+  # duplicating provider calls. Formation itself is still leased per projection
+  # lane, and publication optimistically merges disjoint lanes.
+  # Automatic callers supply the governed stream digest. Manual or legacy
+  # callers omit it and conservatively serialize at the problem boundary.
+  group: "openrouter-judgment-${{ inputs.problem }}-${{ inputs.judgment_stream_id || inputs.problem }}"
   cancel-in-progress: false
 
 env:
@@ -33,6 +41,7 @@ env:
   MATH_FLOW_PROBLEM_ID: "${{ inputs.problem }}"
   MATH_FLOW_RESUME_RUN_ID: "${{ inputs.resume_run_id }}"
   MATH_FLOW_REMAINING_PROJECTIONS: "${{ inputs.remaining_projections }}"
+  MATH_FLOW_JUDGMENT_STREAM_ID: "${{ inputs.judgment_stream_id }}"
 
 jobs:
   plan:
@@ -44,6 +53,7 @@ jobs:
       count: ${{ steps.coverage.outputs.count }}
       expected_subjects: ${{ steps.coverage.outputs.expected_subjects }}
       primary_judge: ${{ steps.registry.outputs.primary_judge }}
+      judgment_stream_id: ${{ steps.registry.outputs.judgment_stream_id }}
       reconciliation_judge: ${{ steps.registry.outputs.reconciliation_judge }}
       knowledge_builder: ${{ steps.registry.outputs.knowledge_builder }}
       projection_digest: ${{ steps.registry.outputs.projection_digest }}
@@ -61,6 +71,11 @@ jobs:
           fi
           if [[ -n "$MATH_FLOW_RESUME_RUN_ID" && ! "$MATH_FLOW_RESUME_RUN_ID" =~ ^[1-9][0-9]*$ ]]; then
             echo "resume_run_id must be a positive GitHub Actions run ID." >&2
+            exit 1
+          fi
+          if [[ -n "$MATH_FLOW_JUDGMENT_STREAM_ID" && \
+                ! "$MATH_FLOW_JUDGMENT_STREAM_ID" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "judgment_stream_id must be empty or a SHA-256 digest." >&2
             exit 1
           fi
           if ! jq -e '
@@ -93,6 +108,13 @@ jobs:
             exit 1
           fi
           echo "primary_judge=$(jq -r '.primaryJudge' "$resolved")" >> "$GITHUB_OUTPUT"
+          expected_stream_id="$(jq -r '.judgmentStreamId' "$resolved")"
+          if [[ -n "$MATH_FLOW_JUDGMENT_STREAM_ID" && \
+                "$MATH_FLOW_JUDGMENT_STREAM_ID" != "$expected_stream_id" ]]; then
+            echo "judgment_stream_id does not match the governed primary judge." >&2
+            exit 1
+          fi
+          echo "judgment_stream_id=$expected_stream_id" >> "$GITHUB_OUTPUT"
           echo "reconciliation_judge=$(jq -r '.reconciliationJudge' "$resolved")" >> "$GITHUB_OUTPUT"
           echo "knowledge_builder=$(jq -r '.knowledgeBuilder' "$resolved")" >> "$GITHUB_OUTPUT"
           echo "projection_digest=$(jq -r '.projectionSpecDigest' "$resolved")" >> "$GITHUB_OUTPUT"
@@ -783,7 +805,7 @@ jobs:
     permissions:
       actions: write
     steps:
-      - name: Dispatch the next serialized active projection
+      - name: Dispatch the next projection sharing this judgment stream
         env:
           GH_TOKEN: "${{ github.token }}"
         run: |
@@ -804,4 +826,5 @@ jobs:
             --ref main \
             -f projection="$next_projection" \
             -f problem="$MATH_FLOW_PROBLEM_ID" \
+            -f judgment_stream_id="${{ needs.plan.outputs.judgment_stream_id }}" \
             -f remaining_projections="$remaining"

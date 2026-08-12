@@ -154,6 +154,25 @@ scheduler semantics, and content-addressed batch publisher. The existing `run`
 command remains available for replay and comparison of combined hierarchical
 judge/state runs.
 
+Before spending provider credits on a scale test, run the deterministic
+congestion probe:
+
+```bash
+python -m math_flow provider-free-scale-probe \
+  --problems 12 \
+  --projections-per-problem 4 \
+  --solvers 12 \
+  --output /tmp/math-flow-scale-report.json
+```
+
+It exercises parallel judgment completion, reconciliation-atomic formation,
+single-writer leases and throttling, failures and retries, optimistic scheduler
+merges, bounded publication commits, and repository-backed viewer/context
+discovery with `providerCalls: 0`. Hosted projection workflows use verified
+`(problem, primary-judge)` concurrency streams: independent judges run in
+parallel, while projections sharing one judge queue briefly to reuse published
+paid judgments.
+
 ### Credit overlays
 
 Credit is an independent projection over an exact locked knowledge state, never

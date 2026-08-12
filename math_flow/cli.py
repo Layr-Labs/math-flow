@@ -57,6 +57,7 @@ from .projection_queue import (
 )
 from .repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
 from .runs import run_judge_bundle
+from .scale_probe import run_provider_free_scale_probe
 from .viewer import export_viewer_catalog, export_viewer_data
 
 
@@ -559,6 +560,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="limit context.md to this node and its descendants (repeatable)",
     )
     context_parser.add_argument("--output-dir", required=True, type=Path)
+
+    scale_parser = commands.add_parser(
+        "provider-free-scale-probe",
+        help="stress scheduling, publication, viewer, and context isolation without model calls",
+    )
+    scale_parser.add_argument("--problems", type=int, default=12)
+    scale_parser.add_argument("--projections-per-problem", type=int, default=4)
+    scale_parser.add_argument("--solvers", type=int, default=12)
+    scale_parser.add_argument("--minimum-interval", type=int, default=300)
+    scale_parser.add_argument("--maximum-judgments", type=int, default=64)
+    scale_parser.add_argument("--output")
     return parser
 
 
@@ -568,6 +580,16 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "validate-tree":
             result = validate_tree(root)
+        elif args.command == "provider-free-scale-probe":
+            result = run_provider_free_scale_probe(
+                problems=args.problems,
+                projections=args.projections_per_problem,
+                solvers=args.solvers,
+                minimum_interval_seconds=args.minimum_interval,
+                maximum_judgments_per_build=args.maximum_judgments,
+            )
+            _write_json(result, args.output)
+            return 0
         elif args.command == "validate-projections":
             result = validate_projection_registry(root)
         elif args.command == "verifier-spec-digest":

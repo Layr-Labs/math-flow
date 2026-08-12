@@ -200,18 +200,32 @@ jobs:
             --head refs/remotes/origin/main \
             --engine openrouter-repository-v1 \
             --output "$projection_plan"
-          mapfile -t projections < <(
-            jq -r '.projections[].projectionId' "$projection_plan"
-          )
-          if [[ "${#projections[@]}" -gt 0 ]]; then
-            first_projection="${projections[0]}"
-            remaining_projections="$(
-              jq -c '[.projections[].projectionId][1:]' "$projection_plan"
-            )"
-            dispatch project-openrouter.yml \
+          failed_stream_dispatches=0
+          while IFS= read -r stream; do
+            judgment_stream_id="$(jq -r '.judgmentStreamId' <<< "$stream")"
+            first_projection="$(jq -r '.projections[0]' <<< "$stream")"
+            remaining_projections="$(jq -c '.projections[1:]' <<< "$stream")"
+            if ! dispatch project-openrouter.yml \
               -f projection="$first_projection" \
               -f problem="$PROBLEM" \
-              -f remaining_projections="$remaining_projections"
+              -f judgment_stream_id="$judgment_stream_id" \
+              -f remaining_projections="$remaining_projections"; then
+              echo "Failed to dispatch judgment stream $judgment_stream_id." >&2
+              failed_stream_dispatches=$((failed_stream_dispatches + 1))
+            fi
+          done < <(
+            jq -c '
+              .projections
+              | sort_by(.judgmentStreamId, .projectionId)
+              | group_by(.judgmentStreamId)[]
+              | {
+                  judgmentStreamId: .[0].judgmentStreamId,
+                  projections: [.[].projectionId]
+                }
+            ' "$projection_plan"
+          )
+          if [[ "$failed_stream_dispatches" -gt 0 ]]; then
+            exit 1
           fi
 
       - if: >-

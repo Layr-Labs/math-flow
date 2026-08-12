@@ -377,6 +377,14 @@ class ProjectionQueueTests(unittest.TestCase):
         expected_alpha_second = resolve_projection(
             self.root, "alpha-v1", "second-problem", self.head
         )
+        self.assertEqual(
+            expected_alpha_first["judgmentStreamId"],
+            expected_zeta_first["judgmentStreamId"],
+        )
+        self.assertNotEqual(
+            expected_alpha_first["judgmentStreamId"],
+            expected_alpha_second["judgmentStreamId"],
+        )
         expected = {
             "schemaVersion": 1,
             "repositoryHead": self.head,

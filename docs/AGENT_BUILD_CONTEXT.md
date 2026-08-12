@@ -77,6 +77,9 @@ automatic squash merge to main
   no mathematical meaning.
 - Logical projections and serialized knowledge lanes are isolated by the digest
   of `protocol/projections/<projection-id>.json`, not by additional Git branches.
+- Hosted execution is partitioned by a verified `(problem, primary-judge)`
+  stream. Independent judges and problems run concurrently; projections sharing
+  a judge form a short reuse queue so they do not duplicate paid judgments.
 
 ## Invariants that changes must preserve
 
@@ -151,6 +154,7 @@ automatic squash merge to main
 | Coalescing, leased formation lanes | Implemented | `math_flow/coordination.py` |
 | Holistic hierarchical state and revisions | Implemented | `math_flow/formation.py`, `math_flow/knowledge.py` |
 | Content-addressed projection publisher | Implemented, including optimistic cross-problem merge/retry and bounded GitHub commits | `math_flow/coordination.py`, `math_flow/projection_queue.py`, `math_flow/github_projection.py` |
+| Provider-free congestion probe | Implemented; models concurrent problems, solvers, judge streams, projection lanes, atomic reconciliations, throttling, failure recovery, optimistic publication, chunking, catalog export, and agent context with zero provider calls | `math_flow/scale_probe.py`, `tests/test_scale_probe.py` |
 | Repository-backed viewer | Implemented and deployed through ChatGPT Sites | `viewer/` |
 | Non-UI agent context command | Implemented; deterministically reports verified credit assignments or explicit pending/stale/invalid/unavailable status without model calls | `math_flow/context.py`, `math_flow/credit_context.py` |
 | Solver-facing repository skill | Implemented; requires repository tools and explains qualitative scoring semantics and exact-reference inspection | `.agents/skills/math-flow-solver/` |
@@ -372,18 +376,20 @@ the task requires an end-to-end check.
 
 These are the most important gaps as of this document's reconciliation date:
 
-1. **Exercise paid hosted reconciliation.** The hosted planner and no-conflict
-   path are live, but a genuine opposed primary set has not yet generated and
-   published a paid reconciliation artifact end to end.
-2. **Operate durable objective attestations.** The content-addressed recipe,
+1. **Operate durable objective attestations.** The content-addressed recipe,
    pinned OCI execution, replay, validation, and publication interfaces are
-   implemented. Add trusted post-merge hosted dispatch, authenticated catalog
-   discovery, and viewer/context presentation before treating them as automatic
-   platform evidence.
-3. **Scale-test independent problems and solvers.** Admit several problems with
-   simultaneous solver contributions and verify judgment isolation, durable
-   wake-up/retry behavior, chunked publication, and viewer/context discovery on
-   the organization repository.
+   implemented. Cap retained verifier output, then add trusted post-merge hosted
+   dispatch, authenticated catalog discovery, and viewer/context presentation
+   before treating attestations as automatic platform evidence.
+2. **Run the hosted scale pilot.** The provider-free congestion probe now covers
+   scheduler, retry, merge, chunking, viewer, and context invariants locally.
+   Admit several real problems with simultaneous solver contributions to
+   measure GitHub runner/API congestion and confirm the same behavior on the
+   organization repository without changing the protocol under load.
+3. **Exercise natural reconciliation.** The controlled paid smoke run succeeded
+   without publication. The remaining operational proof is a real opposed
+   primary set flowing through automatic reconciliation, formation, publication,
+   viewer discovery, and agent context without special fixture inputs.
 4. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
    exact UTC transaction windows, and predecessor-chain terminals are now
    implemented, while the admitted example remains qualitative and non-zero-sum.
