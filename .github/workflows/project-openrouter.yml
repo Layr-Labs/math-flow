@@ -823,6 +823,7 @@ jobs:
           fi
           remaining="$(jq -c '.[1:]' <<< "$MATH_FLOW_REMAINING_PROJECTIONS")"
           gh workflow run project-openrouter.yml \
+            --repo "$GITHUB_REPOSITORY" \
             --ref main \
             -f projection="$next_projection" \
             -f problem="$MATH_FLOW_PROBLEM_ID" \
