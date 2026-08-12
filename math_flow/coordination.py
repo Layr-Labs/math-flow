@@ -631,6 +631,7 @@ def publish_batch(projection_root: Path, bundle_dirs: list[Path]) -> dict[str, o
             "judgment",
             "knowledge-build",
             "legacy-projection",
+            "verifier-attestation",
         }:
             raise MathFlowError(f"unsupported run kind for publication: {run_kind}")
         manifest_inputs = manifest.get("inputs")
