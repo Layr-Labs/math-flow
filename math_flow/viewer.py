@@ -15,6 +15,15 @@ from .knowledge import validate_state_v2, validate_state_v3
 from .repository import ledger, read_at
 
 
+def _projection_catalog_sort_key(item: dict[str, object]) -> tuple[object, ...]:
+    return (
+        str(item["problemId"]),
+        item.get("projectionSpec") is None,
+        str(item["label"]),
+        str(item["id"]),
+    )
+
+
 def _json_artifact(
     bundle: Path, manifest: dict[str, object], role: str
 ) -> dict[str, object]:
@@ -755,7 +764,11 @@ def export_viewer_catalog(
                 }
             )
 
-    projections.sort(key=lambda item: (str(item["problemId"]), str(item["label"]), str(item["id"])))
+    # A governed projection edit creates a new digest and lane while its old
+    # content-addressed runs remain valid history. Prefer lanes whose digest is
+    # still registered so a retired implementation cannot become the default
+    # merely because its builder label sorts first.
+    projections.sort(key=_projection_catalog_sort_key)
 
     projection_specs_by_id = {
         str(spec["id"]): spec for spec in projection_specs.values()

@@ -31,16 +31,31 @@ class ResearchProgramProjectionTests(unittest.TestCase):
         self.assertIn("central exact-value question", builder["systemPrompt"])
         self.assertIn("never itself a knowledge node", builder["systemPrompt"])
 
-    def test_projection_does_not_mutate_the_legacy_wildcard_projection(self) -> None:
-        legacy = json.loads(
+    def test_specialized_projection_has_distinct_scope_and_shared_judges(self) -> None:
+        default = json.loads(
             (self.root / "protocol/projections/openrouter-research-v1.json").read_text(
                 encoding="utf-8"
             )
         )
-        self.assertEqual(legacy["allowedProblems"], ["*"])
+        specialized = json.loads(
+            (
+                self.root
+                / "protocol/projections/openrouter-no-three-in-line-research-programs-v2.json"
+            ).read_text(encoding="utf-8")
+        )
+
+        self.assertEqual(default["allowedProblems"], ["*"])
+        self.assertEqual(specialized["allowedProblems"], ["no-three-in-line-77"])
+        self.assertNotEqual(default["id"], specialized["id"])
         self.assertEqual(
-            legacy["knowledgeBuilder"],
-            "protocol/judges/openrouter-knowledge-builder-v1.json",
+            default["primaryJudge"], specialized["primaryJudge"]
+        )
+        self.assertEqual(
+            default["reconciliationJudge"], specialized["reconciliationJudge"]
+        )
+        self.assertEqual(
+            specialized["knowledgeBuilder"],
+            "protocol/judges/openrouter-research-program-builder-v2.json",
         )
 
 
