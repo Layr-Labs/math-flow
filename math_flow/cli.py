@@ -60,6 +60,7 @@ from .projection_queue import (
 from .repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
 from .runs import run_judge_bundle
 from .scale_probe import run_provider_free_scale_probe
+from .solver_tools import credit_status, register_direction
 from .viewer import export_viewer_catalog, export_viewer_data
 
 
@@ -233,6 +234,35 @@ def build_parser() -> argparse.ArgumentParser:
         "--status", choices=["active", "released", "completed"]
     )
     directions_parser.add_argument("--output")
+
+    credit_status_parser = commands.add_parser(
+        "credit-status",
+        help="inspect active governed credit policy without running an overlay",
+    )
+    credit_status_parser.add_argument("--problem", required=True)
+    credit_status_parser.add_argument("--head", default="HEAD")
+    credit_status_parser.add_argument("--output")
+
+    register_direction_parser = commands.add_parser(
+        "register-direction",
+        help="scaffold one policy-neutral research-direction register event",
+    )
+    register_direction_parser.add_argument("--problem", required=True)
+    register_direction_parser.add_argument("--direction", required=True)
+    register_direction_parser.add_argument("--event", default="initial-plan")
+    register_direction_parser.add_argument("--title", required=True)
+    register_direction_parser.add_argument("--summary", required=True)
+    register_direction_parser.add_argument(
+        "--plan-file", required=True, type=Path, help="detailed Markdown plan"
+    )
+    register_direction_parser.add_argument(
+        "--node",
+        action="append",
+        default=[],
+        dest="nodes",
+        help="exact related knowledge node ID (repeatable; sorted order required)",
+    )
+    register_direction_parser.add_argument("--head", default="HEAD")
 
     affected_parser = commands.add_parser(
         "affected-problems", help="list problems affected between two Git commits"
@@ -740,6 +770,22 @@ def main(argv: list[str] | None = None) -> int:
                 }
             _write_json(result, args.output)
             return 0
+        elif args.command == "credit-status":
+            result = credit_status(root, args.problem, args.head)
+            _write_json(result, args.output)
+            return 0
+        elif args.command == "register-direction":
+            result = register_direction(
+                root,
+                args.problem,
+                args.direction,
+                args.event,
+                args.title,
+                args.summary,
+                args.plan_file,
+                args.nodes,
+                args.head,
+            )
         elif args.command == "affected-problems":
             result = affected_problems(
                 root, args.base, args.head, args.global_pattern

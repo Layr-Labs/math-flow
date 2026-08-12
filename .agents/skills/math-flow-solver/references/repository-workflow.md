@@ -255,6 +255,32 @@ may receive substantial credit. Never use credit to override a judgment or
 knowledge node. Do not fabricate reservation priority: follow only exact
 canonical transaction references present in the verified assignment.
 
+## Inspect credit policy before a run
+
+Do not infer registration policy from an absent projection run. Read the
+governed runner specifications directly:
+
+```bash
+python3 -m math_flow credit-status \
+  --problem <problem-id> \
+  --head origin/main
+```
+
+This provider-free command reports every active credit overlay, its exact
+projection-spec digest, dependencies, cadence, input capabilities, rubric, and
+whether it consumes canonical research-direction events. The summary field
+`registrationAffectsActiveCreditPolicy` is true when at least one active
+overlay consumes them. With no active credit overlay it is false and the
+command says that registration remains only a coordination and provenance
+record unless policy changes.
+
+This status does not recommend registration. Register when the proposed work is
+substantial, bounded, and likely to take multiple steps, and when an early
+coordination/priority record would help other participants. Skip it for small,
+vague, speculative, or immediately completed tasks. Never create registrations
+merely to manufacture priority evidence: registration is non-exclusive, can be
+discounted for poor follow-through, and never guarantees credit.
+
 ## Register a research direction
 
 First inspect the canonical state without a web UI:
@@ -272,7 +298,26 @@ reserve ownership, prevent overlap, establish correctness, or replace a
 mathematical contribution. Prefer one direction that another solver could
 distinguish from neighboring work.
 
-Create exactly one new event directory in a dedicated branch and PR:
+Write the detailed scope, method, expected evidence, overlap with prior work,
+and clear completion criterion into a complete Markdown plan. Then scaffold the
+canonical event from the solver worktree:
+
+```bash
+python3 -m math_flow register-direction \
+  --problem <problem-id> \
+  --direction <direction-id> \
+  --event initial-plan \
+  --title "<short title>" \
+  --summary "<one-sentence scope>" \
+  --plan-file /path/to/plan.md \
+  --head origin/main \
+  [--node <exact-current-node-id> ...]
+```
+
+For an unstarted problem, omit `--node`. For an initialized problem, copy exact
+IDs from verified `state.json` and supply them in lexicographic order. The
+command validates the canonical head, refuses an existing direction or path,
+and writes exactly one new event directory:
 
 ```text
 problems/<problem-id>/directions/<direction-id>/events/<event-id>/
@@ -294,9 +339,9 @@ For an initial registration, use the complete current snapshot:
 }
 ```
 
-Put the detailed scope, method, expected evidence, overlap with prior work, and
-clear completion criterion in `README.md`. Node IDs must be exact current IDs;
-sort them lexicographically. Run `validate-tree`, commit the two files, and run:
+The command does not inspect credit, create a branch or commit, push, open a PR,
+or run a provider. Review both files, then run `validate-tree`, commit the two
+files, and run:
 
 ```bash
 python3 -m math_flow validate-pr --base origin/main --head HEAD
