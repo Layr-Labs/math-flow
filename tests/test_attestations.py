@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -10,7 +11,9 @@ from unittest.mock import patch
 from math_flow.artifacts import sha256_bytes, verify_bundle
 from math_flow.attestations import (
     ExecutionResult,
+    _run_bounded_process,
     docker_oci_executor,
+    plan_verifier_attestation,
     run_verifier_attestation_bundle,
     verifier_spec_digest,
     verify_verifier_attestation_bundle,
@@ -18,6 +21,7 @@ from math_flow.attestations import (
 from math_flow.coordination import publish_batch
 from math_flow.errors import MathFlowError
 from math_flow.repository import validate_pr, validate_tree
+from math_flow.viewer import _viewer_objective_attestations
 
 
 def git(root: Path, *args: str) -> str:
@@ -165,7 +169,28 @@ class ObjectiveAttestationTests(unittest.TestCase):
         self.assertEqual(verified["status"], "passed")
         self.assertTrue(verified["replayed"])
 
+        pending_catalog = _viewer_objective_attestations(
+            self.root, {}, ["demo"], "HEAD"
+        )
+        self.assertEqual(pending_catalog[0]["selectionStatus"], "pending")
+        manifest, run_digest = verify_bundle(first)
+        published_catalog = _viewer_objective_attestations(
+            self.root,
+            {run_digest: {"manifest": manifest, "path": first}},
+            ["demo"],
+            "HEAD",
+        )
+        self.assertEqual(published_catalog[0]["selectionStatus"], "passed")
+        self.assertEqual(
+            published_catalog[0]["run"]["stdout"]["text"],
+            "certificate: valid\n",
+        )
+
         projections = Path(first_parent.name) / "projections"
+        pending = plan_verifier_attestation(
+            self.root, projections, "demo", transaction, "HEAD"
+        )
+        self.assertTrue(pending["eligible"])
         batch = publish_batch(projections, [first])
         self.assertEqual(batch["objects"][0]["runKind"], "verifier-attestation")
         self.assertTrue(
@@ -175,6 +200,38 @@ class ObjectiveAttestationTests(unittest.TestCase):
                 / "attestation.json"
             ).is_file()
         )
+        published = plan_verifier_attestation(
+            self.root, projections, "demo", transaction, "HEAD"
+        )
+        self.assertFalse(published["eligible"])
+        self.assertEqual(
+            published["publishedRunDigest"], batch["objects"][0]["runDigest"]
+        )
+
+        conflicting = Path(second_parent.name) / "conflicting"
+
+        def failing_executor(
+            _materialized: Path,
+            _spec: dict[str, object],
+            _request: dict[str, object],
+        ) -> ExecutionResult:
+            return ExecutionResult(1, b"invalid\n", b"")
+
+        run_verifier_attestation_bundle(
+            self.root,
+            "demo",
+            transaction,
+            "HEAD",
+            conflicting,
+            executor=failing_executor,
+        )
+        with self.assertRaisesRegex(MathFlowError, "different published attestation"):
+            publish_batch(projections, [conflicting])
+
+        empty_projection = Path(second_parent.name) / "empty-projections"
+        with self.assertRaisesRegex(MathFlowError, "different outcomes"):
+            publish_batch(empty_projection, [first, conflicting])
+        self.assertFalse(empty_projection.exists())
 
     def test_later_unrelated_commit_does_not_make_attestation_stale(self) -> None:
         transaction = self.add_contribution()
@@ -260,11 +317,9 @@ class ObjectiveAttestationTests(unittest.TestCase):
                 executor=changed_output,
             )
 
-    @patch("math_flow.attestations.subprocess.run")
+    @patch("math_flow.attestations._run_bounded_process")
     def test_oci_executor_enforces_pinned_non_shell_isolation(self, run) -> None:
-        run.return_value = subprocess.CompletedProcess(
-            args=[], returncode=0, stdout=b"ok\n", stderr=b""
-        )
+        run.return_value = ExecutionResult(0, b"ok\n", b"")
         request = {
             "schemaVersion": 1,
             "verifier": {
@@ -279,6 +334,7 @@ class ObjectiveAttestationTests(unittest.TestCase):
         invocation = run.call_args.args[0]
         self.assertIsInstance(invocation, list)
         self.assertEqual(invocation[:3], ["docker", "run", "--rm"])
+        self.assertIn("--cidfile", invocation)
         self.assertIn("--network", invocation)
         self.assertEqual(invocation[invocation.index("--network") + 1], "none")
         self.assertIn("--read-only", invocation)
@@ -287,8 +343,21 @@ class ObjectiveAttestationTests(unittest.TestCase):
         self.assertEqual(invocation[invocation.index("--cap-drop") + 1], "ALL")
         self.assertIn(str(self.spec["environment"]["image"]), invocation)
         self.assertEqual(invocation[-3:], ["-B", "verify.py", "certificate.bin"])
-        self.assertEqual(run.call_args.kwargs["timeout"], 300)
-        self.assertNotIn("shell", run.call_args.kwargs)
+        self.assertEqual(run.call_args.kwargs["timeout_seconds"], 300)
+        self.assertEqual(run.call_args.kwargs["maximum_output_bytes"], 262144)
+
+    def test_process_output_is_bounded_before_it_can_fill_memory(self) -> None:
+        invocation = [
+            sys.executable,
+            "-c",
+            "import sys; sys.stdout.buffer.write(b'x' * 200000)",
+        ]
+        with self.assertRaisesRegex(MathFlowError, "maximumOutputBytes"):
+            _run_bounded_process(
+                invocation,
+                timeout_seconds=10,
+                maximum_output_bytes=4096,
+            )
 
 
 if __name__ == "__main__":

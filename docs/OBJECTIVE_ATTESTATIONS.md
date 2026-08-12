@@ -19,7 +19,7 @@ The participant-authored file records intent, not a result:
   "schemaVersion": 1,
   "verifier": {
     "id": "python-stdlib-3-13-v1",
-    "specDigest": "sha256:138055a712b6da392abe932ff02d057e4838fba6338b8f011f59beab6c883b63"
+    "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884"
   },
   "entrypoint": "verify.py",
   "arguments": ["configuration.txt"]
@@ -43,14 +43,28 @@ python3 -m math_flow verifier-spec-digest \
 
 The initial allowlisted runner is `oci-command-v1`. Its spec pins an OCI image
 by SHA-256 digest, platform, executable, fixed arguments, success exit codes,
-timeout, resource limits, disabled networking, a read-only root filesystem, and
-a bounded temporary filesystem. Execution never uses a shell. New environment
+timeout, a combined stdout/stderr byte limit, resource limits, disabled
+networking, a read-only root filesystem, and a bounded temporary filesystem.
+The worker drains output while the command runs and terminates it before output
+can grow beyond that governed limit. Execution never uses a shell. New environment
 or command policies require a new versioned spec and a new digest.
 
 ## Producing and replaying a bundle
 
 Production happens only after the contribution's squash commit is part of the
 canonical first-parent ledger, because that commit is the attestation subject:
+
+```bash
+python3 -m math_flow attestation-plan \
+  --problem <problem-id> \
+  --transaction <full-canonical-transaction-sha> \
+  --head main \
+  --projection-dir <projection-worktree>
+```
+
+Planning is provider-free and does not execute participant code. It reports
+whether this exact immutable request already has an authoritative published
+outcome. Publication rejects a second, different outcome for the same request.
 
 ```bash
 python3 -m math_flow attest \
@@ -133,12 +147,17 @@ protected verifier spec. Participant code is still untrusted and must only run
 inside the constrained OCI worker.
 
 The OCI digest pins userspace bytes, not the host kernel, Docker daemon, CPU
-microcode, or hardware. The v1 profile also captures only stdout and stderr; a
+microcode, or hardware. The v1 profile also captures only bounded stdout and stderr; a
 future profile can add declared file outputs, proof-assistant-specific result
 indexes, signed workload identity, transparency logs, or hardware-backed remote
-attestation. Hosted automatic dispatch and catalog/viewer presentation are
-separate follow-up work; this MVP supplies the stable artifact, verifier, replay,
-validation, and publication interfaces they consume.
+attestation.
+
+The trusted `project-attestation.yml` workflow is dispatched automatically for
+a merged contribution containing `verification.json`. It performs a provider-free
+preflight, executes only the pinned networkless OCI command, rechecks canonical
+main and the projection branch, and publishes through the GitHub-signed orphan
+projection transport. The viewer and `math-flow context` show pending and
+published outcomes separately from judgments and credit.
 
 ## Use by judges and knowledge builders
 

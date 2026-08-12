@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import json
+import os
 import re
+import selectors
 import subprocess
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Callable
@@ -141,7 +144,13 @@ def validate_verifier_spec(value: object, *, expected_id: str | None = None) -> 
 
     command = _strict_object(
         spec["command"],
-        {"executable", "fixedArguments", "timeoutSeconds", "successExitCodes"},
+        {
+            "executable",
+            "fixedArguments",
+            "timeoutSeconds",
+            "maximumOutputBytes",
+            "successExitCodes",
+        },
         "verifier command",
     )
     executable = _argument(command["executable"], "verifier executable")
@@ -155,6 +164,15 @@ def validate_verifier_spec(value: object, *, expected_id: str | None = None) -> 
     timeout = command["timeoutSeconds"]
     if isinstance(timeout, bool) or not isinstance(timeout, int) or not 1 <= timeout <= 3600:
         raise MathFlowError("verifier timeoutSeconds must be between 1 and 3600")
+    maximum_output = command["maximumOutputBytes"]
+    if (
+        isinstance(maximum_output, bool)
+        or not isinstance(maximum_output, int)
+        or not 1024 <= maximum_output <= 16 * 1024 * 1024
+    ):
+        raise MathFlowError(
+            "verifier maximumOutputBytes must be between 1024 and 16777216"
+        )
     success_codes = command["successExitCodes"]
     if (
         not isinstance(success_codes, list)
@@ -292,6 +310,79 @@ class ExecutionResult:
 Executor = Callable[[Path, dict[str, object], dict[str, object]], ExecutionResult]
 
 
+def _run_bounded_process(
+    invocation: list[str],
+    *,
+    timeout_seconds: int,
+    maximum_output_bytes: int,
+    cleanup: Callable[[], None] | None = None,
+) -> ExecutionResult:
+    """Run without allowing child output to grow host memory without bound."""
+
+    try:
+        process = subprocess.Popen(
+            invocation,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except FileNotFoundError as exc:
+        raise MathFlowError("Docker is required to execute an OCI verifier") from exc
+    assert process.stdout is not None and process.stderr is not None
+    selected = selectors.DefaultSelector()
+    selected.register(process.stdout, selectors.EVENT_READ, "stdout")
+    selected.register(process.stderr, selectors.EVENT_READ, "stderr")
+    outputs = {"stdout": bytearray(), "stderr": bytearray()}
+    deadline = time.monotonic() + timeout_seconds
+    timed_out = False
+    stopped = False
+    try:
+        while selected.get_map():
+            remaining = deadline - time.monotonic()
+            if remaining <= 0 and not stopped:
+                timed_out = True
+                stopped = True
+                if cleanup is not None:
+                    cleanup()
+                process.kill()
+            events = selected.select(max(0.0, min(remaining, 0.1)) if not stopped else 0.1)
+            if not events and process.poll() is not None:
+                events = [
+                    (key, selectors.EVENT_READ) for key in list(selected.get_map().values())
+                ]
+            for key, _ in events:
+                chunk = os.read(key.fileobj.fileno(), 65536)
+                if not chunk:
+                    selected.unregister(key.fileobj)
+                    key.fileobj.close()
+                    continue
+                current_size = len(outputs["stdout"]) + len(outputs["stderr"])
+                if current_size + len(chunk) > maximum_output_bytes:
+                    if cleanup is not None:
+                        cleanup()
+                    process.kill()
+                    process.wait(timeout=10)
+                    raise MathFlowError(
+                        "verifier output exceeded its governed maximumOutputBytes"
+                    )
+                outputs[str(key.data)].extend(chunk)
+        process.wait(timeout=10)
+    finally:
+        selected.close()
+        process.stdout.close()
+        process.stderr.close()
+        if process.poll() is None:
+            if cleanup is not None:
+                cleanup()
+            process.kill()
+            process.wait(timeout=10)
+    return ExecutionResult(
+        exit_code=None if timed_out else process.returncode,
+        stdout=bytes(outputs["stdout"]),
+        stderr=bytes(outputs["stderr"]),
+        timed_out=timed_out,
+    )
+
+
 def docker_oci_executor(
     contribution_dir: Path,
     spec: dict[str, object],
@@ -302,57 +393,68 @@ def docker_oci_executor(
     environment = spec["environment"]
     command = spec["command"]
     assert isinstance(environment, dict) and isinstance(command, dict)
-    invocation = [
-        "docker",
-        "run",
-        "--rm",
-        "--network",
-        "none",
-        "--read-only",
-        "--user",
-        str(environment["user"]),
-        "--cap-drop",
-        "ALL",
-        "--security-opt",
-        "no-new-privileges",
-        "--pids-limit",
-        str(environment["pidsLimit"]),
-        "--memory",
-        str(environment["memoryBytes"]),
-        "--cpus",
-        str(environment["cpuCount"]),
-        "--platform",
-        str(environment["platform"]),
-        "--mount",
-        f"type=bind,src={contribution_dir.resolve()},dst=/work,readonly",
-        "--tmpfs",
-        f"/tmp:rw,noexec,nosuid,size={environment['tmpfsBytes']}",
-        "--workdir",
-        "/work",
-        str(environment["image"]),
-        str(command["executable"]),
-        *[str(item) for item in command["fixedArguments"]],
-        str(request["entrypoint"]),
-        *[str(item) for item in request["arguments"]],
-    ]
-    try:
-        completed = subprocess.run(
+    with tempfile.TemporaryDirectory(prefix="math-flow-verifier-container-") as temporary:
+        cidfile = Path(temporary) / "container.cid"
+        invocation = [
+            "docker",
+            "run",
+            "--rm",
+            "--cidfile",
+            str(cidfile),
+            "--network",
+            "none",
+            "--read-only",
+            "--user",
+            str(environment["user"]),
+            "--cap-drop",
+            "ALL",
+            "--security-opt",
+            "no-new-privileges",
+            "--pids-limit",
+            str(environment["pidsLimit"]),
+            "--memory",
+            str(environment["memoryBytes"]),
+            "--cpus",
+            str(environment["cpuCount"]),
+            "--platform",
+            str(environment["platform"]),
+            "--mount",
+            f"type=bind,src={contribution_dir.resolve()},dst=/work,readonly",
+            "--tmpfs",
+            f"/tmp:rw,noexec,nosuid,size={environment['tmpfsBytes']}",
+            "--workdir",
+            "/work",
+            str(environment["image"]),
+            str(command["executable"]),
+            *[str(item) for item in command["fixedArguments"]],
+            str(request["entrypoint"]),
+            *[str(item) for item in request["arguments"]],
+        ]
+
+        def cleanup() -> None:
+            try:
+                container_id = cidfile.read_text(encoding="utf-8").strip()
+            except OSError:
+                return
+            if not container_id:
+                return
+            try:
+                subprocess.run(
+                    ["docker", "rm", "-f", container_id],
+                    check=False,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    timeout=15,
+                )
+            except (OSError, subprocess.SubprocessError):
+                pass
+
+        return _run_bounded_process(
             invocation,
-            check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            timeout=int(command["timeoutSeconds"]),
+            timeout_seconds=int(command["timeoutSeconds"]),
+            maximum_output_bytes=int(command["maximumOutputBytes"]),
+            cleanup=cleanup,
         )
-    except FileNotFoundError as exc:
-        raise MathFlowError("Docker is required to execute an OCI verifier") from exc
-    except subprocess.TimeoutExpired as exc:
-        return ExecutionResult(
-            exit_code=None,
-            stdout=exc.stdout or b"",
-            stderr=exc.stderr or b"",
-            timed_out=True,
-        )
-    return ExecutionResult(completed.returncode, completed.stdout, completed.stderr)
 
 
 def _transaction(
@@ -448,6 +550,172 @@ def _request_core(
     }
 
 
+def verification_requests(
+    root: Path, problem: str, head: str = "HEAD"
+) -> list[dict[str, object]]:
+    """Return every canonical contribution that requests objective verification."""
+
+    root = root.resolve()
+    source = ledger(root, problem, head)
+    requests: list[dict[str, object]] = []
+    for item in source["transactions"]:
+        if not isinstance(item, dict):
+            continue
+        transaction = str(item["transactionId"])
+        prefix = str(item["path"])
+        if f"{prefix}/{VERIFICATION_REQUEST}" not in list_files_at(
+            root, transaction, prefix
+        ):
+            continue
+        _, loaded_item, request, spec, inputs = _load_subject(
+            root, problem, str(source["ledgerHead"]), transaction
+        )
+        core = _request_core(problem, loaded_item, request, spec, inputs)
+        requests.append(
+            {
+                **core,
+                "transactionId": loaded_item["transactionId"],
+                "contributionId": loaded_item["contributionId"],
+                "requestDigest": f"sha256:{sha256_json(core)}",
+            }
+        )
+    return requests
+
+
+def _published_attestation_entries(
+    projection_root: Path, problem: str
+) -> list[dict[str, object]]:
+    root = projection_root.resolve()
+    index_path = root / "indexes" / "problems" / problem / "runs.json"
+    if not index_path.exists():
+        return []
+    try:
+        values = json.loads(index_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise MathFlowError(f"could not read projection index {index_path}: {exc}") from exc
+    if not isinstance(values, list) or any(not isinstance(item, dict) for item in values):
+        raise MathFlowError(f"invalid projection index: {index_path}")
+    entries: list[dict[str, object]] = []
+    for item in values:
+        if item.get("runKind") != "verifier-attestation":
+            continue
+        digest = item.get("runDigest")
+        relative = item.get("path")
+        if not isinstance(digest, str) or not isinstance(relative, str):
+            raise MathFlowError("published verifier attestation index entry is incomplete")
+        target = (root / relative).resolve()
+        try:
+            target.relative_to(root)
+        except ValueError as exc:
+            raise MathFlowError("published verifier attestation path escapes its root") from exc
+        manifest, verified_digest = verify_bundle(target)
+        if verified_digest != digest:
+            raise MathFlowError("published verifier attestation digest does not match its index")
+        inputs = manifest.get("inputs")
+        request_digests = manifest.get("requestDigests")
+        if (
+            manifest.get("runKind") != "verifier-attestation"
+            or manifest.get("problemId") != problem
+            or not isinstance(inputs, dict)
+            or not isinstance(inputs.get("transactionId"), str)
+            or not isinstance(request_digests, list)
+            or len(request_digests) != 1
+            or not isinstance(request_digests[0], str)
+        ):
+            raise MathFlowError("published verifier attestation identity is invalid")
+        entries.append(
+            {
+                "runDigest": digest,
+                "requestDigest": request_digests[0],
+                "transactionId": inputs["transactionId"],
+                "path": target,
+            }
+        )
+    return entries
+
+
+def plan_verifier_attestation(
+    root: Path,
+    projection_root: Path,
+    problem: str,
+    transaction: str,
+    head: str = "HEAD",
+) -> dict[str, object]:
+    """Plan one exact request without executing participant-controlled code."""
+
+    root = root.resolve()
+    source, item, request, spec, inputs = _load_subject(root, problem, head, transaction)
+    request_core = _request_core(problem, item, request, spec, inputs)
+    request_digest = f"sha256:{sha256_json(request_core)}"
+    exact = [
+        entry
+        for entry in _published_attestation_entries(projection_root, problem)
+        if entry["transactionId"] == item["transactionId"]
+        and entry["requestDigest"] == request_digest
+    ]
+    for entry in exact:
+        verify_verifier_attestation_bundle(
+            root, Path(entry["path"]), str(source["ledgerHead"])
+        )
+    run_digests = sorted({str(entry["runDigest"]) for entry in exact})
+    if len(run_digests) > 1:
+        raise MathFlowError(
+            "objective verification request has multiple published attestations"
+        )
+    return {
+        "schemaVersion": 1,
+        "problemId": problem,
+        "transactionId": item["transactionId"],
+        "contributionId": item["contributionId"],
+        "ledgerHead": source["ledgerHead"],
+        "requestDigest": request_digest,
+        "verifier": request_core["verifier"],
+        "environmentDigest": request_core["environmentDigest"],
+        "eligible": not run_digests,
+        "reasonCode": "verification-request-pending"
+        if not run_digests
+        else "already-published",
+        "publishedRunDigest": run_digests[0] if run_digests else None,
+    }
+
+
+def assert_attestation_publication_unique(
+    projection_root: Path, bundle_dir: Path
+) -> dict[str, str]:
+    """Forbid two authoritative outcomes for one immutable request."""
+
+    manifest, run_digest = verify_bundle(bundle_dir)
+    if manifest.get("runKind") != "verifier-attestation":
+        raise MathFlowError("attestation uniqueness check requires an attestation bundle")
+    problem = manifest.get("problemId")
+    inputs = manifest.get("inputs")
+    request_digests = manifest.get("requestDigests")
+    if (
+        not isinstance(problem, str)
+        or not isinstance(inputs, dict)
+        or not isinstance(inputs.get("transactionId"), str)
+        or not isinstance(request_digests, list)
+        or len(request_digests) != 1
+        or not isinstance(request_digests[0], str)
+    ):
+        raise MathFlowError("verifier attestation publication identity is invalid")
+    for entry in _published_attestation_entries(projection_root, problem):
+        if (
+            entry["transactionId"] == inputs["transactionId"]
+            and entry["requestDigest"] == request_digests[0]
+            and entry["runDigest"] != run_digest
+        ):
+            raise MathFlowError(
+                "objective verification request already has a different published attestation"
+            )
+    return {
+        "problemId": problem,
+        "transactionId": str(inputs["transactionId"]),
+        "requestDigest": str(request_digests[0]),
+        "runDigest": run_digest,
+    }
+
+
 def _result_record(result: ExecutionResult, success_codes: list[int]) -> dict[str, object]:
     if result.timed_out or result.exit_code is None:
         status = "error"
@@ -494,6 +762,12 @@ def run_verifier_attestation_bundle(
         raise MathFlowError("verifier executor returned an inconsistent exit result")
     command = spec["command"]
     assert isinstance(command, dict)
+    if len(execution.stdout) + len(execution.stderr) > int(
+        command["maximumOutputBytes"]
+    ):
+        raise MathFlowError(
+            "verifier output exceeded its governed maximumOutputBytes"
+        )
     result = _result_record(execution, list(command["successExitCodes"]))
     outputs = {
         "stdout": {
@@ -519,6 +793,7 @@ def run_verifier_attestation_bundle(
             "entrypoint": request["entrypoint"],
             "arguments": request["arguments"],
             "timeoutSeconds": command["timeoutSeconds"],
+            "maximumOutputBytes": command["maximumOutputBytes"],
             "successExitCodes": command["successExitCodes"],
         },
         "result": result,
@@ -759,12 +1034,17 @@ def verify_verifier_attestation_bundle(
         raise MathFlowError("verifier attestation input index is forged or stale")
     command = spec["command"]
     assert isinstance(command, dict)
+    if len(stdout) + len(stderr) > int(command["maximumOutputBytes"]):
+        raise MathFlowError(
+            "verifier attestation output exceeds its governed maximumOutputBytes"
+        )
     expected_invocation = {
         "executable": command["executable"],
         "fixedArguments": command["fixedArguments"],
         "entrypoint": request["entrypoint"],
         "arguments": request["arguments"],
         "timeoutSeconds": command["timeoutSeconds"],
+        "maximumOutputBytes": command["maximumOutputBytes"],
         "successExitCodes": command["successExitCodes"],
     }
     if attestation.get("invocation") != expected_invocation:
@@ -820,4 +1100,45 @@ def verify_verifier_attestation_bundle(
         if isinstance(attestation.get("result"), dict)
         else None,
         "replayed": replay,
+    }
+
+
+def verifier_attestation_details(
+    root: Path, bundle_dir: Path, head: str = "HEAD"
+) -> dict[str, object]:
+    """Return viewer/agent-safe detail after full canonical verification."""
+
+    verified = verify_verifier_attestation_bundle(root, bundle_dir, head)
+    manifest, run_digest = verify_bundle(bundle_dir)
+    try:
+        attestation = json.loads(
+            read_verified_artifact(bundle_dir, manifest, "verifier-attestation")
+        )
+    except json.JSONDecodeError as exc:
+        raise MathFlowError("verifier attestation is not valid JSON") from exc
+    if not isinstance(attestation, dict):
+        raise MathFlowError("verifier attestation record must be an object")
+    stdout = read_verified_artifact(bundle_dir, manifest, "verifier-stdout")
+    stderr = read_verified_artifact(bundle_dir, manifest, "verifier-stderr")
+
+    def preview(value: bytes) -> dict[str, object]:
+        maximum = 4096
+        return {
+            "text": value[:maximum].decode("utf-8", errors="replace"),
+            "truncated": len(value) > maximum,
+            "bytes": len(value),
+            "digest": sha256_bytes(value),
+        }
+
+    return {
+        **verified,
+        "requestDigest": attestation["requestDigest"],
+        "verifier": attestation["verifier"],
+        "environmentDigest": attestation["environmentDigest"],
+        "result": attestation["result"],
+        "producer": attestation["producer"],
+        "record": attestation,
+        "stdout": preview(stdout),
+        "stderr": preview(stderr),
+        "runDigest": run_digest,
     }

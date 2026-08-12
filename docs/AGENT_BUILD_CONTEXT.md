@@ -161,7 +161,7 @@ automatic squash merge to main
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Governed local/hosted runner, provider-free eligibility planner, bounded semantic retries, rolling coalescing, catch-up over closed UTC periods, predecessor-chain terminals, and independent `credit-assignment` bundles implemented | `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
 | Research direction registration | Implemented and merged in PR #28: append-only schema/reducer, atomic validation and auto-merge, provider-free CLI/context/catalog refresh, solver skill, viewer, and registration-aware credit v2 | `math_flow/directions.py`, `protocol/schemas/research-direction-event.schema.json`, `viewer/` |
-| Objective verifier attestations | Additive v1 recipe, pinned OCI runner, durable bundle, semantic validation, replay, and publication interface implemented; hosted dispatch/viewer discovery pending | `math_flow/attestations.py`, `docs/OBJECTIVE_ATTESTATIONS.md` |
+| Objective verifier attestations | Additive v1 recipe, bounded pinned OCI runner, durable bundle, uniqueness/semantic validation, automatic hosted execution and signed publication, replay, context, and viewer presentation implemented | `math_flow/attestations.py`, `.github/workflows/project-attestation.yml`, `docs/OBJECTIVE_ATTESTATIONS.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
 
 The approved hosted projections are:
@@ -206,6 +206,11 @@ without a viewer redeploy. Its top controls now group the knowledge projection
 and state selectors in one vertical control bubble and the credit projection
 and state selectors in a parallel bubble, with the problem selector to their
 left. Selector state remains URL-backed and repository-catalog-driven.
+Its build chain is pinned to a zero-advisory npm resolution; the last compatible
+vinext release without the vulnerable transitive image parser is retained until
+that parser has an upstream patched release. Objective-verification requests
+and their authenticated published outcomes appear as a separate transaction
+tab, never as judgments or credit.
 
 The credit overlay was admitted in PR #22 at `640f41a`; its first qualitative
 assignment was published at projection commit `e0c6fc8` (run-digest prefix
@@ -249,7 +254,9 @@ The ordinary solver path is fully automatic:
 3. If the PR is still open, non-draft, targets `main`, and every required check
    succeeded, it is squash-merged at the exact validated head SHA.
 4. For a contribution, the auto-merger explicitly dispatches the baseline and
-   approved OpenRouter workflows for only the affected problem. A direction
+   approved OpenRouter workflows for only the affected problem. If the merged
+   transaction contains `verification.json`, it also dispatches the trusted,
+   provider-free objective-attestation workflow for that exact squash SHA. A direction
    event dispatches only the provider-free viewer-catalog refresh because it has
    no mathematical judgment effect.
 5. OpenRouter coverage planning fans out one primary judgment for each
@@ -376,35 +383,25 @@ the task requires an end-to-end check.
 
 These are the most important gaps as of this document's reconciliation date:
 
-1. **Operate durable objective attestations.** The content-addressed recipe,
-   pinned OCI execution, replay, validation, and publication interfaces are
-   implemented. Cap retained verifier output, then add trusted post-merge hosted
-   dispatch, authenticated catalog discovery, and viewer/context presentation
-   before treating attestations as automatic platform evidence.
-2. **Refresh the viewer build dependency chain.** Dependabot currently reports
-   38 open npm advisories, including 24 high-severity alerts, across development
-   and build dependencies. Replace the stale failing grouped update with a
-   current minimal upgrade, verify the Sites build output, and keep all action
-   pins and deployment behavior compatible with the organization constraints.
-3. **Run the hosted scale pilot.** The provider-free congestion probe now covers
+1. **Run the hosted scale pilot.** The provider-free congestion probe now covers
    scheduler, retry, merge, chunking, viewer, and context invariants locally.
    Admit several real problems with simultaneous solver contributions to
    measure GitHub runner/API congestion and confirm the same behavior on the
    organization repository without changing the protocol under load.
-4. **Exercise natural reconciliation.** The controlled paid smoke run succeeded
+2. **Exercise natural reconciliation.** The controlled paid smoke run succeeded
    without publication. The remaining operational proof is a real opposed
    primary set flowing through automatic reconciliation, formation, publication,
    viewer discovery, and agent context without special fixture inputs.
-5. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
+3. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
    exact UTC transaction windows, and predecessor-chain terminals are now
    implemented, while the admitted example remains qualitative and non-zero-sum.
    A future runner can allocate a finite hourly/daily award without changing
    the scheduling envelope. Strict boundary-time knowledge would additionally
    require historical dependency resolution.
-6. **Improve GitHub identity and contributor UX.** A GitHub App can record stable
+4. **Improve GitHub identity and contributor UX.** A GitHub App can record stable
    user identity, add richer PR summaries and projection links, and scaffold
    valid contribution directories.
-7. **Harden organization operations.** Exercise admission approval, signer and
+5. **Harden organization operations.** Exercise admission approval, signer and
    projection-publication recovery with multiple maintainers; document secret
    rotation and disaster recovery; and remove temporary migration branches once
    the organization deployment has remained stable.

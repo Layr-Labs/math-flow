@@ -221,6 +221,10 @@ h1, h2, h3, h4, p { margin-top: 0; }
 .transaction-copy .coverage-complete { color: var(--teal); }
 .transaction-copy .coverage-missing { color: var(--coral); }
 .transaction-copy .credit-badge { color: #795910; text-transform: uppercase; }
+.transaction-copy .verification-badge { color: #315b75; text-transform: uppercase; }
+.transaction-copy .verification-passed { color: var(--teal); }
+.transaction-copy .verification-failed,
+.transaction-copy .verification-error { color: #a34931; }
 .ledger-footnote { display: flex; align-items: center; gap: 8px; margin: 2px 18px 16px; color: var(--ink-soft); font-size: 10px; }
 .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 4px var(--teal-soft); }
 .transaction-preview { max-height: 48vh; overflow: auto; margin-top: auto; padding: 18px; border-top: 1px solid var(--line); background: rgba(232, 227, 216, 0.4); }
@@ -289,7 +293,7 @@ h1, h2, h3, h4, p { margin-top: 0; }
 
 .detail-panel { overflow-y: auto; padding-bottom: 24px; }
 .detail-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 8px; border-bottom: 1px solid var(--line); }
-.detail-tabs-transaction { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.detail-tabs-transaction { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .detail-tabs-direction { grid-template-columns: 1fr; }
 .detail-tabs button { padding: 9px; border: 0; border-radius: 8px; color: var(--ink-soft); background: transparent; cursor: pointer; font-size: 10px; font-weight: 700; }
 .detail-tabs button[aria-selected="true"] { color: var(--ink); background: var(--paper-deep); }

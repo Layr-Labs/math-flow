@@ -238,16 +238,39 @@ type RepositoryCreditProjection = {
   runs: CreditRun[];
 };
 
+type ObjectiveAttestation = {
+  problemId: string;
+  transactionId: string;
+  contributionId: string;
+  requestDigest: string;
+  verifier: { id: string; specDigest: string; implementation: string };
+  environmentDigest: string;
+  selectionStatus: "pending" | "passed" | "failed" | "error";
+  run: null | {
+    attestationId: string;
+    runDigest: string;
+    status: "passed" | "failed" | "error";
+    result: { status: string; exitCode: number | null; timedOut: boolean };
+    verifier: { id: string; specDigest: string; implementation: string };
+    environmentDigest: string;
+    producer: Record<string, unknown>;
+    stdout: { text: string; truncated: boolean; bytes: number; digest: string };
+    stderr: { text: string; truncated: boolean; bytes: number; digest: string };
+    record: Record<string, unknown>;
+  };
+};
+
 export type ViewerCatalog = {
   schemaVersion: number;
   repository: { slug: string; canonicalRef: string; projectionRef: string };
   projections: RepositoryProjection[];
   creditProjections?: RepositoryCreditProjection[];
   researchDirections?: ResearchDirectionLedger[];
+  objectiveAttestations?: ObjectiveAttestation[];
   defaultProjectionId: string | null;
 };
 
-type DetailMode = "node" | "transaction" | "judgment" | "credit" | "report" | "direction";
+type DetailMode = "node" | "transaction" | "judgment" | "verification" | "credit" | "report" | "direction";
 
 type ViewerState = {
   problemId?: string;
@@ -330,6 +353,21 @@ function isViewerCatalog(value: unknown): value is ViewerCatalog {
       Array.isArray(item?.directions),
     )
   );
+  const validAttestations = catalog.objectiveAttestations === undefined || (
+    Array.isArray(catalog.objectiveAttestations) &&
+    catalog.objectiveAttestations.every((item) =>
+      typeof item?.problemId === "string" &&
+      typeof item?.transactionId === "string" &&
+      typeof item?.requestDigest === "string" &&
+      ["pending", "passed", "failed", "error"].includes(item?.selectionStatus) &&
+      (item.run === null || (
+        typeof item.run?.runDigest === "string" &&
+        typeof item.run?.attestationId === "string" &&
+        typeof item.run?.stdout?.text === "string" &&
+        typeof item.run?.stderr?.text === "string"
+      )),
+    )
+  );
   return catalog.schemaVersion === 1 &&
     !!catalog.repository &&
     Array.isArray(catalog.projections) &&
@@ -339,7 +377,7 @@ function isViewerCatalog(value: unknown): value is ViewerCatalog {
       typeof projection?.problemId === "string" &&
       Array.isArray(projection?.data?.runs) &&
       projection.data.runs.length > 0,
-    ) && validCredits && validDirections;
+    ) && validCredits && validDirections && validAttestations;
 }
 
 export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: ViewerData }) {
@@ -358,6 +396,7 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
     projections: [fallbackProjection],
     creditProjections: [],
     researchDirections: [],
+    objectiveAttestations: [],
     defaultProjectionId: fallbackProjection.id,
   };
   const [catalog, setCatalog] = useState(fallbackCatalog);
@@ -427,6 +466,9 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
     (item) => item.runDigest === creditProjection.latestRunDigest,
   );
   const researchDirections = (catalog.researchDirections ?? []).find(
+    (item) => item.problemId === effectiveProblem,
+  );
+  const objectiveAttestations = (catalog.objectiveAttestations ?? []).filter(
     (item) => item.problemId === effectiveProblem,
   );
 
@@ -596,6 +638,7 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
         projectionId={projection.id}
         creditProjection={creditProjection}
         researchDirections={researchDirections}
+        objectiveAttestations={objectiveAttestations}
         viewerState={viewerState}
         onViewerStateChange={updateViewerState}
       />
@@ -692,6 +735,7 @@ export function KnowledgeViewer({
   projectionId,
   creditProjection,
   researchDirections,
+  objectiveAttestations,
   viewerState,
   onViewerStateChange,
 }: {
@@ -700,6 +744,7 @@ export function KnowledgeViewer({
   projectionId: string;
   creditProjection?: RepositoryCreditProjection;
   researchDirections?: ResearchDirectionLedger;
+  objectiveAttestations?: ObjectiveAttestation[];
   viewerState: ViewerState;
   onViewerStateChange(patch: Partial<ViewerState>): void;
 }) {
@@ -818,6 +863,9 @@ export function KnowledgeViewer({
   const selectedCreditAssignment = creditRun?.assignments.find(
     (item) => item.transactionId === transactionId,
   );
+  const selectedAttestation = objectiveAttestations?.find(
+    (item) => item.transactionId === transactionId,
+  );
   const transactionJudgments = selectedTransaction
     ? runJudgments.filter((item) => judgmentMentionsTransaction(item, selectedTransaction.transactionId))
     : [];
@@ -827,6 +875,7 @@ export function KnowledgeViewer({
     : selectedTransaction
     ? resolveTransactionDetailMode(viewerState.detailMode, {
       hasJudgment: transactionJudgments.length > 0,
+      hasVerification: Boolean(selectedAttestation),
       hasCredit: Boolean(selectedCreditAssignment),
     })
     : viewerState.detailMode === "report" ? "report" : "node";
@@ -842,9 +891,11 @@ export function KnowledgeViewer({
       transactionId,
       directionId: selectedDirection?.directionId,
       judgmentId: selectedTransaction ? selectedJudgment?.judgmentId : undefined,
-      detailMode,
+      detailMode: selectedTransaction
+        ? preferredTransactionDetailMode(viewerState.detailMode)
+        : detailMode,
     });
-  }, [creditProjection?.id, creditRun?.runDigest, detailMode, onViewerStateChange, problemId, projectionId, run.id, selectedDirection?.directionId, selectedJudgment?.judgmentId, selectedNode.id, selectedTransaction, transactionId]);
+  }, [creditProjection?.id, creditRun?.runDigest, detailMode, onViewerStateChange, problemId, projectionId, run.id, selectedDirection?.directionId, selectedJudgment?.judgmentId, selectedNode.id, selectedTransaction, transactionId, viewerState.detailMode]);
 
   const transactionDirectIds = useMemo(() => new Set(
     transactionId
@@ -1033,6 +1084,9 @@ export function KnowledgeViewer({
               const creditAssignment = creditRun?.assignments.find(
                 (item) => item.transactionId === transaction.transactionId,
               );
+              const attestation = objectiveAttestations?.find(
+                (item) => item.transactionId === transaction.transactionId,
+              );
               return (
                 <button
                   className={`transaction-card ${active ? "selected" : ""} ${available ? "" : "future"}`}
@@ -1061,6 +1115,11 @@ export function KnowledgeViewer({
                     {creditAssignment && (
                       <small className={`credit-badge significance-${creditAssignment.significance}`}>
                         credit · {creditAssignment.significance}
+                      </small>
+                    )}
+                    {attestation && (
+                      <small className={`verification-badge verification-${attestation.selectionStatus}`}>
+                        verification · {attestation.selectionStatus}
                       </small>
                     )}
                   </span>
@@ -1115,6 +1174,7 @@ export function KnowledgeViewer({
             <div className="detail-tabs detail-tabs-transaction" role="tablist" aria-label="Transaction details">
               <button role="tab" aria-selected={detailMode === "transaction"} onClick={() => onViewerStateChange({ detailMode: "transaction" })}>Submission</button>
               <button role="tab" aria-selected={detailMode === "judgment"} disabled={!transactionJudgments.length} onClick={() => onViewerStateChange({ detailMode: "judgment" })}>Judgment</button>
+              <button role="tab" aria-selected={detailMode === "verification"} disabled={!selectedAttestation} onClick={() => onViewerStateChange({ detailMode: "verification" })}>Verification</button>
               <button role="tab" aria-selected={detailMode === "credit"} disabled={!selectedCreditAssignment} onClick={() => onViewerStateChange({ detailMode: "credit" })}>Credit</button>
             </div>
           ) : (
@@ -1351,6 +1411,55 @@ export function KnowledgeViewer({
                 <summary>Structured judgment JSON</summary>
                 <pre>{JSON.stringify(selectedJudgment.record, null, 2)}</pre>
               </details>
+            </section>
+          ) : detailMode === "verification" && selectedAttestation && selectedTransaction ? (
+            <section className="artifact-detail verification-detail">
+              <span className="eyebrow">Objective verifier attestation · separate evidence</span>
+              <h2>{label(selectedTransaction.contributionId)}</h2>
+              <article className={`credit-lock-card ${selectedAttestation.selectionStatus === "passed" ? "current" : "stale"}`}>
+                <strong>{selectedAttestation.selectionStatus === "pending"
+                  ? "Verification requested"
+                  : `Verifier ${selectedAttestation.selectionStatus}`}</strong>
+                <span>A passing execution checks the encoded predicate, not the fidelity of its mathematical encoding.</span>
+              </article>
+              <div className="provenance-grid artifact-provenance">
+                <div><span>Verifier</span><strong>{selectedAttestation.verifier.id}</strong></div>
+                <div><span>Request</span><code>{short(selectedAttestation.requestDigest, 12)}</code></div>
+                <div><span>Verifier spec</span><code>{short(selectedAttestation.verifier.specDigest, 12)}</code></div>
+                <div><span>Environment</span><code>{short(selectedAttestation.environmentDigest, 12)}</code></div>
+                {selectedAttestation.run && <div><span>Attestation</span><code>{short(selectedAttestation.run.attestationId, 12)}</code></div>}
+                {selectedAttestation.run && <div><span>Published run</span><code>{short(selectedAttestation.run.runDigest, 12)}</code></div>}
+              </div>
+              {selectedAttestation.run ? (
+                <>
+                  <section className="finding-list">
+                    <div className="section-label"><h3>Execution result</h3><span>{selectedAttestation.run.result.status}</span></div>
+                    <article className="finding-card">
+                      <div>
+                        <span className={`stance stance-${selectedAttestation.run.result.status}`}>
+                          {selectedAttestation.run.result.status}
+                        </span>
+                        <code>exit {selectedAttestation.run.result.exitCode ?? "timeout"}</code>
+                      </div>
+                      <p>{selectedAttestation.run.result.timedOut ? "The governed verifier timed out." : "The governed verifier completed."}</p>
+                    </article>
+                  </section>
+                  <details className="raw-artifact" open>
+                    <summary>Verifier stdout · {selectedAttestation.run.stdout.bytes} bytes{selectedAttestation.run.stdout.truncated ? " · preview truncated" : ""}</summary>
+                    <pre>{selectedAttestation.run.stdout.text || "(empty)"}</pre>
+                  </details>
+                  <details className="raw-artifact">
+                    <summary>Verifier stderr · {selectedAttestation.run.stderr.bytes} bytes{selectedAttestation.run.stderr.truncated ? " · preview truncated" : ""}</summary>
+                    <pre>{selectedAttestation.run.stderr.text || "(empty)"}</pre>
+                  </details>
+                  <details className="raw-artifact structured-record">
+                    <summary>Structured attestation JSON</summary>
+                    <pre>{JSON.stringify(selectedAttestation.run.record, null, 2)}</pre>
+                  </details>
+                </>
+              ) : (
+                <p className="muted">The canonical request is waiting for its first trusted hosted execution.</p>
+              )}
             </section>
           ) : detailMode === "credit" && selectedCreditAssignment && creditRun && selectedTransaction ? (
             <section className="artifact-detail credit-detail">

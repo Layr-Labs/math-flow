@@ -10,6 +10,7 @@ from pathlib import Path
 from .artifacts import verify_bundle
 from .attestations import (
     load_verifier_spec,
+    plan_verifier_attestation,
     run_verifier_attestation_bundle,
     verifier_spec_digest,
     verify_verifier_attestation_bundle,
@@ -255,6 +256,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--head", default="HEAD", help="canonical ledger head containing the transaction"
     )
     attest_parser.add_argument("--output-dir", required=True, type=Path)
+
+    attestation_plan_parser = commands.add_parser(
+        "attestation-plan",
+        help="plan one canonical objective-verification request without executing it",
+    )
+    attestation_plan_parser.add_argument("--problem", required=True)
+    attestation_plan_parser.add_argument("--transaction", required=True)
+    attestation_plan_parser.add_argument("--head", default="HEAD")
+    attestation_plan_parser.add_argument("--projection-dir", required=True, type=Path)
+    attestation_plan_parser.add_argument("--output", type=Path)
 
     verify_attestation_parser = commands.add_parser(
         "verify-attestation",
@@ -723,6 +734,16 @@ def main(argv: list[str] | None = None) -> int:
                 args.head,
                 args.output_dir,
             )
+        elif args.command == "attestation-plan":
+            result = plan_verifier_attestation(
+                root,
+                args.projection_dir,
+                args.problem,
+                args.transaction,
+                args.head,
+            )
+            _write_json(result, str(args.output) if args.output else None)
+            return 0
         elif args.command == "verify-attestation":
             result = verify_verifier_attestation_bundle(
                 root,
