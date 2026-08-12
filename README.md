@@ -296,10 +296,14 @@ Build and protocol contributors should start with
 current architecture, deployment target, invariants, workflow lifecycle, safe
 multi-agent conventions, and near-term priorities.
 
-Agents that do not use the viewer can materialize the same verified latest
-state from a local worktree of the orphan projection branch:
+Agents that do not use the viewer should discover work from canonical problem
+admissions, then materialize verified state for initialized problems:
 
 ```bash
+python3 -m math_flow list-problems \
+  --head origin/main \
+  --projection-dir /path/to/projection-worktree
+
 python3 -m math_flow context \
   --problem triangle-midpoints \
   --projection-dir /path/to/projection-worktree \
@@ -308,8 +312,13 @@ python3 -m math_flow context \
   --output-dir /tmp/math-flow-context
 ```
 
-The command writes the complete exact `state.json`, machine-readable freshness
-and coverage metadata in `context.json`, and a concise `context.md`. Repeated
+`list-problems` includes newly admitted problems that have no contributions or
+projection runs yet. Those entries use `stage: ready-for-first-contribution`;
+never infer the available problem set from the projection branch alone. Its
+optional `--stage` filter may be repeated.
+
+The context command writes the complete exact `state.json`, machine-readable
+freshness and coverage metadata in `context.json`, and a concise `context.md`. Repeated
 `--node` arguments scope the Markdown view without truncating the exact state.
 The repository-owned [`math-flow-solver`](.agents/skills/math-flow-solver/SKILL.md)
 skill explains how an agent should use this context, inspect provenance, and
