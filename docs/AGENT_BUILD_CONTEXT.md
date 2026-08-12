@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-12 (`943082d`).
+Last reconciled with `main`: 2026-08-12 (`acd3ad6`).
 
 ## Product thesis
 
@@ -105,6 +105,10 @@ automatic squash merge to main
 
 - A primary judgment is immutable, content-addressed, and has no base knowledge
   state. Independent judgments must remain parallelizable.
+- The current OpenRouter judges have no shell, code interpreter, or tool calls.
+  They receive supported repository artifacts as quoted text and return model
+  output. Executable evidence must use a separately governed objective verifier;
+  its pinned, networkless attestation may then be supplied to a judge as evidence.
 - A reconciliation is a new judgment over an explicit conflict and its input
   judgments. It does not mutate either input and does not directly write state.
 - Opposed judgments must not be silently settled by the knowledge builder. They
@@ -205,13 +209,18 @@ reused the shared judgment stream and published the third research-program
 state. The current knowledge run is `sha256:7562b60b...`, its holistic state is
 `sha256:71b92511...`, and it covers canonical problem-ledger head `0ffe9a12`
 with no missing primary judgment or state representation.
-The deployed Sites viewer reads the Layr-Labs repository through its explicit
+The public Sites viewer at
+`https://math-flow-research-atlas.appromoximate.chatgpt.site` reads the
+Layr-Labs repository through its explicit
 `MATH_FLOW_CATALOG_URL` binding and a read-only organization token, so
 projection publication updates the UI
 without a viewer redeploy. Its top controls now group the knowledge projection
 and state selectors in one vertical control bubble and the credit projection
 and state selectors in a parallel bubble, with the problem selector to their
-left. Selector state remains URL-backed and repository-catalog-driven.
+left. Selector state remains URL-backed and repository-catalog-driven. A viewer
+following the current knowledge or credit head advances when a new terminal is
+published; an explicitly selected historical state remains pinned and exposes a
+control to return to the latest state.
 Its build chain is pinned to a zero-advisory npm resolution; the last compatible
 vinext release without the vulnerable transitive image parser is retained until
 that parser has an upstream patched release. Objective-verification requests
@@ -250,9 +259,10 @@ repository:
   second knowledge projection current. The cadence wake-up subsequently
   dispatched both credit overlays; registration-aware run `31570861867`
   published the current five-contribution terminal.
-- **Viewer and dependency chain:** Sites version 14 is deployed at the canonical
-  research-atlas URL with objective-verification presentation. The exact merged
-  viewer build, seven rendered tests, lint, and npm audit pass; the default
+- **Viewer and dependency chain:** public Sites version 15 is deployed at the
+  canonical research-atlas URL with objective-verification presentation and
+  follow-head semantics. The exact merged viewer build, nine rendered tests,
+  lint, and npm audit pass; the default
   branch has zero open Dependabot alerts and recent production worker logs have
   no errors.
 
@@ -286,6 +296,58 @@ The repository currently contains two problems:
 
 - `triangle-midpoints`, the initial correction/revision test fixture;
 - `no-three-in-line-77`, the more substantive active research problem.
+
+## Scale pilot: admit and seed new problems
+
+Adding a problem is a governed maintainer operation, not an atomic solver
+transaction. An agent assigned to add problems should follow the build/protocol
+agent rules in this document, use an isolated worktree from current
+`origin/main`, and read `docs/GOVERNANCE.md`. It should not present a new problem
+as a contribution or combine it with solver work.
+
+For each new problem:
+
+1. Choose a stable lowercase-hyphenated problem ID and write one self-contained
+   `problems/<problem-id>/problem.md`. State the exact objective and definitions,
+   known lower and upper bounds or baseline results, admissible artifact types,
+   and authoritative references. Clearly distinguish established background
+   from the open target. Prefer problems with several separable research
+   programs and small independently checkable intermediate claims.
+2. Open one PR containing exactly that one new file. Do not batch several
+   problems, a projection spec, a verifier, or a seed contribution into the same
+   PR. Run `python3 -m math_flow validate-tree`, the complete unit suite, and
+   `git diff --check`; the hosted admission check validates the exact one-file
+   shape against trusted base-branch code.
+3. Report the PR's full 40-character head SHA to an allowlisted administrator.
+   The administrator may approve the current head with the exact comment
+   `/approve-admission <full-head-SHA>`. Governed admissions are intentionally
+   not handled by the participant auto-merger, so a maintainer must merge the
+   green problem PR. Any new commit requires a fresh head-bound approval.
+4. Treat the merged problem as an empty namespace. It does not trigger a paid
+   judgment, knowledge formation, or credit run, and it will not have a
+   selectable knowledge state in the atlas until a contribution is merged and a
+   projection is published.
+5. The active `openrouter-research-v1` projection has
+   `allowedProblems: ["*"]`, so no projection admission is required for the
+   baseline scale pilot. The first valid contribution to the new problem will
+   auto-merge and dispatch the baseline plus that OpenRouter judgment/knowledge
+   pipeline. A specialized research-program builder or credit policy is a
+   separate one-file governed projection PR and should be added only when the
+   experiment calls for it.
+6. After admission, hand the exact problem ID to solver agents and require them
+   to follow `.agents/skills/math-flow-solver/SKILL.md`. Each solver must create
+   its own worktree and submit exactly one contribution or direction event per
+   PR. The first contribution can optionally declare an already admitted
+   objective verifier; adding a new verifier implementation is a separate
+   maintainer change.
+
+Start the paid pilot in a bounded wave rather than admitting and seeding every
+candidate simultaneously. A useful first observation point is a few new
+problems with a few independent contributions each: verify automatic merges,
+per-problem judgment fan-out, cross-problem publication, retry behavior,
+`math_flow context` coverage, and public-atlas discovery before increasing the
+wave size. Problem admission itself is provider-free; merged contributions are
+the events that begin paid judging.
 
 ## Hosted workflow lifecycle
 
