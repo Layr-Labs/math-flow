@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-11 (`bbd2447`).
+Last reconciled with `main`: 2026-08-11 (`ca452e7`).
 
 ## Product thesis
 
@@ -381,25 +381,30 @@ These are the most important gaps as of this document's reconciliation date:
    implemented. Cap retained verifier output, then add trusted post-merge hosted
    dispatch, authenticated catalog discovery, and viewer/context presentation
    before treating attestations as automatic platform evidence.
-2. **Run the hosted scale pilot.** The provider-free congestion probe now covers
+2. **Refresh the viewer build dependency chain.** Dependabot currently reports
+   38 open npm advisories, including 24 high-severity alerts, across development
+   and build dependencies. Replace the stale failing grouped update with a
+   current minimal upgrade, verify the Sites build output, and keep all action
+   pins and deployment behavior compatible with the organization constraints.
+3. **Run the hosted scale pilot.** The provider-free congestion probe now covers
    scheduler, retry, merge, chunking, viewer, and context invariants locally.
    Admit several real problems with simultaneous solver contributions to
    measure GitHub runner/API congestion and confirm the same behavior on the
    organization repository without changing the protocol under load.
-3. **Exercise natural reconciliation.** The controlled paid smoke run succeeded
+4. **Exercise natural reconciliation.** The controlled paid smoke run succeeded
    without publication. The remaining operational proof is a real opposed
    primary set flowing through automatic reconciliation, formation, publication,
    viewer discovery, and agent context without special fixture inputs.
-4. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
+5. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
    exact UTC transaction windows, and predecessor-chain terminals are now
    implemented, while the admitted example remains qualitative and non-zero-sum.
    A future runner can allocate a finite hourly/daily award without changing
    the scheduling envelope. Strict boundary-time knowledge would additionally
    require historical dependency resolution.
-5. **Improve GitHub identity and contributor UX.** A GitHub App can record stable
+6. **Improve GitHub identity and contributor UX.** A GitHub App can record stable
    user identity, add richer PR summaries and projection links, and scaffold
    valid contribution directories.
-6. **Harden organization operations.** Exercise admission approval, signer and
+7. **Harden organization operations.** Exercise admission approval, signer and
    projection-publication recovery with multiple maintainers; document secret
    rotation and disaster recovery; and remove temporary migration branches once
    the organization deployment has remained stable.
