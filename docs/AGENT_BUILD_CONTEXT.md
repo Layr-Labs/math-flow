@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-11 (`0aecc95`).
+Last reconciled with `main`: 2026-08-11 (`bbd2447`).
 
 ## Product thesis
 
@@ -20,9 +20,17 @@ holistic knowledge states, and eventually credit. A judge may revisit an earlier
 conclusion when later evidence appears, but it does so by appending a revision;
 published history is never rewritten.
 
-The current deployment target is the private personal repository
-`mooselumph/math-flow`. Do not push to `Layr-Labs/math-flow` until the owner
-explicitly switches the project back after organization access is ready.
+The canonical deployment target is the private organization repository
+`Layr-Labs/math-flow`. The former pilot repository, `mooselumph/math-flow`, is
+retained as a fallback remote named `personal`; its scheduled projection wake-up
+is disabled and it must not receive new canonical solver or protocol work.
+
+The organization `main` branch requires the `Admin admission approval` check,
+applies the repository's pull-request protections to administrators, and is
+covered by the active all-branch signed-commit ruleset. The one-time migration
+join is the verified signed commit `bbd2447`. The orphan `projections` branch
+contains the union of the former organization and personal pilot artifacts, and
+the repository-backed viewer reads its Layr-Labs catalog with a read-only token.
 
 ## System map
 
@@ -163,15 +171,18 @@ The approved hosted projections are:
   as its exact dependency;
 - `openrouter-no-three-in-line-credit-directions-v2`, the registration-aware
   qualitative overlay admitted in PR #29, with the same exact knowledge
-  dependency and a one-hour rolling minimum interval. It is currently disabled
-  by PR #31 pending explicit approval to send canonical contribution evidence,
-  the locked knowledge state, and the direction-event ledger to OpenRouter.
+  dependency and a one-hour rolling minimum interval. It is active; repository
+  evidence, its locked knowledge dependency, and the direction-event ledger are
+  approved inputs to its OpenRouter runner.
 
 The `openrouter-credit-assignment-v2` runner/profile embeds the verified
 direction-event ledger and lets assignments cite exact prior canonical
 `register` transactions. Credit v1 remains active and immutable for comparison;
-agents and viewers must select the intended overlay explicitly. The v2 projection
-has no authoritative run until its first eligible hosted execution succeeds.
+agents and viewers must select the intended overlay explicitly. Credit v2 has a
+current authoritative run (`sha256:4711f727...`) covering the four accepted
+`no-three-in-line-77` contributions. Its assignment for the finite-rotation
+classification proof cites the exact prior registration transaction
+`a9552d14...`.
 
 Their judges and builders are pinned to `openai/gpt-5.6-sol` with high reasoning
 through OpenRouter. The current registry allows at most 16 parallel judgment or
@@ -184,8 +195,9 @@ conflicts, skipped both paid judgment stages, and produced a 16-node state with
 two top-level programs: known-record certification/local perturbation, and
 rotational symmetry/rct4 modeling. Its state run digest is
 `sha256:8e1bfea136ad3b78c2720269e984b5f807179533ea8a1b112952fc41a34b31df`.
-The deployed Sites viewer reads the personal repository through its explicit
-`MATH_FLOW_CATALOG_URL` binding, so projection publication updates the UI
+The deployed Sites viewer reads the Layr-Labs repository through its explicit
+`MATH_FLOW_CATALOG_URL` binding and a read-only organization token, so
+projection publication updates the UI
 without a viewer redeploy. Its top controls now group the knowledge projection
 and state selectors in one vertical control bubble and the credit projection
 and state selectors in a parallel bubble, with the problem selector to their
@@ -298,7 +310,8 @@ current knowledge or scoring from the checked-in viewer fallback file.
 
 ### Build and protocol agents
 
-1. Start from the current personal-repository `main`.
+1. Start from the current `Layr-Labs/math-flow` `main`. In the maintained local
+   checkout this is `origin/main`; `personal/main` is historical fallback state.
 2. Read this document, then only the detailed references relevant to the task.
 3. Inspect `git status` before editing. Existing changes belong to another agent
    or the owner unless explicitly assigned.
@@ -345,7 +358,7 @@ python3 -m math_flow context --help
 python3 -m math_flow context \
   --problem no-three-in-line-77 \
   --projection openrouter-no-three-in-line-research-programs-v2 \
-  --credit-projection openrouter-no-three-in-line-credit-v1 \
+  --credit-projection openrouter-no-three-in-line-credit-directions-v2 \
   --head origin/main \
   --projection-dir <detached-projections-worktree> \
   --output-dir <new-empty-context-directory>
@@ -359,31 +372,29 @@ the task requires an end-to-end check.
 
 These are the most important gaps as of this document's reconciliation date:
 
-1. **Exercise registration end to end.** The runtime and governed credit-v2
-   projection are admitted. After the provider-data approval above, enable v2 in
-   a one-file governed PR. Then submit `register` → contribution → `complete`,
-   verify the provider-free catalog refresh after direction events, and confirm
-   that a later v2 credit run cites only exact canonically prior registrations.
-   Keep credit v1 readable and avoid treating registration as exclusivity.
-2. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
+1. **Exercise paid hosted reconciliation.** The hosted planner and no-conflict
+   path are live, but a genuine opposed primary set has not yet generated and
+   published a paid reconciliation artifact end to end.
+2. **Add durable objective attestations.** Lean, exact certificate checkers, and
+   reproducible computation should become content-addressed evidence with pinned
+   environments rather than only ephemeral CI checks.
+3. **Scale-test independent problems and solvers.** Admit several problems with
+   simultaneous solver contributions and verify judgment isolation, durable
+   wake-up/retry behavior, chunked publication, and viewer/context discovery on
+   the organization repository.
+4. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
    exact UTC transaction windows, and predecessor-chain terminals are now
    implemented, while the admitted example remains qualitative and non-zero-sum.
    A future runner can allocate a finite hourly/daily award without changing
    the scheduling envelope. Strict boundary-time knowledge would additionally
    require historical dependency resolution.
-3. **Add durable objective attestations.** Lean, exact certificate checkers, and
-   reproducible computation should become content-addressed evidence with pinned
-   environments rather than only ephemeral CI checks.
-4. **Exercise paid hosted reconciliation.** The hosted planner and no-conflict
-   path are live, but a genuine opposed primary set has not yet generated a paid
-   reconciliation artifact in the repository workflow.
 5. **Improve GitHub identity and contributor UX.** A GitHub App can record stable
    user identity, add richer PR summaries and projection links, and scaffold
    valid contribution directories.
-6. **Exercise governance on an organization plan.** The personal repository is
-   the current test target. Required checks, CODEOWNER review, bypass controls,
-   and projection-branch restrictions must be configured when organization
-   access becomes available.
+6. **Harden organization operations.** Exercise admission approval, signer and
+   projection-publication recovery with multiple maintainers; document secret
+   rotation and disaster recovery; and remove temporary migration branches once
+   the organization deployment has remained stable.
 
 ### Research direction registration MVP
 
@@ -436,6 +447,12 @@ revalidation pattern as solver contributions. It refreshes the repository-backed
 catalog without dispatching a mathematical or paid projection. Direction
 registration introduces no locks, exclusive claims, or requirement to register
 before submitting mathematics.
+
+The first complete hosted lifecycle is now canonical: registration `a9552d14`,
+proof contribution `29ccbd39`, and completion event `bbf27430`. The current
+registration-aware credit-v2 run links the proof's assignment back to that exact
+prior registration, while the mathematical knowledge projection remains
+independent of the credit result.
 
 GitHub currently emits a non-blocking Node 20 deprecation annotation for the
 account-required `actions/checkout@v5` and `actions/setup-python@v5`; GitHub is
