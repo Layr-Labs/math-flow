@@ -161,7 +161,7 @@ automatic squash merge to main
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Governed local/hosted runner, provider-free eligibility planner, bounded semantic retries, rolling coalescing, catch-up over closed UTC periods, predecessor-chain terminals, and independent `credit-assignment` bundles implemented | `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
 | Research direction registration | Implemented and merged in PR #28: append-only schema/reducer, atomic validation and auto-merge, provider-free CLI/context/catalog refresh, solver skill, viewer, and registration-aware credit v2 | `math_flow/directions.py`, `protocol/schemas/research-direction-event.schema.json`, `viewer/` |
-| Objective verifier attestations | Not yet implemented as durable protocol artifacts | `docs/MVP.md` |
+| Objective verifier attestations | Additive v1 recipe, pinned OCI runner, durable bundle, semantic validation, replay, and publication interface implemented; hosted dispatch/viewer discovery pending | `math_flow/attestations.py`, `docs/OBJECTIVE_ATTESTATIONS.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
 
 The approved hosted projections are:
@@ -376,17 +376,20 @@ the task requires an end-to-end check.
 
 These are the most important gaps as of this document's reconciliation date:
 
-1. **Exercise paid hosted reconciliation.** The hosted planner and no-conflict
-   path are live, but a genuine opposed primary set has not yet generated and
-   published a paid reconciliation artifact end to end.
-2. **Add durable objective attestations.** Lean, exact certificate checkers, and
-   reproducible computation should become content-addressed evidence with pinned
-   environments rather than only ephemeral CI checks.
-3. **Run the hosted scale pilot.** The provider-free congestion probe now covers
+1. **Operate durable objective attestations.** The content-addressed recipe,
+   pinned OCI execution, replay, validation, and publication interfaces are
+   implemented. Cap retained verifier output, then add trusted post-merge hosted
+   dispatch, authenticated catalog discovery, and viewer/context presentation
+   before treating attestations as automatic platform evidence.
+2. **Run the hosted scale pilot.** The provider-free congestion probe now covers
    scheduler, retry, merge, chunking, viewer, and context invariants locally.
    Admit several real problems with simultaneous solver contributions to
    measure GitHub runner/API congestion and confirm the same behavior on the
    organization repository without changing the protocol under load.
+3. **Exercise natural reconciliation.** The controlled paid smoke run succeeded
+   without publication. The remaining operational proof is a real opposed
+   primary set flowing through automatic reconciliation, formation, publication,
+   viewer discovery, and agent context without special fixture inputs.
 4. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
    exact UTC transaction windows, and predecessor-chain terminals are now
    implemented, while the admitted example remains qualitative and non-zero-sum.

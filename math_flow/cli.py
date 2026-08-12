@@ -8,6 +8,12 @@ import time
 from pathlib import Path
 
 from .artifacts import verify_bundle
+from .attestations import (
+    load_verifier_spec,
+    run_verifier_attestation_bundle,
+    verifier_spec_digest,
+    verify_verifier_attestation_bundle,
+)
 from .coordination import (
     claim_due_build,
     complete_build,
@@ -79,6 +85,12 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser(
         "validate-projections", help="validate the approved projection registry"
     )
+
+    verifier_digest_parser = commands.add_parser(
+        "verifier-spec-digest",
+        help="validate a verifier spec and print its canonical content digest",
+    )
+    verifier_digest_parser.add_argument("--verifier", required=True, type=Path)
 
     resolve_projection_parser = commands.add_parser(
         "resolve-projection",
@@ -229,6 +241,31 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument("--output-dir", required=True, type=Path)
     run_parser.add_argument(
         "--base-run", type=Path, help="previous hierarchical judge-run bundle to update"
+    )
+
+    attest_parser = commands.add_parser(
+        "attest",
+        help="execute a contribution's pinned OCI verifier and write an attestation bundle",
+    )
+    attest_parser.add_argument("--problem", required=True)
+    attest_parser.add_argument(
+        "--transaction", required=True, help="canonical contribution transaction commit"
+    )
+    attest_parser.add_argument(
+        "--head", default="HEAD", help="canonical ledger head containing the transaction"
+    )
+    attest_parser.add_argument("--output-dir", required=True, type=Path)
+
+    verify_attestation_parser = commands.add_parser(
+        "verify-attestation",
+        help="verify a durable verifier attestation and optionally replay its OCI command",
+    )
+    verify_attestation_parser.add_argument("--bundle", required=True, type=Path)
+    verify_attestation_parser.add_argument(
+        "--head", default="HEAD", help="current canonical head used for stale-subject checks"
+    )
+    verify_attestation_parser.add_argument(
+        "--replay", action="store_true", help="rerun the pinned OCI verifier and compare bytes"
     )
 
     judgment_parser = commands.add_parser(
@@ -555,6 +592,9 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         elif args.command == "validate-projections":
             result = validate_projection_registry(root)
+        elif args.command == "verifier-spec-digest":
+            spec = load_verifier_spec(args.verifier)
+            result = {"id": spec["id"], "digest": verifier_spec_digest(spec)}
         elif args.command == "resolve-projection":
             result = resolve_projection(
                 root, args.projection, args.problem, args.head
@@ -675,6 +715,21 @@ def main(argv: list[str] | None = None) -> int:
             )
             _write_json(result, None)
             return 0
+        elif args.command == "attest":
+            result = run_verifier_attestation_bundle(
+                root,
+                args.problem,
+                args.transaction,
+                args.head,
+                args.output_dir,
+            )
+        elif args.command == "verify-attestation":
+            result = verify_verifier_attestation_bundle(
+                root,
+                args.bundle,
+                args.head,
+                replay=args.replay,
+            )
         elif args.command == "judgment":
             result = run_primary_judgment_bundle(
                 root,

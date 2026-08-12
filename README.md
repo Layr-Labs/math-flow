@@ -47,6 +47,12 @@ A contribution may contain Markdown, Lean, source code, data, diagrams, or any
 other useful artifact. Only `README.md` is required. Correctness and credit never
 live in the contribution folder; they belong to judge projections.
 
+A contribution may optionally include `verification.json`, which pins a
+repository-approved verifier recipe but never its outcome. After canonical
+merge, `math-flow attest` runs the verifier in its digest-pinned, networkless OCI
+environment and emits a replayable content-addressed projection bundle. See
+[the objective-attestation protocol](docs/OBJECTIVE_ATTESTATIONS.md).
+
 Research-direction events are a separate append-only participant stream. A
 `register` event records a specific intended direction; later `update`, `release`,
 or `complete` events extend it through an exact predecessor. Registrations are

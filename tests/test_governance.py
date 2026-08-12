@@ -558,6 +558,24 @@ class CurrentRegistryTests(unittest.TestCase):
         self.assertNotIn("git ls-remote", refresh)
         self.assertNotIn("OPENROUTER_API_KEY", refresh)
 
+    def test_hosted_reconciliation_smoke_is_main_bound_and_non_publishing(self) -> None:
+        root = Path(__file__).parents[1]
+        workflow = (
+            root / ".github/workflows/hosted-reconciliation-smoke.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn('GITHUB_REF" != "refs/heads/main', workflow)
+        self.assertIn("RUN_HOSTED_RECONCILIATION_SMOKE", workflow)
+        self.assertIn("permissions:\n      contents: read", workflow)
+        self.assertIn("math_flow.hosted_reconciliation_smoke", workflow)
+        self.assertIn("reconciliation-plan-before.json", workflow)
+        self.assertIn("reconciliation-plan-after.json", workflow)
+        self.assertIn("Retain the complete smoke-test evidence", workflow)
+        self.assertNotIn("contents: write", workflow)
+        self.assertNotIn("knowledge-trigger", workflow)
+        self.assertNotIn("knowledge-build", workflow)
+        self.assertNotIn("publish-batch", workflow)
+        self.assertNotIn("github-publish-projection", workflow)
+
 
 if __name__ == "__main__":
     unittest.main()

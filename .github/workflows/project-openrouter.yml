@@ -31,7 +31,9 @@ concurrency:
   # the later profile reuses the first profile's published judgments instead of
   # duplicating provider calls. Formation itself is still leased per projection
   # lane, and publication optimistically merges disjoint lanes.
-  group: "openrouter-judgment-${{ inputs.problem }}-${{ inputs.judgment_stream_id || inputs.projection }}"
+  # Automatic callers supply the governed stream digest. Manual or legacy
+  # callers omit it and conservatively serialize at the problem boundary.
+  group: "openrouter-judgment-${{ inputs.problem }}-${{ inputs.judgment_stream_id || inputs.problem }}"
   cancel-in-progress: false
 
 env:

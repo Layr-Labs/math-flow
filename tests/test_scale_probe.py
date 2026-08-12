@@ -80,7 +80,7 @@ class ProviderFreeScaleProbeTests(unittest.TestCase):
             encoding="utf-8"
         )
 
-        self.assertIn("inputs.judgment_stream_id || inputs.projection", projection)
+        self.assertIn("inputs.judgment_stream_id || inputs.problem", projection)
         self.assertIn(
             'judgment_stream_id does not match the governed primary judge.',
             projection,
