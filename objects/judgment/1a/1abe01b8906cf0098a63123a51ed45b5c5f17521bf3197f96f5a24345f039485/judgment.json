@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+  "problemLedgerDigest": "sha256:19f6c665fde2bc17b138f06566def8a8901d35b2f952061f4ddcfdb95b04b2bc",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+      "ledgerPosition": 5
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line/g76-152-point-set",
+      "stance": "supports",
+      "summary": "The supplied encoded configuration is strongly supported as representing 152 distinct points of G_76 with no three collinear by a complete, reproducible exact integer verifier. The transaction supplies an executable certificate rather than an execution attestation, and the checker infers rather than hard-codes the intended size and count, neither of which undermines soundness for the pinned artifact.",
+      "subjectTransactionIds": [
+        "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+      ],
+      "evidenceTransactionIds": [
+        "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/d77-lower-bound-152",
+      "stance": "supports",
+      "summary": "The transaction supports D(77) >= 152, conditional only on the described executable certificate verification: the verified 152-point subset of G_76 embeds unchanged into G_77. This re-verifies the existing lower bound and does not improve it.",
+      "subjectTransactionIds": [
+        "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+      ],
+      "evidenceTransactionIds": [
+        "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/g76-152-certificate-hosted-replay-acceptance",
+      "stance": "uncertain",
+      "summary": "Acceptance of the pinned checker and certificate in the specified governed hosted-verifier environment is not established. The transaction provides a verification request but no attestation, exit status, execution transcript, or hosted output; the external schema and binding rules also cannot be independently adjudicated from the supplied evidence. A future hosted run would provide execution independence, not algorithmic independence.",
+      "subjectTransactionIds": [
+        "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+      ],
+      "evidenceTransactionIds": [
+        "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/g76-152-certificate-artifact-identity-and-provenance",
+      "stance": "qualifies",
+      "summary": "The displayed configuration and verifier support that the subject republishes the earlier mathematical artifacts unchanged in substance, although strict byte-for-byte identity is not independently shown by a checksum. The provenance component is contradicted: the README names dfc0cc40d1193b8d5ca25e7f177fa48ff9a1b38d, while the supplied earlier baseline record is dfc0cc40d41105292a119840dcdbe6f22860cf43. This clerical error does not affect the certificate or lower-bound implication but should be corrected.",
+      "subjectTransactionIds": [
+        "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+      ],
+      "evidenceTransactionIds": [
+        "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/d77-exact-value",
+      "stance": "refutes",
+      "summary": "The transaction does not determine D(77) or improve the certified interval: it supplies neither a 153- or 154-point certificate, nor an exclusion proof, nor a new upper-bound argument. The supported state remains 152 <= D(77) <= 154, so the exact value is unresolved by this transaction.",
+      "subjectTransactionIds": [
+        "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+      ],
+      "evidenceTransactionIds": [
+        "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:529d59c621060d2c14c7a2fa5bf61a3053181720d6ad23d1697a6690c5b1490c",
+  "judgmentId": "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a"
+}
