@@ -549,6 +549,11 @@ class CurrentRegistryTests(unittest.TestCase):
         self.assertIn("export-viewer-catalog", refresh)
         self.assertIn("--canonical-ref refs/remotes/origin/main", refresh)
         self.assertIn("github-publish-projection", refresh)
+        self.assertIn(
+            "if ! git fetch origin +refs/heads/projections:refs/remotes/origin/projections",
+            refresh,
+        )
+        self.assertNotIn("git ls-remote", refresh)
         self.assertNotIn("OPENROUTER_API_KEY", refresh)
 
 

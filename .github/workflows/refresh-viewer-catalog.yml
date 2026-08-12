@@ -29,11 +29,14 @@ jobs:
           set -euo pipefail
           for attempt in {1..8}; do
             git fetch origin +refs/heads/main:refs/remotes/origin/main
-            if ! git ls-remote --exit-code origin refs/heads/projections >/dev/null 2>&1; then
-              echo "The projections branch does not exist yet." >&2
-              exit 1
+            if ! git fetch origin +refs/heads/projections:refs/remotes/origin/projections; then
+              if [[ "$attempt" -eq 8 ]]; then
+                echo "Could not fetch the projections branch after ${attempt} attempts." >&2
+                exit 1
+              fi
+              sleep $((attempt * 2))
+              continue
             fi
-            git fetch origin +refs/heads/projections:refs/remotes/origin/projections
             projection_dir="${RUNNER_TEMP}/viewer-catalog-${attempt}"
             git worktree add --detach "$projection_dir" refs/remotes/origin/projections
             python -m math_flow export-viewer-catalog \
