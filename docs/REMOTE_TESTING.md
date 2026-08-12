@@ -51,6 +51,11 @@ completed batch, publishes the verified bundles and scheduler state to the
 orphan `projections` branch, and refreshes `viewer/catalog.json`. Manual
 dispatch remains available for recovery and replay.
 
+Before it trusts a reconciliation request, the runner re-derives the conflict
+from the supplied immutable primary bundles and requires an exact match. A
+content-addressed but forged or stale conflict record therefore fails before a
+provider call.
+
 If judgments succeed but a later formation or publication step fails, keep the
 original run. After correcting the downstream failure, dispatch the workflow
 again with the same projection and problem and set `resume_run_id` to that
@@ -70,7 +75,44 @@ viewer production-build, rendered-HTML, and lint checks on relevant pushes and
 pull requests. The baseline judge continues to discover affected problems, so
 unrelated problem pushes do not fan out projection jobs.
 
-## 5. Exercise the real transaction boundary
+## 5. Exercise hosted reconciliation without publishing test state
+
+`Hosted reconciliation smoke test` exercises the production conflict planner,
+the pinned OpenRouter reconciliation runner, and post-call artifact verification
+without publishing its deliberately fallible primary fixtures. It has read-only
+repository permissions and contains no scheduler, formation, or projection
+publication step. It must run from canonical `main` and requires an explicit
+spend confirmation:
+
+```bash
+gh workflow run hosted-reconciliation-smoke.yml \
+  --repo Layr-Labs/math-flow \
+  --ref main \
+  -f confirmation=RUN_HOSTED_RECONCILIATION_SMOKE
+```
+
+Find and watch the dispatched run, then download its complete retained evidence:
+
+```bash
+gh run list \
+  --repo Layr-Labs/math-flow \
+  --workflow hosted-reconciliation-smoke.yml \
+  --limit 1
+gh run watch <run-id> --repo Layr-Labs/math-flow --exit-status
+gh run download <run-id> \
+  --repo Layr-Labs/math-flow \
+  --name hosted-reconciliation-smoke-<run-id> \
+  --dir /tmp/math-flow-hosted-reconciliation-smoke
+```
+
+The job summary names the verified claim key, conflict ID, reconciliation
+judgment ID, outcome, and run digest. The retained artifact also includes all
+four primary bundles, the exact conflict record, plans from before and after the
+call, and the raw reconciliation report and record. Fixture manifests identify
+their resolved model as `fixture/deterministic-primary`; they are not canonical
+judgments or knowledge-state inputs.
+
+## 6. Exercise the real transaction boundary
 
 Create a branch that adds one new contribution directory, open a pull request, and
 confirm `Validate transaction` passes. Also try a deliberately invalid PR that
