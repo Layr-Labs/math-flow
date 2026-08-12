@@ -2,7 +2,7 @@
 
 import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { collectProgramContributionIds } from "./programContributions.mjs";
-import { creditRunSelectionPatch, historicalOverlaySelection, knowledgeRunSelectionPatch, latestOverlaySelectionPatch, publishedHeadSelectionPatch } from "./projectionHeadState.mjs";
+import { creditRunSelectionPatch, historicalOverlaySelection, knowledgeRunSelectionPatch, latestOverlaySelectionPatch, projectionByIdentity, publishedHeadSelectionPatch } from "./projectionHeadState.mjs";
 import { createViewerReferenceResolver } from "./referenceLinks.mjs";
 import { preferredTransactionDetailMode, resolveTransactionDetailMode } from "./transactionDetailMode.mjs";
 import { applyViewerStateToSearch, parseViewerState } from "./viewerState.mjs";
@@ -460,7 +460,11 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
   }, [updateViewerState]);
 
   const problems = [...new Set(catalog.projections.map((item) => item.problemId))].sort();
-  const requestedProjection = catalog.projections.find((item) => item.id === viewerState.projectionId);
+  const requestedProjection = projectionByIdentity(
+    catalog,
+    viewerState.problemId,
+    viewerState.projectionId,
+  ) as RepositoryProjection | null;
   const preferredProjection = catalog.projections.find((item) => item.id === catalog.defaultProjectionId) ?? catalog.projections[0];
   const effectiveProblem = requestedProjection?.problemId ??
     (viewerState.problemId && problems.includes(viewerState.problemId) ? viewerState.problemId : preferredProjection.problemId);
@@ -513,7 +517,7 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
   }
 
   function chooseProjection(nextProjectionId: string) {
-    const nextProjection = catalog.projections.find((item) => item.id === nextProjectionId);
+    const nextProjection = problemProjections.find((item) => item.id === nextProjectionId);
     if (!nextProjection) return;
     updateViewerState({
       problemId: nextProjection.problemId,
