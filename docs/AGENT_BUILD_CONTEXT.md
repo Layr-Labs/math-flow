@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-12 (`acd3ad6`).
+Last reconciled with `main`: 2026-08-12 (`a7acd1e`).
 
 ## Product thesis
 
@@ -127,8 +127,9 @@ automatic squash merge to main
   run concurrently. Construction of a given `(problem, projection)` knowledge
   chain is single-writer and serialized.
 - Formation may be triggered by completed judgments but should coalesce work and
-  obey a configurable minimum interval. The active example projection currently
-  sets that interval to zero for MVP testing.
+  obey a configurable minimum interval. The wildcard default projection uses a
+  five-minute minimum interval; a newly created lane can run immediately, while
+  later inputs arriving inside the interval are coalesced.
 - Retroactive changes append `issue`, `revise`, `retract`, or `reinstate`
   revisions with base digest/revision guards. Old runs remain reproducible.
 
@@ -171,7 +172,9 @@ automatic squash merge to main
 
 The approved hosted projections are:
 
-- `openrouter-research-v1`, the original holistic knowledge profile;
+- `openrouter-research-v1`, the wildcard default knowledge projection. It uses
+  the neutral research-program v2 builder and a five-minute formation interval
+  for every admitted problem with a nonempty canonical ledger;
 - `openrouter-no-three-in-line-research-programs-v2`, a knowledge-only profile
   for `no-three-in-line-77` that reuses the same immutable primary and
   reconciliation judgments while prioritizing independent research programs;
@@ -197,6 +200,18 @@ Their judges and builders are pinned to `openai/gpt-5.6-sol` with high reasoning
 through OpenRouter. The current registry allows at most 16 parallel judgment or
 reconciliation jobs and 500 dependency-connected judgments in one formation
 batch.
+
+The wildcard migration was admitted in PR #30 and published fresh hosted lanes
+in runs `31631314014` (`no-three-in-line-77`) and `31631317377`
+(`triangle-midpoints`). Both runs reused the existing verified judgment streams
+and paid only for knowledge formation. Their current wildcard run digests are
+`sha256:b9e01286...` and `sha256:974fa19e...`, respectively. The no-three state
+has three top-level programs (certificates/occupancy, record perturbation, and
+symmetry-restricted analysis); the triangle state has one top-level area
+program. The specialized no-three research-program projection remains active
+as a separate historical/experimental chain because both credit overlays still
+declare it as their exact knowledge dependency. No wildcard default credit
+overlay has been admitted.
 
 The first research-program build published successfully in hosted run
 `31519191523`. It reused all three existing primary judgments, found no current
@@ -328,12 +343,12 @@ For each new problem:
    selectable knowledge state in the atlas until a contribution is merged and a
    projection is published.
 5. The active `openrouter-research-v1` projection has
-   `allowedProblems: ["*"]`, so no projection admission is required for the
-   baseline scale pilot. The first valid contribution to the new problem will
-   auto-merge and dispatch the baseline plus that OpenRouter judgment/knowledge
-   pipeline. A specialized research-program builder or credit policy is a
-   separate one-file governed projection PR and should be added only when the
-   experiment calls for it.
+   `allowedProblems: ["*"]`, uses the research-program v2 builder, and has a
+   five-minute formation interval, so no projection admission is required for
+   the baseline scale pilot. The first valid contribution to the new problem
+   will auto-merge and dispatch that OpenRouter judgment/knowledge pipeline. A
+   specialized knowledge or credit policy is a separate one-file governed
+   projection PR and should be added only when the experiment calls for it.
 6. After admission, hand the exact problem ID to solver agents and require them
    to follow `.agents/skills/math-flow-solver/SKILL.md`. Each solver must create
    its own worktree and submit exactly one contribution or direction event per
