@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "subject": {
+    "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+    "contributionId": "fredricksen-sweet-536-certificate",
+    "path": "problems/schur-number-6/contributions/fredricksen-sweet-536-certificate"
+  },
+  "verifier": {
+    "id": "python-stdlib-3-13-v1",
+    "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "implementation": "oci-command-v1"
+  },
+  "environment": {
+    "kind": "oci",
+    "image": "python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689",
+    "platform": "linux/amd64",
+    "network": "none",
+    "readOnlyRoot": true,
+    "user": "65534:65534",
+    "capabilities": [],
+    "noNewPrivileges": true,
+    "memoryBytes": 536870912,
+    "cpuCount": 1,
+    "pidsLimit": 128,
+    "tmpfsBytes": 67108864
+  },
+  "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+  "requestDigest": "sha256:c5e24083c93a7ae7dc72c470edf7377b9cf0b70b2828f7cb2a0f2440408fbba3",
+  "inputs": [
+    {
+      "path": "README.md",
+      "digest": "sha256:839f58ac1e85573a1c7405817cbd29078da06a3d7fd38b9d7ba085d611a3b311",
+      "bytes": 4390
+    },
+    {
+      "path": "coloring.csv",
+      "digest": "sha256:5e2cd4854c20e8441ff52e09e02472657309d35eb4b35c6957a1be37f6a8cbc9",
+      "bytes": 3122
+    },
+    {
+      "path": "published-symmetric.json",
+      "digest": "sha256:fea957ad25c5a678a458fd9e344af2dc72dc0244fbc681f88bc01d28220021c8",
+      "bytes": 1462
+    },
+    {
+      "path": "verification.json",
+      "digest": "sha256:580d90b7e70ad025a04716bfbb807d58bc261e811d037d6c610883b71e43ca8a",
+      "bytes": 263
+    },
+    {
+      "path": "verify.py",
+      "digest": "sha256:fb4a34d6ba83b179833f4d13c9fd8699143644ce65a4d9360341ee335ea7516d",
+      "bytes": 6611
+    }
+  ],
+  "invocation": {
+    "executable": "python3",
+    "fixedArguments": [
+      "-I",
+      "-B"
+    ],
+    "entrypoint": "verify.py",
+    "arguments": [
+      "published-symmetric.json",
+      "coloring.csv"
+    ],
+    "timeoutSeconds": 300,
+    "maximumOutputBytes": 262144,
+    "successExitCodes": [
+      0
+    ]
+  },
+  "result": {
+    "status": "passed",
+    "exitCode": 0,
+    "timedOut": false
+  },
+  "outputs": {
+    "stdout": {
+      "digest": "sha256:6500f91c9a41b35475ef0b72d01c00367fd2d2ee4c08223a23a66bef8c7d4a76",
+      "bytes": 123
+    },
+    "stderr": {
+      "digest": "sha256:f0acba4a50ab4265563f0b165fabfab1ff30676f561443a1148e2875353e2e3e",
+      "bytes": 948
+    }
+  },
+  "producer": {
+    "implementation": "math-flow-oci-attestation-producer-v1",
+    "mathFlowVersion": "0.6.0"
+  },
+  "attestationId": "sha256:f815fc4e78fddec3f2f29060a54afbd1532ad39c945dfb2584b4847434812503"
+}
