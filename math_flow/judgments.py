@@ -310,6 +310,12 @@ def run_reconciliation_judgment_bundle(
     for bundle_dir in judgment_bundle_dirs:
         manifest, judgment, _ = load_judgment_bundle(bundle_dir)
         judgment_id = str(judgment["judgmentId"])
+        if judgment_id in loaded:
+            raise MathFlowError(
+                f"reconciliation input judgments contain a duplicate: {judgment_id}"
+            )
+        if judgment.get("judgmentKind") != "primary":
+            raise MathFlowError("reconciliation input judgment is not primary")
         if judgment.get("problemId") != problem:
             raise MathFlowError("reconciliation input judgment belongs to another problem")
         report = read_verified_artifact(bundle_dir, manifest, "judgment-report").decode("utf-8")
@@ -317,6 +323,13 @@ def run_reconciliation_judgment_bundle(
     missing = required_ids - loaded.keys()
     if missing:
         raise MathFlowError(f"missing reconciliation input judgment: {sorted(missing)[0]}")
+    derived_conflicts = {
+        str(item["conflictId"]): item for item in detect_conflicts(judgment_bundle_dirs)
+    }
+    if derived_conflicts.get(str(conflict_id)) != conflict:
+        raise MathFlowError(
+            "reconciliation conflict does not match the supplied primary judgments"
+        )
 
     source = load_source(root, problem, head)
     ledger_by_id = {str(item["transactionId"]): item for item in source["transactions"]}
