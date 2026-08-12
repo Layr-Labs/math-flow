@@ -13771,6 +13771,1798 @@
       }
     },
     {
+      "id": "openrouter-research-v1",
+      "problemId": "triangle-midpoints",
+      "label": "openrouter-research-v1",
+      "projectionSpec": {
+        "id": "openrouter-research-v1",
+        "description": "The default parallel OpenRouter judgment projection with serialized, program-oriented hierarchical knowledge formation.",
+        "digest": "sha256:eb2e997ae1f7ee8a619c0c7cd0362f696ab6c70682ffb12a856407a43684abd3",
+        "engine": "openrouter-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [],
+        "scheduling": {
+          "judgmentMaxParallel": 16,
+          "knowledgeMinimumIntervalSeconds": 300,
+          "maximumJudgmentsPerBuild": 500
+        },
+        "runner": null
+      },
+      "builder": {
+        "id": "openrouter-research-program-builder-v2",
+        "digest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c"
+      },
+      "latestRunDigest": "sha256:974fa19e9d53381387c8bae94b115a357d90fe783f25135c216e32ca16e0f3ba",
+      "runCount": 1,
+      "data": {
+        "schemaVersion": 1,
+        "problem": {
+          "id": "triangle-midpoints",
+          "title": "Triangle midpoint quadrilateral",
+          "statementMarkdown": "# Triangle midpoint quadrilateral\n\nLet points \\(D\\), \\(E\\), and \\(F\\) be the midpoints of sides \\(BC\\), \\(CA\\), and\n\\(AB\\) of a nondegenerate triangle \\(ABC\\). Prove that the four small triangles\n\\(AEF\\), \\(BFD\\), \\(CDE\\), and \\(DEF\\) have equal area.\n\nContributions may give synthetic, coordinate, formal, or computational arguments,\nor may critique and extend earlier contributions.\n\n"
+        },
+        "ledgerHead": "a7acd1ec3554f51b381784ff2f84663b88e9c262",
+        "transactions": [
+          {
+            "ordinal": 1,
+            "transactionId": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+            "contributionId": "affine-area-proof",
+            "path": "problems/triangle-midpoints/contributions/affine-area-proof",
+            "author": {
+              "displayName": "Robert",
+              "email": "robert.raynor@gmail.com"
+            },
+            "contentMarkdown": "# Affine area proof\n\nEach segment joining two side midpoints is parallel to the third side, so the\nmedial triangle \\(DEF\\) is similar to \\(ABC\\) with scale factor \\(1/2\\). Its area\nis therefore one quarter of the area of \\(ABC\\).\n\nThe same reasoning applies to each corner triangle: for example, \\(AE=AC/2\\) and\n\\(AF=AB/2\\), with the included angle unchanged, so \\(AEF\\) has one quarter of the\narea of \\(ABC\\). Cyclically, the other two corner triangles do as well. Hence all\nfour areas are equal.\n\n## Possible formalization\n\nAn eventual Lean artifact could express this through affine invariance or the\ndeterminant formula for oriented area.\n\n"
+          },
+          {
+            "ordinal": 2,
+            "transactionId": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+            "contributionId": "midpoint-lemma-detail",
+            "path": "problems/triangle-midpoints/contributions/midpoint-lemma-detail",
+            "author": {
+              "displayName": "Robert",
+              "email": "robert.raynor@gmail.com"
+            },
+            "contentMarkdown": "# Midpoint lemma detail\n\nThis contribution supplements the earlier `affine-area-proof` by making its\nmidpoint-segment step explicit.\n\nWrite the points as position vectors. For the midpoints\n\n\\[\nE = \\frac{A+C}{2}, \\qquad F = \\frac{A+B}{2},\n\\]\n\nwe have\n\n\\[\nE-F = \\frac{C-B}{2}.\n\\]\n\nThus `EF` is parallel to `BC` and has half its length. Cyclically, the same\ncalculation shows that `FD` is parallel to `CA` with half its length and that\n`DE` is parallel to `AB` with half its length.\n\nConsequently the medial triangle is similar to the original triangle with\nlinear scale factor `1/2`. The same midpoint identities give the corresponding\nscale factor for each corner triangle, closing the elementary lemma used by the\noriginal proof.\n\nThis supplies a missing detail in the presentation; it does not claim\noriginality for the classical theorem.\n"
+          },
+          {
+            "ordinal": 3,
+            "transactionId": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "contributionId": "base-height-correction",
+            "path": "problems/triangle-midpoints/contributions/base-height-correction",
+            "author": {
+              "displayName": "Robert",
+              "email": "robert.raynor@gmail.com"
+            },
+            "contentMarkdown": "# Correction to the base-height alternative\n\nThis contribution corrects one ancillary paragraph in the judge report with\nSHA-256 digest\n`sha256:561dbc76876de7977d2b77f8c0b81232c94c69c259535f1031da548926a1386b`.\nThe paragraph appears in the cumulative content associated with\n`triangle-midpoints/midpoint-lemma-detail`.\n\nThe report says that, because `EF` is parallel to `BC`, the altitude from `A`\nto `EF` equals the altitude from `A` to `BC`. That is false. Since `E` and `F`\nare the midpoints of `AC` and `AB`, the homothety centered at `A` with factor\n`1/2` maps `BC` to `EF`. Consequently,\n\n- `|EF| = |BC|/2`; and\n- the distance from `A` to the line `EF` is half the distance from `A` to the\n  line `BC`.\n\nBoth the base and the corresponding height are therefore scaled by `1/2`, so\n\n\\[\n\\frac{\\operatorname{area}(AEF)}{\\operatorname{area}(ABC)}\n= \\frac12 \\cdot \\frac12\n= \\frac14.\n\\]\n\nThis correction does not challenge the equal-area theorem, the original\naffine/homothety proof, or the midpoint lemma. Those conclusions remain correct.\nIt only replaces the erroneous explanation of the optional base-height\nalternative.\n"
+          }
+        ],
+        "judgments": [
+          {
+            "judgmentId": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+            "runDigest": "sha256:9032ca22f5fbc6d42730dfa9ffd3d64400fb7944cf6882b29649de7f29e8a3ee",
+            "judgmentKind": "primary",
+            "ledgerHead": "b949b704a562aef2692e20ecb661ded7e849f60e",
+            "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "judgeSpec": {
+              "id": "openrouter-markdown-judgment-v1",
+              "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.07578875,
+            "reportDigest": "sha256:404f5ecd4166c2248e705d1082b6d1f1c5e40928eba96b21ac13852e4baf8fd9",
+            "reportMarkdown": "# Judgment\n\n## Finding 1 — The medial triangle \\(DEF\\) has one quarter the area of \\(ABC\\)\n\n**Claim key:** `medial-triangle-area-quarter`\n\nThe contribution correctly invokes the midpoint theorem. Since \\(D,E,F\\) are the relevant side midpoints,\n\n\\[\nDE\\parallel AB,\\qquad EF\\parallel BC,\\qquad FD\\parallel CA.\n\\]\n\nMoreover, each medial segment has half the length of the corresponding side:\n\n\\[\nDE=\\frac12 AB,\\qquad EF=\\frac12 BC,\\qquad FD=\\frac12 CA.\n\\]\n\nThus \\(DEF\\) is similar to \\(ABC\\) with linear scale factor \\(1/2\\). Areas of similar triangles scale by the square of the linear factor, so\n\n\\[\n[DEF]=\\left(\\frac12\\right)^2[ABC]=\\frac14[ABC].\n\\]\n\nThe submitted argument states this correctly. It does not spell out the three parallelisms, but “each segment joining two side midpoints is parallel to the third side” is the standard midpoint theorem and is sufficient here.\n\n**Assessment:** Correct and complete at the level of an ordinary Euclidean proof.\n\n---\n\n## Finding 2 — Each corner triangle has one quarter the area of \\(ABC\\)\n\n**Claim key:** `corner-midpoint-triangles-area-quarter`\n\nFor \\(AEF\\), the contribution observes that\n\n\\[\nAE=\\frac12 AC,\\qquad AF=\\frac12 AB,\n\\]\n\nwhile the included angle \\(\\angle EAF\\) is exactly \\(\\angle CAB\\), because \\(E\\in AC\\) and \\(F\\in AB\\). Using the included-angle area formula,\n\n\\[\n[AEF]\n =\\frac12(AE)(AF)\\sin\\angle EAF\n =\\frac12\\left(\\frac{AC}{2}\\right)\\left(\\frac{AB}{2}\\right)\\sin\\angle CAB\n =\\frac14[ABC].\n\\]\n\nEquivalently, \\(AEF\\) is similar to \\(ABC\\) with scale factor \\(1/2\\).\n\nThe cyclic extension is valid:\n\n\\[\nBF=\\frac12 BA,\\qquad BD=\\frac12 BC,\n\\]\n\nwith included angle \\(\\angle FBD=\\angle ABC\\), so \\([BFD]=\\frac14[ABC]\\); and\n\n\\[\nCD=\\frac12 CB,\\qquad CE=\\frac12 CA,\n\\]\n\nwith included angle \\(\\angle DCE=\\angle BCA\\), so \\([CDE]=\\frac14[ABC]\\).\n\nAlthough the contribution leaves these last two calculations under the word “cyclically,” the symmetry is direct and unambiguous.\n\n**Assessment:** Correct. No missing substantive lemma remains beyond the standard fact that scaling two sides surrounding a fixed included angle by \\(1/2\\) scales area by \\(1/4\\).\n\n---\n\n## Finding 3 — Equality of all four small-triangle areas\n\n**Claim key:** `four-midpoint-triangles-equal-area`\n\nCombining the preceding results gives\n\n\\[\n[AEF]=[BFD]=[CDE]=[DEF]=\\frac14[ABC].\n\\]\n\nThis proves the requested equality. The nondegeneracy assumption ensures that \\([ABC]>0\\), though the area identities themselves are otherwise straightforward.\n\nThe proof does not need to argue separately that the four triangles partition \\(ABC\\), because each area is independently shown to be one quarter of the whole. There is therefore no circular reliance on the desired equality.\n\n**Assessment:** The main problem is fully solved, with high confidence.\n\n---\n\n## Finding 4 — The proposed formalization is only a suggestion\n\n**Claim key:** `formalization-via-affine-invariance-or-determinants`\n\nThe final paragraph suggests that a future Lean proof could use affine invariance or determinants. This is mathematically plausible, but no formal statement, code, or machine-checked artifact is supplied. Consequently, the evidence supports the informal Euclidean proof, not a claim of completed formal verification.\n\nThis does not weaken the correctness of the mathematical solution; it only limits what can be concluded about formalization.\n\n---\n\n## Contradictions, omissions, and contribution assessment\n\nNo mathematical contradiction appears in the contribution. The only minor compression is the use of “cyclically” instead of writing the \\(B\\)- and \\(C\\)-corner computations explicitly, but those cases follow exactly as claimed.\n\nRobert’s contribution supplies a concise and complete proof based on the midpoint theorem, similarity, and area scaling. The formalization note should be understood as prospective rather than as additional verified evidence.\n",
+            "record": {
+              "schemaVersion": 1,
+              "judgmentKind": "primary",
+              "problemId": "triangle-midpoints",
+              "ledgerHead": "b949b704a562aef2692e20ecb661ded7e849f60e",
+              "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+              "judgeSpec": {
+                "id": "openrouter-markdown-judgment-v1",
+                "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                  "ledgerPosition": 1
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "medial-triangle-area-quarter",
+                  "stance": "supports",
+                  "summary": "The contribution correctly applies the midpoint theorem: DE, EF, and FD are parallel to the corresponding sides of ABC and each has half its length. Hence DEF is similar to ABC with linear scale factor 1/2, so [DEF] = 1/4[ABC]. The standard midpoint-theorem invocation is sufficient, making the Euclidean proof correct and complete.",
+                  "subjectTransactionIds": [
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                  ],
+                  "evidenceTransactionIds": [
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                  ]
+                },
+                {
+                  "claimKey": "corner-midpoint-triangles-area-quarter",
+                  "stance": "supports",
+                  "summary": "The contribution correctly shows [AEF] = 1/4[ABC] because AE and AF are half of AC and AB while the included angle is unchanged. The same included-angle area argument applies cyclically to BFD and CDE. Using “cyclically” is a minor compression, but the omitted computations are direct and unambiguous, with no missing substantive lemma.",
+                  "subjectTransactionIds": [
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                  ],
+                  "evidenceTransactionIds": [
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                  ]
+                },
+                {
+                  "claimKey": "four-midpoint-triangles-equal-area",
+                  "stance": "supports",
+                  "summary": "Combining the medial- and corner-triangle results establishes [AEF] = [BFD] = [CDE] = [DEF] = 1/4[ABC]. The nondegeneracy assumption ensures positive total area. No separate partition argument is required because every small triangle’s area is independently proved to be one quarter of the whole, so there is no circularity. The main problem is fully solved with high confidence and no mathematical contradiction.",
+                  "subjectTransactionIds": [
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                  ],
+                  "evidenceTransactionIds": [
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                  ]
+                },
+                {
+                  "claimKey": "formalization-via-affine-invariance-or-determinants",
+                  "stance": "qualifies",
+                  "summary": "Affine invariance or determinants are mathematically plausible approaches for a future Lean formalization, but the contribution supplies no formal statement, code, or machine-checked artifact. The evidence therefore supports the informal Euclidean proof only, not a claim of completed formal verification. This limitation does not weaken the mathematical solution’s correctness.",
+                  "subjectTransactionIds": [
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                  ],
+                  "evidenceTransactionIds": [
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                  ]
+                }
+              ],
+              "reportDigest": "sha256:404f5ecd4166c2248e705d1082b6d1f1c5e40928eba96b21ac13852e4baf8fd9",
+              "judgmentId": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262"
+            }
+          },
+          {
+            "judgmentId": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+            "runDigest": "sha256:c92b526d94971bea47535a0bbe66493854e25013995ec2f79b2cc5b5d75dd4ef",
+            "judgmentKind": "primary",
+            "ledgerHead": "b949b704a562aef2692e20ecb661ded7e849f60e",
+            "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "judgeSpec": {
+              "id": "openrouter-markdown-judgment-v1",
+              "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.1058525,
+            "reportDigest": "sha256:74ea37d193cb955c0e39af5a5043a1b6566533edec0ba14dd39657379d638191",
+            "reportMarkdown": "# Judgment of transaction `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`\n\n## Overall assessment\n\nThe contribution is mathematically correct and provides a valid vector verification of the midpoint-segment facts used in the earlier affine-area proof. Together with the earlier contribution, it yields a complete elementary proof that the four triangles \\(AEF\\), \\(BFD\\), \\(CDE\\), and \\(DEF\\) have equal area.\n\nThe new contribution is best characterized as an explanatory supplement rather than a correction of a genuine error. The earlier proof invoked the standard midpoint theorem without proof; that invocation is ordinarily acceptable, but the present transaction successfully derives the theorem directly from the midpoint formulas.\n\nNo mathematical contradiction appears between the two supplied contributions.\n\n---\n\n## Finding 1 — Midpoint vector identities imply the required parallelism and half-length relations\n\n**Claim key:** `triangle-midpoint-segments-are-parallel-and-half-length`\n\nThe contribution writes\n\n\\[\nE=\\frac{A+C}{2},\\qquad F=\\frac{A+B}{2},\n\\]\n\nand computes\n\n\\[\nE-F=\\frac{C-B}{2}.\n\\]\n\nThis is correct. Interpreting the letters as position vectors, the vector \\(E-F\\) is exactly one half of the vector \\(C-B\\). Therefore \\(EF\\) is parallel to \\(BC\\), and\n\n\\[\n|EF|=\\frac12|BC|.\n\\]\n\nThe cyclic claims are also correct. If\n\n\\[\nD=\\frac{B+C}{2},\n\\]\n\nthen direct calculation gives\n\n\\[\nF-D=\\frac{A-C}{2},\n\\qquad\nD-E=\\frac{B-A}{2}.\n\\]\n\nThus \\(FD\\parallel CA\\) and \\(DE\\parallel AB\\), with each midpoint segment having half the length of the corresponding side.\n\nThe signs of the vectors depend on the chosen endpoint order, but this does not affect either parallelism or length. This part of the argument is decisive and requires no additional geometric lemma beyond the standard interpretation of affine combinations and vector differences.\n\n**Confidence:** Very high.\n\n---\n\n## Finding 2 — The medial triangle has linear scale factor \\(1/2\\)\n\n**Claim key:** `medial-triangle-is-similar-to-original-at-half-scale`\n\nFrom the identities above,\n\n\\[\n|EF|=\\frac12|BC|,\\qquad\n|FD|=\\frac12|CA|,\\qquad\n|DE|=\\frac12|AB|.\n\\]\n\nHence the three sides of \\(DEF\\) are proportional to the corresponding sides of \\(ABC\\), all with ratio \\(1/2\\). By SSS similarity,\n\n\\[\n\\triangle DEF\\sim\\triangle ABC\n\\]\n\nwith linear scale factor \\(1/2\\).\n\nAlternatively, the three established parallelisms also identify the corresponding angles. Either route is valid. The contribution says “consequently” rather than naming SSS or angle-angle similarity, but the inference is standard and fully justified by the immediately preceding equations.\n\nIt follows by the standard area-scaling law for similar triangles that\n\n\\[\n[DEF]=\\left(\\frac12\\right)^2[ABC]\n      =\\frac14[ABC].\n\\]\n\nThe area-scaling step is supplied explicitly in the earlier contribution and is correctly supported by the new midpoint details.\n\n**Confidence:** Very high.\n\n---\n\n## Finding 3 — Each corner triangle also has one quarter of the original area\n\n**Claim key:** `each-corner-midpoint-triangle-has-quarter-area`\n\nThe new contribution states that the same midpoint identities give the corresponding scale factor for every corner triangle. This is correct, although it is not written out in full.\n\nFor example, for \\(\\triangle AEF\\),\n\n\\[\nAE=\\frac12 AC,\\qquad\nAF=\\frac12 AB,\\qquad\nEF=\\frac12 BC.\n\\]\n\nTherefore \\(\\triangle AEF\\) is similar to \\(\\triangle ACB\\) with scale factor \\(1/2\\), and hence\n\n\\[\n[AEF]=\\frac14[ABC].\n\\]\n\nCyclically,\n\n\\[\nBF=\\frac12 BA,\\quad BD=\\frac12 BC,\\quad FD=\\frac12 AC,\n\\]\n\nso\n\n\\[\n[BFD]=\\frac14[ABC],\n\\]\n\nand similarly,\n\n\\[\n[CDE]=\\frac14[ABC].\n\\]\n\nCombining these with the medial-triangle result gives\n\n\\[\n[AEF]=[BFD]=[CDE]=[DEF]=\\frac14[ABC].\n\\]\n\nThus the claimed equality of all four areas follows.\n\nThe contribution could have made the corner-triangle correspondence more explicit, but this is only an expository omission. The phrase “cyclically” legitimately covers the remaining cases because the definitions of \\(D,E,F\\) are cyclically symmetric.\n\n**Confidence:** Very high.\n\n---\n\n## Finding 4 — Role of nondegeneracy and area conventions\n\n**Claim key:** `nondegenerate-triangle-midpoint-partition-has-positive-equal-areas`\n\nThe problem assumes \\(ABC\\) is nondegenerate. Consequently \\([ABC]>0\\), and all four midpoint triangles are nondegenerate as well. This avoids any ambiguity about a “scale factor” for degenerate triangles and ensures that ordinary unsigned areas are positive.\n\nThe vector argument would still produce equal zero areas in a degenerate configuration, but the supplied proof does not need to address that extension. It remains within the stated hypotheses.\n\n**Confidence:** Very high.\n\n---\n\n## Completeness and missing evidence\n\nFor an ordinary mathematical proof, the combined supplied evidence is complete. The second contribution establishes the only theorem that the earlier proof had invoked without derivation: the midpoint-segment relation.\n\nAs a standalone note, the second contribution does not explicitly repeat the final area-scaling calculation or state the concluding equality of all four areas. However, it expressly presents itself as a supplement to the earlier proof, and the earlier proof contains those steps. Therefore this is not a logical defect in the supplied argument as a whole.\n\nNo Lean artifact or other formal verification is provided. The earlier mention of a possible formalization is only a proposal, not evidence of machine-checked correctness. This does not weaken the validity of the ordinary vector proof.\n\n---\n\n## Contribution and priority\n\nThe transaction contributes a clear derivation of the midpoint theorem in position-vector form. It does not introduce a new theorem or a novel proof method, and it appropriately disclaims originality for the classical result.\n\nIts main value is expository: it replaces an appeal to a familiar geometric theorem with explicit algebraic identities. The earlier contribution already contained a correct proof at the usual elementary level, so describing the midpoint theorem as a “missing detail” should be understood as supplying additional derivation rather than repairing an invalid argument.\n",
+            "record": {
+              "schemaVersion": 1,
+              "judgmentKind": "primary",
+              "problemId": "triangle-midpoints",
+              "ledgerHead": "b949b704a562aef2692e20ecb661ded7e849f60e",
+              "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+              "judgeSpec": {
+                "id": "openrouter-markdown-judgment-v1",
+                "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                  "ledgerPosition": 2
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "triangle-midpoint-segments-are-parallel-and-half-length",
+                  "stance": "supports",
+                  "summary": "The position-vector identities E−F=(C−B)/2, F−D=(A−C)/2, and D−E=(B−A)/2 correctly establish that each midpoint segment is parallel to, and half the length of, the corresponding side. Endpoint-order signs do not affect parallelism or length.",
+                  "subjectTransactionIds": [
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                  ],
+                  "evidenceTransactionIds": [
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                  ]
+                },
+                {
+                  "claimKey": "medial-triangle-is-similar-to-original-at-half-scale",
+                  "stance": "supports",
+                  "summary": "The three half-length relations justify SSS similarity of DEF and ABC with linear scale factor 1/2; together with the earlier contribution’s area-scaling step, this yields [DEF]=1/4[ABC].",
+                  "subjectTransactionIds": [
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                  ],
+                  "evidenceTransactionIds": [
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                  ]
+                },
+                {
+                  "claimKey": "each-corner-midpoint-triangle-has-quarter-area",
+                  "stance": "supports",
+                  "summary": "The midpoint identities give each corner triangle side lengths equal to one half of the corresponding original-triangle sides. Thus AEF, BFD, and CDE each have one quarter of the area of ABC, and together with DEF all four areas are equal. The omitted cyclic details are expository rather than logical gaps.",
+                  "subjectTransactionIds": [
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                  ],
+                  "evidenceTransactionIds": [
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                  ]
+                },
+                {
+                  "claimKey": "nondegenerate-triangle-midpoint-partition-has-positive-equal-areas",
+                  "stance": "qualifies",
+                  "summary": "Under the stated nondegeneracy hypothesis, ABC and all four midpoint triangles have positive unsigned area, avoiding degeneracy issues. The vector identities would also imply equal zero areas in a degenerate extension, but the supplied proof need not address that case.",
+                  "subjectTransactionIds": [
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                  ],
+                  "evidenceTransactionIds": [
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                  ]
+                }
+              ],
+              "reportDigest": "sha256:74ea37d193cb955c0e39af5a5043a1b6566533edec0ba14dd39657379d638191",
+              "judgmentId": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed"
+            }
+          },
+          {
+            "judgmentId": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+            "runDigest": "sha256:c1f153068fcf6ab5ce4ad4b6b232d267752e5a34b30246fa276101bf0c2d15f3",
+            "judgmentKind": "primary",
+            "ledgerHead": "b949b704a562aef2692e20ecb661ded7e849f60e",
+            "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "judgeSpec": {
+              "id": "openrouter-markdown-judgment-v1",
+              "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.1500225,
+            "reportDigest": "sha256:bd18487b75eafde48e8830d18d41c4c3ec3a5a77a17e0d519599865b4899f53e",
+            "reportMarkdown": "# Mathematical Judgment\n\n## Scope of assessment\n\nThe subject transaction is the contribution **“base-height-correction”**. The two earlier supplied contributions provide the mathematical context for the correction. The external judge report identified only by its SHA-256 digest is not itself supplied, so its wording and provenance cannot be independently verified here. The mathematical statement attributed to that report can nevertheless be assessed.\n\n---\n\n## Finding 1: Altitude scaling under the midpoint homothety\n\n**Claim key:** `triangle-midpoints/altitude-scaling-under-midpoint-homothety`\n\n**Proposition assessed:** If \\(E\\) and \\(F\\) are the midpoints of \\(AC\\) and \\(AB\\), respectively, then\n\\[\n\\operatorname{dist}(A,\\overleftrightarrow{EF})\n=\\frac12\\operatorname{dist}(A,\\overleftrightarrow{BC}).\n\\]\n\n**Judgment:** Correct, with high confidence.\n\nThe decisive observation is that the homothety\n\\[\nH(X)=A+\\frac12(X-A)\n\\]\nfixes \\(A\\), sends \\(B\\) to \\(F\\), and sends \\(C\\) to \\(E\\). It therefore maps the line \\(BC\\) to the line \\(FE\\). A homothety with factor \\(1/2\\) scales every Euclidean distance, including point-to-line distances, by \\(1/2\\). Hence\n\\[\n\\operatorname{dist}(A,\\overleftrightarrow{EF})\n=\\frac12\\operatorname{dist}(A,\\overleftrightarrow{BC}).\n\\]\n\nThe nondegeneracy of \\(ABC\\) ensures that these altitudes are nonzero, though the scaling identity itself is still formally meaningful without that positivity.\n\nThe allegedly earlier statement that the two altitudes are equal merely because \\(EF\\parallel BC\\) is false. Parallelism does not imply that a fixed point has the same distance from the two parallel lines. Here the two lines occur at different positions under a homothety centered at \\(A\\), and their distances from \\(A\\) differ by exactly the homothety factor.\n\nThere is no contradiction with either supplied earlier mathematical contribution: neither `affine-area-proof` nor `midpoint-lemma-detail` states that the altitudes are equal. The contradiction is only with the unsupplied report paragraph as quoted by the subject contribution.\n\n---\n\n## Finding 2: The corrected base-height computation for \\(AEF\\)\n\n**Claim key:** `triangle-midpoints/corner-triangle-quarter-area-by-base-height`\n\n**Proposition assessed:** The midpoint relations imply\n\\[\n[AEF]=\\frac14[ABC].\n\\]\n\n**Judgment:** Correct and completely justified by the supplied correction.\n\nFrom the midpoint theorem, or directly from the homothety above,\n\\[\n|EF|=\\frac12|BC|.\n\\]\nWriting\n\\[\nh_{EF}=\\operatorname{dist}(A,\\overleftrightarrow{EF}),\n\\qquad\nh_{BC}=\\operatorname{dist}(A,\\overleftrightarrow{BC}),\n\\]\nthe first finding gives \\(h_{EF}=h_{BC}/2\\). Therefore\n\\[\n[AEF]\n=\\frac12|EF|h_{EF}\n=\\frac12\\left(\\frac{|BC|}{2}\\right)\\left(\\frac{h_{BC}}{2}\\right)\n=\\frac14\\left(\\frac12|BC|h_{BC}\\right)\n=\\frac14[ABC].\n\\]\n\nThus the correction properly repairs the faulty base-height explanation: both the relevant base and its corresponding height scale by \\(1/2\\), so the area scales by \\(1/4\\).\n\n---\n\n## Finding 3: Equality of all four small-triangle areas\n\n**Claim key:** `triangle-midpoints/four-subtriangles-have-equal-area`\n\n**Proposition assessed:** The triangles \\(AEF\\), \\(BFD\\), \\(CDE\\), and \\(DEF\\) all have equal area.\n\n**Judgment:** Correct, with a complete proof available from the combined supplied evidence.\n\nThe subject correction directly establishes the quarter-area result for \\(AEF\\). The same homothety argument applies cyclically:\n\n- The homothety centered at \\(A\\) with factor \\(1/2\\) maps \\(ABC\\) to \\(AFE\\).\n- The homothety centered at \\(B\\) with factor \\(1/2\\) maps \\(BAC\\) to \\(BFD\\).\n- The homothety centered at \\(C\\) with factor \\(1/2\\) maps \\(CAB\\) to \\(CED\\).\n\nEach corner triangle therefore has area \\([ABC]/4\\).\n\nFor the medial triangle, the vector identities supplied earlier give\n\\[\nE-F=\\frac{C-B}{2},\n\\]\nand cyclically show that its three sides are parallel to and half the lengths of the corresponding sides of \\(ABC\\). Thus \\(DEF\\) is similar to \\(ABC\\) with linear scale factor \\(1/2\\), so\n\\[\n[DEF]=\\frac14[ABC].\n\\]\n\nConsequently,\n\\[\n[AEF]=[BFD]=[CDE]=[DEF]=\\frac14[ABC].\n\\]\n\nThe subject contribution correctly says that its correction does not undermine the theorem or the earlier midpoint and similarity arguments. It changes only the erroneous optional altitude explanation.\n\n---\n\n## Contradictions and missing evidence\n\n1. **False attributed claim:** The statement “because \\(EF\\parallel BC\\), the altitude from \\(A\\) to \\(EF\\) equals the altitude from \\(A\\) to \\(BC\\)” is mathematically false. The correct ratio is \\(1:2\\).\n\n2. **No contradiction within the supplied contribution artifacts:** The two earlier artifacts use similarity, midpoint identities, and included-angle area scaling; those arguments remain valid and do not contain the erroneous equal-altitude assertion.\n\n3. **Unavailable cited report:** The report identified by digest is not included in the evidence. Accordingly, this judgment cannot verify that the quoted error actually appears there, nor whether surrounding text qualified it. This is a provenance limitation, not a gap in the correction’s mathematics.\n\n4. **No formal artifact:** The earlier mention of a possible Lean formalization is only a proposal. No formal proof is supplied, but none is needed for the elementary paper proof, which is complete.\n\n---\n\n## Contribution and priority assessment\n\nRobert’s subject contribution makes a valid and useful narrow correction: it identifies the precise geometric error in an ancillary base-height explanation and replaces it with the correct homothety-based scaling argument. The contribution appropriately disclaims any challenge to the main theorem and any originality for the underlying classical midpoint result.\n\nThe supplied evidence establishes the sequence of these particular contributions, but it does not establish broader historical priority—and no such priority is needed for evaluating the proof.\n",
+            "record": {
+              "schemaVersion": 1,
+              "judgmentKind": "primary",
+              "problemId": "triangle-midpoints",
+              "ledgerHead": "b949b704a562aef2692e20ecb661ded7e849f60e",
+              "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+              "judgeSpec": {
+                "id": "openrouter-markdown-judgment-v1",
+                "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                  "ledgerPosition": 3
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "triangle-midpoints/altitude-scaling-under-midpoint-homothety",
+                  "stance": "supports",
+                  "summary": "Correct with high confidence: the homothety centered at A with factor 1/2 maps BC to EF and scales point-to-line distances by 1/2, so dist(A, EF)=1/2 dist(A, BC). Nondegeneracy ensures the altitudes are nonzero.",
+                  "subjectTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ],
+                  "evidenceTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ]
+                },
+                {
+                  "claimKey": "triangle-midpoints/equal-altitudes-from-parallelism",
+                  "stance": "refutes",
+                  "summary": "The attributed assertion that the altitudes from A to EF and BC are equal merely because EF is parallel to BC is false. Parallelism does not give equal distances from a fixed point; here the distances have ratio 1:2.",
+                  "subjectTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ],
+                  "evidenceTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ]
+                },
+                {
+                  "claimKey": "triangle-midpoints/corner-triangle-quarter-area-by-base-height",
+                  "stance": "supports",
+                  "summary": "Correct and completely justified: EF and the corresponding altitude from A each scale by 1/2 relative to BC and its altitude, so the base-height formula gives [AEF]=1/4[ABC].",
+                  "subjectTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ],
+                  "evidenceTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ]
+                },
+                {
+                  "claimKey": "triangle-midpoints/four-subtriangles-have-equal-area",
+                  "stance": "supports",
+                  "summary": "Correct, with a complete proof from the combined supplied evidence: the three corner triangles are homothetic copies of ABC with factor 1/2, and the medial triangle is similar to ABC with factor 1/2. Therefore AEF, BFD, CDE, and DEF each have area [ABC]/4.",
+                  "subjectTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ],
+                  "evidenceTransactionIds": [
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ]
+                },
+                {
+                  "claimKey": "triangle-midpoints/earlier-midpoint-and-similarity-arguments-remain-valid",
+                  "stance": "supports",
+                  "summary": "The correction does not undermine the equal-area theorem or the earlier similarity, midpoint-identity, and included-angle area arguments. It changes only the erroneous optional equal-altitude explanation, which does not occur in the supplied earlier contribution artifacts.",
+                  "subjectTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ],
+                  "evidenceTransactionIds": [
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ]
+                }
+              ],
+              "reportDigest": "sha256:bd18487b75eafde48e8830d18d41c4c3ec3a5a77a17e0d519599865b4899f53e",
+              "judgmentId": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3"
+            }
+          }
+        ],
+        "runs": [
+          {
+            "id": "974fa19e9d53381387c8bae94b115a357d90fe783f25135c216e32ca16e0f3ba",
+            "ordinal": 1,
+            "ledgerHead": "a7acd1ec3554f51b381784ff2f84663b88e9c262",
+            "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "runDigest": "sha256:974fa19e9d53381387c8bae94b115a357d90fe783f25135c216e32ca16e0f3ba",
+            "baseRun": null,
+            "runKind": "knowledge-build",
+            "inputs": {
+              "projectionSpecDigest": "sha256:eb2e997ae1f7ee8a619c0c7cd0362f696ab6c70682ffb12a856407a43684abd3",
+              "judgmentIds": [
+                "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3"
+              ],
+              "laneId": "sha256:9189180d5c9d0a75845e4f60c43a099cfc726260cfd34daeafbbc4f31f49988e",
+              "builderSpecDigest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c",
+              "schemaVersion": 1,
+              "problemId": "triangle-midpoints",
+              "judgmentSetDigest": "sha256:ae3a1716bedafae46fb415dff617c347918005d797b9dfc1bc324e0295d373c9",
+              "baseStateRun": null,
+              "conflictIds": [],
+              "buildToken": "sha256:7f4b340d8e562c1da9a690cc7f9676f3b853d4da666329b52aab3d7544cbcb22"
+            },
+            "judgeSpec": {
+              "id": "openrouter-research-program-builder-v2",
+              "digest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c"
+            },
+            "runner": {
+              "implementation": "openrouter-knowledge-builder-v2",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.574965,
+            "selection": {
+              "selectedNodeIds": [
+                "root"
+              ],
+              "rationale": "Only the root exists. The batch establishes the equal-area theorem, supporting midpoint/similarity and homothety arguments, a corrected altitude-scaling claim, and an uncompleted formalization direction, so a new top-level program and its claims must be organized beneath root."
+            },
+            "normalizations": [
+              {
+                "kind": "attach-current-base",
+                "nodeId": "root",
+                "reason": "Concurrency guards come from the authoritative selected state."
+              }
+            ],
+            "delta": {
+              "operations": [
+                {
+                  "action": "create",
+                  "nodeId": "root",
+                  "parentId": null,
+                  "nodeType": "root",
+                  "title": "Research state for triangle-midpoints",
+                  "summary": "The current state contains one established program on the four triangles induced by the side midpoints of a nondegenerate triangle. The midpoint-segment, quarter-area, equal-area, and corrected half-altitude conclusions are established. Affine, determinant, and Lean formalization remain prospective, and no active dispute is required.",
+                  "reportSection": "## Node: root",
+                  "baseDigest": "sha256:8fa51dfff09f362308c68bd644c26b82281e596ef673b9e9fd6bf49ceb18e9b3",
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: root"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "triangle-midpoints/equal-area-program",
+                  "parentId": "root",
+                  "nodeType": "program",
+                  "title": "Triangle-midpoint area structure",
+                  "summary": "This program studies the geometric and affine consequences of taking D, E, and F as the side midpoints of a nondegenerate triangle ABC. Established knowledge includes the midpoint-segment relations, quarter-area results for the medial and corner triangles, half-scaling of the relevant corner altitudes, and equality of all four small areas. Formal verification remains prospective, and there is no supplied active mathematical dispute.",
+                  "reportSection": "## Node: triangle-midpoints/equal-area-program",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: triangle-midpoints/equal-area-program"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "triangle-midpoints/midpoint-segment-relations",
+                  "parentId": "triangle-midpoints/equal-area-program",
+                  "nodeType": "lemma",
+                  "title": "Parallelism and half-length relations for triangle midpoint segments",
+                  "summary": "For D=(B+C)/2, E=(C+A)/2, and F=(A+B)/2, the accepted vector identities show EF is parallel to BC, FD is parallel to CA, and DE is parallel to AB, with each midpoint segment having half the length of its corresponding side. Endpoint-order signs do not affect these parallelism or length conclusions.",
+                  "reportSection": "## Node: triangle-midpoints/midpoint-segment-relations",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: triangle-midpoints/midpoint-segment-relations"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "triangle-midpoints/medial-triangle-quarter-area",
+                  "parentId": "triangle-midpoints/equal-area-program",
+                  "nodeType": "result",
+                  "title": "Area of the medial triangle",
+                  "summary": "The midpoint-segment half-length relations make DEF similar to ABC with linear scale factor 1/2. The accepted area-scaling law for similar triangles therefore gives [DEF]=[ABC]/4. The ordinary midpoint-theorem proof is complete; the vector derivation explicitly supplies the same supporting relations.",
+                  "reportSection": "## Node: triangle-midpoints/medial-triangle-quarter-area",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: triangle-midpoints/medial-triangle-quarter-area"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "triangle-midpoints/corner-triangles-quarter-area",
+                  "parentId": "triangle-midpoints/equal-area-program",
+                  "nodeType": "result",
+                  "title": "Areas of the three corner midpoint triangles",
+                  "summary": "The judgments establish [AEF]=[BFD]=[CDE]=[ABC]/4. Accepted justifications include the included-angle area formula, half-scale similarity, vertex-centered homothety, and a base-height calculation in which both the midpoint base and corresponding altitude scale by 1/2. Under nondegeneracy, the three areas are positive.",
+                  "reportSection": "## Node: triangle-midpoints/corner-triangles-quarter-area",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: triangle-midpoints/corner-triangles-quarter-area"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "triangle-midpoints/corner-altitude-scaling",
+                  "parentId": "triangle-midpoints/corner-triangles-quarter-area",
+                  "nodeType": "lemma",
+                  "title": "Altitude scaling under the corner midpoint homothety",
+                  "summary": "Under the factor-1/2 homothety centered at a corner, the opposite side maps to the corresponding midpoint segment and point-to-line distances scale by 1/2. Thus the altitude to the midpoint segment is half, not equal to, the altitude to the original opposite side; cyclic analogues hold at the other vertices. The unsupplied source of the rejected wording limits attribution but not the accepted mathematical conclusion.",
+                  "reportSection": "## Node: triangle-midpoints/corner-altitude-scaling",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "context"
+                    }
+                  ],
+                  "changeSection": "## Change: triangle-midpoints/corner-altitude-scaling"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "triangle-midpoints/equal-area-theorem",
+                  "parentId": "triangle-midpoints/equal-area-program",
+                  "nodeType": "claim",
+                  "title": "Equal-area theorem for the four midpoint triangles",
+                  "summary": "For a nondegenerate triangle ABC with D, E, and F the side midpoints, the judgments establish [AEF]=[BFD]=[CDE]=[DEF]=[ABC]/4. The medial conclusion follows from half-scale similarity, while the corner conclusions follow from the accepted included-angle, similarity, homothety, or corrected base-height arguments. The ordinary mathematical proof is complete independently of machine formalization.",
+                  "reportSection": "## Node: triangle-midpoints/equal-area-theorem",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: triangle-midpoints/equal-area-theorem"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "triangle-midpoints/formalization-status",
+                  "parentId": "triangle-midpoints/equal-area-program",
+                  "nodeType": "question",
+                  "title": "Formalization status and prospective affine methods",
+                  "summary": "Affine invariance and determinant calculations are plausible approaches for a future Lean formalization, but no formal theorem statement, proof-assistant code, machine-checked proof, or independent verification output was supplied. This remains a prospective direction rather than an established formal result and does not affect the completed ordinary proof.",
+                  "reportSection": "## Node: triangle-midpoints/formalization-status",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "relation": "qualifies"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "relation": "qualifies"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "relation": "qualifies"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "context"
+                    }
+                  ],
+                  "changeSection": "## Change: triangle-midpoints/formalization-status"
+                }
+              ]
+            },
+            "state": {
+              "schemaVersion": 3,
+              "problemId": "triangle-midpoints",
+              "rootId": "root",
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "root",
+                  "title": "Research state for triangle-midpoints",
+                  "summary": "The current state contains one established program on the four triangles induced by the side midpoints of a nondegenerate triangle. The midpoint-segment, quarter-area, equal-area, and corrected half-altitude conclusions are established. Affine, determinant, and Lean formalization remain prospective, and no active dispute is required.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+                    "section": "## Node: root"
+                  },
+                  "contentMarkdown": "## Node: root\n\n**Title:** Research state for triangle-midpoints  \n**Type:** Root  \n**Status:** Active  \n**Parent:** None\n\nThe current knowledge state contains one established research program:\n\n- [`triangle-midpoints/equal-area-program`](#node-triangle-midpointsequal-area-program) — the geometric and affine structure of the four triangles determined by the side midpoints of a nondegenerate triangle.\n\nWithin that program, the immutable judgments assess the following current state:\n\n- The midpoint segments are parallel to and half the length of the corresponding sides of the original triangle.\n- The medial triangle \\(DEF\\) and each corner triangle \\(AEF\\), \\(BFD\\), and \\(CDE\\) have area \\([ABC]/4\\).\n- Consequently, the four small triangles have equal positive area under the problem’s nondegeneracy hypothesis.\n- The altitude from a corner to the corresponding midpoint segment is half, not equal to, the altitude to the opposite side.\n- Affine-invariance and determinant methods remain only prospective formalization directions; no formal statement, code, or machine-checked artifact has been supplied.\n\nThe supplied conflict records are empty, and no conflict is designated for preservation as an active dispute.\n\n**Judgment provenance:**\n\n- `sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262`\n- `sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed`\n- `sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3`\n\n**Subject transactions:**\n\n- `64afc12868e150370e6c56e6eeceab6b7aabe158`, ledger position 1\n- `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`, ledger position 2\n- `8bcf66bbd7777ee31f637a0a1a144535feb82ba4`, ledger position 3\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "ledgerPosition": 1
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "ledgerPosition": 2
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "ledgerPosition": 3
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:4d3d99684de555c107da7cf3186a342950d6012d8a74c93e660d88b377dd76f8",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:193a04c232665c03a5caab15462b4345810573ff64b3afe7b6c6db27942ad7e1"
+                },
+                "triangle-midpoints/equal-area-program": {
+                  "id": "triangle-midpoints/equal-area-program",
+                  "parentId": "root",
+                  "type": "program",
+                  "title": "Triangle-midpoint area structure",
+                  "summary": "This program studies the geometric and affine consequences of taking D, E, and F as the side midpoints of a nondegenerate triangle ABC. Established knowledge includes the midpoint-segment relations, quarter-area results for the medial and corner triangles, half-scaling of the relevant corner altitudes, and equality of all four small areas. Formal verification remains prospective, and there is no supplied active mathematical dispute.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+                    "section": "## Node: triangle-midpoints/equal-area-program"
+                  },
+                  "contentMarkdown": "## Node: triangle-midpoints/equal-area-program\n\n**Title:** Triangle-midpoint area structure  \n**Type:** Research program  \n**Status:** Active  \n**Parent:** `root`\n\nThis program studies the geometric and affine consequences of taking \\(D\\), \\(E\\), and \\(F\\) as the midpoints of \\(BC\\), \\(CA\\), and \\(AB\\) in a nondegenerate triangle \\(ABC\\).\n\nThe program’s established ordinary-mathematical knowledge consists of:\n\n1. **Midpoint-segment geometry.** The segments \\(DE\\), \\(EF\\), and \\(FD\\) are respectively parallel to \\(AB\\), \\(BC\\), and \\(CA\\), and each has half the corresponding side length.\n2. **Medial-triangle area.** The triangle \\(DEF\\) is similar to \\(ABC\\) with linear factor \\(1/2\\), and therefore has area \\([ABC]/4\\).\n3. **Corner-triangle areas.** Each of \\(AEF\\), \\(BFD\\), and \\(CDE\\) is a half-scale copy of the original triangle in the appropriate vertex correspondence, and each has area \\([ABC]/4\\).\n4. **Altitude scaling.** Under the corner homothety with factor \\(1/2\\), the relevant base and point-to-line altitude both scale by \\(1/2\\). Parallelism alone does not make the two altitudes equal.\n5. **Equal-area theorem.**\n   \\[\n   [AEF]=[BFD]=[CDE]=[DEF]=\\frac14[ABC].\n   \\]\n   The judgments assess the ordinary Euclidean proof as complete and the main problem as fully solved with high or very high confidence.\n6. **Formalization status.** Affine or determinant approaches are considered plausible for a future Lean formalization, but no formal verification has been established.\n\nThe program contains no supplied active mathematical dispute. The refuted equal-altitude explanation is not supported by an opposing supplied primary judgment; the current judged relation is the \\(1:2\\) altitude ratio.\n\n**Program nodes:**\n\n- `triangle-midpoints/midpoint-segment-relations`\n- `triangle-midpoints/medial-triangle-quarter-area`\n- `triangle-midpoints/corner-triangles-quarter-area`\n- `triangle-midpoints/corner-altitude-scaling`\n- `triangle-midpoints/equal-area-theorem`\n- `triangle-midpoints/formalization-status`\n\n**Credit carried from the judgments:**\n\n- Judgment `sha256:427537...` credits Robert’s transaction with a concise and complete proof using the midpoint theorem, similarity, and area scaling.\n- Judgment `sha256:575cfe...` characterizes transaction `4ccbe3...` as a clear explanatory supplement deriving the midpoint theorem through position vectors. It does not credit that transaction with a new theorem or novel method and notes its disclaimer of originality.\n- Judgment `sha256:ae48d8...` credits Robert’s subject transaction with a valid and useful narrow repair of an ancillary base-height explanation. It does not infer broader historical priority and records the contribution’s disclaimer of originality for the classical midpoint result.\n\n**Evidence:** All three immutable judgments and their three subject transactions listed at the root.\n",
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:45074cc4cd63fa946718dfc5c0d99ff79140490dd900317cb8dfdd85b7003c12",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:0ea96254339e86ff2ba5c15e1dd4a778235220c01e1b6cef2926ebc13d07a520"
+                },
+                "triangle-midpoints/midpoint-segment-relations": {
+                  "id": "triangle-midpoints/midpoint-segment-relations",
+                  "parentId": "triangle-midpoints/equal-area-program",
+                  "type": "lemma",
+                  "title": "Parallelism and half-length relations for triangle midpoint segments",
+                  "summary": "For D=(B+C)/2, E=(C+A)/2, and F=(A+B)/2, the accepted vector identities show EF is parallel to BC, FD is parallel to CA, and DE is parallel to AB, with each midpoint segment having half the length of its corresponding side. Endpoint-order signs do not affect these parallelism or length conclusions.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+                    "section": "## Node: triangle-midpoints/midpoint-segment-relations"
+                  },
+                  "contentMarkdown": "## Node: triangle-midpoints/midpoint-segment-relations\n\n**Title:** Parallelism and half-length relations for triangle midpoint segments  \n**Type:** Lemma  \n**Status:** Established  \n**Parent:** `triangle-midpoints/equal-area-program`\n\nFor the side midpoints\n\n\\[\nD=\\frac{B+C}{2},\\qquad\nE=\\frac{C+A}{2},\\qquad\nF=\\frac{A+B}{2},\n\\]\n\njudgment `sha256:575cfe...` accepts the position-vector identities\n\n\\[\nE-F=\\frac{C-B}{2},\\qquad\nF-D=\\frac{A-C}{2},\\qquad\nD-E=\\frac{B-A}{2}.\n\\]\n\nThe judgment concludes that these identities establish\n\n\\[\nEF\\parallel BC,\\qquad\nFD\\parallel CA,\\qquad\nDE\\parallel AB,\n\\]\n\nand\n\n\\[\n|EF|=\\frac12|BC|,\\qquad\n|FD|=\\frac12|CA|,\\qquad\n|DE|=\\frac12|AB|.\n\\]\n\nChanging endpoint order may change a vector’s sign, but the judgment notes that this does not affect parallelism or length. The same relations are also accepted in judgment `sha256:427537...` through the standard midpoint theorem.\n\nThis lemma supplies the side correspondences used in the medial-triangle similarity result and provides an explicit vector derivation of the geometric midpoint theorem invoked by the original Euclidean proof.\n\n**Assessment carried from the judgments:** Correct, decisive, and supported with very high confidence. The vector derivation is an explanatory supplement rather than a repair of an invalid earlier proof.\n\n**Provenance:**\n\n- Primary judgment: `sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed`\n- Corroborating judgment: `sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262`\n- Subject and direct evidence transaction: `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`\n- Additional evidence transaction: `64afc12868e150370e6c56e6eeceab6b7aabe158`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:ce1ffed76e1f9f162e839db7d7ef788bada338b87dea2e895a1f03787b0f3468",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:7f927a87a657ed44bb5acfa86f7447493438f880df6dc3ea6c8d75ea27285e22"
+                },
+                "triangle-midpoints/medial-triangle-quarter-area": {
+                  "id": "triangle-midpoints/medial-triangle-quarter-area",
+                  "parentId": "triangle-midpoints/equal-area-program",
+                  "type": "result",
+                  "title": "Area of the medial triangle",
+                  "summary": "The midpoint-segment half-length relations make DEF similar to ABC with linear scale factor 1/2. The accepted area-scaling law for similar triangles therefore gives [DEF]=[ABC]/4. The ordinary midpoint-theorem proof is complete; the vector derivation explicitly supplies the same supporting relations.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+                    "section": "## Node: triangle-midpoints/medial-triangle-quarter-area"
+                  },
+                  "contentMarkdown": "## Node: triangle-midpoints/medial-triangle-quarter-area\n\n**Title:** Area of the medial triangle  \n**Type:** Result  \n**Status:** Established  \n**Parent:** `triangle-midpoints/equal-area-program`\n\nThe immutable judgments conclude that the three sides of \\(DEF\\) have half the lengths of the corresponding sides of \\(ABC\\):\n\n\\[\n|DE|=\\frac12|AB|,\\qquad\n|EF|=\\frac12|BC|,\\qquad\n|FD|=\\frac12|CA|.\n\\]\n\nJudgments `sha256:427537...` and `sha256:575cfe...` therefore accept that \\(DEF\\) is similar to \\(ABC\\) with linear scale factor \\(1/2\\), whether similarity is justified through SSS or through the corresponding parallel lines. Applying the accepted area-scaling law for similar triangles gives\n\n\\[\n[DEF]=\\left(\\frac12\\right)^2[ABC]\n     =\\frac14[ABC].\n\\]\n\nThe standard midpoint-theorem invocation is judged sufficient for an ordinary Euclidean proof. The later vector derivation makes the underlying half-length and parallelism relations explicit but is not judged necessary to repair the earlier proof.\n\n**Assessment carried from the judgments:** Correct and complete, with high to very high confidence.\n\n**Credit carried from the judgments:** Judgment `sha256:427537...` credits Robert’s contribution with the concise midpoint-theorem and similarity proof. Judgment `sha256:575cfe...` credits transaction `4ccbe3...` with an explicit algebraic derivation of the supporting midpoint facts, while characterizing it as an explanatory supplement rather than a novel theorem or proof method.\n\n**Provenance:**\n\n- Judgments:\n  - `sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262`\n  - `sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed`\n- Evidence transactions:\n  - `64afc12868e150370e6c56e6eeceab6b7aabe158`\n  - `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`\n",
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:e822bfe0e171d102cb3dc93743f8410392318850199f723ad2ed26eb47b3f5c0",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:d42ae15e62d040870adba303dca7ce94faee78b2580386e151a651d66ff4c5f5"
+                },
+                "triangle-midpoints/corner-triangles-quarter-area": {
+                  "id": "triangle-midpoints/corner-triangles-quarter-area",
+                  "parentId": "triangle-midpoints/equal-area-program",
+                  "type": "result",
+                  "title": "Areas of the three corner midpoint triangles",
+                  "summary": "The judgments establish [AEF]=[BFD]=[CDE]=[ABC]/4. Accepted justifications include the included-angle area formula, half-scale similarity, vertex-centered homothety, and a base-height calculation in which both the midpoint base and corresponding altitude scale by 1/2. Under nondegeneracy, the three areas are positive.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+                    "section": "## Node: triangle-midpoints/corner-triangles-quarter-area"
+                  },
+                  "contentMarkdown": "## Node: triangle-midpoints/corner-triangles-quarter-area\n\n**Title:** Areas of the three corner midpoint triangles  \n**Type:** Result  \n**Status:** Established  \n**Parent:** `triangle-midpoints/equal-area-program`\n\nThe supplied judgments establish\n\n\\[\n[AEF]=[BFD]=[CDE]=\\frac14[ABC].\n\\]\n\nThey accept several compatible ordinary-mathematical justifications:\n\n- For \\(AEF\\),\n  \\[\n  AE=\\frac12 AC,\\qquad AF=\\frac12 AB,\n  \\]\n  while \\(\\angle EAF=\\angle CAB\\). The included-angle area formula therefore gives \\([AEF]=[ABC]/4\\).\n- The corresponding half-length relations also give an SSS similarity between each corner triangle and the appropriately ordered original triangle, with scale factor \\(1/2\\).\n- Equivalently, the factor-\\(1/2\\) homothety centered at each vertex maps the original triangle to its corresponding corner triangle.\n- A base-height proof is valid when both the midpoint base and its corresponding altitude are scaled by \\(1/2\\).\n\nThe judgments accept the cyclic extension to \\(BFD\\) and \\(CDE\\) as direct and unambiguous. They treat the use of “cyclically” as an expository compression, not a missing substantive lemma.\n\nUnder the problem’s nondegeneracy assumption, all three corner triangles have positive unsigned area. Judgment `sha256:575cfe...` additionally observes that the vector relations would produce equal zero areas in a degenerate extension, but the supplied proof is not required to address that extension.\n\n**Assessment carried from the judgments:** Correct and complete, with high to very high confidence.\n\n**Provenance:**\n\n- Judgments:\n  - `sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262`\n  - `sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed`\n  - `sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3`\n- Evidence transactions:\n  - `64afc12868e150370e6c56e6eeceab6b7aabe158`\n  - `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`\n  - `8bcf66bbd7777ee31f637a0a1a144535feb82ba4`\n",
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:d1867460b11d20bc767a411edcd53b3598431e9e25a153388d1af8127a586386",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:81b501d04704b2120a40cae7361084557e47c128da05c46c5ccbd41c3ec2163d"
+                },
+                "triangle-midpoints/corner-altitude-scaling": {
+                  "id": "triangle-midpoints/corner-altitude-scaling",
+                  "parentId": "triangle-midpoints/corner-triangles-quarter-area",
+                  "type": "lemma",
+                  "title": "Altitude scaling under the corner midpoint homothety",
+                  "summary": "Under the factor-1/2 homothety centered at a corner, the opposite side maps to the corresponding midpoint segment and point-to-line distances scale by 1/2. Thus the altitude to the midpoint segment is half, not equal to, the altitude to the original opposite side; cyclic analogues hold at the other vertices. The unsupplied source of the rejected wording limits attribution but not the accepted mathematical conclusion.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+                    "section": "## Node: triangle-midpoints/corner-altitude-scaling"
+                  },
+                  "contentMarkdown": "## Node: triangle-midpoints/corner-altitude-scaling\n\n**Title:** Altitude scaling under the corner midpoint homothety  \n**Type:** Lemma and method constraint  \n**Status:** Established  \n**Parent:** `triangle-midpoints/corner-triangles-quarter-area`\n\nFor the factor-\\(1/2\\) homothety centered at \\(A\\) that sends \\(B\\) to \\(F\\) and \\(C\\) to \\(E\\), judgment `sha256:ae48d8...` concludes that the line \\(BC\\) maps to the line \\(FE\\) and that point-to-line distances scale by \\(1/2\\). Thus\n\n\\[\n\\operatorname{dist}(A,\\overleftrightarrow{EF})\n=\n\\frac12\\operatorname{dist}(A,\\overleftrightarrow{BC}).\n\\]\n\nCyclically, the corresponding altitude relation holds at vertices \\(B\\) and \\(C\\).\n\nThe same judgment refutes the assertion that the altitudes from \\(A\\) to \\(EF\\) and \\(BC\\) are equal merely because the lines are parallel. Its accepted relation is a distance ratio of \\(1:2\\), not equality. Accordingly, the accepted base-height computation uses\n\n\\[\n|EF|=\\frac12|BC|\n\\]\n\nand an altitude to \\(EF\\) equal to half the altitude to \\(BC\\), so both factors scale by \\(1/2\\).\n\nThe nondegeneracy hypothesis ensures that the relevant altitudes are nonzero. The judgment states that the scaling identity itself remains formally meaningful without that positivity.\n\nThis rejected equal-altitude explanation does not undermine the earlier midpoint, similarity, or included-angle arguments. The judgment reports that the erroneous assertion does not occur in the two supplied earlier contribution artifacts.\n\n**Provenance limitation:** The external report allegedly containing the equal-altitude assertion was identified only by a digest and was not supplied. Judgment `sha256:ae48d8...` therefore does not verify that the quoted wording actually appeared in that report or whether it had qualifying context. This limitation concerns attribution only; the judgment nevertheless assesses the quoted mathematical assertion as false and the \\(1/2\\)-scaling relation as correct with high confidence.\n\n**Credit carried from the judgment:** Robert’s subject transaction is credited with a valid and useful narrow repair of an ancillary base-height explanation. The judgment does not assign broader historical priority and records the contribution’s disclaimer of originality.\n\n**Provenance:**\n\n- Primary judgment: `sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3`\n- Subject and direct evidence transaction: `8bcf66bbd7777ee31f637a0a1a144535feb82ba4`\n- Context transactions:\n  - `64afc12868e150370e6c56e6eeceab6b7aabe158`\n  - `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "ledgerPosition": 3
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "context"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:5344507a0d9082758b4b51267eb0065259a124e6f467759e9d8495bc04ad86bc",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:c6c186591d7df227cda0cd108d472be36407643c87f4709b057b38071618136d"
+                },
+                "triangle-midpoints/equal-area-theorem": {
+                  "id": "triangle-midpoints/equal-area-theorem",
+                  "parentId": "triangle-midpoints/equal-area-program",
+                  "type": "claim",
+                  "title": "Equal-area theorem for the four midpoint triangles",
+                  "summary": "For a nondegenerate triangle ABC with D, E, and F the side midpoints, the judgments establish [AEF]=[BFD]=[CDE]=[DEF]=[ABC]/4. The medial conclusion follows from half-scale similarity, while the corner conclusions follow from the accepted included-angle, similarity, homothety, or corrected base-height arguments. The ordinary mathematical proof is complete independently of machine formalization.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+                    "section": "## Node: triangle-midpoints/equal-area-theorem"
+                  },
+                  "contentMarkdown": "## Node: triangle-midpoints/equal-area-theorem\n\n**Title:** Equal-area theorem for the four midpoint triangles  \n**Type:** Theorem  \n**Status:** Established  \n**Parent:** `triangle-midpoints/equal-area-program`\n\nFor a nondegenerate triangle \\(ABC\\), with \\(D\\), \\(E\\), and \\(F\\) the midpoints of \\(BC\\), \\(CA\\), and \\(AB\\), respectively, the immutable judgments establish\n\n\\[\n[AEF]=[BFD]=[CDE]=[DEF]=\\frac14[ABC].\n\\]\n\nThe medial-triangle conclusion follows from its accepted half-scale similarity to \\(ABC\\). The three corner conclusions follow from the accepted included-angle, similarity, or homothety arguments. The corrected base-height argument is also valid when both the base and altitude are scaled by \\(1/2\\).\n\nJudgment `sha256:427537...` states that no separate partition argument is required because every small triangle is independently shown to have one quarter of the total area. It therefore finds no circularity. Judgments `sha256:427537...` and `sha256:ae48d8...` assess the main problem as fully solved, with a complete ordinary mathematical proof and high confidence. Judgment `sha256:575cfe...` likewise assesses the combined elementary proof as complete with very high confidence.\n\nThe nondegeneracy assumption gives \\([ABC]>0\\) and makes the four asserted equal areas positive. The vector judgment observes that a degenerate extension would yield equal zero areas, but no such extension is required by the problem.\n\nThe theorem’s ordinary mathematical status is independent of the absence of a machine-checked formalization.\n\n**Provenance:**\n\n- Judgments:\n  - `sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262`\n  - `sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed`\n  - `sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3`\n- Evidence transactions:\n  - `64afc12868e150370e6c56e6eeceab6b7aabe158`\n  - `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`\n  - `8bcf66bbd7777ee31f637a0a1a144535feb82ba4`\n",
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:d1a6dbf5830e0c3519a38639c5601b2903b3f65c2350f5dbf0df2f56589b7b05",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:dcfbc02389c83fba5e28994cf124f8b01359343eb91d9108e4b380378e2c3387"
+                },
+                "triangle-midpoints/formalization-status": {
+                  "id": "triangle-midpoints/formalization-status",
+                  "parentId": "triangle-midpoints/equal-area-program",
+                  "type": "question",
+                  "title": "Formalization status and prospective affine methods",
+                  "summary": "Affine invariance and determinant calculations are plausible approaches for a future Lean formalization, but no formal theorem statement, proof-assistant code, machine-checked proof, or independent verification output was supplied. This remains a prospective direction rather than an established formal result and does not affect the completed ordinary proof.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+                    "section": "## Node: triangle-midpoints/formalization-status"
+                  },
+                  "contentMarkdown": "## Node: triangle-midpoints/formalization-status\n\n**Title:** Formalization status and prospective affine methods  \n**Type:** Research direction and verification status  \n**Status:** Open  \n**Parent:** `triangle-midpoints/equal-area-program`\n\nAffine invariance and determinant calculations are judged mathematically plausible approaches for a future Lean formalization of the triangle-midpoint equal-area theorem.\n\nNo supplied evidence contains:\n\n- a formal theorem statement,\n- Lean or other proof-assistant code,\n- a machine-checked proof artifact, or\n- independent formal-verification output.\n\nAccordingly, the immutable judgments support only the completed ordinary Euclidean and vector mathematics, not a claim of completed formal verification. The absence of a formal artifact does not weaken the judgments’ assessment that the elementary paper proof is correct and complete.\n\nThis node records a prospective direction rather than an established formal result. No separate formalization research program is established by the available evidence.\n\n**Provenance:**\n\n- Judgment `sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262`, qualifying finding on affine invariance or determinants\n- Judgment `sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed`, confirmation that no Lean artifact or formal verification was supplied\n- Judgment `sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3`, confirmation that the earlier formalization mention remains only a proposal\n- Evidence transactions:\n  - `64afc12868e150370e6c56e6eeceab6b7aabe158`\n  - `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`\n  - `8bcf66bbd7777ee31f637a0a1a144535feb82ba4`\n",
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                      "relation": "qualifies"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                      "relation": "qualifies"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                      "relation": "qualifies"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                      "digest": null,
+                      "relation": "context"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:3bf454b8d37ddbdc0327cbc7641a6acc6c5cf38cd65b48709867ac1ac90cf2d2",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:3cc3e1ab0c86f93a4a02d2a5fb01b1c13c2442d754efd9180b455427f6e39961"
+                }
+              },
+              "stateDigest": "sha256:26910c6915538efe4795ee7301d35c615fd1d82be6515babdc621e0c120b31d5"
+            },
+            "revisionIds": [
+              "sha256:4d3d99684de555c107da7cf3186a342950d6012d8a74c93e660d88b377dd76f8",
+              "sha256:45074cc4cd63fa946718dfc5c0d99ff79140490dd900317cb8dfdd85b7003c12",
+              "sha256:ce1ffed76e1f9f162e839db7d7ef788bada338b87dea2e895a1f03787b0f3468",
+              "sha256:e822bfe0e171d102cb3dc93743f8410392318850199f723ad2ed26eb47b3f5c0",
+              "sha256:d1867460b11d20bc767a411edcd53b3598431e9e25a153388d1af8127a586386",
+              "sha256:5344507a0d9082758b4b51267eb0065259a124e6f467759e9d8495bc04ad86bc",
+              "sha256:d1a6dbf5830e0c3519a38639c5601b2903b3f65c2350f5dbf0df2f56589b7b05",
+              "sha256:3bf454b8d37ddbdc0327cbc7641a6acc6c5cf38cd65b48709867ac1ac90cf2d2"
+            ],
+            "addedRevisionIds": [
+              "sha256:4d3d99684de555c107da7cf3186a342950d6012d8a74c93e660d88b377dd76f8",
+              "sha256:45074cc4cd63fa946718dfc5c0d99ff79140490dd900317cb8dfdd85b7003c12",
+              "sha256:ce1ffed76e1f9f162e839db7d7ef788bada338b87dea2e895a1f03787b0f3468",
+              "sha256:e822bfe0e171d102cb3dc93743f8410392318850199f723ad2ed26eb47b3f5c0",
+              "sha256:d1867460b11d20bc767a411edcd53b3598431e9e25a153388d1af8127a586386",
+              "sha256:5344507a0d9082758b4b51267eb0065259a124e6f467759e9d8495bc04ad86bc",
+              "sha256:d1a6dbf5830e0c3519a38639c5601b2903b3f65c2350f5dbf0df2f56589b7b05",
+              "sha256:3bf454b8d37ddbdc0327cbc7641a6acc6c5cf38cd65b48709867ac1ac90cf2d2"
+            ],
+            "changedNodeIds": [
+              "root",
+              "triangle-midpoints/equal-area-program",
+              "triangle-midpoints/midpoint-segment-relations",
+              "triangle-midpoints/medial-triangle-quarter-area",
+              "triangle-midpoints/corner-triangles-quarter-area",
+              "triangle-midpoints/corner-altitude-scaling",
+              "triangle-midpoints/equal-area-theorem",
+              "triangle-midpoints/formalization-status"
+            ],
+            "reportDigest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+            "revisionSemantics": "neutral-knowledge"
+          }
+        ],
+        "revisions": [
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "The previous root reported that no research programs existed. The three supplied judgments now support a coherent, durable triangle-midpoint area program with an established theorem, supporting lemmas and methods, a corrected altitude relation, and a distinct uncompleted formalization direction.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Change: root"
+            },
+            "contentDigest": "sha256:a434b27851eecd3e8c36f0ffd678be9a204288b8602fa4f8381afd7ab9b91996",
+            "evidence": [
+              {
+                "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "root",
+            "nodeType": "root",
+            "parentId": null,
+            "recordedAtLedgerHead": "a7acd1ec3554f51b381784ff2f84663b88e9c262",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Node: root"
+            },
+            "revisionId": "sha256:4d3d99684de555c107da7cf3186a342950d6012d8a74c93e660d88b377dd76f8",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              },
+              {
+                "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              },
+              {
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "ledgerPosition": 3
+              }
+            ],
+            "summary": "The current state contains one established program on the four triangles induced by the side midpoints of a nondegenerate triangle. The midpoint-segment, quarter-area, equal-area, and corrected half-altitude conclusions are established. Affine, determinant, and Lean formalization remain prospective, and no active dispute is required.",
+            "title": "Research state for triangle-midpoints"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This program is created because the judged theorem, its midpoint and homothety lemmas, and the prospective formalization direction form one enduring mathematical agenda. They are organized together rather than as transaction-shaped nodes, and no separate formalization program is created because formal verification remains only a proposed direction.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Change: triangle-midpoints/equal-area-program"
+            },
+            "contentDigest": "sha256:269ddc6997e9d4d9c4e5383fb5feb9f48b4efd6ad3779092dfc136e0afedc34b",
+            "evidence": [
+              {
+                "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "triangle-midpoints/equal-area-program",
+            "nodeType": "program",
+            "parentId": "root",
+            "recordedAtLedgerHead": "a7acd1ec3554f51b381784ff2f84663b88e9c262",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Node: triangle-midpoints/equal-area-program"
+            },
+            "revisionId": "sha256:45074cc4cd63fa946718dfc5c0d99ff79140490dd900317cb8dfdd85b7003c12",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [],
+            "summary": "This program studies the geometric and affine consequences of taking D, E, and F as the side midpoints of a nondegenerate triangle ABC. Established knowledge includes the midpoint-segment relations, quarter-area results for the medial and corner triangles, half-scaling of the relevant corner altitudes, and equality of all four small areas. Formal verification remains prospective, and there is no supplied active mathematical dispute.",
+            "title": "Triangle-midpoint area structure"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This lemma is materialized as a distinct durable concept because the vector identities independently establish the midpoint-segment geometry used by several area arguments. The cited judgment specifically distinguishes this derivation from the transaction event that supplied it.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Change: triangle-midpoints/midpoint-segment-relations"
+            },
+            "contentDigest": "sha256:d612892ebefe4226e7e81ae667a86776f2917531144c75f31866c26238e69198",
+            "evidence": [
+              {
+                "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                "kind": "transaction",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "triangle-midpoints/midpoint-segment-relations",
+            "nodeType": "lemma",
+            "parentId": "triangle-midpoints/equal-area-program",
+            "recordedAtLedgerHead": "a7acd1ec3554f51b381784ff2f84663b88e9c262",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Node: triangle-midpoints/midpoint-segment-relations"
+            },
+            "revisionId": "sha256:ce1ffed76e1f9f162e839db7d7ef788bada338b87dea2e895a1f03787b0f3468",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "For D=(B+C)/2, E=(C+A)/2, and F=(A+B)/2, the accepted vector identities show EF is parallel to BC, FD is parallel to CA, and DE is parallel to AB, with each midpoint segment having half the length of its corresponding side. Endpoint-order signs do not affect these parallelism or length conclusions.",
+            "title": "Parallelism and half-length relations for triangle midpoint segments"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This result is created separately from the midpoint-segment lemma because it records the durable area consequence of the accepted half-scale similarity, rather than the underlying segment relations themselves.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Change: triangle-midpoints/medial-triangle-quarter-area"
+            },
+            "contentDigest": "sha256:c4d804f7820f3e254ee4d908b46084fb97f31e708d2933a37f608d52ca6f60cd",
+            "evidence": [
+              {
+                "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                "kind": "transaction",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "triangle-midpoints/medial-triangle-quarter-area",
+            "nodeType": "result",
+            "parentId": "triangle-midpoints/equal-area-program",
+            "recordedAtLedgerHead": "a7acd1ec3554f51b381784ff2f84663b88e9c262",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Node: triangle-midpoints/medial-triangle-quarter-area"
+            },
+            "revisionId": "sha256:e822bfe0e171d102cb3dc93743f8410392318850199f723ad2ed26eb47b3f5c0",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [],
+            "summary": "The midpoint-segment half-length relations make DEF similar to ABC with linear scale factor 1/2. The accepted area-scaling law for similar triangles therefore gives [DEF]=[ABC]/4. The ordinary midpoint-theorem proof is complete; the vector derivation explicitly supplies the same supporting relations.",
+            "title": "Area of the medial triangle"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This result is created as the stable home for the accepted quarter-area conclusions for all three corner triangles. It consolidates the included-angle, similarity, homothety, and corrected base-height routes without treating any contributing transaction as a knowledge node.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Change: triangle-midpoints/corner-triangles-quarter-area"
+            },
+            "contentDigest": "sha256:9a5305dc1356b612322773d46e13e9c6deb92d70da2904255fc687cfed80fcdf",
+            "evidence": [
+              {
+                "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "triangle-midpoints/corner-triangles-quarter-area",
+            "nodeType": "result",
+            "parentId": "triangle-midpoints/equal-area-program",
+            "recordedAtLedgerHead": "a7acd1ec3554f51b381784ff2f84663b88e9c262",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Node: triangle-midpoints/corner-triangles-quarter-area"
+            },
+            "revisionId": "sha256:d1867460b11d20bc767a411edcd53b3598431e9e25a153388d1af8127a586386",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [],
+            "summary": "The judgments establish [AEF]=[BFD]=[CDE]=[ABC]/4. Accepted justifications include the included-angle area formula, half-scale similarity, vertex-centered homothety, and a base-height calculation in which both the midpoint base and corresponding altitude scale by 1/2. Under nondegeneracy, the three areas are positive.",
+            "title": "Areas of the three corner midpoint triangles"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This node is created beneath the corner-area result because the judged altitude ratio is a reusable geometric lemma and a necessary constraint on the base-height method. It also preserves the judgment’s attribution limitation without creating an unsupported conflict or report-shaped node.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Change: triangle-midpoints/corner-altitude-scaling"
+            },
+            "contentDigest": "sha256:a1dc7d7d399aa513dd9f9de3e0711afc2b5dc9556ffa4e660dec325e61e80840",
+            "evidence": [
+              {
+                "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                "kind": "transaction",
+                "relation": "context"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "triangle-midpoints/corner-altitude-scaling",
+            "nodeType": "lemma",
+            "parentId": "triangle-midpoints/corner-triangles-quarter-area",
+            "recordedAtLedgerHead": "a7acd1ec3554f51b381784ff2f84663b88e9c262",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Node: triangle-midpoints/corner-altitude-scaling"
+            },
+            "revisionId": "sha256:5344507a0d9082758b4b51267eb0065259a124e6f467759e9d8495bc04ad86bc",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "ledgerPosition": 3
+              }
+            ],
+            "summary": "Under the factor-1/2 homothety centered at a corner, the opposite side maps to the corresponding midpoint segment and point-to-line distances scale by 1/2. Thus the altitude to the midpoint segment is half, not equal to, the altitude to the original opposite side; cyclic analogues hold at the other vertices. The unsupplied source of the rejected wording limits attribution but not the accepted mathematical conclusion.",
+            "title": "Altitude scaling under the corner midpoint homothety"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This theorem node is created as the stable home for the central result independently supported by all three judgments. It records the complete current theorem status while leaving its component lemmas and proof methods in their own durable nodes.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Change: triangle-midpoints/equal-area-theorem"
+            },
+            "contentDigest": "sha256:7d6439b7e271dd46055ff1c7962d88ba58a229bd07b672a34c61b1430706b3a6",
+            "evidence": [
+              {
+                "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "triangle-midpoints/equal-area-theorem",
+            "nodeType": "claim",
+            "parentId": "triangle-midpoints/equal-area-program",
+            "recordedAtLedgerHead": "a7acd1ec3554f51b381784ff2f84663b88e9c262",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Node: triangle-midpoints/equal-area-theorem"
+            },
+            "revisionId": "sha256:d1a6dbf5830e0c3519a38639c5601b2903b3f65c2350f5dbf0df2f56589b7b05",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [],
+            "summary": "For a nondegenerate triangle ABC with D, E, and F the side midpoints, the judgments establish [AEF]=[BFD]=[CDE]=[DEF]=[ABC]/4. The medial conclusion follows from half-scale similarity, while the corner conclusions follow from the accepted included-angle, similarity, homothety, or corrected base-height arguments. The ordinary mathematical proof is complete independently of machine formalization.",
+            "title": "Equal-area theorem for the four midpoint triangles"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This node is created to preserve the judgments’ explicit distinction between a plausible future formalization route and completed machine verification. It remains within the established program because the evidence does not support an independent formalization program or a verified formal result.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Change: triangle-midpoints/formalization-status"
+            },
+            "contentDigest": "sha256:10d58b85fb36e9b6849a50bb48ba1b434d61af5f51db8d384100914eac53e822",
+            "evidence": [
+              {
+                "digest": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "id": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262",
+                "kind": "judgment",
+                "relation": "qualifies"
+              },
+              {
+                "digest": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "id": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed",
+                "kind": "judgment",
+                "relation": "qualifies"
+              },
+              {
+                "digest": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                "id": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3",
+                "kind": "judgment",
+                "relation": "qualifies"
+              },
+              {
+                "digest": null,
+                "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "kind": "transaction",
+                "relation": "context"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "triangle-midpoints/formalization-status",
+            "nodeType": "question",
+            "parentId": "triangle-midpoints/equal-area-program",
+            "recordedAtLedgerHead": "a7acd1ec3554f51b381784ff2f84663b88e9c262",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+              "section": "## Node: triangle-midpoints/formalization-status"
+            },
+            "revisionId": "sha256:3bf454b8d37ddbdc0327cbc7641a6acc6c5cf38cd65b48709867ac1ac90cf2d2",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [],
+            "summary": "Affine invariance and determinant calculations are plausible approaches for a future Lean formalization, but no formal theorem statement, proof-assistant code, machine-checked proof, or independent verification output was supplied. This remains a prospective direction rather than an established formal result and does not affect the completed ordinary proof.",
+            "title": "Formalization status and prospective affine methods"
+          }
+        ],
+        "reports": [
+          {
+            "runId": "974fa19e9d53381387c8bae94b115a357d90fe783f25135c216e32ca16e0f3ba",
+            "digest": "sha256:e967a536546649d8e8c990aea26769420f6c85ec79a6df718972ff79f5fc455e",
+            "markdown": "# Knowledge-Formation Report\n\nThe supplied judgments establish one durable research program concerning the area structure induced by the three side midpoints of a triangle. The organization below preserves the accepted Euclidean, vector, similarity, and homothety conclusions; records the corrected altitude relation; and keeps prospective formalization separate from established verification. No conflict records or reconciliation outcomes were supplied, so no active dispute node is required.\n\n## Node: root\n\n**Title:** Research state for triangle-midpoints  \n**Type:** Root  \n**Status:** Active  \n**Parent:** None\n\nThe current knowledge state contains one established research program:\n\n- [`triangle-midpoints/equal-area-program`](#node-triangle-midpointsequal-area-program) — the geometric and affine structure of the four triangles determined by the side midpoints of a nondegenerate triangle.\n\nWithin that program, the immutable judgments assess the following current state:\n\n- The midpoint segments are parallel to and half the length of the corresponding sides of the original triangle.\n- The medial triangle \\(DEF\\) and each corner triangle \\(AEF\\), \\(BFD\\), and \\(CDE\\) have area \\([ABC]/4\\).\n- Consequently, the four small triangles have equal positive area under the problem’s nondegeneracy hypothesis.\n- The altitude from a corner to the corresponding midpoint segment is half, not equal to, the altitude to the opposite side.\n- Affine-invariance and determinant methods remain only prospective formalization directions; no formal statement, code, or machine-checked artifact has been supplied.\n\nThe supplied conflict records are empty, and no conflict is designated for preservation as an active dispute.\n\n**Judgment provenance:**\n\n- `sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262`\n- `sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed`\n- `sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3`\n\n**Subject transactions:**\n\n- `64afc12868e150370e6c56e6eeceab6b7aabe158`, ledger position 1\n- `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`, ledger position 2\n- `8bcf66bbd7777ee31f637a0a1a144535feb82ba4`, ledger position 3\n\n## Change: root\n\nThe previous root reported that no research programs existed. The three supplied judgments now support a coherent, durable triangle-midpoint area program with an established theorem, supporting lemmas and methods, a corrected altitude relation, and a distinct uncompleted formalization direction.\n\n## Node: triangle-midpoints/equal-area-program\n\n**Title:** Triangle-midpoint area structure  \n**Type:** Research program  \n**Status:** Active  \n**Parent:** `root`\n\nThis program studies the geometric and affine consequences of taking \\(D\\), \\(E\\), and \\(F\\) as the midpoints of \\(BC\\), \\(CA\\), and \\(AB\\) in a nondegenerate triangle \\(ABC\\).\n\nThe program’s established ordinary-mathematical knowledge consists of:\n\n1. **Midpoint-segment geometry.** The segments \\(DE\\), \\(EF\\), and \\(FD\\) are respectively parallel to \\(AB\\), \\(BC\\), and \\(CA\\), and each has half the corresponding side length.\n2. **Medial-triangle area.** The triangle \\(DEF\\) is similar to \\(ABC\\) with linear factor \\(1/2\\), and therefore has area \\([ABC]/4\\).\n3. **Corner-triangle areas.** Each of \\(AEF\\), \\(BFD\\), and \\(CDE\\) is a half-scale copy of the original triangle in the appropriate vertex correspondence, and each has area \\([ABC]/4\\).\n4. **Altitude scaling.** Under the corner homothety with factor \\(1/2\\), the relevant base and point-to-line altitude both scale by \\(1/2\\). Parallelism alone does not make the two altitudes equal.\n5. **Equal-area theorem.**\n   \\[\n   [AEF]=[BFD]=[CDE]=[DEF]=\\frac14[ABC].\n   \\]\n   The judgments assess the ordinary Euclidean proof as complete and the main problem as fully solved with high or very high confidence.\n6. **Formalization status.** Affine or determinant approaches are considered plausible for a future Lean formalization, but no formal verification has been established.\n\nThe program contains no supplied active mathematical dispute. The refuted equal-altitude explanation is not supported by an opposing supplied primary judgment; the current judged relation is the \\(1:2\\) altitude ratio.\n\n**Program nodes:**\n\n- `triangle-midpoints/midpoint-segment-relations`\n- `triangle-midpoints/medial-triangle-quarter-area`\n- `triangle-midpoints/corner-triangles-quarter-area`\n- `triangle-midpoints/corner-altitude-scaling`\n- `triangle-midpoints/equal-area-theorem`\n- `triangle-midpoints/formalization-status`\n\n**Credit carried from the judgments:**\n\n- Judgment `sha256:427537...` credits Robert’s transaction with a concise and complete proof using the midpoint theorem, similarity, and area scaling.\n- Judgment `sha256:575cfe...` characterizes transaction `4ccbe3...` as a clear explanatory supplement deriving the midpoint theorem through position vectors. It does not credit that transaction with a new theorem or novel method and notes its disclaimer of originality.\n- Judgment `sha256:ae48d8...` credits Robert’s subject transaction with a valid and useful narrow repair of an ancillary base-height explanation. It does not infer broader historical priority and records the contribution’s disclaimer of originality for the classical midpoint result.\n\n**Evidence:** All three immutable judgments and their three subject transactions listed at the root.\n\n## Change: triangle-midpoints/equal-area-program\n\nThis program is created because the judged theorem, its midpoint and homothety lemmas, and the prospective formalization direction form one enduring mathematical agenda. They are organized together rather than as transaction-shaped nodes, and no separate formalization program is created because formal verification remains only a proposed direction.\n\n## Node: triangle-midpoints/midpoint-segment-relations\n\n**Title:** Parallelism and half-length relations for triangle midpoint segments  \n**Type:** Lemma  \n**Status:** Established  \n**Parent:** `triangle-midpoints/equal-area-program`\n\nFor the side midpoints\n\n\\[\nD=\\frac{B+C}{2},\\qquad\nE=\\frac{C+A}{2},\\qquad\nF=\\frac{A+B}{2},\n\\]\n\njudgment `sha256:575cfe...` accepts the position-vector identities\n\n\\[\nE-F=\\frac{C-B}{2},\\qquad\nF-D=\\frac{A-C}{2},\\qquad\nD-E=\\frac{B-A}{2}.\n\\]\n\nThe judgment concludes that these identities establish\n\n\\[\nEF\\parallel BC,\\qquad\nFD\\parallel CA,\\qquad\nDE\\parallel AB,\n\\]\n\nand\n\n\\[\n|EF|=\\frac12|BC|,\\qquad\n|FD|=\\frac12|CA|,\\qquad\n|DE|=\\frac12|AB|.\n\\]\n\nChanging endpoint order may change a vector’s sign, but the judgment notes that this does not affect parallelism or length. The same relations are also accepted in judgment `sha256:427537...` through the standard midpoint theorem.\n\nThis lemma supplies the side correspondences used in the medial-triangle similarity result and provides an explicit vector derivation of the geometric midpoint theorem invoked by the original Euclidean proof.\n\n**Assessment carried from the judgments:** Correct, decisive, and supported with very high confidence. The vector derivation is an explanatory supplement rather than a repair of an invalid earlier proof.\n\n**Provenance:**\n\n- Primary judgment: `sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed`\n- Corroborating judgment: `sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262`\n- Subject and direct evidence transaction: `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`\n- Additional evidence transaction: `64afc12868e150370e6c56e6eeceab6b7aabe158`\n\n## Change: triangle-midpoints/midpoint-segment-relations\n\nThis lemma is materialized as a distinct durable concept because the vector identities independently establish the midpoint-segment geometry used by several area arguments. The cited judgment specifically distinguishes this derivation from the transaction event that supplied it.\n\n## Node: triangle-midpoints/medial-triangle-quarter-area\n\n**Title:** Area of the medial triangle  \n**Type:** Result  \n**Status:** Established  \n**Parent:** `triangle-midpoints/equal-area-program`\n\nThe immutable judgments conclude that the three sides of \\(DEF\\) have half the lengths of the corresponding sides of \\(ABC\\):\n\n\\[\n|DE|=\\frac12|AB|,\\qquad\n|EF|=\\frac12|BC|,\\qquad\n|FD|=\\frac12|CA|.\n\\]\n\nJudgments `sha256:427537...` and `sha256:575cfe...` therefore accept that \\(DEF\\) is similar to \\(ABC\\) with linear scale factor \\(1/2\\), whether similarity is justified through SSS or through the corresponding parallel lines. Applying the accepted area-scaling law for similar triangles gives\n\n\\[\n[DEF]=\\left(\\frac12\\right)^2[ABC]\n     =\\frac14[ABC].\n\\]\n\nThe standard midpoint-theorem invocation is judged sufficient for an ordinary Euclidean proof. The later vector derivation makes the underlying half-length and parallelism relations explicit but is not judged necessary to repair the earlier proof.\n\n**Assessment carried from the judgments:** Correct and complete, with high to very high confidence.\n\n**Credit carried from the judgments:** Judgment `sha256:427537...` credits Robert’s contribution with the concise midpoint-theorem and similarity proof. Judgment `sha256:575cfe...` credits transaction `4ccbe3...` with an explicit algebraic derivation of the supporting midpoint facts, while characterizing it as an explanatory supplement rather than a novel theorem or proof method.\n\n**Provenance:**\n\n- Judgments:\n  - `sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262`\n  - `sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed`\n- Evidence transactions:\n  - `64afc12868e150370e6c56e6eeceab6b7aabe158`\n  - `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`\n\n## Change: triangle-midpoints/medial-triangle-quarter-area\n\nThis result is created separately from the midpoint-segment lemma because it records the durable area consequence of the accepted half-scale similarity, rather than the underlying segment relations themselves.\n\n## Node: triangle-midpoints/corner-triangles-quarter-area\n\n**Title:** Areas of the three corner midpoint triangles  \n**Type:** Result  \n**Status:** Established  \n**Parent:** `triangle-midpoints/equal-area-program`\n\nThe supplied judgments establish\n\n\\[\n[AEF]=[BFD]=[CDE]=\\frac14[ABC].\n\\]\n\nThey accept several compatible ordinary-mathematical justifications:\n\n- For \\(AEF\\),\n  \\[\n  AE=\\frac12 AC,\\qquad AF=\\frac12 AB,\n  \\]\n  while \\(\\angle EAF=\\angle CAB\\). The included-angle area formula therefore gives \\([AEF]=[ABC]/4\\).\n- The corresponding half-length relations also give an SSS similarity between each corner triangle and the appropriately ordered original triangle, with scale factor \\(1/2\\).\n- Equivalently, the factor-\\(1/2\\) homothety centered at each vertex maps the original triangle to its corresponding corner triangle.\n- A base-height proof is valid when both the midpoint base and its corresponding altitude are scaled by \\(1/2\\).\n\nThe judgments accept the cyclic extension to \\(BFD\\) and \\(CDE\\) as direct and unambiguous. They treat the use of “cyclically” as an expository compression, not a missing substantive lemma.\n\nUnder the problem’s nondegeneracy assumption, all three corner triangles have positive unsigned area. Judgment `sha256:575cfe...` additionally observes that the vector relations would produce equal zero areas in a degenerate extension, but the supplied proof is not required to address that extension.\n\n**Assessment carried from the judgments:** Correct and complete, with high to very high confidence.\n\n**Provenance:**\n\n- Judgments:\n  - `sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262`\n  - `sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed`\n  - `sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3`\n- Evidence transactions:\n  - `64afc12868e150370e6c56e6eeceab6b7aabe158`\n  - `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`\n  - `8bcf66bbd7777ee31f637a0a1a144535feb82ba4`\n\n## Change: triangle-midpoints/corner-triangles-quarter-area\n\nThis result is created as the stable home for the accepted quarter-area conclusions for all three corner triangles. It consolidates the included-angle, similarity, homothety, and corrected base-height routes without treating any contributing transaction as a knowledge node.\n\n## Node: triangle-midpoints/corner-altitude-scaling\n\n**Title:** Altitude scaling under the corner midpoint homothety  \n**Type:** Lemma and method constraint  \n**Status:** Established  \n**Parent:** `triangle-midpoints/corner-triangles-quarter-area`\n\nFor the factor-\\(1/2\\) homothety centered at \\(A\\) that sends \\(B\\) to \\(F\\) and \\(C\\) to \\(E\\), judgment `sha256:ae48d8...` concludes that the line \\(BC\\) maps to the line \\(FE\\) and that point-to-line distances scale by \\(1/2\\). Thus\n\n\\[\n\\operatorname{dist}(A,\\overleftrightarrow{EF})\n=\n\\frac12\\operatorname{dist}(A,\\overleftrightarrow{BC}).\n\\]\n\nCyclically, the corresponding altitude relation holds at vertices \\(B\\) and \\(C\\).\n\nThe same judgment refutes the assertion that the altitudes from \\(A\\) to \\(EF\\) and \\(BC\\) are equal merely because the lines are parallel. Its accepted relation is a distance ratio of \\(1:2\\), not equality. Accordingly, the accepted base-height computation uses\n\n\\[\n|EF|=\\frac12|BC|\n\\]\n\nand an altitude to \\(EF\\) equal to half the altitude to \\(BC\\), so both factors scale by \\(1/2\\).\n\nThe nondegeneracy hypothesis ensures that the relevant altitudes are nonzero. The judgment states that the scaling identity itself remains formally meaningful without that positivity.\n\nThis rejected equal-altitude explanation does not undermine the earlier midpoint, similarity, or included-angle arguments. The judgment reports that the erroneous assertion does not occur in the two supplied earlier contribution artifacts.\n\n**Provenance limitation:** The external report allegedly containing the equal-altitude assertion was identified only by a digest and was not supplied. Judgment `sha256:ae48d8...` therefore does not verify that the quoted wording actually appeared in that report or whether it had qualifying context. This limitation concerns attribution only; the judgment nevertheless assesses the quoted mathematical assertion as false and the \\(1/2\\)-scaling relation as correct with high confidence.\n\n**Credit carried from the judgment:** Robert’s subject transaction is credited with a valid and useful narrow repair of an ancillary base-height explanation. The judgment does not assign broader historical priority and records the contribution’s disclaimer of originality.\n\n**Provenance:**\n\n- Primary judgment: `sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3`\n- Subject and direct evidence transaction: `8bcf66bbd7777ee31f637a0a1a144535feb82ba4`\n- Context transactions:\n  - `64afc12868e150370e6c56e6eeceab6b7aabe158`\n  - `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`\n\n## Change: triangle-midpoints/corner-altitude-scaling\n\nThis node is created beneath the corner-area result because the judged altitude ratio is a reusable geometric lemma and a necessary constraint on the base-height method. It also preserves the judgment’s attribution limitation without creating an unsupported conflict or report-shaped node.\n\n## Node: triangle-midpoints/equal-area-theorem\n\n**Title:** Equal-area theorem for the four midpoint triangles  \n**Type:** Theorem  \n**Status:** Established  \n**Parent:** `triangle-midpoints/equal-area-program`\n\nFor a nondegenerate triangle \\(ABC\\), with \\(D\\), \\(E\\), and \\(F\\) the midpoints of \\(BC\\), \\(CA\\), and \\(AB\\), respectively, the immutable judgments establish\n\n\\[\n[AEF]=[BFD]=[CDE]=[DEF]=\\frac14[ABC].\n\\]\n\nThe medial-triangle conclusion follows from its accepted half-scale similarity to \\(ABC\\). The three corner conclusions follow from the accepted included-angle, similarity, or homothety arguments. The corrected base-height argument is also valid when both the base and altitude are scaled by \\(1/2\\).\n\nJudgment `sha256:427537...` states that no separate partition argument is required because every small triangle is independently shown to have one quarter of the total area. It therefore finds no circularity. Judgments `sha256:427537...` and `sha256:ae48d8...` assess the main problem as fully solved, with a complete ordinary mathematical proof and high confidence. Judgment `sha256:575cfe...` likewise assesses the combined elementary proof as complete with very high confidence.\n\nThe nondegeneracy assumption gives \\([ABC]>0\\) and makes the four asserted equal areas positive. The vector judgment observes that a degenerate extension would yield equal zero areas, but no such extension is required by the problem.\n\nThe theorem’s ordinary mathematical status is independent of the absence of a machine-checked formalization.\n\n**Provenance:**\n\n- Judgments:\n  - `sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262`\n  - `sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed`\n  - `sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3`\n- Evidence transactions:\n  - `64afc12868e150370e6c56e6eeceab6b7aabe158`\n  - `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`\n  - `8bcf66bbd7777ee31f637a0a1a144535feb82ba4`\n\n## Change: triangle-midpoints/equal-area-theorem\n\nThis theorem node is created as the stable home for the central result independently supported by all three judgments. It records the complete current theorem status while leaving its component lemmas and proof methods in their own durable nodes.\n\n## Node: triangle-midpoints/formalization-status\n\n**Title:** Formalization status and prospective affine methods  \n**Type:** Research direction and verification status  \n**Status:** Open  \n**Parent:** `triangle-midpoints/equal-area-program`\n\nAffine invariance and determinant calculations are judged mathematically plausible approaches for a future Lean formalization of the triangle-midpoint equal-area theorem.\n\nNo supplied evidence contains:\n\n- a formal theorem statement,\n- Lean or other proof-assistant code,\n- a machine-checked proof artifact, or\n- independent formal-verification output.\n\nAccordingly, the immutable judgments support only the completed ordinary Euclidean and vector mathematics, not a claim of completed formal verification. The absence of a formal artifact does not weaken the judgments’ assessment that the elementary paper proof is correct and complete.\n\nThis node records a prospective direction rather than an established formal result. No separate formalization research program is established by the available evidence.\n\n**Provenance:**\n\n- Judgment `sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262`, qualifying finding on affine invariance or determinants\n- Judgment `sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed`, confirmation that no Lean artifact or formal verification was supplied\n- Judgment `sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3`, confirmation that the earlier formalization mention remains only a proposal\n- Evidence transactions:\n  - `64afc12868e150370e6c56e6eeceab6b7aabe158`\n  - `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`\n  - `8bcf66bbd7777ee31f637a0a1a144535feb82ba4`\n\n## Change: triangle-midpoints/formalization-status\n\nThis node is created to preserve the judgments’ explicit distinction between a plausible future formalization route and completed machine verification. It remains within the established program because the evidence does not support an independent formalization program or a verified formal result.\n"
+          }
+        ],
+        "latestRunId": "974fa19e9d53381387c8bae94b115a357d90fe783f25135c216e32ca16e0f3ba"
+      }
+    },
+    {
       "id": "sha256:3bab25c8108050afbd12361ab97a192ab1d0fd6862a5d8aa9671f88b74388404",
       "problemId": "triangle-midpoints",
       "label": "openrouter-knowledge-builder-v1",
