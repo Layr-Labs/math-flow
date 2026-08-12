@@ -4,6 +4,7 @@ import test from "node:test";
 import { collectProgramContributionIds } from "../app/programContributions.mjs";
 import { createViewerReferenceResolver } from "../app/referenceLinks.mjs";
 import { preferredTransactionDetailMode, resolveTransactionDetailMode } from "../app/transactionDetailMode.mjs";
+import { creditRunSelectionPatch, historicalOverlaySelection, knowledgeRunSelectionPatch, latestOverlaySelectionPatch, publishedHeadSelectionPatch } from "../app/projectionHeadState.mjs";
 import { applyViewerStateToSearch, parseViewerState } from "../app/viewerState.mjs";
 
 const templateRoot = new URL("../", import.meta.url);
@@ -63,6 +64,9 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /aria-label="Knowledge state"/);
   assert.match(viewer, /aria-label="Credit projection"/);
   assert.match(viewer, /aria-label="Credit state"/);
+  assert.match(viewer, /View latest knowledge &amp; credit|View latest knowledge & credit/);
+  assert.match(viewer, /publishedHeadSelectionPatch/);
+  assert.match(viewer, /latestOverlaySelectionPatch/);
   assert.doesNotMatch(viewer, /className="run-strip"/);
   assert.match(viewer, /Historical state/);
   assert.match(viewer, /Historical input lock/);
@@ -99,6 +103,7 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(styles, /\.action-restore/);
   assert.match(styles, /\.selector-bubble/);
   assert.match(styles, /\.credit-selector-bubble/);
+  assert.match(styles, /\.latest-state-button/);
   assert.doesNotMatch(styles, /\.run-strip/);
 
   const parsed = JSON.parse(data);
@@ -115,6 +120,98 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
     throw error;
   });
   assert.deepEqual(previewAssets, []);
+});
+
+test("follows newly published overlay heads without moving historical selections", () => {
+  const knowledge = (latestRunId) => ({
+    id: "knowledge:one",
+    data: { latestRunId },
+  });
+  const credit = (latestRunDigest, runs) => ({
+    id: "credit:one",
+    latestRunDigest,
+    runs: runs.map((runDigest) => ({ runDigest })),
+  });
+  const catalog = (knowledgeHead, creditHead, creditRuns = [creditHead].filter(Boolean)) => ({
+    projections: [knowledge(knowledgeHead)],
+    creditProjections: [credit(creditHead, creditRuns)],
+  });
+
+  const previous = catalog("knowledge-2", "credit-2", ["credit-1", "credit-2"]);
+  const next = catalog("knowledge-3", "credit-3", ["credit-1", "credit-2", "credit-3"]);
+
+  assert.deepEqual(publishedHeadSelectionPatch(previous, next, {
+    projectionId: "knowledge:one",
+    runId: "knowledge-2",
+    creditProjectionId: "credit:one",
+    creditRunId: "credit-2",
+  }), { runId: "knowledge-3", creditRunId: "credit-3" });
+
+  assert.deepEqual(publishedHeadSelectionPatch(previous, next, {
+    projectionId: "knowledge:one",
+    runId: "knowledge-1",
+    creditProjectionId: "credit:one",
+    creditRunId: "credit-1",
+  }), {}, "an explicit historical selection is stable across refreshes");
+
+  assert.deepEqual(publishedHeadSelectionPatch(previous, next, {
+    projectionId: "knowledge:one",
+    runId: "knowledge-1",
+    creditProjectionId: "credit:one",
+    creditRunId: "credit-2",
+  }), { creditRunId: "credit-3" }, "each overlay follows its head independently");
+
+  assert.deepEqual(publishedHeadSelectionPatch(
+    catalog("knowledge-2", null, []),
+    catalog("knowledge-2", "credit-1", ["credit-1"]),
+    { projectionId: "knowledge:one", runId: "knowledge-2", creditProjectionId: "credit:one" },
+  ), { creditRunId: "credit-1" }, "the first credit publication becomes the selected head");
+
+  const implicitDefault = {};
+  const reselectedHeads = {
+    ...implicitDefault,
+    ...knowledgeRunSelectionPatch({
+      problemId: "problem:one",
+      projectionId: "knowledge:one",
+      runId: "knowledge-2",
+    }),
+    ...creditRunSelectionPatch({ projectionId: "credit:one", runId: "credit-2" }),
+  };
+  assert.deepEqual(reselectedHeads, {
+    problemId: "problem:one",
+    projectionId: "knowledge:one",
+    runId: "knowledge-2",
+    creditProjectionId: "credit:one",
+    creditRunId: "credit-2",
+  }, "choosing a run materializes its formerly implicit projection identity");
+  assert.deepEqual(
+    publishedHeadSelectionPatch(previous, next, reselectedHeads),
+    { runId: "knowledge-3", creditRunId: "credit-3" },
+    "an implicitly defaulted projection follows after its head is explicitly re-selected",
+  );
+});
+
+test("offers a precise latest-state patch only for historical overlays", () => {
+  const selection = {
+    knowledgeRunId: "knowledge-1",
+    knowledgeLatestRunId: "knowledge-3",
+    creditRunId: "credit-2",
+    creditLatestRunDigest: "credit-3",
+  };
+  assert.deepEqual(historicalOverlaySelection(selection), {
+    knowledge: true,
+    credit: true,
+    any: true,
+  });
+  assert.deepEqual(latestOverlaySelectionPatch(selection), {
+    runId: "knowledge-3",
+    creditRunId: "credit-3",
+  });
+
+  assert.deepEqual(latestOverlaySelectionPatch({
+    ...selection,
+    knowledgeRunId: "knowledge-3",
+  }), { creditRunId: "credit-3" });
 });
 
 test("preserves transaction detail tabs with an explicit availability fallback", () => {
