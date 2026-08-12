@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-11 (`f6f1fc9`).
+Last reconciled with `main`: 2026-08-11 (`68b96b5`).
 
 ## Product thesis
 
@@ -148,7 +148,7 @@ automatic squash merge to main
 | Solver-facing repository skill | Implemented; requires repository tools and explains qualitative scoring semantics and exact-reference inspection | `.agents/skills/math-flow-solver/` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Governed local/hosted runner, provider-free eligibility planner, bounded semantic retries, rolling coalescing, catch-up over closed UTC periods, predecessor-chain terminals, and independent `credit-assignment` bundles implemented | `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
-| Research direction registration | Implemented locally: append-only schema/reducer, atomic validation and auto-merge, provider-free CLI/context, solver skill, viewer, and registration-aware credit v2 | `math_flow/directions.py`, `protocol/schemas/research-direction-event.schema.json`, `viewer/` |
+| Research direction registration | Implemented and merged in PR #28: append-only schema/reducer, atomic validation and auto-merge, provider-free CLI/context/catalog refresh, solver skill, viewer, and registration-aware credit v2 | `math_flow/directions.py`, `protocol/schemas/research-direction-event.schema.json`, `viewer/` |
 | Objective verifier attestations | Not yet implemented as durable protocol artifacts | `docs/MVP.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
 
@@ -160,13 +160,16 @@ The approved hosted projections are:
   reconciliation judgments while prioritizing independent research programs;
 - `openrouter-no-three-in-line-credit-v1`, a qualitative, non-zero-sum overlay
   for `no-three-in-line-77` that declares the research-program knowledge state
-  as its exact dependency.
+  as its exact dependency;
+- `openrouter-no-three-in-line-credit-directions-v2`, the registration-aware
+  qualitative overlay admitted in PR #29, with the same exact knowledge
+  dependency and a one-hour rolling minimum interval.
 
-The runtime also defines `openrouter-credit-assignment-v2`, a backward-compatible
-registration-aware runner/profile. It embeds the verified direction-event ledger
-and lets assignments cite exact prior canonical `register` transactions. It is
-not active until a separate one-file governed projection admission succeeds;
-credit v1 remains authoritative meanwhile.
+The `openrouter-credit-assignment-v2` runner/profile embeds the verified
+direction-event ledger and lets assignments cite exact prior canonical
+`register` transactions. Credit v1 remains active and immutable for comparison;
+agents and viewers must select the intended overlay explicitly. The v2 projection
+has no authoritative run until its first eligible hosted execution succeeds.
 
 Their judges and builders are pinned to `openai/gpt-5.6-sol` with high reasoning
 through OpenRouter. The current registry allows at most 16 parallel judgment or
@@ -354,11 +357,11 @@ the task requires an end-to-end check.
 
 These are the most important gaps as of this document's reconciliation date:
 
-1. **Admit and exercise the registration-aware credit projection.** The runtime,
-   event protocol, tooling, and viewer are implemented. After the runtime PR
-   merges, admit its v2 credit projection in a separate one-file governed PR,
-   then exercise `register` → contribution → `complete` end to end. Keep credit
-   v1 readable and avoid treating registration as exclusivity.
+1. **Exercise registration end to end.** The runtime and governed credit-v2
+   projection are admitted. Submit `register` → contribution → `complete`, verify
+   the provider-free catalog refresh after direction events, and confirm that a
+   later v2 credit run cites only exact canonically prior registrations. Keep
+   credit v1 readable and avoid treating registration as exclusivity.
 2. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
    exact UTC transaction windows, and predecessor-chain terminals are now
    implemented, while the admitted example remains qualitative and non-zero-sum.
