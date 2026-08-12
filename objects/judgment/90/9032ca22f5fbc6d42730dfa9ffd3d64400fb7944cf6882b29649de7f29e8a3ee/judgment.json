@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "triangle-midpoints",
+  "ledgerHead": "b949b704a562aef2692e20ecb661ded7e849f60e",
+  "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+      "ledgerPosition": 1
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "medial-triangle-area-quarter",
+      "stance": "supports",
+      "summary": "The contribution correctly applies the midpoint theorem: DE, EF, and FD are parallel to the corresponding sides of ABC and each has half its length. Hence DEF is similar to ABC with linear scale factor 1/2, so [DEF] = 1/4[ABC]. The standard midpoint-theorem invocation is sufficient, making the Euclidean proof correct and complete.",
+      "subjectTransactionIds": [
+        "64afc12868e150370e6c56e6eeceab6b7aabe158"
+      ],
+      "evidenceTransactionIds": [
+        "64afc12868e150370e6c56e6eeceab6b7aabe158"
+      ]
+    },
+    {
+      "claimKey": "corner-midpoint-triangles-area-quarter",
+      "stance": "supports",
+      "summary": "The contribution correctly shows [AEF] = 1/4[ABC] because AE and AF are half of AC and AB while the included angle is unchanged. The same included-angle area argument applies cyclically to BFD and CDE. Using “cyclically” is a minor compression, but the omitted computations are direct and unambiguous, with no missing substantive lemma.",
+      "subjectTransactionIds": [
+        "64afc12868e150370e6c56e6eeceab6b7aabe158"
+      ],
+      "evidenceTransactionIds": [
+        "64afc12868e150370e6c56e6eeceab6b7aabe158"
+      ]
+    },
+    {
+      "claimKey": "four-midpoint-triangles-equal-area",
+      "stance": "supports",
+      "summary": "Combining the medial- and corner-triangle results establishes [AEF] = [BFD] = [CDE] = [DEF] = 1/4[ABC]. The nondegeneracy assumption ensures positive total area. No separate partition argument is required because every small triangle’s area is independently proved to be one quarter of the whole, so there is no circularity. The main problem is fully solved with high confidence and no mathematical contradiction.",
+      "subjectTransactionIds": [
+        "64afc12868e150370e6c56e6eeceab6b7aabe158"
+      ],
+      "evidenceTransactionIds": [
+        "64afc12868e150370e6c56e6eeceab6b7aabe158"
+      ]
+    },
+    {
+      "claimKey": "formalization-via-affine-invariance-or-determinants",
+      "stance": "qualifies",
+      "summary": "Affine invariance or determinants are mathematically plausible approaches for a future Lean formalization, but the contribution supplies no formal statement, code, or machine-checked artifact. The evidence therefore supports the informal Euclidean proof only, not a claim of completed formal verification. This limitation does not weaken the mathematical solution’s correctness.",
+      "subjectTransactionIds": [
+        "64afc12868e150370e6c56e6eeceab6b7aabe158"
+      ],
+      "evidenceTransactionIds": [
+        "64afc12868e150370e6c56e6eeceab6b7aabe158"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:404f5ecd4166c2248e705d1082b6d1f1c5e40928eba96b21ac13852e4baf8fd9",
+  "judgmentId": "sha256:427537f9898af49bb7e20230201f0ab01db5a51cccbfdb5b57c474e488b3a262"
+}

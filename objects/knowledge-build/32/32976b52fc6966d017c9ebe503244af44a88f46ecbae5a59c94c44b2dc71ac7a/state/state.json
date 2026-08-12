@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 2,
+  "problemId": "no-three-in-line-77",
+  "rootId": "root",
+  "nodes": {
+    "root": {
+      "id": "root",
+      "parentId": null,
+      "type": "root",
+      "title": "Research state for no-three-in-line-77",
+      "summary": "The judge-established state comprises a verified 152-point no-three-in-line subset of G_76, the certified interval 152 ≤ D(77) ≤ 154, necessary occupancy conditions for hypothetical 153- and 154-point sets, and the unresolved exact value of D(77). No active adjudicative conflicts are present.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:2c1aed768dca909e7aa4d3b2be31da2d717c599e8cf692ae8755822942791931",
+        "section": "## Node: root"
+      },
+      "contentMarkdown": "## Node: root\n\n- **Type:** Root research state\n- **Status:** Active\n- **Parent:** None\n- **Primary provenance:** `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n\nThe current judge-established research state for the no-three-in-line problem at grid size \\(77\\) consists of four durable components:\n\n1. An exact computationally verified existence claim for a 152-point no-three-in-line subset of \\(G_{76}\\), including a qualification that the associated verifier does not independently check the configuration’s quarter-turn symmetry.\n2. A high-confidence certified interval\n   \\[\n   152\\le D(77)\\le154.\n   \\]\n3. Necessary row and column occupancy constraints for any hypothetical 153- or 154-point no-three-in-line subset of \\(G_{77}\\).\n4. An unresolved exact-value question: the cited judgment does not determine whether \\(D(77)\\) is \\(152\\), \\(153\\), or \\(154\\), and reports no evidence eliminating or certifying either of the two sizes above the established lower bound.\n\nThese components are organized in the following stable nodes:\n\n- `no-three-in-line/g76-152-point-set`\n- `no-three-in-line/d77-certified-interval`\n- `no-three-in-line/d77-near-capacity-occupancy`\n- `no-three-in-line/d77-exact-value`\n\nThere are no active adjudicative conflicts in the supplied record.\n\n---\n",
+      "subjects": [],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+          "digest": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+          "relation": "supports"
+        }
+      ],
+      "currentAdjudication": {
+        "adjudicationId": "root",
+        "revisionId": "sha256:29427e61b6fc7131de2cd0e63e933b87e8905f0909ce4b84255c19221ae0abfd",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:951bfc19ab252f66bccfd7856cfb0f1f7cf5788c39b883a16deafd29c2fc7cb8"
+    },
+    "no-three-in-line/g76-152-point-set": {
+      "id": "no-three-in-line/g76-152-point-set",
+      "parentId": "root",
+      "type": "claim",
+      "title": "Verified 152-point no-three-in-line subset of G_76",
+      "summary": "An exact computational certificate establishes a 152-point subset of G_76 with no three distinct collinear points. The verifier checks all 573,800 triples using exact integer determinants. It does not independently verify quarter-turn symmetry, but that limitation does not affect the certified no-three-in-line property. The encoded configuration is attributed to Achim Flammenkamp’s maintained database, while Robert is credited with reproducing and independently verifying the certificate; finer authorship history is undetermined.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:2c1aed768dca909e7aa4d3b2be31da2d717c599e8cf692ae8755822942791931",
+        "section": "## Node: no-three-in-line/g76-152-point-set"
+      },
+      "contentMarkdown": "## Node: no-three-in-line/g76-152-point-set\n\n- **Type:** Verified existence claim and certificate scope\n- **Status:** Supported\n- **Parent:** `root`\n- **Primary provenance:** `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n- **Evidence transaction:** `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n\nThe primary judgment supports, through an exact computational certificate, the existence of a 152-point subset of\n\n\\[\nG_{76}=\\{0,\\ldots,75\\}^2\n\\]\n\ncontaining no three distinct collinear points.\n\nAccording to the judgment, the supplied payload decodes deterministically into 76 pairs of points, with two points in each row \\(y=0,\\ldots,75\\). The judgment reports that:\n\n- the decoding produces exactly 152 points;\n- all decoded coordinates lie in \\(\\{0,\\ldots,75\\}^2\\);\n- the verifier rejects duplicate or out-of-grid points;\n- every one of the\n  \\[\n  \\binom{152}{3}=573{,}800\n  \\]\n  unordered triples is checked;\n- each triple is tested by the integer determinant\n  \\[\n  (x_2-x_1)(y_3-y_1)-(x_3-x_1)(y_2-y_1);\n  \\]\n- the computation uses exact arbitrary-precision integer arithmetic; and\n- no defect is apparent in the encoding or verification logic.\n\nThe same judgment therefore characterizes the artifact as a small, self-contained, readily reproducible exact certificate rather than an unsupported search report.\n\n### Scope qualification\n\nThe verifier accepts a leading symmetry marker but does not verify quarter-turn symmetry. The judgment states that this omission does not affect certification of the 152-point no-three-in-line property, because that certification uses the explicitly decoded points. Quarter-turn symmetry itself is not independently established by this verifier. This qualification is not a finding that the configuration lacks such symmetry.\n\n### Credit\n\nThe judgment carries forward the README’s attribution of the encoded configuration to Achim Flammenkamp’s maintained database. It credits Robert with reproducing the baseline certificate and providing an independent, self-contained verifier, rather than with originating the underlying construction. The finer priority or authorship history of the 152-point construction is not determined by the supplied evidence.\n\n---\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+          "digest": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+          "relation": "supports"
+        }
+      ],
+      "currentAdjudication": {
+        "adjudicationId": "no-three-in-line/g76-152-point-set",
+        "revisionId": "sha256:76864191d97f36d99465ffa1a063a8eb65f9f34dc9c5dbcca28751f65d90e401",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:49a02ea368d9a43a1ce2551298b2ac57dab89522b507bbbf6a029328bd6b14e2"
+    },
+    "no-three-in-line/d77-certified-interval": {
+      "id": "no-three-in-line/d77-certified-interval",
+      "parentId": "root",
+      "type": "result",
+      "title": "Certified interval for D(77)",
+      "summary": "The strongest supported current bound is 152 ≤ D(77) ≤ 154. The verified 152-point subset of G_76 supplies the lower bound by inclusion G_76 ⊂ G_77, while the capacity of at most two selected points on each of 77 rows supplies the upper bound.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:2c1aed768dca909e7aa4d3b2be31da2d717c599e8cf692ae8755822942791931",
+        "section": "## Node: no-three-in-line/d77-certified-interval"
+      },
+      "contentMarkdown": "## Node: no-three-in-line/d77-certified-interval\n\n- **Type:** Certified bound\n- **Status:** Supported with high confidence\n- **Parent:** `root`\n- **Primary provenance:** `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n- **Evidence transaction:** `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n- **Related certificate:** `no-three-in-line/g76-152-point-set`\n\nFor\n\n\\[\nG_{77}=\\{0,\\ldots,76\\}^2,\n\\]\n\nlet \\(D(77)\\) denote the largest size of a subset containing no three distinct collinear points. The primary judgment supports with high confidence the current interval\n\n\\[\n\\boxed{152\\le D(77)\\le154}.\n\\]\n\nThe judgment attributes the two sides of the interval as follows:\n\n- **Lower bound:** The exact certificate for 152 no-three-in-line points in \\(G_{76}\\) also supplies 152 such points in \\(G_{77}\\), because \\(G_{76}\\subset G_{77}\\). Thus the judgment supports\n  \\[\n  D(77)\\ge152.\n  \\]\n\n- **Upper bound:** The judgment accepts the elementary row-capacity argument: each of the 77 horizontal grid lines can contain at most two selected points in a no-three-in-line set. It therefore supports\n  \\[\n  D(77)\\le2\\cdot77=154.\n  \\]\n\nThe judgment identifies no contradiction between the certificate, verifier, lower-bound implication, and elementary upper bound. It also makes clear that this interval records the established baseline rather than an improvement beyond it.\n\n---\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+          "digest": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+          "relation": "supports"
+        }
+      ],
+      "currentAdjudication": {
+        "adjudicationId": "no-three-in-line/d77-certified-interval",
+        "revisionId": "sha256:6280a7e1d1b917612c221cdee7170fecee2bf38949998915128a4550c4149db0",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:56dbcde4c9499961d38e15c6ac6c7f1ec39f8900749b12fe461fea76575df587"
+    },
+    "no-three-in-line/d77-near-capacity-occupancy": {
+      "id": "no-three-in-line/d77-near-capacity-occupancy",
+      "parentId": "root",
+      "type": "lemma",
+      "title": "Near-capacity occupancy constraints in G_77",
+      "summary": "Any hypothetical 154-point no-three-in-line subset of G_77 must contain exactly two points in every row and column. Any hypothetical 153-point subset must contain two points in 76 rows and columns and one point in the remaining row and column. These are necessary conditions only and establish neither existence nor nonexistence.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:2c1aed768dca909e7aa4d3b2be31da2d717c599e8cf692ae8755822942791931",
+        "section": "## Node: no-three-in-line/d77-near-capacity-occupancy"
+      },
+      "contentMarkdown": "## Node: no-three-in-line/d77-near-capacity-occupancy\n\n- **Type:** Structural necessary conditions\n- **Status:** Supported\n- **Parent:** `root`\n- **Primary provenance:** `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n- **Evidence transaction:** `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n\nThe primary judgment supports the following necessary occupancy conditions for no-three-in-line subsets of \\(G_{77}\\) near the upper capacity of 154 points.\n\n### Hypothetical 154-point set\n\nAny valid 154-point subset of \\(G_{77}\\) must have:\n\n- exactly two selected points in each of the 77 rows; and\n- exactly two selected points in each of the 77 columns.\n\nThe judgment identifies this as the equality case of the row and column capacity bounds.\n\n### Hypothetical 153-point set\n\nAny valid 153-point subset of \\(G_{77}\\) must have:\n\n- exactly 76 rows containing two selected points and one row containing one selected point; and\n- exactly 76 columns containing two selected points and one column containing one selected point.\n\nThe judgment describes this as the precise occupancy pattern associated with a total deficiency of one from the 154-point row and column capacities.\n\n### Scope\n\nThese occupancy statements are necessary conditions only. The primary judgment expressly qualifies them as establishing neither existence nor nonexistence of a 153- or 154-point no-three-in-line set. They therefore do not resolve the exact value of \\(D(77)\\).\n\n---\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+          "digest": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+          "relation": "supports"
+        }
+      ],
+      "currentAdjudication": {
+        "adjudicationId": "no-three-in-line/d77-near-capacity-occupancy",
+        "revisionId": "sha256:75ad911947d619b1e665c551b90d6f251d96ea13f8edd1328c8b6ff209e1f1ae",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:b95c782bf2e13123dac9ae5e436a45354fb7f4cda3a46e64a6e12d36fd0137b4"
+    },
+    "no-three-in-line/d77-exact-value": {
+      "id": "no-three-in-line/d77-exact-value",
+      "parentId": "root",
+      "type": "question",
+      "title": "Exact value of D(77)",
+      "summary": "The exact value of D(77) remains unresolved within 152 ≤ D(77) ≤ 154. The supplied evidence provides neither a 153- or 154-point certificate nor an impossibility proof, symmetry-restricted negative result, or reproducible failed search narrowing those possibilities. This is an open mathematical question arising from missing evidence, not an adjudicative dispute.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:2c1aed768dca909e7aa4d3b2be31da2d717c599e8cf692ae8755822942791931",
+        "section": "## Node: no-three-in-line/d77-exact-value"
+      },
+      "contentMarkdown": "## Node: no-three-in-line/d77-exact-value\n\n- **Type:** Open mathematical question\n- **Status:** Unresolved\n- **Parent:** `root`\n- **Primary provenance:** `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`\n- **Evidence transaction:** `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n- **Related bound:** `no-three-in-line/d77-certified-interval`\n- **Related constraints:** `no-three-in-line/d77-near-capacity-occupancy`\n\nThe exact value of \\(D(77)\\) remains unresolved under the supplied primary judgment. The strongest supported conclusion is\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nThe judgment reports that the supplied evidence contains:\n\n- no 153-point certificate;\n- no 154-point certificate;\n- no global impossibility proof for 153 points;\n- no global impossibility proof for 154 points;\n- no symmetry-restricted negative result; and\n- no reproducible failed search that would provide a narrower, explicitly restricted computational conclusion.\n\nThe necessary occupancy conditions for sets of sizes 153 and 154 do not settle their existence or nonexistence.\n\nThis unresolved status reflects missing evidence rather than a conflict between opposed judgments. No side of the open question is selected in the current knowledge state.\n\n---\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+          "digest": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e",
+          "relation": "supports"
+        }
+      ],
+      "currentAdjudication": {
+        "adjudicationId": "no-three-in-line/d77-exact-value",
+        "revisionId": "sha256:c1fa94da976e885e587f595a3a3ae91d3f05aeab06bbea99738ab02a64bc94c8",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:f7e1d37bbcde87008e42f4fc17c9a817941ab621eba40d6cc3fbbebba52bfade"
+    }
+  },
+  "stateDigest": "sha256:10fd28a31acaebbff5c94ba87f89af7392b62507a91486db930258884410833e"
+}

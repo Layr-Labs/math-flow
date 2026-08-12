@@ -1,0 +1,136 @@
+{
+  "protocolVersion": 1,
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "11cd457dc42c6df0d146161a9635ab1607135933",
+  "problemLedgerHead": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+  "problemLedgerDigest": "sha256:0c0677d5252855d09785f57eabd58b2fed8dc129cbba814f5c6854a190d607c0",
+  "judgeSpec": {
+    "id": "openrouter-credit-assignment-v2",
+    "digest": "sha256:e309657c4eba4e97cd9339aa136ff39233818a152b5dfdb038e0a12b1b23fc40"
+  },
+  "runner": {
+    "implementation": "openrouter-credit-assignment-v2",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "locked-knowledge-ledger-directions-v2",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "report-extract-credit-v2",
+    "reducer": null
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/credit-assignment-markdown-v2",
+  "requestDigests": [
+    "sha256:fd817e8e6184f0eef60c5c8198006e385eae7a691fd5ad67b360ec3f17c2a0cc",
+    "sha256:82b78983b832c54c4c0a418b06ae2746c4f5969ca580447a1f578f2c043d1b39"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "report",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1786498423-cZSDWVruLOZExTQsaBnD",
+      "usage": {
+        "prompt_tokens": 50662,
+        "completion_tokens": 5029,
+        "total_tokens": 55691,
+        "cost": 0.46750375,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 50659,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.46750375,
+          "upstream_inference_prompt_cost": 0.31663375,
+          "upstream_inference_completions_cost": 0.15087
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1552,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    },
+    {
+      "provider": "openrouter",
+      "stage": "extract",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1786498509-AxxbVt1La0VEahlgnsVW",
+      "usage": {
+        "prompt_tokens": 5871,
+        "completion_tokens": 2753,
+        "total_tokens": 8624,
+        "cost": 0.11928,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 5868,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.11928,
+          "upstream_inference_prompt_cost": 0.03669,
+          "upstream_inference_completions_cost": 0.08259
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1518,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "credit-assignment",
+  "inputs": {
+    "projectionId": "openrouter-no-three-in-line-credit-directions-v2",
+    "projectionSpecDigest": "sha256:d4b69d00d1e63254a407e83ce91fb0d17ae852e78306011b69b223e95e118fa7",
+    "dependencyLockDigest": "sha256:b383f34b09e0da6a26acadf2e0bdef2ee76863e64fa54907bbb365dc9f6bf002",
+    "dependencyRunDigests": [
+      "sha256:af5d2ac834649ab221b1a1b2fdd55aeda759532c36f32dd3ec9c8e535009e0ae"
+    ],
+    "schedule": {
+      "schemaVersion": 1,
+      "mode": "rolling",
+      "evaluatedAt": 1786498421,
+      "minimumIntervalSeconds": 3600,
+      "allocationWindow": null,
+      "previousRunDigest": null
+    }
+  },
+  "artifacts": [
+    {
+      "path": "control/dependencies.json",
+      "role": "dependency-lock",
+      "mediaType": "application/json",
+      "digest": "sha256:d14716e085b432ac693c79961eded410041341bc3fe1e5e14a99eef7c80ebc9d",
+      "bytes": 1531
+    },
+    {
+      "path": "control/input.json",
+      "role": "credit-input",
+      "mediaType": "application/json",
+      "digest": "sha256:48a1ecfc717e0e30aea9411d02b91134c43780dc2a5eff82c8f3048dbf72e5f9",
+      "bytes": 248108
+    },
+    {
+      "path": "credit/index.json",
+      "role": "credit-index",
+      "mediaType": "application/json",
+      "digest": "sha256:626fa176b1b7251a5c6cbea3e35cb04e3744b6aec519fce26891e678cdef2066",
+      "bytes": 4717
+    },
+    {
+      "path": "report.md",
+      "role": "credit-report",
+      "mediaType": "text/markdown",
+      "digest": "sha256:116663a6d0ed197d9194dd7cc5161b5a6d3bc5086ed0a48a08b92958e022a75c",
+      "bytes": 16452
+    }
+  ]
+}

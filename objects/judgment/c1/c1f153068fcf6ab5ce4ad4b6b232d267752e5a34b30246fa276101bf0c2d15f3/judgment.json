@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "triangle-midpoints",
+  "ledgerHead": "b949b704a562aef2692e20ecb661ded7e849f60e",
+  "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+      "ledgerPosition": 3
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "triangle-midpoints/altitude-scaling-under-midpoint-homothety",
+      "stance": "supports",
+      "summary": "Correct with high confidence: the homothety centered at A with factor 1/2 maps BC to EF and scales point-to-line distances by 1/2, so dist(A, EF)=1/2 dist(A, BC). Nondegeneracy ensures the altitudes are nonzero.",
+      "subjectTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ],
+      "evidenceTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ]
+    },
+    {
+      "claimKey": "triangle-midpoints/equal-altitudes-from-parallelism",
+      "stance": "refutes",
+      "summary": "The attributed assertion that the altitudes from A to EF and BC are equal merely because EF is parallel to BC is false. Parallelism does not give equal distances from a fixed point; here the distances have ratio 1:2.",
+      "subjectTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ],
+      "evidenceTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ]
+    },
+    {
+      "claimKey": "triangle-midpoints/corner-triangle-quarter-area-by-base-height",
+      "stance": "supports",
+      "summary": "Correct and completely justified: EF and the corresponding altitude from A each scale by 1/2 relative to BC and its altitude, so the base-height formula gives [AEF]=1/4[ABC].",
+      "subjectTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ],
+      "evidenceTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ]
+    },
+    {
+      "claimKey": "triangle-midpoints/four-subtriangles-have-equal-area",
+      "stance": "supports",
+      "summary": "Correct, with a complete proof from the combined supplied evidence: the three corner triangles are homothetic copies of ABC with factor 1/2, and the medial triangle is similar to ABC with factor 1/2. Therefore AEF, BFD, CDE, and DEF each have area [ABC]/4.",
+      "subjectTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ],
+      "evidenceTransactionIds": [
+        "64afc12868e150370e6c56e6eeceab6b7aabe158",
+        "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ]
+    },
+    {
+      "claimKey": "triangle-midpoints/earlier-midpoint-and-similarity-arguments-remain-valid",
+      "stance": "supports",
+      "summary": "The correction does not undermine the equal-area theorem or the earlier similarity, midpoint-identity, and included-angle area arguments. It changes only the erroneous optional equal-altitude explanation, which does not occur in the supplied earlier contribution artifacts.",
+      "subjectTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ],
+      "evidenceTransactionIds": [
+        "64afc12868e150370e6c56e6eeceab6b7aabe158",
+        "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:bd18487b75eafde48e8830d18d41c4c3ec3a5a77a17e0d519599865b4899f53e",
+  "judgmentId": "sha256:ae48d86e7bd2cdc4b6c2a708194553c6c8444c7f448bd73a82f8af95b64580c3"
+}

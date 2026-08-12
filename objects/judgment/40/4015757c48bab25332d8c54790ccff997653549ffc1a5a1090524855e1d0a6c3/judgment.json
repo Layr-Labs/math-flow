@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+  "problemLedgerDigest": "sha256:9b28f63e12a006ccabb31e3d62274e046b7f06e3a3f42863ebb33a73945a6828",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+      "ledgerPosition": 2
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit",
+      "stance": "supports",
+      "summary": "Supported with high confidence: the supplied 152-point configuration in G_76 is invariant under (x,y)↦(75−y,x), has exactly two distinct dihedral images, and yields exactly eight distinct subsets of G_77 after the four translations in {0,1}². This concerns only the specified record and these dihedral-and-translation embeddings, not unrelated affine images or other configurations.",
+      "subjectTransactionIds": [
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/d77-saturation-of-embedded-g76-152-record",
+      "stance": "supports",
+      "summary": "Supported with high confidence as an exact computational certificate: for each of the eight specified embeddings, all 5,777 outside cells are blocked by pairs of embedded points, with at least two blocking pairs per cell and total blocking incidence 51,449. Each embedding is therefore inclusion-maximal in G_77, but this does not establish maximum cardinality or exclude unrelated 153- or 154-point sets.",
+      "subjectTransactionIds": [
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record",
+      "stance": "supports",
+      "summary": "Supported with high confidence: for every specified embedding and every removal of one embedded point, no cell that was originally outside the embedding becomes addable. The claim concerns cells in G_77\\E; the removed point itself can be restored.",
+      "subjectTransactionIds": [
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ],
+      "evidenceTransactionIds": [
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record",
+      "stance": "supports",
+      "summary": "Supported with high confidence as a finite exact computation: removing any unordered pair from a specified embedding frees at most one originally outside cell. Exactly 16 removal pairs per embedding free a cell, distributed over four cells with four pairs per cell, all through the two-lines-of-two mechanism. The direction census and line-walk/hitting-set enumeration provide structurally different cross-checks, though they share the decoded configuration and primitive-direction routine.",
+      "subjectTransactionIds": [
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ],
+      "evidenceTransactionIds": [
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/d77-distance-from-embedded-g76-152-record",
+      "stance": "supports",
+      "summary": "Proved from the supported local computations: if E is a specified embedding and S is no-three-in-line with |E\\S|≤2, then |S\\E|≤1 and |S|≤152. Consequently, every no-three-in-line S with |S|≥153 must have |E\\S|≥3, |S\\E|≥4, and symmetric difference |E△S|≥7.",
+      "subjectTransactionIds": [
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ],
+      "evidenceTransactionIds": [
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/d77-exact-value",
+      "stance": "uncertain",
+      "summary": "The transaction does not determine whether D(77) is 152, 153, or 154 and does not improve the certified interval 152≤D(77)≤154. It supplies neither a 153- or 154-point certificate nor a global impossibility proof; other 152-point configurations and configurations at symmetric-difference distance at least seven from every specified embedding remain unconstrained.",
+      "subjectTransactionIds": [
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/d77-perturb-known-record-strategy",
+      "stance": "qualifies",
+      "summary": "The claim that the computation prunes the entire strategy of perturbing the known record is too broad. The justified scope is only that no improvement can be obtained from a specified embedding after removing at most two points; removal depth three or greater, including removing three points and adding four, remains unexplored.",
+      "subjectTransactionIds": [
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ],
+      "evidenceTransactionIds": [
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:f933ca41348f6ff7d404fa874b6139664919d354a56bbe6273afe5a10f5f5272",
+  "judgmentId": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927"
+}

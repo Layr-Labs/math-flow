@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "triangle-midpoints",
+  "ledgerHead": "b949b704a562aef2692e20ecb661ded7e849f60e",
+  "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+      "ledgerPosition": 2
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "triangle-midpoint-segments-are-parallel-and-half-length",
+      "stance": "supports",
+      "summary": "The position-vector identities E−F=(C−B)/2, F−D=(A−C)/2, and D−E=(B−A)/2 correctly establish that each midpoint segment is parallel to, and half the length of, the corresponding side. Endpoint-order signs do not affect parallelism or length.",
+      "subjectTransactionIds": [
+        "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+      ],
+      "evidenceTransactionIds": [
+        "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+      ]
+    },
+    {
+      "claimKey": "medial-triangle-is-similar-to-original-at-half-scale",
+      "stance": "supports",
+      "summary": "The three half-length relations justify SSS similarity of DEF and ABC with linear scale factor 1/2; together with the earlier contribution’s area-scaling step, this yields [DEF]=1/4[ABC].",
+      "subjectTransactionIds": [
+        "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+      ],
+      "evidenceTransactionIds": [
+        "64afc12868e150370e6c56e6eeceab6b7aabe158",
+        "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+      ]
+    },
+    {
+      "claimKey": "each-corner-midpoint-triangle-has-quarter-area",
+      "stance": "supports",
+      "summary": "The midpoint identities give each corner triangle side lengths equal to one half of the corresponding original-triangle sides. Thus AEF, BFD, and CDE each have one quarter of the area of ABC, and together with DEF all four areas are equal. The omitted cyclic details are expository rather than logical gaps.",
+      "subjectTransactionIds": [
+        "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+      ],
+      "evidenceTransactionIds": [
+        "64afc12868e150370e6c56e6eeceab6b7aabe158",
+        "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+      ]
+    },
+    {
+      "claimKey": "nondegenerate-triangle-midpoint-partition-has-positive-equal-areas",
+      "stance": "qualifies",
+      "summary": "Under the stated nondegeneracy hypothesis, ABC and all four midpoint triangles have positive unsigned area, avoiding degeneracy issues. The vector identities would also imply equal zero areas in a degenerate extension, but the supplied proof need not address that case.",
+      "subjectTransactionIds": [
+        "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+      ],
+      "evidenceTransactionIds": [
+        "64afc12868e150370e6c56e6eeceab6b7aabe158",
+        "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:74ea37d193cb955c0e39af5a5043a1b6566533edec0ba14dd39657379d638191",
+  "judgmentId": "sha256:575cfe733758035c57b6a7f7915c3e2a38a78c25f4b0c6ce026504546e4655ed"
+}

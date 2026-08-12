@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "0b34ccfd75116b164feac84518acd4e8f61eb5ea",
+  "problemLedgerDigest": "sha256:cbcbefdab706ac27170e5302b3c2c5e64d1986f28ab69438233383d6f14857d4",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+      "ledgerPosition": 1
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line/g76-152-point-subset",
+      "stance": "supports",
+      "summary": "An exact, self-contained computational certificate supports the existence of a 152-point subset of G_76 with no three collinear points. The payload decodes to two distinct points in each of 76 rows, all coordinates lie in {0,...,75}², and the verifier checks distinctness, grid membership, and the nonvanishing determinant for all 573,800 unordered triples using exact integer arithmetic.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "no-three-in-line/certificate-quarter-turn-symmetry",
+      "stance": "qualifies",
+      "summary": "The verifier accepts the leading symmetry marker but does not verify quarter-turn symmetry. This does not affect certification of the 152-point no-three-in-line property because that argument uses only the explicitly decoded points, but it would not independently establish symmetry as a separate property.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "d77/lower-bound-152",
+      "stance": "supports",
+      "summary": "The verified 152-point subset of G_76 is also a subset of G_77 by direct inclusion G_76 ⊂ G_77, proving D(77) >= 152.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "d77/upper-bound-154",
+      "stance": "supports",
+      "summary": "Every horizontal row of G_77 can contain at most two selected points in a no-three-in-line set. Since G_77 has 77 rows, every such set has size at most 154, proving D(77) <= 154.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "d77/interval-152-154",
+      "stance": "supports",
+      "summary": "The exact certificate and elementary row bound together support the interval 152 <= D(77) <= 154 with high confidence.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "d77/154-point-row-column-occupancy",
+      "stance": "supports",
+      "summary": "Any valid 154-point subset of G_77 must contain exactly two points in every one of the 77 rows and exactly two points in every one of the 77 columns, because it attains the full row and column capacities.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "d77/153-point-row-column-occupancy",
+      "stance": "supports",
+      "summary": "Any valid 153-point subset of G_77 would have exactly 76 rows with two points and one row with one point, and exactly 76 columns with two points and one column with one point, since its deficiency from the capacity 154 is exactly one.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "d77/153-154-occupancy-sufficiency",
+      "stance": "qualifies",
+      "summary": "The stated row and column occupancy patterns for hypothetical 153- and 154-point sets are necessary conditions only; they establish neither existence nor nonexistence of such sets.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    },
+    {
+      "claimKey": "d77/exact-value",
+      "stance": "uncertain",
+      "summary": "The transaction does not determine D(77): it gives no 153- or 154-point certificate, no global impossibility proof for either size, and no symmetry-restricted negative result or reproducible failed search. The exact value therefore remains unresolved.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:cef5c8f3e3b1b773e1d25fb6b91229e192b1ce83b92256638e85254310d328db",
+  "judgmentId": "sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e"
+}

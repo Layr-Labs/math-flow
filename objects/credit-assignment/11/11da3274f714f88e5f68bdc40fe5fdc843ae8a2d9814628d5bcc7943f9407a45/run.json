@@ -1,0 +1,128 @@
+{
+  "protocolVersion": 1,
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "d23b00c96cf1a269bd27ba2a87f5e32cc941b5d8",
+  "problemLedgerHead": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+  "problemLedgerDigest": "sha256:04c5cfe0c71ed131fa459604072bb4ad9423393eb22a96ae816721acbf326090",
+  "judgeSpec": {
+    "id": "openrouter-credit-assignment-v1",
+    "digest": "sha256:bd35b25069c8a56cf290ea0b69bf008e1915f397638e6fbcb460305fdef0159b"
+  },
+  "runner": {
+    "implementation": "openrouter-credit-assignment-v1",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "locked-knowledge-ledger-v1",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "report-extract-credit-v1",
+    "reducer": null
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/credit-assignment-markdown-v1",
+  "requestDigests": [
+    "sha256:36b6f10d11459ea6320d65ff23e663b7cf6e8cc75c9975fc46bc3f23247cb8ee",
+    "sha256:dccd257015ac53a0fd16cd9521a22415298f6a163c7ef6b4efd326666f0dacf6"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "report",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1786481831-OV0JnuAxsUSIJBLqrFNc",
+      "usage": {
+        "prompt_tokens": 44257,
+        "completion_tokens": 4844,
+        "total_tokens": 49101,
+        "cost": 0.167462,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 44254,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.167462,
+          "upstream_inference_prompt_cost": 0.022142,
+          "upstream_inference_completions_cost": 0.14532
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1552,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    },
+    {
+      "provider": "openrouter",
+      "stage": "extract",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1786481923-OHauaV5RVVnau1CLtAXN",
+      "usage": {
+        "prompt_tokens": 5674,
+        "completion_tokens": 3854,
+        "total_tokens": 9528,
+        "cost": 0.15107875,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 5671,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.15107875,
+          "upstream_inference_prompt_cost": 0.03545875,
+          "upstream_inference_completions_cost": 0.11562
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2933,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "credit-assignment",
+  "inputs": {
+    "projectionId": "openrouter-no-three-in-line-credit-v1",
+    "projectionSpecDigest": "sha256:d69fda953f0e1e3cc590555b3b9f1746db3e733efb6db7e06a2a18a35941edc1",
+    "dependencyLockDigest": "sha256:a9f972dddb63366ba2f782c7153bb301198d56d1a412493198b649c405452ae4",
+    "dependencyRunDigests": [
+      "sha256:8e1bfea136ad3b78c2720269e984b5f807179533ea8a1b112952fc41a34b31df"
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "control/dependencies.json",
+      "role": "dependency-lock",
+      "mediaType": "application/json",
+      "digest": "sha256:b7e13405fa273afa360ce1db089df26b9a311ba698589edda44df0d244534dce",
+      "bytes": 1520
+    },
+    {
+      "path": "control/input.json",
+      "role": "credit-input",
+      "mediaType": "application/json",
+      "digest": "sha256:b9260fdae8e0d4a5fdb936640fa67f5ce49bff15e1f3ef4b044d6b489e47eb6b",
+      "bytes": 210923
+    },
+    {
+      "path": "credit/index.json",
+      "role": "credit-index",
+      "mediaType": "application/json",
+      "digest": "sha256:44b8e18a3fee426139eb02854340b017f282b348af0f1db416800a36ba6cc4d3",
+      "bytes": 3638
+    },
+    {
+      "path": "report.md",
+      "role": "credit-report",
+      "mediaType": "text/markdown",
+      "digest": "sha256:f3d0784dc2298ad92684593c7577c5ac9092c0b4a0e11aaaefedc8648e1ae7c8",
+      "bytes": 16417
+    }
+  ]
+}
