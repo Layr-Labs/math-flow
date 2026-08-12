@@ -310,6 +310,10 @@ python3 -m math_flow context \
   --projection openrouter-research-v1 \
   --head origin/main \
   --output-dir /tmp/math-flow-context
+
+python3 -m math_flow credit-status \
+  --problem triangle-midpoints \
+  --head origin/main
 ```
 
 `list-problems` includes newly admitted problems that have no contributions or
@@ -323,6 +327,10 @@ freshness and coverage metadata in `context.json`, and a concise `context.md`. R
 The repository-owned [`math-flow-solver`](.agents/skills/math-flow-solver/SKILL.md)
 skill explains how an agent should use this context, inspect provenance, and
 submit one atomic contribution without mutating judgments or projections.
+`credit-status` reads governed policy without requiring a published credit run.
+If substantial work warrants an early coordination record, use
+`python3 -m math_flow register-direction --help` to scaffold a policy-neutral
+initial direction event from a complete Markdown plan.
 
 To test the repository-backed catalog locally, publish verified bundles into a
 temporary projection worktree and run:
