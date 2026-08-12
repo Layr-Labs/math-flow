@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from .artifacts import load_manifest, read_verified_artifact, sha256_bytes, verify_bundle
+from .attestations import verification_requests, verifier_attestation_details
 from .coordination import load_scheduler
 from .credit import load_credit_assignment_bundle
 from .credit_schedule import ordered_credit_runs
@@ -565,6 +566,65 @@ def _projection_chain(
     return chain
 
 
+def _viewer_objective_attestations(
+    root: Path,
+    published_objects: dict[str, dict[str, object]],
+    problems: list[str],
+    canonical_ref: str,
+) -> list[dict[str, object]]:
+    objective_attestations: list[dict[str, object]] = []
+    for problem in sorted(problems):
+        requests = verification_requests(root, problem, canonical_ref)
+        request_index = {
+            (str(item["transactionId"]), str(item["requestDigest"])): item
+            for item in requests
+        }
+        published: dict[tuple[str, str], dict[str, object]] = {}
+        for digest, item in sorted(published_objects.items()):
+            manifest = item["manifest"]
+            if (
+                manifest.get("runKind") != "verifier-attestation"
+                or manifest.get("problemId") != problem
+            ):
+                continue
+            details = verifier_attestation_details(root, item["path"], canonical_ref)
+            key = (
+                str(details["transactionId"]),
+                str(details["requestDigest"]),
+            )
+            if key not in request_index:
+                raise MathFlowError(
+                    "published objective attestation has no canonical request"
+                )
+            if key in published and published[key]["runDigest"] != digest:
+                raise MathFlowError(
+                    "canonical objective-verification request has multiple outcomes"
+                )
+            published[key] = details
+        for request in requests:
+            key = (
+                str(request["transactionId"]),
+                str(request["requestDigest"]),
+            )
+            run = published.get(key)
+            objective_attestations.append(
+                {
+                    "problemId": problem,
+                    "transactionId": request["transactionId"],
+                    "contributionId": request["contributionId"],
+                    "requestDigest": request["requestDigest"],
+                    "verifier": request["verifier"],
+                    "environmentDigest": request["environmentDigest"],
+                    "selectionStatus": str(run["status"]) if run else "pending",
+                    "run": run,
+                }
+            )
+    objective_attestations.sort(
+        key=lambda item: (str(item["problemId"]), str(item["transactionId"]))
+    )
+    return objective_attestations
+
+
 def export_viewer_catalog(
     root: Path,
     projection_root: Path,
@@ -922,6 +982,12 @@ def export_viewer_catalog(
             {str(projection["problemId"]) for projection in projections}
         )
     ]
+    objective_attestations = _viewer_objective_attestations(
+        root,
+        published_objects,
+        sorted({str(projection["problemId"]) for projection in projections}),
+        canonical_ref,
+    )
     return {
         "schemaVersion": 1,
         "repository": {
@@ -932,5 +998,6 @@ def export_viewer_catalog(
         "projections": projections,
         "creditProjections": credit_projections,
         "researchDirections": direction_ledgers,
+        "objectiveAttestations": objective_attestations,
         "defaultProjectionId": projections[0]["id"] if projections else None,
     }

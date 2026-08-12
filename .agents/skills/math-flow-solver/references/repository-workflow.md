@@ -144,7 +144,7 @@ Interpret freshness as follows:
 - `ahead`: the chosen canonical head predates the projection.
 - `diverged`: the histories do not form an ancestor chain.
 
-`context.json` distinguishes primary judgments included in the state chain, transactions represented in state provenance, scheduler inputs still pending formation, and a summary of active, released, and completed research directions. `directions.json` contains the exact canonical direction-event ledger. These are operational signals, not mathematical verdicts.
+`context.json` distinguishes primary judgments included in the state chain, transactions represented in state provenance, scheduler inputs still pending formation, objective-verification status, and a summary of active, released, and completed research directions. `directions.json` contains the exact canonical direction-event ledger, while `attestations.json` contains verified pending/passed/failed objective checks and bounded output previews. These are operational signals, not mathematical verdicts. A passing attestation establishes only that the pinned checker accepted its encoded predicate.
 
 ## Inspect provenance
 

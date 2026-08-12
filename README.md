@@ -52,6 +52,8 @@ repository-approved verifier recipe but never its outcome. After canonical
 merge, `math-flow attest` runs the verifier in its digest-pinned, networkless OCI
 environment and emits a replayable content-addressed projection bundle. See
 [the objective-attestation protocol](docs/OBJECTIVE_ATTESTATIONS.md).
+The trusted merge lifecycle now dispatches that execution automatically, while
+`math-flow attestation-plan` provides a provider-free, non-executing status check.
 
 Research-direction events are a separate append-only participant stream. A
 `register` event records a specific intended direction; later `update`, `release`,

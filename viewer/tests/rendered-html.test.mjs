@@ -26,7 +26,7 @@ test("server-renders a stable loading state before repository data arrives", asy
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  const initialMarkup = html.slice(0, html.indexOf('<script type="module"'));
+  const initialMarkup = html.split('<script id="_R_">')[0];
   assert.match(html, /<title>Math Flow · Research Atlas<\/title>/i);
   assert.match(initialMarkup, /Math Flow · research atlas/);
   assert.match(initialMarkup, /Loading repository state/);
@@ -54,7 +54,9 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /detail-tabs-transaction/);
   assert.match(viewer, /Submission<\/button>/);
   assert.match(viewer, /Judgment<\/button>/);
+  assert.match(viewer, /Verification<\/button>/);
   assert.match(viewer, /Credit<\/button>/);
+  assert.match(viewer, /Objective verifier attestation · separate evidence/);
   assert.match(viewer, /className="selector-bubble knowledge-selector-bubble"/);
   assert.match(viewer, /className="selector-bubble credit-selector-bubble"/);
   assert.match(viewer, /aria-label="Knowledge projection"/);
@@ -118,15 +120,18 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
 test("preserves transaction detail tabs with an explicit availability fallback", () => {
   assert.equal(preferredTransactionDetailMode("credit"), "credit");
   assert.equal(preferredTransactionDetailMode("judgment"), "judgment");
+  assert.equal(preferredTransactionDetailMode("verification"), "verification");
   assert.equal(preferredTransactionDetailMode("transaction"), "transaction");
   assert.equal(preferredTransactionDetailMode("node"), "transaction");
   assert.equal(preferredTransactionDetailMode(undefined), "transaction");
 
-  assert.equal(resolveTransactionDetailMode("credit", { hasJudgment: true, hasCredit: true }), "credit");
-  assert.equal(resolveTransactionDetailMode("credit", { hasJudgment: true, hasCredit: false }), "transaction");
-  assert.equal(resolveTransactionDetailMode("judgment", { hasJudgment: true, hasCredit: false }), "judgment");
-  assert.equal(resolveTransactionDetailMode("judgment", { hasJudgment: false, hasCredit: true }), "transaction");
-  assert.equal(resolveTransactionDetailMode("transaction", { hasJudgment: true, hasCredit: true }), "transaction");
+  assert.equal(resolveTransactionDetailMode("credit", { hasJudgment: true, hasVerification: true, hasCredit: true }), "credit");
+  assert.equal(resolveTransactionDetailMode("credit", { hasJudgment: true, hasVerification: true, hasCredit: false }), "transaction");
+  assert.equal(resolveTransactionDetailMode("judgment", { hasJudgment: true, hasVerification: false, hasCredit: false }), "judgment");
+  assert.equal(resolveTransactionDetailMode("judgment", { hasJudgment: false, hasVerification: true, hasCredit: true }), "transaction");
+  assert.equal(resolveTransactionDetailMode("verification", { hasJudgment: false, hasVerification: true, hasCredit: false }), "verification");
+  assert.equal(resolveTransactionDetailMode("verification", { hasJudgment: true, hasVerification: false, hasCredit: true }), "transaction");
+  assert.equal(resolveTransactionDetailMode("transaction", { hasJudgment: true, hasVerification: true, hasCredit: true }), "transaction");
 });
 
 test("derives related contributions from every node in a program subtree", () => {

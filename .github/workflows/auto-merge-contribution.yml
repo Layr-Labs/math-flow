@@ -148,7 +148,8 @@ jobs:
           echo "problem=$(jq -r '.problemId' "$result")" >> "$GITHUB_OUTPUT"
           echo "transaction_kind=$(jq -r '.transactionKind' "$result")" >> "$GITHUB_OUTPUT"
 
-      - if: steps.transaction.outputs.atomic == 'true'
+      - id: merge
+        if: steps.transaction.outputs.atomic == 'true'
         name: Squash-merge the validated participant transaction
         env:
           GH_TOKEN: "${{ github.token }}"
@@ -168,7 +169,9 @@ jobs:
             jq -r '.message' "$merged" >&2
             exit 1
           fi
-          echo "Merged pull request ${PR_NUMBER} at $(jq -r '.sha' "$merged")."
+          merged_sha="$(jq -r '.sha' "$merged")"
+          echo "sha=$merged_sha" >> "$GITHUB_OUTPUT"
+          echo "Merged pull request ${PR_NUMBER} at ${merged_sha}."
 
       - if: >-
           steps.transaction.outputs.atomic == 'true' &&
@@ -177,6 +180,7 @@ jobs:
         env:
           GH_TOKEN: "${{ github.token }}"
           PROBLEM: "${{ steps.transaction.outputs.problem }}"
+          MERGED_SHA: "${{ steps.merge.outputs.sha }}"
         shell: bash
         run: |
           set -euo pipefail
@@ -194,6 +198,22 @@ jobs:
           dispatch project-baseline.yml -f problem="$PROBLEM"
           git fetch --no-tags origin \
             "+refs/heads/main:refs/remotes/origin/main"
+          transaction_path="$(
+            python -m math_flow ledger \
+              --problem "$PROBLEM" \
+              --head refs/remotes/origin/main \
+            | jq -r --arg transaction "$MERGED_SHA" \
+                '.transactions[] | select(.transactionId == $transaction) | .path'
+          )"
+          if [[ -z "$transaction_path" ]]; then
+            echo "Merged transaction is absent from the canonical problem ledger." >&2
+            exit 1
+          fi
+          if git cat-file -e "${MERGED_SHA}:${transaction_path}/verification.json" 2>/dev/null; then
+            dispatch project-attestation.yml \
+              -f problem="$PROBLEM" \
+              -f transaction="$MERGED_SHA"
+          fi
           projection_plan="${RUNNER_TEMP}/active-projections.json"
           python -m math_flow list-active-projections \
             --problem "$PROBLEM" \

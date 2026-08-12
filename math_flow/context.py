@@ -186,6 +186,7 @@ def _markdown(context: dict[str, object], scoped_nodes: list[dict[str, object]])
     coverage = context["coverage"]
     coordination = context["coordination"]
     credit = context["credit"]
+    objective = context["objectiveVerification"]
     scope = context["scope"]
     lines = [
         f"# Agent context: {problem['title']}",
@@ -291,6 +292,31 @@ def _markdown(context: dict[str, object], scoped_nodes: list[dict[str, object]])
                 ]
             )
     lines.append("")
+    lines.extend(
+        [
+            "## Objective verification",
+            "",
+            "Objective attestations replay an encoded predicate in a pinned, networkless environment. A passing check is separate evidence; it does not by itself establish that the encoding captures the intended mathematics.",
+            "",
+            f"- Requested: {objective['requestedCount']}",
+            f"- Passed: {objective['passedCount']}",
+            f"- Failed or errored: {objective['failedCount']}",
+            f"- Pending: {objective['pendingCount']}",
+            "- Full verified records and bounded output previews: `attestations.json`",
+            "",
+        ]
+    )
+    for item in objective["attestations"]:
+        run = item.get("run")
+        run_text = (
+            f"; run `{run['runDigest']}`" if isinstance(run, dict) else ""
+        )
+        lines.append(
+            f"- `{item['transactionId']}` — **{item['selectionStatus']}**; "
+            f"verifier `{item['verifier']['id']}`{run_text}"
+        )
+    if objective["attestations"]:
+        lines.append("")
     lines.extend(["## Queue and coverage", ""])
     unjudged = coverage["canonicalTransactionsWithoutBuiltPrimaryJudgment"]
     unformed = coverage["canonicalTransactionsNotRepresentedInState"]
@@ -426,6 +452,25 @@ def materialize_agent_context(
     completed_directions = [
         item for item in direction_items if item["status"] == "completed"
     ]
+    raw_attestations = catalog.get("objectiveAttestations", [])
+    if not isinstance(raw_attestations, list) or any(
+        not isinstance(item, dict) for item in raw_attestations
+    ):
+        raise MathFlowError("projection catalog has an invalid attestation index")
+    attestations = [
+        item for item in raw_attestations if item.get("problemId") == problem
+    ]
+    passed_attestations = [
+        item for item in attestations if item.get("selectionStatus") == "passed"
+    ]
+    failed_attestations = [
+        item
+        for item in attestations
+        if item.get("selectionStatus") in {"failed", "error"}
+    ]
+    pending_attestations = [
+        item for item in attestations if item.get("selectionStatus") == "pending"
+    ]
 
     context: dict[str, object] = {
         "schemaVersion": 1,
@@ -479,6 +524,13 @@ def materialize_agent_context(
             "potentialOverlaps": potential_direction_overlaps(direction_items),
         },
         "credit": credit,
+        "objectiveVerification": {
+            "requestedCount": len(attestations),
+            "passedCount": len(passed_attestations),
+            "failedCount": len(failed_attestations),
+            "pendingCount": len(pending_attestations),
+            "attestations": attestations,
+        },
         "scope": {
             "requestedNodeIds": requested,
             "includedNodeIds": [str(node["id"]) for node in scoped_nodes],
@@ -489,6 +541,7 @@ def materialize_agent_context(
             "context": "context.md",
             "directions": "directions.json",
             "credit": "credit.json",
+            "attestations": "attestations.json",
             **({"creditReport": "credit-report.md"} if credit_report is not None else {}),
         },
     }
@@ -510,6 +563,11 @@ def materialize_agent_context(
         json.dumps(direction_ledger, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+    (output / "attestations.json").write_text(
+        json.dumps(context["objectiveVerification"], indent=2, ensure_ascii=False)
+        + "\n",
+        encoding="utf-8",
+    )
     if credit_report is not None:
         (output / "credit-report.md").write_text(
             credit_report, encoding="utf-8"
@@ -524,5 +582,7 @@ def materialize_agent_context(
         "stateDigest": state.get("stateDigest"),
         "creditStatus": credit["status"],
         "activeDirectionCount": len(active_directions),
+        "objectiveAttestationPassedCount": len(passed_attestations),
+        "objectiveAttestationPendingCount": len(pending_attestations),
         "outputDir": str(output),
     }

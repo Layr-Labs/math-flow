@@ -30,11 +30,12 @@
     },
     "command": {
       "type": "object",
-      "required": ["executable", "fixedArguments", "timeoutSeconds", "successExitCodes"],
+      "required": ["executable", "fixedArguments", "timeoutSeconds", "maximumOutputBytes", "successExitCodes"],
       "properties": {
         "executable": { "type": "string", "minLength": 1 },
         "fixedArguments": { "type": "array", "maxItems": 32, "items": { "type": "string", "minLength": 1 } },
         "timeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 3600 },
+        "maximumOutputBytes": { "type": "integer", "minimum": 1024, "maximum": 16777216 },
         "successExitCodes": { "type": "array", "minItems": 1, "maxItems": 16, "uniqueItems": true, "items": { "type": "integer", "minimum": 0, "maximum": 124 } }
       },
       "additionalProperties": false

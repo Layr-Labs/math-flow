@@ -621,6 +621,25 @@ def publish_batch(projection_root: Path, bundle_dirs: list[Path]) -> dict[str, o
     if not bundle_dirs:
         raise MathFlowError("projection publication requires at least one run bundle")
     root = projection_root.resolve()
+    incoming_attestations: dict[tuple[str, str, str], str] = {}
+    for bundle_dir in bundle_dirs:
+        manifest, _ = verify_bundle(bundle_dir)
+        if manifest.get("runKind") != "verifier-attestation":
+            continue
+        from .attestations import assert_attestation_publication_unique
+
+        identity = assert_attestation_publication_unique(root, bundle_dir)
+        key = (
+            identity["problemId"],
+            identity["transactionId"],
+            identity["requestDigest"],
+        )
+        prior = incoming_attestations.get(key)
+        if prior is not None and prior != identity["runDigest"]:
+            raise MathFlowError(
+                "publication batch contains different outcomes for one objective verification request"
+            )
+        incoming_attestations[key] = identity["runDigest"]
     root.mkdir(parents=True, exist_ok=True)
     published: list[dict[str, object]] = []
     for bundle_dir in bundle_dirs:

@@ -10,6 +10,7 @@ Use the deterministic `math_flow context` command before reasoning from a projec
 - `state.json`: the complete exact knowledge state;
 - `directions.json`: the canonical append-only direction-event ledger and derived current statuses;
 - `credit.json`: verified qualitative assignments or an explicit pending, stale, invalid, ambiguous, selection-required, or unavailable status;
+- `attestations.json`: pending and published objective-verifier evidence with bounded output previews;
 - `credit-report.md`: the full scoring rationale when one uniquely applicable verified run exists;
 - `context.json`: projection identity, freshness, queue/coverage, credit, and scope metadata;
 - `context.md`: an agent-readable problem and knowledge summary.
@@ -34,7 +35,7 @@ Web research is allowed when the mathematical task needs external sources; it is
 8. Add exactly one new directory under `problems/<problem>/contributions/<contribution>/` in the solver worktree. Put the claim, method, provenance, limitations, and reproduction instructions in `README.md`; keep supporting artifacts beside it. Never combine a contribution and direction event in one PR.
 9. Validate the artifact and repository from the solver worktree. Commit only the one participant event, then validate the committed PR diff against `origin/main`. Do not edit past contributions or direction events, judgments, knowledge state, credit assignments, projection indexes, or scheduler data.
 10. Push only the solver branch, then use `gh` or an available GitHub connector to open one PR for that atomic participant event and monitor its checks. The repository re-verifies and automatically squash-merges valid contribution and direction-event PRs after every required current-head check passes; do not add unrelated changes or merge through the UI.
-11. After a contribution merges, use repository tools to obtain the squash commit, follow projection publication, and re-materialize context until that transaction has a built primary judgment and is represented in state provenance. Credit may update later through its separate dependent projection. If the work finishes a registered direction, submit a separate `complete` event referencing the canonical contribution transaction.
+11. After a contribution merges, use repository tools to obtain the squash commit, follow projection publication, and re-materialize context until that transaction has a built primary judgment and is represented in state provenance. If it requested objective verification, also require its `objectiveVerification.attestations` entry to leave `pending`; treat a pass as evidence about the encoded predicate, not mathematical adjudication. Credit may update later through its separate dependent projection. If the work finishes a registered direction, submit a separate `complete` event referencing the canonical contribution transaction.
 12. Keep the solver worktree until its work is safely pushed and handed off. Remove only worktrees created by this agent, only after confirming they are clean, and never use forced removal.
 
 ## Safety and integrity

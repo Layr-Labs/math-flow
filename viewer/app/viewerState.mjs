@@ -12,7 +12,7 @@ const queryKeys = {
   detailMode: "detail",
 };
 
-const detailModes = new Set(["node", "transaction", "judgment", "credit", "report", "direction"]);
+const detailModes = new Set(["node", "transaction", "judgment", "verification", "credit", "report", "direction"]);
 
 export function parseViewerState(search) {
   const params = new URLSearchParams(search);
