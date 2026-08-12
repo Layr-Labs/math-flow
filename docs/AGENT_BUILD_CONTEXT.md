@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-11 (`ca452e7`).
+Last reconciled with `main`: 2026-08-12 (`943082d`).
 
 ## Product thesis
 
@@ -42,6 +42,7 @@ solver participant-event PR
 automatic squash merge to main
         │
         ├── contribution ── baseline + approved OpenRouter projections
+        │             └── declared verification ── pinned objective attestation
         └── direction event ── provider-free direction ledger
                     │
                     ├── parallel primary judgments
@@ -183,7 +184,7 @@ The `openrouter-credit-assignment-v2` runner/profile embeds the verified
 direction-event ledger and lets assignments cite exact prior canonical
 `register` transactions. Credit v1 remains active and immutable for comparison;
 agents and viewers must select the intended overlay explicitly. Credit v2 has a
-current authoritative run (`sha256:4711f727...`) covering the four accepted
+current authoritative run (`sha256:b0e1c432...`) covering all five accepted
 `no-three-in-line-77` contributions. Its assignment for the finite-rotation
 classification proof cites the exact prior registration transaction
 `a9552d14...`.
@@ -199,6 +200,11 @@ conflicts, skipped both paid judgment stages, and produced a 16-node state with
 two top-level programs: known-record certification/local perturbation, and
 rotational symmetry/rct4 modeling. Its state run digest is
 `sha256:8e1bfea136ad3b78c2720269e984b5f807179533ea8a1b112952fc41a34b31df`.
+After the objective-verification contribution merged, hosted run `31569748809`
+reused the shared judgment stream and published the third research-program
+state. The current knowledge run is `sha256:7562b60b...`, its holistic state is
+`sha256:71b92511...`, and it covers canonical problem-ledger head `0ffe9a12`
+with no missing primary judgment or state representation.
 The deployed Sites viewer reads the Layr-Labs repository through its explicit
 `MATH_FLOW_CATALOG_URL` binding and a read-only organization token, so
 projection publication updates the UI
@@ -211,6 +217,49 @@ vinext release without the vulnerable transitive image parser is retained until
 that parser has an upstream patched release. Objective-verification requests
 and their authenticated published outcomes appear as a separate transaction
 tab, never as judgments or credit.
+
+## P0 operational evidence
+
+The scale-readiness P0s are implemented and exercised on the organization
+repository:
+
+- **Provider-free congestion:** PR #12 added the deterministic scale probe. Its
+  reference case covers 12 problems, four projections, 12 solvers per problem,
+  48 independent lanes, 576 primary jobs, 48 reconciliation jobs, contested
+  leases, bounded retry/reset, optimistic publication, 2,256 immutable files,
+  catalog export, and agent context with zero provider calls.
+- **Hosted reconciliation:** run `31563447090` produced one paid reconciliation
+  over a controlled, repository-derived conflict. It returned
+  `prefer-refutation`, judgment `sha256:b3f7acd0...`, and run
+  `sha256:b4e015ac...`; the retained smoke evidence was deliberately not
+  published as canonical mathematical state. The fixture is pinned to its
+  reviewed historical ledger prefix, so later contributions do not invalidate
+  the smoke path.
+- **Objective verification:** canonical contribution `0ffe9a12` declares the
+  exact 152-point checker. Run `31569747227` executed it inside the governed,
+  digest-pinned, networkless, non-root OCI environment and reported
+  `verified 152 points on a 76 x 76 grid; no collinear triple`. It published
+  attestation `sha256:079692f8...` in run object `sha256:293d1eed...`; both the
+  immutable-object commit `d0965e7` and catalog commit `c5a17f0` are verified
+  GitHub signatures. Machine context reports one passed and zero pending
+  objective attestations.
+- **Queue handoff:** the objective run exposed a missing repository binding in
+  the checkout-free successor dispatcher. PR #19 fixed it. Run `31570610937`
+  then completed the current projection and successfully dispatched run
+  `31570656849`, which reused the existing primary judgment and brought the
+  second knowledge projection current. The cadence wake-up subsequently
+  dispatched both credit overlays; registration-aware run `31570861867`
+  published the current five-contribution terminal.
+- **Viewer and dependency chain:** Sites version 14 is deployed at the canonical
+  research-atlas URL with objective-verification presentation. The exact merged
+  viewer build, seven rendered tests, lint, and npm audit pass; the default
+  branch has zero open Dependabot alerts and recent production worker logs have
+  no errors.
+
+At this checkpoint, `math_flow context` reports current research-program
+knowledge, current registration-aware credit, zero knowledge coverage gaps, no
+active build, and one passed/zero pending objective attestations for
+`no-three-in-line-77`.
 
 The credit overlay was admitted in PR #22 at `640f41a`; its first qualitative
 assignment was published at projection commit `e0c6fc8` (run-digest prefix
@@ -379,9 +428,10 @@ For workflow edits, also parse the YAML and syntax-check extracted shell blocks.
 Hosted provider tests spend money and mutate projection state; run them only when
 the task requires an end-to-end check.
 
-## Near-term build priorities
+## Post-P0 build priorities
 
-These are the most important gaps as of this document's reconciliation date:
+The scale-readiness P0s above are complete. These are the most important next
+experiments and product gaps as of this document's reconciliation date:
 
 1. **Run the hosted scale pilot.** The provider-free congestion probe now covers
    scheduler, retry, merge, chunking, viewer, and context invariants locally.
