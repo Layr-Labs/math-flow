@@ -14,7 +14,10 @@ from .projection_dependencies import (
 )
 
 
-CREDIT_RUNNER = "openrouter-credit-assignment-v1"
+CREDIT_RUNNERS = {
+    "openrouter-credit-assignment-v1",
+    "openrouter-credit-assignment-v2",
+}
 
 
 def _credit_projections(
@@ -27,7 +30,7 @@ def _credit_projections(
         item
         for item in listing["projections"]
         if isinstance(item.get("runner"), dict)
-        and item["runner"].get("implementation") == CREDIT_RUNNER
+        and item["runner"].get("implementation") in CREDIT_RUNNERS
     ]
 
 
@@ -188,6 +191,10 @@ def _assignment_context(candidate: dict[str, object]) -> list[dict[str, object]]
     for raw_assignment in candidate["creditIndex"]["assignments"]:
         transaction_id = str(raw_assignment["transactionId"])
         transaction = metadata[transaction_id]
+        direction_registration_ids = raw_assignment.get(
+            "directionRegistrationTransactionIds"
+        )
+        reservation_ids = raw_assignment.get("reservationTransactionIds")
         assignments.append(
             {
                 "ordinal": transaction["ordinal"],
@@ -198,8 +205,18 @@ def _assignment_context(candidate: dict[str, object]) -> list[dict[str, object]]
                 "significance": raw_assignment["significance"],
                 "roles": list(raw_assignment["roles"]),
                 "knowledgeRefs": list(raw_assignment["knowledgeRefs"]),
-                "reservationTransactionIds": list(
-                    raw_assignment["reservationTransactionIds"]
+                **(
+                    {
+                        "directionRegistrationTransactionIds": list(
+                            direction_registration_ids
+                        )
+                    }
+                    if isinstance(direction_registration_ids, list)
+                    else {
+                        "reservationTransactionIds": list(reservation_ids)
+                        if isinstance(reservation_ids, list)
+                        else []
+                    }
                 ),
                 "reportSection": raw_assignment["reportSection"],
             }
@@ -211,10 +228,19 @@ def _validate_candidate_history(
     candidate: dict[str, object], canonical_transactions: list[dict[str, object]]
 ) -> None:
     transactions = candidate["creditInput"].get("transactions")
+    normalized = (
+        [
+            {key: value for key, value in item.items() if key != "canonicalOrdinal"}
+            for item in transactions
+        ]
+        if isinstance(transactions, list)
+        and all(isinstance(item, dict) for item in transactions)
+        else transactions
+    )
     if (
         not isinstance(transactions, list)
         or len(transactions) > len(canonical_transactions)
-        or transactions != canonical_transactions[: len(transactions)]
+        or normalized != canonical_transactions[: len(transactions)]
     ):
         raise MathFlowError(
             "published credit input does not match canonical transaction history"

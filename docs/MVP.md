@@ -12,7 +12,7 @@ views over exactly the same ledger prefix.
 
 ## Protocol boundaries
 
-### Canonical transaction layer
+### Canonical participant transaction layer
 
 The protected default branch is the ledger. A contribution transaction is the
 squash commit that first adds exactly one directory at:
@@ -25,6 +25,18 @@ The directory must contain a non-empty `README.md`; everything else is arbitrary
 The source pull request remains the social record for discussion and iteration.
 The canonical commit is the protocol record. Sequence is derived from the
 first-parent history of the protected branch, not from filenames or counters.
+
+Research-direction events form a second, append-only participant stream at:
+
+```text
+problems/<problem-id>/directions/<direction-id>/events/<event-id>/
+```
+
+Each event contains `README.md` and a versioned `event.json`. A registration may
+be updated, released, or completed through one exact predecessor. Its squash
+commit provides priority and identity, but it does not enter the mathematical
+contribution ledger, trigger judgment, establish truth, or exclude overlapping
+work. Current direction status is derived from immutable history.
 
 Recommended GitHub settings:
 
@@ -111,6 +123,10 @@ tools to follow current state.
 - a GitHub App that posts richer check summaries and projection links;
 - GitHub identity/PR provenance derived through the API;
 - contribution scaffolding and reference helpers.
+- provider-free direction listing/context, atomic registration PRs, and a
+  repository-backed research-direction viewer — implemented;
+- registration-aware qualitative credit inputs with exact canonical register
+  references — implemented as a versioned profile, pending governed admission.
 
 ### Phase 4 — governance and scale
 
@@ -135,7 +151,8 @@ tools to follow current state.
 
 - Git commit author is only a fallback identity and may not equal the source PR
   author; a GitHub App should resolve immutable GitHub user IDs.
-- The PR validator assumes contribution-only PRs. Maintainer problem/protocol PRs
+- The PR validator accepts exactly one new contribution directory or one new
+  two-file research-direction event directory. Maintainer problem/protocol PRs
   should run `validate-tree`, not `validate-pr`.
 - First-parent ordering is only canonical when branch protections enforce a
   linear, non-rewritable history.

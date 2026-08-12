@@ -99,7 +99,12 @@
           "type": "object",
           "required": ["implementation", "spec"],
           "properties": {
-            "implementation": { "const": "openrouter-credit-assignment-v1" },
+            "implementation": {
+              "enum": [
+                "openrouter-credit-assignment-v1",
+                "openrouter-credit-assignment-v2"
+              ]
+            },
             "spec": { "type": "string" }
           },
           "additionalProperties": false

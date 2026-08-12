@@ -84,6 +84,46 @@ type Transaction = {
   contentMarkdown: string;
 };
 
+type ResearchDirectionEvent = {
+  ordinal: number;
+  canonicalOrdinal: number;
+  transactionId: string;
+  committedAt: number;
+  eventId: string;
+  directionId: string;
+  eventType: "register" | "update" | "release" | "complete";
+  path: string;
+  author: { displayName: string };
+  contentDigest: string;
+  contentMarkdown: string;
+  data: Record<string, unknown>;
+};
+
+type ResearchDirection = {
+  directionId: string;
+  title: string;
+  summary: string;
+  relatedKnowledgeNodeIds: string[];
+  status: "active" | "released" | "completed";
+  registeredEventId: string;
+  registeredTransactionId: string;
+  registeredAt: number;
+  registeredBy: { displayName: string };
+  currentEventId: string;
+  currentTransactionId: string;
+  currentAt: number;
+  completionTransactionIds: string[];
+  eventIds: string[];
+};
+
+type ResearchDirectionLedger = {
+  problemId: string;
+  directionLedgerHead: string | null;
+  directionLedgerDigest: string;
+  events: ResearchDirectionEvent[];
+  directions: ResearchDirection[];
+};
+
 type JudgmentFinding = {
   claimKey: string;
   stance: string;
@@ -134,7 +174,8 @@ type CreditAssignment = {
   significance: "foundational" | "major" | "supporting" | "minor" | "none" | "uncertain";
   roles: string[];
   knowledgeRefs: CreditKnowledgeRef[];
-  reservationTransactionIds: string[];
+  reservationTransactionIds?: string[];
+  directionRegistrationTransactionIds?: string[];
   reportSection: string;
 };
 
@@ -202,10 +243,11 @@ export type ViewerCatalog = {
   repository: { slug: string; canonicalRef: string; projectionRef: string };
   projections: RepositoryProjection[];
   creditProjections?: RepositoryCreditProjection[];
+  researchDirections?: ResearchDirectionLedger[];
   defaultProjectionId: string | null;
 };
 
-type DetailMode = "node" | "transaction" | "judgment" | "credit" | "report";
+type DetailMode = "node" | "transaction" | "judgment" | "credit" | "report" | "direction";
 
 type ViewerState = {
   problemId?: string;
@@ -215,6 +257,7 @@ type ViewerState = {
   runId?: string;
   nodeId?: string;
   transactionId?: string;
+  directionId?: string;
   judgmentId?: string;
   query?: string;
   detailMode?: DetailMode;
@@ -278,6 +321,15 @@ function isViewerCatalog(value: unknown): value is ViewerCatalog {
       ),
     )
   );
+  const validDirections = catalog.researchDirections === undefined || (
+    Array.isArray(catalog.researchDirections) &&
+    catalog.researchDirections.every((item) =>
+      typeof item?.problemId === "string" &&
+      typeof item?.directionLedgerDigest === "string" &&
+      Array.isArray(item?.events) &&
+      Array.isArray(item?.directions),
+    )
+  );
   return catalog.schemaVersion === 1 &&
     !!catalog.repository &&
     Array.isArray(catalog.projections) &&
@@ -287,7 +339,7 @@ function isViewerCatalog(value: unknown): value is ViewerCatalog {
       typeof projection?.problemId === "string" &&
       Array.isArray(projection?.data?.runs) &&
       projection.data.runs.length > 0,
-    ) && validCredits;
+    ) && validCredits && validDirections;
 }
 
 export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: ViewerData }) {
@@ -305,6 +357,7 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
     repository: { slug: "Layr-Labs/math-flow", canonicalRef: "main", projectionRef: "projections" },
     projections: [fallbackProjection],
     creditProjections: [],
+    researchDirections: [],
     defaultProjectionId: fallbackProjection.id,
   };
   const [catalog, setCatalog] = useState(fallbackCatalog);
@@ -373,6 +426,9 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
   ) ?? creditProjection?.runs.find(
     (item) => item.runDigest === creditProjection.latestRunDigest,
   );
+  const researchDirections = (catalog.researchDirections ?? []).find(
+    (item) => item.problemId === effectiveProblem,
+  );
 
   function chooseProblem(nextProblem: string) {
     const nextProjection = catalog.projections.find((item) => item.problemId === nextProblem);
@@ -385,6 +441,7 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
       runId: undefined,
       nodeId: undefined,
       transactionId: undefined,
+      directionId: undefined,
       judgmentId: undefined,
       query: undefined,
       detailMode: undefined,
@@ -402,6 +459,7 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
       runId: undefined,
       nodeId: undefined,
       transactionId: undefined,
+      directionId: undefined,
       judgmentId: undefined,
       query: undefined,
       detailMode: undefined,
@@ -427,6 +485,7 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
       runId: nextRunId,
       nodeId: nextRun.state.nodes[currentNodeId] ? currentNodeId : "root",
       transactionId: undefined,
+      directionId: undefined,
       judgmentId: undefined,
       detailMode: "node",
     });
@@ -536,6 +595,7 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
         problemId={effectiveProblem}
         projectionId={projection.id}
         creditProjection={creditProjection}
+        researchDirections={researchDirections}
         viewerState={viewerState}
         onViewerStateChange={updateViewerState}
       />
@@ -631,6 +691,7 @@ export function KnowledgeViewer({
   problemId,
   projectionId,
   creditProjection,
+  researchDirections,
   viewerState,
   onViewerStateChange,
 }: {
@@ -638,6 +699,7 @@ export function KnowledgeViewer({
   problemId: string;
   projectionId: string;
   creditProjection?: RepositoryCreditProjection;
+  researchDirections?: ResearchDirectionLedger;
   viewerState: ViewerState;
   onViewerStateChange(patch: Partial<ViewerState>): void;
 }) {
@@ -744,6 +806,14 @@ export function KnowledgeViewer({
   const selectedTransaction = data.transactions.find((item) =>
     item.transactionId === viewerState.transactionId && item.ordinal <= runLedgerPosition,
   );
+  const selectedDirection = researchDirections?.directions.find(
+    (item) => item.directionId === viewerState.directionId,
+  );
+  const selectedDirectionEvents = selectedDirection
+    ? researchDirections?.events.filter(
+      (item) => item.directionId === selectedDirection.directionId,
+    ) ?? []
+    : [];
   const transactionId = selectedTransaction?.transactionId;
   const selectedCreditAssignment = creditRun?.assignments.find(
     (item) => item.transactionId === transactionId,
@@ -752,7 +822,9 @@ export function KnowledgeViewer({
     ? runJudgments.filter((item) => judgmentMentionsTransaction(item, selectedTransaction.transactionId))
     : [];
   const selectedJudgment = transactionJudgments.find((item) => item.judgmentId === viewerState.judgmentId) ?? transactionJudgments.at(-1);
-  const detailMode: DetailMode = selectedTransaction
+  const detailMode: DetailMode = selectedDirection
+    ? "direction"
+    : selectedTransaction
     ? resolveTransactionDetailMode(viewerState.detailMode, {
       hasJudgment: transactionJudgments.length > 0,
       hasCredit: Boolean(selectedCreditAssignment),
@@ -768,10 +840,11 @@ export function KnowledgeViewer({
       runId: run.id,
       nodeId: selectedNode.id,
       transactionId,
+      directionId: selectedDirection?.directionId,
       judgmentId: selectedTransaction ? selectedJudgment?.judgmentId : undefined,
       detailMode,
     });
-  }, [creditProjection?.id, creditRun?.runDigest, detailMode, onViewerStateChange, problemId, projectionId, run.id, selectedJudgment?.judgmentId, selectedNode.id, selectedTransaction, transactionId]);
+  }, [creditProjection?.id, creditRun?.runDigest, detailMode, onViewerStateChange, problemId, projectionId, run.id, selectedDirection?.directionId, selectedJudgment?.judgmentId, selectedNode.id, selectedTransaction, transactionId]);
 
   const transactionDirectIds = useMemo(() => new Set(
     transactionId
@@ -818,6 +891,7 @@ export function KnowledgeViewer({
       runId: targetRun.id,
       nodeId: reference.nodeId,
       transactionId: undefined,
+      directionId: undefined,
       judgmentId: undefined,
       detailMode: "node",
     });
@@ -832,13 +906,14 @@ export function KnowledgeViewer({
         judgmentMentionsTransaction(judgment, item.transactionId),
       )?.transactionId;
     if (!relevantTransaction) return;
-    onViewerStateChange({ transactionId: relevantTransaction, judgmentId: nextJudgmentId, detailMode: "judgment" });
+    onViewerStateChange({ transactionId: relevantTransaction, directionId: undefined, judgmentId: nextJudgmentId, detailMode: "judgment" });
   }
 
   function openTransaction(nextTransactionId: string) {
     const linked = runJudgments.find((item) => judgmentMentionsTransaction(item, nextTransactionId));
     onViewerStateChange({
       transactionId: nextTransactionId,
+      directionId: undefined,
       judgmentId: linked?.judgmentId,
       detailMode: preferredTransactionDetailMode(viewerState.detailMode),
     });
@@ -857,7 +932,7 @@ export function KnowledgeViewer({
       >
         <button
           className={`node-card ${selectedNode.id === id ? "selected" : ""} ${nodeRelation ?? ""} ${dimmed ? "dimmed" : ""}`}
-          onClick={() => onViewerStateChange({ nodeId: id, transactionId: undefined, judgmentId: undefined, detailMode: "node" })}
+          onClick={() => onViewerStateChange({ nodeId: id, transactionId: undefined, directionId: undefined, judgmentId: undefined, detailMode: "node" })}
           aria-pressed={selectedNode.id === id}
         >
           <TypeMark type={node.type} />
@@ -901,8 +976,45 @@ export function KnowledgeViewer({
       <section className="workspace">
         <aside className="ledger-panel panel">
           <div className="panel-heading">
-            <div><span className="eyebrow">Canonical history</span><h2>Transactions</h2></div>
+            <div><span className="eyebrow">Canonical history</span><h2>Research activity</h2></div>
             <span className="count">{data.transactions.length}</span>
+          </div>
+          <section className="direction-list" aria-label="Research directions">
+            <div className="section-label">
+              <h3>Research directions</h3>
+              <span>{researchDirections?.directions.length ?? 0}</span>
+            </div>
+            {researchDirections?.directions.map((direction) => {
+              const active = selectedDirection?.directionId === direction.directionId;
+              return (
+                <button
+                  className={`direction-card direction-${direction.status} ${active ? "selected" : ""}`}
+                  key={direction.directionId}
+                  onClick={() => onViewerStateChange(active
+                    ? { directionId: undefined, detailMode: "node" }
+                    : {
+                      directionId: direction.directionId,
+                      transactionId: undefined,
+                      judgmentId: undefined,
+                      detailMode: "direction",
+                    })}
+                  aria-pressed={active}
+                >
+                  <span className="direction-mark">↗</span>
+                  <span>
+                    <strong>{direction.title}</strong>
+                    <small>{direction.registeredBy.displayName} · {label(direction.status)}</small>
+                  </span>
+                </button>
+              );
+            })}
+            {!researchDirections?.directions.length && (
+              <p className="muted">No research directions have been registered.</p>
+            )}
+          </section>
+          <div className="ledger-subheading">
+            <h3>Submissions</h3>
+            <span>{data.transactions.length}</span>
           </div>
           <div className="ledger-line">
             {data.transactions.map((transaction) => {
@@ -927,7 +1039,7 @@ export function KnowledgeViewer({
                   key={transaction.transactionId}
                   onClick={() => {
                     if (active) {
-                      onViewerStateChange({ transactionId: undefined, judgmentId: undefined, detailMode: "node" });
+                      onViewerStateChange({ transactionId: undefined, directionId: undefined, judgmentId: undefined, detailMode: "node" });
                     } else {
                       openTransaction(transaction.transactionId);
                     }
@@ -995,7 +1107,11 @@ export function KnowledgeViewer({
         </section>
 
         <aside className="detail-panel panel">
-          {selectedTransaction ? (
+          {selectedDirection ? (
+            <div className="detail-tabs detail-tabs-direction" role="tablist" aria-label="Research direction details">
+              <button role="tab" aria-selected="true">Direction</button>
+            </div>
+          ) : selectedTransaction ? (
             <div className="detail-tabs detail-tabs-transaction" role="tablist" aria-label="Transaction details">
               <button role="tab" aria-selected={detailMode === "transaction"} onClick={() => onViewerStateChange({ detailMode: "transaction" })}>Submission</button>
               <button role="tab" aria-selected={detailMode === "judgment"} disabled={!transactionJudgments.length} onClick={() => onViewerStateChange({ detailMode: "judgment" })}>Judgment</button>
@@ -1007,7 +1123,81 @@ export function KnowledgeViewer({
               <button role="tab" aria-selected={detailMode === "report"} onClick={() => onViewerStateChange({ detailMode: "report" })}>Build report</button>
             </div>
           )}
-          {detailMode === "node" ? (
+          {detailMode === "direction" && selectedDirection ? (
+            <section className="artifact-detail direction-detail">
+              <span className="eyebrow">Participant intent · non-exclusive</span>
+              <h2>{selectedDirection.title}</h2>
+              <div className="direction-status-row">
+                <span className={`direction-status direction-status-${selectedDirection.status}`}>
+                  {selectedDirection.status}
+                </span>
+                <code>{selectedDirection.directionId}</code>
+              </div>
+              <p className="detail-summary direction-summary">{selectedDirection.summary}</p>
+              <div className="provenance-grid artifact-provenance">
+                <div><span>Registered by</span><strong>{selectedDirection.registeredBy.displayName}</strong></div>
+                <div><span>Registration</span><code>{short(selectedDirection.registeredTransactionId, 12)}</code></div>
+                <div><span>Current event</span><code>{selectedDirection.currentEventId}</code></div>
+                <div><span>Direction ledger</span><code>{short(researchDirections?.directionLedgerDigest ?? null, 12)}</code></div>
+              </div>
+              <article className="direction-notice">
+                <strong>Registration is evidence, not ownership.</strong>
+                <span>Other solvers may pursue overlapping work, and mathematical validity is determined separately.</span>
+              </article>
+              <section className="credit-reference-list">
+                <div className="section-label"><h3>Related knowledge nodes</h3><span>{selectedDirection.relatedKnowledgeNodeIds.length}</span></div>
+                {selectedDirection.relatedKnowledgeNodeIds.map((nodeId) => (
+                  nodes[nodeId] ? (
+                    <button
+                      key={nodeId}
+                      onClick={() => onViewerStateChange({
+                        nodeId,
+                        directionId: undefined,
+                        detailMode: "node",
+                      })}
+                    >
+                      <strong>{nodes[nodeId].title}</strong>
+                      <code>{nodeId}</code>
+                    </button>
+                  ) : (
+                    <span className="reference-chip" key={nodeId}>{nodeId} · not present in selected state</span>
+                  )
+                ))}
+                {!selectedDirection.relatedKnowledgeNodeIds.length && <p className="muted">No knowledge nodes were named by the participant.</p>}
+              </section>
+              {!!selectedDirection.completionTransactionIds.length && (
+                <section className="credit-reference-list">
+                  <div className="section-label"><h3>Completion submissions</h3><span>{selectedDirection.completionTransactionIds.length}</span></div>
+                  {selectedDirection.completionTransactionIds.map((completionId) => {
+                    const transaction = data.transactions.find((item) => item.transactionId === completionId);
+                    return (
+                      <button key={completionId} onClick={() => openTransaction(completionId)}>
+                        <strong>{transaction ? label(transaction.contributionId) : short(completionId)}</strong>
+                        <code>{short(completionId, 12)}</code>
+                      </button>
+                    );
+                  })}
+                </section>
+              )}
+              <section className="revision-section direction-history">
+                <div className="section-label"><h3>Direction event history</h3><span>{selectedDirectionEvents.length}</span></div>
+                {[...selectedDirectionEvents].reverse().map((event) => (
+                  <article className="revision-card" key={event.transactionId}>
+                    <div>
+                      <span className={`action action-${event.eventType}`}>{event.eventType}</span>
+                      <strong>{event.eventId}</strong>
+                      <code>{short(event.transactionId)}</code>
+                    </div>
+                    <small>{event.author.displayName} · {new Date(event.committedAt * 1000).toISOString()}</small>
+                    <details className="raw-artifact">
+                      <summary>Participant-authored event detail</summary>
+                      <Markdown value={event.contentMarkdown} actions={referenceActions} />
+                    </details>
+                  </article>
+                ))}
+              </section>
+            </section>
+          ) : detailMode === "node" ? (
             <>
               <div className="detail-title">
                 <TypeMark type={selectedNode.type} />
@@ -1201,9 +1391,33 @@ export function KnowledgeViewer({
                 ))}
                 {!selectedCreditAssignment.knowledgeRefs.length && <p className="muted">No knowledge node was cited for this assignment.</p>}
               </section>
+              {selectedCreditAssignment.directionRegistrationTransactionIds ? (
+                <section className="credit-reference-list">
+                  <div className="section-label"><h3>Research direction registrations</h3><span>{selectedCreditAssignment.directionRegistrationTransactionIds.length}</span></div>
+                  {selectedCreditAssignment.directionRegistrationTransactionIds.map((registrationId) => {
+                    const event = researchDirections?.events.find((item) => item.transactionId === registrationId && item.eventType === "register");
+                    return (
+                      <button
+                        key={registrationId}
+                        onClick={() => event && onViewerStateChange({
+                          directionId: event.directionId,
+                          transactionId: undefined,
+                          judgmentId: undefined,
+                          detailMode: "direction",
+                        })}
+                        disabled={!event}
+                      >
+                        <strong>{event ? label(event.directionId) : short(registrationId)}</strong>
+                        <code>{short(registrationId, 12)}</code>
+                      </button>
+                    );
+                  })}
+                  {!selectedCreditAssignment.directionRegistrationTransactionIds.length && <p className="muted">No formal research-direction registration was credited.</p>}
+                </section>
+              ) : (
               <section className="credit-reference-list">
-                <div className="section-label"><h3>Prior reservations</h3><span>{selectedCreditAssignment.reservationTransactionIds.length}</span></div>
-                {selectedCreditAssignment.reservationTransactionIds.map((reservationId) => {
+                <div className="section-label"><h3>Prior reservations</h3><span>{selectedCreditAssignment.reservationTransactionIds?.length ?? 0}</span></div>
+                {(selectedCreditAssignment.reservationTransactionIds ?? []).map((reservationId) => {
                   const reservation = data.transactions.find((item) => item.transactionId === reservationId);
                   return (
                     <button key={reservationId} onClick={() => openTransaction(reservationId)}>
@@ -1212,8 +1426,9 @@ export function KnowledgeViewer({
                     </button>
                   );
                 })}
-                {!selectedCreditAssignment.reservationTransactionIds.length && <p className="muted">No prior reservation was credited.</p>}
+                {!selectedCreditAssignment.reservationTransactionIds?.length && <p className="muted">No prior reservation was credited.</p>}
               </section>
+              )}
               <details className="raw-artifact" open>
                 <summary>Credit rationale for this contribution</summary>
                 <Markdown

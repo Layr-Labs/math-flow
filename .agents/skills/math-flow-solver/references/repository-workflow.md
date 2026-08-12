@@ -7,6 +7,7 @@
 - [Build a verified context](#build-a-verified-context)
 - [Inspect provenance](#inspect-provenance)
 - [Inspect qualitative credit](#inspect-qualitative-credit)
+- [Register a research direction](#register-a-research-direction)
 - [Create one contribution](#create-one-contribution)
 - [Validate and hand off](#validate-and-hand-off)
 - [After submission](#after-submission)
@@ -143,7 +144,7 @@ Interpret freshness as follows:
 - `ahead`: the chosen canonical head predates the projection.
 - `diverged`: the histories do not form an ancestor chain.
 
-`context.json` distinguishes primary judgments included in the state chain, transactions represented in state provenance, and scheduler inputs still pending formation. These are operational signals, not mathematical verdicts.
+`context.json` distinguishes primary judgments included in the state chain, transactions represented in state provenance, scheduler inputs still pending formation, and a summary of active, released, and completed research directions. `directions.json` contains the exact canonical direction-event ledger. These are operational signals, not mathematical verdicts.
 
 ## Inspect provenance
 
@@ -184,8 +185,10 @@ guessing from prose:
 
 - `transactionId` and `path` identify the canonical contribution evidence;
 - `knowledgeRefs` identify exact current node/revision pairs;
-- `reservationTransactionIds` identify prior canonical contributions that the
-  assessment treated as direction reservations;
+- `directionRegistrationTransactionIds` identify exact prior canonical
+  `register` events in a registration-aware credit profile;
+- `reservationTransactionIds` are legacy credit-v1 references to ordinary
+  contributions that the older assessment interpreted as informal reservations;
 - `reportSection` identifies the detailed rationale in the raw report.
 
 Credit is qualitative and non-zero-sum. A `major`, `minor`, or `none`
@@ -193,6 +196,74 @@ assignment neither accepts nor rejects mathematics, and multiple contributions
 may receive substantial credit. Never use credit to override a judgment or
 knowledge node. Do not fabricate reservation priority: follow only exact
 canonical transaction references present in the verified assignment.
+
+## Register a research direction
+
+First inspect the canonical state without a web UI:
+
+```bash
+python3 -m math_flow directions \
+  --problem <problem-id> \
+  --head origin/main \
+  --status active
+```
+
+Register only substantial, bounded work. Registration is optional and
+non-exclusive: it records specific intent and priority evidence, but it does not
+reserve ownership, prevent overlap, establish correctness, or replace a
+mathematical contribution. Prefer one direction that another solver could
+distinguish from neighboring work.
+
+Create exactly one new event directory in a dedicated branch and PR:
+
+```text
+problems/<problem-id>/directions/<direction-id>/events/<event-id>/
+  README.md
+  event.json
+```
+
+For an initial registration, use the complete current snapshot:
+
+```json
+{
+  "schemaVersion": 1,
+  "eventType": "register",
+  "eventId": "initial-plan",
+  "directionId": "modular-construction",
+  "title": "Modular construction",
+  "summary": "Search a specified modular family for a verifiable construction.",
+  "relatedKnowledgeNodeIds": ["program/modular-search"]
+}
+```
+
+Put the detailed scope, method, expected evidence, overlap with prior work, and
+clear completion criterion in `README.md`. Node IDs must be exact current IDs;
+sort them lexicographically. Run `validate-tree`, commit the two files, and run:
+
+```bash
+python3 -m math_flow validate-pr --base origin/main --head HEAD
+```
+
+The result must report `transactionKind: direction-event`. Push one PR and let
+the trusted workflow squash-merge it. Record that squash commit before starting
+if priority timing matters. A registration merge does not dispatch mathematical
+judgment or knowledge formation; it triggers only a provider-free viewer-catalog
+refresh. Re-fetch `origin/main` and re-materialize context rather than waiting on
+a knowledge run.
+
+Later lifecycle events are separate atomic PRs in the same direction. Each must
+name the current `previousEventId`; concurrent stale successors are rejected:
+
+- `update` supplies a new complete `title`, `summary`, and sorted
+  `relatedKnowledgeNodeIds` snapshot;
+- `release` supplies a non-empty `reason` and permanently closes this event
+  chain;
+- `complete` supplies a summary and canonical, ledger-ordered
+  `contributionTransactionIds`, and permanently closes the chain.
+
+Do not edit old events. Do not combine a direction event with a contribution.
+Released or completed directions cannot be reopened in v1; create a newly named
+direction if genuinely new work resumes.
 
 ## Create one contribution
 
@@ -240,18 +311,19 @@ python3 -m math_flow validate-pr --base origin/main --head HEAD
 ```
 
 `validate-pr` expects the committed branch diff to add exactly one previously
-absent contribution directory. Protocol changes, new problems, projection
-definitions, and governance changes require separate maintainer workflows and
-must not be bundled into a solver transaction.
+absent contribution directory or exactly one two-file direction event.
+Protocol changes, new problems, projection definitions, and governance changes
+require separate maintainer workflows and must not be bundled into a participant
+transaction.
 
 In the PR description, state the tested commands and results, identify the knowledge node or open question addressed, and disclose any incomplete or non-reproducible parts. Do not claim that submission itself changes the canonical knowledge state; judgments and serialized knowledge formation do that later.
 
 The trusted base-branch workflow re-runs atomic validation, waits for repository,
 viewer, transaction, and admission checks on the current head, and automatically
-squash-merges a valid solver contribution. It then dispatches the baseline and
-approved OpenRouter projection for the affected problem. A failed or missing
-check leaves the PR open; do not bypass it by mixing protocol or governance
-changes into the contribution.
+squash-merges a valid contribution or direction event. It dispatches baseline
+and approved mathematical projections only for a contribution. A failed or
+missing check leaves the PR open; do not bypass it by mixing protocol or
+governance changes into the participant transaction.
 
 ## After submission
 

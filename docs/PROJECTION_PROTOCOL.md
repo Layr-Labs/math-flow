@@ -309,7 +309,7 @@ against the same bytes even after the producer advances.
 Artifact roles are extensible protocol identifiers. Support for a role is an
 explicit runner capability, not permission to execute repository code. The first
 resolver supports `knowledge-state`; future handlers can add judgments,
-reconciliations, verifier attestations, reservations, or prior overlay state
+reconciliations, verifier attestations, direction-event projections, or prior overlay state
 without changing the dependency envelope.
 
 ## Credit as an independent overlay
@@ -330,12 +330,23 @@ That is an example policy surface, not a core credit formula. Another governed
 credit projection can use numerical shares, Shapley-style measures, peer voting,
 or another schema while reusing the same dependency lock and run envelope.
 
+The additive `math-flow/credit-assignment-markdown-v2` profile replaces those
+informal reservation references with exact `directionRegistrationTransactionIds`.
+Its runner embeds and verifies the canonical research-direction event ledger and
+permits only a `register` event canonically preceding the credited contribution.
+The model may consider later updates, release, and completion in its Markdown
+assessment, but the structured priority citation stays bound to the original
+registration transaction. Published v1 bundles retain their original meaning
+and remain valid.
+
 The `credit` command now implements the local two-stage example runner. Its first
 call writes detailed Markdown with one exact section per canonical transaction;
 its second call extracts only the qualitative index. Deterministic validation
 requires one assignment per transaction, exact current node/revision references,
-ordered prior reservation references, and a unique non-empty matching report
-section. The published bundle contains the dependency lock, complete structured
+ordered profile-specific prior references, and a unique non-empty matching report
+section. Credit v1 accepts its legacy contribution-based reservation references;
+credit v2 accepts only exact, canonically prior `register` events. The published
+bundle contains the dependency lock, complete structured
 input (including the locked knowledge state), Markdown report, and credit index.
 The publisher accepts it as an independent immutable `credit-assignment` object.
 Every new-format credit run also carries an immutable scheduling envelope:
@@ -356,10 +367,14 @@ transactions whose Git *committer* timestamps fall in `[startAt, endAt)`.
 GitHub squash-merge
 committer time is therefore the trusted admission time for hosted contribution
 transactions; imported or administrator-authored history must preserve credible
-committer metadata. The full ledger remains in the locked input so earlier
-reservations and provenance can still be audited. In particular, structured
-assignments remain window-scoped while reservation references may name any
-canonical prior transaction.
+committer metadata. The full contribution ledger and, for v2, the full
+direction-event ledger remain in the locked input so prior registrations and
+provenance can still be audited. Structured assignments remain window-scoped
+while a registration reference may name any canonical prior `register` event.
+Direction-only changes do not make an existing credit run eligible: a later
+registration cannot retroactively precede an already merged contribution, while
+the next contribution changes the locked knowledge dependency and triggers a new
+assessment.
 
 Automatic retries use a semantic key rather than wall-clock evaluation time:
 all keys bind the governed projection, runner, and dependency state, while
@@ -387,8 +402,14 @@ per-period award while reusing this schedule envelope. Before a calendar chain
 has its first run, older periods are not backfilled; deployment should therefore
 activate the projection before the first intended award period.
 
-Research-direction reservations belong in participant-authored canonical
-transactions, not in judge or knowledge state. A credit profile may treat an
-earlier, specific reservation as evidence of priority while also considering
-overlap, completion quality, abandonment, and independent work. A reservation is
-neither permanent ownership nor mathematical evidence by itself.
+Research-direction registrations belong in participant-authored canonical
+transactions, not in judgment or knowledge state. The repository accepts exactly
+one append-only `register`, `update`, `release`, or `complete` event per atomic
+direction PR and derives current status from the linear predecessor chain. These
+events do not advance the mathematical ledger or trigger judgments. Their merge
+does trigger a provider-free catalog refresh so repository viewers expose the new
+canonical event without waiting for another knowledge run. A credit
+profile may treat an earlier, specific registration as evidence of priority while
+also considering overlap, completion quality, abandonment, and independent work.
+A registration is neither permanent ownership nor mathematical evidence by
+itself, and overlapping registrations remain valid.

@@ -6,12 +6,13 @@ const queryKeys = {
   runId: "run",
   nodeId: "node",
   transactionId: "transaction",
+  directionId: "direction",
   judgmentId: "judgment",
   query: "q",
   detailMode: "detail",
 };
 
-const detailModes = new Set(["node", "transaction", "judgment", "credit", "report"]);
+const detailModes = new Set(["node", "transaction", "judgment", "credit", "report", "direction"]);
 
 export function parseViewerState(search) {
   const params = new URLSearchParams(search);

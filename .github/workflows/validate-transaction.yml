@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "problems/**/contributions/**"
+      - "problems/**/directions/**"
 
 permissions:
   contents: read
@@ -20,7 +21,7 @@ jobs:
           python-version: "3.12"
       - name: Validate repository tree
         run: python -m math_flow validate-tree
-      - name: Validate atomic contribution diff
+      - name: Validate atomic participant transaction diff
         if: github.event.pull_request.base.sha != '64afc12868e150370e6c56e6eeceab6b7aabe158'
         run: >-
           python -m math_flow validate-pr
@@ -30,4 +31,4 @@ jobs:
         if: github.event.pull_request.base.sha == '64afc12868e150370e6c56e6eeceab6b7aabe158'
         run: >-
           echo "The full repository migration is covered by validate-tree and the
-          repository test workflow; future contribution PRs use validate-pr."
+          repository test workflow; future participant PRs use validate-pr."

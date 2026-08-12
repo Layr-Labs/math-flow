@@ -11,8 +11,9 @@ The protocol's central rule is:
 
 This repository is an executable MVP of that rule. It contains:
 
-- a folder-based contribution format that stays pleasant to read and edit;
-- a pull-request validator enforcing one atomic contribution per PR;
+- folder-based contribution and research-direction event formats that stay
+  pleasant to read and edit;
+- a pull-request validator enforcing one atomic participant event per PR;
 - a ledger command that derives contribution order from first-parent Git history;
 - a versioned, allowlisted judge-builder interface;
 - generic judge-run bundles with profile-specific artifacts;
@@ -27,6 +28,9 @@ problems/<problem-id>/
   contributions/<contribution-id>/
     README.md
     ... arbitrary supporting artifacts
+  directions/<direction-id>/events/<event-id>/
+    README.md
+    event.json
 
 protocol/
   judges/                 versioned judge specifications
@@ -42,6 +46,13 @@ projections/<run>/
 A contribution may contain Markdown, Lean, source code, data, diagrams, or any
 other useful artifact. Only `README.md` is required. Correctness and credit never
 live in the contribution folder; they belong to judge projections.
+
+Research-direction events are a separate append-only participant stream. A
+`register` event records a specific intended direction; later `update`, `release`,
+or `complete` events extend it through an exact predecessor. Registrations are
+non-exclusive evidence of priority, not ownership or mathematical truth. They do
+not enter the contribution ledger or trigger mathematical projections. Their
+merge performs a provider-free refresh of the repository viewer catalog.
 
 ## Try it locally
 
@@ -60,6 +71,7 @@ After this repository is committed, use a Git commit instead:
 
 ```bash
 python -m math_flow ledger --problem triangle-midpoints --head HEAD
+python -m math_flow directions --problem triangle-midpoints --head HEAD
 python -m math_flow run \
   --problem triangle-midpoints \
   --judge protocol/judges/baseline-v1.json \
@@ -172,9 +184,13 @@ python -m math_flow credit-plan \
 ```
 
 The report call is unconstrained Markdown. A second control call indexes one
-qualitative assignment per transaction, linked to exact knowledge revisions and
-prior reservation transactions. This is an example credit policy rather than a
-core formula. The five-minute wake-up workflow plans governed overlay eligibility
+qualitative assignment per transaction, linked to exact knowledge revisions.
+The registration-aware v2 profile may additionally cite exact prior canonical
+`register` events; the legacy v1 profile's informal reservation references remain
+readable without changing their meaning. Registration is non-exclusive evidence,
+and the v2 rubric discounts vague, abandoned, or poorly executed plans. This is
+an example credit policy rather than a core formula. The five-minute wake-up
+workflow plans governed overlay eligibility
 without a provider call and dispatches the allowlisted credit runner only when
 eligible. Rolling overlays coalesce dependency changes behind
 `minimumIntervalSeconds`; an optional closed UTC hour/day window can instead
@@ -186,9 +202,10 @@ failures; manual workflow dispatch remains available for diagnosis and repair.
 
 ### Interactive research atlas
 
-The `viewer/` app presents the canonical transaction ledger, full submission
-Markdown, published primary and reconciliation judgments, every knowledge-state
-chain, and the immutable adjudication revisions behind it. Its
+The `viewer/` app presents the canonical transaction ledger, research-direction
+history, full submission Markdown, published primary and reconciliation
+judgments, every knowledge-state chain, credit overlays, and the immutable
+adjudication revisions behind them. Its
 server endpoint reads `viewer/catalog.json` directly from the orphan
 `projections` branch; the browser refreshes that endpoint every 30 seconds and
 offers problem and projection selectors. A checked-in deterministic export is
@@ -197,9 +214,10 @@ Private repositories configure the viewer's server-only
 `MATH_FLOW_GITHUB_TOKEN` binding with a fine-grained, read-only Contents token;
 the credential is never sent to the browser.
 
-After every validated atomic contribution is squash-merged, the trusted
-auto-merge workflow dispatches the baseline and approved OpenRouter projection
-for that contribution's problem. The OpenRouter workflow resolves its logical
+Every validated atomic participant event is squash-merged by the trusted
+auto-merge workflow. Contribution events dispatch the baseline and approved
+OpenRouter projection for their problem; research-direction events do not. The
+OpenRouter workflow resolves its logical
 projection from `protocol/projections/` at canonical `main`, plans judgment
 coverage for every ledger transaction under its judge spec, and fans out all
 missing primary judgments concurrently. It then deterministically derives

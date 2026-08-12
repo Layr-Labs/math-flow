@@ -78,6 +78,7 @@ def validate_tree(root: Path) -> dict[str, int]:
     root = root.resolve()
     # Imported lazily to keep the projection registry's Git-oriented admission
     # helpers from creating an import cycle at module load time.
+    from .directions import validate_direction_tree
     from .governance import validate_projection_registry
 
     validate_projection_registry(root)
@@ -87,6 +88,8 @@ def validate_tree(root: Path) -> dict[str, int]:
 
     problem_count = 0
     contribution_count = 0
+    direction_count = 0
+    direction_event_count = 0
     for problem_dir in sorted(problems_root.iterdir()):
         if not problem_dir.is_dir():
             raise MathFlowError(f"problems directory may only contain problem directories: {problem_dir}")
@@ -97,27 +100,35 @@ def validate_tree(root: Path) -> dict[str, int]:
         problem_count += 1
 
         contributions = problem_dir / "contributions"
-        if not contributions.exists():
-            continue
-        if not contributions.is_dir() or contributions.is_symlink():
-            raise MathFlowError(f"contributions must be a real directory: {contributions}")
-        for contribution in sorted(contributions.iterdir()):
-            if not contribution.is_dir():
-                raise MathFlowError(
-                    f"contributions directory may only contain contribution directories: {contribution}"
-                )
-            if contribution.is_symlink():
-                raise MathFlowError(f"contributions may not be symlinks: {contribution}")
-            validate_slug(contribution.name, "contribution id")
-            _check_nonempty(contribution / "README.md", "contribution README")
-            for artifact in contribution.rglob("*"):
-                if artifact.is_symlink():
-                    raise MathFlowError(f"contribution artifacts may not be symlinks: {artifact}")
-            contribution_count += 1
+        if contributions.exists():
+            if not contributions.is_dir() or contributions.is_symlink():
+                raise MathFlowError(f"contributions must be a real directory: {contributions}")
+            for contribution in sorted(contributions.iterdir()):
+                if not contribution.is_dir():
+                    raise MathFlowError(
+                        f"contributions directory may only contain contribution directories: {contribution}"
+                    )
+                if contribution.is_symlink():
+                    raise MathFlowError(f"contributions may not be symlinks: {contribution}")
+                validate_slug(contribution.name, "contribution id")
+                _check_nonempty(contribution / "README.md", "contribution README")
+                for artifact in contribution.rglob("*"):
+                    if artifact.is_symlink():
+                        raise MathFlowError(f"contribution artifacts may not be symlinks: {artifact}")
+                contribution_count += 1
+
+        events, directions = validate_direction_tree(root, problem_dir)
+        direction_event_count += events
+        direction_count += directions
 
     if not problem_count:
         raise MathFlowError("the repository must contain at least one problem")
-    return {"problems": problem_count, "contributions": contribution_count}
+    return {
+        "problems": problem_count,
+        "contributions": contribution_count,
+        "researchDirections": direction_count,
+        "directionEvents": direction_event_count,
+    }
 
 
 def _parse_name_status(raw: str) -> list[ChangedPath]:
@@ -169,51 +180,188 @@ def validate_pr(root: Path, base: str, head: str) -> dict[str, object]:
     if not changes:
         raise MathFlowError("the pull request contains no file changes")
 
-    keys: set[tuple[str, str]] = set()
+    from .directions import (
+        direction_event_key,
+        research_direction_ledger,
+        validate_direction_event,
+    )
+
+    contribution_keys = {contribution_key(change.path) for change in changes}
+    direction_keys = {direction_event_key(change.path) for change in changes}
+    contribution_only = None not in contribution_keys
+    direction_only = None not in direction_keys
+    if contribution_only and direction_only:
+        raise MathFlowError("participant PR paths ambiguously match multiple transaction types")
+    if not contribution_only and not direction_only:
+        raise MathFlowError(
+            "participant PRs may only change one new contribution or research direction event; "
+            f"found {changes[0].path}"
+        )
     for change in changes:
-        key = contribution_key(change.path)
-        if key is None:
-            raise MathFlowError(
-                "contribution PRs may only change one new contribution directory; "
-                f"found {change.path}"
-            )
-        keys.add(key)
         if change.status != "A":
             raise MathFlowError(
-                f"every file in a contribution PR must be newly added; {change.path} "
+                f"every file in a participant PR must be newly added; {change.path} "
                 f"has status {change.status}"
             )
 
+    if contribution_only:
+        keys = {key for key in contribution_keys if key is not None}
+        if len(keys) != 1:
+            rendered = ", ".join(
+                f"{problem}/{contribution}"
+                for problem, contribution in sorted(keys)
+            )
+            raise MathFlowError(
+                f"a PR must add exactly one contribution directory; found {rendered}"
+            )
+        problem, contribution = next(iter(keys))
+        validate_slug(problem, "problem id")
+        validate_slug(contribution, "contribution id")
+        prefix = f"problems/{problem}/contributions/{contribution}"
+
+        if _run_git(
+            root, "cat-file", "-e", f"{base_sha}:{prefix}", check=False
+        ).returncode == 0:
+            raise MathFlowError(
+                f"the contribution directory already exists at the base commit: {prefix}"
+            )
+        if _run_git(
+            root,
+            "cat-file",
+            "-e",
+            f"{head_sha}:problems/{problem}/problem.md",
+            check=False,
+        ).returncode:
+            raise MathFlowError(f"problem does not exist at the head commit: {problem}")
+
+        readme_path = f"{prefix}/README.md"
+        readme = _run_git(root, "show", f"{head_sha}:{readme_path}", check=False)
+        if readme.returncode or not readme.stdout.strip():
+            raise MathFlowError(
+                f"the new contribution must contain a non-empty {readme_path}"
+            )
+
+        tree = _run_git(root, "ls-tree", "-r", head_sha, "--", prefix)
+        for line in tree.stdout.splitlines():
+            mode = line.split(" ", 1)[0]
+            if mode == "120000":
+                raise MathFlowError(
+                    f"contribution artifacts may not be symlinks: {line.rsplit(chr(9), 1)[-1]}"
+                )
+
+        return {
+            "base": base_sha,
+            "head": head_sha,
+            "transactionKind": "contribution",
+            "problemId": problem,
+            "contributionId": contribution,
+            "files": len(changes),
+        }
+
+    keys = {key for key in direction_keys if key is not None}
     if len(keys) != 1:
-        rendered = ", ".join(f"{problem}/{contribution}" for problem, contribution in sorted(keys))
-        raise MathFlowError(f"a PR must add exactly one contribution directory; found {rendered}")
-
-    problem, contribution = next(iter(keys))
+        rendered = ", ".join(
+            f"{problem}/{direction}/{event}"
+            for problem, direction, event in sorted(keys)
+        )
+        raise MathFlowError(
+            f"a PR must add exactly one research direction event; found {rendered}"
+        )
+    problem, direction_id, event_id = next(iter(keys))
     validate_slug(problem, "problem id")
-    validate_slug(contribution, "contribution id")
-    prefix = f"problems/{problem}/contributions/{contribution}"
-
-    if _run_git(root, "cat-file", "-e", f"{base_sha}:{prefix}", check=False).returncode == 0:
-        raise MathFlowError(f"the contribution directory already exists at the base commit: {prefix}")
-    if _run_git(root, "cat-file", "-e", f"{head_sha}:problems/{problem}/problem.md", check=False).returncode:
+    validate_slug(direction_id, "research direction id")
+    validate_slug(event_id, "research direction event id")
+    prefix = f"problems/{problem}/directions/{direction_id}/events/{event_id}"
+    paths = sorted(change.path for change in changes)
+    expected_paths = sorted([f"{prefix}/README.md", f"{prefix}/event.json"])
+    if paths != expected_paths:
+        raise MathFlowError(
+            "a research direction event PR must add exactly README.md and event.json"
+        )
+    if _run_git(
+        root, "cat-file", "-e", f"{base_sha}:{prefix}", check=False
+    ).returncode == 0:
+        raise MathFlowError(
+            f"the research direction event already exists at the base commit: {prefix}"
+        )
+    if _run_git(
+        root,
+        "cat-file",
+        "-e",
+        f"{head_sha}:problems/{problem}/problem.md",
+        check=False,
+    ).returncode:
         raise MathFlowError(f"problem does not exist at the head commit: {problem}")
-
-    readme_path = f"{prefix}/README.md"
-    readme = _run_git(root, "show", f"{head_sha}:{readme_path}", check=False)
-    if readme.returncode or not readme.stdout.strip():
-        raise MathFlowError(f"the new contribution must contain a non-empty {readme_path}")
-
+    readme = read_at(root, head_sha, f"{prefix}/README.md")
+    if not readme.strip():
+        raise MathFlowError("research direction event README must contain text")
     tree = _run_git(root, "ls-tree", "-r", head_sha, "--", prefix)
     for line in tree.stdout.splitlines():
         mode = line.split(" ", 1)[0]
         if mode == "120000":
-            raise MathFlowError(f"contribution artifacts may not be symlinks: {line.rsplit(chr(9), 1)[-1]}")
-
+            raise MathFlowError(
+                f"research direction event files may not be symlinks: {line.rsplit(chr(9), 1)[-1]}"
+            )
+    try:
+        raw_event = json.loads(read_at(root, head_sha, f"{prefix}/event.json"))
+    except json.JSONDecodeError as exc:
+        raise MathFlowError(f"research direction event is not valid JSON: {exc}") from exc
+    event = validate_direction_event(
+        raw_event,
+        expected_direction_id=direction_id,
+        expected_event_id=event_id,
+    )
+    direction_state = research_direction_ledger(root, problem, base_sha)
+    existing = next(
+        (
+            item
+            for item in direction_state["directions"]
+            if item["directionId"] == direction_id
+        ),
+        None,
+    )
+    event_type = str(event["eventType"])
+    if event_type == "register":
+        if existing is not None:
+            raise MathFlowError(
+                f"research direction already exists at the base commit: {direction_id}"
+            )
+    else:
+        if existing is None:
+            raise MathFlowError(
+                f"research direction does not exist at the base commit: {direction_id}"
+            )
+        if existing["status"] != "active":
+            raise MathFlowError(
+                f"research direction is already {existing['status']}: {direction_id}"
+            )
+        if event["previousEventId"] != existing["currentEventId"]:
+            raise MathFlowError(
+                "research direction event does not extend the current terminal event"
+            )
+    if event_type == "complete":
+        source = ledger(root, problem, base_sha)
+        ordinals = {
+            str(item["transactionId"]): int(item["ordinal"])
+            for item in source["transactions"]
+        }
+        transaction_ids = list(event["contributionTransactionIds"])
+        if any(item not in ordinals for item in transaction_ids):
+            raise MathFlowError(
+                "research direction completion references a non-canonical contribution"
+            )
+        if transaction_ids != sorted(transaction_ids, key=ordinals.get):
+            raise MathFlowError(
+                "research direction completion contribution IDs must follow ledger order"
+            )
     return {
         "base": base_sha,
         "head": head_sha,
+        "transactionKind": "direction-event",
         "problemId": problem,
-        "contributionId": contribution,
+        "directionId": direction_id,
+        "eventId": event_id,
+        "eventType": event_type,
         "files": len(changes),
     }
 

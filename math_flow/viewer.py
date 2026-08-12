@@ -7,6 +7,7 @@ from .artifacts import load_manifest, read_verified_artifact, sha256_bytes, veri
 from .coordination import load_scheduler
 from .credit import load_credit_assignment_bundle
 from .credit_schedule import ordered_credit_runs
+from .directions import research_direction_ledger
 from .errors import MathFlowError
 from .governance import projection_registry_index
 from .knowledge import validate_state_v2, validate_state_v3
@@ -915,6 +916,12 @@ def export_viewer_catalog(
     credit_projections.sort(
         key=lambda item: (str(item["problemId"]), str(item["label"]), str(item["id"]))
     )
+    direction_ledgers = [
+        research_direction_ledger(root, problem, canonical_ref)
+        for problem in sorted(
+            {str(projection["problemId"]) for projection in projections}
+        )
+    ]
     return {
         "schemaVersion": 1,
         "repository": {
@@ -924,5 +931,6 @@ def export_viewer_catalog(
         },
         "projections": projections,
         "creditProjections": credit_projections,
+        "researchDirections": direction_ledgers,
         "defaultProjectionId": projections[0]["id"] if projections else None,
     }

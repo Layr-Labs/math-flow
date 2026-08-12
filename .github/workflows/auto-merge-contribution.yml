@@ -1,4 +1,4 @@
-name: Auto-merge validated contribution
+name: Auto-merge validated participant transaction
 
 on:
   workflow_run:
@@ -119,9 +119,9 @@ jobs:
           echo "Timed out waiting for required validation checks." >&2
           exit 1
 
-      - id: contribution
+      - id: transaction
         if: steps.checks.outputs.ready == 'true'
-        name: Re-verify one atomic contribution against current main
+        name: Re-verify one atomic participant transaction against current main
         env:
           PR_NUMBER: "${{ steps.pr.outputs.number }}"
           HEAD_SHA: "${{ steps.pr.outputs.head_sha }}"
@@ -135,20 +135,21 @@ jobs:
             exit 1
           fi
 
-          result="${RUNNER_TEMP}/validated-contribution.json"
+          result="${RUNNER_TEMP}/validated-transaction.json"
           if ! python -m math_flow validate-pr \
             --base origin/main \
             --head refs/remotes/origin/math-flow-auto-merge-head \
             > "$result"; then
             echo "atomic=false" >> "$GITHUB_OUTPUT"
-            echo "Pull request is not an atomic solver contribution; leaving it for maintainers."
+            echo "Pull request is not an atomic contribution or direction event; leaving it for maintainers."
             exit 0
           fi
           echo "atomic=true" >> "$GITHUB_OUTPUT"
           echo "problem=$(jq -r '.problemId' "$result")" >> "$GITHUB_OUTPUT"
+          echo "transaction_kind=$(jq -r '.transactionKind' "$result")" >> "$GITHUB_OUTPUT"
 
-      - if: steps.contribution.outputs.atomic == 'true'
-        name: Squash-merge the validated contribution
+      - if: steps.transaction.outputs.atomic == 'true'
+        name: Squash-merge the validated participant transaction
         env:
           GH_TOKEN: "${{ github.token }}"
           REPOSITORY: "${{ github.repository }}"
@@ -169,11 +170,13 @@ jobs:
           fi
           echo "Merged pull request ${PR_NUMBER} at $(jq -r '.sha' "$merged")."
 
-      - if: steps.contribution.outputs.atomic == 'true'
+      - if: >-
+          steps.transaction.outputs.atomic == 'true' &&
+          steps.transaction.outputs.transaction_kind == 'contribution'
         name: Dispatch affected problem projections
         env:
           GH_TOKEN: "${{ github.token }}"
-          PROBLEM: "${{ steps.contribution.outputs.problem }}"
+          PROBLEM: "${{ steps.transaction.outputs.problem }}"
         shell: bash
         run: |
           set -euo pipefail
@@ -210,3 +213,12 @@ jobs:
               -f problem="$PROBLEM" \
               -f remaining_projections="$remaining_projections"
           fi
+
+      - if: >-
+          steps.transaction.outputs.atomic == 'true' &&
+          steps.transaction.outputs.transaction_kind == 'direction-event'
+        name: Refresh the repository viewer after a direction event
+        env:
+          GH_TOKEN: "${{ github.token }}"
+        shell: bash
+        run: gh workflow run refresh-viewer-catalog.yml --ref main

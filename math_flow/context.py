@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .coordination import load_scheduler
 from .credit_context import build_credit_context
+from .directions import potential_direction_overlaps, research_direction_ledger
 from .errors import MathFlowError
 from .repository import is_ancestor, ledger
 from .viewer import export_viewer_catalog
@@ -216,6 +217,36 @@ def _markdown(context: dict[str, object], scoped_nodes: list[dict[str, object]])
         )
     lines.extend(
         [
+            "## Research directions",
+            "",
+            "Direction registrations record participant intent and priority. They are non-exclusive evidence, not mathematical adjudications or locks on other solvers.",
+            "",
+            f"- Active: {len(context['researchDirections']['active'])}",
+            f"- Released: {len(context['researchDirections']['released'])}",
+            f"- Completed: {len(context['researchDirections']['completed'])}",
+            f"- Potential overlaps from shared knowledge-node references: {len(context['researchDirections']['potentialOverlaps'])}",
+            "- Full canonical event history: `directions.json`",
+            "",
+        ]
+    )
+    active_directions = context["researchDirections"]["active"]
+    if active_directions:
+        lines.extend(["### Active directions", ""])
+        for direction in active_directions:
+            registered_by = direction.get("registeredBy")
+            author = (
+                registered_by.get("displayName", "unknown")
+                if isinstance(registered_by, dict)
+                else "unknown"
+            )
+            lines.append(
+                f"- `{direction['directionId']}` — **{direction['title']}**: "
+                f"{direction['summary']} (registered by {author} at "
+                f"`{direction['registeredTransactionId']}`)"
+            )
+        lines.append("")
+    lines.extend(
+        [
             "## Qualitative credit",
             "",
             "Credit is a non-zero-sum attribution overlay. It does not change mathematical validity or the knowledge-state assessment.",
@@ -384,6 +415,17 @@ def materialize_agent_context(
         list(canonical["transactions"]),
         credit_projection_id=credit_projection_id,
     )
+    direction_ledger = research_direction_ledger(root, problem, head)
+    direction_items = list(direction_ledger["directions"])
+    active_directions = [
+        item for item in direction_items if item["status"] == "active"
+    ]
+    released_directions = [
+        item for item in direction_items if item["status"] == "released"
+    ]
+    completed_directions = [
+        item for item in direction_items if item["status"] == "completed"
+    ]
 
     context: dict[str, object] = {
         "schemaVersion": 1,
@@ -427,6 +469,15 @@ def materialize_agent_context(
             ],
         },
         "coordination": coordination,
+        "researchDirections": {
+            "directionLedgerHead": direction_ledger["directionLedgerHead"],
+            "directionLedgerDigest": direction_ledger["directionLedgerDigest"],
+            "eventCount": len(direction_ledger["events"]),
+            "active": active_directions,
+            "released": released_directions,
+            "completed": completed_directions,
+            "potentialOverlaps": potential_direction_overlaps(direction_items),
+        },
         "credit": credit,
         "scope": {
             "requestedNodeIds": requested,
@@ -436,6 +487,7 @@ def materialize_agent_context(
         "files": {
             "state": "state.json",
             "context": "context.md",
+            "directions": "directions.json",
             "credit": "credit.json",
             **({"creditReport": "credit-report.md"} if credit_report is not None else {}),
         },
@@ -454,6 +506,10 @@ def materialize_agent_context(
     (output / "credit.json").write_text(
         json.dumps(credit, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
+    (output / "directions.json").write_text(
+        json.dumps(direction_ledger, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
     if credit_report is not None:
         (output / "credit-report.md").write_text(
             credit_report, encoding="utf-8"
@@ -467,5 +523,6 @@ def materialize_agent_context(
         "freshness": freshness_status,
         "stateDigest": state.get("stateDigest"),
         "creditStatus": credit["status"],
+        "activeDirectionCount": len(active_directions),
         "outputDir": str(output),
     }

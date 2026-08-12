@@ -381,6 +381,178 @@ class ProjectionDependencyTests(unittest.TestCase):
         )
         self.assertEqual(json.loads(output.read_text(encoding="utf-8")), first)
 
+    def test_registration_aware_credit_uses_exact_prior_register_events(self) -> None:
+        write(
+            self.root / "protocol/judges/credit.json",
+            (
+                Path(__file__).parents[1]
+                / "protocol/judges/openrouter-credit-assignment-v2.json"
+            ).read_text(encoding="utf-8"),
+        )
+        credit_projection = overlay_projection_spec(
+            [
+                {
+                    "name": "knowledge",
+                    "projectionId": "knowledge-v1",
+                    "artifactRole": "knowledge-state",
+                }
+            ]
+        )
+        credit_projection["runner"] = {
+            "implementation": "openrouter-credit-assignment-v2",
+            "spec": "protocol/judges/credit.json",
+        }
+        write_json(
+            self.root / "protocol/projections/credit-v1.json", credit_projection
+        )
+        direction = self.root / "problems/demo/directions/modular/events/initial"
+        write_json(
+            direction / "event.json",
+            {
+                "schemaVersion": 1,
+                "eventType": "register",
+                "eventId": "initial",
+                "directionId": "modular",
+                "title": "Modular construction",
+                "summary": "Search a specified modular family for a construction.",
+                "relatedKnowledgeNodeIds": ["root"],
+            },
+        )
+        write(direction / "README.md", "# Modular construction\n\nSearch the specified family.\n")
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Register modular direction")
+        registration_id = git(self.root, "rev-parse", "HEAD")
+
+        write(
+            self.root / "problems/demo/contributions/second-result/README.md",
+            "# Second result\n\nA construction obtained from the modular search.\n",
+        )
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Add second result")
+        self.head = git(self.root, "rev-parse", "HEAD")
+        shutil.rmtree(self.root / "knowledge-bundle")
+        self._publish_knowledge_state()
+
+        transaction_ids = [
+            str(item["transactionId"])
+            for item in ledger(self.root, "demo", self.head)["transactions"]
+        ]
+        report = "# Credit assessment\n\n" + "\n\n".join(
+            f"## Contribution: {transaction_id}\n\nAssessment for this contribution."
+            for transaction_id in transaction_ids
+        ) + "\n"
+        extracted = {
+            "assignments": [
+                {
+                    "transactionId": transaction_ids[0],
+                    "significance": "major",
+                    "roles": ["proof"],
+                    "knowledgeRefs": [{"nodeId": "root", "revisionId": None}],
+                    "directionRegistrationTransactionIds": [],
+                },
+                {
+                    "transactionId": transaction_ids[1],
+                    "significance": "supporting",
+                    "roles": ["construction", "direction-priority"],
+                    "knowledgeRefs": [{"nodeId": "root", "revisionId": None}],
+                    "directionRegistrationTransactionIds": [registration_id],
+                },
+            ]
+        }
+        calls = 0
+
+        def transport(payload: dict[str, object]) -> dict[str, object]:
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                self.assertIn("research-direction registrations", json.dumps(payload))
+            return {
+                "id": f"registration-credit-{calls}",
+                "model": "openai/gpt-5.6-sol",
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": report if calls == 1 else json.dumps(extracted),
+                        },
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 100,
+                    "completion_tokens": 50,
+                    "total_tokens": 150,
+                },
+            }
+
+        bundle = self.root / "registration-credit-bundle"
+        run_credit_assignment_bundle(
+            self.root,
+            self.projection_root,
+            "credit-v1",
+            "demo",
+            self.head,
+            bundle,
+            transport=transport,
+            as_of=100,
+        )
+        manifest, index, _ = load_credit_assignment_bundle(bundle)
+        self.assertEqual(
+            manifest["outputProfile"], "math-flow/credit-assignment-markdown-v2"
+        )
+        self.assertEqual(index["schemaVersion"], 2)
+        self.assertEqual(
+            index["assignments"][1]["directionRegistrationTransactionIds"],
+            [registration_id],
+        )
+        credit_input = json.loads(
+            read_verified_artifact(bundle, manifest, "credit-input")
+        )
+        self.assertEqual(credit_input["schemaVersion"], 2)
+        self.assertEqual(
+            credit_input["researchDirections"]["directions"][0]["status"],
+            "active",
+        )
+        publish_batch(self.projection_root, [bundle])
+        context, _ = build_credit_context(
+            self.root,
+            self.projection_root,
+            "demo",
+            self.head,
+            list(ledger(self.root, "demo", self.head)["transactions"]),
+            credit_projection_id="credit-v1",
+        )
+        self.assertEqual(context["status"], "current")
+        self.assertEqual(
+            context["assignments"][1]["directionRegistrationTransactionIds"],
+            [registration_id],
+        )
+        catalog = export_viewer_catalog(
+            self.root,
+            self.projection_root,
+            "owner/repository",
+            canonical_ref=self.head,
+        )
+        self.assertEqual(
+            catalog["researchDirections"][0]["directions"][0]["directionId"],
+            "modular",
+        )
+
+        invalid = copy.deepcopy(extracted)
+        invalid["assignments"][0]["directionRegistrationTransactionIds"] = [
+            registration_id
+        ]
+        with self.assertRaisesRegex(MathFlowError, "prior register events"):
+            _validate_credit_index(
+                invalid,
+                "demo",
+                str(credit_input["dependencyLockDigest"]),
+                credit_input["transactions"],
+                {"root": None},
+                report,
+                direction_ledger=credit_input["researchDirections"],
+            )
+
     def test_rolling_credit_plan_is_provider_free_and_coalesces_current_state(self) -> None:
         initial = plan_credit_run(
             self.root,
@@ -765,6 +937,19 @@ class ProjectionDependencyTests(unittest.TestCase):
         self.assertEqual(
             result["assignments"][0]["reservationTransactionIds"], [prior]
         )
+
+    def test_registration_schema_handles_no_prior_registrations(self) -> None:
+        current = "2" * 40
+        schema = _credit_schema(
+            [current],
+            {"root": None},
+            direction_registration_transaction_ids=[],
+        )
+        references = schema["properties"]["assignments"]["items"]["properties"][
+            "directionRegistrationTransactionIds"
+        ]
+        self.assertEqual(references["maxItems"], 0)
+        self.assertNotIn("enum", references["items"])
 
     def test_rolling_minimum_interval_coalesces_a_changed_dependency(self) -> None:
         projection = overlay_projection_spec(

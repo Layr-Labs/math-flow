@@ -22,6 +22,7 @@ from .credit_schedule import (
     plan_credit_run,
     plan_due_credit_dispatches,
 )
+from .directions import research_direction_ledger
 from .errors import MathFlowError
 from .formation import run_knowledge_build_bundle
 from .governance import (
@@ -69,7 +70,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--root", default=".", help="repository root (default: current directory)")
     commands = parser.add_subparsers(dest="command", required=True)
 
-    commands.add_parser("validate-tree", help="validate all problem and contribution folders")
+    commands.add_parser(
+        "validate-tree",
+        help="validate all problem, contribution, and research-direction folders",
+    )
 
     commands.add_parser(
         "validate-projections", help="validate the approved projection registry"
@@ -170,13 +174,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="JSON array of current PR comments normalized to author and body",
     )
 
-    validate_pr_parser = commands.add_parser("validate-pr", help="validate one contribution-only PR diff")
+    validate_pr_parser = commands.add_parser(
+        "validate-pr", help="validate one atomic contribution or direction-event PR diff"
+    )
     validate_pr_parser.add_argument("--base", required=True, help="base commit or revision")
     validate_pr_parser.add_argument("--head", required=True, help="head commit or revision")
 
     ledger_parser = commands.add_parser("ledger", help="derive a problem ledger from first-parent Git history")
     ledger_parser.add_argument("--problem", required=True)
     ledger_parser.add_argument("--head", default="HEAD")
+
+    directions_parser = commands.add_parser(
+        "directions",
+        help="derive canonical research-direction events and current statuses",
+    )
+    directions_parser.add_argument("--problem", required=True)
+    directions_parser.add_argument("--head", default="HEAD")
+    directions_parser.add_argument(
+        "--status", choices=["active", "released", "completed"]
+    )
+    directions_parser.add_argument("--output")
 
     affected_parser = commands.add_parser(
         "affected-problems", help="list problems affected between two Git commits"
@@ -600,6 +617,19 @@ def main(argv: list[str] | None = None) -> int:
             result = validate_pr(root, args.base, args.head)
         elif args.command == "ledger":
             result = ledger(root, args.problem, args.head)
+        elif args.command == "directions":
+            result = research_direction_ledger(root, args.problem, args.head)
+            if args.status is not None:
+                result = {
+                    **result,
+                    "directions": [
+                        item
+                        for item in result["directions"]
+                        if item["status"] == args.status
+                    ],
+                }
+            _write_json(result, args.output)
+            return 0
         elif args.command == "affected-problems":
             result = affected_problems(
                 root, args.base, args.head, args.global_pattern

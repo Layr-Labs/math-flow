@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .artifacts import ArtifactBundle, read_verified_artifact, verify_bundle
 from .credit_schedule import plan_credit_run, validate_credit_run_schedule
+from .directions import research_direction_ledger, validate_direction_ledger
 from .errors import MathFlowError
 from .governance import resolve_projection
 from .hierarchical import (
@@ -18,7 +19,7 @@ from .judges import artifact_evidence, load_judge_spec, load_source
 from .knowledge import validate_state_v2, validate_state_v3
 from .openrouter import OpenRouterTransport, send_chat_completion
 from .projection_dependencies import resolve_projection_dependencies
-from .repository import read_at, sha256_json
+from .repository import _run_git, read_at, sha256_json
 from .runs import run_envelope
 
 
@@ -138,15 +139,25 @@ def _credit_schema(
     transaction_ids: list[str],
     node_revisions: dict[str, str | None],
     reservation_transaction_ids: list[str] | None = None,
+    direction_registration_transaction_ids: list[str] | None = None,
 ) -> dict[str, object]:
     transaction: dict[str, object] = {
         "type": "string",
         "enum": transaction_ids,
     }
-    reservation_transaction: dict[str, object] = {
-        "type": "string",
-        "enum": reservation_transaction_ids or transaction_ids,
-    }
+    priority_ids = (
+        direction_registration_transaction_ids
+        if direction_registration_transaction_ids is not None
+        else reservation_transaction_ids or transaction_ids
+    )
+    priority_reference: dict[str, object] = {"type": "string"}
+    if priority_ids:
+        priority_reference["enum"] = priority_ids
+    priority_field = (
+        "directionRegistrationTransactionIds"
+        if direction_registration_transaction_ids is not None
+        else "reservationTransactionIds"
+    )
     node_ids = sorted(node_revisions)
     revision_ids = sorted(
         {value for value in node_revisions.values() if value is not None}
@@ -176,9 +187,10 @@ def _credit_schema(
                 "items": {"type": "string", "enum": sorted(CREDIT_ROLES)},
             },
             "knowledgeRefs": {"type": "array", "items": knowledge_ref},
-            "reservationTransactionIds": {
+            priority_field: {
                 "type": "array",
-                "items": reservation_transaction,
+                "items": priority_reference,
+                **({"maxItems": 0} if not priority_ids else {}),
             },
         },
         "required": [
@@ -186,7 +198,7 @@ def _credit_schema(
             "significance",
             "roles",
             "knowledgeRefs",
-            "reservationTransactionIds",
+            priority_field,
         ],
         "additionalProperties": False,
     }
@@ -245,6 +257,7 @@ def _validate_credit_index(
     *,
     materialized: bool = False,
     assignment_transaction_ids: list[str] | None = None,
+    direction_ledger: dict[str, object] | None = None,
 ) -> dict[str, object]:
     if not isinstance(value, dict) or set(value) != {"assignments"}:
         raise MathFlowError("credit extractor returned an invalid assignments envelope")
@@ -268,8 +281,13 @@ def _validate_credit_index(
         "significance",
         "roles",
         "knowledgeRefs",
-        "reservationTransactionIds",
     }
+    priority_field = (
+        "directionRegistrationTransactionIds"
+        if direction_ledger is not None
+        else "reservationTransactionIds"
+    )
+    expected_fields.add(priority_field)
     if materialized:
         expected_fields.add("reportSection")
     for assignment in assignments:
@@ -318,19 +336,56 @@ def _validate_credit_index(
             normalized_refs.append((node_id, revision_id))
         if normalized_refs != sorted(set(normalized_refs)):
             raise MathFlowError("credit knowledge references must be unique and sorted")
-        reservations = assignment.get("reservationTransactionIds")
-        if (
-            not isinstance(reservations, list)
-            or any(
-                not isinstance(item, str) or item not in ordinals
-                for item in reservations
+        priority_references = assignment.get(priority_field)
+        if direction_ledger is None:
+            if (
+                not isinstance(priority_references, list)
+                or any(
+                    not isinstance(item, str) or item not in ordinals
+                    for item in priority_references
+                )
+                or priority_references
+                != sorted(set(priority_references), key=ordinals.get)
+                or any(
+                    ordinals[item] > ordinals[transaction_id]
+                    for item in priority_references
+                )
+            ):
+                raise MathFlowError(
+                    "credit reservation references must be unique prior ledger transactions"
+                )
+        else:
+            registration_ordinals = {
+                str(item["transactionId"]): int(item["canonicalOrdinal"])
+                for item in direction_ledger["events"]
+                if item["eventType"] == "register"
+            }
+            transaction = next(
+                item
+                for item in transactions
+                if item["transactionId"] == transaction_id
             )
-            or reservations != sorted(set(reservations), key=ordinals.get)
-            or any(ordinals[item] > ordinals[transaction_id] for item in reservations)
-        ):
-            raise MathFlowError(
-                "credit reservation references must be unique prior ledger transactions"
-            )
+            canonical_ordinal = transaction.get("canonicalOrdinal")
+            if (
+                not isinstance(canonical_ordinal, int)
+                or isinstance(canonical_ordinal, bool)
+                or not isinstance(priority_references, list)
+                or any(
+                    not isinstance(item, str) or item not in registration_ordinals
+                    for item in priority_references
+                )
+                or priority_references
+                != sorted(
+                    set(priority_references), key=registration_ordinals.get
+                )
+                or any(
+                    registration_ordinals[item] > canonical_ordinal
+                    for item in priority_references
+                )
+            ):
+                raise MathFlowError(
+                    "credit direction-registration references must be unique prior register events"
+                )
         heading = f"## Contribution: {transaction_id}"
         if materialized and assignment.get("reportSection") != heading:
             raise MathFlowError(
@@ -346,7 +401,7 @@ def _validate_credit_index(
         raise MathFlowError("credit extractor omitted a canonical transaction")
     ordered = [by_transaction[transaction_id] for transaction_id in transaction_ids]
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2 if direction_ledger is not None else 1,
         "problemId": problem,
         "dependencyLockDigest": dependency_lock_digest,
         "assignments": ordered,
@@ -359,10 +414,15 @@ def load_credit_assignment_bundle(
     """Verify a published/local credit bundle and its internal bindings."""
 
     manifest, run_digest = verify_bundle(bundle_dir)
+    output_profile = manifest.get("outputProfile")
+    registration_aware = output_profile == "math-flow/credit-assignment-markdown-v2"
     if (
         manifest.get("runKind") != "credit-assignment"
-        or manifest.get("outputProfile")
-        != "math-flow/credit-assignment-markdown-v1"
+        or output_profile
+        not in {
+            "math-flow/credit-assignment-markdown-v1",
+            "math-flow/credit-assignment-markdown-v2",
+        }
         or not isinstance(manifest.get("problemId"), str)
         or not isinstance(manifest.get("ledgerHead"), str)
         or not isinstance(manifest.get("problemLedgerHead"), str)
@@ -440,6 +500,8 @@ def load_credit_assignment_bundle(
         "knowledgeOutputProfile",
     }
     optional_input_fields = {"schedule"}
+    if registration_aware:
+        input_fields.add("researchDirections")
     transactions = credit_input.get("transactions")
     state = credit_input.get("knowledgeState")
     revisions = credit_input.get("knowledgeRevisions")
@@ -447,7 +509,7 @@ def load_credit_assignment_bundle(
     if (
         not input_fields <= set(credit_input)
         or not set(credit_input) <= input_fields | optional_input_fields
-        or credit_input.get("schemaVersion") != 1
+        or credit_input.get("schemaVersion") != (2 if registration_aware else 1)
         or credit_input.get("problemId") != manifest.get("problemId")
         or credit_input.get("ledgerHead") != manifest.get("ledgerHead")
         or credit_input.get("problemLedgerHead")
@@ -494,7 +556,14 @@ def load_credit_assignment_bundle(
         author = item.get("author")
         if (
             set(item)
-            != {"ordinal", "transactionId", "contributionId", "path", "author"}
+            != {
+                "ordinal",
+                "transactionId",
+                "contributionId",
+                "path",
+                "author",
+                *({"canonicalOrdinal"} if registration_aware else set()),
+            }
             or not isinstance(contribution_id, str)
             or item.get("path")
             != f"problems/{manifest['problemId']}/contributions/{contribution_id}"
@@ -502,8 +571,28 @@ def load_credit_assignment_bundle(
             or set(author) != {"displayName", "email"}
             or not isinstance(author.get("displayName"), str)
             or not isinstance(author.get("email"), str)
+            or (
+                registration_aware
+                and (
+                    not isinstance(item.get("canonicalOrdinal"), int)
+                    or isinstance(item.get("canonicalOrdinal"), bool)
+                    or int(item["canonicalOrdinal"]) <= 0
+                )
+            )
         ):
             raise MathFlowError("credit bundle input has invalid transaction metadata")
+    direction_ledger = None
+    if registration_aware:
+        direction_ledger = validate_direction_ledger(
+            credit_input.get("researchDirections")
+        )
+        if (
+            direction_ledger.get("problemId") != manifest.get("problemId")
+            or direction_ledger.get("ledgerHead") != manifest.get("ledgerHead")
+        ):
+            raise MathFlowError(
+                "credit bundle research directions do not match its canonical input"
+            )
     projection = credit_input.get("creditProjection")
     manifest_inputs = manifest.get("inputs")
     raw_schedule = credit_input.get("schedule")
@@ -539,7 +628,7 @@ def load_credit_assignment_bundle(
         "problemId",
         "dependencyLockDigest",
         "assignments",
-    }:
+    } or credit_index.get("schemaVersion") != (2 if registration_aware else 1):
         raise MathFlowError("credit bundle index has an invalid envelope")
     assignment_transaction_ids = None
     if schedule is not None and schedule["mode"] == "utc-calendar":
@@ -555,6 +644,7 @@ def load_credit_assignment_bundle(
         report,
         materialized=True,
         assignment_transaction_ids=assignment_transaction_ids,
+        direction_ledger=direction_ledger,
     )
     if validated_index != credit_index:
         raise MathFlowError("credit bundle index is not canonical")
@@ -579,10 +669,17 @@ def run_credit_assignment_bundle(
     runner = resolved.get("runner")
     if (
         not isinstance(runner, dict)
-        or runner.get("implementation") != "openrouter-credit-assignment-v1"
+        or runner.get("implementation")
+        not in {
+            "openrouter-credit-assignment-v1",
+            "openrouter-credit-assignment-v2",
+        }
         or not isinstance(runner.get("spec"), str)
     ):
         raise MathFlowError("credit projection does not select the supported credit runner")
+    registration_aware = (
+        runner.get("implementation") == "openrouter-credit-assignment-v2"
+    )
     spec_path = root / str(runner["spec"])
     spec = load_judge_spec(spec_path)
     if spec.get("implementation") != runner["implementation"]:
@@ -629,9 +726,31 @@ def run_credit_assignment_bundle(
         "problemLedgerDigest"
     ]:
         raise MathFlowError("credit source ledger does not match its dependency lock")
-    transactions = source["transactions"]
+    transactions = list(source["transactions"])
     if not transactions:
         raise MathFlowError("credit assignment requires at least one canonical transaction")
+    direction_ledger = None
+    if registration_aware:
+        direction_ledger = research_direction_ledger(
+            root, problem, str(source["ledgerHead"])
+        )
+        commits = _run_git(
+            root,
+            "rev-list",
+            "--first-parent",
+            "--reverse",
+            str(source["ledgerHead"]),
+        ).stdout.splitlines()
+        canonical_ordinals = {
+            commit: index for index, commit in enumerate(commits, start=1)
+        }
+        transactions = [
+            {
+                **item,
+                "canonicalOrdinal": canonical_ordinals[str(item["transactionId"])],
+            }
+            for item in transactions
+        ]
     transaction_ids = [str(item["transactionId"]) for item in transactions]
     assignment_transaction_ids = transaction_ids
     if schedule["mode"] == "utc-calendar":
@@ -643,7 +762,7 @@ def run_credit_assignment_bundle(
     )
     evidence = artifact_evidence(root, source, head)
     credit_input = {
-        "schemaVersion": 1,
+        "schemaVersion": 2 if registration_aware else 1,
         "problemId": problem,
         "ledgerHead": source["ledgerHead"],
         "problemLedgerHead": source["problemLedgerHead"],
@@ -660,6 +779,11 @@ def run_credit_assignment_bundle(
         "knowledgeRevisions": knowledge_revisions,
         "knowledgeOutputProfile": knowledge_profile,
         "schedule": schedule,
+        **(
+            {"researchDirections": direction_ledger}
+            if direction_ledger is not None
+            else {}
+        ),
     }
 
     headings = "\n".join(
@@ -680,7 +804,11 @@ def run_credit_assignment_bundle(
                 if schedule["mode"] == "utc-calendar"
                 else "This rolling run assesses the complete canonical ledger."
             ),
-            "Use each required level-two heading exactly once, with substantive reasoning beneath it. Discuss reservations only when a canonical contribution actually provides specific evidence of one.",
+            (
+                "Use each required level-two heading exactly once, with substantive reasoning beneath it. Treat the supplied research-direction registrations as non-exclusive evidence of specific, timely intent. Discount vague, abandoned, duplicative, or poorly executed registrations, and never award priority based on a registration made after the assessed contribution."
+                if registration_aware
+                else "Use each required level-two heading exactly once, with substantive reasoning beneath it. Discuss reservations only when a canonical contribution actually provides specific evidence of one."
+            ),
             f"Required headings in ledger order:\n{headings}",
             f"Rubric:\n{json.dumps(spec['rubric'], indent=2, ensure_ascii=False)}",
             f"Problem statement:\n<problem>\n{problem_statement}\n</problem>",
@@ -688,6 +816,15 @@ def run_credit_assignment_bundle(
             + json.dumps(state, indent=2, ensure_ascii=False)
             + "\n</knowledge-state>",
             f"Canonical contributions in ledger order:\n{evidence}",
+            *(
+                [
+                    "Canonical research-direction events and derived current statuses:\n<research-directions>\n"
+                    + json.dumps(direction_ledger, indent=2, ensure_ascii=False)
+                    + "\n</research-directions>"
+                ]
+                if direction_ledger is not None
+                else []
+            ),
         ]
     )
     report_request = _request(
@@ -710,9 +847,17 @@ def run_credit_assignment_bundle(
     extract_prompt = "\n\n".join(
         [
             "Extract a faithful qualitative credit index from the report. Do not redo, summarize, or extend its assessment.",
-            "Return exactly one assignment per transaction in ledger order. Sort roles alphabetically, knowledgeRefs by nodeId then revisionId, and reservationTransactionIds by ledger order.",
+            (
+                "Return exactly one assignment per transaction in ledger order. Sort roles alphabetically, knowledgeRefs by nodeId then revisionId, and directionRegistrationTransactionIds by canonical event order."
+                if registration_aware
+                else "Return exactly one assignment per transaction in ledger order. Sort roles alphabetically, knowledgeRefs by nodeId then revisionId, and reservationTransactionIds by ledger order."
+            ),
             "Do not return report-section headings; trusted runner code derives each exact heading from its transaction ID.",
-            "A knowledge reference must use the exact current revision shown below. A reservation reference must be a canonical transaction no later than the transaction being assessed.",
+            (
+                "A knowledge reference must use the exact current revision shown below. A direction-registration reference must be an exact canonical register-event transaction no later than the contribution being assessed."
+                if registration_aware
+                else "A knowledge reference must use the exact current revision shown below. A reservation reference must be a canonical transaction no later than the transaction being assessed."
+            ),
             "Transactions in assignment scope and ledger order:\n"
             + json.dumps(assignment_transaction_ids, indent=2),
             f"Current knowledge references:\n{json.dumps(node_index, indent=2)}",
@@ -732,7 +877,16 @@ def run_credit_assignment_bundle(
         _credit_schema(
             assignment_transaction_ids,
             node_revisions,
-            reservation_transaction_ids=transaction_ids,
+            reservation_transaction_ids=(transaction_ids if not registration_aware else None),
+            direction_registration_transaction_ids=(
+                [
+                    str(item["transactionId"])
+                    for item in direction_ledger["events"]
+                    if item["eventType"] == "register"
+                ]
+                if direction_ledger is not None
+                else None
+            ),
         ),
     )
     extract_response = send(extract_request)
@@ -745,6 +899,7 @@ def run_credit_assignment_bundle(
         node_revisions,
         report,
         assignment_transaction_ids=assignment_transaction_ids,
+        direction_ledger=direction_ledger,
     )
 
     bundle = ArtifactBundle(output_dir)

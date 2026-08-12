@@ -197,7 +197,10 @@ class RepositoryValidationTests(unittest.TestCase):
     def test_current_tree_is_valid(self) -> None:
         root = Path(__file__).parents[1]
         summary = validate_tree(root)
-        self.assertEqual(set(summary), {"problems", "contributions"})
+        self.assertEqual(
+            set(summary),
+            {"problems", "contributions", "researchDirections", "directionEvents"},
+        )
         for count in summary.values():
             self.assertIsInstance(count, int)
             self.assertGreaterEqual(count, 0)
@@ -1172,6 +1175,7 @@ class GitProtocolTests(unittest.TestCase):
             self.root,
             projection,
             "example/math-flow",
+            canonical_ref=refuting_head,
         )
         self.assertEqual(catalog["repository"]["projectionRef"], "projections")
         self.assertEqual(catalog["defaultProjectionId"], formation_lane["laneId"])

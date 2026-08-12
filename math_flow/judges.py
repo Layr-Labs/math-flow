@@ -24,12 +24,14 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-knowledge-builder-v1",
     "openrouter-knowledge-builder-v2",
     "openrouter-credit-assignment-v1",
+    "openrouter-credit-assignment-v2",
 }
 SUPPORTED_INPUT_BUILDERS = {
     "ledger-index-v1",
     "ledger-text-artifacts-v1",
     "judgment-batch-v1",
     "locked-knowledge-ledger-v1",
+    "locked-knowledge-ledger-directions-v2",
 }
 SUPPORTED_INVOCATION_ADAPTERS = {"local-v1", "openrouter-chat-completions-v1"}
 SUPPORTED_OUTPUT_PROFILES = {
@@ -40,6 +42,7 @@ SUPPORTED_OUTPUT_PROFILES = {
     "math-flow/knowledge-build-markdown-v1",
     "math-flow/knowledge-build-markdown-v2",
     "math-flow/credit-assignment-markdown-v1",
+    "math-flow/credit-assignment-markdown-v2",
 }
 SUPPORTED_OUTPUT_ADAPTERS = {
     "flat-json-v1",
@@ -51,6 +54,7 @@ SUPPORTED_OUTPUT_ADAPTERS = {
     "select-form-extract-revisions-v1",
     "select-form-extract-knowledge-revisions-v2",
     "report-extract-credit-v1",
+    "report-extract-credit-v2",
 }
 SUPPORTED_REDUCERS = {
     None,
@@ -154,6 +158,12 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputAdapter": "report-extract-credit-v1",
             "reducer": None,
         },
+        "openrouter-credit-assignment-v2": {
+            "inputBuilder": "locked-knowledge-ledger-directions-v2",
+            "outputProfile": "math-flow/credit-assignment-markdown-v2",
+            "outputAdapter": "report-extract-credit-v2",
+            "reducer": None,
+        },
     }
     expected_components = hierarchical_components.get(str(spec["implementation"]))
     if expected_components is not None:
@@ -171,6 +181,7 @@ def load_judge_spec(path: Path) -> dict[str, object]:
         "openrouter-knowledge-builder-v1",
         "openrouter-knowledge-builder-v2",
         "openrouter-credit-assignment-v1",
+        "openrouter-credit-assignment-v2",
     }:
         for field in ("model", "systemPrompt", "rubric", "parameters", "provider"):
             if field not in spec:

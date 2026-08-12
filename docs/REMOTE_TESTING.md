@@ -40,9 +40,11 @@ README. Inspect `run.json`, `report.md`, `control/selection.json`,
 ## 4. Enable the repository projection
 
 Add `OPENROUTER_API_KEY` as a GitHub Actions repository secret. A validated
-atomic contribution is squash-merged by `Auto-merge validated contribution`,
-which explicitly dispatches `OpenRouter repository projection` from `main` for
-the affected problem. The projection compares the ledger with judgments
+atomic participant event is squash-merged by
+`Auto-merge validated participant transaction`. Contribution merges explicitly
+dispatch `OpenRouter repository projection` from `main` for the affected problem;
+direction-event merges do not dispatch mathematical projections. The projection
+compares the ledger with judgments
 published under the active judge spec, fans out one primary judgment for every
 uncovered transaction, performs one serialized knowledge build over the
 completed batch, publishes the verified bundles and scheduler state to the

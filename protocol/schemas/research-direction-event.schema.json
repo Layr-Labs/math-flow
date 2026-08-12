@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/research-direction-event.schema.json",
+  "title": "Math Flow research direction event",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "eventType": { "const": "register" },
+        "eventId": { "$ref": "#/$defs/slug" },
+        "directionId": { "$ref": "#/$defs/slug" },
+        "title": { "$ref": "#/$defs/title" },
+        "summary": { "$ref": "#/$defs/summary" },
+        "relatedKnowledgeNodeIds": { "$ref": "#/$defs/nodeIds" }
+      },
+      "required": ["schemaVersion", "eventType", "eventId", "directionId", "title", "summary", "relatedKnowledgeNodeIds"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "eventType": { "const": "update" },
+        "eventId": { "$ref": "#/$defs/slug" },
+        "directionId": { "$ref": "#/$defs/slug" },
+        "previousEventId": { "$ref": "#/$defs/slug" },
+        "title": { "$ref": "#/$defs/title" },
+        "summary": { "$ref": "#/$defs/summary" },
+        "relatedKnowledgeNodeIds": { "$ref": "#/$defs/nodeIds" }
+      },
+      "required": ["schemaVersion", "eventType", "eventId", "directionId", "previousEventId", "title", "summary", "relatedKnowledgeNodeIds"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "eventType": { "const": "release" },
+        "eventId": { "$ref": "#/$defs/slug" },
+        "directionId": { "$ref": "#/$defs/slug" },
+        "previousEventId": { "$ref": "#/$defs/slug" },
+        "reason": { "$ref": "#/$defs/summary" }
+      },
+      "required": ["schemaVersion", "eventType", "eventId", "directionId", "previousEventId", "reason"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "eventType": { "const": "complete" },
+        "eventId": { "$ref": "#/$defs/slug" },
+        "directionId": { "$ref": "#/$defs/slug" },
+        "previousEventId": { "$ref": "#/$defs/slug" },
+        "summary": { "$ref": "#/$defs/summary" },
+        "contributionTransactionIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+        }
+      },
+      "required": ["schemaVersion", "eventType", "eventId", "directionId", "previousEventId", "summary", "contributionTransactionIds"],
+      "additionalProperties": false
+    }
+  ],
+  "$defs": {
+    "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "title": { "type": "string", "minLength": 1, "maxLength": 160, "pattern": "^\\S(?:.*\\S)?$" },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 2000, "pattern": "^\\S(?:[\\s\\S]*\\S)?$" },
+    "nodeIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*(?:/[a-z0-9][a-z0-9_-]*)*$" }
+    }
+  }
+}

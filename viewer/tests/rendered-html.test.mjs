@@ -87,6 +87,9 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /inline\(revision\.changeRationale, referenceActions\)/);
   assert.match(viewer, /revision\.changeRef\.section/);
   assert.match(viewer, /Related contributions/);
+  assert.match(viewer, /Research directions/);
+  assert.match(viewer, /Registration is evidence, not ownership/);
+  assert.match(viewer, /Direction event history/);
   assert.match(viewer, /collectProgramContributionIds/);
   assert.match(styles, /\.action-create/);
   assert.match(styles, /\.action-update/);
@@ -212,6 +215,7 @@ test("round-trips viewer state through the query string", () => {
     runId: "run-3",
     nodeId: "claim/midpoint",
     transactionId: "abc123",
+    directionId: "modular-search",
     judgmentId: "sha256:def456",
     query: "parallel lines",
     detailMode: "judgment",
@@ -225,6 +229,7 @@ test("round-trips viewer state through the query string", () => {
     runId: "run-3",
     nodeId: "claim/midpoint",
     transactionId: "abc123",
+    directionId: "modular-search",
     judgmentId: "sha256:def456",
     query: "parallel lines",
     detailMode: "judgment",

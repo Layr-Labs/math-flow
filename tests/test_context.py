@@ -190,9 +190,14 @@ class AgentContextTests(unittest.TestCase):
         self.assertEqual(
             context["credit"]["reasonCode"], "no-governed-credit-projection"
         )
+        self.assertEqual(context["researchDirections"]["active"], [])
+        self.assertEqual(context["researchDirections"]["eventCount"], 0)
         self.assertTrue((output / "credit.json").is_file())
+        self.assertTrue((output / "directions.json").is_file())
         self.assertFalse((output / "credit-report.md").exists())
         markdown = (output / "context.md").read_text()
+        self.assertIn("Research directions", markdown)
+        self.assertIn("non-exclusive evidence", markdown)
         self.assertIn("Program assessment.", markdown)
         self.assertIn("Detailed claim assessment.", markdown)
         self.assertNotIn("Unrelated assessment.", markdown)

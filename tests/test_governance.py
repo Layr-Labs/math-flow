@@ -536,6 +536,21 @@ class CurrentRegistryTests(unittest.TestCase):
         self.assertIn("problemLedgerDigest", workflow)
         self.assertIn("runnerSpecDigest", workflow)
 
+    def test_direction_events_refresh_only_the_repository_catalog(self) -> None:
+        root = Path(__file__).parents[1]
+        auto_merge = (
+            root / ".github/workflows/auto-merge-contribution.yml"
+        ).read_text(encoding="utf-8")
+        refresh = (
+            root / ".github/workflows/refresh-viewer-catalog.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("transaction_kind == 'direction-event'", auto_merge)
+        self.assertIn("gh workflow run refresh-viewer-catalog.yml", auto_merge)
+        self.assertIn("export-viewer-catalog", refresh)
+        self.assertIn("--canonical-ref refs/remotes/origin/main", refresh)
+        self.assertIn("github-publish-projection", refresh)
+        self.assertNotIn("OPENROUTER_API_KEY", refresh)
+
 
 if __name__ == "__main__":
     unittest.main()

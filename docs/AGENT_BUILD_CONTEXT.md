@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-11 (`4e9d723`).
+Last reconciled with `main`: 2026-08-11 (`f6f1fc9`).
 
 ## Product thesis
 
@@ -27,15 +27,14 @@ explicitly switches the project back after organization access is ready.
 ## System map
 
 ```text
-solver contribution PR
+solver participant-event PR
         │
         ├── repository + atomic-diff validation
         ▼
 automatic squash merge to main
         │
-        ├── canonical transaction commit
-        ├── baseline projection
-        └── approved OpenRouter projections
+        ├── contribution ── baseline + approved OpenRouter projections
+        └── direction event ── provider-free direction ledger
                     │
                     ├── parallel primary judgments
                     ├── deterministic conflict detection
@@ -83,6 +82,12 @@ automatic squash merge to main
   in a contribution directory.
 - The squash commit on `main`, not a PR number or filename counter, is the
   transaction ID. First-parent history defines order.
+- A second canonical participant stream stores exactly one immutable
+  `register`, `update`, `release`, or `complete` event under
+  `problems/<problem>/directions/<direction>/events/<event>/`.
+- Direction status is derived from a linear predecessor chain. Registrations are
+  non-exclusive evidence of intent and priority, not ownership or mathematical
+  truth. They do not advance the contribution ledger or trigger judgments.
 
 ### Judgment and reconciliation
 
@@ -143,7 +148,7 @@ automatic squash merge to main
 | Solver-facing repository skill | Implemented; requires repository tools and explains qualitative scoring semantics and exact-reference inspection | `.agents/skills/math-flow-solver/` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Governed local/hosted runner, provider-free eligibility planner, bounded semantic retries, rolling coalescing, catch-up over closed UTC periods, predecessor-chain terminals, and independent `credit-assignment` bundles implemented | `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
-| Research direction registration | Proposed next slice; no canonical transaction schema, reducer, tooling, or viewer surface exists yet | This document, near-term priorities |
+| Research direction registration | Implemented locally: append-only schema/reducer, atomic validation and auto-merge, provider-free CLI/context, solver skill, viewer, and registration-aware credit v2 | `math_flow/directions.py`, `protocol/schemas/research-direction-event.schema.json`, `viewer/` |
 | Objective verifier attestations | Not yet implemented as durable protocol artifacts | `docs/MVP.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
 
@@ -156,6 +161,12 @@ The approved hosted projections are:
 - `openrouter-no-three-in-line-credit-v1`, a qualitative, non-zero-sum overlay
   for `no-three-in-line-77` that declares the research-program knowledge state
   as its exact dependency.
+
+The runtime also defines `openrouter-credit-assignment-v2`, a backward-compatible
+registration-aware runner/profile. It embeds the verified direction-event ledger
+and lets assignments cite exact prior canonical `register` transactions. It is
+not active until a separate one-file governed projection admission succeeds;
+credit v1 remains authoritative meanwhile.
 
 Their judges and builders are pinned to `openai/gpt-5.6-sol` with high reasoning
 through OpenRouter. The current registry allows at most 16 parallel judgment or
@@ -211,12 +222,15 @@ The ordinary solver path is fully automatic:
    either a native current-head review or an exact
    `/approve-admission <full-40-character-head-SHA>` comment. A new commit,
    comment edit, or deletion triggers revalidation against the current head.
-2. `Auto-merge validated contribution` re-fetches the candidate as inert Git
-   data and re-runs the trusted atomic validator against current `main`.
+2. `Auto-merge validated participant transaction` re-fetches the candidate as
+   inert Git data and re-runs the trusted atomic validator against current
+   `main`.
 3. If the PR is still open, non-draft, targets `main`, and every required check
    succeeded, it is squash-merged at the exact validated head SHA.
-4. The auto-merger explicitly dispatches the baseline and approved OpenRouter
-   workflows for only the affected problem.
+4. For a contribution, the auto-merger explicitly dispatches the baseline and
+   approved OpenRouter workflows for only the affected problem. A direction
+   event dispatches only the provider-free viewer-catalog refresh because it has
+   no mathematical judgment effect.
 5. OpenRouter coverage planning fans out one primary judgment for each
    transaction not covered by the active judge-spec digest.
 6. The workflow reconstructs the complete verified primary set, derives the
@@ -237,10 +251,11 @@ The ordinary solver path is fully automatic:
 The explicit dispatch in step 4 is intentional. A merge made with the workflow's
 `GITHUB_TOKEN` does not normally cause a second workflow through a `push` event.
 
-Automatic merging applies only to valid atomic solver contributions. Code,
-workflow, protocol, problem-admission, projection-admission, and governance PRs
-remain maintainer changes. New or modified problem/projection namespaces require
-the administrator approval described in `docs/GOVERNANCE.md`.
+Automatic merging applies only to valid atomic solver contributions and
+research-direction events. Code, workflow, protocol, problem-admission,
+projection-admission, and governance PRs remain maintainer changes. New or
+modified problem/projection namespaces require the administrator approval
+described in `docs/GOVERNANCE.md`.
 
 ### Recovery
 
@@ -268,10 +283,13 @@ needed to exercise a paid reconciliation call end to end.
 Read and follow `.agents/skills/math-flow-solver/SKILL.md`. Use
 `python3 -m math_flow context` to materialize a verified latest state, inspect
 provenance and qualitative credit, select an open direction, and submit exactly
-one atomic contribution. Inspect `credit.json` and the optional raw
+one atomic participant event per PR. Inspect `directions.json`, `credit.json`,
+and the optional raw
 `credit-report.md` rather than the UI; credit is non-zero-sum attribution and
-does not alter mathematical validity. Do not infer current knowledge or scoring
-from the checked-in viewer fallback file.
+does not alter mathematical validity. A direction registration may precede
+substantial work, but it is optional and non-exclusive; complete it in a later
+atomic event referencing the canonical contribution transaction. Do not infer
+current knowledge or scoring from the checked-in viewer fallback file.
 
 ### Build and protocol agents
 
@@ -312,6 +330,7 @@ Useful read-only diagnostics include:
 
 ```bash
 python3 -m math_flow ledger --problem no-three-in-line-77 --head HEAD
+python3 -m math_flow directions --problem no-three-in-line-77 --head HEAD
 python3 -m math_flow resolve-projection \
   --projection openrouter-research-v1 \
   --problem no-three-in-line-77 \
@@ -335,11 +354,11 @@ the task requires an end-to-end check.
 
 These are the most important gaps as of this document's reconciliation date:
 
-1. **Add research direction registration as a canonical participant event.**
-   The user-facing noun should be *research direction* and the act should be
-   *registration*, not reservation. Registration records priority and intent;
-   it does not grant exclusivity, block overlapping work, or establish
-   mathematical truth. See the proposed MVP contract below.
+1. **Admit and exercise the registration-aware credit projection.** The runtime,
+   event protocol, tooling, and viewer are implemented. After the runtime PR
+   merges, admit its v2 credit projection in a separate one-file governed PR,
+   then exercise `register` → contribution → `complete` end to end. Keep credit
+   v1 readable and avoid treating registration as exclusivity.
 2. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
    exact UTC transaction windows, and predecessor-chain terminals are now
    implemented, while the admitted example remains qualitative and non-zero-sum.
@@ -360,17 +379,17 @@ These are the most important gaps as of this document's reconciliation date:
    and projection-branch restrictions must be configured when organization
    access becomes available.
 
-### Proposed research direction registration MVP
+### Research direction registration MVP
 
-Research direction registration should be a new participant-authored canonical
+Research direction registration is a participant-authored canonical
 event stream, separate from submissions, judgments, knowledge formation, and
-credit assignment. The concise protocol name can be `direction-registration`;
-the UI should call the resulting objects **Research directions**. Existing
+credit assignment. The protocol calls these direction events; the UI calls the
+resulting objects **Research directions**. Existing
 published credit-v1 artifacts that use `reservationTransactionIds` remain
-immutable and readable, but a new credit profile should use
-`directionRegistrationTransactionIds` or another explicitly versioned field.
+immutable and readable, while credit v2 uses
+`directionRegistrationTransactionIds`.
 
-The MVP should support immutable events equivalent to:
+The MVP supports these immutable events:
 
 - `register`: describe a specific intended direction, motivation, proposed
   evidence or method, and optional related knowledge-node IDs;
@@ -379,37 +398,38 @@ The MVP should support immutable events equivalent to:
 - `complete`: connect the registration to a submitted contribution without
   claiming that the contribution is correct or sufficient.
 
-Each event should identify its registration and predecessor where applicable;
+Each event identifies its direction and predecessor where applicable;
 author identity and priority time come from the canonical squash transaction.
 Current status is derived deterministically from the append-only event history,
 not stored as mutable repository state. Overlapping registrations are valid and
 must be shown explicitly. An optional review horizon may inform the credit
 policy, but expiry must not erase history.
 
-The first credit policy that consumes these events may consider priority,
+The first credit policy that consumes these events considers priority,
 specificity, meaningful progress, overlap, release or abandonment, and the
 quality of the eventual contribution. It must treat registration only as
 evidence: early vague registrations should be discountable, low-quality work
 should not be rewarded merely for being first, and no solver should be prevented
 from pursuing a registered direction.
 
-Implementation should be phased:
+Implemented surfaces are:
 
-1. Add a versioned event schema, repository validator, and atomic-PR validation
+1. A versioned event schema, repository validator, and atomic-PR validation
    for registering, updating, releasing, or completing one direction event.
-2. Add provider-free CLI/context output that lists active, overlapping,
-   released, and completed directions; update the solver skill to inspect the
+2. Provider-free CLI/context output that lists active, overlapping, released,
+   and completed directions; the solver skill inspects the
    list and optionally register before beginning substantial work.
-3. Add a repository-backed viewer surface for research directions without
+3. A repository-backed viewer surface for research directions without
    folding them into holistic mathematical knowledge.
-4. Add a new credit profile that receives verified direction events as typed
+4. A new credit-v2 profile that receives verified direction events as typed
    inputs and cites their canonical transaction IDs. Keep the existing credit-v1
    profile compatible rather than changing the meaning of published bundles.
 
-Automatic merge may be extended to a valid one-event direction PR using the same
-trusted revalidation pattern as solver contributions. Direction registration
-must not initially introduce locks, exclusive claims, or a requirement to
-register before submitting mathematics.
+Automatic merge accepts a valid one-event direction PR using the same trusted
+revalidation pattern as solver contributions. It refreshes the repository-backed
+catalog without dispatching a mathematical or paid projection. Direction
+registration introduces no locks, exclusive claims, or requirement to register
+before submitting mathematics.
 
 GitHub currently emits a non-blocking Node 20 deprecation annotation for the
 account-required `actions/checkout@v5` and `actions/setup-python@v5`; GitHub is
