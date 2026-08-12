@@ -4,7 +4,7 @@ import test from "node:test";
 import { collectProgramContributionIds } from "../app/programContributions.mjs";
 import { createViewerReferenceResolver } from "../app/referenceLinks.mjs";
 import { preferredTransactionDetailMode, resolveTransactionDetailMode } from "../app/transactionDetailMode.mjs";
-import { creditRunSelectionPatch, historicalOverlaySelection, knowledgeRunSelectionPatch, latestOverlaySelectionPatch, publishedHeadSelectionPatch } from "../app/projectionHeadState.mjs";
+import { creditRunSelectionPatch, historicalOverlaySelection, knowledgeRunSelectionPatch, latestOverlaySelectionPatch, projectionByIdentity, publishedHeadSelectionPatch } from "../app/projectionHeadState.mjs";
 import { applyViewerStateToSearch, parseViewerState } from "../app/viewerState.mjs";
 
 const templateRoot = new URL("../", import.meta.url);
@@ -27,7 +27,7 @@ test("server-renders a stable loading state before repository data arrives", asy
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  const initialMarkup = html.split('<script id="_R_">')[0];
+  const initialMarkup = html.split(/<script[^>]*\bid="_R_"/)[0];
   assert.match(html, /<title>Math Flow · Research Atlas<\/title>/i);
   assert.match(initialMarkup, /Math Flow · research atlas/);
   assert.match(initialMarkup, /Loading repository state/);
@@ -125,10 +125,12 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
 test("follows newly published overlay heads without moving historical selections", () => {
   const knowledge = (latestRunId) => ({
     id: "knowledge:one",
+    problemId: "problem:one",
     data: { latestRunId },
   });
   const credit = (latestRunDigest, runs) => ({
     id: "credit:one",
+    problemId: "problem:one",
     latestRunDigest,
     runs: runs.map((runDigest) => ({ runDigest })),
   });
@@ -189,6 +191,33 @@ test("follows newly published overlay heads without moving historical selections
     { runId: "knowledge-3", creditRunId: "credit-3" },
     "an implicitly defaulted projection follows after its head is explicitly re-selected",
   );
+});
+
+test("resolves a shared projection id within the selected problem", () => {
+  const previous = {
+    projections: [
+      { id: "openrouter-research-v1", problemId: "no-three-in-line-77", data: { latestRunId: "no-three-2" } },
+      { id: "openrouter-research-v1", problemId: "triangle-midpoints", data: { latestRunId: "triangle-2" } },
+    ],
+    creditProjections: [],
+  };
+  const next = {
+    ...previous,
+    projections: [
+      { id: "openrouter-research-v1", problemId: "no-three-in-line-77", data: { latestRunId: "no-three-3" } },
+      { id: "openrouter-research-v1", problemId: "triangle-midpoints", data: { latestRunId: "triangle-3" } },
+    ],
+  };
+
+  assert.equal(
+    projectionByIdentity(previous, "triangle-midpoints", "openrouter-research-v1")?.problemId,
+    "triangle-midpoints",
+  );
+  assert.deepEqual(publishedHeadSelectionPatch(previous, next, {
+    problemId: "triangle-midpoints",
+    projectionId: "openrouter-research-v1",
+    runId: "triangle-2",
+  }), { runId: "triangle-3" });
 });
 
 test("offers a precise latest-state patch only for historical overlays", () => {

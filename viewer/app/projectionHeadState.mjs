@@ -1,17 +1,35 @@
-function projectionById(catalog, projectionId) {
+export function projectionByIdentity(catalog, problemId, projectionId) {
   if (!projectionId) return null;
+  if (problemId) {
+    return catalog.projections?.find((projection) =>
+      projection.problemId === problemId && projection.id === projectionId
+    ) ?? null;
+  }
   return catalog.projections?.find((projection) => projection.id === projectionId) ?? null;
 }
 
-function creditProjectionById(catalog, projectionId) {
+function creditProjectionByIdentity(catalog, problemId, projectionId) {
   if (!projectionId) return null;
+  if (problemId) {
+    return catalog.creditProjections?.find((projection) =>
+      projection.problemId === problemId && projection.id === projectionId
+    ) ?? null;
+  }
   return catalog.creditProjections?.find((projection) => projection.id === projectionId) ?? null;
 }
 
 export function publishedHeadSelectionPatch(previousCatalog, nextCatalog, viewerState) {
   const patch = {};
-  const previousKnowledge = projectionById(previousCatalog, viewerState.projectionId);
-  const nextKnowledge = projectionById(nextCatalog, viewerState.projectionId);
+  const previousKnowledge = projectionByIdentity(
+    previousCatalog,
+    viewerState.problemId,
+    viewerState.projectionId,
+  );
+  const nextKnowledge = projectionByIdentity(
+    nextCatalog,
+    viewerState.problemId,
+    viewerState.projectionId,
+  );
 
   if (previousKnowledge && nextKnowledge) {
     const previousHead = previousKnowledge.data.latestRunId;
@@ -21,8 +39,16 @@ export function publishedHeadSelectionPatch(previousCatalog, nextCatalog, viewer
     if (selectedRun === previousHead && nextHead !== selectedRun) patch.runId = nextHead;
   }
 
-  const previousCredit = creditProjectionById(previousCatalog, viewerState.creditProjectionId);
-  const nextCredit = creditProjectionById(nextCatalog, viewerState.creditProjectionId);
+  const previousCredit = creditProjectionByIdentity(
+    previousCatalog,
+    viewerState.problemId,
+    viewerState.creditProjectionId,
+  );
+  const nextCredit = creditProjectionByIdentity(
+    nextCatalog,
+    viewerState.problemId,
+    viewerState.creditProjectionId,
+  );
 
   if (previousCredit && nextCredit && nextCredit.latestRunDigest) {
     const previousHead = previousCredit.latestRunDigest;
