@@ -91,7 +91,20 @@ code { font-family: var(--font-geist-mono), ui-monospace, monospace; }
 .repository-toolbar label { display: flex; min-width: 0; flex-direction: column; gap: 5px; color: var(--ink-soft); font: 650 8px var(--font-geist-mono); letter-spacing: 0.1em; text-transform: uppercase; }
 .repository-toolbar select { width: 100%; min-width: 0; padding: 8px 28px 8px 10px; border: 1px solid var(--line); border-radius: 9px; outline: 0; color: var(--ink); background: rgba(255, 254, 249, 0.86); font-size: 10px; letter-spacing: 0; text-transform: none; }
 .repository-toolbar select:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
-.problem-selector { align-self: center; }
+.problem-control { display: flex; min-width: 0; align-self: center; flex-direction: column; gap: 8px; }
+.problem-selector { align-self: stretch; }
+.latest-state-button {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid rgba(30, 116, 109, 0.42);
+  border-radius: 9px;
+  color: var(--teal);
+  background: rgba(217, 235, 230, 0.62);
+  font: 700 9px/1.25 var(--font-geist-mono);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+.latest-state-button:hover { color: white; background: var(--teal); }
 .selector-bubble { display: flex; min-width: 0; flex-direction: column; gap: 10px; margin: 0; padding: 10px 12px 12px; border: 1px solid rgba(30, 116, 109, 0.25); border-radius: 16px; background: rgba(217, 235, 230, 0.42); }
 .selector-bubble legend { padding: 0 7px; color: var(--teal); font: 700 9px var(--font-geist-mono); letter-spacing: 0.12em; text-transform: uppercase; }
 .selector-bubble label { gap: 4px; }
@@ -446,7 +459,7 @@ button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px 
 
 @media (max-width: 760px) {
   .repository-toolbar { display: flex; align-items: stretch; flex-direction: column; padding: 14px 16px 0; }
-  .problem-selector { align-self: stretch; }
+  .problem-control, .problem-selector { align-self: stretch; }
   .app-shell { padding: 12px; }
   .masthead { display: flex; align-items: stretch; flex-direction: column; gap: 14px; }
   .run-metrics { justify-content: space-between; }

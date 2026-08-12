@@ -1,7 +1,8 @@
 "use client";
 
-import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { collectProgramContributionIds } from "./programContributions.mjs";
+import { creditRunSelectionPatch, historicalOverlaySelection, knowledgeRunSelectionPatch, latestOverlaySelectionPatch, publishedHeadSelectionPatch } from "./projectionHeadState.mjs";
 import { createViewerReferenceResolver } from "./referenceLinks.mjs";
 import { preferredTransactionDetailMode, resolveTransactionDetailMode } from "./transactionDetailMode.mjs";
 import { applyViewerStateToSearch, parseViewerState } from "./viewerState.mjs";
@@ -400,16 +401,24 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
     defaultProjectionId: fallbackProjection.id,
   };
   const [catalog, setCatalog] = useState(fallbackCatalog);
+  const catalogRef = useRef(fallbackCatalog);
   const [source, setSource] = useState<"checking" | "repository" | "fallback">("checking");
   const [viewerState, setViewerState] = useState<ViewerState>(() =>
     typeof window === "undefined" ? {} : parseViewerState(window.location.search) as ViewerState,
   );
+  const viewerStateRef = useRef(viewerState);
   const updateViewerState = useCallback((patch: Partial<ViewerState>) => {
-    setViewerState((current) => ({ ...current, ...patch }));
+    const next = { ...viewerStateRef.current, ...patch };
+    viewerStateRef.current = next;
+    setViewerState(next);
   }, []);
 
   useEffect(() => {
-    const restoreState = () => setViewerState(parseViewerState(window.location.search) as ViewerState);
+    const restoreState = () => {
+      const restored = parseViewerState(window.location.search) as ViewerState;
+      viewerStateRef.current = restored;
+      setViewerState(restored);
+    };
     window.addEventListener("popstate", restoreState);
     return () => window.removeEventListener("popstate", restoreState);
   }, []);
@@ -429,7 +438,14 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
         const next: unknown = await response.json();
         if (!isViewerCatalog(next)) throw new Error("catalog shape is invalid");
         if (!active) return;
+        const selectionPatch = publishedHeadSelectionPatch(
+          catalogRef.current,
+          next,
+          viewerStateRef.current,
+        ) as Partial<ViewerState>;
+        catalogRef.current = next;
         setCatalog(next);
+        if (Object.keys(selectionPatch).length) updateViewerState(selectionPatch);
         setSource("repository");
       } catch {
         if (active) setSource("fallback");
@@ -441,7 +457,7 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
       active = false;
       window.clearInterval(interval);
     };
-  }, []);
+  }, [updateViewerState]);
 
   const problems = [...new Set(catalog.projections.map((item) => item.problemId))].sort();
   const requestedProjection = catalog.projections.find((item) => item.id === viewerState.projectionId);
@@ -471,6 +487,12 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
   const objectiveAttestations = (catalog.objectiveAttestations ?? []).filter(
     (item) => item.problemId === effectiveProblem,
   );
+  const historicalSelection = historicalOverlaySelection({
+    knowledgeRunId: knowledgeRun.id,
+    knowledgeLatestRunId: projection.data.latestRunId,
+    creditRunId: creditRun?.runDigest,
+    creditLatestRunDigest: creditProjection?.latestRunDigest,
+  });
 
   function chooseProblem(nextProblem: string) {
     const nextProjection = catalog.projections.find((item) => item.problemId === nextProblem);
@@ -524,7 +546,11 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
     if (!nextRun) return;
     const currentNodeId = viewerState.nodeId ?? "root";
     updateViewerState({
-      runId: nextRunId,
+      ...knowledgeRunSelectionPatch({
+        problemId: effectiveProblem,
+        projectionId: projection.id,
+        runId: nextRunId,
+      }),
       nodeId: nextRun.state.nodes[currentNodeId] ? currentNodeId : "root",
       transactionId: undefined,
       directionId: undefined,
@@ -534,7 +560,19 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
   }
 
   function chooseCreditRun(nextRunDigest: string) {
-    updateViewerState({ creditRunId: nextRunDigest || undefined });
+    updateViewerState(creditRunSelectionPatch({
+      projectionId: creditProjection?.id,
+      runId: nextRunDigest || undefined,
+    }) as Partial<ViewerState>);
+  }
+
+  function advanceToLatest() {
+    updateViewerState(latestOverlaySelectionPatch({
+      knowledgeRunId: knowledgeRun.id,
+      knowledgeLatestRunId: projection.data.latestRunId,
+      creditRunId: creditRun?.runDigest,
+      creditLatestRunDigest: creditProjection?.latestRunDigest,
+    }) as Partial<ViewerState>);
   }
 
   if (source === "checking") {
@@ -559,12 +597,23 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
             <small>{catalog.repository.canonicalRef} → {catalog.repository.projectionRef} · {source === "repository" ? "live repository state" : source === "checking" ? "checking repository" : "local fallback"}</small>
           </span>
         </div>
-        <label className="problem-selector">
-          <span>Problem</span>
-          <select value={effectiveProblem} onChange={(event) => chooseProblem(event.target.value)}>
-            {problems.map((problem) => <option value={problem} key={problem}>{label(problem)}</option>)}
-          </select>
-        </label>
+        <div className="problem-control">
+          <label className="problem-selector">
+            <span>Problem</span>
+            <select value={effectiveProblem} onChange={(event) => chooseProblem(event.target.value)}>
+              {problems.map((problem) => <option value={problem} key={problem}>{label(problem)}</option>)}
+            </select>
+          </label>
+          {historicalSelection.any && (
+            <button type="button" className="latest-state-button" onClick={advanceToLatest}>
+              {historicalSelection.knowledge && historicalSelection.credit
+                ? "View latest knowledge & credit"
+                : historicalSelection.knowledge
+                  ? "View latest knowledge"
+                  : "View latest credit"}
+            </button>
+          )}
+        </div>
         <fieldset className="selector-bubble knowledge-selector-bubble">
           <legend>Knowledge</legend>
           <label>
@@ -619,12 +668,12 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
               {creditProjection?.runs.length && !creditRun && <option value="" disabled>Choose an assessment</option>}
               {creditProjection?.runs.map((item, index) => (
                 <option value={item.runDigest} key={item.runDigest}>
-                  Assessment {String(index + 1).padStart(2, "0")} · {short(item.runDigest)} · {item.stale ? "stale" : "current"}
+                  Assessment {String(index + 1).padStart(2, "0")} · {short(item.runDigest)} · {item.runDigest === creditProjection.latestRunDigest ? "current" : "historical"}
                 </option>
               ))}
             </select>
             <small>{creditRun
-              ? `${creditRun.stale ? "Historical input lock" : "Current input lock"} · ${creditRun.assignments.length} assignments`
+              ? `${creditRun.runDigest === creditProjection?.latestRunDigest ? "Current state" : "Historical state"} · ${creditRun.stale ? "stale inputs" : "current inputs"} · ${creditRun.assignments.length} assignments`
               : creditProjection?.runs.length
                 ? "No credit terminal selected"
                 : "Waiting for the first verified run"}</small>
