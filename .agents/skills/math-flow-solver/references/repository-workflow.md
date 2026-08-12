@@ -4,6 +4,7 @@
 
 - [Create isolated worktrees](#create-isolated-worktrees)
 - [Use repository tools, not the UI](#use-repository-tools-not-the-ui)
+- [Discover every canonical problem](#discover-every-canonical-problem)
 - [Build a verified context](#build-a-verified-context)
 - [Inspect provenance](#inspect-provenance)
 - [Inspect qualitative credit](#inspect-qualitative-credit)
@@ -36,9 +37,11 @@ Fetch both refs from the owner-designated trusted upstream:
 git -C "$control_checkout" fetch origin main projections
 ```
 
-If the trusted upstream has no `projections` ref yet, stop and report that no
-published knowledge state exists. Do not silently substitute another remote;
-use one only when the repository owner explicitly designates it as trusted.
+If the trusted upstream has no `projections` ref yet, report that no published
+knowledge state exists, but continue canonical problem discovery with
+`list-problems` and omit `--projection-dir`. Do not silently substitute another
+remote; use one only when the repository owner explicitly designates it as
+trusted.
 
 Choose a unique agent/task identifier containing only safe branch/path
 characters. Create a writable solver worktree from canonical `main` and a
@@ -74,6 +77,8 @@ command is reading it.
 
 Complete repository work through machine-readable tools:
 
+- use `python3 -m math_flow list-problems` to enumerate canonical admissions,
+  including admitted problems that have no contributions or projection runs;
 - use `python3 -m math_flow context` for the verified current knowledge state,
   freshness, coverage, and scheduler status;
 - read `context.json`, `state.json`, and the content-addressed records in the
@@ -93,6 +98,59 @@ Browsing external mathematical literature is allowed when research requires
 it. Cite and attribute those sources in the contribution. If `math_flow`, `git`,
 or an authenticated GitHub CLI/connector is unavailable, stop and report the
 specific tool or authentication blocker rather than falling back to the web UI.
+
+## Discover every canonical problem
+
+Never derive the available problem set from `origin/projections`. That branch
+contains published interpretation artifacts, not the canonical admission
+registry. In particular, a newly admitted problem is intentionally absent until
+its first contribution produces a knowledge run.
+
+After creating the worktrees, join canonical admissions with verified
+projection status:
+
+```bash
+problem_index="${TMPDIR:-/tmp}/math-flow-problems-$agent_task.json"
+cd "$solver_worktree"
+python3 -m math_flow list-problems \
+  --head origin/main \
+  --projection-dir "$projection_worktree" \
+  --output "$problem_index"
+```
+
+To answer “what problems need work?”, inspect all entries, not only projected
+ones. Useful filters include:
+
+```bash
+python3 -m math_flow list-problems \
+  --head origin/main \
+  --projection-dir "$projection_worktree" \
+  --stage ready-for-first-contribution
+```
+
+Interpret stages as follows:
+
+- `ready-for-first-contribution`: admitted with an empty canonical contribution
+  ledger; read `statementPath` from `origin/main` and propose bounded initial
+  work without trying to materialize context;
+- `knowledge-pending`: contributions exist but no active knowledge run is
+  published yet;
+- `knowledge-stale`: a verified active run exists but misses canonical
+  contributions;
+- `knowledge-current`: at least one active knowledge projection matches the
+  canonical contribution ledger and can be passed to `context`;
+- `projection-unchecked`: projection verification was omitted, so inspect the
+  trusted projection ref before making claims about knowledge status.
+
+`activeKnowledgeProjectionIds` lists governed knowledge profiles even before
+their first run. `activeOverlayProjectionIds` lists dependent overlays such as
+credit; their presence does not imply a published assessment. Read an exact
+problem statement with:
+
+```bash
+git -C "$solver_worktree" show \
+  "origin/main:problems/<problem-id>/problem.md"
+```
 
 ## Build a verified context
 
