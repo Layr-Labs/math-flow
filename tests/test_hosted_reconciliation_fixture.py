@@ -16,6 +16,7 @@ from math_flow.hosted_reconciliation_smoke import (
     CLAIM_KEY,
     PRIMARY_JUDGE,
     PROBLEM_ID,
+    SCENARIOS,
     prepare_fixture,
 )
 
@@ -48,8 +49,13 @@ class HostedReconciliationFixtureTests(unittest.TestCase):
             plan = prepare_fixture(root, Path(temporary) / "staging")
 
         self.assertEqual(len(plan["primaryBundlePaths"]), 4)
+        reviewed_transactions = [
+            transaction
+            for transaction in current["transactions"]
+            if transaction["contributionId"] in SCENARIOS
+        ]
         self.assertEqual(
-            plan["ledgerHead"], current["transactions"][-1]["transactionId"]
+            plan["ledgerHead"], reviewed_transactions[-1]["transactionId"]
         )
 
     def test_fixture_covers_ledger_and_derives_one_current_conflict(self) -> None:
