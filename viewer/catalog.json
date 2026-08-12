@@ -15955,6 +15955,736 @@
     },
     {
       "id": "openrouter-research-v1",
+      "problemId": "schur-number-6",
+      "label": "openrouter-research-v1",
+      "projectionSpec": {
+        "id": "openrouter-research-v1",
+        "description": "The default parallel OpenRouter judgment projection with serialized, program-oriented hierarchical knowledge formation.",
+        "digest": "sha256:eb2e997ae1f7ee8a619c0c7cd0362f696ab6c70682ffb12a856407a43684abd3",
+        "engine": "openrouter-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [],
+        "scheduling": {
+          "judgmentMaxParallel": 16,
+          "knowledgeMinimumIntervalSeconds": 300,
+          "maximumJudgmentsPerBuild": 500
+        },
+        "runner": null
+      },
+      "builder": {
+        "id": "openrouter-research-program-builder-v2",
+        "digest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c"
+      },
+      "latestRunDigest": "sha256:55cff577a60f17bfd0b3783f30cbb77451b0cbac02750ff26932bfa9f391a108",
+      "runCount": 1,
+      "data": {
+        "schemaVersion": 1,
+        "problem": {
+          "id": "schur-number-6",
+          "title": "The sixth Schur number",
+          "statementMarkdown": "# The sixth Schur number\n\nA set of positive integers is *sum-free* if it contains no \\(x,y,z\\), with\n\\(x\\) and \\(y\\) allowed to be equal, such that \\(x+y=z\\). The Schur number\n\\(S(r)\\) is the largest integer \\(N\\) for which\n\\(\\{1,2,\\ldots,N\\}\\) can be partitioned into \\(r\\) sum-free sets.\nEquivalently, it is the largest \\(N\\) admitting an \\(r\\)-coloring with no\nmonochromatic solution to \\(x+y=z\\).\n\nDetermine \\(S(6)\\), or improve either side of the current published interval\n\n\\[\n536\\le S(6)\\le1836.\n\\]\n\nA lower-bound contribution should give an explicit coloring. An upper-bound\ncontribution must rule out every coloring at the claimed threshold; a search\nthat merely fails to find one is not an upper bound.\n\nUseful contributions include:\n\n- an explicit certified coloring of \\(\\{1,\\ldots,N\\}\\) for \\(N>536\\);\n- a compact exact checker and a canonical encoding of a coloring witness;\n- a combinatorial argument lowering the upper endpoint;\n- a SAT, pseudo-Boolean, or constraint-programming proof with a replayable\n  unsatisfiability certificate;\n- symmetry reductions proved to preserve all relevant colorings;\n- a formal proof of a structural lemma; or\n- reproducible search data or a negative search result with its non-global\n  scope stated explicitly.\n\nAll witness checks should use exact integer arithmetic. Certificate-producing\ncomputations should include enough source data and instructions for an\nindependent replay.\n\n## Frontier sources\n\n- Shalom Eliahou and Pastora Revuelta,\n  [The Schur degree of additive sets](https://arxiv.org/abs/2006.01502),\n  Discrete Mathematics 344 (2021), Article 112332; the paper records the\n  displayed interval and conjectures the conditional upper bound \\(966\\).\n- Marijn J. H. Heule,\n  [Schur Number Five](https://ojs.aaai.org/index.php/AAAI/article/view/12209),\n  AAAI 2018; this gives a model for certificate-based exact Schur-number work.\n"
+        },
+        "ledgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+        "transactions": [
+          {
+            "ordinal": 1,
+            "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "contributionId": "fredricksen-sweet-536-certificate",
+            "path": "problems/schur-number-6/contributions/fredricksen-sweet-536-certificate",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Exact certificate for the published lower bound S(6) >= 536\n\n## Claim\n\nThe committed `coloring.csv` is a complete six-coloring of\n`{1, 2, ..., 536}` with no monochromatic solution to `x + y = z`, including\nthe case `x = y`. It therefore independently replays the published baseline\nlower bound\n\n```text\nS(6) >= 536.\n```\n\nThis certificate does not improve the bound. The problem's published interval\nremains `536 <= S(6) <= 1836`.\n\n## Witness encoding and exact check\n\n`coloring.csv` is the canonical expanded encoding: it has the exact header\n`integer,color`, followed by one row for every integer in increasing order,\nwith colors numbered 1 through 6. `published-symmetric.json` preserves the\ncompact form printed by the source paper. Each ordinary representative `r`\nencodes both `r` and `537-r` in the same color. The exceptional pair is\nrecorded explicitly as `[179, 4]` and `[358, 1]`, exactly as printed.\n\nRun from this directory with Python 3 and only the standard library:\n\n```bash\npython3 -I -B verify.py published-symmetric.json coloring.csv\n```\n\nExpected output:\n\n```text\nverified 6-coloring of 1..536: class sizes 129,86,110,77,64,70; all 71824 in-range x<=y Schur triples are nonmonochromatic\n```\n\nThe checker:\n\n1. validates the compact witness schema, `n = 536`, six nonempty color\n   classes, and symmetry modulus 537;\n2. rejects noncanonical, duplicate, out-of-range, or overlapping paired\n   representatives and special assignments;\n3. expands the compact source witness and requires exact coverage of `1..536`;\n4. validates the CSV header, row count, canonical integer order, and color\n   range, and requires exact agreement with the source witness; and\n5. enumerates every integer triple with `1 <= x <= y` and\n   `z = x + y <= 536`, rejecting a monochromatic triple. Thus `x = y` is\n   included rather than silently omitted.\n\n`verification.json` requests a replay by the repository's pinned, networkless\nPython-standard-library verifier. A passing hosted attestation is evidence only\nthat the pinned checker accepted the pinned artifact bytes; mathematical\njudgment remains separate.\n\n## Primary-source provenance and attribution\n\nThe construction is due to Harold Fredricksen and Melvin M. Sweet:\n\n- Harold Fredricksen and Melvin M. Sweet, “Symmetric Sum-Free Partitions and\n  Lower Bounds for Schur Numbers,” *The Electronic Journal of Combinatorics*\n  7 (2000), Research Paper 32, DOI\n  [10.37236/1510](https://doi.org/10.37236/1510).\n- [Official journal article page](https://www.combinatorics.org/ojs/index.php/eljc/article/view/v7i1r32).\n- [Official primary PDF](https://www.combinatorics.org/ojs/index.php/eljc/article/download/v7i1r32/pdf),\n  retrieved 2026-08-12, SHA-256\n  `ae8541c564efd65785a0e1d2c778108d58fec4c060707d7c277dd7f3eecad259`.\n\nPage 2 defines a symmetric partition and permits `(n+1)/3` and\n`2(n+1)/3` to occupy different sets when 3 divides `n+1`. Page 6 prints the\n536 construction, says that only the smaller ordinary member of each symmetric\npair is listed, and places the exceptional values 179 and 358 in sets 4 and 1,\nrespectively. `published-symmetric.json` is a transcription of that page,\nseparating those exceptions from the paired representatives. `coloring.csv`\nis the deterministic full expansion.\n\nThe official PDF was independently checked both by layout-preserving text\nextraction and by visual inspection of the rendered page. The construction,\nthe bound, and their mathematical authorship remain Fredricksen and Sweet's;\nthis contribution claims no originality or priority for the construction.\n\n## Limitations\n\n- The certificate proves only the already published lower bound `S(6) >= 536`.\n- It supplies no coloring of 537 or higher and no upper-bound information.\n- The PDF is not vendored. Its official URLs and exact content digest are\n  recorded, while all witness bytes needed for offline replay are committed.\n- The verifier establishes the encoded finite predicate; it does not explain\n  how Fredricksen and Sweet found the coloring.\n\n## Artifact authorship\n\nThe witness and mathematical construction are by Harold Fredricksen and Melvin\nM. Sweet. Transcription, canonical expansion design, checker, and documentation\nwere produced by an OpenAI Codex research agent operating the Math Flow solver\nworkflow at Robert Raynor's request. Any transcription or implementation errors\nin these artifacts are the agent's.\n"
+          }
+        ],
+        "judgments": [
+          {
+            "judgmentId": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+            "runDigest": "sha256:45e9cd9f489f8a8906c694095a2c7c059e7e72e25db36912915b4b207f292bf2",
+            "judgmentKind": "primary",
+            "ledgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "problemLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "judgeSpec": {
+              "id": "openrouter-markdown-judgment-v1",
+              "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.27936,
+            "reportDigest": "sha256:7a560799cb4890be034a7295fe11acdb851ba0a208c3e2b7bdc5e27fc3f3e03f",
+            "reportMarkdown": "# Judgment\n\n## Overall disposition\n\nThe transaction supplies a complete, explicit six-coloring of \\(\\{1,\\dots,536\\}\\), together with a small deterministic checker that exhaustively tests the Schur condition using exact integer arithmetic. The verifier logic is mathematically sound on audit, and the advertised total of \\(71{,}824\\) tested triples is correct.\n\nAccordingly, the supplied evidence supports the already published proposition\n\n\\[\nS(6)\\ge 536.\n\\]\n\nThis is a finite-certificate proof, not merely a successful heuristic search. It does **not**, however, improve either endpoint of the stated interval, determine \\(S(6)\\), provide a coloring of \\(537\\), or establish any new upper bound.\n\nNo internal mathematical contradiction was found. The principal evidentiary caveat is that the transaction includes an expected replay result but no actual execution transcript or hosted attestation. The complete witness and source code are nevertheless present, so independent exact replay is straightforward.\n\n---\n\n## Finding 1: Existence of a sum-free six-coloring of \\(\\{1,\\dots,536\\}\\)\n\n**Claim key:** `six-colorability-of-the-interval-1-through-536`\n\n**Proposition assessed:**\n\n\\[\n\\{1,\\dots,536\\}\\text{ admits a six-coloring with no monochromatic }x+y=z.\n\\]\n\n### Assessment\n\n**Supported with high confidence by a complete replayable finite certificate.**\n\nThe CSV provides one color in \\(\\{1,\\dots,6\\}\\) for every integer from \\(1\\) through \\(536\\), in increasing order. If the supplied verifier accepts this exact file, the acceptance logically proves that no monochromatic Schur triple occurs.\n\nThe decisive completeness point is the loop\n\n```python\nfor x in range(1, n + 1):\n    for y in range(x, n - x + 1):\n        z = x + y\n```\n\nFor each possible solution with \\(1\\le x,y,z\\le536\\) and \\(x+y=z\\), commutativity permits relabeling the summands so that \\(x\\le y\\). The inner range then enumerates precisely the integers satisfying\n\n\\[\nx\\le y\\le 536-x,\n\\]\n\nwhich is equivalent to \\(x\\le y\\) and \\(x+y\\le536\\). Thus every relevant unordered summand pair is examined exactly once. The case \\(x=y\\) is included because the lower endpoint of the inner range is \\(x\\).\n\nThe claimed number of tested triples is independently consistent with the loop. For \\(x=1,\\dots,268\\), there are\n\n\\[\n(536-x)-x+1=537-2x\n\\]\n\neligible values of \\(y\\). Hence the total is\n\n\\[\n\\sum_{x=1}^{268}(537-2x)\n=268\\cdot537-268\\cdot269\n=71{,}824.\n\\]\n\nFor \\(x>268\\), the inner range is empty, as it should be.\n\nOnce every triple is tested, the logical implication to the Schur-number bound is immediate: each color class is sum-free, so the six classes form a valid partition and therefore \\(S(6)\\ge536\\).\n\n### Consistency of the supplied encodings\n\nThe compact JSON encoding uses the involution\n\n\\[\nr\\longmapsto 537-r.\n\\]\n\nEach ordinary representative is required to be the smaller member of its pair, and both members receive the same color. The complementary integers \\(179\\) and \\(358\\), satisfying \\(179+358=537\\), are treated exceptionally and assigned colors \\(4\\) and \\(1\\), respectively. The expanded CSV agrees with these stated assignments.\n\nThe reported class sizes\n\n\\[\n129,\\ 86,\\ 110,\\ 77,\\ 64,\\ 70\n\\]\n\nsum to \\(536\\). They are also compatible with paired classes plus the two exceptional assignments: colors \\(1\\) and \\(4\\) have odd sizes because each receives one exceptional integer, while the other class sizes are even.\n\nThe exceptional asymmetric assignments cause no logical problem. Symmetry is only a compact representation device; the required mathematical condition is the absence of monochromatic triples, which the final exhaustive check addresses directly.\n\n### Evidentiary limitation\n\nThe README states the expected successful output, but the supplied evidence does not contain an execution log or signed hosted attestation demonstrating that the command was actually run on these exact bytes. This is not a missing mathematical lemma: the complete data and executable checker are supplied. It is only a missing record of independent replay. The code audit, the internal count checks, and the known provenance of the construction make confidence high, but this judgment does not claim to have independently performed all \\(71{,}824\\) comparisons.\n\n---\n\n## Finding 2: Correctness and scope of the exact checker\n\n**Claim key:** `exact-exhaustive-verification-method-for-a-fixed-finite-schur-coloring`\n\n**Method assessed:** The supplied Python program correctly verifies the stated fixed witness format and decides whether the resulting coloring of \\(\\{1,\\dots,536\\}\\) contains a monochromatic Schur triple.\n\n### Assessment\n\n**The checker is logically correct for the supplied fixed certificate.**\n\nIts relevant validation stages are sound:\n\n1. **Compact witness schema**\n   - It requires exactly the expected JSON fields.\n   - It rejects booleans and non-integer JSON values where integers are required.\n   - It fixes the intended parameters \\(n=536\\), six colors, and symmetry modulus \\(537\\).\n   - It requires exactly six paired-class lists.\n\n2. **Symmetric expansion**\n   - Every representative \\(r\\) must satisfy\n     \\[\n     1\\le r<537-r\\le536.\n     \\]\n   - The `assign` function rejects repeated or overlapping assignments.\n   - Special assignments are range-checked, including their colors.\n   - Exact coverage is checked by comparing the assigned key set with\n     \\[\n     \\{1,\\dots,536\\}.\n     \\]\n   Thus omission, overlap, or assignment of an out-of-range integer cannot silently pass.\n\n3. **Canonical CSV validation**\n   - The header must be exactly `integer,color`.\n   - There must be exactly \\(536\\) data rows.\n   - Row \\(i\\) must encode integer \\(i\\), so missing, duplicated, or reordered integers are rejected.\n   - Colors must lie in \\(\\{1,\\dots,6\\}\\).\n   - ASCII and canonical decimal checks reject signs, whitespace variants, and leading-zero alternatives.\n\n4. **Agreement of representations**\n   - The expanded compact witness and the CSV dictionary must be exactly equal.\n   - This prevents the compact publication transcription and the advertised canonical expansion from certifying different colorings.\n\n5. **Exhaustive Schur check**\n   - As shown above, all and only the relevant pairs \\(x\\le y\\) with \\(x+y\\le536\\) are enumerated.\n   - Equality \\(x=y\\) is included.\n   - The comparison\n     ```python\n     colors[x] == colors[y] == colors[z]\n     ```\n     is exactly the forbidden monochromatic condition.\n\nAll arithmetic involved is ordinary exact Python integer arithmetic. There is no floating-point computation, random search, timeout, solver heuristic, or external dependency.\n\n### Scope qualification\n\nThe checker is intentionally specialized: it hardcodes \\(n=536\\), six colors, and modulus \\(537\\). It should therefore be described as an exact checker for this certificate format, not as a general verifier for arbitrary Schur-number instances.\n\nLikewise, “canonical” here means a unique syntactic row order and decimal representation for a **labeled** coloring. It does not canonicalize colorings modulo permutations of the six color labels. Nothing in the contribution requires that stronger notion.\n\nThe direct replay command uses only the supplied script and Python’s standard library, so the absence of the external pinned-verifier specification referenced by `verification.json` does not prevent independent replay.\n\n---\n\n## Finding 3: Consequences for the sixth Schur number frontier\n\n**Claim key:** `improved-bound-or-exact-value-for-the-sixth-schur-number`\n\n### Assessment\n\n**Not addressed beyond replaying the existing lower endpoint.**\n\nThe transaction expressly limits itself to \\(N=536\\). Therefore:\n\n- it gives no coloring of \\(\\{1,\\dots,537\\}\\) or any larger interval;\n- it does not prove \\(S(6)\\ge537\\);\n- it supplies no combinatorial impossibility argument at any threshold;\n- it supplies no SAT, pseudo-Boolean, or constraint-programming unsatisfiability certificate;\n- it provides no basis for lowering the stated upper bound \\(1836\\);\n- it does not determine \\(S(6)\\).\n\nThus the interval remains, on the supplied evidence,\n\n\\[\n536\\le S(6)\\le1836.\n\\]\n\nThis limitation is stated accurately in the README. There is no attempt to turn a failed search into an upper bound, and consequently no upper-bound logical error to reject.\n\nThe contribution still has utility under the problem’s stated criteria because it supplies a compact exact checker and a canonical expanded encoding of the published baseline witness. Its value is reproducibility rather than frontier improvement.\n\n---\n\n## Contradictions and missing evidence\n\n### Internal contradictions\n\nNone found. In particular:\n\n- the README’s claimed parameters match the verifier’s hardcoded parameters;\n- the CSV covers the stated interval and uses the stated color range;\n- the special assignments \\(179\\mapsto4\\) and \\(358\\mapsto1\\) match the CSV;\n- the claimed triple count agrees exactly with the enumeration formula;\n- the class sizes sum to \\(536\\);\n- the limitations section correctly disclaims any improved bound.\n\n### Missing or unverified evidence\n\n1. **No recorded replay.**  \n   The expected verifier output is quoted, but no execution transcript or hosted acceptance artifact is included. This is readily repairable by independently running the supplied command.\n\n2. **Primary-source provenance is not independently replayable offline.**  \n   The cited Fredricksen–Sweet PDF is not vendored. URLs and a SHA-256 digest are supplied, but the claims about page contents and historical priority cannot be checked solely from the committed artifacts. This does not affect the mathematical validity of the explicit coloring.\n\n3. **No explanation of construction.**  \n   The certificate proves that the coloring works but does not explain how it was found. Such an explanation is unnecessary for the lower-bound proof and is correctly identified as outside the contribution’s scope.\n\n---\n\n## Attribution and priority\n\nAccording to the supplied documentation, the mathematical construction is due to Harold Fredricksen and Melvin M. Sweet, and the transaction claims no originality for the coloring or the bound \\(S(6)\\ge536\\). That allocation is consistent with the cited publication metadata, although the absent primary PDF means the detailed page-level provenance was not independently verified here.\n\nThe new work represented in this transaction is the transcription, deterministic full expansion, exact checker, and reproducibility documentation. Those are useful certificate-engineering contributions, but they should not be confused with priority for the underlying coloring or with an improvement to the sixth Schur-number bounds.\n\n## Final conclusion\n\nThe transaction provides a sound and complete certificate framework for the published lower bound\n\n\\[\n\\boxed{S(6)\\ge536}.\n\\]\n\nThe verifier’s logic is exhaustive and exact, and no mathematical flaw or internal inconsistency is apparent. The transaction should be regarded as a high-confidence reproducibility certificate for the baseline result, not as a determination of \\(S(6)\\) or an improvement of the published interval.\n",
+            "record": {
+              "schemaVersion": 1,
+              "judgmentKind": "primary",
+              "problemId": "schur-number-6",
+              "ledgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+              "problemLedgerDigest": "sha256:3a4e5dc16b2489edc1edb12863ecf765aa1d5a22aa61a7c5c8bda3b13ccfca18",
+              "judgeSpec": {
+                "id": "openrouter-markdown-judgment-v1",
+                "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                  "ledgerPosition": 1
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "six-colorability-of-the-interval-1-through-536",
+                  "stance": "supports",
+                  "summary": "The complete explicit six-coloring and exhaustive exact checker support that {1,…,536} has no monochromatic solution to x+y=z, and hence support S(6)≥536 with high confidence.",
+                  "subjectTransactionIds": [
+                    "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                  ],
+                  "evidenceTransactionIds": [
+                    "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                  ]
+                },
+                {
+                  "claimKey": "six-colorability-of-the-interval-1-through-536",
+                  "stance": "qualifies",
+                  "summary": "The certificate is fully present and independently replayable, but the transaction contains only expected output rather than an actual execution transcript or hosted attestation; the judgment therefore does not claim independent performance of all 71,824 comparisons.",
+                  "subjectTransactionIds": [
+                    "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                  ],
+                  "evidenceTransactionIds": [
+                    "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                  ]
+                },
+                {
+                  "claimKey": "exact-exhaustive-verification-method-for-a-fixed-finite-schur-coloring",
+                  "stance": "supports",
+                  "summary": "The Python checker soundly validates the compact and expanded encodings, exact coverage and color ranges, representation agreement, and every relevant pair x≤y with x+y≤536 using exact deterministic integer arithmetic.",
+                  "subjectTransactionIds": [
+                    "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                  ],
+                  "evidenceTransactionIds": [
+                    "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                  ]
+                },
+                {
+                  "claimKey": "exact-exhaustive-verification-method-for-a-fixed-finite-schur-coloring",
+                  "stance": "qualifies",
+                  "summary": "The checker is specialized to n=536, six colors, and symmetry modulus 537 rather than being a general Schur-instance verifier; its canonicalization applies to labeled colorings and does not quotient by color-label permutations.",
+                  "subjectTransactionIds": [
+                    "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                  ],
+                  "evidenceTransactionIds": [
+                    "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                  ]
+                },
+                {
+                  "claimKey": "improved-bound-or-exact-value-for-the-sixth-schur-number",
+                  "stance": "refutes",
+                  "summary": "The transaction provides neither a coloring of 537 nor an impossibility certificate or new upper bound, so it does not improve either endpoint or determine S(6); the supported interval remains 536≤S(6)≤1836.",
+                  "subjectTransactionIds": [
+                    "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                  ],
+                  "evidenceTransactionIds": [
+                    "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                  ]
+                }
+              ],
+              "reportDigest": "sha256:7a560799cb4890be034a7295fe11acdb851ba0a208c3e2b7bdc5e27fc3f3e03f",
+              "judgmentId": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4"
+            }
+          }
+        ],
+        "runs": [
+          {
+            "id": "55cff577a60f17bfd0b3783f30cbb77451b0cbac02750ff26932bfa9f391a108",
+            "ordinal": 1,
+            "ledgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "problemLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "runDigest": "sha256:55cff577a60f17bfd0b3783f30cbb77451b0cbac02750ff26932bfa9f391a108",
+            "baseRun": null,
+            "runKind": "knowledge-build",
+            "inputs": {
+              "builderSpecDigest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c",
+              "judgmentIds": [
+                "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4"
+              ],
+              "schemaVersion": 1,
+              "problemId": "schur-number-6",
+              "judgmentSetDigest": "sha256:94f68aa3161ca6379a5cb2f63fab0feaf7862c440e54fc424e4da7f3159c7620",
+              "baseStateRun": null,
+              "conflictIds": [],
+              "projectionSpecDigest": "sha256:eb2e997ae1f7ee8a619c0c7cd0362f696ab6c70682ffb12a856407a43684abd3",
+              "laneId": "sha256:d86b7e9d80b73c89558f57ed3f72232ba0514d3eeb1c386985c31f760f2ed288",
+              "buildToken": "sha256:73ceb2affce648df98c992405cb9ad602689e06e1067cf75e3c256bb7d88dc89"
+            },
+            "judgeSpec": {
+              "id": "openrouter-research-program-builder-v2",
+              "digest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c"
+            },
+            "runner": {
+              "implementation": "openrouter-knowledge-builder-v2",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.34972225,
+            "selection": {
+              "selectedNodeIds": [
+                "root"
+              ],
+              "rationale": "Root is the only existing node and requires updates to record the supported global lower bound S(6)≥536, the unchanged interval 536≤S(6)≤1836 and unresolved exact-value question, plus new program-level knowledge for the explicit coloring and its specialized exact verification method and qualifications."
+            },
+            "normalizations": [
+              {
+                "kind": "attach-current-base",
+                "nodeId": "root",
+                "reason": "Concurrency guards come from the authoritative selected state."
+              }
+            ],
+            "delta": {
+              "operations": [
+                {
+                  "action": "create",
+                  "nodeId": "root",
+                  "parentId": null,
+                  "nodeType": "root",
+                  "title": "Research state for the sixth Schur number",
+                  "summary": "The exact value of S(6) remains unresolved, with the current interval 536 ≤ S(6) ≤ 1836. A complete explicit six-coloring and exact checker support S(6) ≥ 536 with high confidence, but the supplied evidence provides no coloring through 537, no upper-bound improvement, and no exact determination. Explicit coloring certificates and exact verification are organized under a dedicated research program.",
+                  "reportSection": "## Node: root",
+                  "baseDigest": "sha256:601071f7faad1258ed8eb4dd8130d1a489dbf88a9e2f6bf471c8976d4ab78481",
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: root"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/explicit-coloring-certificates",
+                  "parentId": "root",
+                  "nodeType": "program",
+                  "title": "Explicit coloring certificates and exact verification",
+                  "summary": "This program organizes complete finite Schur-coloring witnesses, compact and expanded encodings, exact representation and coverage checks, exhaustive verification of the Schur condition, and replay qualifications. It contains the certified coloring through 536 and the specialized deterministic checker for that certificate, but no coloring beyond 536, upper-bound proof, or determination of S(6).",
+                  "reportSection": "## Node: programs/explicit-coloring-certificates",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/explicit-coloring-certificates"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/explicit-coloring-certificates/coloring-1-536",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "nodeType": "result",
+                  "title": "Certified six-coloring of {1,...,536}",
+                  "summary": "A complete six-coloring of {1,...,536} with no monochromatic solution of x+y=z certifies S(6) ≥ 536 with high confidence. Compact and canonical expanded representations agree, including exceptional assignments 179↦4 and 358↦1. The certificate has complete source and is independently replayable, but no execution transcript or hosted attestation was supplied. It establishes no coloring through 537 or larger interval and does not improve the published lower endpoint.",
+                  "reportSection": "## Node: programs/explicit-coloring-certificates/coloring-1-536",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/explicit-coloring-certificates/coloring-1-536"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/explicit-coloring-certificates/exact-checker-536",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "nodeType": "method",
+                  "title": "Exact exhaustive verifier for the fixed 536-integer coloring certificate",
+                  "summary": "The deterministic Python checker is logically correct for the supplied fixed certificate format. It validates the compact witness and canonical expanded CSV, enforces exact agreement between them, and exhaustively tests all 71,824 relevant pairs with 1 ≤ x ≤ y and x+y ≤ 536, including x=y. It uses exact integer arithmetic and no heuristic or external-package behavior. Its scope is specialized to n=536, six colors, and symmetry modulus 537; source and expected output are supplied, but no independent replay transcript or hosted attestation is recorded.",
+                  "reportSection": "## Node: programs/explicit-coloring-certificates/exact-checker-536",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/explicit-coloring-certificates/exact-checker-536"
+                }
+              ]
+            },
+            "state": {
+              "schemaVersion": 3,
+              "problemId": "schur-number-6",
+              "rootId": "root",
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "root",
+                  "title": "Research state for the sixth Schur number",
+                  "summary": "The exact value of S(6) remains unresolved, with the current interval 536 ≤ S(6) ≤ 1836. A complete explicit six-coloring and exact checker support S(6) ≥ 536 with high confidence, but the supplied evidence provides no coloring through 537, no upper-bound improvement, and no exact determination. Explicit coloring certificates and exact verification are organized under a dedicated research program.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+                    "section": "## Node: root"
+                  },
+                  "contentMarkdown": "## Node: root\n\n**Title:** Research state for the sixth Schur number  \n**Type:** Root  \n**Status:** Active\n\n### Current knowledge\n\nThe central unresolved question is to determine the exact value of the sixth Schur number \\(S(6)\\), where \\(S(6)\\) is the largest \\(N\\) for which \\(\\{1,\\ldots,N\\}\\) admits a six-coloring without a monochromatic solution of \\(x+y=z\\), including solutions with \\(x=y\\).\n\nAccording to primary judgment `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`, the current interval remains\n\n\\[\n536\\le S(6)\\le 1836.\n\\]\n\nThe judgment supports the lower endpoint \\(S(6)\\ge 536\\) with high confidence through a complete explicit six-coloring and an exact exhaustive checker. It does not treat that certificate as a frontier improvement because the lower endpoint \\(536\\) was already published.\n\nThe same judgment finds that the routed evidence:\n\n- does not provide a coloring of \\(\\{1,\\ldots,537\\}\\);\n- does not establish \\(S(6)\\ge 537\\);\n- does not supply an impossibility proof or replayable unsatisfiability certificate at any threshold;\n- does not lower the upper endpoint \\(1836\\); and\n- does not determine the exact value of \\(S(6)\\).\n\nThus both the exact-value question and the gap between the published endpoints remain open on the supplied evidence.\n\n### Program organization\n\nOne durable research program is established under the root:\n\n- `programs/explicit-coloring-certificates` — explicit finite colorings, canonical witness representations, and exact deterministic verification.\n\nThe globally relevant exact-value question and current bounds remain at root rather than being assigned to that program.\n\n### Conflict state\n\nNo conflict or reconciliation records were supplied. There is therefore no active dispute node arising from this build.\n\n### Provenance\n\n- **Primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Subject and evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Relevant judgment claim keys:**\n  - `six-colorability-of-the-interval-1-through-536`\n  - `improved-bound-or-exact-value-for-the-sixth-schur-number`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:14cd2cdab8acc1905288955cc8171278f3e1a6603856a054b4722836b4bbc731",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:02f75f6a7a358eeccbc9502acfdf0ad5bcc355cfd465919ad48f8f3672896a8a"
+                },
+                "programs/explicit-coloring-certificates": {
+                  "id": "programs/explicit-coloring-certificates",
+                  "parentId": "root",
+                  "type": "program",
+                  "title": "Explicit coloring certificates and exact verification",
+                  "summary": "This program organizes complete finite Schur-coloring witnesses, compact and expanded encodings, exact representation and coverage checks, exhaustive verification of the Schur condition, and replay qualifications. It contains the certified coloring through 536 and the specialized deterministic checker for that certificate, but no coloring beyond 536, upper-bound proof, or determination of S(6).",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+                    "section": "## Node: programs/explicit-coloring-certificates"
+                  },
+                  "contentMarkdown": "## Node: programs/explicit-coloring-certificates\n\n**Title:** Explicit coloring certificates and exact verification  \n**Type:** Program  \n**Parent:** `root`  \n**Status:** Active\n\n### Program scope\n\nThis program organizes durable work on explicit finite Schur colorings and the exact verification machinery needed to certify them. Its scope includes:\n\n- complete finite coloring witnesses;\n- compact and expanded witness encodings;\n- exact checks of coverage, color ranges, and representation agreement;\n- exhaustive checks for monochromatic solutions of \\(x+y=z\\); and\n- replayability and evidentiary qualifications for certificate-based lower bounds.\n\nThe program does not currently contain a coloring beyond \\(536\\), an upper-bound proof, or a determination of \\(S(6)\\).\n\n### Current program knowledge\n\nThe program currently contains two related but distinct durable concepts:\n\n1. `programs/explicit-coloring-certificates/coloring-1-536` records the certified existence of a six-coloring of \\(\\{1,\\ldots,536\\}\\).\n2. `programs/explicit-coloring-certificates/exact-checker-536` records the specialized deterministic method used to verify that fixed witness and its two encodings.\n\nThe primary judgment regards the witness as a finite-certificate proof of the already published lower bound, not as a heuristic search result. It regards the checker as mathematically sound for the supplied fixed format, while expressly qualifying its scope and the absence of an independently recorded replay.\n\n### Attribution\n\nThe judgment carries forward the supplied documentation’s attribution of the underlying coloring to Harold Fredricksen and Melvin M. Sweet. It notes that detailed page-level historical provenance was not independently checked because the cited primary PDF was not included in the artifacts.\n\nThe transaction claims no originality for the coloring or for \\(S(6)\\ge536\\). The certificate-engineering work associated with the transaction consists of the transcription, deterministic expansion, exact checker, and reproducibility documentation.\n\n### Provenance\n\n- **Primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Subject and evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Relevant judgment claim keys:**\n  - `six-colorability-of-the-interval-1-through-536`\n  - `exact-exhaustive-verification-method-for-a-fixed-finite-schur-coloring`\n  - `improved-bound-or-exact-value-for-the-sixth-schur-number`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:16901618e775a1e42951bdcdc57283e99dbf1a33a561ec230f7f7391249cd725",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:2db2573809494e2fc0dddb2a845e3434d6d9db942a142ee6d6af4fc2304ad36d"
+                },
+                "programs/explicit-coloring-certificates/coloring-1-536": {
+                  "id": "programs/explicit-coloring-certificates/coloring-1-536",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "type": "result",
+                  "title": "Certified six-coloring of {1,...,536}",
+                  "summary": "A complete six-coloring of {1,...,536} with no monochromatic solution of x+y=z certifies S(6) ≥ 536 with high confidence. Compact and canonical expanded representations agree, including exceptional assignments 179↦4 and 358↦1. The certificate has complete source and is independently replayable, but no execution transcript or hosted attestation was supplied. It establishes no coloring through 537 or larger interval and does not improve the published lower endpoint.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+                    "section": "## Node: programs/explicit-coloring-certificates/coloring-1-536"
+                  },
+                  "contentMarkdown": "## Node: programs/explicit-coloring-certificates/coloring-1-536\n\n**Title:** Certified six-coloring of \\(\\{1,\\ldots,536\\}\\)  \n**Type:** Result  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Supported with high confidence\n\n### Current knowledge\n\nPrimary judgment `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4` supports the proposition\n\n\\[\n\\{1,\\ldots,536\\}\\text{ admits a six-coloring with no monochromatic }x+y=z.\n\\]\n\nThe judgment reports that the transaction contains a complete assignment of one color in \\(\\{1,\\ldots,6\\}\\) to every integer from \\(1\\) through \\(536\\), together with an exhaustive exact checker. On that basis, it treats the witness as a finite-certificate proof that\n\n\\[\nS(6)\\ge536.\n\\]\n\nThis certifies the published lower endpoint but does not improve it.\n\n### Witness representations\n\nThe judgment reports two agreeing representations:\n\n- a compact JSON representation based on the involution\n  \\[\n  r\\longmapsto 537-r;\n  \\]\n- a canonical expanded CSV representation containing one row for each integer \\(1,\\ldots,536\\).\n\nOrdinary compact representatives are the smaller members of their complementary pairs, and both members of each such pair receive the same color. The complementary integers \\(179\\) and \\(358\\) are handled exceptionally, with assignments\n\n\\[\n179\\mapsto4,\\qquad 358\\mapsto1.\n\\]\n\nThe judgment reports class sizes\n\n\\[\n129,\\ 86,\\ 110,\\ 77,\\ 64,\\ 70,\n\\]\n\nwhich sum to \\(536\\) and are consistent with the paired representation and the two exceptional assignments.\n\nThe judgment expressly treats the symmetry as a representation device, not as a substitute for checking the Schur condition. The asymmetric exceptional assignments are therefore not identified as a mathematical defect.\n\n### Evidentiary qualification\n\nThe complete witness and checker source are present and independently replayable. However, the transaction contains only the expected successful output, not an execution transcript, hosted acceptance artifact, or signed attestation for those exact bytes.\n\nConsequently, the judgment supports the coloring with high confidence but does not claim that it independently performed all \\(71{,}824\\) comparisons. It characterizes this as a missing replay record rather than a missing mathematical lemma.\n\nThe certificate also does not explain how the coloring was constructed. The judgment states that such an explanation is unnecessary for the finite lower-bound proof.\n\n### Frontier limitation\n\nThis node supports no claim beyond \\(N=536\\). In particular, the judgment finds that the evidence supplies no coloring of \\(537\\) or any larger interval and therefore does not support \\(S(6)\\ge537\\).\n\n### Attribution and provenance\n\nAccording to the documentation assessed by the judgment:\n\n- the underlying mathematical construction is attributed to Harold Fredricksen and Melvin M. Sweet;\n- the transaction claims no priority for the coloring or the lower bound;\n- the transaction’s contribution is the transcription, deterministic expansion, exact checker, and reproducibility documentation; and\n- detailed historical priority was not independently verified from the absent primary PDF.\n\n**Evidence trail:**\n\n- **Primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Subject and evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Claim key:** `six-colorability-of-the-interval-1-through-536`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:a3c5842217ebbe98c82a3f61e1026b6c6fdb20eb8681210c41cc737573f9ffcc",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:d81039c44967d7c525364358c3117341ea36a1a4278a097d411b90eae7d07906"
+                },
+                "programs/explicit-coloring-certificates/exact-checker-536": {
+                  "id": "programs/explicit-coloring-certificates/exact-checker-536",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "type": "method",
+                  "title": "Exact exhaustive verifier for the fixed 536-integer coloring certificate",
+                  "summary": "The deterministic Python checker is logically correct for the supplied fixed certificate format. It validates the compact witness and canonical expanded CSV, enforces exact agreement between them, and exhaustively tests all 71,824 relevant pairs with 1 ≤ x ≤ y and x+y ≤ 536, including x=y. It uses exact integer arithmetic and no heuristic or external-package behavior. Its scope is specialized to n=536, six colors, and symmetry modulus 537; source and expected output are supplied, but no independent replay transcript or hosted attestation is recorded.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+                    "section": "## Node: programs/explicit-coloring-certificates/exact-checker-536"
+                  },
+                  "contentMarkdown": "## Node: programs/explicit-coloring-certificates/exact-checker-536\n\n**Title:** Exact exhaustive verifier for the fixed \\(536\\)-integer coloring certificate  \n**Type:** Method  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Supported for the supplied fixed certificate format\n\n### Current knowledge\n\nPrimary judgment `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4` finds the supplied Python checker logically correct for the fixed certificate of a six-coloring of \\(\\{1,\\ldots,536\\}\\).\n\nThe checker uses deterministic exact Python integer arithmetic. The judgment reports no floating-point operations, randomness, heuristic solver behavior, timeout dependence, or external package dependency.\n\n### Validation performed\n\nAccording to the judgment, the checker soundly performs the following stages.\n\n#### Compact witness validation\n\nIt:\n\n- requires the expected JSON fields;\n- rejects booleans and other non-integer values where integers are required;\n- fixes \\(n=536\\), six colors, and symmetry modulus \\(537\\);\n- requires six paired-class lists;\n- checks that each representative \\(r\\) satisfies\n  \\[\n  1\\le r<537-r\\le536;\n  \\]\n- rejects repeated or overlapping assignments;\n- range-checks special assignments and their colors; and\n- verifies exact coverage of \\(\\{1,\\ldots,536\\}\\).\n\n#### Expanded CSV validation\n\nIt:\n\n- requires the exact header `integer,color`;\n- requires exactly \\(536\\) data rows;\n- requires row \\(i\\) to encode integer \\(i\\);\n- restricts colors to \\(\\{1,\\ldots,6\\}\\); and\n- enforces ASCII and canonical decimal syntax, rejecting alternate forms such as signs, leading zeroes, or whitespace variants.\n\n#### Agreement of representations\n\nThe expanded compact witness must agree exactly with the CSV coloring. The judgment states that this prevents the compact transcription and canonical expansion from silently certifying different assignments.\n\n#### Exhaustive Schur check\n\nThe checker enumerates every pair satisfying\n\n\\[\n1\\le x\\le y,\\qquad x+y\\le536,\n\\]\n\nand tests whether the colors of \\(x\\), \\(y\\), and \\(x+y\\) are all equal. The case \\(x=y\\) is included.\n\nThe judgment reports that this enumeration covers all relevant Schur triples exactly once up to commutation of the summands and that the advertised total is\n\n\\[\n71{,}824\n\\]\n\ntested triples.\n\n### Scope qualifications\n\nThe method is specialized rather than general. It hardcodes:\n\n- \\(n=536\\);\n- six colors; and\n- symmetry modulus \\(537\\).\n\nIt should therefore be described as an exact checker for this fixed certificate format, not as a general verifier for arbitrary Schur-number instances.\n\nThe expanded representation is canonical only in the syntactic sense for a **labeled** coloring: it fixes row order and decimal representation. It does not identify colorings that differ only by a permutation of the six color labels.\n\nThe judgment also reports that the direct replay command depends only on the supplied script and Python’s standard library. The absence of a separately referenced external verifier specification does not prevent direct independent replay.\n\n### Replay status\n\nThe transaction includes the complete source and expected successful output, but no actual execution transcript or hosted attestation. The judgment therefore supports the checker through code and logic audit while declining to claim that an independent replay of all comparisons was recorded.\n\n### Provenance\n\n- **Primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Subject and evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Claim key:** `exact-exhaustive-verification-method-for-a-fixed-finite-schur-coloring`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:7a8802b3f1ddb3f2abf7cc39f17f3a52aa47748ea9e9b93879a44ca0330deb24",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:67d34dfddc18d375c37e196fa077c4d712ce7e62aeb97074a1b419a7abeb532d"
+                }
+              },
+              "stateDigest": "sha256:92cca7af00bea3bd37a9da6cded4c5d04fc925679d9caf44f7bb38d2f9bed1d2"
+            },
+            "revisionIds": [
+              "sha256:14cd2cdab8acc1905288955cc8171278f3e1a6603856a054b4722836b4bbc731",
+              "sha256:16901618e775a1e42951bdcdc57283e99dbf1a33a561ec230f7f7391249cd725",
+              "sha256:a3c5842217ebbe98c82a3f61e1026b6c6fdb20eb8681210c41cc737573f9ffcc",
+              "sha256:7a8802b3f1ddb3f2abf7cc39f17f3a52aa47748ea9e9b93879a44ca0330deb24"
+            ],
+            "addedRevisionIds": [
+              "sha256:14cd2cdab8acc1905288955cc8171278f3e1a6603856a054b4722836b4bbc731",
+              "sha256:16901618e775a1e42951bdcdc57283e99dbf1a33a561ec230f7f7391249cd725",
+              "sha256:a3c5842217ebbe98c82a3f61e1026b6c6fdb20eb8681210c41cc737573f9ffcc",
+              "sha256:7a8802b3f1ddb3f2abf7cc39f17f3a52aa47748ea9e9b93879a44ca0330deb24"
+            ],
+            "changedNodeIds": [
+              "root",
+              "programs/explicit-coloring-certificates",
+              "programs/explicit-coloring-certificates/coloring-1-536",
+              "programs/explicit-coloring-certificates/exact-checker-536"
+            ],
+            "reportDigest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+            "revisionSemantics": "neutral-knowledge"
+          }
+        ],
+        "revisions": [
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "The root previously recorded no research programs or mathematical state. The routed primary judgment now supports recording the unresolved exact-value question, the unchanged interval \\(536\\le S(6)\\le1836\\), and an explicit-coloring certificate program. The bounds remain at root because they are global frontier facts rather than program-specific results.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+              "section": "## Change: root"
+            },
+            "contentDigest": "sha256:2c1530842f07215878276e9e4d6b477899a279fb7499efd6d76d3c1a4dbce959",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "root",
+            "nodeType": "root",
+            "parentId": null,
+            "recordedAtLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+              "section": "## Node: root"
+            },
+            "revisionId": "sha256:14cd2cdab8acc1905288955cc8171278f3e1a6603856a054b4722836b4bbc731",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "The exact value of S(6) remains unresolved, with the current interval 536 ≤ S(6) ≤ 1836. A complete explicit six-coloring and exact checker support S(6) ≥ 536 with high confidence, but the supplied evidence provides no coloring through 537, no upper-bound improvement, and no exact determination. Explicit coloring certificates and exact verification are organized under a dedicated research program.",
+            "title": "Research state for the sixth Schur number"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This program is introduced because the judgment recognizes a durable certificate-based agenda comprising an explicit coloring, canonical encodings, and exact replay machinery. It remains meaningful independently of the originating transaction and keeps certificate-specific knowledge separate from the global bounds and exact-value question.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+              "section": "## Change: programs/explicit-coloring-certificates"
+            },
+            "contentDigest": "sha256:fe83084143925c5c1492f90554938f53784e2a6f227c6e1238972506d64daefe",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/explicit-coloring-certificates",
+            "nodeType": "program",
+            "parentId": "root",
+            "recordedAtLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+              "section": "## Node: programs/explicit-coloring-certificates"
+            },
+            "revisionId": "sha256:16901618e775a1e42951bdcdc57283e99dbf1a33a561ec230f7f7391249cd725",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "This program organizes complete finite Schur-coloring witnesses, compact and expanded encodings, exact representation and coverage checks, exhaustive verification of the Schur condition, and replay qualifications. It contains the certified coloring through 536 and the specialized deterministic checker for that certificate, but no coloring beyond 536, upper-bound proof, or determination of S(6).",
+            "title": "Explicit coloring certificates and exact verification"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This result node is introduced because the primary judgment supports a distinct durable mathematical proposition: the existence of a valid six-coloring through \\(536\\). The node incorporates the judgment’s confidence, witness structure, replay qualification, frontier limitation, and carried-forward attribution without treating the transaction itself as a knowledge concept.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+              "section": "## Change: programs/explicit-coloring-certificates/coloring-1-536"
+            },
+            "contentDigest": "sha256:8f6e9db17080ac613f89b5d7270e3a43dd9ebc3f571edb112d33bcb493f1163e",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/explicit-coloring-certificates/coloring-1-536",
+            "nodeType": "result",
+            "parentId": "programs/explicit-coloring-certificates",
+            "recordedAtLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+              "section": "## Node: programs/explicit-coloring-certificates/coloring-1-536"
+            },
+            "revisionId": "sha256:a3c5842217ebbe98c82a3f61e1026b6c6fdb20eb8681210c41cc737573f9ffcc",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "A complete six-coloring of {1,...,536} with no monochromatic solution of x+y=z certifies S(6) ≥ 536 with high confidence. Compact and canonical expanded representations agree, including exceptional assignments 179↦4 and 358↦1. The certificate has complete source and is independently replayable, but no execution transcript or hosted attestation was supplied. It establishes no coloring through 537 or larger interval and does not improve the published lower endpoint.",
+            "title": "Certified six-coloring of {1,...,536}"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This method node is introduced because the judgment separately supports the correctness of a durable verification method, while qualifying its fixed-instance scope and replay status. Separating it from the coloring result preserves the distinction between the mathematical witness and the machinery used to validate its encoding and Schur condition.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+              "section": "## Change: programs/explicit-coloring-certificates/exact-checker-536"
+            },
+            "contentDigest": "sha256:ce8a50dd36a03f1bbaba94c1714ecc9840b71eff0bc282f661e623443c21dd62",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/explicit-coloring-certificates/exact-checker-536",
+            "nodeType": "method",
+            "parentId": "programs/explicit-coloring-certificates",
+            "recordedAtLedgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+              "section": "## Node: programs/explicit-coloring-certificates/exact-checker-536"
+            },
+            "revisionId": "sha256:7a8802b3f1ddb3f2abf7cc39f17f3a52aa47748ea9e9b93879a44ca0330deb24",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "The deterministic Python checker is logically correct for the supplied fixed certificate format. It validates the compact witness and canonical expanded CSV, enforces exact agreement between them, and exhaustively tests all 71,824 relevant pairs with 1 ≤ x ≤ y and x+y ≤ 536, including x=y. It uses exact integer arithmetic and no heuristic or external-package behavior. Its scope is specialized to n=536, six colors, and symmetry modulus 537; source and expected output are supplied, but no independent replay transcript or hosted attestation is recorded.",
+            "title": "Exact exhaustive verifier for the fixed 536-integer coloring certificate"
+          }
+        ],
+        "reports": [
+          {
+            "runId": "55cff577a60f17bfd0b3783f30cbb77451b0cbac02750ff26932bfa9f391a108",
+            "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+            "markdown": "# Knowledge-Formation Report\n\n## Node: root\n\n**Title:** Research state for the sixth Schur number  \n**Type:** Root  \n**Status:** Active\n\n### Current knowledge\n\nThe central unresolved question is to determine the exact value of the sixth Schur number \\(S(6)\\), where \\(S(6)\\) is the largest \\(N\\) for which \\(\\{1,\\ldots,N\\}\\) admits a six-coloring without a monochromatic solution of \\(x+y=z\\), including solutions with \\(x=y\\).\n\nAccording to primary judgment `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`, the current interval remains\n\n\\[\n536\\le S(6)\\le 1836.\n\\]\n\nThe judgment supports the lower endpoint \\(S(6)\\ge 536\\) with high confidence through a complete explicit six-coloring and an exact exhaustive checker. It does not treat that certificate as a frontier improvement because the lower endpoint \\(536\\) was already published.\n\nThe same judgment finds that the routed evidence:\n\n- does not provide a coloring of \\(\\{1,\\ldots,537\\}\\);\n- does not establish \\(S(6)\\ge 537\\);\n- does not supply an impossibility proof or replayable unsatisfiability certificate at any threshold;\n- does not lower the upper endpoint \\(1836\\); and\n- does not determine the exact value of \\(S(6)\\).\n\nThus both the exact-value question and the gap between the published endpoints remain open on the supplied evidence.\n\n### Program organization\n\nOne durable research program is established under the root:\n\n- `programs/explicit-coloring-certificates` — explicit finite colorings, canonical witness representations, and exact deterministic verification.\n\nThe globally relevant exact-value question and current bounds remain at root rather than being assigned to that program.\n\n### Conflict state\n\nNo conflict or reconciliation records were supplied. There is therefore no active dispute node arising from this build.\n\n### Provenance\n\n- **Primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Subject and evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Relevant judgment claim keys:**\n  - `six-colorability-of-the-interval-1-through-536`\n  - `improved-bound-or-exact-value-for-the-sixth-schur-number`\n\n## Change: root\n\nThe root previously recorded no research programs or mathematical state. The routed primary judgment now supports recording the unresolved exact-value question, the unchanged interval \\(536\\le S(6)\\le1836\\), and an explicit-coloring certificate program. The bounds remain at root because they are global frontier facts rather than program-specific results.\n\n## Node: programs/explicit-coloring-certificates\n\n**Title:** Explicit coloring certificates and exact verification  \n**Type:** Program  \n**Parent:** `root`  \n**Status:** Active\n\n### Program scope\n\nThis program organizes durable work on explicit finite Schur colorings and the exact verification machinery needed to certify them. Its scope includes:\n\n- complete finite coloring witnesses;\n- compact and expanded witness encodings;\n- exact checks of coverage, color ranges, and representation agreement;\n- exhaustive checks for monochromatic solutions of \\(x+y=z\\); and\n- replayability and evidentiary qualifications for certificate-based lower bounds.\n\nThe program does not currently contain a coloring beyond \\(536\\), an upper-bound proof, or a determination of \\(S(6)\\).\n\n### Current program knowledge\n\nThe program currently contains two related but distinct durable concepts:\n\n1. `programs/explicit-coloring-certificates/coloring-1-536` records the certified existence of a six-coloring of \\(\\{1,\\ldots,536\\}\\).\n2. `programs/explicit-coloring-certificates/exact-checker-536` records the specialized deterministic method used to verify that fixed witness and its two encodings.\n\nThe primary judgment regards the witness as a finite-certificate proof of the already published lower bound, not as a heuristic search result. It regards the checker as mathematically sound for the supplied fixed format, while expressly qualifying its scope and the absence of an independently recorded replay.\n\n### Attribution\n\nThe judgment carries forward the supplied documentation’s attribution of the underlying coloring to Harold Fredricksen and Melvin M. Sweet. It notes that detailed page-level historical provenance was not independently checked because the cited primary PDF was not included in the artifacts.\n\nThe transaction claims no originality for the coloring or for \\(S(6)\\ge536\\). The certificate-engineering work associated with the transaction consists of the transcription, deterministic expansion, exact checker, and reproducibility documentation.\n\n### Provenance\n\n- **Primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Subject and evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Relevant judgment claim keys:**\n  - `six-colorability-of-the-interval-1-through-536`\n  - `exact-exhaustive-verification-method-for-a-fixed-finite-schur-coloring`\n  - `improved-bound-or-exact-value-for-the-sixth-schur-number`\n\n## Change: programs/explicit-coloring-certificates\n\nThis program is introduced because the judgment recognizes a durable certificate-based agenda comprising an explicit coloring, canonical encodings, and exact replay machinery. It remains meaningful independently of the originating transaction and keeps certificate-specific knowledge separate from the global bounds and exact-value question.\n\n## Node: programs/explicit-coloring-certificates/coloring-1-536\n\n**Title:** Certified six-coloring of \\(\\{1,\\ldots,536\\}\\)  \n**Type:** Result  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Supported with high confidence\n\n### Current knowledge\n\nPrimary judgment `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4` supports the proposition\n\n\\[\n\\{1,\\ldots,536\\}\\text{ admits a six-coloring with no monochromatic }x+y=z.\n\\]\n\nThe judgment reports that the transaction contains a complete assignment of one color in \\(\\{1,\\ldots,6\\}\\) to every integer from \\(1\\) through \\(536\\), together with an exhaustive exact checker. On that basis, it treats the witness as a finite-certificate proof that\n\n\\[\nS(6)\\ge536.\n\\]\n\nThis certifies the published lower endpoint but does not improve it.\n\n### Witness representations\n\nThe judgment reports two agreeing representations:\n\n- a compact JSON representation based on the involution\n  \\[\n  r\\longmapsto 537-r;\n  \\]\n- a canonical expanded CSV representation containing one row for each integer \\(1,\\ldots,536\\).\n\nOrdinary compact representatives are the smaller members of their complementary pairs, and both members of each such pair receive the same color. The complementary integers \\(179\\) and \\(358\\) are handled exceptionally, with assignments\n\n\\[\n179\\mapsto4,\\qquad 358\\mapsto1.\n\\]\n\nThe judgment reports class sizes\n\n\\[\n129,\\ 86,\\ 110,\\ 77,\\ 64,\\ 70,\n\\]\n\nwhich sum to \\(536\\) and are consistent with the paired representation and the two exceptional assignments.\n\nThe judgment expressly treats the symmetry as a representation device, not as a substitute for checking the Schur condition. The asymmetric exceptional assignments are therefore not identified as a mathematical defect.\n\n### Evidentiary qualification\n\nThe complete witness and checker source are present and independently replayable. However, the transaction contains only the expected successful output, not an execution transcript, hosted acceptance artifact, or signed attestation for those exact bytes.\n\nConsequently, the judgment supports the coloring with high confidence but does not claim that it independently performed all \\(71{,}824\\) comparisons. It characterizes this as a missing replay record rather than a missing mathematical lemma.\n\nThe certificate also does not explain how the coloring was constructed. The judgment states that such an explanation is unnecessary for the finite lower-bound proof.\n\n### Frontier limitation\n\nThis node supports no claim beyond \\(N=536\\). In particular, the judgment finds that the evidence supplies no coloring of \\(537\\) or any larger interval and therefore does not support \\(S(6)\\ge537\\).\n\n### Attribution and provenance\n\nAccording to the documentation assessed by the judgment:\n\n- the underlying mathematical construction is attributed to Harold Fredricksen and Melvin M. Sweet;\n- the transaction claims no priority for the coloring or the lower bound;\n- the transaction’s contribution is the transcription, deterministic expansion, exact checker, and reproducibility documentation; and\n- detailed historical priority was not independently verified from the absent primary PDF.\n\n**Evidence trail:**\n\n- **Primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Subject and evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Claim key:** `six-colorability-of-the-interval-1-through-536`\n\n## Change: programs/explicit-coloring-certificates/coloring-1-536\n\nThis result node is introduced because the primary judgment supports a distinct durable mathematical proposition: the existence of a valid six-coloring through \\(536\\). The node incorporates the judgment’s confidence, witness structure, replay qualification, frontier limitation, and carried-forward attribution without treating the transaction itself as a knowledge concept.\n\n## Node: programs/explicit-coloring-certificates/exact-checker-536\n\n**Title:** Exact exhaustive verifier for the fixed \\(536\\)-integer coloring certificate  \n**Type:** Method  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Supported for the supplied fixed certificate format\n\n### Current knowledge\n\nPrimary judgment `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4` finds the supplied Python checker logically correct for the fixed certificate of a six-coloring of \\(\\{1,\\ldots,536\\}\\).\n\nThe checker uses deterministic exact Python integer arithmetic. The judgment reports no floating-point operations, randomness, heuristic solver behavior, timeout dependence, or external package dependency.\n\n### Validation performed\n\nAccording to the judgment, the checker soundly performs the following stages.\n\n#### Compact witness validation\n\nIt:\n\n- requires the expected JSON fields;\n- rejects booleans and other non-integer values where integers are required;\n- fixes \\(n=536\\), six colors, and symmetry modulus \\(537\\);\n- requires six paired-class lists;\n- checks that each representative \\(r\\) satisfies\n  \\[\n  1\\le r<537-r\\le536;\n  \\]\n- rejects repeated or overlapping assignments;\n- range-checks special assignments and their colors; and\n- verifies exact coverage of \\(\\{1,\\ldots,536\\}\\).\n\n#### Expanded CSV validation\n\nIt:\n\n- requires the exact header `integer,color`;\n- requires exactly \\(536\\) data rows;\n- requires row \\(i\\) to encode integer \\(i\\);\n- restricts colors to \\(\\{1,\\ldots,6\\}\\); and\n- enforces ASCII and canonical decimal syntax, rejecting alternate forms such as signs, leading zeroes, or whitespace variants.\n\n#### Agreement of representations\n\nThe expanded compact witness must agree exactly with the CSV coloring. The judgment states that this prevents the compact transcription and canonical expansion from silently certifying different assignments.\n\n#### Exhaustive Schur check\n\nThe checker enumerates every pair satisfying\n\n\\[\n1\\le x\\le y,\\qquad x+y\\le536,\n\\]\n\nand tests whether the colors of \\(x\\), \\(y\\), and \\(x+y\\) are all equal. The case \\(x=y\\) is included.\n\nThe judgment reports that this enumeration covers all relevant Schur triples exactly once up to commutation of the summands and that the advertised total is\n\n\\[\n71{,}824\n\\]\n\ntested triples.\n\n### Scope qualifications\n\nThe method is specialized rather than general. It hardcodes:\n\n- \\(n=536\\);\n- six colors; and\n- symmetry modulus \\(537\\).\n\nIt should therefore be described as an exact checker for this fixed certificate format, not as a general verifier for arbitrary Schur-number instances.\n\nThe expanded representation is canonical only in the syntactic sense for a **labeled** coloring: it fixes row order and decimal representation. It does not identify colorings that differ only by a permutation of the six color labels.\n\nThe judgment also reports that the direct replay command depends only on the supplied script and Python’s standard library. The absence of a separately referenced external verifier specification does not prevent direct independent replay.\n\n### Replay status\n\nThe transaction includes the complete source and expected successful output, but no actual execution transcript or hosted attestation. The judgment therefore supports the checker through code and logic audit while declining to claim that an independent replay of all comparisons was recorded.\n\n### Provenance\n\n- **Primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Subject and evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Claim key:** `exact-exhaustive-verification-method-for-a-fixed-finite-schur-coloring`\n\n## Change: programs/explicit-coloring-certificates/exact-checker-536\n\nThis method node is introduced because the judgment separately supports the correctness of a durable verification method, while qualifying its fixed-instance scope and replay status. Separating it from the coloring result preserves the distinction between the mathematical witness and the machinery used to validate its encoding and Schur condition.\n"
+          }
+        ],
+        "latestRunId": "55cff577a60f17bfd0b3783f30cbb77451b0cbac02750ff26932bfa9f391a108"
+      }
+    },
+    {
+      "id": "openrouter-research-v1",
       "problemId": "triangle-midpoints",
       "label": "openrouter-research-v1",
       "projectionSpec": {
@@ -31657,6 +32387,15 @@
     },
     {
       "schemaVersion": 1,
+      "problemId": "schur-number-6",
+      "ledgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+      "directionLedgerHead": null,
+      "directionLedgerDigest": "sha256:d904d2135a6de0acfbdb9ce1cfd81a12ee400358318e973edf37251202839757",
+      "events": [],
+      "directions": []
+    },
+    {
+      "schemaVersion": 1,
       "problemId": "triangle-midpoints",
       "ledgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
       "directionLedgerHead": null,
@@ -31800,6 +32539,149 @@
           "truncated": false,
           "bytes": 915,
           "digest": "sha256:81e0c81f922042ca2fb447bba7cd7ab073bce1f0ec7e763f635c0dd4f3ccd4b2"
+        }
+      }
+    },
+    {
+      "problemId": "schur-number-6",
+      "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+      "contributionId": "fredricksen-sweet-536-certificate",
+      "requestDigest": "sha256:c5e24083c93a7ae7dc72c470edf7377b9cf0b70b2828f7cb2a0f2440408fbba3",
+      "verifier": {
+        "id": "python-stdlib-3-13-v1",
+        "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+        "implementation": "oci-command-v1"
+      },
+      "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+      "selectionStatus": "passed",
+      "run": {
+        "schemaVersion": 1,
+        "attestationId": "sha256:f815fc4e78fddec3f2f29060a54afbd1532ad39c945dfb2584b4847434812503",
+        "runDigest": "sha256:051abad0540fd787780bd43308b301752a16e1c1dffff7822cb7db1ea78745c2",
+        "problemId": "schur-number-6",
+        "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+        "status": "passed",
+        "replayed": false,
+        "requestDigest": "sha256:c5e24083c93a7ae7dc72c470edf7377b9cf0b70b2828f7cb2a0f2440408fbba3",
+        "verifier": {
+          "id": "python-stdlib-3-13-v1",
+          "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+          "implementation": "oci-command-v1"
+        },
+        "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+        "result": {
+          "status": "passed",
+          "exitCode": 0,
+          "timedOut": false
+        },
+        "producer": {
+          "implementation": "math-flow-oci-attestation-producer-v1",
+          "mathFlowVersion": "0.6.0"
+        },
+        "record": {
+          "schemaVersion": 1,
+          "subject": {
+            "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "contributionId": "fredricksen-sweet-536-certificate",
+            "path": "problems/schur-number-6/contributions/fredricksen-sweet-536-certificate"
+          },
+          "verifier": {
+            "id": "python-stdlib-3-13-v1",
+            "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+            "implementation": "oci-command-v1"
+          },
+          "environment": {
+            "kind": "oci",
+            "image": "python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689",
+            "platform": "linux/amd64",
+            "network": "none",
+            "readOnlyRoot": true,
+            "user": "65534:65534",
+            "capabilities": [],
+            "noNewPrivileges": true,
+            "memoryBytes": 536870912,
+            "cpuCount": 1,
+            "pidsLimit": 128,
+            "tmpfsBytes": 67108864
+          },
+          "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+          "requestDigest": "sha256:c5e24083c93a7ae7dc72c470edf7377b9cf0b70b2828f7cb2a0f2440408fbba3",
+          "inputs": [
+            {
+              "path": "README.md",
+              "digest": "sha256:839f58ac1e85573a1c7405817cbd29078da06a3d7fd38b9d7ba085d611a3b311",
+              "bytes": 4390
+            },
+            {
+              "path": "coloring.csv",
+              "digest": "sha256:5e2cd4854c20e8441ff52e09e02472657309d35eb4b35c6957a1be37f6a8cbc9",
+              "bytes": 3122
+            },
+            {
+              "path": "published-symmetric.json",
+              "digest": "sha256:fea957ad25c5a678a458fd9e344af2dc72dc0244fbc681f88bc01d28220021c8",
+              "bytes": 1462
+            },
+            {
+              "path": "verification.json",
+              "digest": "sha256:580d90b7e70ad025a04716bfbb807d58bc261e811d037d6c610883b71e43ca8a",
+              "bytes": 263
+            },
+            {
+              "path": "verify.py",
+              "digest": "sha256:fb4a34d6ba83b179833f4d13c9fd8699143644ce65a4d9360341ee335ea7516d",
+              "bytes": 6611
+            }
+          ],
+          "invocation": {
+            "executable": "python3",
+            "fixedArguments": [
+              "-I",
+              "-B"
+            ],
+            "entrypoint": "verify.py",
+            "arguments": [
+              "published-symmetric.json",
+              "coloring.csv"
+            ],
+            "timeoutSeconds": 300,
+            "maximumOutputBytes": 262144,
+            "successExitCodes": [
+              0
+            ]
+          },
+          "result": {
+            "status": "passed",
+            "exitCode": 0,
+            "timedOut": false
+          },
+          "outputs": {
+            "stdout": {
+              "digest": "sha256:6500f91c9a41b35475ef0b72d01c00367fd2d2ee4c08223a23a66bef8c7d4a76",
+              "bytes": 123
+            },
+            "stderr": {
+              "digest": "sha256:f0acba4a50ab4265563f0b165fabfab1ff30676f561443a1148e2875353e2e3e",
+              "bytes": 948
+            }
+          },
+          "producer": {
+            "implementation": "math-flow-oci-attestation-producer-v1",
+            "mathFlowVersion": "0.6.0"
+          },
+          "attestationId": "sha256:f815fc4e78fddec3f2f29060a54afbd1532ad39c945dfb2584b4847434812503"
+        },
+        "stdout": {
+          "text": "verified 6-coloring of 1..536: class sizes 129,86,110,77,64,70; all 71824 in-range x<=y Schur triples are nonmonochromatic\n",
+          "truncated": false,
+          "bytes": 123,
+          "digest": "sha256:6500f91c9a41b35475ef0b72d01c00367fd2d2ee4c08223a23a66bef8c7d4a76"
+        },
+        "stderr": {
+          "text": "Unable to find image 'python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689' locally\ndocker.io/library/python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689: Pulling from library/python\n8c7716127147: Pulling fs layer\n31fd2a94d723: Pulling fs layer\n66b685f2f76b: Pulling fs layer\n7d456e82f89b: Pulling fs layer\n7d456e82f89b: Waiting\n31fd2a94d723: Verifying Checksum\n31fd2a94d723: Download complete\n66b685f2f76b: Verifying Checksum\n66b685f2f76b: Download complete\n7d456e82f89b: Verifying Checksum\n7d456e82f89b: Download complete\n8c7716127147: Verifying Checksum\n8c7716127147: Download complete\n8c7716127147: Pull complete\n31fd2a94d723: Pull complete\n66b685f2f76b: Pull complete\n7d456e82f89b: Pull complete\nDigest: sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nStatus: Downloaded newer image for python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\n",
+          "truncated": false,
+          "bytes": 948,
+          "digest": "sha256:f0acba4a50ab4265563f0b165fabfab1ff30676f561443a1148e2875353e2e3e"
         }
       }
     }
