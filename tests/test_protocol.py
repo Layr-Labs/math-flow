@@ -38,7 +38,11 @@ from math_flow.knowledge import apply_deltas, apply_revision_deltas, empty_state
 from math_flow.openrouter import format_error_message
 from math_flow.repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
 from math_flow.runs import run_judge_bundle
-from math_flow.viewer import export_viewer_catalog, export_viewer_data
+from math_flow.viewer import (
+    _projection_catalog_sort_key,
+    export_viewer_catalog,
+    export_viewer_data,
+)
 from math_flow.hierarchical import _structured_content
 
 
@@ -55,6 +59,24 @@ def write(path: Path, value: str) -> None:
 
 
 class RepositoryValidationTests(unittest.TestCase):
+    def test_viewer_source_prefers_active_projection_lanes(self) -> None:
+        retired = {
+            "id": "retired",
+            "problemId": "demo",
+            "label": "a-retired-builder",
+            "projectionSpec": None,
+        }
+        active = {
+            "id": "active",
+            "problemId": "demo",
+            "label": "z-active-projection",
+            "projectionSpec": {"digest": "sha256:" + "a" * 64},
+        }
+        self.assertEqual(
+            sorted([retired, active], key=_projection_catalog_sort_key),
+            [active, retired],
+        )
+
     def test_knowledge_checkpoint_reuses_success_but_not_truncation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             checkpoint_dir = Path(directory)
