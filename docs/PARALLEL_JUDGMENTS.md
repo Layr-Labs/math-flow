@@ -207,17 +207,20 @@ The catalog follows `baseRun` content digests and uses each scheduler lane's
 does not become knowledge-state order. The included OpenRouter repository
 projection workflow fans out every missing primary judgment, derives conflicts
 from the complete verified set, reuses or fans out reconciliations, and
-coalesces the dependency-complete artifacts into one formation claim. Formation
-is serialized per problem. This problem-wide serialization is a conservative
-compatibility boundary: each later knowledge projection replans after the
-preceding one and can inherit its verified primary and reconciliation
-judgments. Cross-problem judgment and formation work remains parallel.
+coalesces the dependency-complete artifacts into one formation claim. Hosted
+workflow concurrency is keyed by the verified `(problem, primary-judge)`
+stream. Different problems and different primary judges run concurrently.
+Knowledge projections sharing a primary judge stay in one short queue so the
+later projection replans against, and reuses, the first projection's published
+judgments instead of making duplicate paid calls. Formation leases remain
+serialized only within each projection-specific knowledge lane.
 Publication snapshots its lane update, three-way merges that
 disjoint lane onto the newest orphan-branch scheduler, and retries optimistic
 GitHub-signed publication when another problem wins the expected-head race.
-Automatic dispatch passes the sorted active projection list as a one-at-a-time
-queue; each workflow dispatches its independent successor even when its own
-formation or publication fails. A five-minute repository wake-up pass
+Automatic dispatch partitions the sorted active projection list by verified
+judgment stream. It starts those queues independently, while each workflow
+dispatches the next projection sharing its stream even when its own formation
+or publication fails. A five-minute repository wake-up pass
 rediscovers eligible, never-started, and stale active lanes from repository
 state, so minimum intervals, multi-batch formation, interrupted queues, failed
 builders, and replaced GitHub pending runs recover without an unrelated

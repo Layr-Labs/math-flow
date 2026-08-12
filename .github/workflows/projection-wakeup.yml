@@ -62,30 +62,50 @@ jobs:
             --output "${RUNNER_TEMP}/filtered-due-projections.json"
           mv "${RUNNER_TEMP}/filtered-due-projections.json" \
             "${RUNNER_TEMP}/due-projections.json"
-      - name: Dispatch one recoverable queue per problem
+      - name: Dispatch one recoverable queue per independent judgment stream
         env:
           GH_TOKEN: "${{ github.token }}"
         run: |
           set -euo pipefail
           plan="${RUNNER_TEMP}/due-projections.json"
+          failed_stream_dispatches=0
           while IFS= read -r queue; do
             problem="$(jq -r '.problemId' <<< "$queue")"
-            first_projection="$(jq -r '.projections[0].projectionId' <<< "$queue")"
-            remaining="$(jq -c '[.projections[1:][].projectionId]' <<< "$queue")"
+            judgment_stream_id="$(jq -r '.judgmentStreamId' <<< "$queue")"
+            first_projection="$(jq -r '.projections[0]' <<< "$queue")"
+            remaining="$(jq -c '.projections[1:]' <<< "$queue")"
             for attempt in {1..5}; do
               if gh workflow run project-openrouter.yml \
                 --ref main \
                 -f projection="$first_projection" \
                 -f problem="$problem" \
+                -f judgment_stream_id="$judgment_stream_id" \
                 -f remaining_projections="$remaining"; then
                 break
               fi
               if [[ "$attempt" -eq 5 ]]; then
-                exit 1
+                echo "Failed to dispatch judgment stream $judgment_stream_id." >&2
+                failed_stream_dispatches=$((failed_stream_dispatches + 1))
               fi
               sleep 2
             done
-          done < <(jq -c '.problems[]' "$plan")
+          done < <(
+            jq -c '
+              .problems[]
+              | .problemId as $problem
+              | .projections
+              | sort_by(.judgmentStreamId, .projectionId)
+              | group_by(.judgmentStreamId)[]
+              | {
+                  problemId: $problem,
+                  judgmentStreamId: .[0].judgmentStreamId,
+                  projections: [.[].projectionId]
+                }
+            ' "$plan"
+          )
+          if [[ "$failed_stream_dispatches" -gt 0 ]]; then
+            exit 1
+          fi
       - id: credit_plan
         name: Plan bounded automatic credit retries
         env:

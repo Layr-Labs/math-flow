@@ -243,6 +243,8 @@ class GovernanceRepositoryTests(unittest.TestCase):
         )
         resolved = resolve_projection(self.root, "research-v1", "demo", head)
         self.assertEqual(resolved["primaryJudge"], "protocol/judges/primary.json")
+        self.assertRegex(resolved["primaryJudgeDigest"], r"^sha256:[0-9a-f]{64}$")
+        self.assertRegex(resolved["judgmentStreamId"], r"^sha256:[0-9a-f]{64}$")
         self.assertEqual(resolved["scheduling"]["judgmentMaxParallel"], 8)
         self.assertRegex(resolved["projectionSpecDigest"], r"^sha256:[0-9a-f]{64}$")
         self.assertEqual(resolved["dependencies"], [])

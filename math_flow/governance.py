@@ -489,9 +489,20 @@ def resolve_projection(
         "scheduling": spec["scheduling"],
     }
     if spec["schemaVersion"] == 1:
+        primary_judge = _json_object(
+            read_at(root, resolved_head, str(spec["primaryJudge"])),
+            f"primary judge specification {spec['primaryJudge']}",
+        )
+        primary_judge_digest = f"sha256:{sha256_json(primary_judge)}"
+        stream_core = {
+            "problemId": problem,
+            "primaryJudgeDigest": primary_judge_digest,
+        }
         resolved.update(
             {
                 "primaryJudge": spec["primaryJudge"],
+                "primaryJudgeDigest": primary_judge_digest,
+                "judgmentStreamId": f"sha256:{sha256_json(stream_core)}",
                 "reconciliationJudge": spec["reconciliationJudge"],
                 "knowledgeBuilder": spec["knowledgeBuilder"],
             }

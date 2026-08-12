@@ -20,7 +20,56 @@ Configure a ruleset for `main` that:
 The code validates transaction shape; these repository controls make first-parent
 history a non-rewritable canonical order.
 
-## 3. Run one local OpenRouter smoke test
+## 3. Run the provider-free congestion probe
+
+Exercise many independent problems, solvers, judge streams, projection lanes,
+reconciliation components, failures, retries, stale publications, chunking,
+and repository-backed discovery without configuring a provider key:
+
+```bash
+python -m math_flow provider-free-scale-probe \
+  --problems 12 \
+  --projections-per-problem 4 \
+  --solvers 12 \
+  --minimum-interval 300 \
+  --maximum-judgments 64 \
+  --output /tmp/math-flow-scale-report.json
+```
+
+The command is deterministic apart from temporary paths, reports
+`providerCalls: 0`, and exits nonzero if an invariant fails. It gives two
+competing claim attempts to every lane, preserves reconciliation dependency
+components, coalesces arrivals behind active builds, exercises durable backoff
+and new-evidence reset, merges disjoint stale scheduler snapshots, rejects a
+same-lane race, plans bounded 100-file publication commits, then constructs a
+real multi-problem catalog and materializes agent context for every sampled
+lane.
+
+On the reference local run, the default scenario completed with 48 independent
+knowledge lanes, 576 primary and 48 reconciliation jobs, 48 simultaneous
+cross-lane leases, 48 rejected duplicate same-lane claims, five durable retries,
+five new-evidence resets, and a 133,787-byte scheduler. Its modeled catch-up
+publication contained 2,256 immutable files split into 23 bounded commits plus
+one 14-file metadata commit; all four sampled catalog/context lanes were found.
+
+Important current capacity boundaries are:
+
+- governed primary matrices and knowledge claims are bounded independently;
+  the registry currently uses 16 parallel judgments and at most 500 judgments
+  per formation claim;
+- hosted concurrency is one queue per verified `(problem, primary-judge)`
+  stream, so independent judges do not block, while profiles sharing a judge
+  deliberately serialize to reuse paid artifacts;
+- formation is single-writer only within one projection lane; disjoint lanes
+  merge optimistically, but the orphan projection ref remains a final commit
+  serialization point with eight publication attempts;
+- immutable files chunk across as many 100-file GitHub commits as needed, while
+  one metadata commit can contain at most 100 changed indexes/scheduler/catalog
+  files; ordinary one-problem publication stays well below that bound;
+- the wake-up workflow inspects the newest 1,000 projection runs, so an unusually
+  large same-head burst should be monitored for history-window exhaustion.
+
+## 4. Run one local OpenRouter smoke test
 
 First inspect the request without credentials or cost:
 
@@ -37,7 +86,7 @@ README. Inspect `run.json`, `report.md`, `control/selection.json`,
 `control/normalizations.json`, `state/delta.json`, `state/state.json`, and
 `state/revisions.jsonl` before enabling hosted inference.
 
-## 4. Enable the repository projection
+## 5. Enable the repository projection
 
 Add `OPENROUTER_API_KEY` as a GitHub Actions repository secret. A validated
 atomic participant event is squash-merged by
@@ -70,7 +119,7 @@ viewer production-build, rendered-HTML, and lint checks on relevant pushes and
 pull requests. The baseline judge continues to discover affected problems, so
 unrelated problem pushes do not fan out projection jobs.
 
-## 5. Exercise the real transaction boundary
+## 6. Exercise the real transaction boundary
 
 Create a branch that adds one new contribution directory, open a pull request, and
 confirm `Validate transaction` passes. Also try a deliberately invalid PR that
