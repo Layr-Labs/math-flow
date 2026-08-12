@@ -85,6 +85,7 @@ class ProviderFreeScaleProbeTests(unittest.TestCase):
             'judgment_stream_id does not match the governed primary judge.',
             projection,
         )
+        self.assertIn('--repo "$GITHUB_REPOSITORY"', projection)
         for caller in (auto_merge, wakeup):
             self.assertIn("group_by(.judgmentStreamId)", caller)
             self.assertIn('-f judgment_stream_id="$judgment_stream_id"', caller)
