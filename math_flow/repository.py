@@ -80,8 +80,10 @@ def validate_tree(root: Path) -> dict[str, int]:
     # helpers from creating an import cycle at module load time.
     from .directions import validate_direction_tree
     from .governance import validate_projection_registry
+    from .attestations import validate_contribution_verification_at, validate_verifier_tree
 
     validate_projection_registry(root)
+    validate_verifier_tree(root)
     problems_root = root / "problems"
     if not problems_root.is_dir():
         raise MathFlowError(f"missing problems directory: {problems_root}")
@@ -115,6 +117,11 @@ def validate_tree(root: Path) -> dict[str, int]:
                 for artifact in contribution.rglob("*"):
                     if artifact.is_symlink():
                         raise MathFlowError(f"contribution artifacts may not be symlinks: {artifact}")
+                validate_contribution_verification_at(
+                    root,
+                    "WORKTREE",
+                    contribution.relative_to(root).as_posix(),
+                )
                 contribution_count += 1
 
         events, directions = validate_direction_tree(root, problem_dir)
@@ -248,6 +255,10 @@ def validate_pr(root: Path, base: str, head: str) -> dict[str, object]:
                 raise MathFlowError(
                     f"contribution artifacts may not be symlinks: {line.rsplit(chr(9), 1)[-1]}"
                 )
+
+        from .attestations import validate_contribution_verification_at
+
+        validate_contribution_verification_at(root, head_sha, prefix)
 
         return {
             "base": base_sha,
@@ -513,6 +524,32 @@ def read_at(root: Path, head: str, path: str) -> str:
             raise MathFlowError(f"path escapes repository root: {path}") from exc
         return target.read_text(encoding="utf-8")
     return _run_git(root, "show", f"{head}:{path}").stdout
+
+
+def read_bytes_at(root: Path, head: str, path: str) -> bytes:
+    """Read exact repository bytes without passing binary content through text Git I/O."""
+
+    if head == "WORKTREE":
+        target = (root / path).resolve()
+        try:
+            target.relative_to(root.resolve())
+        except ValueError as exc:
+            raise MathFlowError(f"path escapes repository root: {path}") from exc
+        return target.read_bytes()
+    try:
+        result = subprocess.run(
+            ["git", "show", f"{head}:{path}"],
+            cwd=root,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except FileNotFoundError as exc:
+        raise MathFlowError("Git is required but was not found") from exc
+    if result.returncode:
+        detail = result.stderr.decode("utf-8", errors="replace").strip()
+        raise MathFlowError(f"git show {head}:{path} failed: {detail}")
+    return result.stdout
 
 
 def list_files_at(root: Path, head: str, prefix: str) -> list[str]:

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "python-stdlib-3-13-v1",
+  "description": "Run a repository-contained Python 3.13 verifier with only the standard library in a networkless, read-only OCI environment.",
+  "implementation": "oci-command-v1",
+  "environment": {
+    "kind": "oci",
+    "image": "python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689",
+    "platform": "linux/amd64",
+    "network": "none",
+    "readOnlyRoot": true,
+    "user": "65534:65534",
+    "capabilities": [],
+    "noNewPrivileges": true,
+    "memoryBytes": 536870912,
+    "cpuCount": 1,
+    "pidsLimit": 128,
+    "tmpfsBytes": 67108864
+  },
+  "command": {
+    "executable": "python3",
+    "fixedArguments": ["-I", "-B"],
+    "timeoutSeconds": 300,
+    "successExitCodes": [0]
+  }
+}

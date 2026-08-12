@@ -1,15 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://math-flow.local/schemas/run.schema.json",
-  "title": "Math Flow Judge Run Manifest",
+  "title": "Math Flow Run Manifest",
   "type": "object",
   "required": [
     "protocolVersion",
     "problemId",
     "ledgerHead",
-    "judgeSpec",
     "runner",
-    "judgeBuilder",
     "baseRun",
     "outputProfile",
     "requestDigests",
@@ -24,7 +22,8 @@
         "credit-assignment",
         "judgment",
         "knowledge-build",
-        "legacy-projection"
+        "legacy-projection",
+        "verifier-attestation"
       ]
     },
     "problemId": { "type": "string" },
@@ -40,6 +39,16 @@
       "properties": {
         "id": { "type": "string" },
         "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      },
+      "additionalProperties": false
+    },
+    "verifier": {
+      "type": "object",
+      "required": ["id", "specDigest", "implementation"],
+      "properties": {
+        "id": { "type": "string" },
+        "specDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "implementation": { "type": "string" }
       },
       "additionalProperties": false
     },
@@ -87,5 +96,15 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "required": ["runKind"],
+        "properties": { "runKind": { "const": "verifier-attestation" } }
+      },
+      "then": { "required": ["verifier", "inputs"] },
+      "else": { "required": ["judgeSpec", "judgeBuilder"] }
+    }
+  ],
   "additionalProperties": false
 }

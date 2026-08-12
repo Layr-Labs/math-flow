@@ -157,7 +157,7 @@ automatic squash merge to main
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Governed local/hosted runner, provider-free eligibility planner, bounded semantic retries, rolling coalescing, catch-up over closed UTC periods, predecessor-chain terminals, and independent `credit-assignment` bundles implemented | `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
 | Research direction registration | Implemented and merged in PR #28: append-only schema/reducer, atomic validation and auto-merge, provider-free CLI/context/catalog refresh, solver skill, viewer, and registration-aware credit v2 | `math_flow/directions.py`, `protocol/schemas/research-direction-event.schema.json`, `viewer/` |
-| Objective verifier attestations | Not yet implemented as durable protocol artifacts | `docs/MVP.md` |
+| Objective verifier attestations | Additive v1 recipe, pinned OCI runner, durable bundle, semantic validation, replay, and publication interface implemented; hosted dispatch/viewer discovery pending | `math_flow/attestations.py`, `docs/OBJECTIVE_ATTESTATIONS.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
 
 The approved hosted projections are:
@@ -375,9 +375,11 @@ These are the most important gaps as of this document's reconciliation date:
 1. **Exercise paid hosted reconciliation.** The hosted planner and no-conflict
    path are live, but a genuine opposed primary set has not yet generated and
    published a paid reconciliation artifact end to end.
-2. **Add durable objective attestations.** Lean, exact certificate checkers, and
-   reproducible computation should become content-addressed evidence with pinned
-   environments rather than only ephemeral CI checks.
+2. **Operate durable objective attestations.** The content-addressed recipe,
+   pinned OCI execution, replay, validation, and publication interfaces are
+   implemented. Add trusted post-merge hosted dispatch, authenticated catalog
+   discovery, and viewer/context presentation before treating them as automatic
+   platform evidence.
 3. **Scale-test independent problems and solvers.** Admit several problems with
    simultaneous solver contributions and verify judgment isolation, durable
    wake-up/retry behavior, chunked publication, and viewer/context discovery on

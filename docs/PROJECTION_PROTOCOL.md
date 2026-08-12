@@ -24,6 +24,25 @@ artifacts. A profile supplies those semantics. This permits independent judges t
 produce JSON, Markdown, formal proof objects, images, notebooks, or a composite
 bundle without changing the canonical transaction layer.
 
+### `math-flow/verifier-attestation-v1`
+
+Objective verification is an independent run kind, not a judgment or a field in
+canonical participant content. A contribution may declare a versioned verifier
+recipe without declaring its outcome. After merge, an allowlisted OCI runner
+binds the exact canonical transaction, every contribution artifact, verifier
+spec, digest-pinned image and execution policy, exit result, stdout, and stderr
+into a content-addressed bundle. A verifier attestation has no base knowledge
+state and does not mutate one.
+
+The deterministic verifier checks canonical ancestry and rejects mismatched
+inputs, stale specs, mutable or changed environments, inconsistent results, and
+undeclared bundle files. Optional replay requires the result and captured output
+to match byte-for-byte. Production authenticity is deliberately a transport
+concern: non-replaying consumers trust only attestations reached through the
+governed, GitHub-signed projection publisher. See
+[`OBJECTIVE_ATTESTATIONS.md`](OBJECTIVE_ATTESTATIONS.md) for the artifact shape,
+commands, and threat model.
+
 ## Example profiles
 
 ### `math-flow/flat-json-v1`

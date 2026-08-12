@@ -52,9 +52,13 @@ branch a trustworthy linear ledger.
 ### Objective attestations
 
 Lean, tests, and other verifiers are checks over a proposed contribution. They do
-not write `accepted: true` into canonical content. In a later milestone, durable
-attestations will identify the transaction commit, verifier image/digest, inputs,
-and structured result. GitHub check runs are the MVP transport for this evidence.
+not write `accepted: true` into canonical content. An optional participant-authored
+`verification.json` records only a pinned verifier recipe. After canonical merge,
+the `math-flow/verifier-attestation-v1` profile binds the transaction commit,
+every contribution artifact, verifier spec, OCI image and isolation policy,
+invocation, result, and output logs in a replayable content-addressed bundle.
+The conclusion remains on the projection layer. See
+[`OBJECTIVE_ATTESTATIONS.md`](OBJECTIVE_ATTESTATIONS.md).
 
 ### Pluralistic state layer
 
@@ -112,7 +116,8 @@ tools to follow current state.
 - unconstrained Markdown reports and hierarchical state deltas — implemented;
 - append-only adjudication revisions with distinct subjects and evidence — implemented;
 - add a second judge and a projection-diff view;
-- record verifier attestations with content and environment digests;
+- automatically dispatch and surface the implemented content- and
+  environment-addressed verifier attestations in the hosted repository;
 - add adversarial fixtures (incorrect proof, duplicate result, correction,
   conflicting claims) and evaluate judge behavior.
 
@@ -144,8 +149,9 @@ tools to follow current state.
   volume is low. A database can index Git later without becoming authoritative.
 - **Credit formula:** the protocol represents a judge's assignment; it should not
   prematurely endorse one social-choice mechanism.
-- **Tamper resistance beyond GitHub controls:** signed commits/transparency logs
-  can be added if the threat model requires them.
+- **Tamper resistance beyond GitHub controls:** projection commits are signed by
+  GitHub, while workload identity, transparency logs, and hardware-backed remote
+  attestation remain future hardening.
 
 ## Known MVP limitations
 
