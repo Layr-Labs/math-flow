@@ -1,6 +1,8 @@
 "use client";
 
 import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import katex from "katex";
+import { splitDisplayMath, splitInlineMath } from "./markdownMath.mjs";
 import { collectProgramContributionIds } from "./programContributions.mjs";
 import { creditRunSelectionPatch, historicalOverlaySelection, knowledgeRunSelectionPatch, latestOverlaySelectionPatch, projectionByIdentity, publishedHeadSelectionPatch } from "./projectionHeadState.mjs";
 import { createViewerReferenceResolver } from "./referenceLinks.mjs";
@@ -726,6 +728,23 @@ function referenceText(text: string, key: string, actions?: ReferenceActions): R
   );
 }
 
+function MathExpression({ value, displayMode }: { value: string; displayMode: boolean }) {
+  const html = katex.renderToString(value.trim(), {
+    displayMode,
+    strict: false,
+    throwOnError: false,
+    trust: false,
+  });
+  const Tag = displayMode ? "div" : "span";
+  return <Tag className={displayMode ? "math-display" : "math-inline"} dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+function inlineText(text: string, key: string, actions?: ReferenceActions): ReactNode[] {
+  return splitInlineMath(text).map((segment, index) => segment.type === "math"
+    ? <MathExpression value={segment.value} displayMode={false} key={`${key}-${index}-math`} />
+    : <Fragment key={`${key}-${index}-text`}>{referenceText(segment.value, `${key}-${index}`, actions)}</Fragment>);
+}
+
 function inline(text: string, actions?: ReferenceActions): ReactNode[] {
   return text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g).map((part, index) => {
     if (part.startsWith("`") && part.endsWith("`")) {
@@ -736,26 +755,36 @@ function inline(text: string, actions?: ReferenceActions): ReactNode[] {
         : <code key={index}>{value}</code>;
     }
     if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={index}>{referenceText(part.slice(2, -2), `${index}-strong`, actions)}</strong>;
+      return <strong key={index}>{inlineText(part.slice(2, -2), `${index}-strong`, actions)}</strong>;
     }
-    return <Fragment key={index}>{referenceText(part, `${index}-text`, actions)}</Fragment>;
+    return <Fragment key={index}>{inlineText(part, `${index}-text`, actions)}</Fragment>;
   });
+}
+
+function MarkdownLines({ value, actions, segmentKey }: { value: string; actions?: ReferenceActions; segmentKey: number }) {
+  return (
+    <>
+      {value.split("\n").map((raw, index) => {
+        const key = `${segmentKey}-${index}`;
+        const line = raw.trim();
+        if (!line || line === "---") return <div className="markdown-gap" key={key} />;
+        if (line.startsWith("### ")) return <h4 key={key}>{inline(line.slice(4), actions)}</h4>;
+        if (line.startsWith("## ")) return <h3 key={key}>{inline(line.slice(3), actions)}</h3>;
+        if (line.startsWith("# ")) return <h2 key={key}>{inline(line.slice(2), actions)}</h2>;
+        if (/^\d+\. /.test(line)) return <p className="numbered" key={key}>{inline(line, actions)}</p>;
+        if (line.startsWith("- ")) return <p className="bullet" key={key}>{inline(line.slice(2), actions)}</p>;
+        return <p key={key}>{inline(line, actions)}</p>;
+      })}
+    </>
+  );
 }
 
 function Markdown({ value, actions }: { value: string; actions?: ReferenceActions }) {
   return (
     <div className="markdown">
-      {value.split("\n").map((raw, index) => {
-        const line = raw.trim();
-        if (!line || line === "---") return <div className="markdown-gap" key={index} />;
-        if (line.startsWith("### ")) return <h4 key={index}>{inline(line.slice(4), actions)}</h4>;
-        if (line.startsWith("## ")) return <h3 key={index}>{inline(line.slice(3), actions)}</h3>;
-        if (line.startsWith("# ")) return <h2 key={index}>{inline(line.slice(2), actions)}</h2>;
-        if (/^\d+\. /.test(line)) return <p className="numbered" key={index}>{inline(line, actions)}</p>;
-        if (line.startsWith("- ")) return <p className="bullet" key={index}>{inline(line.slice(2), actions)}</p>;
-        if (line === "\\[" || line === "\\]") return null;
-        return <p key={index}>{inline(line, actions)}</p>;
-      })}
+      {splitDisplayMath(value).map((segment, index) => segment.type === "math"
+        ? <MathExpression value={segment.value} displayMode key={`${index}-math`} />
+        : <MarkdownLines value={segment.value} actions={actions} segmentKey={index} key={`${index}-text`} />)}
     </div>
   );
 }

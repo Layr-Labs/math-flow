@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
+import katex from "katex";
 import { collectProgramContributionIds } from "../app/programContributions.mjs";
+import { splitDisplayMath, splitInlineMath } from "../app/markdownMath.mjs";
 import { createViewerReferenceResolver } from "../app/referenceLinks.mjs";
 import { preferredTransactionDetailMode, resolveTransactionDetailMode } from "../app/transactionDetailMode.mjs";
 import { creditRunSelectionPatch, historicalOverlaySelection, knowledgeRunSelectionPatch, latestOverlaySelectionPatch, projectionByIdentity, publishedHeadSelectionPatch } from "../app/projectionHeadState.mjs";
@@ -105,6 +107,10 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(styles, /\.credit-selector-bubble/);
   assert.match(styles, /\.latest-state-button/);
   assert.doesNotMatch(styles, /\.run-strip/);
+  assert.match(packageJson, /"katex"/);
+  assert.match(layout, /katex\/dist\/katex\.min\.css/);
+  assert.match(viewer, /katex\.renderToString/);
+  assert.match(styles, /\.math-display/);
 
   const parsed = JSON.parse(data);
   assert.equal(parsed.runs.length, 3);
@@ -120,6 +126,35 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
     throw error;
   });
   assert.deepEqual(previewAssets, []);
+});
+
+test("recognizes and renders inline and display LaTeX without consuming code", () => {
+  assert.deepEqual(splitInlineMath("Let \\(x^2\\) and $y_1$ vary."), [
+    { type: "text", value: "Let " },
+    { type: "math", value: "x^2" },
+    { type: "text", value: " and " },
+    { type: "math", value: "y_1" },
+    { type: "text", value: " vary." },
+  ]);
+  assert.deepEqual(splitDisplayMath("Before\\[\\frac{a}{b}\\]After"), [
+    { type: "text", value: "Before" },
+    { type: "math", value: "\\frac{a}{b}" },
+    { type: "text", value: "After" },
+  ]);
+  assert.deepEqual(splitDisplayMath("$$x+y$$"), [{ type: "math", value: "x+y" }]);
+  assert.deepEqual(splitInlineMath("Unclosed \\(x remains text"), [
+    { type: "text", value: "Unclosed \\(x remains text" },
+  ]);
+  assert.deepEqual(splitInlineMath("Keep `$code$` and \\$5 literal."), [
+    { type: "text", value: "Keep `$code$` and \\$5 literal." },
+  ]);
+  assert.deepEqual(splitDisplayMath("Keep `$$code$$` literal."), [
+    { type: "text", value: "Keep `$$code$$` literal." },
+  ]);
+
+  const rendered = katex.renderToString("\\frac{a}{b}", { displayMode: true });
+  assert.match(rendered, /class="katex-display"/);
+  assert.match(rendered, /<math/);
 });
 
 test("follows newly published overlay heads without moving historical selections", () => {
