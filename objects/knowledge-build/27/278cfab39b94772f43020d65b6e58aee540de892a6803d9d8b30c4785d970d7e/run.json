@@ -1,0 +1,189 @@
+{
+  "protocolVersion": 1,
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+  "problemLedgerHead": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+  "problemLedgerDigest": "sha256:19f6c665fde2bc17b138f06566def8a8901d35b2f952061f4ddcfdb95b04b2bc",
+  "judgeSpec": {
+    "id": "openrouter-research-program-builder-v3",
+    "digest": "sha256:8dbfc0666d364444fd0e237c4465a6bdca502d6eb06318f2b8a9bfb99d001d8f"
+  },
+  "runner": {
+    "implementation": "openrouter-knowledge-builder-v3",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "judgment-batch-v1",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "select-form-extract-knowledge-revisions-v2",
+    "reducer": "hierarchical-knowledge-revisions-v3"
+  },
+  "baseRun": "sha256:5951ff24fd51041ae3b4a520c5260e456e62da07d65b8c4147ca9c615fdc5e7c",
+  "outputProfile": "math-flow/knowledge-build-markdown-v2",
+  "requestDigests": [
+    "sha256:a383b182b478f8bfa972c5e27fde3056d51d66c70a759f20b492b7c9af56d9b8",
+    "sha256:8ccb09a812def5fbae0f66d902d6cd12810f88c27eca710019e707d33867a0b5",
+    "sha256:d9df4bce19ffd7b5ff17dbc1ae04539090d687752628be73e67d941c1932febd"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "select",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1786659605-RxJl2rZMugq6mAtsQKkb",
+      "usage": {
+        "prompt_tokens": 5690,
+        "completion_tokens": 538,
+        "total_tokens": 6228,
+        "cost": 0.0189985,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 5687,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.0189985,
+          "upstream_inference_prompt_cost": 0.0028585,
+          "upstream_inference_completions_cost": 0.01614
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 391,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "cacheHit": false
+    },
+    {
+      "provider": "openrouter",
+      "stage": "report",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1786659617-AQqPHNsVlPYHKLDAfQeu",
+      "usage": {
+        "prompt_tokens": 7755,
+        "completion_tokens": 4606,
+        "total_tokens": 12361,
+        "cost": 0.186645,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 7752,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.186645,
+          "upstream_inference_prompt_cost": 0.048465,
+          "upstream_inference_completions_cost": 0.13818
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2070,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "cacheHit": false
+    },
+    {
+      "provider": "openrouter",
+      "stage": "extract",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1786659678-IA0R2rQAHTa4h5CNUzxV",
+      "usage": {
+        "prompt_tokens": 7477,
+        "completion_tokens": 2107,
+        "total_tokens": 9584,
+        "cost": 0.1099375,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 7474,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.1099375,
+          "upstream_inference_prompt_cost": 0.0467275,
+          "upstream_inference_completions_cost": 0.06321
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1034,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "cacheHit": false
+    }
+  ],
+  "runKind": "knowledge-build",
+  "inputs": {
+    "judgmentSetDigest": "sha256:81b602c49527873cc679598c4639786ce4811d3e1eb52ca72d7cd8b0a0906979",
+    "conflictIds": [],
+    "baseStateRun": "sha256:5951ff24fd51041ae3b4a520c5260e456e62da07d65b8c4147ca9c615fdc5e7c",
+    "judgmentIds": [
+      "sha256:8c5f8eeb55af54b575fd3d46473e7894095afd6a4741186fe0583d3d0feade8a"
+    ],
+    "laneId": "sha256:c2eccc232f4dc66ce6e6802682bcf0ff027c762023d7048689156d8bcc3b8742",
+    "problemId": "no-three-in-line-77",
+    "builderSpecDigest": "sha256:8dbfc0666d364444fd0e237c4465a6bdca502d6eb06318f2b8a9bfb99d001d8f",
+    "schemaVersion": 1,
+    "projectionSpecDigest": "sha256:17286f418e1335fd718c1c7f7a87d04863bae14de496efd790d3ea6bc4b6cee9",
+    "buildToken": "sha256:c59e12bb529b102a4407085ec458d1af14be3cf815d08e427fa9aabc54b1c050"
+  },
+  "artifacts": [
+    {
+      "path": "control/build-input.json",
+      "role": "knowledge-build-input",
+      "mediaType": "application/json",
+      "digest": "sha256:20469bb355442c59535be3b7247206e379eb8d26d542e1d5c4ddb45f60621826",
+      "bytes": 754
+    },
+    {
+      "path": "control/normalizations.json",
+      "role": "adapter-normalizations",
+      "mediaType": "application/json",
+      "digest": "sha256:0d03e8e3724380c5a64368bbb4b692cd6e8484876735026abdaee55733b8d5c9",
+      "bytes": 27
+    },
+    {
+      "path": "control/selection.json",
+      "role": "node-selection",
+      "mediaType": "application/json",
+      "digest": "sha256:a5047faa1e3a4451ced5e24146be970fe8ec76f8388c3a1cceac04e3c743886c",
+      "bytes": 679
+    },
+    {
+      "path": "report.md",
+      "role": "report",
+      "mediaType": "text/markdown",
+      "digest": "sha256:6bfe62e90f8ea6a11caf14c782548ba9658270d025179bc736af8dd82a9a2abb",
+      "bytes": 11008
+    },
+    {
+      "path": "state/delta.json",
+      "role": "knowledge-delta",
+      "mediaType": "application/json",
+      "digest": "sha256:d04650efc975e76530df865a171d80f89770d70d202cf63cfd83d88ecd6fe683",
+      "bytes": 4122
+    },
+    {
+      "path": "state/revisions.jsonl",
+      "role": "knowledge-revisions",
+      "mediaType": "application/x-ndjson",
+      "digest": "sha256:bc3bc0401426711fd91fd203cb7e50c48fbff21362a17f1a540991561c2423cd",
+      "bytes": 34783
+    },
+    {
+      "path": "state/state.json",
+      "role": "knowledge-state",
+      "mediaType": "application/json",
+      "digest": "sha256:6725f07732176f97acac9220c7209e2566ce55b79d03c777af1caa5d21e36fe0",
+      "bytes": 62381
+    }
+  ]
+}
