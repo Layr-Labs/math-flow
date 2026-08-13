@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "repository": {
     "slug": "Layr-Labs/math-flow",
-    "canonicalRef": "refs/remotes/origin/main",
+    "canonicalRef": "main",
     "projectionRef": "projections"
   },
   "projections": [
@@ -17313,8 +17313,8 @@
         "id": "openrouter-research-program-builder-v2",
         "digest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c"
       },
-      "latestRunDigest": "sha256:55cff577a60f17bfd0b3783f30cbb77451b0cbac02750ff26932bfa9f391a108",
-      "runCount": 1,
+      "latestRunDigest": "sha256:84e487224d927148fdcb7a41b8e1a00b27bf221ff0412a294434a2e4d2d46ca3",
+      "runCount": 2,
       "data": {
         "schemaVersion": 1,
         "problem": {
@@ -17322,7 +17322,7 @@
           "title": "The sixth Schur number",
           "statementMarkdown": "# The sixth Schur number\n\nA set of positive integers is *sum-free* if it contains no \\(x,y,z\\), with\n\\(x\\) and \\(y\\) allowed to be equal, such that \\(x+y=z\\). The Schur number\n\\(S(r)\\) is the largest integer \\(N\\) for which\n\\(\\{1,2,\\ldots,N\\}\\) can be partitioned into \\(r\\) sum-free sets.\nEquivalently, it is the largest \\(N\\) admitting an \\(r\\)-coloring with no\nmonochromatic solution to \\(x+y=z\\).\n\nDetermine \\(S(6)\\), or improve either side of the current published interval\n\n\\[\n536\\le S(6)\\le1836.\n\\]\n\nA lower-bound contribution should give an explicit coloring. An upper-bound\ncontribution must rule out every coloring at the claimed threshold; a search\nthat merely fails to find one is not an upper bound.\n\nUseful contributions include:\n\n- an explicit certified coloring of \\(\\{1,\\ldots,N\\}\\) for \\(N>536\\);\n- a compact exact checker and a canonical encoding of a coloring witness;\n- a combinatorial argument lowering the upper endpoint;\n- a SAT, pseudo-Boolean, or constraint-programming proof with a replayable\n  unsatisfiability certificate;\n- symmetry reductions proved to preserve all relevant colorings;\n- a formal proof of a structural lemma; or\n- reproducible search data or a negative search result with its non-global\n  scope stated explicitly.\n\nAll witness checks should use exact integer arithmetic. Certificate-producing\ncomputations should include enough source data and instructions for an\nindependent replay.\n\n## Frontier sources\n\n- Shalom Eliahou and Pastora Revuelta,\n  [The Schur degree of additive sets](https://arxiv.org/abs/2006.01502),\n  Discrete Mathematics 344 (2021), Article 112332; the paper records the\n  displayed interval and conjectures the conditional upper bound \\(966\\).\n- Marijn J. H. Heule,\n  [Schur Number Five](https://ojs.aaai.org/index.php/AAAI/article/view/12209),\n  AAAI 2018; this gives a model for certificate-based exact Schur-number work.\n"
         },
-        "ledgerHead": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+        "ledgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
         "transactions": [
           {
             "ordinal": 1,
@@ -17334,6 +17334,17 @@
               "email": "35671663+mooselumph@users.noreply.github.com"
             },
             "contentMarkdown": "# Exact certificate for the published lower bound S(6) >= 536\n\n## Claim\n\nThe committed `coloring.csv` is a complete six-coloring of\n`{1, 2, ..., 536}` with no monochromatic solution to `x + y = z`, including\nthe case `x = y`. It therefore independently replays the published baseline\nlower bound\n\n```text\nS(6) >= 536.\n```\n\nThis certificate does not improve the bound. The problem's published interval\nremains `536 <= S(6) <= 1836`.\n\n## Witness encoding and exact check\n\n`coloring.csv` is the canonical expanded encoding: it has the exact header\n`integer,color`, followed by one row for every integer in increasing order,\nwith colors numbered 1 through 6. `published-symmetric.json` preserves the\ncompact form printed by the source paper. Each ordinary representative `r`\nencodes both `r` and `537-r` in the same color. The exceptional pair is\nrecorded explicitly as `[179, 4]` and `[358, 1]`, exactly as printed.\n\nRun from this directory with Python 3 and only the standard library:\n\n```bash\npython3 -I -B verify.py published-symmetric.json coloring.csv\n```\n\nExpected output:\n\n```text\nverified 6-coloring of 1..536: class sizes 129,86,110,77,64,70; all 71824 in-range x<=y Schur triples are nonmonochromatic\n```\n\nThe checker:\n\n1. validates the compact witness schema, `n = 536`, six nonempty color\n   classes, and symmetry modulus 537;\n2. rejects noncanonical, duplicate, out-of-range, or overlapping paired\n   representatives and special assignments;\n3. expands the compact source witness and requires exact coverage of `1..536`;\n4. validates the CSV header, row count, canonical integer order, and color\n   range, and requires exact agreement with the source witness; and\n5. enumerates every integer triple with `1 <= x <= y` and\n   `z = x + y <= 536`, rejecting a monochromatic triple. Thus `x = y` is\n   included rather than silently omitted.\n\n`verification.json` requests a replay by the repository's pinned, networkless\nPython-standard-library verifier. A passing hosted attestation is evidence only\nthat the pinned checker accepted the pinned artifact bytes; mathematical\njudgment remains separate.\n\n## Primary-source provenance and attribution\n\nThe construction is due to Harold Fredricksen and Melvin M. Sweet:\n\n- Harold Fredricksen and Melvin M. Sweet, “Symmetric Sum-Free Partitions and\n  Lower Bounds for Schur Numbers,” *The Electronic Journal of Combinatorics*\n  7 (2000), Research Paper 32, DOI\n  [10.37236/1510](https://doi.org/10.37236/1510).\n- [Official journal article page](https://www.combinatorics.org/ojs/index.php/eljc/article/view/v7i1r32).\n- [Official primary PDF](https://www.combinatorics.org/ojs/index.php/eljc/article/download/v7i1r32/pdf),\n  retrieved 2026-08-12, SHA-256\n  `ae8541c564efd65785a0e1d2c778108d58fec4c060707d7c277dd7f3eecad259`.\n\nPage 2 defines a symmetric partition and permits `(n+1)/3` and\n`2(n+1)/3` to occupy different sets when 3 divides `n+1`. Page 6 prints the\n536 construction, says that only the smaller ordinary member of each symmetric\npair is listed, and places the exceptional values 179 and 358 in sets 4 and 1,\nrespectively. `published-symmetric.json` is a transcription of that page,\nseparating those exceptions from the paired representatives. `coloring.csv`\nis the deterministic full expansion.\n\nThe official PDF was independently checked both by layout-preserving text\nextraction and by visual inspection of the rendered page. The construction,\nthe bound, and their mathematical authorship remain Fredricksen and Sweet's;\nthis contribution claims no originality or priority for the construction.\n\n## Limitations\n\n- The certificate proves only the already published lower bound `S(6) >= 536`.\n- It supplies no coloring of 537 or higher and no upper-bound information.\n- The PDF is not vendored. Its official URLs and exact content digest are\n  recorded, while all witness bytes needed for offline replay are committed.\n- The verifier establishes the encoded finite predicate; it does not explain\n  how Fredricksen and Sweet found the coloring.\n\n## Artifact authorship\n\nThe witness and mathematical construction are by Harold Fredricksen and Melvin\nM. Sweet. Transcription, canonical expansion design, checker, and documentation\nwere produced by an OpenAI Codex research agent operating the Math Flow solver\nworkflow at Robert Raynor's request. Any transcription or implementation errors\nin these artifacts are the agent's.\n"
+          },
+          {
+            "ordinal": 2,
+            "transactionId": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+            "contributionId": "fredricksen-sweet-537-radius-43-exclusion",
+            "path": "problems/schur-number-6/contributions/fredricksen-sweet-537-radius-43-exclusion",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Exact exclusion of the radius-43 extension neighborhood at 537\n\n## Claim\n\nLet `B` be the labeled Fredricksen-Sweet six-coloring of\n`{1, ..., 536}` committed as `baseline-536.csv`. If `C` is any valid\nsix-coloring of `{1, ..., 537}` with no monochromatic `x + y = z`, including\n`x = y`, then\n\n```text\n|{i in {1,...,536} : C(i) != B(i)}| >= 44.\n```\n\nNo color-symmetry constraint is imposed on `C`. Consequently every relabeling\nof every candidate coloring is covered, so the minimum distance over color\npermutations is also at least 44.\n\nThis is an exhaustive result for one finite Hamming neighborhood. It is **not**\nan impossibility proof for 537, does not supply a coloring of 537, and does not\nchange the published interval\n\n```text\n536 <= S(6) <= 1836.\n```\n\n## Why four cases suffice\n\nCondition on the color `c` assigned to 537. In the baseline, count the disjoint\npairs `{x, 537-x}` whose two endpoints both have color `c`. The counts for\ncolors 1 through 6 are\n\n```text\n64, 43, 55, 38, 32, 35.\n```\n\nFor every such pair, a valid extension with `C(537) = c` must recolor at least\none endpoint; otherwise `x + (537-x) = 537` is monochromatic. Thus colors 1 and\n3 already require more than 43 old assignments to change.\n\nFor each remaining color, let `b_c` be its blocker-pair count. Every blocker\npair contributes one unavoidable change. A second changed endpoint in a\nblocker pair contributes one *extra* change, as does any changed integer\noutside all blocker pairs. Therefore\n\n```text\nHamming distance from B = b_c + number of extra changes.\n```\n\nThe four committed unsatisfiability cases are exactly:\n\n| `C(537)` | blocker pairs | permitted extra changes | total radius |\n|---:|---:|---:|---:|\n| 2 | 43 | 0 | 43 |\n| 4 | 38 | 5 | 43 |\n| 5 | 32 | 11 | 43 |\n| 6 | 35 | 8 | 43 |\n\nTogether with the direct pair counts for colors 1 and 3, these cases exhaust\nall six possibilities for `C(537)`.\n\n## Exact encoding\n\n`verify.py` regenerates every formula rather than trusting a committed CNF.\nFor each integer `i` and labeled color `c`, variable `X(i,c)` means that `i`\nhas color `c`. The formula contains:\n\n1. one at-least-one and all pairwise at-most-one clauses for every\n   `i in {1,...,537}`;\n2. for every `1 <= x <= y` with `x+y <= 537` and every color `c`, the exact\n   Schur clause forbidding `X(x,c)`, `X(y,c)`, and `X(x+y,c)` simultaneously;\n   when `x = y`, this is correctly reduced to a binary clause;\n3. one unit clause fixing the conditioned color of 537;\n4. for each blocker pair, an auxiliary variable equivalent to both endpoints\n   changing from their baseline color; and\n5. a Sinz sequential counter bounding the signed extra-change literals.\n\nThere are 72,092 in-range triples with `x <= y` at `n = 537`. The verifier\nchecks this count, the blocker counts, each formula's dimensions, and the\nSHA-256 digest of its canonical DIMACS byte stream. It deliberately adds no\ncolor-label symmetry-breaking clauses because those could invalidate a\ndistance statement anchored to a labeled baseline.\n\n`cases.json` records the four case splits, formula digests, proof digests,\nproof statistics, and generation provenance. Each compressed proof is text\nLRAT and uses only ordered reverse-unit-propagation hints; no RAT additions are\nneeded. The standard-library checker decompresses each proof with a byte bound,\nreconstructs the initial clause table, processes deletions, checks every RUP\nhint in order, and requires a final derived empty clause. It does not invoke or\ntrust the solver that generated the proofs.\n\n## Independent replay\n\nFrom this directory, using Python 3 and only the standard library:\n\n```bash\npython3 -I -B verify.py cases.json baseline-536.csv\n```\n\nExpected output:\n\n```text\nverified baseline (71824 triples), blocker counts 64,43,55,38,32,35, and four RUP-only LRAT proofs (41022 lines): every valid coloring of 1..537 differs from the fixed baseline on at least 44 of integers 1..536\n```\n\nTo emit the exact canonical DIMACS files into a new or empty scratch directory:\n\n```bash\npython3 -I -B verify.py cases.json baseline-536.csv \\\n  --emit-cnf-dir /tmp/schur537-radius43-cnf\n```\n\nThe committed proofs were generated with CaDiCaL 3.0.1. For each emitted case,\nthe corresponding uncompressed proof can be regenerated and internally\nchecked by CaDiCaL with:\n\n```bash\ncadical --unsat --lrat=true --binary=false --checkproof=2 \\\n  /tmp/schur537-radius43-cnf/case-color-5-extra-11.cnf \\\n  /tmp/case-color-5-extra-11.lrat\ngzip -n -9 -k /tmp/case-color-5-extra-11.lrat\n```\n\nUse the analogous filename for colors 2, 4, and 6. Solver reproduction is\noptional: the first Python command independently checks the committed proof\nobjects. CaDiCaL is available from its\n[official source repository](https://github.com/arminbiere/cadical).\n\n`verification.json` requests the same Python replay in Math Flow's pinned,\nnetworkless standard-library verifier. A passing hosted attestation establishes\nonly that the pinned program accepted these pinned artifact bytes; mathematical\njudgment remains separate.\n\n## Baseline provenance and attribution\n\n`baseline-536.csv` is byte-for-byte identical (SHA-256\n`5e2cd4854c20e8441ff52e09e02472657309d35eb4b35c6957a1be37f6a8cbc9`)\nto the canonical coloring in contribution `fredricksen-sweet-536-certificate`,\ntransaction `b28dd977ae39eb77989de8e60b63f7eacd8982d2`. The underlying construction is\ndue to Harold Fredricksen and Melvin M. Sweet, “Symmetric Sum-Free Partitions\nand Lower Bounds for Schur Numbers,” *The Electronic Journal of Combinatorics*\n7 (2000), Research Paper 32, DOI\n[10.37236/1510](https://doi.org/10.37236/1510).\n\nThe baseline bytes are duplicated here only to make this proof transaction\nself-contained and digest-stable. This contribution claims no authorship or\npriority for that coloring or for `S(6) >= 536`.\n\nThe radius-43 case decomposition, exact CNF generator, independent LRAT\nchecker, proof production, and documentation were produced by an OpenAI Codex\nresearch agent operating the Math Flow solver workflow at Robert Raynor's\nrequest. The LRAT objects were generated by CaDiCaL 3.0.1; CaDiCaL and LRAT\nreceive tool/format attribution, not mathematical authorship of the baseline.\n\n## Limitations\n\n- No coloring of 537 or larger was found or is claimed.\n- The certificate rules out only candidates within distance 43 of this fixed\n  536 coloring (counting changes among the old 536 integers). Candidates at\n  distance 44 or greater remain possible.\n- The result is not an upper bound for `S(6)` and supplies no evidence that all\n  colorings of `{1,...,537}` are impossible.\n- The proof concerns exact finite formulas and contains no claim based on a\n  solver timeout, failed heuristic, or probabilistic search.\n"
           }
         ],
         "judgments": [
@@ -17429,6 +17440,114 @@
               ],
               "reportDigest": "sha256:7a560799cb4890be034a7295fe11acdb851ba0a208c3e2b7bdc5e27fc3f3e03f",
               "judgmentId": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4"
+            }
+          },
+          {
+            "judgmentId": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+            "runDigest": "sha256:5a0afa79b1a3906a0f641c9f42ea127b2983ef5fd384118db32200671378241e",
+            "judgmentKind": "primary",
+            "ledgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+            "problemLedgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+            "judgeSpec": {
+              "id": "openrouter-markdown-judgment-v1",
+              "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.42996125,
+            "reportDigest": "sha256:39db1e37b343fca6fe6ad8348caeaa69aa35b80b0d85293de74df6a0e0ab38f9",
+            "reportMarkdown": "# Mathematical judgment\n\n## Overall assessment\n\nThe subject addresses a precise and potentially useful local structural claim:\n\n> Every valid six-coloring of \\(\\{1,\\dots,537\\}\\) differs, on at least \\(44\\) of the first \\(536\\) integers, from the fixed labeled Fredricksen–Sweet coloring \\(B\\).\n\nThe reduction from this Hamming-distance claim to six cases is mathematically sound. The blocker-pair counts, the identity expressing Hamming distance as unavoidable blocker changes plus “extra” changes, and the SAT encoding described in `verify.py` are all coherent and appear correct.\n\nHowever, the decisive evidence for four of the six cases is absent from the supplied artifacts. The verifier and `cases.json` refer to four compressed LRAT files,\n\n- `case-color-2-extra-0.lrat.gz`,\n- `case-color-4-extra-5.lrat.gz`,\n- `case-color-5-extra-11.lrat.gz`,\n- `case-color-6-extra-8.lrat.gz`,\n\nbut none of those proof objects is included in the supplied evidence. Consequently, the advertised replay command cannot complete from the supplied material, and the four unsatisfiability assertions cannot be independently checked here. Hash digests and claimed proof statistics do not substitute for the proof bytes.\n\nThus the mathematical reduction and certificate architecture are strong, but the principal radius-\\(43\\) exclusion theorem is **not established by the supplied evidence**. It remains a reproducible computational claim pending provision or independent regeneration and verification of the four LRAT proofs. In any event, it is explicitly local and does not improve either endpoint of the published interval for \\(S(6)\\).\n\n---\n\n## Finding 1: Validity and role of the fixed \\(536\\)-coloring\n\n**Claim key:** `S6-ge-536-via-Fredricksen-Sweet-coloring`\n\nThe baseline is an explicit coloring \\(B:\\{1,\\dots,536\\}\\to\\{1,\\dots,6\\}\\), duplicated from the earlier supplied Fredricksen–Sweet certificate. The earlier artifacts include both an expanded CSV and a compact symmetric representation, together with a straightforward exhaustive checker.\n\nThe sum-free verification loop is correct:\n\n```python\nfor x in range(1, n + 1):\n    for y in range(x, n - x + 1):\n        z = x + y\n```\n\nThis enumerates every triple with\n\n\\[\n1\\le x\\le y,\\qquad x+y=z\\le n.\n\\]\n\nIt includes \\(x=y\\), so it checks the convention in the problem rather than only triples with distinct summands. For \\(n=536\\), the stated count\n\n\\[\n71824\n\\]\n\nis correct: the numbers of admissible \\(y\\)'s are \\(535,533,\\dots,1\\), whose sum is \\(268^2=71824\\).\n\nThe subject verifier independently repeats this baseline check before attempting the LRAT proofs. The baseline data shown in the subject transaction also agrees entry-for-entry with the earlier supplied coloring. This makes the use of \\(B\\) well specified and independently replayable.\n\n### Confidence\n\nThe baseline proposition \\(S(6)\\ge 536\\) is strongly supported by the supplied explicit witness and exact checker. It is not a new bound and is not original to this subject transaction.\n\n---\n\n## Finding 2: The blocker-pair counts are correct\n\n**Claim key:** `FS536-blocker-pair-counts-at-537`\n\nFor a prospective color \\(c=C(537)\\), the relevant pairs are\n\n\\[\n\\{x,537-x\\},\\qquad 1\\le x\\le 268.\n\\]\n\nBecause \\(537\\) is odd, these \\(268\\) pairs are pairwise disjoint. A pair is a blocker for color \\(c\\) when both endpoints have baseline color \\(c\\).\n\nThe stated blocker counts are\n\n\\[\n(b_1,b_2,b_3,b_4,b_5,b_6)\n=(64,43,55,38,32,35).\n\\]\n\nThese numbers are consistent with the symmetric Fredricksen–Sweet representation. There are \\(267\\) ordinary same-color symmetric pairs and the exceptional pair\n\n\\[\n\\{179,358\\},\n\\]\n\nwhose endpoints have different colors, namely \\(4\\) and \\(1\\). Indeed,\n\n\\[\n64+43+55+38+32+35=267.\n\\]\n\nThey are also consistent with the class sizes\n\n\\[\n129,86,110,77,64,70:\n\\]\n\n- color \\(1\\) has \\(64\\) ordinary pairs plus the exceptional value \\(358\\), giving \\(2\\cdot64+1=129\\);\n- color \\(4\\) has \\(38\\) ordinary pairs plus the exceptional value \\(179\\), giving \\(2\\cdot38+1=77\\);\n- the other class sizes are twice their blocker counts.\n\nThus the blocker counts are not merely asserted in metadata; they follow transparently from the supplied symmetric construction.\n\n### Consequence for colors \\(1\\) and \\(3\\)\n\nIf \\(C(537)=c\\), then for every blocker pair \\(\\{x,537-x\\}\\), at least one endpoint must change from its baseline color. Otherwise\n\n\\[\nx+(537-x)=537\n\\]\n\nwould be monochromatic in color \\(c\\).\n\nTherefore:\n\n- if \\(C(537)=1\\), at least \\(64\\) old positions change;\n- if \\(C(537)=3\\), at least \\(55\\) old positions change.\n\nBoth cases are consequently outside Hamming radius \\(43\\), without requiring SAT certificates. This part of the claimed exclusion is proved directly.\n\n---\n\n## Finding 3: The Hamming-distance decomposition is correct\n\n**Claim key:** `FS536-distance-decomposition-for-537-extensions`\n\nFix \\(c=C(537)\\), and let \\(b_c\\) be the number of color-\\(c\\) blocker pairs.\n\nEvery blocker pair contributes at least one changed endpoint. Since blocker pairs are disjoint, this gives an unavoidable contribution of exactly \\(b_c\\) after assigning one mandatory change to each pair. The only additional changes are:\n\n1. the second changed endpoint in a blocker pair, or\n2. a changed integer outside all blocker pairs.\n\nHence, for every valid extension conditioned on \\(C(537)=c\\),\n\n\\[\nd_H(C|_{\\{1,\\dots,536\\}},B)\n=\nb_c+\n\\#\\{\\text{extra changes}\\}.\n\\]\n\nThis justifies the four radius splits:\n\n| \\(C(537)\\) | \\(b_c\\) | Maximum extras when total distance is at most \\(43\\) |\n|---:|---:|---:|\n| 2 | 43 | 0 |\n| 4 | 38 | 5 |\n| 5 | 32 | 11 |\n| 6 | 35 | 8 |\n\nTogether with the direct exclusions for colors \\(1\\) and \\(3\\), these cases exhaust all possible labeled colors of \\(537\\).\n\nThe statement about color permutations is also correct. Since no label symmetry breaking is imposed, every relabeling \\(\\pi\\circ C\\) of a valid coloring is itself among the universally quantified labeled colorings. Therefore, if the labeled conclusion were proved, then\n\n\\[\n\\min_{\\pi\\in S_6} d_H(\\pi\\circ C,B)\\ge 44.\n\\]\n\nEquivalently, the same conclusion holds if one instead permits permutations of the labels of \\(B\\).\n\n---\n\n## Finding 4: The generated CNF correctly represents the local extension problem\n\n**Claim key:** `SAT-encoding-for-FS536-radius-43-exclusion`\n\nThe CNF construction in `verify.py` is logically appropriate.\n\n### Exactly one color\n\nFor each \\(i\\in\\{1,\\dots,537\\}\\), it adds:\n\n- one at-least-one clause containing all six color variables;\n- all \\(\\binom 62=15\\) pairwise at-most-one clauses.\n\nThus every satisfying assignment selects exactly one labeled color for every integer.\n\n### Schur constraints\n\nFor every \\(1\\le x\\le y\\) with \\(x+y\\le537\\), and every color, it adds the clause forbidding all members of the triple from having that color. When \\(x=y\\), the repeated literal is correctly removed, yielding the binary constraint\n\n\\[\n\\neg X(x,c)\\lor\\neg X(2x,c).\n\\]\n\nThe claimed number of triples is correct:\n\n\\[\n\\sum_{x=1}^{268}(537-2x+1)\n=536+534+\\cdots+2\n=268\\cdot269\n=72092.\n\\]\n\n### Conditioning on \\(C(537)\\)\n\nA unit clause fixes the color of \\(537\\), giving the intended six-way case split.\n\n### Blocker-pair auxiliary variables\n\nFor a blocker pair \\((x,y)\\), write \\(B_x=X(x,B(x))\\) and \\(B_y=X(y,B(y))\\). The clauses\n\n\\[\n\\neg e\\lor\\neg B_x,\\qquad\n\\neg e\\lor\\neg B_y,\\qquad\nB_x\\lor B_y\\lor e\n\\]\n\nencode\n\n\\[\ne\\iff(\\neg B_x\\land\\neg B_y).\n\\]\n\nThus \\(e\\) is true exactly when both endpoints have changed, which is precisely one extra change beyond the mandatory one for that pair.\n\nOutside the blocker pairs, the signed literal\n\n\\[\n\\neg X(i,B(i))\n\\]\n\nis true exactly when \\(i\\) has changed from its baseline color, because the exactly-one constraints are present.\n\n### Cardinality encoding\n\nThe Sinz sequential counter is a standard at-most-\\(k\\) encoding. Substituting signed literals for positive input variables is valid. It has both necessary properties here:\n\n- any satisfying assignment obeys the stated upper bound;\n- any coloring with at most the allowed number of extras can be extended to the counter variables, for example by assigning cumulative threshold values.\n\nThe formula dimensions recorded in `cases.json` are also internally consistent with the generator. This is useful corroboration, although the dimensions and SHA-256 digests by themselves do not prove unsatisfiability.\n\n### LRAT checker design\n\nThe supplied checker implements the RUP-only subset claimed for the proofs. For each derived clause it:\n\n1. assumes the negation of that clause;\n2. follows the ordered hint clauses;\n3. requires each hinted clause to be unit under the accumulated assignment, except the last, which must produce conflict;\n4. adds the checked clause to the clause table;\n5. accepts only after an empty clause has been derived.\n\nSuch RUP steps preserve logical consequence, so deriving the empty clause would soundly prove the initial CNF unsatisfiable. Deletions do not affect soundness. The checker also binds formulas and proof payloads to recorded digests and limits decompressed proof size.\n\nNo evident logical flaw in the encoding or checker invalidates the intended argument.\n\n---\n\n## Finding 5: The four decisive unsatisfiability claims lack their certificates\n\n**Claim key:** `FS536-radius-43-exclusion-at-537`\n\nThe main proposition requires proving unsatisfiability for the four conditioned formulas corresponding to colors \\(2,4,5,6\\).\n\nThe supplied evidence contains:\n\n- the CNF generator;\n- metadata describing formula dimensions and digests;\n- claimed compressed and uncompressed proof digests;\n- claimed proof line statistics;\n- an LRAT checker;\n- instructions for regenerating proofs using CaDiCaL.\n\nBut it does **not** contain the four `.lrat.gz` files referenced by that metadata and checker.\n\nThis omission is decisive. Running\n\n```bash\npython3 -I -B verify.py cases.json baseline-536.csv\n```\n\nagainst only the supplied artifacts would encounter a missing proof file. The expected-output text in the README is not an execution transcript or certificate, and `verification.json` is merely a request for a hosted verification, not evidence that one occurred.\n\nSimilarly, the following do not establish unsatisfiability:\n\n- a SHA-256 digest of an unavailable proof;\n- a claimed number of proof lines;\n- the assertion that CaDiCaL produced a proof;\n- instructions under which a proof is expected to be reproducible.\n\nA digest can authenticate proof bytes once those bytes are available, but it contains no replayable logical derivation on its own. Independent regeneration could remedy the omission, but no such regeneration result is part of the supplied evidence.\n\n### Status of the main theorem\n\nOnly the \\(C(537)=1\\) and \\(C(537)=3\\) cases are presently proved from the supplied material. The other four cases are reduced correctly to explicit finite CNFs, but their unsatisfiability is unproved here.\n\nAccordingly, the universal conclusion\n\n\\[\n\\left|\\{i\\le536:C(i)\\ne B(i)\\}\\right|\\ge44\n\\]\n\nmust be classified as **not established by the supplied evidence**, despite having a convincing proof plan and apparently suitable checking infrastructure.\n\nSupplying the four compressed LRAT objects matching the recorded digests—or independently regenerating and replaying them—would address this gap.\n\n---\n\n## Finding 6: No bound on \\(S(6)\\) follows from the local result\n\n**Claim key:** `implications-of-FS536-radius-exclusion-for-S6`\n\nEven if all four LRAT proofs are valid, the result excludes only colorings lying within Hamming distance \\(43\\) of one fixed labeled baseline on the first \\(536\\) positions.\n\nIt does not exclude:\n\n- colorings at distance \\(44\\) or more from \\(B\\);\n- structurally unrelated colorings of \\(\\{1,\\dots,537\\}\\);\n- all six-colorings of any threshold relevant to a new upper bound.\n\nIt also supplies no coloring of \\(537\\) or above.\n\nTherefore it implies neither \\(S(6)=536\\) nor any improvement of\n\n\\[\n536\\le S(6)\\le1836.\n\\]\n\nThe README states this limitation accurately. There is no mathematical contradiction between the local exclusion claim and the possibility that a distant valid coloring of \\(\\{1,\\dots,537\\}\\) exists.\n\n---\n\n## Contradictions and missing evidence\n\n### Evidentiary discrepancy\n\nThe README repeatedly describes the four LRAT proofs as “committed,” but the supplied artifact list does not include them. This is an evidentiary discrepancy rather than a contradiction in the mathematics, but it prevents the advertised independent replay.\n\n### No mathematical contradiction found\n\nThe following supplied components are mutually consistent:\n\n- the baseline coloring;\n- its symmetric structure;\n- the blocker counts;\n- the radius decomposition;\n- the generated formula sizes;\n- the case split;\n- the statement that the result, if certified, is local rather than a bound on \\(S(6)\\).\n\nThe only decisive deficiency is the absence of the proof payloads needed to establish four unsatisfiability claims.\n\n---\n\n## Attribution and contribution\n\nThe underlying \\(536\\)-coloring and the lower bound \\(S(6)\\ge536\\) are correctly attributed to Harold Fredricksen and Melvin Sweet. The subject does not claim originality for that construction.\n\nThe new work represented here is the radius-\\(43\\) case decomposition, the exact CNF construction, the independent RUP/LRAT checker, and the documentation and reproduction design. Those components are mathematically meaningful and carefully scoped. The metadata attributes proof generation to CaDiCaL and the workflow implementation to an OpenAI Codex research agent acting at Robert Raynor’s request.\n\nNo priority conclusion about the local radius theorem is warranted solely from the supplied documentation, and the theorem itself remains uncertified here because its proof files are missing.\n\n## Final judgment\n\nThe transaction presents a **sound and well-designed exact approach** to a finite local exclusion theorem. Its combinatorial reduction and SAT encoding are persuasive, and two of the six color cases are proved directly. Nevertheless, the central four unsatisfiability certificates are absent from the supplied evidence, so the claimed radius-\\(43\\) exclusion cannot be accepted as proved in this judgment. The work does not alter the known interval for \\(S(6)\\).\n",
+            "record": {
+              "schemaVersion": 1,
+              "judgmentKind": "primary",
+              "problemId": "schur-number-6",
+              "ledgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+              "problemLedgerDigest": "sha256:fb30c38e8a7d14804ef760333167a4f085b51fd121c52af3eb874a7b7dfbedb4",
+              "judgeSpec": {
+                "id": "openrouter-markdown-judgment-v1",
+                "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                  "ledgerPosition": 2
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "s6-ge-536-via-fredricksen-sweet-coloring",
+                  "stance": "supports",
+                  "summary": "The explicit Fredricksen–Sweet coloring of {1,…,536}, its compact symmetric representation, and the exhaustive checker correctly verify all 71,824 admissible Schur triples, including x=y. The subject independently repeats the check and agrees entry-for-entry with the earlier supplied witness, strongly supporting S(6)≥536, though this bound is neither new nor original to the subject.",
+                  "subjectTransactionIds": [
+                    "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                  ],
+                  "evidenceTransactionIds": [
+                    "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                    "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                  ]
+                },
+                {
+                  "claimKey": "fs536-blocker-pair-counts-at-537",
+                  "stance": "supports",
+                  "summary": "The blocker counts (64,43,55,38,32,35) follow from the supplied symmetric construction, sum to the 267 ordinary same-color symmetric pairs, and agree with the class sizes and exceptional pair {179,358}. Disjoint blocker pairs directly force at least 64 changes when C(537)=1 and at least 55 when C(537)=3, proving those two cases lie outside Hamming radius 43 without SAT certificates.",
+                  "subjectTransactionIds": [
+                    "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                  ],
+                  "evidenceTransactionIds": [
+                    "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                    "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                  ]
+                },
+                {
+                  "claimKey": "fs536-distance-decomposition-for-537-extensions",
+                  "stance": "supports",
+                  "summary": "For fixed c=C(537), disjoint blocker pairs force b_c mandatory changes, while every remaining change is exactly either a second changed blocker endpoint or a change outside the blocker pairs. Hence d_H=b_c+#extras, yielding extra-change limits 0, 5, 11, and 8 for colors 2, 4, 5, and 6 respectively. Together with the direct exclusions for colors 1 and 3, this exhausts all labeled cases; the stated consequence under color permutations is also correct.",
+                  "subjectTransactionIds": [
+                    "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                  ],
+                  "evidenceTransactionIds": [
+                    "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                    "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                  ]
+                },
+                {
+                  "claimKey": "sat-encoding-for-fs536-radius-43-exclusion",
+                  "stance": "supports",
+                  "summary": "The generated CNF correctly enforces exactly one of six colors, all Schur constraints for the 72,092 triples through 537 including the x=y binary cases, the conditioned color of 537, the blocker-pair extra-change equivalences, and the appropriate Sinz at-most-k bound using signed literals. The recorded formula dimensions are internally consistent. The RUP-only LRAT checker design is sound: it validates ordered unit-propagation hints, derives clauses only after conflict, and accepts only after deriving the empty clause. No evident encoding or checker flaw invalidates the intended argument.",
+                  "subjectTransactionIds": [
+                    "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                  ],
+                  "evidenceTransactionIds": [
+                    "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                  ]
+                },
+                {
+                  "claimKey": "fs536-radius-43-exclusion-at-537",
+                  "stance": "uncertain",
+                  "summary": "The universal radius-43 exclusion is not established by the supplied evidence. Colors 1 and 3 are proved directly, and the other four cases are correctly reduced to explicit finite CNFs, but the referenced compressed LRAT proofs for colors 2, 4, 5, and 6 are absent. Digests, proof statistics, expected output, regeneration instructions, and a verification request cannot replace replayable proof bytes. Supplying matching LRAT objects or independently regenerating and replaying them would resolve the gap.",
+                  "subjectTransactionIds": [
+                    "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                  ],
+                  "evidenceTransactionIds": [
+                    "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                  ]
+                },
+                {
+                  "claimKey": "implications-of-fs536-radius-exclusion-for-s6",
+                  "stance": "qualifies",
+                  "summary": "Even if all four LRAT proofs are valid, the result is only a local exclusion within Hamming distance 43 of one fixed labeled baseline on the first 536 positions. It neither excludes distant or structurally unrelated colorings through 537 nor supplies a coloring of 537 or above. Therefore it implies neither S(6)=536 nor any improvement to 536≤S(6)≤1836.",
+                  "subjectTransactionIds": [
+                    "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                  ],
+                  "evidenceTransactionIds": [
+                    "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                  ]
+                }
+              ],
+              "reportDigest": "sha256:39db1e37b343fca6fe6ad8348caeaa69aa35b80b0d85293de74df6a0e0ab38f9",
+              "judgmentId": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b"
             }
           }
         ],
@@ -17797,6 +17916,753 @@
             ],
             "reportDigest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
             "revisionSemantics": "neutral-knowledge"
+          },
+          {
+            "id": "84e487224d927148fdcb7a41b8e1a00b27bf221ff0412a294434a2e4d2d46ca3",
+            "ordinal": 2,
+            "ledgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+            "problemLedgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+            "runDigest": "sha256:84e487224d927148fdcb7a41b8e1a00b27bf221ff0412a294434a2e4d2d46ca3",
+            "baseRun": "sha256:55cff577a60f17bfd0b3783f30cbb77451b0cbac02750ff26932bfa9f391a108",
+            "runKind": "knowledge-build",
+            "inputs": {
+              "baseStateRun": "sha256:55cff577a60f17bfd0b3783f30cbb77451b0cbac02750ff26932bfa9f391a108",
+              "conflictIds": [],
+              "laneId": "sha256:d86b7e9d80b73c89558f57ed3f72232ba0514d3eeb1c386985c31f760f2ed288",
+              "problemId": "schur-number-6",
+              "projectionSpecDigest": "sha256:eb2e997ae1f7ee8a619c0c7cd0362f696ab6c70682ffb12a856407a43684abd3",
+              "judgmentIds": [
+                "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b"
+              ],
+              "judgmentSetDigest": "sha256:1f0ec53e0967d38660374a069acbcdb1d0e740977c883cc0e7ea3614cc113a5b",
+              "schemaVersion": 1,
+              "builderSpecDigest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c",
+              "buildToken": "sha256:e9bfaffab82b447a16c7236cafd639efdcdb9b0173b6dbe51abecdaa45b06dbf"
+            },
+            "judgeSpec": {
+              "id": "openrouter-research-program-builder-v2",
+              "digest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c"
+            },
+            "runner": {
+              "implementation": "openrouter-knowledge-builder-v2",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.592575,
+            "selection": {
+              "selectedNodeIds": [
+                "programs/explicit-coloring-certificates",
+                "programs/explicit-coloring-certificates/coloring-1-536",
+                "programs/explicit-coloring-certificates/exact-checker-536"
+              ],
+              "rationale": "The existing program may need new child nodes for the blocker-pair analysis, distance decomposition, SAT/LRAT method, and the still-unestablished radius-43 exclusion. The fixed 536-coloring node may need the newly supported structural blocker facts and local-extension qualifications, while the checker node may need the additional independent verification provenance. Root is unnecessary because the exact-value question and global bounds remain unchanged, and no independent top-level program or global dispute is indicated."
+            },
+            "normalizations": [],
+            "delta": {
+              "operations": [
+                {
+                  "action": "update",
+                  "nodeId": "programs/explicit-coloring-certificates",
+                  "parentId": "root",
+                  "nodeType": "program",
+                  "title": "Explicit coloring certificates, exact verification, and certificate-relative extension analysis",
+                  "summary": "This program organizes explicit finite Schur-coloring certificates, exact verification, and analysis of extensions relative to the fixed Fredricksen–Sweet coloring through 536. It now includes blocker counts at 537, a Hamming-distance decomposition, SAT/LRAT verification machinery, and a qualified radius-43 exclusion claim. The supplied evidence does not certify the universal radius exclusion, a coloring through 537, a new upper bound, or the value of S(6).",
+                  "reportSection": "## Node: programs/explicit-coloring-certificates",
+                  "baseDigest": "sha256:2db2573809494e2fc0dddb2a845e3434d6d9db942a142ee6d6af4fc2304ad36d",
+                  "baseRevisionId": "sha256:16901618e775a1e42951bdcdc57283e99dbf1a33a561ec230f7f7391249cd725",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/explicit-coloring-certificates"
+                },
+                {
+                  "action": "update",
+                  "nodeId": "programs/explicit-coloring-certificates/coloring-1-536",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "nodeType": "result",
+                  "title": "Certified six-coloring of {1,...,536}",
+                  "summary": "A complete six-coloring of {1,...,536} with no monochromatic solution of x+y=z certifies S(6) ≥ 536 with high confidence. The later transaction agrees entry-for-entry with the original certificate and independently repeats its exact baseline check. This corroboration supplies no coloring through 537 or larger interval and does not improve the published lower endpoint.",
+                  "reportSection": "## Node: programs/explicit-coloring-certificates/coloring-1-536",
+                  "baseDigest": "sha256:d81039c44967d7c525364358c3117341ea36a1a4278a097d411b90eae7d07906",
+                  "baseRevisionId": "sha256:a3c5842217ebbe98c82a3f61e1026b6c6fdb20eb8681210c41cc737573f9ffcc",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/explicit-coloring-certificates/coloring-1-536"
+                },
+                {
+                  "action": "update",
+                  "nodeId": "programs/explicit-coloring-certificates/exact-checker-536",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "nodeType": "method",
+                  "title": "Exact exhaustive verification of the fixed 536-integer coloring certificate",
+                  "summary": "The original deterministic checker exactly validates the fixed certificate and exhaustively tests all 71,824 relevant Schur triples through 536. The later verifier uses baseline data agreeing entry-for-entry with the certificate and independently repeats the baseline check. The method remains specialized to the fixed 536-integer, six-color format; missing LRAT payloads affect the separate local radius theorem, not this baseline verification.",
+                  "reportSection": "## Node: programs/explicit-coloring-certificates/exact-checker-536",
+                  "baseDigest": "sha256:67d34dfddc18d375c37e196fa077c4d712ce7e62aeb97074a1b419a7abeb532d",
+                  "baseRevisionId": "sha256:7a8802b3f1ddb3f2abf7cc39f17f3a52aa47748ea9e9b93879a44ca0330deb24",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/explicit-coloring-certificates/exact-checker-536"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/explicit-coloring-certificates/blocker-pairs-at-537",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "nodeType": "lemma",
+                  "title": "Blocker pairs for assigning a color to 537 relative to the fixed baseline",
+                  "summary": "Relative to the fixed Fredricksen–Sweet coloring, the blocker-pair counts for prospective colors 1 through 6 at 537 are (64,43,55,38,32,35). The 268 complementary pairs are disjoint, so each color-c blocker forces at least one changed baseline position. Colors 1 and 3 therefore require at least 64 and 55 changes respectively and are directly outside Hamming radius 43. The lemma does not exclude the other colors or more distant colorings.",
+                  "reportSection": "## Node: programs/explicit-coloring-certificates/blocker-pairs-at-537",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/explicit-coloring-certificates/blocker-pairs-at-537"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "nodeType": "lemma",
+                  "title": "Hamming-distance decomposition for extensions through 537",
+                  "summary": "For a prospective extension assigning color c to 537, the distance from the fixed baseline on the first 536 positions equals the blocker count b_c plus the number of extra changes. At radius 43, the remaining conditioned colors 2, 4, 5, and 6 permit at most 0, 5, 11, and 8 extra changes respectively. This is an exact supported reduction, not a proof that those four cases are unsatisfiable.",
+                  "reportSection": "## Node: programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/explicit-coloring-certificates/sat-lrat-radius-43-method",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "nodeType": "method",
+                  "title": "SAT encoding and RUP/LRAT checking method for the radius-43 cases",
+                  "summary": "The exact CNF encoding and RUP-only LRAT checker are logically appropriate for the four remaining conditioned radius-43 cases. The formulas enforce exactly one color, all Schur constraints through 537, the selected color of 537, and the corresponding extra-change bounds 0, 5, 11, and 8. The checker architecture is sound, but the four decisive LRAT payloads are unavailable, so the formulas' unsatisfiability is not certified by the supplied artifacts.",
+                  "reportSection": "## Node: programs/explicit-coloring-certificates/sat-lrat-radius-43-method",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/explicit-coloring-certificates/sat-lrat-radius-43-method"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/explicit-coloring-certificates/radius-43-exclusion-at-537",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "nodeType": "claim",
+                  "title": "Radius-43 exclusion around the fixed Fredricksen–Sweet baseline",
+                  "summary": "The proposed claim is that every valid six-coloring through 537 differs from the fixed labeled Fredricksen–Sweet baseline in at least 44 of the first 536 positions. Colors 1 and 3 are proved outside radius 43, while the other four cases have supported exact reductions and checking machinery but lack their referenced LRAT proofs. The universal claim is therefore not established and would not, even if certified, determine S(6) or improve its known bounds.",
+                  "reportSection": "## Node: programs/explicit-coloring-certificates/radius-43-exclusion-at-537",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/explicit-coloring-certificates/radius-43-exclusion-at-537"
+                }
+              ]
+            },
+            "state": {
+              "schemaVersion": 3,
+              "problemId": "schur-number-6",
+              "rootId": "root",
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "root",
+                  "title": "Research state for the sixth Schur number",
+                  "summary": "The exact value of S(6) remains unresolved, with the current interval 536 ≤ S(6) ≤ 1836. A complete explicit six-coloring and exact checker support S(6) ≥ 536 with high confidence, but the supplied evidence provides no coloring through 537, no upper-bound improvement, and no exact determination. Explicit coloring certificates and exact verification are organized under a dedicated research program.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
+                    "section": "## Node: root"
+                  },
+                  "contentMarkdown": "## Node: root\n\n**Title:** Research state for the sixth Schur number  \n**Type:** Root  \n**Status:** Active\n\n### Current knowledge\n\nThe central unresolved question is to determine the exact value of the sixth Schur number \\(S(6)\\), where \\(S(6)\\) is the largest \\(N\\) for which \\(\\{1,\\ldots,N\\}\\) admits a six-coloring without a monochromatic solution of \\(x+y=z\\), including solutions with \\(x=y\\).\n\nAccording to primary judgment `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`, the current interval remains\n\n\\[\n536\\le S(6)\\le 1836.\n\\]\n\nThe judgment supports the lower endpoint \\(S(6)\\ge 536\\) with high confidence through a complete explicit six-coloring and an exact exhaustive checker. It does not treat that certificate as a frontier improvement because the lower endpoint \\(536\\) was already published.\n\nThe same judgment finds that the routed evidence:\n\n- does not provide a coloring of \\(\\{1,\\ldots,537\\}\\);\n- does not establish \\(S(6)\\ge 537\\);\n- does not supply an impossibility proof or replayable unsatisfiability certificate at any threshold;\n- does not lower the upper endpoint \\(1836\\); and\n- does not determine the exact value of \\(S(6)\\).\n\nThus both the exact-value question and the gap between the published endpoints remain open on the supplied evidence.\n\n### Program organization\n\nOne durable research program is established under the root:\n\n- `programs/explicit-coloring-certificates` — explicit finite colorings, canonical witness representations, and exact deterministic verification.\n\nThe globally relevant exact-value question and current bounds remain at root rather than being assigned to that program.\n\n### Conflict state\n\nNo conflict or reconciliation records were supplied. There is therefore no active dispute node arising from this build.\n\n### Provenance\n\n- **Primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Subject and evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Relevant judgment claim keys:**\n  - `six-colorability-of-the-interval-1-through-536`\n  - `improved-bound-or-exact-value-for-the-sixth-schur-number`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:14cd2cdab8acc1905288955cc8171278f3e1a6603856a054b4722836b4bbc731",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:02f75f6a7a358eeccbc9502acfdf0ad5bcc355cfd465919ad48f8f3672896a8a"
+                },
+                "programs/explicit-coloring-certificates": {
+                  "id": "programs/explicit-coloring-certificates",
+                  "parentId": "root",
+                  "type": "program",
+                  "title": "Explicit coloring certificates, exact verification, and certificate-relative extension analysis",
+                  "summary": "This program organizes explicit finite Schur-coloring certificates, exact verification, and analysis of extensions relative to the fixed Fredricksen–Sweet coloring through 536. It now includes blocker counts at 537, a Hamming-distance decomposition, SAT/LRAT verification machinery, and a qualified radius-43 exclusion claim. The supplied evidence does not certify the universal radius exclusion, a coloring through 537, a new upper bound, or the value of S(6).",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+                    "section": "## Node: programs/explicit-coloring-certificates"
+                  },
+                  "contentMarkdown": "## Node: programs/explicit-coloring-certificates\n\n**Title:** Explicit coloring certificates, exact verification, and certificate-relative extension analysis  \n**Type:** Program  \n**Parent:** `root`  \n**Status:** Active\n\n### Program scope\n\nThis program organizes durable work based on explicit finite Schur colorings and exact machinery for checking or analyzing them. Its present scope includes:\n\n- complete finite coloring witnesses;\n- compact and expanded witness encodings;\n- exact checks of coverage, color ranges, and agreement between representations;\n- exhaustive verification of the Schur condition;\n- combinatorial analysis of attempts to extend a fixed certified coloring;\n- exact SAT encodings of finite local-extension questions;\n- replayable proof-checking architectures; and\n- explicit qualification of claims whose decisive proof objects are unavailable.\n\nThe local-extension work remains in this program because it is defined relative to the fixed Fredricksen–Sweet coloring \\(B\\) of \\(\\{1,\\ldots,536\\}\\). It does not constitute an independent general upper-bound program.\n\n### Current program knowledge\n\nThe program contains the following durable concepts:\n\n1. `programs/explicit-coloring-certificates/coloring-1-536` records the strongly supported six-coloring of \\(\\{1,\\ldots,536\\}\\), its two agreeing representations, and its certification of \\(S(6)\\ge536\\).\n2. `programs/explicit-coloring-certificates/exact-checker-536` records the exact exhaustive verification method for that fixed certificate and the additional verifier that independently repeats its baseline check.\n3. `programs/explicit-coloring-certificates/blocker-pairs-at-537` records the blocker-pair counts for assigning a color to \\(537\\), including direct radius-\\(43\\) exclusions for colors \\(1\\) and \\(3\\).\n4. `programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537` records the exact decomposition of distance from the baseline into mandatory blocker changes and extra changes.\n5. `programs/explicit-coloring-certificates/sat-lrat-radius-43-method` records the supported SAT encoding and RUP-only LRAT checking architecture for the remaining conditioned cases.\n6. `programs/explicit-coloring-certificates/radius-43-exclusion-at-537` records the proposed universal local exclusion and its present evidentiary status.\n\nThe supplied judgments support the baseline certificate, blocker analysis, distance decomposition, and certificate architecture. They do not establish the universal radius-\\(43\\) exclusion because four referenced LRAT proof payloads are absent.\n\n### Frontier limitations\n\nThe program currently contains:\n\n- no certified coloring of \\(\\{1,\\ldots,537\\}\\) or any larger interval;\n- no proof excluding all six-colorings of \\(\\{1,\\ldots,537\\}\\);\n- no improvement to the upper endpoint \\(1836\\); and\n- no determination of \\(S(6)\\).\n\nEven a completed radius-\\(43\\) exclusion would be local to one fixed labeled baseline and would not change these global conclusions.\n\n### Attribution\n\nThe judgments carry forward attribution of the underlying \\(536\\)-coloring to Harold Fredricksen and Melvin M. Sweet. Neither assessed transaction claims originality for that coloring or for \\(S(6)\\ge536\\).\n\nThe later judgment attributes the local radius decomposition, exact CNF construction, independent RUP/LRAT checker, and reproduction design to the newer work. Its metadata attributes intended proof generation to CaDiCaL and workflow implementation to an OpenAI Codex research agent acting at Robert Raynor’s request. The judgment makes no priority determination for the uncertified local theorem.\n\n### Provenance\n\n- **Earlier primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Later primary judgment:** `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n- **Baseline transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Local-extension transaction:** `26a77f38a16f35641a8d8f0efe72132953af5d2e`, ledger position 2\n- **Conflict records:** none supplied\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "ledgerPosition": 1
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:58ab962293516339c93b0d16d1b824a85f725c49ac7161c6691bd595dc6c58f5",
+                    "revisionNumber": 2
+                  },
+                  "digest": "sha256:3934354097b469bb50fab232450e6426a47361cb7d5ebba711112126b97e3384"
+                },
+                "programs/explicit-coloring-certificates/coloring-1-536": {
+                  "id": "programs/explicit-coloring-certificates/coloring-1-536",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "type": "result",
+                  "title": "Certified six-coloring of {1,...,536}",
+                  "summary": "A complete six-coloring of {1,...,536} with no monochromatic solution of x+y=z certifies S(6) ≥ 536 with high confidence. The later transaction agrees entry-for-entry with the original certificate and independently repeats its exact baseline check. This corroboration supplies no coloring through 537 or larger interval and does not improve the published lower endpoint.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+                    "section": "## Node: programs/explicit-coloring-certificates/coloring-1-536"
+                  },
+                  "contentMarkdown": "## Node: programs/explicit-coloring-certificates/coloring-1-536\n\n**Title:** Certified six-coloring of \\(\\{1,\\ldots,536\\}\\)  \n**Type:** Result  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Supported with high confidence\n\n### Current knowledge\n\nPrimary judgments\n\n- `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`, and\n- `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n\nsupport the proposition\n\n\\[\n\\{1,\\ldots,536\\}\\text{ admits a six-coloring with no monochromatic }x+y=z.\n\\]\n\nThe judgments accordingly support\n\n\\[\nS(6)\\ge536.\n\\]\n\nThis certifies the published lower endpoint but does not improve it.\n\n### Witness and representations\n\nThe certificate assigns exactly one color in \\(\\{1,\\ldots,6\\}\\) to every integer from \\(1\\) through \\(536\\). The earlier judgment reports two agreeing representations:\n\n- a compact representation based on the involution\n  \\[\n  r\\longmapsto537-r;\n  \\]\n- a canonical expanded CSV containing one row for each integer \\(1,\\ldots,536\\).\n\nThe ordinary compact representatives are the smaller elements of complementary pairs, with both endpoints assigned the same color. The pair\n\n\\[\n\\{179,358\\}\n\\]\n\nis exceptional, with assignments\n\n\\[\n179\\mapsto4,\\qquad 358\\mapsto1.\n\\]\n\nThe reported class sizes are\n\n\\[\n129,\\ 86,\\ 110,\\ 77,\\ 64,\\ 70,\n\\]\n\nwhich sum to \\(536\\) and agree with the compact paired representation and exceptional assignments.\n\nThe symmetry is a representation device, not a substitute for checking all Schur triples. The asymmetric exceptional pair is not identified by either judgment as a mathematical defect.\n\n### Exact certification and corroboration\n\nThe original checker exhaustively tests every pair satisfying\n\n\\[\n1\\le x\\le y,\\qquad x+y\\le536,\n\\]\n\nincluding \\(x=y\\). The total number of tested triples is\n\n\\[\n71{,}824.\n\\]\n\nThe later judgment reports that the newer transaction duplicates the baseline data entry-for-entry and independently repeats the baseline sum-free check before its local SAT work. This supplies corroborating exact verification of the same fixed coloring rather than a distinct coloring or stronger lower bound.\n\n### Structural role at \\(537\\)\n\nThe symmetric structure of this certificate supports a blocker-pair analysis for attempts to assign a color to \\(537\\). Those structural conclusions are recorded separately in:\n\n- `programs/explicit-coloring-certificates/blocker-pairs-at-537`; and\n- `programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537`.\n\nThey concern proximity to this fixed labeled baseline and do not imply that the baseline cannot be extended after sufficiently many changes.\n\n### Evidentiary qualifications\n\nThe complete baseline witness and checker source are supplied and independently replayable. The earlier judgment nevertheless notes that its transaction contains expected output rather than an execution transcript, hosted acceptance artifact, or signed attestation for the exact submitted bytes.\n\nThe later judgment provides an additional verifier that repeats the baseline check and agrees with the earlier witness. It does not supply the missing LRAT files needed for the separate radius-\\(43\\) theorem, but that omission does not undermine the baseline coloring certificate.\n\nNo construction history is required for the finite lower-bound proof. Neither judgment supports a coloring through \\(537\\) or any larger interval.\n\n### Attribution and provenance\n\nThe documentation assessed by both judgments attributes the underlying coloring to Harold Fredricksen and Melvin M. Sweet. The transactions claim no originality for the coloring or lower bound. The earlier transaction contributes transcription, deterministic expansion, an exact checker, and reproducibility documentation; the later one supplies an agreeing copy and an additional exact baseline check.\n\n- **Earlier primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Later primary judgment:** `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n- **Baseline transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`\n- **Corroborating transaction:** `26a77f38a16f35641a8d8f0efe72132953af5d2e`\n- **Relevant claim keys:**\n  - `six-colorability-of-the-interval-1-through-536`\n  - `s6-ge-536-via-fredricksen-sweet-coloring`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:cb447b4a2e012b573b1dd6dbaec415c6478232387d69cd7777496fc30bf92482",
+                    "revisionNumber": 2
+                  },
+                  "digest": "sha256:0deaec6afee298032581148b1258a3192ab9cee5a71f82264e147fb0db4bd026"
+                },
+                "programs/explicit-coloring-certificates/exact-checker-536": {
+                  "id": "programs/explicit-coloring-certificates/exact-checker-536",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "type": "method",
+                  "title": "Exact exhaustive verification of the fixed 536-integer coloring certificate",
+                  "summary": "The original deterministic checker exactly validates the fixed certificate and exhaustively tests all 71,824 relevant Schur triples through 536. The later verifier uses baseline data agreeing entry-for-entry with the certificate and independently repeats the baseline check. The method remains specialized to the fixed 536-integer, six-color format; missing LRAT payloads affect the separate local radius theorem, not this baseline verification.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+                    "section": "## Node: programs/explicit-coloring-certificates/exact-checker-536"
+                  },
+                  "contentMarkdown": "## Node: programs/explicit-coloring-certificates/exact-checker-536\n\n**Title:** Exact exhaustive verification of the fixed \\(536\\)-integer coloring certificate  \n**Type:** Method  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Supported for the fixed certificate format\n\n### Current knowledge\n\nPrimary judgment `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4` finds the original deterministic Python checker logically correct for the supplied six-coloring of \\(\\{1,\\ldots,536\\}\\).\n\nPrimary judgment `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b` reports that the later verifier independently repeats the baseline check and uses baseline data agreeing entry-for-entry with the earlier certificate.\n\n### Original fixed-format validation\n\nThe original checker uses exact Python integer arithmetic and no floating-point calculations, randomness, heuristic solver behavior, timeout dependence, or external package dependency.\n\nFor the compact representation, it:\n\n- requires the expected JSON fields;\n- rejects booleans and other non-integer values where integers are required;\n- fixes \\(n=536\\), six colors, and symmetry modulus \\(537\\);\n- requires six paired-class lists;\n- checks\n  \\[\n  1\\le r<537-r\\le536\n  \\]\n  for each ordinary representative;\n- rejects overlapping or repeated assignments;\n- range-checks exceptional assignments and colors; and\n- verifies exact coverage of \\(\\{1,\\ldots,536\\}\\).\n\nFor the expanded CSV, it:\n\n- requires the exact header `integer,color`;\n- requires exactly \\(536\\) data rows;\n- requires row \\(i\\) to encode integer \\(i\\);\n- restricts colors to \\(\\{1,\\ldots,6\\}\\); and\n- enforces ASCII and canonical decimal syntax.\n\nThe checker requires exact agreement between the expanded compact witness and the CSV assignment.\n\n### Exhaustive Schur verification\n\nThe checker enumerates every pair satisfying\n\n\\[\n1\\le x\\le y,\\qquad x+y\\le536,\n\\]\n\nand tests whether \\(x\\), \\(y\\), and \\(x+y\\) all have the same color. The enumeration includes \\(x=y\\) and covers all relevant Schur triples once up to interchange of the summands.\n\nBoth judgments accept the count\n\n\\[\n71{,}824\n\\]\n\nfor these comparisons.\n\n### Scope\n\nThe original method is specialized to:\n\n- \\(n=536\\);\n- six colors; and\n- symmetry modulus \\(537\\).\n\nIt is an exact checker for this fixed certificate format, not a general verifier for arbitrary Schur-number instances.\n\nThe expanded CSV is canonical for a labeled coloring only. It fixes row order and syntax but does not identify colorings that differ by a permutation of color labels.\n\nThe later verifier’s baseline routine provides a second exact check of the same mathematical witness. Its additional SAT and LRAT functionality is recorded separately in `programs/explicit-coloring-certificates/sat-lrat-radius-43-method`.\n\n### Replay status\n\nThe original source and expected successful output are available, but the earlier judgment records no separate execution transcript, hosted attestation, or signed acceptance for the exact submitted bytes.\n\nThe later judgment regards the additional baseline verification as independently replayable and coherent. However, the later transaction’s advertised full proof command cannot complete from the supplied artifacts because four unrelated LRAT payloads are absent. That deficiency affects the local radius theorem, not the logic of the baseline checker.\n\n### Provenance\n\n- **Earlier primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Later primary judgment:** `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n- **Baseline transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`\n- **Additional-verifier transaction:** `26a77f38a16f35641a8d8f0efe72132953af5d2e`\n- **Relevant claim keys:**\n  - `exact-exhaustive-verification-method-for-a-fixed-finite-schur-coloring`\n  - `s6-ge-536-via-fredricksen-sweet-coloring`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:cb385ad62c170024a22d562c9e0e433b71c06234f3d23207aba868616cf34542",
+                    "revisionNumber": 2
+                  },
+                  "digest": "sha256:1adba1837eda399f7d20e587d13834c1d11be7a3dd60125d6811e1fb90db0e2d"
+                },
+                "programs/explicit-coloring-certificates/blocker-pairs-at-537": {
+                  "id": "programs/explicit-coloring-certificates/blocker-pairs-at-537",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "type": "lemma",
+                  "title": "Blocker pairs for assigning a color to 537 relative to the fixed baseline",
+                  "summary": "Relative to the fixed Fredricksen–Sweet coloring, the blocker-pair counts for prospective colors 1 through 6 at 537 are (64,43,55,38,32,35). The 268 complementary pairs are disjoint, so each color-c blocker forces at least one changed baseline position. Colors 1 and 3 therefore require at least 64 and 55 changes respectively and are directly outside Hamming radius 43. The lemma does not exclude the other colors or more distant colorings.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+                    "section": "## Node: programs/explicit-coloring-certificates/blocker-pairs-at-537"
+                  },
+                  "contentMarkdown": "## Node: programs/explicit-coloring-certificates/blocker-pairs-at-537\n\n**Title:** Blocker pairs for assigning a color to \\(537\\) relative to the fixed baseline  \n**Type:** Lemma  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Supported\n\n### Current knowledge\n\nPrimary judgment `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b` supports the blocker-pair analysis relative to the fixed Fredricksen–Sweet coloring\n\n\\[\nB:\\{1,\\ldots,536\\}\\to\\{1,\\ldots,6\\}.\n\\]\n\nFor a prospective extension \\(C\\) and fixed color \\(c=C(537)\\), consider the pairs\n\n\\[\n\\{x,537-x\\},\\qquad 1\\le x\\le268.\n\\]\n\nBecause \\(537\\) is odd, these \\(268\\) pairs are pairwise disjoint. A pair is a color-\\(c\\) blocker when both endpoints have baseline color \\(c\\).\n\n### Supported blocker counts\n\nThe judgment supports\n\n\\[\n(b_1,b_2,b_3,b_4,b_5,b_6)\n=\n(64,43,55,38,32,35).\n\\]\n\nTheir sum is\n\n\\[\n64+43+55+38+32+35=267.\n\\]\n\nThis agrees with the \\(267\\) ordinary same-color complementary pairs in the compact baseline representation. The remaining pair,\n\n\\[\n\\{179,358\\},\n\\]\n\nhas different baseline colors \\(4\\) and \\(1\\).\n\nThe blocker counts also agree with the baseline class sizes\n\n\\[\n129,\\ 86,\\ 110,\\ 77,\\ 64,\\ 70:\n\\]\n\n- color \\(1\\) has \\(64\\) ordinary pairs and the exceptional point \\(358\\);\n- color \\(4\\) has \\(38\\) ordinary pairs and the exceptional point \\(179\\);\n- each other class consists of twice its blocker count.\n\n### Mandatory changes\n\nIf \\(C(537)=c\\), every color-\\(c\\) blocker pair must have at least one endpoint changed from its baseline color. Otherwise its two endpoints and \\(537\\) would form a monochromatic solution\n\n\\[\nx+(537-x)=537.\n\\]\n\nSince the blocker pairs are disjoint, they force at least \\(b_c\\) changed positions among the first \\(536\\) integers.\n\nConsequently, the judgment directly supports:\n\n- if \\(C(537)=1\\), at least \\(64\\) old positions change;\n- if \\(C(537)=3\\), at least \\(55\\) old positions change.\n\nThus these two conditioned cases lie outside Hamming radius \\(43\\) of the fixed labeled baseline without relying on SAT or LRAT certificates.\n\n### Scope\n\nThis lemma establishes only mandatory changes relative to one fixed baseline. It does not exclude colors \\(2,4,5,6\\) within radius \\(43\\), does not rule out more distant colorings through \\(537\\), and does not change either bound on \\(S(6)\\).\n\n### Provenance\n\n- **Primary judgment:** `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n- **Baseline evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`\n- **Local-analysis transaction:** `26a77f38a16f35641a8d8f0efe72132953af5d2e`\n- **Claim key:** `fs536-blocker-pair-counts-at-537`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:bc9a86527bedda2534156d46a5d58e32e35ac4fe04634aaa68b457b8622657c1",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:ea86c62cbdbebbf96b461301332c6c9d540e0a2b54d97821c81c75bfe04a0c9d"
+                },
+                "programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537": {
+                  "id": "programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "type": "lemma",
+                  "title": "Hamming-distance decomposition for extensions through 537",
+                  "summary": "For a prospective extension assigning color c to 537, the distance from the fixed baseline on the first 536 positions equals the blocker count b_c plus the number of extra changes. At radius 43, the remaining conditioned colors 2, 4, 5, and 6 permit at most 0, 5, 11, and 8 extra changes respectively. This is an exact supported reduction, not a proof that those four cases are unsatisfiable.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+                    "section": "## Node: programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537"
+                  },
+                  "contentMarkdown": "## Node: programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537\n\n**Title:** Hamming-distance decomposition for extensions through \\(537\\)  \n**Type:** Lemma  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Supported\n\n### Current knowledge\n\nPrimary judgment `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b` supports an exact decomposition of Hamming distance from the fixed baseline \\(B\\).\n\nFix a prospective color \\(c=C(537)\\), and let \\(b_c\\) be the supported number of color-\\(c\\) blocker pairs. Each blocker pair contributes at least one mandatory changed endpoint. Because these pairs are disjoint, the remaining changed positions are exactly:\n\n1. a second changed endpoint in a blocker pair; or\n2. a changed integer outside all blocker pairs.\n\nThe judgment therefore supports\n\n\\[\nd_H\\!\\left(C|_{\\{1,\\ldots,536\\}},B\\right)\n=\nb_c+\\#\\{\\text{extra changes}\\}.\n\\]\n\n### Radius-\\(43\\) case split\n\nFor the four colors not directly excluded by their blocker counts, the identity gives:\n\n| \\(C(537)\\) | \\(b_c\\) | Maximum extra changes if total distance is at most \\(43\\) |\n|---:|---:|---:|\n| \\(2\\) | \\(43\\) | \\(0\\) |\n| \\(4\\) | \\(38\\) | \\(5\\) |\n| \\(5\\) | \\(32\\) | \\(11\\) |\n| \\(6\\) | \\(35\\) | \\(8\\) |\n\nTogether with the direct blocker exclusions for colors \\(1\\) and \\(3\\), these cases exhaust all six possible labeled colors of \\(537\\).\n\nThis is a supported reduction of the radius question to four bounded-extra cases. It does not establish that those four cases are unsatisfiable.\n\n### Color-label permutations\n\nThe judgment also supports the following conditional consequence: if the universal labeled radius conclusion were established without label-symmetry breaking, then every relabeling \\(\\pi\\circ C\\) would already be covered by the quantified labeled colorings. The resulting statement would be\n\n\\[\n\\min_{\\pi\\in S_6}d_H(\\pi\\circ C,B)\\ge44.\n\\]\n\nThis permutation-invariant conclusion remains conditional because the universal radius theorem itself is not established by the supplied evidence.\n\n### Scope\n\nThe decomposition concerns distance from one fixed labeled baseline on the first \\(536\\) positions. It does not imply the nonexistence of a distant or structurally unrelated coloring through \\(537\\), and it does not change the interval for \\(S(6)\\).\n\n### Provenance\n\n- **Primary judgment:** `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n- **Baseline evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`\n- **Local-analysis transaction:** `26a77f38a16f35641a8d8f0efe72132953af5d2e`\n- **Claim key:** `fs536-distance-decomposition-for-537-extensions`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:6fa1a3eb0428d9682bd5b36b332d6387054a532cbad4e4319af0dea8a825e18c",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:437c560dab2bb2f30b5a2ac080a16aa195709e9125d27541888077fe108c5346"
+                },
+                "programs/explicit-coloring-certificates/sat-lrat-radius-43-method": {
+                  "id": "programs/explicit-coloring-certificates/sat-lrat-radius-43-method",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "type": "method",
+                  "title": "SAT encoding and RUP/LRAT checking method for the radius-43 cases",
+                  "summary": "The exact CNF encoding and RUP-only LRAT checker are logically appropriate for the four remaining conditioned radius-43 cases. The formulas enforce exactly one color, all Schur constraints through 537, the selected color of 537, and the corresponding extra-change bounds 0, 5, 11, and 8. The checker architecture is sound, but the four decisive LRAT payloads are unavailable, so the formulas' unsatisfiability is not certified by the supplied artifacts.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+                    "section": "## Node: programs/explicit-coloring-certificates/sat-lrat-radius-43-method"
+                  },
+                  "contentMarkdown": "## Node: programs/explicit-coloring-certificates/sat-lrat-radius-43-method\n\n**Title:** SAT encoding and RUP/LRAT checking method for the radius-\\(43\\) cases  \n**Type:** Method  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Encoding and checker design supported; decisive proof payloads unavailable\n\n### Current knowledge\n\nPrimary judgment `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b` finds the generated CNF and RUP-only LRAT checker logically appropriate for the intended local extension problem.\n\nThis judgment concerns the soundness of the encoding and checker architecture. It does not support the unsatisfiability of the four decisive formulas without their proof objects.\n\n### Exactly-one color constraints\n\nFor each \\(i\\in\\{1,\\ldots,537\\}\\), the generator adds:\n\n- one six-literal at-least-one clause; and\n- all \\(\\binom62=15\\) pairwise at-most-one clauses.\n\nEvery satisfying assignment therefore selects exactly one labeled color for each integer.\n\n### Schur constraints\n\nFor each\n\n\\[\n1\\le x\\le y,\\qquad x+y\\le537,\n\\]\n\nand each color, the CNF forbids \\(x\\), \\(y\\), and \\(x+y\\) from all receiving that color.\n\nWhen \\(x=y\\), duplicate literals are removed, producing the required binary constraint between \\(x\\) and \\(2x\\).\n\nThe judgment accepts the stated total\n\n\\[\n72{,}092\n\\]\n\nof Schur triples through \\(537\\).\n\n### Conditioning and extra-change variables\n\nA unit clause fixes \\(C(537)=c\\) in each conditioned case.\n\nFor a blocker pair \\((x,y)\\), let \\(B_x\\) and \\(B_y\\) denote the literals asserting the respective baseline colors. The clauses\n\n\\[\n\\neg e\\lor\\neg B_x,\\qquad\n\\neg e\\lor\\neg B_y,\\qquad\nB_x\\lor B_y\\lor e\n\\]\n\nencode\n\n\\[\ne\\iff(\\neg B_x\\land\\neg B_y).\n\\]\n\nThus \\(e\\) records that both endpoints changed, which is exactly one extra change beyond the mandatory blocker change.\n\nFor integers outside the blocker pairs, the signed literal\n\n\\[\n\\neg X(i,B(i))\n\\]\n\nrecords a change from the baseline because the exactly-one constraints are present.\n\n### Cardinality encoding\n\nThe generator uses a Sinz sequential counter to enforce the relevant at-most-\\(k\\) bounds:\n\n- \\(k=0\\) for color \\(2\\);\n- \\(k=5\\) for color \\(4\\);\n- \\(k=11\\) for color \\(5\\);\n- \\(k=8\\) for color \\(6\\).\n\nThe judgment finds substitution of signed literals into the counter valid and finds the recorded formula dimensions internally consistent with the generator.\n\n### RUP-only LRAT checker\n\nFor each derived clause, the supplied checker:\n\n1. assumes the negation of that clause;\n2. follows its ordered hint clauses;\n3. requires the hints to be unit under the accumulated assignment until a conflict is reached;\n4. adds the checked clause only after the conflict; and\n5. accepts unsatisfiability only after deriving the empty clause.\n\nThe judgment finds that such RUP steps preserve logical consequence and that deletion handling does not affect soundness. It also notes digest binding for formulas and proof payloads and a limit on decompressed proof size.\n\n### Certificate availability\n\nThe architecture refers to four proof files:\n\n- `case-color-2-extra-0.lrat.gz`;\n- `case-color-4-extra-5.lrat.gz`;\n- `case-color-5-extra-11.lrat.gz`;\n- `case-color-6-extra-8.lrat.gz`.\n\nNone is included in the supplied evidence.\n\nThe available SHA-256 digests, claimed proof sizes, expected output, and CaDiCaL regeneration instructions can authenticate or help reproduce proofs, but the judgment expressly finds that they do not substitute for replayable proof bytes. The advertised full verification command therefore cannot complete from the supplied artifacts.\n\n### Attribution and provenance\n\nThe later judgment attributes the CNF construction, independent RUP/LRAT checker, and reproduction design to the newer work. Its metadata attributes intended proof generation to CaDiCaL and workflow implementation to an OpenAI Codex research agent acting at Robert Raynor’s request. No priority determination is made.\n\n- **Primary judgment:** `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n- **Evidence transaction:** `26a77f38a16f35641a8d8f0efe72132953af5d2e`\n- **Claim key:** `sat-encoding-for-fs536-radius-43-exclusion`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "relation": "supports"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:c5e8f4381184a2fe3b0512dfe008f546356e45785e2cd7b6c76bae033a62cf0d",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:b2c7802641b9d3ba77a0e1448f4971895facfdf85aa49042ed12a9c00807d3f3"
+                },
+                "programs/explicit-coloring-certificates/radius-43-exclusion-at-537": {
+                  "id": "programs/explicit-coloring-certificates/radius-43-exclusion-at-537",
+                  "parentId": "programs/explicit-coloring-certificates",
+                  "type": "claim",
+                  "title": "Radius-43 exclusion around the fixed Fredricksen–Sweet baseline",
+                  "summary": "The proposed claim is that every valid six-coloring through 537 differs from the fixed labeled Fredricksen–Sweet baseline in at least 44 of the first 536 positions. Colors 1 and 3 are proved outside radius 43, while the other four cases have supported exact reductions and checking machinery but lack their referenced LRAT proofs. The universal claim is therefore not established and would not, even if certified, determine S(6) or improve its known bounds.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+                    "section": "## Node: programs/explicit-coloring-certificates/radius-43-exclusion-at-537"
+                  },
+                  "contentMarkdown": "## Node: programs/explicit-coloring-certificates/radius-43-exclusion-at-537\n\n**Title:** Radius-\\(43\\) exclusion around the fixed Fredricksen–Sweet baseline  \n**Type:** Claim  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Not established by the supplied evidence\n\n### Claim under assessment\n\nFor the fixed labeled Fredricksen–Sweet coloring\n\n\\[\nB:\\{1,\\ldots,536\\}\\to\\{1,\\ldots,6\\},\n\\]\n\nthe proposed universal statement is that every valid six-coloring \\(C\\) of \\(\\{1,\\ldots,537\\}\\) satisfies\n\n\\[\n\\left|\\{i\\le536:C(i)\\ne B(i)\\}\\right|\\ge44.\n\\]\n\nPrimary judgment `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b` classifies this universal claim as not established by the supplied evidence.\n\n### Established components\n\nThe judgment supports the following parts of the proposed argument:\n\n- the baseline \\(B\\) is a valid six-coloring of \\(\\{1,\\ldots,536\\}\\);\n- the blocker counts are\n  \\[\n  (64,43,55,38,32,35);\n  \\]\n- the cases \\(C(537)=1\\) and \\(C(537)=3\\) are directly outside radius \\(43\\);\n- Hamming distance decomposes into mandatory blocker changes plus extra changes;\n- the remaining cases reduce to the extra-change bounds \\(0,5,11,8\\) for colors \\(2,4,5,6\\);\n- the four corresponding CNFs encode the intended finite problems; and\n- the supplied RUP-only LRAT checker would soundly verify suitable proof objects.\n\n### Missing decisive evidence\n\nThe four LRAT payloads for colors \\(2,4,5,6\\) are absent. Consequently, their unsatisfiability has not been replayed or otherwise proved by the supplied evidence.\n\nThe judgment expressly finds that none of the following replaces the missing derivations:\n\n- digests of unavailable proofs;\n- claimed proof-line statistics;\n- expected-output text;\n- assertions that CaDiCaL generated proofs;\n- a hosted-verification request; or\n- regeneration instructions without a recorded regeneration result.\n\nMatching LRAT objects, or an independently regenerated and replayed set of proofs, would address the identified evidentiary gap.\n\n### Current qualified conclusion\n\nOnly the conditioned colors \\(1\\) and \\(3\\) are proved to lie outside radius \\(43\\). The other four cases have a supported exact reduction and checking plan but remain uncertified.\n\nThere is no opposed primary judgment and no supplied conflict record. The node therefore records missing evidence rather than a dispute between incompatible mathematical assessments.\n\n### Consequences for \\(S(6)\\)\n\nEven if the universal radius-\\(43\\) statement is eventually certified, it would exclude only colorings sufficiently close to one fixed labeled baseline on the first \\(536\\) positions. It would not exclude:\n\n- colorings at distance at least \\(44\\);\n- structurally unrelated colorings through \\(537\\); or\n- all colorings at a threshold relevant to a new upper bound.\n\nIt supplies no coloring through \\(537\\). Therefore, according to the judgment, it implies neither\n\n\\[\nS(6)=536\n\\]\n\nnor any improvement to\n\n\\[\n536\\le S(6)\\le1836.\n\\]\n\n### Attribution and provenance\n\nThe judgment treats the local decomposition, CNF construction, checker, and reproduction design as meaningful new work but makes no priority conclusion for the uncertified theorem.\n\n- **Primary judgment:** `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n- **Evidence transaction:** `26a77f38a16f35641a8d8f0efe72132953af5d2e`\n- **Relevant claim keys:**\n  - `fs536-radius-43-exclusion-at-537`\n  - `implications-of-fs536-radius-exclusion-for-s6`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "digest": null,
+                      "relation": "context"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "currentRevision": {
+                    "revisionId": "sha256:500ba1d7984c227f685009385521a00f84c2d1b47359a284ee0a43031927baa7",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:063b6ddec8b5ecb3f68f7d4c1292d59816f2fc7df5b831c0c5deed3cb5e9a9b7"
+                }
+              },
+              "stateDigest": "sha256:f8b0af7143f776192f539141e9d5f412245af945b4ff9f46c78edddb3028dcf4"
+            },
+            "revisionIds": [
+              "sha256:14cd2cdab8acc1905288955cc8171278f3e1a6603856a054b4722836b4bbc731",
+              "sha256:16901618e775a1e42951bdcdc57283e99dbf1a33a561ec230f7f7391249cd725",
+              "sha256:a3c5842217ebbe98c82a3f61e1026b6c6fdb20eb8681210c41cc737573f9ffcc",
+              "sha256:7a8802b3f1ddb3f2abf7cc39f17f3a52aa47748ea9e9b93879a44ca0330deb24",
+              "sha256:58ab962293516339c93b0d16d1b824a85f725c49ac7161c6691bd595dc6c58f5",
+              "sha256:cb447b4a2e012b573b1dd6dbaec415c6478232387d69cd7777496fc30bf92482",
+              "sha256:cb385ad62c170024a22d562c9e0e433b71c06234f3d23207aba868616cf34542",
+              "sha256:bc9a86527bedda2534156d46a5d58e32e35ac4fe04634aaa68b457b8622657c1",
+              "sha256:6fa1a3eb0428d9682bd5b36b332d6387054a532cbad4e4319af0dea8a825e18c",
+              "sha256:c5e8f4381184a2fe3b0512dfe008f546356e45785e2cd7b6c76bae033a62cf0d",
+              "sha256:500ba1d7984c227f685009385521a00f84c2d1b47359a284ee0a43031927baa7"
+            ],
+            "addedRevisionIds": [
+              "sha256:58ab962293516339c93b0d16d1b824a85f725c49ac7161c6691bd595dc6c58f5",
+              "sha256:cb447b4a2e012b573b1dd6dbaec415c6478232387d69cd7777496fc30bf92482",
+              "sha256:cb385ad62c170024a22d562c9e0e433b71c06234f3d23207aba868616cf34542",
+              "sha256:bc9a86527bedda2534156d46a5d58e32e35ac4fe04634aaa68b457b8622657c1",
+              "sha256:6fa1a3eb0428d9682bd5b36b332d6387054a532cbad4e4319af0dea8a825e18c",
+              "sha256:c5e8f4381184a2fe3b0512dfe008f546356e45785e2cd7b6c76bae033a62cf0d",
+              "sha256:500ba1d7984c227f685009385521a00f84c2d1b47359a284ee0a43031927baa7"
+            ],
+            "changedNodeIds": [
+              "programs/explicit-coloring-certificates",
+              "programs/explicit-coloring-certificates/coloring-1-536",
+              "programs/explicit-coloring-certificates/exact-checker-536",
+              "programs/explicit-coloring-certificates/blocker-pairs-at-537",
+              "programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537",
+              "programs/explicit-coloring-certificates/sat-lrat-radius-43-method",
+              "programs/explicit-coloring-certificates/radius-43-exclusion-at-537"
+            ],
+            "reportDigest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+            "revisionSemantics": "neutral-knowledge"
           }
         ],
         "revisions": [
@@ -18007,6 +18873,423 @@
             ],
             "summary": "The deterministic Python checker is logically correct for the supplied fixed certificate format. It validates the compact witness and canonical expanded CSV, enforces exact agreement between them, and exhaustively tests all 71,824 relevant pairs with 1 ≤ x ≤ y and x+y ≤ 536, including x=y. It uses exact integer arithmetic and no heuristic or external-package behavior. Its scope is specialized to n=536, six colors, and symmetry modulus 537; source and expected output are supplied, but no independent replay transcript or hosted attestation is recorded.",
             "title": "Exact exhaustive verifier for the fixed 536-integer coloring certificate"
+          },
+          {
+            "action": "update",
+            "baseRevisionId": "sha256:16901618e775a1e42951bdcdc57283e99dbf1a33a561ec230f7f7391249cd725",
+            "changeRationale": "This existing program is broadened to include certificate-relative extension analysis supported by the later primary judgment. Four new durable child concepts are added rather than creating a new root program because all of them depend on the fixed \\(536\\)-integer certificate. The unchanged global interval and exact-value question remain at root and are not duplicated here.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+              "section": "## Change: programs/explicit-coloring-certificates"
+            },
+            "contentDigest": "sha256:b8f11d7bf0b7fbed2b9b18038165253401ecd166e35862ba55f5282ecf68af01",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "content",
+              "provenance"
+            ],
+            "nodeId": "programs/explicit-coloring-certificates",
+            "nodeType": "program",
+            "parentId": "root",
+            "recordedAtLedgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+              "section": "## Node: programs/explicit-coloring-certificates"
+            },
+            "revisionId": "sha256:58ab962293516339c93b0d16d1b824a85f725c49ac7161c6691bd595dc6c58f5",
+            "revisionNumber": 2,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              },
+              {
+                "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "This program organizes explicit finite Schur-coloring certificates, exact verification, and analysis of extensions relative to the fixed Fredricksen–Sweet coloring through 536. It now includes blocker counts at 537, a Hamming-distance decomposition, SAT/LRAT verification machinery, and a qualified radius-43 exclusion claim. The supplied evidence does not certify the universal radius exclusion, a coloring through 537, a new upper bound, or the value of S(6).",
+            "title": "Explicit coloring certificates, exact verification, and certificate-relative extension analysis"
+          },
+          {
+            "action": "update",
+            "baseRevisionId": "sha256:a3c5842217ebbe98c82a3f61e1026b6c6fdb20eb8681210c41cc737573f9ffcc",
+            "changeRationale": "This existing result is updated with the later judgment’s entry-for-entry agreement and independently repeated baseline check. Its mathematical scope and confidence remain limited to the already published lower bound \\(S(6)\\ge536\\); the new local-extension work supplies no larger coloring.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+              "section": "## Change: programs/explicit-coloring-certificates/coloring-1-536"
+            },
+            "contentDigest": "sha256:59cd7eb583a7324a510953e3eaf849aaec08494e70a726c1754f7f5576fbcc73",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "content",
+              "provenance"
+            ],
+            "nodeId": "programs/explicit-coloring-certificates/coloring-1-536",
+            "nodeType": "result",
+            "parentId": "programs/explicit-coloring-certificates",
+            "recordedAtLedgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+              "section": "## Node: programs/explicit-coloring-certificates/coloring-1-536"
+            },
+            "revisionId": "sha256:cb447b4a2e012b573b1dd6dbaec415c6478232387d69cd7777496fc30bf92482",
+            "revisionNumber": 2,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "A complete six-coloring of {1,...,536} with no monochromatic solution of x+y=z certifies S(6) ≥ 536 with high confidence. The later transaction agrees entry-for-entry with the original certificate and independently repeats its exact baseline check. This corroboration supplies no coloring through 537 or larger interval and does not improve the published lower endpoint.",
+            "title": "Certified six-coloring of {1,...,536}"
+          },
+          {
+            "action": "update",
+            "baseRevisionId": "sha256:7a8802b3f1ddb3f2abf7cc39f17f3a52aa47748ea9e9b93879a44ca0330deb24",
+            "changeRationale": "This existing method node now records the later judgment’s corroborating verifier and entry-for-entry baseline agreement. The distinct SAT/LRAT machinery is not merged into this node because it addresses a separate local unsatisfiability problem and has materially different evidentiary qualifications.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+              "section": "## Change: programs/explicit-coloring-certificates/exact-checker-536"
+            },
+            "contentDigest": "sha256:fd354784c5c38534a44e56ea0d30bf3df4d752e16fc2baf60796c158cc738355",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "content",
+              "provenance"
+            ],
+            "nodeId": "programs/explicit-coloring-certificates/exact-checker-536",
+            "nodeType": "method",
+            "parentId": "programs/explicit-coloring-certificates",
+            "recordedAtLedgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+              "section": "## Node: programs/explicit-coloring-certificates/exact-checker-536"
+            },
+            "revisionId": "sha256:cb385ad62c170024a22d562c9e0e433b71c06234f3d23207aba868616cf34542",
+            "revisionNumber": 2,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "The original deterministic checker exactly validates the fixed certificate and exhaustively tests all 71,824 relevant Schur triples through 536. The later verifier uses baseline data agreeing entry-for-entry with the certificate and independently repeats the baseline check. The method remains specialized to the fixed 536-integer, six-color format; missing LRAT payloads affect the separate local radius theorem, not this baseline verification.",
+            "title": "Exact exhaustive verification of the fixed 536-integer coloring certificate"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This proposed node isolates a supported combinatorial lemma that remains meaningful independently of the transaction that presented it. It is placed under the existing certificate program because its definitions and counts depend on the fixed \\(536\\)-integer baseline.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+              "section": "## Change: programs/explicit-coloring-certificates/blocker-pairs-at-537"
+            },
+            "contentDigest": "sha256:91c5d2de1120726a3aeaf4b7d9c428d9bb9ff4de87a3651a67b433a9881dd8d2",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/explicit-coloring-certificates/blocker-pairs-at-537",
+            "nodeType": "lemma",
+            "parentId": "programs/explicit-coloring-certificates",
+            "recordedAtLedgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+              "section": "## Node: programs/explicit-coloring-certificates/blocker-pairs-at-537"
+            },
+            "revisionId": "sha256:bc9a86527bedda2534156d46a5d58e32e35ac4fe04634aaa68b457b8622657c1",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "Relative to the fixed Fredricksen–Sweet coloring, the blocker-pair counts for prospective colors 1 through 6 at 537 are (64,43,55,38,32,35). The 268 complementary pairs are disjoint, so each color-c blocker forces at least one changed baseline position. Colors 1 and 3 therefore require at least 64 and 55 changes respectively and are directly outside Hamming radius 43. The lemma does not exclude the other colors or more distant colorings.",
+            "title": "Blocker pairs for assigning a color to 537 relative to the fixed baseline"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This proposed node records a distinct supported structural identity and its exhaustive labeled case split. It is kept separate from the blocker-count lemma because it classifies all additional changes and supplies the stable bridge from combinatorial blockers to bounded-cardinality SAT instances.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+              "section": "## Change: programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537"
+            },
+            "contentDigest": "sha256:6830ac66720eb8f3c6847e96bb927f24f789666f6c645f616bc9fbadd4ae6070",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537",
+            "nodeType": "lemma",
+            "parentId": "programs/explicit-coloring-certificates",
+            "recordedAtLedgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+              "section": "## Node: programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537"
+            },
+            "revisionId": "sha256:6fa1a3eb0428d9682bd5b36b332d6387054a532cbad4e4319af0dea8a825e18c",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "For a prospective extension assigning color c to 537, the distance from the fixed baseline on the first 536 positions equals the blocker count b_c plus the number of extra changes. At radius 43, the remaining conditioned colors 2, 4, 5, and 6 permit at most 0, 5, 11, and 8 extra changes respectively. This is an exact supported reduction, not a proof that those four cases are unsatisfiable.",
+            "title": "Hamming-distance decomposition for extensions through 537"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This proposed method node separates the supported encoding and checker architecture from the unsupported unsatisfiability conclusion. That separation preserves the judgment’s positive assessment of the method without treating unavailable LRAT digests or metadata as proofs.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+              "section": "## Change: programs/explicit-coloring-certificates/sat-lrat-radius-43-method"
+            },
+            "contentDigest": "sha256:722efd6bdf74c9ba84ae84e33fbfbd883cfa42aff2f7323fd9dc60ba74fd8ec9",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/explicit-coloring-certificates/sat-lrat-radius-43-method",
+            "nodeType": "method",
+            "parentId": "programs/explicit-coloring-certificates",
+            "recordedAtLedgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+              "section": "## Node: programs/explicit-coloring-certificates/sat-lrat-radius-43-method"
+            },
+            "revisionId": "sha256:c5e8f4381184a2fe3b0512dfe008f546356e45785e2cd7b6c76bae033a62cf0d",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "The exact CNF encoding and RUP-only LRAT checker are logically appropriate for the four remaining conditioned radius-43 cases. The formulas enforce exactly one color, all Schur constraints through 537, the selected color of 537, and the corresponding extra-change bounds 0, 5, 11, and 8. The checker architecture is sound, but the four decisive LRAT payloads are unavailable, so the formulas' unsatisfiability is not certified by the supplied artifacts.",
+            "title": "SAT encoding and RUP/LRAT checking method for the radius-43 cases"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This proposed claim node preserves the later judgment’s exact evidentiary stance: two conditioned cases are proved, four are reduced correctly but lack their referenced certificates, and the universal theorem remains unestablished. It is not represented as a conflict because no opposing judgment or conflict record was supplied.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+              "section": "## Change: programs/explicit-coloring-certificates/radius-43-exclusion-at-537"
+            },
+            "contentDigest": "sha256:9bb81faaf60e2de00d57387436795e4abcaa2fd67e46111406a9b1a40c077e98",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                "kind": "transaction",
+                "relation": "context"
+              },
+              {
+                "digest": null,
+                "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+                "kind": "judgment",
+                "relation": "qualifies"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "nodeId": "programs/explicit-coloring-certificates/radius-43-exclusion-at-537",
+            "nodeType": "claim",
+            "parentId": "programs/explicit-coloring-certificates",
+            "recordedAtLedgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+              "section": "## Node: programs/explicit-coloring-certificates/radius-43-exclusion-at-537"
+            },
+            "revisionId": "sha256:500ba1d7984c227f685009385521a00f84c2d1b47359a284ee0a43031927baa7",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "The proposed claim is that every valid six-coloring through 537 differs from the fixed labeled Fredricksen–Sweet baseline in at least 44 of the first 536 positions. Colors 1 and 3 are proved outside radius 43, while the other four cases have supported exact reductions and checking machinery but lack their referenced LRAT proofs. The universal claim is therefore not established and would not, even if certified, determine S(6) or improve its known bounds.",
+            "title": "Radius-43 exclusion around the fixed Fredricksen–Sweet baseline"
           }
         ],
         "reports": [
@@ -18014,9 +19297,14 @@
             "runId": "55cff577a60f17bfd0b3783f30cbb77451b0cbac02750ff26932bfa9f391a108",
             "digest": "sha256:b6ee79851060457ed7ec9ec7ce92cc1258e13f9371afe62783e19ad5129f9792",
             "markdown": "# Knowledge-Formation Report\n\n## Node: root\n\n**Title:** Research state for the sixth Schur number  \n**Type:** Root  \n**Status:** Active\n\n### Current knowledge\n\nThe central unresolved question is to determine the exact value of the sixth Schur number \\(S(6)\\), where \\(S(6)\\) is the largest \\(N\\) for which \\(\\{1,\\ldots,N\\}\\) admits a six-coloring without a monochromatic solution of \\(x+y=z\\), including solutions with \\(x=y\\).\n\nAccording to primary judgment `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`, the current interval remains\n\n\\[\n536\\le S(6)\\le 1836.\n\\]\n\nThe judgment supports the lower endpoint \\(S(6)\\ge 536\\) with high confidence through a complete explicit six-coloring and an exact exhaustive checker. It does not treat that certificate as a frontier improvement because the lower endpoint \\(536\\) was already published.\n\nThe same judgment finds that the routed evidence:\n\n- does not provide a coloring of \\(\\{1,\\ldots,537\\}\\);\n- does not establish \\(S(6)\\ge 537\\);\n- does not supply an impossibility proof or replayable unsatisfiability certificate at any threshold;\n- does not lower the upper endpoint \\(1836\\); and\n- does not determine the exact value of \\(S(6)\\).\n\nThus both the exact-value question and the gap between the published endpoints remain open on the supplied evidence.\n\n### Program organization\n\nOne durable research program is established under the root:\n\n- `programs/explicit-coloring-certificates` — explicit finite colorings, canonical witness representations, and exact deterministic verification.\n\nThe globally relevant exact-value question and current bounds remain at root rather than being assigned to that program.\n\n### Conflict state\n\nNo conflict or reconciliation records were supplied. There is therefore no active dispute node arising from this build.\n\n### Provenance\n\n- **Primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Subject and evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Relevant judgment claim keys:**\n  - `six-colorability-of-the-interval-1-through-536`\n  - `improved-bound-or-exact-value-for-the-sixth-schur-number`\n\n## Change: root\n\nThe root previously recorded no research programs or mathematical state. The routed primary judgment now supports recording the unresolved exact-value question, the unchanged interval \\(536\\le S(6)\\le1836\\), and an explicit-coloring certificate program. The bounds remain at root because they are global frontier facts rather than program-specific results.\n\n## Node: programs/explicit-coloring-certificates\n\n**Title:** Explicit coloring certificates and exact verification  \n**Type:** Program  \n**Parent:** `root`  \n**Status:** Active\n\n### Program scope\n\nThis program organizes durable work on explicit finite Schur colorings and the exact verification machinery needed to certify them. Its scope includes:\n\n- complete finite coloring witnesses;\n- compact and expanded witness encodings;\n- exact checks of coverage, color ranges, and representation agreement;\n- exhaustive checks for monochromatic solutions of \\(x+y=z\\); and\n- replayability and evidentiary qualifications for certificate-based lower bounds.\n\nThe program does not currently contain a coloring beyond \\(536\\), an upper-bound proof, or a determination of \\(S(6)\\).\n\n### Current program knowledge\n\nThe program currently contains two related but distinct durable concepts:\n\n1. `programs/explicit-coloring-certificates/coloring-1-536` records the certified existence of a six-coloring of \\(\\{1,\\ldots,536\\}\\).\n2. `programs/explicit-coloring-certificates/exact-checker-536` records the specialized deterministic method used to verify that fixed witness and its two encodings.\n\nThe primary judgment regards the witness as a finite-certificate proof of the already published lower bound, not as a heuristic search result. It regards the checker as mathematically sound for the supplied fixed format, while expressly qualifying its scope and the absence of an independently recorded replay.\n\n### Attribution\n\nThe judgment carries forward the supplied documentation’s attribution of the underlying coloring to Harold Fredricksen and Melvin M. Sweet. It notes that detailed page-level historical provenance was not independently checked because the cited primary PDF was not included in the artifacts.\n\nThe transaction claims no originality for the coloring or for \\(S(6)\\ge536\\). The certificate-engineering work associated with the transaction consists of the transcription, deterministic expansion, exact checker, and reproducibility documentation.\n\n### Provenance\n\n- **Primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Subject and evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Relevant judgment claim keys:**\n  - `six-colorability-of-the-interval-1-through-536`\n  - `exact-exhaustive-verification-method-for-a-fixed-finite-schur-coloring`\n  - `improved-bound-or-exact-value-for-the-sixth-schur-number`\n\n## Change: programs/explicit-coloring-certificates\n\nThis program is introduced because the judgment recognizes a durable certificate-based agenda comprising an explicit coloring, canonical encodings, and exact replay machinery. It remains meaningful independently of the originating transaction and keeps certificate-specific knowledge separate from the global bounds and exact-value question.\n\n## Node: programs/explicit-coloring-certificates/coloring-1-536\n\n**Title:** Certified six-coloring of \\(\\{1,\\ldots,536\\}\\)  \n**Type:** Result  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Supported with high confidence\n\n### Current knowledge\n\nPrimary judgment `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4` supports the proposition\n\n\\[\n\\{1,\\ldots,536\\}\\text{ admits a six-coloring with no monochromatic }x+y=z.\n\\]\n\nThe judgment reports that the transaction contains a complete assignment of one color in \\(\\{1,\\ldots,6\\}\\) to every integer from \\(1\\) through \\(536\\), together with an exhaustive exact checker. On that basis, it treats the witness as a finite-certificate proof that\n\n\\[\nS(6)\\ge536.\n\\]\n\nThis certifies the published lower endpoint but does not improve it.\n\n### Witness representations\n\nThe judgment reports two agreeing representations:\n\n- a compact JSON representation based on the involution\n  \\[\n  r\\longmapsto 537-r;\n  \\]\n- a canonical expanded CSV representation containing one row for each integer \\(1,\\ldots,536\\).\n\nOrdinary compact representatives are the smaller members of their complementary pairs, and both members of each such pair receive the same color. The complementary integers \\(179\\) and \\(358\\) are handled exceptionally, with assignments\n\n\\[\n179\\mapsto4,\\qquad 358\\mapsto1.\n\\]\n\nThe judgment reports class sizes\n\n\\[\n129,\\ 86,\\ 110,\\ 77,\\ 64,\\ 70,\n\\]\n\nwhich sum to \\(536\\) and are consistent with the paired representation and the two exceptional assignments.\n\nThe judgment expressly treats the symmetry as a representation device, not as a substitute for checking the Schur condition. The asymmetric exceptional assignments are therefore not identified as a mathematical defect.\n\n### Evidentiary qualification\n\nThe complete witness and checker source are present and independently replayable. However, the transaction contains only the expected successful output, not an execution transcript, hosted acceptance artifact, or signed attestation for those exact bytes.\n\nConsequently, the judgment supports the coloring with high confidence but does not claim that it independently performed all \\(71{,}824\\) comparisons. It characterizes this as a missing replay record rather than a missing mathematical lemma.\n\nThe certificate also does not explain how the coloring was constructed. The judgment states that such an explanation is unnecessary for the finite lower-bound proof.\n\n### Frontier limitation\n\nThis node supports no claim beyond \\(N=536\\). In particular, the judgment finds that the evidence supplies no coloring of \\(537\\) or any larger interval and therefore does not support \\(S(6)\\ge537\\).\n\n### Attribution and provenance\n\nAccording to the documentation assessed by the judgment:\n\n- the underlying mathematical construction is attributed to Harold Fredricksen and Melvin M. Sweet;\n- the transaction claims no priority for the coloring or the lower bound;\n- the transaction’s contribution is the transcription, deterministic expansion, exact checker, and reproducibility documentation; and\n- detailed historical priority was not independently verified from the absent primary PDF.\n\n**Evidence trail:**\n\n- **Primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Subject and evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Claim key:** `six-colorability-of-the-interval-1-through-536`\n\n## Change: programs/explicit-coloring-certificates/coloring-1-536\n\nThis result node is introduced because the primary judgment supports a distinct durable mathematical proposition: the existence of a valid six-coloring through \\(536\\). The node incorporates the judgment’s confidence, witness structure, replay qualification, frontier limitation, and carried-forward attribution without treating the transaction itself as a knowledge concept.\n\n## Node: programs/explicit-coloring-certificates/exact-checker-536\n\n**Title:** Exact exhaustive verifier for the fixed \\(536\\)-integer coloring certificate  \n**Type:** Method  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Supported for the supplied fixed certificate format\n\n### Current knowledge\n\nPrimary judgment `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4` finds the supplied Python checker logically correct for the fixed certificate of a six-coloring of \\(\\{1,\\ldots,536\\}\\).\n\nThe checker uses deterministic exact Python integer arithmetic. The judgment reports no floating-point operations, randomness, heuristic solver behavior, timeout dependence, or external package dependency.\n\n### Validation performed\n\nAccording to the judgment, the checker soundly performs the following stages.\n\n#### Compact witness validation\n\nIt:\n\n- requires the expected JSON fields;\n- rejects booleans and other non-integer values where integers are required;\n- fixes \\(n=536\\), six colors, and symmetry modulus \\(537\\);\n- requires six paired-class lists;\n- checks that each representative \\(r\\) satisfies\n  \\[\n  1\\le r<537-r\\le536;\n  \\]\n- rejects repeated or overlapping assignments;\n- range-checks special assignments and their colors; and\n- verifies exact coverage of \\(\\{1,\\ldots,536\\}\\).\n\n#### Expanded CSV validation\n\nIt:\n\n- requires the exact header `integer,color`;\n- requires exactly \\(536\\) data rows;\n- requires row \\(i\\) to encode integer \\(i\\);\n- restricts colors to \\(\\{1,\\ldots,6\\}\\); and\n- enforces ASCII and canonical decimal syntax, rejecting alternate forms such as signs, leading zeroes, or whitespace variants.\n\n#### Agreement of representations\n\nThe expanded compact witness must agree exactly with the CSV coloring. The judgment states that this prevents the compact transcription and canonical expansion from silently certifying different assignments.\n\n#### Exhaustive Schur check\n\nThe checker enumerates every pair satisfying\n\n\\[\n1\\le x\\le y,\\qquad x+y\\le536,\n\\]\n\nand tests whether the colors of \\(x\\), \\(y\\), and \\(x+y\\) are all equal. The case \\(x=y\\) is included.\n\nThe judgment reports that this enumeration covers all relevant Schur triples exactly once up to commutation of the summands and that the advertised total is\n\n\\[\n71{,}824\n\\]\n\ntested triples.\n\n### Scope qualifications\n\nThe method is specialized rather than general. It hardcodes:\n\n- \\(n=536\\);\n- six colors; and\n- symmetry modulus \\(537\\).\n\nIt should therefore be described as an exact checker for this fixed certificate format, not as a general verifier for arbitrary Schur-number instances.\n\nThe expanded representation is canonical only in the syntactic sense for a **labeled** coloring: it fixes row order and decimal representation. It does not identify colorings that differ only by a permutation of the six color labels.\n\nThe judgment also reports that the direct replay command depends only on the supplied script and Python’s standard library. The absence of a separately referenced external verifier specification does not prevent direct independent replay.\n\n### Replay status\n\nThe transaction includes the complete source and expected successful output, but no actual execution transcript or hosted attestation. The judgment therefore supports the checker through code and logic audit while declining to claim that an independent replay of all comparisons was recorded.\n\n### Provenance\n\n- **Primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Subject and evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Claim key:** `exact-exhaustive-verification-method-for-a-fixed-finite-schur-coloring`\n\n## Change: programs/explicit-coloring-certificates/exact-checker-536\n\nThis method node is introduced because the judgment separately supports the correctness of a durable verification method, while qualifying its fixed-instance scope and replay status. Separating it from the coloring result preserves the distinction between the mathematical witness and the machinery used to validate its encoding and Schur condition.\n"
+          },
+          {
+            "runId": "84e487224d927148fdcb7a41b8e1a00b27bf221ff0412a294434a2e4d2d46ca3",
+            "digest": "sha256:2a48dc86b64bda52d5832dbaf363a09f16a377876ac6da30661c70d392eebb33",
+            "markdown": "# Knowledge-Formation Report\n\n## Formation scope\n\nThis build preserves the existing program boundary `programs/explicit-coloring-certificates` and extends it with durable local-extension concepts tied specifically to the certified Fredricksen–Sweet coloring. No independent top-level program is warranted because the blocker analysis, distance decomposition, SAT encoding, and proposed radius exclusion all depend on that fixed certificate.\n\nThe root-level exact-value question and global interval remain unchanged:\n\n\\[\n536\\le S(6)\\le1836.\n\\]\n\nNo conflict records or reconciliation outcomes were supplied. The uncertified radius-\\(43\\) claim is therefore represented as a claim with missing evidence, not as an active dispute between opposed judgments.\n\n## Node: programs/explicit-coloring-certificates\n\n**Title:** Explicit coloring certificates, exact verification, and certificate-relative extension analysis  \n**Type:** Program  \n**Parent:** `root`  \n**Status:** Active\n\n### Program scope\n\nThis program organizes durable work based on explicit finite Schur colorings and exact machinery for checking or analyzing them. Its present scope includes:\n\n- complete finite coloring witnesses;\n- compact and expanded witness encodings;\n- exact checks of coverage, color ranges, and agreement between representations;\n- exhaustive verification of the Schur condition;\n- combinatorial analysis of attempts to extend a fixed certified coloring;\n- exact SAT encodings of finite local-extension questions;\n- replayable proof-checking architectures; and\n- explicit qualification of claims whose decisive proof objects are unavailable.\n\nThe local-extension work remains in this program because it is defined relative to the fixed Fredricksen–Sweet coloring \\(B\\) of \\(\\{1,\\ldots,536\\}\\). It does not constitute an independent general upper-bound program.\n\n### Current program knowledge\n\nThe program contains the following durable concepts:\n\n1. `programs/explicit-coloring-certificates/coloring-1-536` records the strongly supported six-coloring of \\(\\{1,\\ldots,536\\}\\), its two agreeing representations, and its certification of \\(S(6)\\ge536\\).\n2. `programs/explicit-coloring-certificates/exact-checker-536` records the exact exhaustive verification method for that fixed certificate and the additional verifier that independently repeats its baseline check.\n3. `programs/explicit-coloring-certificates/blocker-pairs-at-537` records the blocker-pair counts for assigning a color to \\(537\\), including direct radius-\\(43\\) exclusions for colors \\(1\\) and \\(3\\).\n4. `programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537` records the exact decomposition of distance from the baseline into mandatory blocker changes and extra changes.\n5. `programs/explicit-coloring-certificates/sat-lrat-radius-43-method` records the supported SAT encoding and RUP-only LRAT checking architecture for the remaining conditioned cases.\n6. `programs/explicit-coloring-certificates/radius-43-exclusion-at-537` records the proposed universal local exclusion and its present evidentiary status.\n\nThe supplied judgments support the baseline certificate, blocker analysis, distance decomposition, and certificate architecture. They do not establish the universal radius-\\(43\\) exclusion because four referenced LRAT proof payloads are absent.\n\n### Frontier limitations\n\nThe program currently contains:\n\n- no certified coloring of \\(\\{1,\\ldots,537\\}\\) or any larger interval;\n- no proof excluding all six-colorings of \\(\\{1,\\ldots,537\\}\\);\n- no improvement to the upper endpoint \\(1836\\); and\n- no determination of \\(S(6)\\).\n\nEven a completed radius-\\(43\\) exclusion would be local to one fixed labeled baseline and would not change these global conclusions.\n\n### Attribution\n\nThe judgments carry forward attribution of the underlying \\(536\\)-coloring to Harold Fredricksen and Melvin M. Sweet. Neither assessed transaction claims originality for that coloring or for \\(S(6)\\ge536\\).\n\nThe later judgment attributes the local radius decomposition, exact CNF construction, independent RUP/LRAT checker, and reproduction design to the newer work. Its metadata attributes intended proof generation to CaDiCaL and workflow implementation to an OpenAI Codex research agent acting at Robert Raynor’s request. The judgment makes no priority determination for the uncertified local theorem.\n\n### Provenance\n\n- **Earlier primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Later primary judgment:** `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n- **Baseline transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`, ledger position 1\n- **Local-extension transaction:** `26a77f38a16f35641a8d8f0efe72132953af5d2e`, ledger position 2\n- **Conflict records:** none supplied\n\n## Change: programs/explicit-coloring-certificates\n\nThis existing program is broadened to include certificate-relative extension analysis supported by the later primary judgment. Four new durable child concepts are added rather than creating a new root program because all of them depend on the fixed \\(536\\)-integer certificate. The unchanged global interval and exact-value question remain at root and are not duplicated here.\n\n## Node: programs/explicit-coloring-certificates/coloring-1-536\n\n**Title:** Certified six-coloring of \\(\\{1,\\ldots,536\\}\\)  \n**Type:** Result  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Supported with high confidence\n\n### Current knowledge\n\nPrimary judgments\n\n- `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`, and\n- `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n\nsupport the proposition\n\n\\[\n\\{1,\\ldots,536\\}\\text{ admits a six-coloring with no monochromatic }x+y=z.\n\\]\n\nThe judgments accordingly support\n\n\\[\nS(6)\\ge536.\n\\]\n\nThis certifies the published lower endpoint but does not improve it.\n\n### Witness and representations\n\nThe certificate assigns exactly one color in \\(\\{1,\\ldots,6\\}\\) to every integer from \\(1\\) through \\(536\\). The earlier judgment reports two agreeing representations:\n\n- a compact representation based on the involution\n  \\[\n  r\\longmapsto537-r;\n  \\]\n- a canonical expanded CSV containing one row for each integer \\(1,\\ldots,536\\).\n\nThe ordinary compact representatives are the smaller elements of complementary pairs, with both endpoints assigned the same color. The pair\n\n\\[\n\\{179,358\\}\n\\]\n\nis exceptional, with assignments\n\n\\[\n179\\mapsto4,\\qquad 358\\mapsto1.\n\\]\n\nThe reported class sizes are\n\n\\[\n129,\\ 86,\\ 110,\\ 77,\\ 64,\\ 70,\n\\]\n\nwhich sum to \\(536\\) and agree with the compact paired representation and exceptional assignments.\n\nThe symmetry is a representation device, not a substitute for checking all Schur triples. The asymmetric exceptional pair is not identified by either judgment as a mathematical defect.\n\n### Exact certification and corroboration\n\nThe original checker exhaustively tests every pair satisfying\n\n\\[\n1\\le x\\le y,\\qquad x+y\\le536,\n\\]\n\nincluding \\(x=y\\). The total number of tested triples is\n\n\\[\n71{,}824.\n\\]\n\nThe later judgment reports that the newer transaction duplicates the baseline data entry-for-entry and independently repeats the baseline sum-free check before its local SAT work. This supplies corroborating exact verification of the same fixed coloring rather than a distinct coloring or stronger lower bound.\n\n### Structural role at \\(537\\)\n\nThe symmetric structure of this certificate supports a blocker-pair analysis for attempts to assign a color to \\(537\\). Those structural conclusions are recorded separately in:\n\n- `programs/explicit-coloring-certificates/blocker-pairs-at-537`; and\n- `programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537`.\n\nThey concern proximity to this fixed labeled baseline and do not imply that the baseline cannot be extended after sufficiently many changes.\n\n### Evidentiary qualifications\n\nThe complete baseline witness and checker source are supplied and independently replayable. The earlier judgment nevertheless notes that its transaction contains expected output rather than an execution transcript, hosted acceptance artifact, or signed attestation for the exact submitted bytes.\n\nThe later judgment provides an additional verifier that repeats the baseline check and agrees with the earlier witness. It does not supply the missing LRAT files needed for the separate radius-\\(43\\) theorem, but that omission does not undermine the baseline coloring certificate.\n\nNo construction history is required for the finite lower-bound proof. Neither judgment supports a coloring through \\(537\\) or any larger interval.\n\n### Attribution and provenance\n\nThe documentation assessed by both judgments attributes the underlying coloring to Harold Fredricksen and Melvin M. Sweet. The transactions claim no originality for the coloring or lower bound. The earlier transaction contributes transcription, deterministic expansion, an exact checker, and reproducibility documentation; the later one supplies an agreeing copy and an additional exact baseline check.\n\n- **Earlier primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Later primary judgment:** `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n- **Baseline transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`\n- **Corroborating transaction:** `26a77f38a16f35641a8d8f0efe72132953af5d2e`\n- **Relevant claim keys:**\n  - `six-colorability-of-the-interval-1-through-536`\n  - `s6-ge-536-via-fredricksen-sweet-coloring`\n\n## Change: programs/explicit-coloring-certificates/coloring-1-536\n\nThis existing result is updated with the later judgment’s entry-for-entry agreement and independently repeated baseline check. Its mathematical scope and confidence remain limited to the already published lower bound \\(S(6)\\ge536\\); the new local-extension work supplies no larger coloring.\n\n## Node: programs/explicit-coloring-certificates/exact-checker-536\n\n**Title:** Exact exhaustive verification of the fixed \\(536\\)-integer coloring certificate  \n**Type:** Method  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Supported for the fixed certificate format\n\n### Current knowledge\n\nPrimary judgment `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4` finds the original deterministic Python checker logically correct for the supplied six-coloring of \\(\\{1,\\ldots,536\\}\\).\n\nPrimary judgment `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b` reports that the later verifier independently repeats the baseline check and uses baseline data agreeing entry-for-entry with the earlier certificate.\n\n### Original fixed-format validation\n\nThe original checker uses exact Python integer arithmetic and no floating-point calculations, randomness, heuristic solver behavior, timeout dependence, or external package dependency.\n\nFor the compact representation, it:\n\n- requires the expected JSON fields;\n- rejects booleans and other non-integer values where integers are required;\n- fixes \\(n=536\\), six colors, and symmetry modulus \\(537\\);\n- requires six paired-class lists;\n- checks\n  \\[\n  1\\le r<537-r\\le536\n  \\]\n  for each ordinary representative;\n- rejects overlapping or repeated assignments;\n- range-checks exceptional assignments and colors; and\n- verifies exact coverage of \\(\\{1,\\ldots,536\\}\\).\n\nFor the expanded CSV, it:\n\n- requires the exact header `integer,color`;\n- requires exactly \\(536\\) data rows;\n- requires row \\(i\\) to encode integer \\(i\\);\n- restricts colors to \\(\\{1,\\ldots,6\\}\\); and\n- enforces ASCII and canonical decimal syntax.\n\nThe checker requires exact agreement between the expanded compact witness and the CSV assignment.\n\n### Exhaustive Schur verification\n\nThe checker enumerates every pair satisfying\n\n\\[\n1\\le x\\le y,\\qquad x+y\\le536,\n\\]\n\nand tests whether \\(x\\), \\(y\\), and \\(x+y\\) all have the same color. The enumeration includes \\(x=y\\) and covers all relevant Schur triples once up to interchange of the summands.\n\nBoth judgments accept the count\n\n\\[\n71{,}824\n\\]\n\nfor these comparisons.\n\n### Scope\n\nThe original method is specialized to:\n\n- \\(n=536\\);\n- six colors; and\n- symmetry modulus \\(537\\).\n\nIt is an exact checker for this fixed certificate format, not a general verifier for arbitrary Schur-number instances.\n\nThe expanded CSV is canonical for a labeled coloring only. It fixes row order and syntax but does not identify colorings that differ by a permutation of color labels.\n\nThe later verifier’s baseline routine provides a second exact check of the same mathematical witness. Its additional SAT and LRAT functionality is recorded separately in `programs/explicit-coloring-certificates/sat-lrat-radius-43-method`.\n\n### Replay status\n\nThe original source and expected successful output are available, but the earlier judgment records no separate execution transcript, hosted attestation, or signed acceptance for the exact submitted bytes.\n\nThe later judgment regards the additional baseline verification as independently replayable and coherent. However, the later transaction’s advertised full proof command cannot complete from the supplied artifacts because four unrelated LRAT payloads are absent. That deficiency affects the local radius theorem, not the logic of the baseline checker.\n\n### Provenance\n\n- **Earlier primary judgment:** `sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4`\n- **Later primary judgment:** `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n- **Baseline transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`\n- **Additional-verifier transaction:** `26a77f38a16f35641a8d8f0efe72132953af5d2e`\n- **Relevant claim keys:**\n  - `exact-exhaustive-verification-method-for-a-fixed-finite-schur-coloring`\n  - `s6-ge-536-via-fredricksen-sweet-coloring`\n\n## Change: programs/explicit-coloring-certificates/exact-checker-536\n\nThis existing method node now records the later judgment’s corroborating verifier and entry-for-entry baseline agreement. The distinct SAT/LRAT machinery is not merged into this node because it addresses a separate local unsatisfiability problem and has materially different evidentiary qualifications.\n\n## Node: programs/explicit-coloring-certificates/blocker-pairs-at-537\n\n**Title:** Blocker pairs for assigning a color to \\(537\\) relative to the fixed baseline  \n**Type:** Lemma  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Supported\n\n### Current knowledge\n\nPrimary judgment `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b` supports the blocker-pair analysis relative to the fixed Fredricksen–Sweet coloring\n\n\\[\nB:\\{1,\\ldots,536\\}\\to\\{1,\\ldots,6\\}.\n\\]\n\nFor a prospective extension \\(C\\) and fixed color \\(c=C(537)\\), consider the pairs\n\n\\[\n\\{x,537-x\\},\\qquad 1\\le x\\le268.\n\\]\n\nBecause \\(537\\) is odd, these \\(268\\) pairs are pairwise disjoint. A pair is a color-\\(c\\) blocker when both endpoints have baseline color \\(c\\).\n\n### Supported blocker counts\n\nThe judgment supports\n\n\\[\n(b_1,b_2,b_3,b_4,b_5,b_6)\n=\n(64,43,55,38,32,35).\n\\]\n\nTheir sum is\n\n\\[\n64+43+55+38+32+35=267.\n\\]\n\nThis agrees with the \\(267\\) ordinary same-color complementary pairs in the compact baseline representation. The remaining pair,\n\n\\[\n\\{179,358\\},\n\\]\n\nhas different baseline colors \\(4\\) and \\(1\\).\n\nThe blocker counts also agree with the baseline class sizes\n\n\\[\n129,\\ 86,\\ 110,\\ 77,\\ 64,\\ 70:\n\\]\n\n- color \\(1\\) has \\(64\\) ordinary pairs and the exceptional point \\(358\\);\n- color \\(4\\) has \\(38\\) ordinary pairs and the exceptional point \\(179\\);\n- each other class consists of twice its blocker count.\n\n### Mandatory changes\n\nIf \\(C(537)=c\\), every color-\\(c\\) blocker pair must have at least one endpoint changed from its baseline color. Otherwise its two endpoints and \\(537\\) would form a monochromatic solution\n\n\\[\nx+(537-x)=537.\n\\]\n\nSince the blocker pairs are disjoint, they force at least \\(b_c\\) changed positions among the first \\(536\\) integers.\n\nConsequently, the judgment directly supports:\n\n- if \\(C(537)=1\\), at least \\(64\\) old positions change;\n- if \\(C(537)=3\\), at least \\(55\\) old positions change.\n\nThus these two conditioned cases lie outside Hamming radius \\(43\\) of the fixed labeled baseline without relying on SAT or LRAT certificates.\n\n### Scope\n\nThis lemma establishes only mandatory changes relative to one fixed baseline. It does not exclude colors \\(2,4,5,6\\) within radius \\(43\\), does not rule out more distant colorings through \\(537\\), and does not change either bound on \\(S(6)\\).\n\n### Provenance\n\n- **Primary judgment:** `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n- **Baseline evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`\n- **Local-analysis transaction:** `26a77f38a16f35641a8d8f0efe72132953af5d2e`\n- **Claim key:** `fs536-blocker-pair-counts-at-537`\n\n## Change: programs/explicit-coloring-certificates/blocker-pairs-at-537\n\nThis proposed node isolates a supported combinatorial lemma that remains meaningful independently of the transaction that presented it. It is placed under the existing certificate program because its definitions and counts depend on the fixed \\(536\\)-integer baseline.\n\n## Node: programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537\n\n**Title:** Hamming-distance decomposition for extensions through \\(537\\)  \n**Type:** Lemma  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Supported\n\n### Current knowledge\n\nPrimary judgment `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b` supports an exact decomposition of Hamming distance from the fixed baseline \\(B\\).\n\nFix a prospective color \\(c=C(537)\\), and let \\(b_c\\) be the supported number of color-\\(c\\) blocker pairs. Each blocker pair contributes at least one mandatory changed endpoint. Because these pairs are disjoint, the remaining changed positions are exactly:\n\n1. a second changed endpoint in a blocker pair; or\n2. a changed integer outside all blocker pairs.\n\nThe judgment therefore supports\n\n\\[\nd_H\\!\\left(C|_{\\{1,\\ldots,536\\}},B\\right)\n=\nb_c+\\#\\{\\text{extra changes}\\}.\n\\]\n\n### Radius-\\(43\\) case split\n\nFor the four colors not directly excluded by their blocker counts, the identity gives:\n\n| \\(C(537)\\) | \\(b_c\\) | Maximum extra changes if total distance is at most \\(43\\) |\n|---:|---:|---:|\n| \\(2\\) | \\(43\\) | \\(0\\) |\n| \\(4\\) | \\(38\\) | \\(5\\) |\n| \\(5\\) | \\(32\\) | \\(11\\) |\n| \\(6\\) | \\(35\\) | \\(8\\) |\n\nTogether with the direct blocker exclusions for colors \\(1\\) and \\(3\\), these cases exhaust all six possible labeled colors of \\(537\\).\n\nThis is a supported reduction of the radius question to four bounded-extra cases. It does not establish that those four cases are unsatisfiable.\n\n### Color-label permutations\n\nThe judgment also supports the following conditional consequence: if the universal labeled radius conclusion were established without label-symmetry breaking, then every relabeling \\(\\pi\\circ C\\) would already be covered by the quantified labeled colorings. The resulting statement would be\n\n\\[\n\\min_{\\pi\\in S_6}d_H(\\pi\\circ C,B)\\ge44.\n\\]\n\nThis permutation-invariant conclusion remains conditional because the universal radius theorem itself is not established by the supplied evidence.\n\n### Scope\n\nThe decomposition concerns distance from one fixed labeled baseline on the first \\(536\\) positions. It does not imply the nonexistence of a distant or structurally unrelated coloring through \\(537\\), and it does not change the interval for \\(S(6)\\).\n\n### Provenance\n\n- **Primary judgment:** `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n- **Baseline evidence transaction:** `b28dd977ae39eb77989de8e60b63f7eacd8982d2`\n- **Local-analysis transaction:** `26a77f38a16f35641a8d8f0efe72132953af5d2e`\n- **Claim key:** `fs536-distance-decomposition-for-537-extensions`\n\n## Change: programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537\n\nThis proposed node records a distinct supported structural identity and its exhaustive labeled case split. It is kept separate from the blocker-count lemma because it classifies all additional changes and supplies the stable bridge from combinatorial blockers to bounded-cardinality SAT instances.\n\n## Node: programs/explicit-coloring-certificates/sat-lrat-radius-43-method\n\n**Title:** SAT encoding and RUP/LRAT checking method for the radius-\\(43\\) cases  \n**Type:** Method  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Encoding and checker design supported; decisive proof payloads unavailable\n\n### Current knowledge\n\nPrimary judgment `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b` finds the generated CNF and RUP-only LRAT checker logically appropriate for the intended local extension problem.\n\nThis judgment concerns the soundness of the encoding and checker architecture. It does not support the unsatisfiability of the four decisive formulas without their proof objects.\n\n### Exactly-one color constraints\n\nFor each \\(i\\in\\{1,\\ldots,537\\}\\), the generator adds:\n\n- one six-literal at-least-one clause; and\n- all \\(\\binom62=15\\) pairwise at-most-one clauses.\n\nEvery satisfying assignment therefore selects exactly one labeled color for each integer.\n\n### Schur constraints\n\nFor each\n\n\\[\n1\\le x\\le y,\\qquad x+y\\le537,\n\\]\n\nand each color, the CNF forbids \\(x\\), \\(y\\), and \\(x+y\\) from all receiving that color.\n\nWhen \\(x=y\\), duplicate literals are removed, producing the required binary constraint between \\(x\\) and \\(2x\\).\n\nThe judgment accepts the stated total\n\n\\[\n72{,}092\n\\]\n\nof Schur triples through \\(537\\).\n\n### Conditioning and extra-change variables\n\nA unit clause fixes \\(C(537)=c\\) in each conditioned case.\n\nFor a blocker pair \\((x,y)\\), let \\(B_x\\) and \\(B_y\\) denote the literals asserting the respective baseline colors. The clauses\n\n\\[\n\\neg e\\lor\\neg B_x,\\qquad\n\\neg e\\lor\\neg B_y,\\qquad\nB_x\\lor B_y\\lor e\n\\]\n\nencode\n\n\\[\ne\\iff(\\neg B_x\\land\\neg B_y).\n\\]\n\nThus \\(e\\) records that both endpoints changed, which is exactly one extra change beyond the mandatory blocker change.\n\nFor integers outside the blocker pairs, the signed literal\n\n\\[\n\\neg X(i,B(i))\n\\]\n\nrecords a change from the baseline because the exactly-one constraints are present.\n\n### Cardinality encoding\n\nThe generator uses a Sinz sequential counter to enforce the relevant at-most-\\(k\\) bounds:\n\n- \\(k=0\\) for color \\(2\\);\n- \\(k=5\\) for color \\(4\\);\n- \\(k=11\\) for color \\(5\\);\n- \\(k=8\\) for color \\(6\\).\n\nThe judgment finds substitution of signed literals into the counter valid and finds the recorded formula dimensions internally consistent with the generator.\n\n### RUP-only LRAT checker\n\nFor each derived clause, the supplied checker:\n\n1. assumes the negation of that clause;\n2. follows its ordered hint clauses;\n3. requires the hints to be unit under the accumulated assignment until a conflict is reached;\n4. adds the checked clause only after the conflict; and\n5. accepts unsatisfiability only after deriving the empty clause.\n\nThe judgment finds that such RUP steps preserve logical consequence and that deletion handling does not affect soundness. It also notes digest binding for formulas and proof payloads and a limit on decompressed proof size.\n\n### Certificate availability\n\nThe architecture refers to four proof files:\n\n- `case-color-2-extra-0.lrat.gz`;\n- `case-color-4-extra-5.lrat.gz`;\n- `case-color-5-extra-11.lrat.gz`;\n- `case-color-6-extra-8.lrat.gz`.\n\nNone is included in the supplied evidence.\n\nThe available SHA-256 digests, claimed proof sizes, expected output, and CaDiCaL regeneration instructions can authenticate or help reproduce proofs, but the judgment expressly finds that they do not substitute for replayable proof bytes. The advertised full verification command therefore cannot complete from the supplied artifacts.\n\n### Attribution and provenance\n\nThe later judgment attributes the CNF construction, independent RUP/LRAT checker, and reproduction design to the newer work. Its metadata attributes intended proof generation to CaDiCaL and workflow implementation to an OpenAI Codex research agent acting at Robert Raynor’s request. No priority determination is made.\n\n- **Primary judgment:** `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n- **Evidence transaction:** `26a77f38a16f35641a8d8f0efe72132953af5d2e`\n- **Claim key:** `sat-encoding-for-fs536-radius-43-exclusion`\n\n## Change: programs/explicit-coloring-certificates/sat-lrat-radius-43-method\n\nThis proposed method node separates the supported encoding and checker architecture from the unsupported unsatisfiability conclusion. That separation preserves the judgment’s positive assessment of the method without treating unavailable LRAT digests or metadata as proofs.\n\n## Node: programs/explicit-coloring-certificates/radius-43-exclusion-at-537\n\n**Title:** Radius-\\(43\\) exclusion around the fixed Fredricksen–Sweet baseline  \n**Type:** Claim  \n**Parent:** `programs/explicit-coloring-certificates`  \n**Status:** Not established by the supplied evidence\n\n### Claim under assessment\n\nFor the fixed labeled Fredricksen–Sweet coloring\n\n\\[\nB:\\{1,\\ldots,536\\}\\to\\{1,\\ldots,6\\},\n\\]\n\nthe proposed universal statement is that every valid six-coloring \\(C\\) of \\(\\{1,\\ldots,537\\}\\) satisfies\n\n\\[\n\\left|\\{i\\le536:C(i)\\ne B(i)\\}\\right|\\ge44.\n\\]\n\nPrimary judgment `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b` classifies this universal claim as not established by the supplied evidence.\n\n### Established components\n\nThe judgment supports the following parts of the proposed argument:\n\n- the baseline \\(B\\) is a valid six-coloring of \\(\\{1,\\ldots,536\\}\\);\n- the blocker counts are\n  \\[\n  (64,43,55,38,32,35);\n  \\]\n- the cases \\(C(537)=1\\) and \\(C(537)=3\\) are directly outside radius \\(43\\);\n- Hamming distance decomposes into mandatory blocker changes plus extra changes;\n- the remaining cases reduce to the extra-change bounds \\(0,5,11,8\\) for colors \\(2,4,5,6\\);\n- the four corresponding CNFs encode the intended finite problems; and\n- the supplied RUP-only LRAT checker would soundly verify suitable proof objects.\n\n### Missing decisive evidence\n\nThe four LRAT payloads for colors \\(2,4,5,6\\) are absent. Consequently, their unsatisfiability has not been replayed or otherwise proved by the supplied evidence.\n\nThe judgment expressly finds that none of the following replaces the missing derivations:\n\n- digests of unavailable proofs;\n- claimed proof-line statistics;\n- expected-output text;\n- assertions that CaDiCaL generated proofs;\n- a hosted-verification request; or\n- regeneration instructions without a recorded regeneration result.\n\nMatching LRAT objects, or an independently regenerated and replayed set of proofs, would address the identified evidentiary gap.\n\n### Current qualified conclusion\n\nOnly the conditioned colors \\(1\\) and \\(3\\) are proved to lie outside radius \\(43\\). The other four cases have a supported exact reduction and checking plan but remain uncertified.\n\nThere is no opposed primary judgment and no supplied conflict record. The node therefore records missing evidence rather than a dispute between incompatible mathematical assessments.\n\n### Consequences for \\(S(6)\\)\n\nEven if the universal radius-\\(43\\) statement is eventually certified, it would exclude only colorings sufficiently close to one fixed labeled baseline on the first \\(536\\) positions. It would not exclude:\n\n- colorings at distance at least \\(44\\);\n- structurally unrelated colorings through \\(537\\); or\n- all colorings at a threshold relevant to a new upper bound.\n\nIt supplies no coloring through \\(537\\). Therefore, according to the judgment, it implies neither\n\n\\[\nS(6)=536\n\\]\n\nnor any improvement to\n\n\\[\n536\\le S(6)\\le1836.\n\\]\n\n### Attribution and provenance\n\nThe judgment treats the local decomposition, CNF construction, checker, and reproduction design as meaningful new work but makes no priority conclusion for the uncertified theorem.\n\n- **Primary judgment:** `sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`\n- **Evidence transaction:** `26a77f38a16f35641a8d8f0efe72132953af5d2e`\n- **Relevant claim keys:**\n  - `fs536-radius-43-exclusion-at-537`\n  - `implications-of-fs536-radius-exclusion-for-s6`\n\n## Change: programs/explicit-coloring-certificates/radius-43-exclusion-at-537\n\nThis proposed claim node preserves the later judgment’s exact evidentiary stance: two conditioned cases are proved, four are reduced correctly but lack their referenced certificates, and the universal theorem remains unestablished. It is not represented as a conflict because no opposing judgment or conflict record was supplied.\n"
           }
         ],
-        "latestRunId": "55cff577a60f17bfd0b3783f30cbb77451b0cbac02750ff26932bfa9f391a108"
+        "latestRunId": "84e487224d927148fdcb7a41b8e1a00b27bf221ff0412a294434a2e4d2d46ca3"
       }
     },
     {
