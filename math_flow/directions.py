@@ -220,6 +220,16 @@ def _derive_directions(
             raise MathFlowError(
                 f"research direction {direction_id!r} has disconnected or cyclic events"
             )
+        originating_author = chain[0].get("author")
+        for item in chain[1:]:
+            if (
+                item["data"]["eventType"] == "release"
+                and item.get("author") != originating_author
+            ):
+                raise MathFlowError(
+                    f"research direction {direction_id!r} has a release whose author "
+                    "does not match the originating register event author"
+                )
         status = "active"
         snapshot = chain[0]["data"]
         for item in chain[1:]:

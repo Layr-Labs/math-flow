@@ -350,6 +350,13 @@ def validate_pr(root: Path, base: str, head: str) -> dict[str, object]:
             raise MathFlowError(
                 "research direction event does not extend the current terminal event"
             )
+        originating_author = existing.get("registeredBy")
+        event_author = _commit_author(root, head_sha)
+        if event_type == "release" and event_author != originating_author:
+            raise MathFlowError(
+                "research direction release author must match the originating "
+                "register event author"
+            )
     if event_type == "complete":
         source = ledger(root, problem, base_sha)
         ordinals = {
