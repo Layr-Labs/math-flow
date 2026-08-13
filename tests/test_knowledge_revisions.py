@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 from math_flow.artifacts import load_manifest, read_verified_artifact
-from math_flow.coordination import claim_due_build, record_completed_inputs
+from math_flow.coordination import claim_due_build, complete_build, record_completed_inputs
 from math_flow.errors import MathFlowError
 from math_flow.formation import (
     _expand_taxonomy_selection,
@@ -731,6 +731,236 @@ class NeutralKnowledgeRevisionTests(unittest.TestCase):
             self.assertEqual(loaded_revisions, revisions)
             self.assertEqual(base_digest, stored_digest)
             self.assertEqual(base_head, head)
+
+            complete_build(
+                scheduler,
+                lane["laneId"],
+                claim["buildToken"],
+                stored_digest,
+                now=2,
+            )
+            later_contribution = (
+                root / "problems/demo/contributions/later-proof/README.md"
+            )
+            later_contribution.parent.mkdir(parents=True)
+            later_contribution.write_text(
+                "# Later claim\n\nA second supported result.", encoding="utf-8"
+            )
+            subprocess.run(["git", "add", "."], cwd=root, check=True)
+            subprocess.run(
+                ["git", "commit", "-qm", "Add later proof"], cwd=root, check=True
+            )
+            later_head = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=root,
+                check=True,
+                stdout=subprocess.PIPE,
+                text=True,
+            ).stdout.strip()
+            later_judgment_responses = iter(
+                [
+                    {
+                        "id": "later-report",
+                        "model": "openai/gpt-5.6-sol",
+                        "choices": [
+                            {
+                                "message": {
+                                    "content": "# Assessment\n\nThe later claim is supported."
+                                }
+                            }
+                        ],
+                    },
+                    {
+                        "id": "later-extract",
+                        "model": "openai/gpt-5.6-sol",
+                        "choices": [
+                            {
+                                "message": {
+                                    "content": json.dumps(
+                                        {
+                                            "findings": [
+                                                {
+                                                    "claimKey": "demo/later-claim",
+                                                    "stance": "supports",
+                                                    "summary": "The later claim is supported.",
+                                                    "subjectTransactionIds": [later_head],
+                                                    "evidenceTransactionIds": [later_head],
+                                                }
+                                            ]
+                                        }
+                                    )
+                                }
+                            }
+                        ],
+                    },
+                ]
+            )
+            later_judgment_dir = root / "later-judgment"
+            run_primary_judgment_bundle(
+                root,
+                "demo",
+                judge_path,
+                later_head,
+                [later_head],
+                later_judgment_dir,
+                context_transaction_ids=[head],
+                transport=lambda _: next(later_judgment_responses),
+            )
+            _, later_judgment, _ = load_judgment_bundle(later_judgment_dir)
+            later_lane = record_completed_inputs(
+                scheduler,
+                "demo",
+                builder_digest,
+                [later_judgment["judgmentId"]],
+                [],
+                0,
+                3,
+            )
+            later_claim = claim_due_build(
+                scheduler, later_lane["laneId"], 3, 1
+            )
+            self.assertIsNotNone(later_claim)
+            self.assertEqual(later_claim["baseStateRun"], stored_digest)
+
+            def later_formation_responses(
+                preserved_relation: str,
+            ) -> iter:
+                return iter(
+                    [
+                        {
+                            "id": f"later-select-{preserved_relation}",
+                            "model": "openai/gpt-5.6-sol",
+                            "choices": [
+                                {
+                                    "message": {
+                                        "content": json.dumps(
+                                            {
+                                                "selectedNodeIds": ["program/main"],
+                                                "taxonomyReviewNodeIds": [],
+                                                "rationale": "Add a supported child result.",
+                                            }
+                                        )
+                                    }
+                                }
+                            ],
+                        },
+                        {
+                            "id": f"later-report-{preserved_relation}",
+                            "model": "openai/gpt-5.6-sol",
+                            "choices": [
+                                {
+                                    "message": {
+                                        "content": "# Formation\n\n"
+                                        "## Node: result/later\nLater result body.\n\n"
+                                        "## Change: result/later\nCreated a child result using cumulative evidence.\n"
+                                    }
+                                }
+                            ],
+                        },
+                        {
+                            "id": f"later-extract-{preserved_relation}",
+                            "model": "openai/gpt-5.6-sol",
+                            "choices": [
+                                {
+                                    "message": {
+                                        "content": json.dumps(
+                                            {
+                                                "operations": [
+                                                    {
+                                                        "action": "create",
+                                                        "nodeId": "result/later",
+                                                        "parentId": "program/main",
+                                                        "nodeType": "result",
+                                                        "title": "Later result",
+                                                        "summary": "A later cumulative result.",
+                                                        "reportSection": "## Node: result/later",
+                                                        "changeSection": "## Change: result/later",
+                                                        "baseDigest": None,
+                                                        "baseRevisionId": None,
+                                                        "subjects": [
+                                                            {
+                                                                "kind": "transaction",
+                                                                "id": later_head,
+                                                            }
+                                                        ],
+                                                        "evidence": [
+                                                            {
+                                                                "kind": "judgment",
+                                                                "id": judgment["judgmentId"],
+                                                                "digest": judgment["judgmentId"],
+                                                                "relation": preserved_relation,
+                                                            },
+                                                            {
+                                                                "kind": "judgment",
+                                                                "id": later_judgment["judgmentId"],
+                                                                "digest": later_judgment["judgmentId"],
+                                                                "relation": "supports",
+                                                            },
+                                                        ],
+                                                    }
+                                                ]
+                                            }
+                                        )
+                                    }
+                                }
+                            ],
+                        },
+                    ]
+                )
+
+            altered_responses = later_formation_responses("qualifies")
+            with self.assertRaisesRegex(
+                MathFlowError, "evidence outside its claimed inputs"
+            ):
+                run_knowledge_build_bundle(
+                    root,
+                    "demo",
+                    builder_path,
+                    later_head,
+                    later_claim,
+                    [later_judgment_dir],
+                    None,
+                    root / "altered-historical-evidence",
+                    base_run=output,
+                    transport=lambda _: next(altered_responses),
+                )
+
+            preserved_responses = later_formation_responses("supports")
+            cumulative_output = root / "cumulative-knowledge"
+            cumulative_manifest = run_knowledge_build_bundle(
+                root,
+                "demo",
+                builder_path,
+                later_head,
+                later_claim,
+                [later_judgment_dir],
+                None,
+                cumulative_output,
+                base_run=output,
+                transport=lambda _: next(preserved_responses),
+            )
+            cumulative_state = json.loads(
+                read_verified_artifact(
+                    cumulative_output, cumulative_manifest, "knowledge-state"
+                )
+            )
+            self.assertEqual(
+                cumulative_state["nodes"]["result/later"]["evidence"],
+                [
+                    {
+                        "kind": "judgment",
+                        "id": judgment["judgmentId"],
+                        "digest": judgment["judgmentId"],
+                        "relation": "supports",
+                    },
+                    {
+                        "kind": "judgment",
+                        "id": later_judgment["judgmentId"],
+                        "digest": later_judgment["judgmentId"],
+                        "relation": "supports",
+                    },
+                ],
+            )
 
 
 if __name__ == "__main__":
