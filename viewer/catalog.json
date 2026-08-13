@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "repository": {
     "slug": "Layr-Labs/math-flow",
-    "canonicalRef": "main",
+    "canonicalRef": "refs/remotes/origin/main",
     "projectionRef": "projections"
   },
   "projections": [
@@ -34901,7 +34901,7 @@
     {
       "schemaVersion": 1,
       "problemId": "bssc-sum-capacity",
-      "ledgerHead": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
+      "ledgerHead": "efb1cc4ce5b387eb94fc2358c3f5dd6585846092",
       "directionLedgerHead": null,
       "directionLedgerDigest": "sha256:a468d6764b505dd3000014aa672a34ce3b6d92c06b7ca069b72c6489bc67abd5",
       "events": [],
@@ -34910,16 +34910,70 @@
     {
       "schemaVersion": 1,
       "problemId": "maximal-determinant-23",
-      "ledgerHead": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
-      "directionLedgerHead": null,
-      "directionLedgerDigest": "sha256:77f7ecca0ed20abb9c6602202389af88a89410187dbb2fd85102e807a656f4fe",
-      "events": [],
-      "directions": []
+      "ledgerHead": "efb1cc4ce5b387eb94fc2358c3f5dd6585846092",
+      "directionLedgerHead": "efb1cc4ce5b387eb94fc2358c3f5dd6585846092",
+      "directionLedgerDigest": "sha256:51e77deb8a3a9c480eb6bf1c32a34e82b97607e48f4826adbaba9dbdec98e513",
+      "events": [
+        {
+          "ordinal": 1,
+          "canonicalOrdinal": 107,
+          "transactionId": "efb1cc4ce5b387eb94fc2358c3f5dd6585846092",
+          "committedAt": 1786600694,
+          "eventId": "initial-plan",
+          "directionId": "near-record-gram-obstructions",
+          "eventType": "register",
+          "path": "problems/maximal-determinant-23/directions/near-record-gram-obstructions/events/initial-plan",
+          "author": {
+            "displayName": "Robert Raynor",
+            "email": "35671663+mooselumph@users.noreply.github.com"
+          },
+          "contentDigest": "sha256:4e33274f09f8b499caac7714a8c9b085229e049a1e02dc11ef68324cb5069781",
+          "contentMarkdown": "# Exact near-record Gram obstruction program\n\n## Scope\n\nThis direction is restricted to order $23$ and to exact evidence at or above\nthe currently certified record determinant\n\n\\[\n2^{22}\\,3\\,5^6\\,67\\,211\n=2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThe first target is a complete classification of the standard Ehlich-block\nGram family\n\n\\[\nE(r)=20I_{23}-J_{23}+4\\operatorname{diag}\n  (J_{r_1},\\ldots,J_{r_s}),\n\\]\n\nwhere $r$ ranges over the unordered positive integer partitions of $23$.\nThe intended theorem is only that no matrix in this family is\n$AA^{\\mathsf T}$ for a $23\\times23$ sign matrix $A$ at or above the certified\nrecord.  After that finite family is settled, the direction will investigate\none explicitly defined non-block Gram class or an improved exact sign-matrix\nwitness.  Every finite class will be stated before its exclusion is claimed;\nan incomplete class will not be presented as a global upper bound.\n\n## Phases and exact evidence\n\n1. **Fix the canonical threshold and dependencies.**  The published record\n   matrix is already certified in canonical transaction\n   `fb88b7832c0fa7e84c1583110a7df800571bca02` and knowledge node\n   `exact-witness-certification/order-23-record-witness`.  That determinant is\n   the structural-exclusion threshold.  The divisibility-rounded global upper\n   endpoint is now canonical transaction\n   `7b28860c418486cb41e6379e68cc355ff861b1a5`; subsequent contributions will\n   cite that exact transaction where the rounded ceiling is relevant.  The\n   block-family exclusion itself does not depend on the new rounding.\n\n2. **Enumerate the Ehlich-block family exactly.**  A standard-library verifier\n   will enumerate all unordered positive integer partitions of $23$, evaluate\n   the determinant-lemma formula with integer/rational arithmetic, and compare\n   each result with the square of the record.  The replay will check the total\n   partition count and every determinant, not trust a saved numerical\n   transcript.  Square tests will be performed after the proved universal\n   $2^{44}$ normalization of Gram determinants.\n\n3. **Exclude every record-level block candidate.**  The certificate format will\n   be a small versioned JSON file plus a deterministic Python verifier.  A\n   nonsquare normalized Gram determinant is an immediate exact obstruction.\n   Each remaining local-form certificate will name the partition, normalized\n   determinant coefficient, and a rational prime; the verifier will construct\n   $E(r)$, perform exact rational congruence diagonalization, and recompute the\n   relevant Hilbert symbols and Hasse invariant.  Each moment certificate will\n   name the partition, enumerate all parity-compatible block-sum vectors\n   satisfying $x^{\\mathsf T}E(r)^{-1}x=1$, and give integer multipliers for a\n   Farkas functional on the count and second-moment coordinates.  The verifier\n   will check nonnegativity on every admissible column pattern and strict\n   separation of the required aggregate Gram moments.\n\n4. **Audit scope before submission.**  The proof will derive the determinant,\n   rational-equivalence, inverse-quadratic, and aggregate-moment identities in\n   the contribution itself.  Independent replay must exhaust exactly the\n   candidates asserted.  The claim will expressly distinguish an\n   Ehlich-block obstruction from a classification of all Gram matrices with\n   diagonal $23$ and off-diagonal entries congruent to $3\\pmod 4$.\n\n5. **Move to a bounded non-block target or a better witness.**  A later atomic\n   contribution may either classify a precisely specified finite non-block\n   candidate class using canonicalized integer Gram matrices and replayable\n   pruning certificates, or provide a complete $23\\times23$ sign matrix with\n   a determinant strictly above the record.  A non-block certificate must\n   encode every branch/pruning decision or provide independently checkable\n   infeasibility witnesses; a construction must include the literal sign\n   matrix and an integer-only determinant verifier.  Heuristic searches may be\n   reported only as non-exhaustive and cannot support an exclusion theorem.\n\nEach mathematical output will be a separate atomic contribution.  Registration\nitself contains no mathematical payload and makes no correctness or ownership\nclaim.\n\n## Relationship to current knowledge and pending work\n\nThe canonical record replay establishes an exact lower witness but no\noptimality result.  This program uses its determinant only as a threshold and\ndoes not duplicate its matrix transcription or Bareiss certification.\nCanonical transaction `7b28860c418486cb41e6379e68cc355ff861b1a5` sharpens\nthe global endpoint using the universal factor $2^{22}$ and exact rounding;\nthe proposed Gram obstructions are structurally different.  At registration\ntime, that transaction's judgment and knowledge formation are not yet present\nin the latest published projection, so this event cites the canonical\ntransaction without inventing a knowledge-node interpretation.\n\n## Limitations\n\nExcluding the Ehlich-block family does not imply that the published record is\noptimal and does not lower the global upper bound: a realizable near-record\nGram matrix may be non-block.  Rational local invariants are only necessary\nconditions for being a rational Gram matrix, and moment equations are only\nnecessary conditions for factorization by a sign matrix.  The direction will\nnot infer sufficiency from either test.  Any non-block search is limited to the\nclass whose completeness is explicitly proved, and a failed heuristic search\nwill not be converted into a nonexistence claim.\n\n## Completion criterion\n\nThe direction is complete only after (i) one canonical atomic contribution\ngives a self-contained, exactly replayable exclusion of every record-level\nEhlich-block candidate at order $23$, and (ii) a separate canonical atomic\ncontribution either excludes a precisely defined non-block near-record class\nwith a replayable completeness certificate or supplies and exactly verifies a\nsign matrix strictly improving the current record.  If the second target\ncannot be reached, the direction remains active or is explicitly released; the\nfirst structural result alone will not be presented as a solution of\n$D_{23}$.\n",
+          "data": {
+            "schemaVersion": 1,
+            "eventType": "register",
+            "eventId": "initial-plan",
+            "directionId": "near-record-gram-obstructions",
+            "title": "Exact near-record Gram obstructions at order 23",
+            "summary": "Exactly exclude every record-level Ehlich-block Gram candidate at order 23, then investigate a precisely bounded non-block Gram class or a strictly better exact sign-matrix witness without overclaiming a global upper bound.",
+            "relatedKnowledgeNodeIds": [
+              "exact-witness-certification/order-23-record-witness",
+              "root"
+            ]
+          }
+        }
+      ],
+      "directions": [
+        {
+          "directionId": "near-record-gram-obstructions",
+          "title": "Exact near-record Gram obstructions at order 23",
+          "summary": "Exactly exclude every record-level Ehlich-block Gram candidate at order 23, then investigate a precisely bounded non-block Gram class or a strictly better exact sign-matrix witness without overclaiming a global upper bound.",
+          "relatedKnowledgeNodeIds": [
+            "exact-witness-certification/order-23-record-witness",
+            "root"
+          ],
+          "status": "active",
+          "registeredEventId": "initial-plan",
+          "registeredTransactionId": "efb1cc4ce5b387eb94fc2358c3f5dd6585846092",
+          "registeredAt": 1786600694,
+          "registeredBy": {
+            "displayName": "Robert Raynor",
+            "email": "35671663+mooselumph@users.noreply.github.com"
+          },
+          "currentEventId": "initial-plan",
+          "currentTransactionId": "efb1cc4ce5b387eb94fc2358c3f5dd6585846092",
+          "currentAt": 1786600694,
+          "completionTransactionIds": [],
+          "eventIds": [
+            "initial-plan"
+          ]
+        }
+      ]
     },
     {
       "schemaVersion": 1,
       "problemId": "no-three-in-line-77",
-      "ledgerHead": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
+      "ledgerHead": "efb1cc4ce5b387eb94fc2358c3f5dd6585846092",
       "directionLedgerHead": "bbf27430c8b61446236371c57c58e3b8d6278921",
       "directionLedgerDigest": "sha256:07ee521c46e228157b5de06a87c30bbfc736710b5f1f210a75f1a1bfb8ecae95",
       "events": [
@@ -35012,7 +35066,7 @@
     {
       "schemaVersion": 1,
       "problemId": "schur-number-6",
-      "ledgerHead": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
+      "ledgerHead": "efb1cc4ce5b387eb94fc2358c3f5dd6585846092",
       "directionLedgerHead": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
       "directionLedgerDigest": "sha256:c05f9175217c4dd6cf2aee28493f95b4059debbbfeec57ec9cafe699c210c4a5",
       "events": [
@@ -35079,7 +35133,7 @@
     {
       "schemaVersion": 1,
       "problemId": "triangle-midpoints",
-      "ledgerHead": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
+      "ledgerHead": "efb1cc4ce5b387eb94fc2358c3f5dd6585846092",
       "directionLedgerHead": null,
       "directionLedgerDigest": "sha256:ecdcbed4ec39db1bdd46bb93855ea58bb55304e05282df274a0ea2877a935a0b",
       "events": [],
