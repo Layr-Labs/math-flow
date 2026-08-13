@@ -12140,6 +12140,1018 @@
       }
     },
     {
+      "id": "openrouter-no-three-in-line-taxonomy-v3-eval",
+      "problemId": "no-three-in-line-77",
+      "label": "openrouter-no-three-in-line-taxonomy-v3-eval",
+      "projectionSpec": {
+        "id": "openrouter-no-three-in-line-taxonomy-v3-eval",
+        "description": "A shadow no-three-in-line projection that reuses approved judgments and incrementally evaluates the v3 evolvable research-program taxonomy builder.",
+        "digest": "sha256:17286f418e1335fd718c1c7f7a87d04863bae14de496efd790d3ea6bc4b6cee9",
+        "engine": "openrouter-repository-v1",
+        "allowedProblems": [
+          "no-three-in-line-77"
+        ],
+        "dependencies": [],
+        "scheduling": {
+          "judgmentMaxParallel": 16,
+          "knowledgeMinimumIntervalSeconds": 0,
+          "maximumJudgmentsPerBuild": 1
+        },
+        "runner": null
+      },
+      "builder": {
+        "id": "openrouter-research-program-builder-v3",
+        "digest": "sha256:8dbfc0666d364444fd0e237c4465a6bdca502d6eb06318f2b8a9bfb99d001d8f"
+      },
+      "latestRunDigest": "sha256:cc94c6abd5db53040c4f8eddaa5783778d83091fa99e19bfed45dd35b1155bb2",
+      "runCount": 1,
+      "data": {
+        "schemaVersion": 1,
+        "problem": {
+          "id": "no-three-in-line-77",
+          "title": "No-three-in-line at grid size 77",
+          "statementMarkdown": "# No-three-in-line at grid size 77\n\nFor a positive integer `n`, let\n\n\\[\nG_n = \\{0,1,\\ldots,n-1\\}^2,\n\\]\n\nand let `D(n)` be the largest cardinality of a subset of `G_n` containing no\nthree distinct collinear points.\n\nDetermine `D(77)`, or improve either side of the current certified interval\n\n\\[\n152 \\le D(77) \\le 154.\n\\]\n\nThe upper bound is elementary: each of the 77 horizontal grid lines contains at\nmost two selected points. For the lower bound, a 152-point configuration on the\n`76 x 76` grid can be embedded unchanged in `G_77`. The initial contribution\nrecords and independently checks such a configuration.\n\nUseful contributions include:\n\n- an exact coordinate certificate with 153 or 154 points;\n- a small, reproducible verifier or SAT/CP-SAT encoding;\n- a symmetry-restricted result with its precise scope stated;\n- a structural lemma constraining hypothetical 153- or 154-point sets;\n- a reproducible search improvement or negative search result, clearly\n  distinguished from a global impossibility proof; or\n- a proof improving the upper bound.\n\nAll computational claims should include enough data and code to verify the\nclaimed implication with exact integer arithmetic. The frontier is active, so a\nlater contribution may update these baseline bounds without rewriting this\nhistorical statement.\n\n## Frontier sources\n\n- Achim Flammenkamp's maintained\n  [No-Three-in-Line database](https://wwwhomes.uni-bielefeld.de/achim/no3in/readme.html),\n  updated 2026-08-10, records the first `n = 76` configuration.\n- Thomas Prellberg,\n  [Constraint Satisfaction Programming for the No-three-in-line Problem](https://arxiv.org/abs/2602.07751),\n  describes the recent constraint-programming approach and its earlier advance\n  through `n = 60`.\n\n"
+        },
+        "ledgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+        "transactions": [
+          {
+            "ordinal": 1,
+            "transactionId": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+            "contributionId": "record-152-certificate",
+            "path": "problems/no-three-in-line-77/contributions/record-152-certificate",
+            "author": {
+              "displayName": "Robert",
+              "email": "robert.raynor@gmail.com"
+            },
+            "contentMarkdown": "# Checkable 152-point baseline\n\nThis contribution supplies an exact lower-bound certificate and a minimal\nverifier for the baseline claim `D(77) >= 152`.\n\n## Certificate provenance and encoding\n\nThe encoded configuration in `configuration.txt` is the `n = 76` record posted\non 2026-08-10 in Achim Flammenkamp's maintained\n[No-Three-in-Line database](https://wwwhomes.uni-bielefeld.de/achim/no3in/readme.html)\nand its downloadable\n[certificate list](https://wwwhomes.uni-bielefeld.de/~achim/no3in/download/all_known_solutions).\nIt is reproduced here so the mathematical claim does not depend on a mutable\nweb page.\n\nThe first character, `o`, is the database's quarter-turn symmetry marker. Drop\nthat marker and read the remaining 152 characters in consecutive pairs, one\npair for each row `y = 0, 1, ..., 75`. Each character denotes an `x` coordinate\nby its zero-based position in this alphabet:\n\n```text\n0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%&@?!()[]<>{}=*+|-/~^_:;,.\n```\n\nThus the payload describes exactly two selected points in each row of the\n`76 x 76` grid.\n\n## Exact verification\n\nRun:\n\n```bash\npython verify.py configuration.txt\n```\n\nThe verifier checks that:\n\n1. the payload decodes to 152 distinct integer points;\n2. every coordinate lies in `{0, ..., 75}`; and\n3. every triple has nonzero determinant\n\n\\[\n(x_2-x_1)(y_3-y_1)-(x_3-x_1)(y_2-y_1).\n\\]\n\nIt reports:\n\n```text\nverified 152 points on a 76 x 76 grid; no collinear triple\n```\n\nBecause `{0, ..., 75}^2` is a subset of `{0, ..., 76}^2`, the same 152 points\nform a valid configuration on the `77 x 77` grid. Therefore `D(77) >= 152`.\n\nConversely, each of the 77 horizontal rows contains at most two points in any\nvalid configuration, so `D(77) <= 154`. This establishes the current working\ninterval\n\n\\[\n152 \\le D(77) \\le 154.\n\\]\n\n## Suggested independent programs\n\n- Try to extend or perturb this certificate to 153 points on the larger grid.\n- Search directly for a 154-point configuration, which must have exactly two\n  points in every row and every column.\n- Analyze rotational and reflection symmetry classes separately, without\n  treating failure in one class as a global upper bound.\n- Develop structural constraints on the two exceptional rows or columns of a\n  hypothetical 153-point configuration.\n"
+          },
+          {
+            "ordinal": 2,
+            "transactionId": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+            "contributionId": "record-152-local-rigidity",
+            "path": "problems/no-three-in-line-77/contributions/record-152-local-rigidity",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Local rigidity of the 152-point record inside G_77\n\nThis contribution certifies, by exhaustive exact-integer computation, that the\ncertified 152-point no-three-in-line record on the `76 x 76` grid is an\nisolated local optimum inside `G_77 = {0,...,76}^2`. It is a negative search\nresult with a precise scope, not a global impossibility proof: it prunes the\nentire \"perturb the known record\" strategy for reaching 153 or 154 points and\nquantifies how different any larger configuration must be.\n\n## Claim\n\nLet `C` be the 152-point configuration decoded from\n[`../record-152-certificate/configuration.txt`](../record-152-certificate/configuration.txt),\nand let `E` range over the embeddings of `C` into `G_77`, meaning every image\nof `C` under the dihedral symmetries of `G_76` followed by a translation by\n`(tx, ty)` with `tx, ty` in `{0, 1}`. There are exactly 8 distinct such\nembeddings (see \"By-product\" below). For every embedding `E`:\n\n1. **Saturation (maximality).** Every one of the `77^2 - 152 = 5777` cells of\n   `G_77 \\ E` is collinear with at least two points of `E` (in fact with at\n   least two distinct blocking pairs). Hence no proper superset of `E` in\n   `G_77` is a no-three-in-line set; in particular `E` extends to neither 153\n   nor 154 points.\n2. **One-robust saturation.** For every single point `r` of `E`, the 151-point\n   set `E \\ {r}` still blocks every cell of `G_77 \\ E`. No cell is freed by\n   any single removal.\n3. **Two-removal accounting.** Removing any unordered pair of points of `E`\n   frees at most one cell of `G_77 \\ E`. Exactly 16 removal pairs free a cell;\n   they are listed exhaustively in [`results.json`](results.json). The 16\n   pairs concentrate on 4 freed cells (4 pairs each), and every instance is of\n   the \"two lines of two\" pattern: the freed cell lies on exactly two heavy\n   lines, each carrying exactly two configuration points.\n\n**Corollary (certified).** For every embedding `E` and every no-three-in-line\nset `S` in `G_77` with `|E \\ S| <= 2`, it holds that `|S \\ E| <= 1`, hence\n`|S| <= 152`. Therefore any hypothetical 153- or 154-point no-three-in-line\nset in `G_77` must omit at least 3 points of every embedding of the record and\ncontain at least 4 points outside it — symmetric difference at least 7 with\nevery embedding. (Proof of the corollary from claims 1-3: write\n`S = (E \\ R) ∪ A` with `R = E \\ S`, `A = S \\ E`. Every cell of `A` must be\nfree with respect to `E \\ R`; for `|R| = 0, 1` there are no free cells, and\nfor `|R| = 2` there is at most one, so `|A| <= 1` and\n`|S| = 152 - |R| + |A| <= 152` whenever `|R| <= 2`.)\n\nA weaker immediate consequence of claim 1 alone: adding two points at once is\nalso impossible, since each added point would in particular have to be\nindividually addable.\n\n## By-product: quarter-turn symmetry of the record\n\nThe decoded configuration `C` is invariant under the quarter-turn rotation\n`(x, y) -> (75 - y, x)` of `G_76`. The checker verifies this exactly. The\nexisting primary judgment recorded the database's symmetry marker as\nrecognized but deliberately unverified; this computation supplies the missing\nindependent verification (relevant to knowledge node\n`no-three-in-line/g76-152-point-set`). Consequently the dihedral orbit of `C`\nhas exactly 2 distinct images, and with the 4 translations this yields the 8\ndistinct embeddings analyzed here; the checker enumerates all 8 transforms and\n4 offsets and deduplicates programmatically, so completeness of the embedding\nlist does not depend on the symmetry claim.\n\n## Method and assumptions\n\nAll computation uses exact integer arithmetic (collinearity via the 2x2\ndeterminant `(x2-x1)(y3-y1) - (x3-x1)(y2-y1)`); there is no floating point and\nno randomness. The base configuration and each embedding are re-verified from\nscratch (all `C(152,3) = 573,800` triples), so this contribution does not\nassume the prior contribution's verifier ran correctly.\n\nTwo structurally independent enumerations must agree cell by cell:\n\n- **Line census (primary).** For each outside cell `c`, group the 152\n  configuration points by the sign-normalized primitive direction of `p - c`.\n  Points are collinear with `c` exactly when they share a direction, so the\n  groups of size at least 2 (\"heavy lines\") determine every blocking pair.\n  Because two distinct lines through `c` intersect only at `c`, one removed\n  point can lower the census of at most one heavy line, and a heavy line with\n  `n` points needs `n - 1` removals. Freeing `c` with at most 2 removals is\n  therefore possible only for: one heavy line of 2 (one removal), one heavy\n  line of 3 (two removals on it), or two heavy lines of 2 (one removal on\n  each). This case analysis is exhaustive, which makes the freeing enumeration\n  complete.\n- **Line walk (cross-check).** For every pair of configuration points, walk\n  the full lattice line through the pair in primitive steps in both\n  directions, recording every visited cell of `G_77`. This yields, for each\n  cell, the explicit list of blocking pairs; minimal freeing sets are\n  re-derived from these lists as minimum hitting sets. Per-cell pair counts\n  and freeing sets must match the census exactly.\n\nFinally, every reported freeing is re-verified by direct simulation (remove\nthe pair, test the freed cell against all `C(150,2)` remaining pairs),\nand the assembled results must byte-match the committed `results.json`.\n\n## Reproduction\n\nFrom this directory:\n\n```bash\npython3 rigidity.py            # verifies every claim against results.json; exit 0 on success\npython3 rigidity.py --write    # regenerates results.json\n```\n\nRequires only the Python 3 standard library (developed on CPython 3.11).\nDeterministic; runs in about 4 seconds on a laptop. Expected final line:\n\n```text\nverified: all 8 embeddings of the 152-point record are maximal in G_77, ...\n```\n\n## Provenance and reused work\n\n- Input configuration: `configuration.txt` from the prior contribution\n  `record-152-certificate`, added in transaction\n  `dfc0cc40d41105292a119840dcdbe6f22860cf43`. The file is read in place and\n  not copied; its SHA-256\n  (`a23f1f55d9a914cff49fb6ba369b9f392f7af4c5ce08085267b3af1e7d7742c4`) is\n  pinned in `results.json`. The decoding convention (marker character, then\n  two alphabet-encoded x coordinates per row) follows that contribution's\n  README; the decoder here is an independent re-implementation.\n- The underlying configuration is attributed to Achim Flammenkamp's\n  maintained [No-Three-in-Line database](https://wwwhomes.uni-bielefeld.de/achim/no3in/readme.html)\n  (n = 76 record), as recorded by the prior contribution and by primary\n  judgment `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`.\n- Knowledge nodes addressed (projection `openrouter-research-v1`, state digest\n  `sha256:10fd28a31acaebbff5c94ba87f89af7392b62507a91486db930258884410833e`):\n  primarily the open question `no-three-in-line/d77-exact-value` (constrains\n  where a 153- or 154-point set can be found); secondarily\n  `no-three-in-line/g76-152-point-set` (verifies the flagged quarter-turn\n  symmetry) and `no-three-in-line/d77-near-capacity-occupancy` (independent,\n  complementary constraints).\n\nThis contribution is presented as evidence for future adjudication; it does\nnot modify the certified interval `152 <= D(77) <= 154` or any prior record.\n\n## Known gaps and limitations\n\n- The result is local: it says nothing about no-three-in-line sets far from\n  the record embeddings, and it does not decide `D(77)`, which remains open\n  among 152, 153, and 154.\n- The scope is exactly the 8 embeddings of this particular record\n  configuration. Other 152-point configurations in `G_77` (if any exist) are\n  not covered.\n- Neighborhoods of removal depth 3 or more are not explored; the symmetric\n  difference bound of 7 is what depth 2 supports and is not claimed to be\n  sharp.\n- No failed checks: both enumeration methods, the direct simulations, and the\n  byte-comparison against `results.json` all pass.\n\n## Authorship\n\nAnalysis, code, and text were produced by an AI research agent (Cursor agent,\nmodel Fable 5) operating the repository's math-flow-solver workflow at\nRobert's request, building fresh verified context from the\n`openrouter-research-v1` projection. The base configuration is Achim\nFlammenkamp's (see provenance); the prior packaging and verification of that\nconfiguration are credited to the `record-152-certificate` contribution.\n"
+          },
+          {
+            "ordinal": 3,
+            "transactionId": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+            "contributionId": "rct4-154-search-instance",
+            "path": "problems/no-three-in-line-77/contributions/rct4-154-search-instance",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Validated rct4 search instance for a 154-point set in G_77\n\nThis contribution packages the one viable *rotational* route to resolving\n`D(77) = 154` as an exact, validated, reusable search instance, together with\na small symmetry lemma that proves it is the only such route, and an\nhonestly-scoped report of bounded search attempts that did not find a\nsolution. It changes no bounds: `152 <= D(77) <= 154` and the open question\n`no-three-in-line/d77-exact-value` remain exactly as certified.\n\n## Context: an unverified breakthrough report\n\nThis work was prompted by a private-channel report (received 2026-08-11,\nwithout any artifact) of a breakthrough on `D(77)`. Public sources were\nchecked immediately before packaging:\n\n- Achim Flammenkamp's No-Three-in-Line database\n  ([readme](https://wwwhomes.uni-bielefeld.de/achim/no3in/readme.html), page\n  dated 2026-08-10 19:57 UTC+2) records `n = 76` (Marijn Heule, rot4 class)\n  as the largest solved size; odd sizes 71, 73, 75, 77 have no recorded\n  2n-point solution and the largest solved odd size is 69.\n- The database's\n  [`all_known_solutions`](https://wwwhomes.uni-bielefeld.de/~achim/no3in/download/all_known_solutions)\n  download (retrieved 2026-08-11T01:13Z, 23,830,822 bytes) contains no line of\n  length 155, i.e. no `n = 77` configuration; the longest entries have length\n  153 (`n = 76`).\n- No preprint or other public trace of a 77 result was found.\n\nThe report is therefore treated as an unverified claim: this contribution\nneither confirms nor refutes it. What it does is reproduce, validate, and\npackage the exact search pipeline that produced every known odd-size record,\ninstantiated at `n = 77`, so that adequately provisioned solvers can attack\nor audit the claim.\n\n## Lemma: available rotational symmetry at sizes 153 and 154\n\nLet `S` be a no-three-in-line subset of `G_77` (all statements below hold for\nany grid). Write a *half-turn* for a 180-degree rotation about any center\npoint `z` of the plane and a *quarter-turn* for a 90-degree rotation about any\ncenter.\n\n1. **Half-turn-invariant sets of odd size do not exist (beyond one point).**\n   If `S` is invariant under the half-turn about `z` and `|S|` is odd, some\n   point is fixed (the map pairs `p` with its reflection `2z - p`, whose only\n   fixed point is `z`), so `z` is a grid point of `S`. But then for any other\n   `p` in `S`, the three points `p`, `z`, `2z - p` are distinct and collinear\n   (`z` is the midpoint of the segment). Hence `|S| <= 1`. In particular **no\n   153-point set has a half-turn symmetry about any center.**\n2. **Quarter-turn invariance forces size 0 or 1 modulo 4.** An order-4\n   rotation has orbits of size 4 except for its single fixed point (an orbit\n   of size 2 would consist of a point fixed by the half-turn square of the\n   rotation, and only `z` is). A quarter-turn-invariant `S` is also invariant\n   under the half-turn about the same center, so by (1) it either equals\n   `{z}` or excludes `z` and has `|S| = 0 (mod 4)`. Since `153 = 1 (mod 4)`\n   requires `z` in `S` (impossible for `|S| > 1`) and `154 = 2 (mod 4)`, **no\n   153- or 154-point set has a quarter-turn symmetry about any center.**\n3. **A 154-point half-turn symmetry can only be about the grid center.** A\n   154-point set has exactly two points in every row and every column (the\n   canonical occupancy constraint), so its bounding box is all of `G_77`; a\n   half-turn preserving the set preserves the bounding box, forcing the\n   center `z = (38, 38)`, which by (1) is not in `S`.\n\nConsequently the only rotational symmetry available above 152 points is:\n`|S| = 154`, half-turn about `(38, 38)`, center unoccupied. The **rct4\npattern** used for every known odd-size record (`n = 47` through `69`;\ndatabase marker `c`) is exactly such a structure with additional partial\nquarter-turn regularity, and it is what this instance encodes. A 153-point\nset, if one exists, has no rotational symmetry at all; only reflection\nsymmetry or none.\n\n## The rct4 pattern and the exact model\n\nFollowing Prellberg, [Constraint Satisfaction Programming for the\nNo-three-in-line Problem](https://arxiv.org/abs/2602.07751) (whose Table 1\nconstructions and database markers define the class), with\n`rho(i, j) = (j, 76 - i)` the quarter-turn about `(38, 38)`:\n\n- the anti-diagonal `{(i, 76 - i)}` is empty;\n- off-diagonal occupied cells form full `rho`-orbits of size 4;\n- exactly one main-diagonal pair `{(i, i), (76 - i, 76 - i)}`, `i != 38`, is\n  occupied (a `rho^2`-orbit; note such a set is `rho^2`-invariant but not\n  `rho`-invariant, consistent with the lemma).\n\nChoosing 38 off-diagonal orbits plus one diagonal pair gives\n`4 * 38 + 2 = 154` points. The model has one Boolean per off-diagonal orbit\n(1444) and one per diagonal pair (38). Every maximal grid line carrying at\nleast 3 lattice points contributes `sum(coeff * y) <= 2` after mapping cells\nto orbit variables (388,148 distinct constraints at `n = 77` after\ndeduplication, which realizes the `rho^2` line-orbit reduction); cardinality\nconstraints fix 38 chosen orbits and 1 chosen pair. Any three collinear grid\npoints lie on an enumerated line, and cells of the anti-diagonal are fixed\nempty, so feasible assignments correspond exactly to rct4-pattern 154-point\nno-three-in-line sets (soundness and completeness within the class). Every\nsolver output is additionally re-verified point-by-point by the exhaustive\nexact-integer triple test before being reported.\n\n## Validation against known certificates\n\n`known_certificates.txt` reproduces five `c`-class lines from the database\ndownload (sizes 41, 47, 57, 65, 69; SHA-256 of the file and of each line are\npinned in `results.json`). For each one, `check-known`:\n\n1. decodes it (marker character, then two alphabet-encoded x-coordinates per\n   row, the convention documented in `record-152-certificate`);\n2. verifies the no-three-in-line property exhaustively in exact integers;\n3. decomposes it into the class structure (38-type orbit counts, one diagonal\n   pair, empty anti-diagonal); and\n4. checks it satisfies every constraint of this model at its size.\n\nAll five pass. This establishes that the encoding does not exclude real\nsolutions of the class it targets, and that the class is *satisfiable* at the\ncalibration sizes used below.\n\n## Reproduction\n\nFrom this directory (validation is Python-stdlib-only):\n\n```bash\npython3 rct4_search.py check-known     # decode + verify + model-check the 5 certificates\npython3 rct4_search.py results         # recompute everything deterministic vs results.json\n```\n\nSearch and export (tested with Python 3.12.3, `ortools` 9.15.6755,\n`python-sat` 1.9.dev12):\n\n```bash\npython3 rct4_search.py solve 77 --seed 7 --time 3600 --workers 4 --out sol77.json\npython3 rct4_search.py export-cnf 77 --out n77.cnf     # DIMACS for any SAT solver\npython3 rct4_search.py verify sol77.json 77            # exact check of any claimed list\n```\n\n`results --write` regenerates `results.json`. The `results` run takes about\none minute; building the `n = 77` model takes about 10 seconds.\n\n## Bounded search report (negative, hardware-scoped)\n\nAll runs below on a 4-core cloud VM (15 GB RAM), OR-Tools CP-SAT and CaDiCaL\n1.9.5 via the commands above. **These are budget statements, not evidence of\nnonexistence**: the class is provably satisfiable at `n = 41` and `n = 47`\n(committed witnesses), yet the same pipeline also failed to find those within\nsimilar budgets, demonstrating that this hardware scale is far below what the\ninstance family needs. For comparison, the literature's `n <= 60` results\nused 384 parallel runs with multi-day horizons, and sizes 65-76 required\nspecialized new SAT solvers.\n\n| target | engine | budget and seed | outcome |\n| --- | --- | --- | --- |\n| n=41 (satisfiable) | CP-SAT, 4 workers | 300 s, seed 1 | no solution (UNKNOWN) |\n| n=47 (satisfiable) | CP-SAT, 4 workers | 600 s, seed 1 | no solution (UNKNOWN) |\n| n=41 (satisfiable) | CaDiCaL 1.9.5 via python-sat, same clause encoding | 420 s | no result (timeout) |\n| n=77 (this instance) | CP-SAT, 2 workers | seed 7, >= 45 min | no solution |\n| n=77 (this instance) | CaDiCaL 1.9.5 via python-sat, same clause encoding | >= 45 min | no result |\n\nAn exploratory stochastic local search over orbit space (not part of this\nartifact) plateaued at 17 violated lines at `n = 41` and was not competitive.\nNo run returned INFEASIBLE at any size; nothing here bounds `D(77)`.\n\n## Provenance and reused work\n\n- Knowledge state: projection `openrouter-research-v1`, verified `current` at\n  canonical problem head `c5e8096d942d57228bb4fed00f7617fb6b43af9f`, state\n  digest `sha256:a3ace33ff5d4fea1127568d4e20c771a5e90b5b25c730ac7be610b4d1cb2a708`.\n  Primary nodes addressed: the open question `no-three-in-line/d77-exact-value`\n  and the occupancy lemma `no-three-in-line/d77-near-capacity-occupancy`\n  (judgment `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`);\n  the local-rigidity nodes, e.g.\n  `no-three-in-line/d77-distance-from-embedded-g76-152-record`\n  (judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`),\n  motivate a global symmetric search by closing the perturbative route to 153.\n- Certificate encoding convention: contribution `record-152-certificate`\n  (transaction `dfc0cc40d41105292a119840dcdbe6f22860cf43`).\n- `known_certificates.txt` lines are reproduced verbatim from Achim\n  Flammenkamp's database download (retrieved 2026-08-11T01:13Z) so the\n  validation does not depend on a mutable web page. Per the database history,\n  the record discoveries at these sizes are credited to the database's\n  contributors, including Thomas Prellberg (first odd-size records through\n  `n = 63`) and Marijn Heule (`n = 65` through `n = 76`); this contribution\n  claims no originality for them.\n- Class definition and symmetry-reduction methodology: Prellberg,\n  arXiv:2602.07751. The model here is an independent implementation of that\n  specification.\n\n## Known gaps and limitations\n\n- No change to the certified interval; no existence or nonexistence evidence\n  for 153 or 154 points. The private-channel breakthrough report remains\n  unverified in both directions.\n- The instance covers the rct4 pattern only. General half-turn (rot2)\n  configurations satisfy a weaker symmetry (the lemma shows rot2 about the\n  center is the full rotational envelope at 154); a rot2-general model has\n  roughly twice the variables and is not included. Reflection-symmetric and\n  asymmetric searches (the only options at 153) are likewise out of scope.\n- The negative search table reflects small budgets on small hardware and\n  carries no weight about satisfiability of the `n = 77` instance.\n- The lemma constrains rotations only; it says nothing about reflection or\n  glide symmetries.\n\n## Authorship\n\nAnalysis, lemma, code, and text by an AI research agent (Cursor cloud agent,\nmodel Fable 5) operating the repository's math-flow-solver workflow at\nRobert's request, as a replication attempt for a privately reported\nbreakthrough. Reproduced certificates and the class definition are credited\nabove; errors are the agent's.\n"
+          },
+          {
+            "ordinal": 4,
+            "transactionId": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+            "contributionId": "finite-rotation-classification-proof",
+            "path": "problems/no-three-in-line-77/contributions/finite-rotation-classification-proof",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Arbitrary-center rotational symmetry at cardinalities 153 and 154\n\n## Result\n\nThis contribution closes the specific arbitrary-center gap recorded in\n`d77/rotational-classification-scope`.\n\n**Finite-rotation lemma.** Let \\(S\\subset\\mathbb Z^2\\) be finite and\nnoncollinear. If a nonidentity Euclidean rotation \\(T\\) satisfies \\(T(S)=S\\),\nthen \\(T\\) is a half-turn or a quarter-turn (in either orientation). This\nallows an arbitrary center; no assumption is made that the rotation preserves\nthe whole ambient square or the whole integer lattice.\n\nConsequently, for a no-three-in-line set \\(S\\subset G_{77}\\):\n\n1. if \\(|S|=153\\), then \\(S\\) has no nontrivial rotational symmetry;\n2. if \\(|S|=154\\) and \\(S\\) has nontrivial rotational symmetry, it is invariant\n   under the half-turn about \\((38,38)\\), and \\((38,38)\\notin S\\).\n\nThis classifies rotations only. It says nothing about reflection symmetry and\ndoes not identify the strict rct4 subclass with the full centered half-turn\nclass. In particular, it does **not** improve the certified interval\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\n## Proof of the finite-rotation lemma\n\nWrite the rotation as\n\n\\[\nT(x)=z+Q(x-z),\\qquad\nQ=\\begin{pmatrix}c&-s\\\\s&c\\end{pmatrix},\n\\qquad c^2+s^2=1.\n\\]\n\nHere \\(z\\in\\mathbb R^2\\) is arbitrary. We prove first that both \\(c\\) and\n\\(s\\) are rational.\n\nChoose noncollinear \\(p_0,p_1,p_2\\in S\\), and form the matrices whose columns\nare two differences and their rotated images:\n\n\\[\nB=\\begin{pmatrix}|&|\\\\p_1-p_0&p_2-p_0\\\\|&|\\end{pmatrix},\n\\qquad\nC=\\begin{pmatrix}|&|\\\\T(p_1)-T(p_0)&T(p_2)-T(p_0)\\\\|&|\\end{pmatrix}.\n\\]\n\nThe columns of \\(B\\) and \\(C\\) are integer vectors because all six relevant\npoints lie in \\(S\\subset\\mathbb Z^2\\). Noncollinearity gives\n\\(\\det(B)\\ne0\\). The translational part of \\(T\\) cancels in differences, so\n\n\\[\nC=QB,\n\\qquad Q=CB^{-1}.\n\\]\n\nThe inverse of the nonsingular integer matrix \\(B\\) has rational entries.\nThus \\(Q\\) has rational entries, and in particular \\(c,s\\in\\mathbb Q\\).\nThis step does not require the center \\(z\\) to be a lattice point.\n\nNext, \\(T\\) acts as a permutation of the finite set \\(S\\). Some positive\npower of that permutation is the identity, so for some \\(m\\ge1\\), \\(T^m\\)\nfixes every point of \\(S\\). Since \\(S\\) contains three noncollinear points,\nthe Euclidean isometry \\(T^m\\) is the identity. Hence \\(Q\\) has finite order.\n\nLet \\(\\lambda,\\lambda^{-1}\\) be the complex eigenvalues of \\(Q\\). They are\nroots of unity, so\n\n\\[\nt=\\operatorname{tr}(Q)=\\lambda+\\lambda^{-1}=2c\n\\]\n\nis an algebraic integer. But \\(Q\\) is rational, hence \\(t\\in\\mathbb Q\\); a\nrational algebraic integer is an integer. Since \\(|t|\\le2\\),\n\n\\[\nt\\in\\{-2,-1,0,1,2\\}.\n\\]\n\nThe cases \\(t=\\pm1\\) would give \\(c=\\pm\\tfrac12\\), and then\n\\(s^2=1-c^2=\\tfrac34\\). This is impossible because \\(s\\) was proved rational\nwhereas \\(\\sqrt3/2\\) is irrational. The case \\(t=2\\) is the identity rotation,\nwhich was excluded. If \\(t=-2\\), then \\((c,s)=(-1,0)\\), a half-turn. If\n\\(t=0\\), then \\((c,s)=(0,\\pm1)\\), a quarter-turn. These are all cases, proving\nthe lemma.\n\n## Application to \\(G_{77}\\)\n\nA 153- or 154-point no-three-in-line set is noncollinear, so the lemma applies.\nIt remains only to combine it with the orbit arguments already represented in\n`rotational-symmetry/cardinality-obstructions`; they are repeated here to make\nthe corollary self-contained.\n\nUnder a half-turn, noncentral points occur in opposite pairs. If an invariant\nset has odd size, it contains the center. Any other opposite pair together with\nthat center would be three collinear points. Therefore a half-turn-invariant\nno-three-in-line set of odd size has at most one point, excluding size 153.\n\nUnder a quarter-turn, every noncentral orbit has size four. If the center is\nselected, the same half-turn argument excludes every other orbit; otherwise the\ncardinality is divisible by four. Thus neither 153 nor 154 is compatible with\na quarter-turn.\n\nThe only remaining nontrivial rotation at size 154 is a half-turn. A\n154-point no-three-in-line subset of \\(G_{77}\\) has exactly two selected points\nin every row and, independently, exactly two in every column: each of the 77\nrows or columns contains at most two points, and equality holds in the total\nbound \\(154=2\\cdot77\\). Its coordinatewise bounding box is therefore all of\n\\([0,76]^2\\). A half-turn maps the bounding box of an invariant set to itself,\nso its center is the center of that box, \\((38,38)\\). The rotation has no\nselected fixed point: otherwise every opposite pair and the center would be a\ncollinear triple (and, equivalently here, 154 is even while all noncentral\norbits have size two). Hence \\((38,38)\\notin S\\).\n\nThis proves both stated consequences.\n\n## Provenance and relationship to prior work\n\n- Research-direction registration:\n  `a9552d14dcd11d394a0ae9672b6d81dae033f127`.\n- The qualified knowledge node addressed is\n  `d77/rotational-classification-scope`, revision\n  `sha256:49933934edbd64cdd3484e6a987ffcb1a4bde2c1beb63aaddad89d78736e22db`.\n- The accepted half-turn and quarter-turn orbit facts are represented by\n  `rotational-symmetry/cardinality-obstructions`, revision\n  `sha256:586ea4ca1f07e8217cbd39b0496d0330f895b088623f0429c214c93a88b1aa83`.\n- Both nodes arose from transaction\n  `c98dd877ad81611a9a469b1bd790cd909b56b1ce` and its primary judgment\n  `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5`.\n  That judgment explicitly identified the finite-order classification step as\n  plausible but omitted. This contribution supplies that step and reuses the\n  already established orbit and occupancy arguments; it claims no priority for\n  those prior results or for the rct4 model.\n\nNo external mathematical source or computational result is used.\n\n## Verification and limitations\n\nThe evidence is the exact proof above, not a bounded computation. Repository\nvalidation can be reproduced from the repository root with:\n\n```bash\npython3 -m math_flow validate-tree\npython3 -m unittest discover -s tests -v\ngit diff --check\n```\n\nKnown limitations are deliberate:\n\n- the theorem classifies Euclidean rotations preserving a finite noncollinear\n  lattice set, not reflections, general affine maps, or approximate symmetry;\n- the 154-point conclusion is conditional and constructs no configuration;\n- no 153- or 154-point existence or global nonexistence result is obtained;\n- the rct4 model remains a strict subclass of centered half-turn symmetry; and\n- the certified bounds remain unchanged.\n\n## Authorship\n\nProof and exposition by an OpenAI Codex research agent working through the\nMath Flow solver protocol at Robert Raynor's request. Prior results and their\nimmutable provenance are credited above.\n"
+          },
+          {
+            "ordinal": 5,
+            "transactionId": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "contributionId": "record-152-objective-verification",
+            "path": "problems/no-three-in-line-77/contributions/record-152-objective-verification",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Replayable objective verification of the 152-point record\n\nThis contribution republishes the exact `record-152-certificate` checker and\ncertificate bytes with a canonical `verification.json` request. Its purpose is\nto produce a durable, independently replayable objective attestation through\nMath Flow's trusted hosted verifier path.\n\n## Scope\n\nThe encoded configuration is byte-for-byte identical, and the checker logic is\nidentical, to the artifacts in the earlier canonical contribution\n`record-152-certificate` (transaction\n`dfc0cc40d1193b8d5ca25e7f177fa48ff9a1b38d`). The checker establishes that the\npayload decodes to 152 distinct points in the `76 x 76` grid and that every\ntriple has nonzero integer determinant. Since that grid embeds into the\n`77 x 77` grid, this re-verifies the existing lower bound\n\n\\[\nD(77) \\ge 152.\n\\]\n\nThis is independent verification infrastructure, not a new bound and not a\nclaim about optimality. A successful attestation proves only that the pinned\nchecker accepted these pinned bytes in the governed environment; judgment of\nwhether the encoding captures the stated mathematics remains separate.\n\n## Reproduction\n\nRun locally with Python 3 and the standard library:\n\n```bash\npython3 -I -B verify.py configuration.txt\n```\n\nThe expected output is:\n\n```text\nverified 152 points on a 76 x 76 grid; no collinear triple\n```\n\nAfter canonical merge, `verification.json` requests the repository-approved\n`python-stdlib-3-13-v1` verifier. The trusted workflow should execute it in the\ndigest-pinned, networkless, read-only OCI environment and publish the resulting\ncontent-addressed attestation separately on the `projections` branch.\n"
+          }
+        ],
+        "judgments": [
+          {
+            "judgmentId": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+            "runDigest": "sha256:f6c8941bbfb3621d14884050f5e0ce95e1a65c9bb9f5c0f1e5aba3374a0c65af",
+            "judgmentKind": "primary",
+            "ledgerHead": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+            "problemLedgerHead": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+            "judgeSpec": {
+              "id": "openrouter-markdown-judgment-v1",
+              "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.39591375,
+            "reportDigest": "sha256:b15c373fd12a011d552275634f2f0377377ed2da469086dfedbd0d02f4ace485",
+            "reportMarkdown": "# Judgment of subject transaction `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n\n## Overall assessment\n\nThe subject contribution supplies a complete, self-contained proof of the previously missing arbitrary-center rotation-classification lemma. Its main theorem is correct:\n\n> A nonidentity Euclidean rotation preserving a finite noncollinear subset of \\(\\mathbb Z^2\\) must be a half-turn or a quarter-turn.\n\nThe application to 153- and 154-point no-three-in-line subsets of \\(G_{77}\\) is also correct. In particular:\n\n- a 153-point configuration cannot have any nontrivial rotational symmetry;\n- any rotationally symmetric 154-point configuration must have the centered half-turn symmetry about \\((38,38)\\), with the center unselected.\n\nThese are structural results only. They neither construct a 153- or 154-point configuration nor rule out such configurations globally, so the certified interval remains\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nConfidence in the stated rotation results is high. The proof uses no computational or external factual assumptions.\n\n---\n\n## Finding 1: Classification of rotations preserving a finite noncollinear lattice set\n\n**Claim key:** `finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn`\n\n### Claim\n\nIf \\(S\\subset\\mathbb Z^2\\) is finite and noncollinear, and a nonidentity Euclidean rotation \\(T\\) satisfies \\(T(S)=S\\), then the rotation angle is \\(180^\\circ\\) or \\(\\pm90^\\circ\\). The center of rotation may be arbitrary.\n\n### Judgment\n\n**Accepted as proved.**\n\n### Decisive reasoning\n\nWrite the rotation as\n\n\\[\nT(x)=z+Q(x-z),\\qquad\nQ=\n\\begin{pmatrix}\nc&-s\\\\\ns&c\n\\end{pmatrix},\n\\qquad c^2+s^2=1.\n\\]\n\nThe proof has three essential steps.\n\n#### 1. The rotation matrix has rational entries\n\nChoose noncollinear \\(p_0,p_1,p_2\\in S\\), and form\n\n\\[\nB=\\begin{pmatrix}|&|\\\\p_1-p_0&p_2-p_0\\\\|&|\\end{pmatrix},\n\\qquad\nC=\\begin{pmatrix}|&|\\\\T(p_1)-T(p_0)&T(p_2)-T(p_0)\\\\|&|\\end{pmatrix}.\n\\]\n\nBoth matrices have integer entries because the original points and their images belong to \\(S\\subset\\mathbb Z^2\\). Noncollinearity gives \\(\\det B\\ne0\\). Translation by the arbitrary center cancels in differences, so\n\n\\[\nC=QB,\\qquad Q=CB^{-1}.\n\\]\n\nSince \\(B^{-1}\\) has rational entries, \\(Q\\) has rational entries. Therefore\n\n\\[\nc,s\\in\\mathbb Q.\n\\]\n\nThis is the key step that makes the conclusion valid even when the rotation does not preserve the whole lattice and its center is not a lattice point.\n\n#### 2. The rotation has finite order\n\nBecause \\(T\\) permutes the finite set \\(S\\), some positive power \\(T^m\\) fixes every point of \\(S\\). It therefore fixes the chosen three noncollinear points. A Euclidean isometry fixing three noncollinear points is the identity, so \\(T^m\\) is the identity isometry. In particular, \\(Q\\) has finite order.\n\nThis step is logically sufficient; it does not merely show that the restriction of \\(T\\) to \\(S\\) has finite order.\n\n#### 3. Rationality excludes all finite rotation orders except \\(2\\) and \\(4\\)\n\nLet the eigenvalues of \\(Q\\) be \\(\\lambda,\\lambda^{-1}\\). Since \\(Q\\) has finite order, they are roots of unity. Thus\n\n\\[\n\\operatorname{tr}(Q)=\\lambda+\\lambda^{-1}=2c\n\\]\n\nis an algebraic integer. It is also rational, because \\(Q\\) is rational. Hence it is an ordinary integer. As \\(|2c|\\le2\\),\n\n\\[\n2c\\in\\{-2,-1,0,1,2\\}.\n\\]\n\nThe cases are then exhaustive:\n\n- \\(2c=2\\): \\(c=1,s=0\\), the identity, which was excluded.\n- \\(2c=-2\\): \\(c=-1,s=0\\), a half-turn.\n- \\(2c=0\\): \\(c=0,s=\\pm1\\), a quarter-turn in one of the two orientations.\n- \\(2c=\\pm1\\): \\(c=\\pm\\frac12\\), which would imply\n  \\[\n  s^2=1-c^2=\\frac34,\n  \\]\n  so \\(s=\\pm\\frac{\\sqrt3}{2}\\), contradicting the already established rationality of \\(s\\).\n\nNo possible finite-order rotation remains.\n\n### Scope and assumptions\n\nThe noncollinearity hypothesis is essential. For example, a singleton lattice set is preserved by rotations through arbitrary angles about that point. The contribution states the necessary hypothesis explicitly.\n\nThe theorem classifies Euclidean rotations only. It does not classify reflections, affine automorphisms, or approximate symmetries.\n\n---\n\n## Finding 2: A 153-point configuration in \\(G_{77}\\) has no nontrivial rotational symmetry\n\n**Claim key:** `no-three-in-line/g77-153-has-no-nontrivial-rotation`\n\n### Claim\n\nEvery 153-point no-three-in-line subset of \\(G_{77}\\), if one exists, has no nonidentity rotational symmetry about any center.\n\n### Judgment\n\n**Accepted as proved.**\n\n### Decisive reasoning\n\nA 153-point no-three-in-line set is automatically noncollinear, so Finding 1 restricts any nontrivial rotation to a half-turn or quarter-turn.\n\n#### Half-turn exclusion\n\nUnder a half-turn, every noncentral point lies in a two-element opposite pair. An invariant finite set of odd cardinality must therefore include the unique fixed point, namely the rotation center \\(z\\).\n\nIf the set contains any other point \\(p\\), invariance also gives the opposite point \\(2z-p\\), and\n\n\\[\np,\\ z,\\ 2z-p\n\\]\n\nare three distinct collinear points. Thus a half-turn-invariant no-three-in-line set of odd size has cardinality at most one. In particular, it cannot have 153 points.\n\n#### Quarter-turn exclusion\n\nUnder a quarter-turn, every noncentral orbit has size four. If the center is absent, the cardinality must be divisible by four. Since\n\n\\[\n153\\equiv1\\pmod4,\n\\]\n\nthe center would have to be selected.\n\nBut quarter-turn invariance also gives half-turn invariance under the square of the rotation. If the center and any noncentral orbit are selected, a point, its half-turn opposite, and the center form a collinear triple. Hence a quarter-turn-invariant no-three-in-line set containing its center can contain no other points.\n\nTherefore a 153-point set admits neither a half-turn nor a quarter-turn. By Finding 1, there is no other possible nontrivial rotation.\n\n### Significance\n\nThis is a global symmetry restriction, not a global nonexistence theorem. It shows that any prospective 153-point construction must be rotationally asymmetric, though it may still have reflection symmetry.\n\n---\n\n## Finding 3: Rotational symmetry of a 154-point configuration is necessarily the centered half-turn\n\n**Claim key:** `no-three-in-line/g77-154-rotation-is-centered-half-turn`\n\n### Claim\n\nIf a 154-point no-three-in-line subset \\(S\\subset G_{77}\\) has a nontrivial rotational symmetry, then that symmetry is the half-turn about \\((38,38)\\), and \\((38,38)\\notin S\\).\n\n### Judgment\n\n**Accepted as proved.**\n\n### Decisive reasoning\n\n#### 1. Quarter-turn symmetry is impossible\n\nAs above, a quarter-turn-invariant no-three-in-line set either:\n\n- excludes its center and has cardinality divisible by four, or\n- contains its center and then has no other selected point.\n\nSince\n\n\\[\n154\\equiv2\\pmod4,\n\\]\n\na 154-point set cannot be quarter-turn invariant.\n\nBy Finding 1, the only remaining nontrivial rotational possibility is a half-turn.\n\n#### 2. Equality in the row and column bounds forces full coordinate range\n\nEach horizontal row contains at most two selected points. There are 77 rows, and\n\n\\[\n|S|=154=2\\cdot77,\n\\]\n\nso every row contains exactly two points.\n\nThe same argument applied to vertical columns shows that every column also contains exactly two points. Consequently every \\(x\\)-coordinate and every \\(y\\)-coordinate in \\(\\{0,\\ldots,76\\}\\) occurs, and the coordinatewise bounding box of \\(S\\) is\n\n\\[\n[0,76]\\times[0,76].\n\\]\n\n#### 3. The half-turn center is forced by the bounding box\n\nA half-turn about \\(z=(z_x,z_y)\\) maps the bounding box of \\(S\\) to the half-turned bounding box. Since \\(S\\) is invariant, its bounding box must also be invariant. In one coordinate, the interval \\([0,76]\\) is sent to\n\n\\[\n[2z_x-76,\\,2z_x].\n\\]\n\nEquality with \\([0,76]\\) forces \\(2z_x=76\\), hence \\(z_x=38\\). Similarly \\(z_y=38\\). Thus the center is\n\n\\[\nz=(38,38).\n\\]\n\n#### 4. The center is unselected\n\nUnder a half-turn, all noncentral orbits have size two and the center is the unique fixed point. An invariant set containing the center therefore has odd cardinality. Since \\(154\\) is even, the center cannot be selected.\n\nEquivalently, if the center and any noncentral opposite pair were selected, they would form a collinear triple.\n\n### Scope\n\nThis does not prove that a 154-point set exists. Nor does it prove that every centered half-turn configuration lies in the much narrower `rct4` class considered in the earlier search contribution. The subject contribution explicitly preserves that distinction.\n\n---\n\n## Finding 4: Effect on the exact-value problem\n\n**Claim key:** `no-three-in-line/d77-exact-value`\n\n### Judgment\n\n**No bound improvement is established.**\n\nThe contribution provides neither:\n\n- a 153- or 154-point coordinate certificate,\n- an impossibility proof for either cardinality, nor\n- a global exhaustive search.\n\nTherefore it does not alter the supplied certified interval\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nIts mathematical value is instead to constrain the symmetry classes in which any larger configuration could occur:\n\n- cardinality 153: reflection-symmetric or asymmetric only; no rotational symmetry;\n- cardinality 154: if rotationally symmetric, necessarily centered half-turn symmetric;\n- the asymmetric and reflection-symmetric 154 cases remain possible in principle;\n- centered half-turn symmetry is strictly broader than the `rct4` model.\n\n---\n\n## Relationship to the earlier supplied evidence\n\nThe preceding `rct4-154-search-instance` contribution stated the same high-level rotational conclusion, but its displayed orbit arguments only handled half-turns and quarter-turns. By themselves, those arguments did not exclude an arbitrary-center rotation of order \\(3\\), \\(5\\), \\(6\\), or another finite order. Thus the earlier conclusion had a genuine missing lemma.\n\nThe subject contribution fills that gap correctly by proving that a finite noncollinear lattice set cannot support any of those other rotational orders. This is not a contradiction with the earlier mathematical conclusion; it is a completion of previously insufficient justification.\n\nThere is also no conflict with the local-rigidity computation or the baseline 152-point certificate. Those concern existence and local search around a particular configuration, while the present result concerns possible rotational symmetries of hypothetical 153- and 154-point sets.\n\n---\n\n## Missing evidence and limitations\n\nThere is no material missing lemma in the proof actually presented. The limitations are matters of scope:\n\n1. **No reflection classification.** Reflection-symmetric configurations are not analyzed.\n2. **No existence result.** The proof does not produce a larger configuration.\n3. **No nonexistence result.** It does not exclude asymmetric 153- or 154-point sets, reflection-symmetric sets, or general centered-half-turn 154-point sets.\n4. **No identification with `rct4`.** Centered half-turn invariance does not imply the anti-diagonal and partial quarter-turn structure of the `rct4` search class.\n5. **Repository validation is not mathematical evidence for the theorem.** The listed repository tests may validate file consistency, but the theorem is warranted by the written proof itself.\n\n---\n\n## Contribution and priority\n\nThe subject contribution supplies the decisive arbitrary-center finite-rotation argument. The half-turn and quarter-turn orbit-counting arguments and the row/column occupancy observation were already present in the earlier supplied evidence and are repeated self-containedly here. The contribution appropriately does not claim the earlier `rct4` construction methodology or known certificates.\n\nThe supplied evidence is not sufficient to adjudicate broader historical priority for the finite-rotation theorem. It is sufficient to recognize that this transaction contains a correct proof of the proposition and closes the explicitly identified logical gap in the earlier rotational classification.\n",
+            "record": {
+              "schemaVersion": 1,
+              "judgmentKind": "primary",
+              "problemId": "no-three-in-line-77",
+              "ledgerHead": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+              "problemLedgerDigest": "sha256:0c0677d5252855d09785f57eabd58b2fed8dc129cbba814f5c6854a190d607c0",
+              "judgeSpec": {
+                "id": "openrouter-markdown-judgment-v1",
+                "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                  "ledgerPosition": 4
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn",
+                  "stance": "supports",
+                  "summary": "Accepted as proved: if a finite noncollinear subset of Z^2 is preserved by a nonidentity Euclidean rotation about an arbitrary center, the rotation is a half-turn or quarter-turn. The proof derives a rational rotation matrix from three noncollinear lattice points, obtains finite order from the induced permutation, and uses the rational algebraic-integer trace to exclude every other finite rotation order. This closes the missing arbitrary-center lemma in the earlier rotational classification; noncollinearity is essential, and reflections or affine and approximate symmetries are outside scope.",
+                  "subjectTransactionIds": [
+                    "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                  ],
+                  "evidenceTransactionIds": [
+                    "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                  ]
+                },
+                {
+                  "claimKey": "no-three-in-line/g77-153-has-no-nontrivial-rotation",
+                  "stance": "supports",
+                  "summary": "Accepted as proved: any 153-point no-three-in-line subset of G_77 has no nonidentity rotational symmetry about any center. The rotation-classification lemma leaves only half-turns and quarter-turns; odd cardinality forces inclusion of a half-turn center, creating a collinear opposite pair through that center, while 153 mod 4 forces inclusion of a quarter-turn center and the squared half-turn gives the same obstruction. This is only a symmetry restriction and does not prove that a 153-point set is nonexistent; reflection-symmetric and asymmetric possibilities remain.",
+                  "subjectTransactionIds": [
+                    "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                  ],
+                  "evidenceTransactionIds": [
+                    "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                  ]
+                },
+                {
+                  "claimKey": "no-three-in-line/g77-154-rotation-is-centered-half-turn",
+                  "stance": "supports",
+                  "summary": "Accepted as proved: if a 154-point no-three-in-line subset of G_77 has nontrivial rotational symmetry, it must be invariant under the half-turn about (38,38), with (38,38) unselected. Quarter-turn symmetry is excluded by orbit cardinalities; equality in the row and column bounds forces exactly two selected points in every row and column and hence bounding box [0,76]^2; invariance of that box forces the half-turn center to be (38,38); even cardinality excludes selection of the unique fixed point. This neither establishes existence nor identifies every centered-half-turn configuration with the narrower rct4 class.",
+                  "subjectTransactionIds": [
+                    "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                  ],
+                  "evidenceTransactionIds": [
+                    "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                  ]
+                },
+                {
+                  "claimKey": "no-three-in-line/d77-exact-value",
+                  "stance": "uncertain",
+                  "summary": "The exact value remains undecided and no bound improvement is established: the certified interval stays 152 <= D(77) <= 154. The contribution gives neither a 153- or 154-point coordinate certificate, an impossibility proof for either size, nor a global exhaustive search. It only constrains symmetry classes: a 153-point set cannot be rotationally symmetric; a rotationally symmetric 154-point set must have the centered half-turn; asymmetric, reflection-symmetric, and general centered-half-turn cases remain possible in principle, and centered-half-turn symmetry is broader than rct4.",
+                  "subjectTransactionIds": [
+                    "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                  ],
+                  "evidenceTransactionIds": [
+                    "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                  ]
+                }
+              ],
+              "reportDigest": "sha256:b15c373fd12a011d552275634f2f0377377ed2da469086dfedbd0d02f4ace485",
+              "judgmentId": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca"
+            }
+          }
+        ],
+        "runs": [
+          {
+            "id": "cc94c6abd5db53040c4f8eddaa5783778d83091fa99e19bfed45dd35b1155bb2",
+            "ordinal": 1,
+            "ledgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "problemLedgerHead": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "runDigest": "sha256:cc94c6abd5db53040c4f8eddaa5783778d83091fa99e19bfed45dd35b1155bb2",
+            "baseRun": null,
+            "runKind": "knowledge-build",
+            "inputs": {
+              "judgmentSetDigest": "sha256:3042126deae5b88f4ea0f8ff9be48712982898f8a63ef3d15ca6b7eb6c471ac3",
+              "conflictIds": [],
+              "schemaVersion": 1,
+              "builderSpecDigest": "sha256:8dbfc0666d364444fd0e237c4465a6bdca502d6eb06318f2b8a9bfb99d001d8f",
+              "judgmentIds": [
+                "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca"
+              ],
+              "laneId": "sha256:c2eccc232f4dc66ce6e6802682bcf0ff027c762023d7048689156d8bcc3b8742",
+              "problemId": "no-three-in-line-77",
+              "projectionSpecDigest": "sha256:17286f418e1335fd718c1c7f7a87d04863bae14de496efd790d3ea6bc4b6cee9",
+              "baseStateRun": null,
+              "buildToken": "sha256:a471063e6a36ee6e1046b0698966140744d9a564c19047dfef85139e55fb25d2"
+            },
+            "judgeSpec": {
+              "id": "openrouter-research-program-builder-v3",
+              "digest": "sha256:8dbfc0666d364444fd0e237c4465a6bdca502d6eb06318f2b8a9bfb99d001d8f"
+            },
+            "runner": {
+              "implementation": "openrouter-knowledge-builder-v3",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.33169624999999997,
+            "selection": {
+              "selectedNodeIds": [
+                "root"
+              ],
+              "taxonomyReviewNodeIds": [],
+              "rationale": "Root is the only existing node and must be updated to add the still-uncertain exact-value/bounds state as a global fact and to establish durable nodes for the accepted rotational-symmetry results, including the general finite-lattice rotation lemma and its G_77 consequences. No existing research program or subtree exists, so no split, merge, promotion, or reparenting review is warranted."
+            },
+            "normalizations": [],
+            "delta": {
+              "operations": [
+                {
+                  "action": "create",
+                  "nodeId": "root",
+                  "parentId": null,
+                  "nodeType": "root",
+                  "title": "Research state for no-three-in-line at grid size 77",
+                  "summary": "The exact value of D(77) remains undecided, with certified interval 152 ≤ D(77) ≤ 154. The state has active branches for the global exact-value question and rotational-symmetry results. No active disputes exist.",
+                  "reportSection": "## Node: root",
+                  "baseDigest": "sha256:182fd4ab3cff13c2410f364403d9962b96944122acda56bea8389df70bd43d03",
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: root",
+                  "lineage": []
+                },
+                {
+                  "action": "create",
+                  "nodeId": "no-three-in-line/d77-exact-value",
+                  "parentId": "root",
+                  "nodeType": "question",
+                  "title": "Exact value and certified interval for D(77)",
+                  "summary": "The exact value of D(77) is unresolved. The certified interval remains 152 ≤ D(77) ≤ 154, and the accepted rotational-symmetry restrictions do not improve either bound or select among 152, 153, and 154.",
+                  "reportSection": "## Node: no-three-in-line/d77-exact-value",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: no-three-in-line/d77-exact-value",
+                  "lineage": []
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/rotational-symmetry",
+                  "parentId": "root",
+                  "nodeType": "program",
+                  "title": "Rotational symmetry of finite lattice configurations",
+                  "summary": "This program organizes the accepted classification of nonidentity rotations preserving finite noncollinear lattice sets and its consequences for hypothetical 153- and 154-point no-three-in-line configurations in G_77. It does not establish existence or impossibility at either cardinality.",
+                  "reportSection": "## Node: programs/rotational-symmetry",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/rotational-symmetry",
+                  "lineage": []
+                },
+                {
+                  "action": "create",
+                  "nodeId": "finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn",
+                  "parentId": "programs/rotational-symmetry",
+                  "nodeType": "claim",
+                  "title": "Classification of rotations preserving a finite noncollinear lattice set",
+                  "summary": "If a nonidentity Euclidean rotation about an arbitrary center preserves a finite noncollinear subset of Z², then it is a half-turn or quarter-turn. The result does not classify reflections, affine symmetries, or approximate symmetries.",
+                  "reportSection": "## Node: finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn",
+                  "lineage": []
+                },
+                {
+                  "action": "create",
+                  "nodeId": "no-three-in-line/g77-153-has-no-nontrivial-rotation",
+                  "parentId": "programs/rotational-symmetry",
+                  "nodeType": "claim",
+                  "title": "Rotational asymmetry of any 153-point configuration in G_77",
+                  "summary": "Every 153-point no-three-in-line subset of G_77, if one exists, has no nonidentity rotational symmetry about any center. This does not exclude reflection-symmetric or asymmetric configurations and does not improve the certified bounds.",
+                  "reportSection": "## Node: no-three-in-line/g77-153-has-no-nontrivial-rotation",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: no-three-in-line/g77-153-has-no-nontrivial-rotation",
+                  "lineage": []
+                },
+                {
+                  "action": "create",
+                  "nodeId": "no-three-in-line/g77-154-rotation-is-centered-half-turn",
+                  "parentId": "programs/rotational-symmetry",
+                  "nodeType": "claim",
+                  "title": "Rotational symmetry of a 154-point configuration in G_77",
+                  "summary": "If a 154-point no-three-in-line subset of G_77 has nontrivial rotational symmetry, that symmetry is the half-turn about (38,38), and (38,38) is unselected. The result is conditional and does not exclude asymmetric or reflection-symmetric configurations or identify centered half-turn symmetry with the narrower rct4 class.",
+                  "reportSection": "## Node: no-three-in-line/g77-154-rotation-is-centered-half-turn",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: no-three-in-line/g77-154-rotation-is-centered-half-turn",
+                  "lineage": []
+                }
+              ]
+            },
+            "state": {
+              "schemaVersion": 3,
+              "problemId": "no-three-in-line-77",
+              "rootId": "root",
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "root",
+                  "title": "Research state for no-three-in-line at grid size 77",
+                  "summary": "The exact value of D(77) remains undecided, with certified interval 152 ≤ D(77) ≤ 154. The state has active branches for the global exact-value question and rotational-symmetry results. No active disputes exist.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+                    "section": "## Node: root"
+                  },
+                  "contentMarkdown": "## Node: root\n\n- **Type:** Root\n- **Title:** Research state for no-three-in-line at grid size 77\n- **Status:** Active\n- **Parent:** None\n\nFor\n\n\\[\nG_{77}=\\{0,1,\\ldots,76\\}^2,\n\\]\n\nthe exact maximum cardinality \\(D(77)\\) of a subset containing no three distinct collinear points remains undecided. The current certified interval is\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nThe primary judgment establishes no improvement to either bound. It accepts structural restrictions on rotationally symmetric configurations but does not establish the existence or global impossibility of configurations with 153 or 154 points.\n\nThe current organization has two active root-level branches:\n\n1. **`no-three-in-line/d77-exact-value`** records the central exact-value question and current certified bounds as a genuinely global fact.\n2. **`programs/rotational-symmetry`** organizes the accepted classification of rotations preserving finite noncollinear lattice sets and its consequences for hypothetical 153- and 154-point configurations in \\(G_{77}\\).\n\nThere are no active disputes, because no conflict records or incompatible reconciliation outcomes were supplied.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Judged subject transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n- Ledger position: 4\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:ae533eae07c86fc248dc2ff4c4681cbd37290c460fbea4ffddace7e9dd65c206",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:5fdf63f7f3e9a25c25f490a7441c1d85fbf1ea3758b6e28450887ab82f9659ff"
+                },
+                "no-three-in-line/d77-exact-value": {
+                  "id": "no-three-in-line/d77-exact-value",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Exact value and certified interval for D(77)",
+                  "summary": "The exact value of D(77) is unresolved. The certified interval remains 152 ≤ D(77) ≤ 154, and the accepted rotational-symmetry restrictions do not improve either bound or select among 152, 153, and 154.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+                    "section": "## Node: no-three-in-line/d77-exact-value"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-exact-value\n\n- **Type:** Central question and global bounds\n- **Title:** Exact value and certified interval for \\(D(77)\\)\n- **Status:** Active and unresolved\n- **Parent:** `root`\n\nThe central question is to determine the maximum size \\(D(77)\\) of a no-three-in-line subset of \\(G_{77}\\).\n\nAccording to primary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`, the exact value remains undecided and the current certified interval remains\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nThe judged contribution does not provide:\n\n- a 153- or 154-point coordinate certificate;\n- an impossibility proof for either cardinality; or\n- a global exhaustive search.\n\nThe accepted rotational-symmetry results therefore do not improve either side of the interval. They only narrow the possible symmetry classes:\n\n- any hypothetical 153-point configuration has no nonidentity rotational symmetry, although reflection-symmetric and asymmetric possibilities remain;\n- if a hypothetical 154-point configuration has nontrivial rotational symmetry, it must have the half-turn about \\((38,38)\\), with that center unselected;\n- asymmetric and reflection-symmetric 154-point configurations remain possible in principle;\n- general centered-half-turn symmetry is broader than the previously referenced `rct4` class.\n\nNo conclusion has been accepted that selects among \\(D(77)=152\\), \\(153\\), or \\(154\\).\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `no-three-in-line/d77-exact-value`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:2d77dff2c158634e7eec59e56b39e3c5a5d7df0a83fea54db8d3ab1fe2fe6e8f",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:32d5791554f210e941cf0d025f43502ac399a8d22133741bc83000748bdf9bb7"
+                },
+                "programs/rotational-symmetry": {
+                  "id": "programs/rotational-symmetry",
+                  "parentId": "root",
+                  "type": "program",
+                  "title": "Rotational symmetry of finite lattice configurations",
+                  "summary": "This program organizes the accepted classification of nonidentity rotations preserving finite noncollinear lattice sets and its consequences for hypothetical 153- and 154-point no-three-in-line configurations in G_77. It does not establish existence or impossibility at either cardinality.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+                    "section": "## Node: programs/rotational-symmetry"
+                  },
+                  "contentMarkdown": "## Node: programs/rotational-symmetry\n\n- **Type:** Research program\n- **Title:** Rotational symmetry of finite lattice configurations\n- **Status:** Active\n- **Parent:** `root`\n- **Lineage:** None; this program was not formed by a split or merge.\n\nThis program studies which nonidentity Euclidean rotations can preserve finite noncollinear lattice sets and what those classifications imply for large no-three-in-line configurations in \\(G_{77}\\).\n\nIts current accepted knowledge consists of:\n\n- the classification that a nonidentity Euclidean rotation preserving a finite noncollinear subset of \\(\\mathbb Z^2\\) must be a half-turn or quarter-turn, even when the rotation center is arbitrary;\n- the resulting exclusion of all nontrivial rotational symmetry for a hypothetical 153-point no-three-in-line subset of \\(G_{77}\\);\n- the conclusion that any rotationally symmetric hypothetical 154-point subset must be invariant under the half-turn about \\((38,38)\\), with the center unselected.\n\nThe program does not currently classify reflections, affine automorphisms, or approximate symmetries. It does not establish the existence or nonexistence of 153- or 154-point configurations and does not identify centered-half-turn symmetry with the narrower `rct4` class.\n\nThe primary judgment assigns high confidence to the accepted rotation results and reports that their proof uses no computational or external factual assumptions.\n\n**Active descendants**\n\n- `finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn`\n- `no-three-in-line/g77-153-has-no-nontrivial-rotation`\n- `no-three-in-line/g77-154-rotation-is-centered-half-turn`\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:6e53a9549ef8a3aaac90481714dce9bf01c1ce4779213bd80498000ff95e61bb",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:32f43440e5639f99d78e09e9fc43821bbc754eeeff6283b888125bb821ed6772"
+                },
+                "finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn": {
+                  "id": "finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn",
+                  "parentId": "programs/rotational-symmetry",
+                  "type": "claim",
+                  "title": "Classification of rotations preserving a finite noncollinear lattice set",
+                  "summary": "If a nonidentity Euclidean rotation about an arbitrary center preserves a finite noncollinear subset of Z², then it is a half-turn or quarter-turn. The result does not classify reflections, affine symmetries, or approximate symmetries.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+                    "section": "## Node: finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn"
+                  },
+                  "contentMarkdown": "## Node: finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn\n\n- **Type:** Theorem\n- **Title:** Classification of rotations preserving a finite noncollinear lattice set\n- **Status:** Accepted as proved\n- **Parent:** `programs/rotational-symmetry`\n\nPrimary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts the following statement as proved:\n\n> If \\(S\\subset\\mathbb Z^2\\) is finite and noncollinear, and a nonidentity Euclidean rotation about an arbitrary center satisfies \\(T(S)=S\\), then the rotation is a half-turn or a quarter-turn.\n\nThus the only admitted nonidentity rotation angles are \\(180^\\circ\\) and \\(\\pm90^\\circ\\).\n\nThe judgment reports that the proof:\n\n- obtains a rational rotation matrix from the images of three noncollinear lattice points;\n- obtains finite rotation order from the induced permutation of the finite set; and\n- uses the rational algebraic-integer trace to exclude all remaining finite rotation orders.\n\nThe arbitrary-center scope is material: the theorem does not require the center to be a lattice point or require the rotation to preserve the whole lattice.\n\nThe noncollinearity assumption is essential. The accepted theorem concerns Euclidean rotations only and does not classify reflections, affine symmetries, or approximate symmetries.\n\n**Credit and priority carried from the judgment**\n\nThe subject transaction supplies the decisive arbitrary-center finite-rotation argument and closes the logical gap identified in earlier rotational reasoning. The supplied evidence is insufficient to adjudicate broader historical priority for the theorem.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:58c726ab4cd2c63a604d57df9976bae00d29dec4301d40f8991afec4908c85ac",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:59593b3ffde56eac79763e22185d62020161ac1f6131d15b580b58b763586f6d"
+                },
+                "no-three-in-line/g77-153-has-no-nontrivial-rotation": {
+                  "id": "no-three-in-line/g77-153-has-no-nontrivial-rotation",
+                  "parentId": "programs/rotational-symmetry",
+                  "type": "claim",
+                  "title": "Rotational asymmetry of any 153-point configuration in G_77",
+                  "summary": "Every 153-point no-three-in-line subset of G_77, if one exists, has no nonidentity rotational symmetry about any center. This does not exclude reflection-symmetric or asymmetric configurations and does not improve the certified bounds.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+                    "section": "## Node: no-three-in-line/g77-153-has-no-nontrivial-rotation"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/g77-153-has-no-nontrivial-rotation\n\n- **Type:** Structural theorem\n- **Title:** Rotational asymmetry of any 153-point configuration in \\(G_{77}\\)\n- **Status:** Accepted as proved\n- **Parent:** `programs/rotational-symmetry`\n\nPrimary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts as proved that every 153-point no-three-in-line subset of \\(G_{77}\\), if such a subset exists, has no nonidentity rotational symmetry about any center.\n\nThe accepted conclusion uses the general finite-lattice rotation classification to reduce the possibilities to half-turns and quarter-turns. The judgment accepts the corresponding orbit and collinearity obstructions for odd cardinality and for cardinality \\(153\\equiv1\\pmod 4\\).\n\nThis theorem is only a symmetry restriction. It does not prove that a 153-point configuration is impossible. In particular:\n\n- reflection symmetry is not excluded;\n- asymmetric configurations are not excluded; and\n- no improvement to the certified lower or upper bound follows from this result alone.\n\n**Credit carried from the judgment**\n\nThe half-turn and quarter-turn orbit arguments were already present in earlier supplied evidence. The subject transaction repeats them self-containedly and supplies the general arbitrary-center classification needed to exclude every other possible rotational order.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `no-three-in-line/g77-153-has-no-nontrivial-rotation`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:536c509790357d094a74b14df39accea35cc7ca6f87c8313e2fe23302bfe3fad",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:94168e17f2af045857026c5ed907681263e7f6982c5e19884747854d2c7fd5f0"
+                },
+                "no-three-in-line/g77-154-rotation-is-centered-half-turn": {
+                  "id": "no-three-in-line/g77-154-rotation-is-centered-half-turn",
+                  "parentId": "programs/rotational-symmetry",
+                  "type": "claim",
+                  "title": "Rotational symmetry of a 154-point configuration in G_77",
+                  "summary": "If a 154-point no-three-in-line subset of G_77 has nontrivial rotational symmetry, that symmetry is the half-turn about (38,38), and (38,38) is unselected. The result is conditional and does not exclude asymmetric or reflection-symmetric configurations or identify centered half-turn symmetry with the narrower rct4 class.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+                    "section": "## Node: no-three-in-line/g77-154-rotation-is-centered-half-turn"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/g77-154-rotation-is-centered-half-turn\n\n- **Type:** Structural theorem\n- **Title:** Rotational symmetry of a 154-point configuration in \\(G_{77}\\)\n- **Status:** Accepted as proved\n- **Parent:** `programs/rotational-symmetry`\n\nPrimary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts as proved that if a 154-point no-three-in-line subset \\(S\\subset G_{77}\\) has a nontrivial rotational symmetry, then:\n\n- the symmetry is the half-turn about \\((38,38)\\); and\n- \\((38,38)\\notin S\\).\n\nThe judgment accepts the following associated constraints:\n\n- quarter-turn symmetry is excluded by orbit cardinalities;\n- equality in the row and column bounds forces exactly two selected points in every row and every column;\n- consequently the coordinatewise bounding box is \\([0,76]^2\\);\n- invariance of that bounding box forces the half-turn center to be \\((38,38)\\); and\n- the unique fixed point of the half-turn is unselected.\n\nThe theorem is conditional on a 154-point configuration existing and having nontrivial rotational symmetry. It does not establish existence. It also does not exclude asymmetric or reflection-symmetric 154-point configurations.\n\nCentered-half-turn invariance is not identified with the narrower `rct4` search class. The judgment explicitly preserves that distinction.\n\n**Credit carried from the judgment**\n\nThe half-turn and quarter-turn orbit counting and the row/column occupancy observation were already present in earlier supplied evidence. The subject transaction presents the argument self-containedly and supplies the missing arbitrary-center rotation classification. It does not claim the earlier `rct4` construction methodology or known certificates.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `no-three-in-line/g77-154-rotation-is-centered-half-turn`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:fdcd789090edf1c5a1a0aea479ffca87432d6f096bd3207b7cf2b59fe4f6f7c2",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:aac77795a1d05d0fe85b84cf307e2fe88b54b77741788f2cf33ea415bd64bdf0"
+                }
+              },
+              "stateDigest": "sha256:46e51ea1388c6752cc9aa227ccc1d3bd8668d8858e49a0765eaf7a6592d1ac0b"
+            },
+            "revisionIds": [
+              "sha256:ae533eae07c86fc248dc2ff4c4681cbd37290c460fbea4ffddace7e9dd65c206",
+              "sha256:2d77dff2c158634e7eec59e56b39e3c5a5d7df0a83fea54db8d3ab1fe2fe6e8f",
+              "sha256:6e53a9549ef8a3aaac90481714dce9bf01c1ce4779213bd80498000ff95e61bb",
+              "sha256:58c726ab4cd2c63a604d57df9976bae00d29dec4301d40f8991afec4908c85ac",
+              "sha256:536c509790357d094a74b14df39accea35cc7ca6f87c8313e2fe23302bfe3fad",
+              "sha256:fdcd789090edf1c5a1a0aea479ffca87432d6f096bd3207b7cf2b59fe4f6f7c2"
+            ],
+            "addedRevisionIds": [
+              "sha256:ae533eae07c86fc248dc2ff4c4681cbd37290c460fbea4ffddace7e9dd65c206",
+              "sha256:2d77dff2c158634e7eec59e56b39e3c5a5d7df0a83fea54db8d3ab1fe2fe6e8f",
+              "sha256:6e53a9549ef8a3aaac90481714dce9bf01c1ce4779213bd80498000ff95e61bb",
+              "sha256:58c726ab4cd2c63a604d57df9976bae00d29dec4301d40f8991afec4908c85ac",
+              "sha256:536c509790357d094a74b14df39accea35cc7ca6f87c8313e2fe23302bfe3fad",
+              "sha256:fdcd789090edf1c5a1a0aea479ffca87432d6f096bd3207b7cf2b59fe4f6f7c2"
+            ],
+            "changedNodeIds": [
+              "root",
+              "no-three-in-line/d77-exact-value",
+              "programs/rotational-symmetry",
+              "finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn",
+              "no-three-in-line/g77-153-has-no-nontrivial-rotation",
+              "no-three-in-line/g77-154-rotation-is-centered-half-turn"
+            ],
+            "reportDigest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+            "revisionSemantics": "neutral-knowledge"
+          }
+        ],
+        "revisions": [
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "The previously empty root at digest `sha256:182fd4ab3cff13c2410f364403d9962b96944122acda56bea8389df70bd43d03` is updated to represent the certified global bounds and the first durable research program warranted by the supplied primary judgment. No split, merge, restoration, or reparenting is involved because no prior program taxonomy existed.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+              "section": "## Change: root"
+            },
+            "contentDigest": "sha256:c7cb918cfc326e62dfa3bae9da33d3db9e4015959ee1aceadc8a39c8f415b481",
+            "evidence": [
+              {
+                "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "root",
+            "nodeType": "root",
+            "parentId": null,
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+              "section": "## Node: root"
+            },
+            "revisionId": "sha256:ae533eae07c86fc248dc2ff4c4681cbd37290c460fbea4ffddace7e9dd65c206",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "ledgerPosition": 4
+              }
+            ],
+            "summary": "The exact value of D(77) remains undecided, with certified interval 152 ≤ D(77) ≤ 154. The state has active branches for the global exact-value question and rotational-symmetry results. No active disputes exist.",
+            "title": "Research state for no-three-in-line at grid size 77"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This node is created as the durable root-level home for the unresolved exact-value question and best certified bounds. It remains outside any individual program because the bounds and exact value govern the entire problem.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+              "section": "## Change: no-three-in-line/d77-exact-value"
+            },
+            "contentDigest": "sha256:9c3ea596d64eb2be4f25164089d4de4ec2e4d90e73b2f554334766025948f7da",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "no-three-in-line/d77-exact-value",
+            "nodeType": "question",
+            "parentId": "root",
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+              "section": "## Node: no-three-in-line/d77-exact-value"
+            },
+            "revisionId": "sha256:2d77dff2c158634e7eec59e56b39e3c5a5d7df0a83fea54db8d3ab1fe2fe6e8f",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "ledgerPosition": 4
+              }
+            ],
+            "summary": "The exact value of D(77) is unresolved. The certified interval remains 152 ≤ D(77) ≤ 154, and the accepted rotational-symmetry restrictions do not improve either bound or select among 152, 153, and 154.",
+            "title": "Exact value and certified interval for D(77)"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This program is created because the accepted general rotation-classification theorem and its \\(G_{77}\\) consequences form a coherent, separately extensible research agenda. No predecessor program exists, so no reciprocal split or merge lineage is required.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+              "section": "## Change: programs/rotational-symmetry"
+            },
+            "contentDigest": "sha256:9b9a0233d43fe775b13900248d386f66c5a7287efcd506dfb399f260b2d3fb28",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "programs/rotational-symmetry",
+            "nodeType": "program",
+            "parentId": "root",
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+              "section": "## Node: programs/rotational-symmetry"
+            },
+            "revisionId": "sha256:6e53a9549ef8a3aaac90481714dce9bf01c1ce4779213bd80498000ff95e61bb",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "ledgerPosition": 4
+              }
+            ],
+            "summary": "This program organizes the accepted classification of nonidentity rotations preserving finite noncollinear lattice sets and its consequences for hypothetical 153- and 154-point no-three-in-line configurations in G_77. It does not establish existence or impossibility at either cardinality.",
+            "title": "Rotational symmetry of finite lattice configurations"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This theorem node is created because the accepted arbitrary-center rotation classification is a durable general mathematical result supporting, but not limited to, the \\(G_{77}\\) applications.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+              "section": "## Change: finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn"
+            },
+            "contentDigest": "sha256:4e0103bd14e3aec2265463c00374a8ceaa814c04af747179c869f5c187f4ce70",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn",
+            "nodeType": "claim",
+            "parentId": "programs/rotational-symmetry",
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+              "section": "## Node: finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn"
+            },
+            "revisionId": "sha256:58c726ab4cd2c63a604d57df9976bae00d29dec4301d40f8991afec4908c85ac",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "ledgerPosition": 4
+              }
+            ],
+            "summary": "If a nonidentity Euclidean rotation about an arbitrary center preserves a finite noncollinear subset of Z², then it is a half-turn or quarter-turn. The result does not classify reflections, affine symmetries, or approximate symmetries.",
+            "title": "Classification of rotations preserving a finite noncollinear lattice set"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This node is created to preserve the accepted 153-point rotational restriction as a distinct durable consequence, separate from both the general lattice theorem and the unresolved existence question.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+              "section": "## Change: no-three-in-line/g77-153-has-no-nontrivial-rotation"
+            },
+            "contentDigest": "sha256:5480ace1b4e06c50c4ef77a39f8c3945788a2d2258a5a7da2244af2924bfca56",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "no-three-in-line/g77-153-has-no-nontrivial-rotation",
+            "nodeType": "claim",
+            "parentId": "programs/rotational-symmetry",
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+              "section": "## Node: no-three-in-line/g77-153-has-no-nontrivial-rotation"
+            },
+            "revisionId": "sha256:536c509790357d094a74b14df39accea35cc7ca6f87c8313e2fe23302bfe3fad",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "ledgerPosition": 4
+              }
+            ],
+            "summary": "Every 153-point no-three-in-line subset of G_77, if one exists, has no nonidentity rotational symmetry about any center. This does not exclude reflection-symmetric or asymmetric configurations and does not improve the certified bounds.",
+            "title": "Rotational asymmetry of any 153-point configuration in G_77"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This node is created to preserve the accepted conditional classification of rotational symmetry at cardinality 154 without conflating it with existence, global impossibility, or the narrower `rct4` model.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+              "section": "## Change: no-three-in-line/g77-154-rotation-is-centered-half-turn"
+            },
+            "contentDigest": "sha256:0664699e0e87127872b030fb9faca93a21f424e4f6ea267df861b91d2941278c",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "no-three-in-line/g77-154-rotation-is-centered-half-turn",
+            "nodeType": "claim",
+            "parentId": "programs/rotational-symmetry",
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+              "section": "## Node: no-three-in-line/g77-154-rotation-is-centered-half-turn"
+            },
+            "revisionId": "sha256:fdcd789090edf1c5a1a0aea479ffca87432d6f096bd3207b7cf2b59fe4f6f7c2",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "ledgerPosition": 4
+              }
+            ],
+            "summary": "If a 154-point no-three-in-line subset of G_77 has nontrivial rotational symmetry, that symmetry is the half-turn about (38,38), and (38,38) is unselected. The result is conditional and does not exclude asymmetric or reflection-symmetric configurations or identify centered half-turn symmetry with the narrower rct4 class.",
+            "title": "Rotational symmetry of a 154-point configuration in G_77"
+          }
+        ],
+        "reports": [
+          {
+            "runId": "cc94c6abd5db53040c4f8eddaa5783778d83091fa99e19bfed45dd35b1155bb2",
+            "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+            "markdown": "# Knowledge-formation report\n\n## Node: root\n\n- **Type:** Root\n- **Title:** Research state for no-three-in-line at grid size 77\n- **Status:** Active\n- **Parent:** None\n\nFor\n\n\\[\nG_{77}=\\{0,1,\\ldots,76\\}^2,\n\\]\n\nthe exact maximum cardinality \\(D(77)\\) of a subset containing no three distinct collinear points remains undecided. The current certified interval is\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nThe primary judgment establishes no improvement to either bound. It accepts structural restrictions on rotationally symmetric configurations but does not establish the existence or global impossibility of configurations with 153 or 154 points.\n\nThe current organization has two active root-level branches:\n\n1. **`no-three-in-line/d77-exact-value`** records the central exact-value question and current certified bounds as a genuinely global fact.\n2. **`programs/rotational-symmetry`** organizes the accepted classification of rotations preserving finite noncollinear lattice sets and its consequences for hypothetical 153- and 154-point configurations in \\(G_{77}\\).\n\nThere are no active disputes, because no conflict records or incompatible reconciliation outcomes were supplied.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Judged subject transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n- Ledger position: 4\n\n## Change: root\n\nThe previously empty root at digest `sha256:182fd4ab3cff13c2410f364403d9962b96944122acda56bea8389df70bd43d03` is updated to represent the certified global bounds and the first durable research program warranted by the supplied primary judgment. No split, merge, restoration, or reparenting is involved because no prior program taxonomy existed.\n\n## Node: no-three-in-line/d77-exact-value\n\n- **Type:** Central question and global bounds\n- **Title:** Exact value and certified interval for \\(D(77)\\)\n- **Status:** Active and unresolved\n- **Parent:** `root`\n\nThe central question is to determine the maximum size \\(D(77)\\) of a no-three-in-line subset of \\(G_{77}\\).\n\nAccording to primary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`, the exact value remains undecided and the current certified interval remains\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nThe judged contribution does not provide:\n\n- a 153- or 154-point coordinate certificate;\n- an impossibility proof for either cardinality; or\n- a global exhaustive search.\n\nThe accepted rotational-symmetry results therefore do not improve either side of the interval. They only narrow the possible symmetry classes:\n\n- any hypothetical 153-point configuration has no nonidentity rotational symmetry, although reflection-symmetric and asymmetric possibilities remain;\n- if a hypothetical 154-point configuration has nontrivial rotational symmetry, it must have the half-turn about \\((38,38)\\), with that center unselected;\n- asymmetric and reflection-symmetric 154-point configurations remain possible in principle;\n- general centered-half-turn symmetry is broader than the previously referenced `rct4` class.\n\nNo conclusion has been accepted that selects among \\(D(77)=152\\), \\(153\\), or \\(154\\).\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `no-three-in-line/d77-exact-value`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n\n## Change: no-three-in-line/d77-exact-value\n\nThis node is created as the durable root-level home for the unresolved exact-value question and best certified bounds. It remains outside any individual program because the bounds and exact value govern the entire problem.\n\n## Node: programs/rotational-symmetry\n\n- **Type:** Research program\n- **Title:** Rotational symmetry of finite lattice configurations\n- **Status:** Active\n- **Parent:** `root`\n- **Lineage:** None; this program was not formed by a split or merge.\n\nThis program studies which nonidentity Euclidean rotations can preserve finite noncollinear lattice sets and what those classifications imply for large no-three-in-line configurations in \\(G_{77}\\).\n\nIts current accepted knowledge consists of:\n\n- the classification that a nonidentity Euclidean rotation preserving a finite noncollinear subset of \\(\\mathbb Z^2\\) must be a half-turn or quarter-turn, even when the rotation center is arbitrary;\n- the resulting exclusion of all nontrivial rotational symmetry for a hypothetical 153-point no-three-in-line subset of \\(G_{77}\\);\n- the conclusion that any rotationally symmetric hypothetical 154-point subset must be invariant under the half-turn about \\((38,38)\\), with the center unselected.\n\nThe program does not currently classify reflections, affine automorphisms, or approximate symmetries. It does not establish the existence or nonexistence of 153- or 154-point configurations and does not identify centered-half-turn symmetry with the narrower `rct4` class.\n\nThe primary judgment assigns high confidence to the accepted rotation results and reports that their proof uses no computational or external factual assumptions.\n\n**Active descendants**\n\n- `finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn`\n- `no-three-in-line/g77-153-has-no-nontrivial-rotation`\n- `no-three-in-line/g77-154-rotation-is-centered-half-turn`\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n\n## Change: programs/rotational-symmetry\n\nThis program is created because the accepted general rotation-classification theorem and its \\(G_{77}\\) consequences form a coherent, separately extensible research agenda. No predecessor program exists, so no reciprocal split or merge lineage is required.\n\n## Node: finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn\n\n- **Type:** Theorem\n- **Title:** Classification of rotations preserving a finite noncollinear lattice set\n- **Status:** Accepted as proved\n- **Parent:** `programs/rotational-symmetry`\n\nPrimary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts the following statement as proved:\n\n> If \\(S\\subset\\mathbb Z^2\\) is finite and noncollinear, and a nonidentity Euclidean rotation about an arbitrary center satisfies \\(T(S)=S\\), then the rotation is a half-turn or a quarter-turn.\n\nThus the only admitted nonidentity rotation angles are \\(180^\\circ\\) and \\(\\pm90^\\circ\\).\n\nThe judgment reports that the proof:\n\n- obtains a rational rotation matrix from the images of three noncollinear lattice points;\n- obtains finite rotation order from the induced permutation of the finite set; and\n- uses the rational algebraic-integer trace to exclude all remaining finite rotation orders.\n\nThe arbitrary-center scope is material: the theorem does not require the center to be a lattice point or require the rotation to preserve the whole lattice.\n\nThe noncollinearity assumption is essential. The accepted theorem concerns Euclidean rotations only and does not classify reflections, affine symmetries, or approximate symmetries.\n\n**Credit and priority carried from the judgment**\n\nThe subject transaction supplies the decisive arbitrary-center finite-rotation argument and closes the logical gap identified in earlier rotational reasoning. The supplied evidence is insufficient to adjudicate broader historical priority for the theorem.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n\n## Change: finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn\n\nThis theorem node is created because the accepted arbitrary-center rotation classification is a durable general mathematical result supporting, but not limited to, the \\(G_{77}\\) applications.\n\n## Node: no-three-in-line/g77-153-has-no-nontrivial-rotation\n\n- **Type:** Structural theorem\n- **Title:** Rotational asymmetry of any 153-point configuration in \\(G_{77}\\)\n- **Status:** Accepted as proved\n- **Parent:** `programs/rotational-symmetry`\n\nPrimary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts as proved that every 153-point no-three-in-line subset of \\(G_{77}\\), if such a subset exists, has no nonidentity rotational symmetry about any center.\n\nThe accepted conclusion uses the general finite-lattice rotation classification to reduce the possibilities to half-turns and quarter-turns. The judgment accepts the corresponding orbit and collinearity obstructions for odd cardinality and for cardinality \\(153\\equiv1\\pmod 4\\).\n\nThis theorem is only a symmetry restriction. It does not prove that a 153-point configuration is impossible. In particular:\n\n- reflection symmetry is not excluded;\n- asymmetric configurations are not excluded; and\n- no improvement to the certified lower or upper bound follows from this result alone.\n\n**Credit carried from the judgment**\n\nThe half-turn and quarter-turn orbit arguments were already present in earlier supplied evidence. The subject transaction repeats them self-containedly and supplies the general arbitrary-center classification needed to exclude every other possible rotational order.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `no-three-in-line/g77-153-has-no-nontrivial-rotation`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n\n## Change: no-three-in-line/g77-153-has-no-nontrivial-rotation\n\nThis node is created to preserve the accepted 153-point rotational restriction as a distinct durable consequence, separate from both the general lattice theorem and the unresolved existence question.\n\n## Node: no-three-in-line/g77-154-rotation-is-centered-half-turn\n\n- **Type:** Structural theorem\n- **Title:** Rotational symmetry of a 154-point configuration in \\(G_{77}\\)\n- **Status:** Accepted as proved\n- **Parent:** `programs/rotational-symmetry`\n\nPrimary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts as proved that if a 154-point no-three-in-line subset \\(S\\subset G_{77}\\) has a nontrivial rotational symmetry, then:\n\n- the symmetry is the half-turn about \\((38,38)\\); and\n- \\((38,38)\\notin S\\).\n\nThe judgment accepts the following associated constraints:\n\n- quarter-turn symmetry is excluded by orbit cardinalities;\n- equality in the row and column bounds forces exactly two selected points in every row and every column;\n- consequently the coordinatewise bounding box is \\([0,76]^2\\);\n- invariance of that bounding box forces the half-turn center to be \\((38,38)\\); and\n- the unique fixed point of the half-turn is unselected.\n\nThe theorem is conditional on a 154-point configuration existing and having nontrivial rotational symmetry. It does not establish existence. It also does not exclude asymmetric or reflection-symmetric 154-point configurations.\n\nCentered-half-turn invariance is not identified with the narrower `rct4` search class. The judgment explicitly preserves that distinction.\n\n**Credit carried from the judgment**\n\nThe half-turn and quarter-turn orbit counting and the row/column occupancy observation were already present in earlier supplied evidence. The subject transaction presents the argument self-containedly and supplies the missing arbitrary-center rotation classification. It does not claim the earlier `rct4` construction methodology or known certificates.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `no-three-in-line/g77-154-rotation-is-centered-half-turn`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n\n## Change: no-three-in-line/g77-154-rotation-is-centered-half-turn\n\nThis node is created to preserve the accepted conditional classification of rotational symmetry at cardinality 154 without conflating it with existence, global impossibility, or the narrower `rct4` model.\n"
+          }
+        ],
+        "latestRunId": "cc94c6abd5db53040c4f8eddaa5783778d83091fa99e19bfed45dd35b1155bb2"
+      }
+    },
+    {
       "id": "openrouter-research-v1",
       "problemId": "no-three-in-line-77",
       "label": "openrouter-research-v1",
@@ -37771,7 +38783,7 @@
     {
       "schemaVersion": 1,
       "problemId": "bssc-sum-capacity",
-      "ledgerHead": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+      "ledgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
       "directionLedgerHead": "a02b4a5b89cea4aa5315f0a352f9630c781b055c",
       "directionLedgerDigest": "sha256:afd4ba2c2b3e82382f9685e438e7789c1bc092de31285924b4392ac5f8551ce2",
       "events": [
@@ -37842,7 +38854,7 @@
     {
       "schemaVersion": 1,
       "problemId": "maximal-determinant-23",
-      "ledgerHead": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+      "ledgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
       "directionLedgerHead": "efb1cc4ce5b387eb94fc2358c3f5dd6585846092",
       "directionLedgerDigest": "sha256:51e77deb8a3a9c480eb6bf1c32a34e82b97607e48f4826adbaba9dbdec98e513",
       "events": [
@@ -37905,7 +38917,7 @@
     {
       "schemaVersion": 1,
       "problemId": "no-three-in-line-77",
-      "ledgerHead": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+      "ledgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
       "directionLedgerHead": "bbf27430c8b61446236371c57c58e3b8d6278921",
       "directionLedgerDigest": "sha256:07ee521c46e228157b5de06a87c30bbfc736710b5f1f210a75f1a1bfb8ecae95",
       "events": [
@@ -37998,7 +39010,7 @@
     {
       "schemaVersion": 1,
       "problemId": "schur-number-6",
-      "ledgerHead": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+      "ledgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
       "directionLedgerHead": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
       "directionLedgerDigest": "sha256:c05f9175217c4dd6cf2aee28493f95b4059debbbfeec57ec9cafe699c210c4a5",
       "events": [
@@ -38065,7 +39077,7 @@
     {
       "schemaVersion": 1,
       "problemId": "triangle-midpoints",
-      "ledgerHead": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+      "ledgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
       "directionLedgerHead": null,
       "directionLedgerDigest": "sha256:ecdcbed4ec39db1bdd46bb93855ea58bb55304e05282df274a0ea2877a935a0b",
       "events": [],
