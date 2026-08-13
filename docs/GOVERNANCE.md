@@ -104,13 +104,70 @@ package-manager, or candidate-script execution to that workflow.
 ## Required repository settings
 
 The workflow reports policy but cannot prevent a merge by itself. On the
-protected `main` branch, configure:
+protected `main` branch, configure the following effective policy. GitHub can
+compose classic branch protection, repository rulesets, and organization
+rulesets; inspect the effective rules rather than assuming that one settings
+page is authoritative.
 
-1. Require pull requests and the `Admin admission approval` status check.
-2. Require CODEOWNER review.
-3. Dismiss stale approvals when new commits are pushed.
-4. Restrict direct pushes and branch-protection bypass to the intended admins.
-5. Restrict creation and updates of the `projections` branch to GitHub Actions.
+| Control | Required value | Reason |
+| --- | --- | --- |
+| Pull request required | yes | No direct participant writes to the canonical ledger. |
+| Required status check | `Admin admission approval` | Governed namespace changes fail closed; ordinary participant events receive a trusted success result. |
+| Require branch to be up to date | **no** (`strict: false`) | The trusted auto-merge workflow revalidates an atomic participant event against latest `main`; requiring rebases needlessly serializes disjoint contributions and registrations. |
+| General approving reviews | `1` for human merges | GitHub enforces CODEOWNER review only when required reviews are enabled. |
+| CODEOWNER review | yes | Governed definitions and trusted executable surfaces require human review. |
+| Pull-request bypass | GitHub Actions app only | The trusted auto-merge workflow may merge validated participant events without a human review. |
+| Dismiss stale approvals | yes | A changed governed head requires a new review. |
+| Most-recent-push approval | no | Current-head admission approval and CODEOWNER review already cover governed changes. |
+| Apply to administrators | yes | Maintainers do not silently bypass the protocol boundary. |
+| Merge method on `main` | squash only | The squash commit is the canonical participant transaction. |
+| Force pushes and deletion | blocked | Canonical history is append-only. |
+| Ruleset target | `refs/heads/main`, not `~ALL` | Feature branches must remain updateable while `main` stays protected. |
+
+The organization ruleset requires signed commits on all branches. The
+repository `main` ruleset has no bypass actors and supplies the squash-only,
+deletion, and non-fast-forward rules. Classic `main` protection supplies the
+required status check, review requirement, CODEOWNER semantics, and the narrow
+GitHub Actions app bypass. A `false` CODEOWNER field in the repository ruleset
+does not cancel the classic protection; effective rules are additive.
+
+The app bypass does not turn arbitrary pull requests into trusted merges. The
+default-branch auto-merge workflow accepts only one atomic contribution or
+direction event, requires every check on the exact candidate head, and
+revalidates that inert event against latest `main` before using the app token to
+merge it. Non-participant changes remain manual and require a review; changes
+to CODEOWNED paths additionally require that approval to come from a code
+owner.
+
+`.github/CODEOWNERS` deliberately excludes ordinary contribution and direction
+event paths. It covers governed problem/projection definitions, the governance
+policy, the Python package used by trusted checks, and **every file under
+`.github/workflows/`**. Protecting the workflow directory as a wildcard avoids
+leaving a newly added write-capable workflow outside review.
+
+Verify the live configuration with read-only GitHub API calls:
+
+```bash
+gh api repos/Layr-Labs/math-flow/branches/main/protection \
+  --jq '{required_status_checks,required_pull_request_reviews,enforce_admins}'
+gh api repos/Layr-Labs/math-flow/rules/branches/main --paginate \
+  --jq '.[] | {type,ruleset_id,ruleset_source,parameters}'
+gh api repos/Layr-Labs/math-flow/rulesets \
+  --jq '.[] | {id,name,target,enforcement}'
+```
+
+Confirm in particular that `required_status_checks.strict` is `false`,
+`required_approving_review_count` is `1`,
+`require_code_owner_reviews` is `true`, and the repository ruleset's ref
+condition is exactly `refs/heads/main`. Confirm that classic pull-request bypass
+allowances contain only the GitHub Actions app. A status check named "Admin
+admission approval" is not a GitHub approving review; these are separate
+mechanisms.
+
+The orphan `projections` branch should remain writable only by the trusted
+publication workflows. Verify its effective rules separately before changing
+publisher permissions; the organization signed-commit rule alone does not
+provide actor restriction.
 
 GitHub team membership is deliberately not inferred in this MVP because the
 default workflow token cannot reliably enumerate private organization teams.
