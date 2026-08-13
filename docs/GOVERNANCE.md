@@ -114,12 +114,12 @@ page is authoritative.
 | Pull request required | yes | No direct participant writes to the canonical ledger. |
 | Required status check | `Admin admission approval` | Governed namespace changes fail closed; ordinary participant events receive a trusted success result. |
 | Require branch to be up to date | **no** (`strict: false`) | The trusted auto-merge workflow revalidates an atomic participant event against latest `main`; requiring rebases needlessly serializes disjoint contributions and registrations. |
-| General approving reviews | `1` for human merges | GitHub enforces CODEOWNER review only when required reviews are enabled. |
+| General approving reviews | `1` | GitHub enforces CODEOWNER review only when required reviews are enabled; the trusted participant workflow supplies this review for atomic solver events. |
 | CODEOWNER review | yes | Governed definitions and trusted executable surfaces require human review. |
-| Pull-request bypass | GitHub Actions app only | The trusted auto-merge workflow may merge validated participant events without a human review. |
+| Pull-request bypass | user `mooselumph` only | A single maintainer cannot approve their own CODEOWNED PR. The explicit bypass avoids that lockout; all status checks still apply. |
 | Dismiss stale approvals | yes | A changed governed head requires a new review. |
 | Most-recent-push approval | no | Current-head admission approval and CODEOWNER review already cover governed changes. |
-| Apply to administrators | yes | Maintainers do not silently bypass the protocol boundary. |
+| Apply to administrators | yes | Administrators other than the explicitly listed maintainer do not silently bypass the protocol boundary. |
 | Merge method on `main` | squash only | The squash commit is the canonical participant transaction. |
 | Force pushes and deletion | blocked | Canonical history is append-only. |
 | Ruleset target | `refs/heads/main`, not `~ALL` | Feature branches must remain updateable while `main` stays protected. |
@@ -128,16 +128,17 @@ The organization ruleset requires signed commits on all branches. The
 repository `main` ruleset has no bypass actors and supplies the squash-only,
 deletion, and non-fast-forward rules. Classic `main` protection supplies the
 required status check, review requirement, CODEOWNER semantics, and the narrow
-GitHub Actions app bypass. A `false` CODEOWNER field in the repository ruleset
+`mooselumph` user bypass. A `false` CODEOWNER field in the repository ruleset
 does not cancel the classic protection; effective rules are additive.
 
-The app bypass does not turn arbitrary pull requests into trusted merges. The
+The maintainer bypass does not bypass the required admission status check. The
 default-branch auto-merge workflow accepts only one atomic contribution or
 direction event, requires every check on the exact candidate head, and
-revalidates that inert event against latest `main` before using the app token to
-merge it. Non-participant changes remain manual and require a review; changes
-to CODEOWNED paths additionally require that approval to come from a code
-owner.
+revalidates that inert event against latest `main` before submitting the one
+required GitHub Actions review and merging it. Non-participant changes remain
+manual. Changes to CODEOWNED paths authored by anyone else require approval
+from `mooselumph`; changes authored by `mooselumph` use the explicit bypass
+because GitHub forbids self-approval.
 
 `.github/CODEOWNERS` deliberately excludes ordinary contribution and direction
 event paths. It covers governed problem/projection definitions, the governance
@@ -160,9 +161,9 @@ Confirm in particular that `required_status_checks.strict` is `false`,
 `required_approving_review_count` is `1`,
 `require_code_owner_reviews` is `true`, and the repository ruleset's ref
 condition is exactly `refs/heads/main`. Confirm that classic pull-request bypass
-allowances contain only the GitHub Actions app. A status check named "Admin
-admission approval" is not a GitHub approving review; these are separate
-mechanisms.
+allowances contain only the user `mooselumph`, with no team or app bypasses. A
+status check named "Admin admission approval" is not a GitHub approving review;
+these are separate mechanisms.
 
 The orphan `projections` branch should remain writable only by the trusted
 publication workflows. Verify its effective rules separately before changing
