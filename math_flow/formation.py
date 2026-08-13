@@ -1142,6 +1142,15 @@ def run_knowledge_build_bundle(
     selected_evidence_kinds = {str(item["kind"]) for item in selected_evidence}
     selected_evidence_ids = {str(item["id"]) for item in selected_evidence}
     selected_evidence_digests = {item.get("digest") for item in selected_evidence}
+    preserved_selected_evidence = {
+        (
+            item.get("kind"),
+            item.get("id"),
+            item.get("digest"),
+            item.get("relation"),
+        )
+        for item in selected_evidence
+    }
     core_evidence_kinds = ["transaction", "judgment", "conflict"]
     delta_schema_args = {
         "evidence_kinds": [
@@ -1265,20 +1274,6 @@ def run_knowledge_build_bundle(
         if not isinstance(subjects, list) or not isinstance(evidence, list):
             raise MathFlowError("knowledge operation must distinguish subjects and evidence")
         existing_node = state["nodes"].get(operation.get("nodeId"))
-        existing_evidence = {
-            (
-                item.get("kind"),
-                item.get("id"),
-                item.get("digest"),
-                item.get("relation"),
-            )
-            for item in (
-                existing_node.get("evidence", [])
-                if isinstance(existing_node, dict)
-                else []
-            )
-            if isinstance(item, dict)
-        }
         permitted_subject_ids = (
             allowed_subject_ids if isinstance(existing_node, dict) else claimed_subject_ids
         )
@@ -1304,7 +1299,12 @@ def run_knowledge_build_bundle(
                 valid = identifier in conflicts and digest == identifier
             else:
                 valid = False
-            valid = valid or (kind, identifier, digest, relation) in existing_evidence
+            valid = valid or (
+                kind,
+                identifier,
+                digest,
+                relation,
+            ) in preserved_selected_evidence
             if not valid:
                 raise MathFlowError(
                     "knowledge operation references evidence outside its claimed inputs: "
