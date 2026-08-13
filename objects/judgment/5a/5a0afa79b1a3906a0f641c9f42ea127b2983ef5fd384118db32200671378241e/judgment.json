@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "schur-number-6",
+  "ledgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+  "problemLedgerDigest": "sha256:fb30c38e8a7d14804ef760333167a4f085b51fd121c52af3eb874a7b7dfbedb4",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+      "ledgerPosition": 2
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "s6-ge-536-via-fredricksen-sweet-coloring",
+      "stance": "supports",
+      "summary": "The explicit Fredricksen–Sweet coloring of {1,…,536}, its compact symmetric representation, and the exhaustive checker correctly verify all 71,824 admissible Schur triples, including x=y. The subject independently repeats the check and agrees entry-for-entry with the earlier supplied witness, strongly supporting S(6)≥536, though this bound is neither new nor original to the subject.",
+      "subjectTransactionIds": [
+        "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+      ],
+      "evidenceTransactionIds": [
+        "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+        "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+      ]
+    },
+    {
+      "claimKey": "fs536-blocker-pair-counts-at-537",
+      "stance": "supports",
+      "summary": "The blocker counts (64,43,55,38,32,35) follow from the supplied symmetric construction, sum to the 267 ordinary same-color symmetric pairs, and agree with the class sizes and exceptional pair {179,358}. Disjoint blocker pairs directly force at least 64 changes when C(537)=1 and at least 55 when C(537)=3, proving those two cases lie outside Hamming radius 43 without SAT certificates.",
+      "subjectTransactionIds": [
+        "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+      ],
+      "evidenceTransactionIds": [
+        "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+        "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+      ]
+    },
+    {
+      "claimKey": "fs536-distance-decomposition-for-537-extensions",
+      "stance": "supports",
+      "summary": "For fixed c=C(537), disjoint blocker pairs force b_c mandatory changes, while every remaining change is exactly either a second changed blocker endpoint or a change outside the blocker pairs. Hence d_H=b_c+#extras, yielding extra-change limits 0, 5, 11, and 8 for colors 2, 4, 5, and 6 respectively. Together with the direct exclusions for colors 1 and 3, this exhausts all labeled cases; the stated consequence under color permutations is also correct.",
+      "subjectTransactionIds": [
+        "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+      ],
+      "evidenceTransactionIds": [
+        "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+        "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+      ]
+    },
+    {
+      "claimKey": "sat-encoding-for-fs536-radius-43-exclusion",
+      "stance": "supports",
+      "summary": "The generated CNF correctly enforces exactly one of six colors, all Schur constraints for the 72,092 triples through 537 including the x=y binary cases, the conditioned color of 537, the blocker-pair extra-change equivalences, and the appropriate Sinz at-most-k bound using signed literals. The recorded formula dimensions are internally consistent. The RUP-only LRAT checker design is sound: it validates ordered unit-propagation hints, derives clauses only after conflict, and accepts only after deriving the empty clause. No evident encoding or checker flaw invalidates the intended argument.",
+      "subjectTransactionIds": [
+        "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+      ],
+      "evidenceTransactionIds": [
+        "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+      ]
+    },
+    {
+      "claimKey": "fs536-radius-43-exclusion-at-537",
+      "stance": "uncertain",
+      "summary": "The universal radius-43 exclusion is not established by the supplied evidence. Colors 1 and 3 are proved directly, and the other four cases are correctly reduced to explicit finite CNFs, but the referenced compressed LRAT proofs for colors 2, 4, 5, and 6 are absent. Digests, proof statistics, expected output, regeneration instructions, and a verification request cannot replace replayable proof bytes. Supplying matching LRAT objects or independently regenerating and replaying them would resolve the gap.",
+      "subjectTransactionIds": [
+        "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+      ],
+      "evidenceTransactionIds": [
+        "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+      ]
+    },
+    {
+      "claimKey": "implications-of-fs536-radius-exclusion-for-s6",
+      "stance": "qualifies",
+      "summary": "Even if all four LRAT proofs are valid, the result is only a local exclusion within Hamming distance 43 of one fixed labeled baseline on the first 536 positions. It neither excludes distant or structurally unrelated colorings through 537 nor supplies a coloring of 537 or above. Therefore it implies neither S(6)=536 nor any improvement to 536≤S(6)≤1836.",
+      "subjectTransactionIds": [
+        "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+      ],
+      "evidenceTransactionIds": [
+        "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:39db1e37b343fca6fe6ad8348caeaa69aa35b80b0d85293de74df6a0e0ab38f9",
+  "judgmentId": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b"
+}

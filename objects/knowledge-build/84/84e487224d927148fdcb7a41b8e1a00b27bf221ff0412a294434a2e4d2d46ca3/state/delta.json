@@ -1,0 +1,286 @@
+{
+  "operations": [
+    {
+      "action": "update",
+      "nodeId": "programs/explicit-coloring-certificates",
+      "parentId": "root",
+      "nodeType": "program",
+      "title": "Explicit coloring certificates, exact verification, and certificate-relative extension analysis",
+      "summary": "This program organizes explicit finite Schur-coloring certificates, exact verification, and analysis of extensions relative to the fixed Fredricksen–Sweet coloring through 536. It now includes blocker counts at 537, a Hamming-distance decomposition, SAT/LRAT verification machinery, and a qualified radius-43 exclusion claim. The supplied evidence does not certify the universal radius exclusion, a coloring through 537, a new upper bound, or the value of S(6).",
+      "reportSection": "## Node: programs/explicit-coloring-certificates",
+      "baseDigest": "sha256:2db2573809494e2fc0dddb2a845e3434d6d9db942a142ee6d6af4fc2304ad36d",
+      "baseRevisionId": "sha256:16901618e775a1e42951bdcdc57283e99dbf1a33a561ec230f7f7391249cd725",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+        },
+        {
+          "kind": "transaction",
+          "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+          "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+          "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: programs/explicit-coloring-certificates"
+    },
+    {
+      "action": "update",
+      "nodeId": "programs/explicit-coloring-certificates/coloring-1-536",
+      "parentId": "programs/explicit-coloring-certificates",
+      "nodeType": "result",
+      "title": "Certified six-coloring of {1,...,536}",
+      "summary": "A complete six-coloring of {1,...,536} with no monochromatic solution of x+y=z certifies S(6) ≥ 536 with high confidence. The later transaction agrees entry-for-entry with the original certificate and independently repeats its exact baseline check. This corroboration supplies no coloring through 537 or larger interval and does not improve the published lower endpoint.",
+      "reportSection": "## Node: programs/explicit-coloring-certificates/coloring-1-536",
+      "baseDigest": "sha256:d81039c44967d7c525364358c3117341ea36a1a4278a097d411b90eae7d07906",
+      "baseRevisionId": "sha256:a3c5842217ebbe98c82a3f61e1026b6c6fdb20eb8681210c41cc737573f9ffcc",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+          "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+          "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: programs/explicit-coloring-certificates/coloring-1-536"
+    },
+    {
+      "action": "update",
+      "nodeId": "programs/explicit-coloring-certificates/exact-checker-536",
+      "parentId": "programs/explicit-coloring-certificates",
+      "nodeType": "method",
+      "title": "Exact exhaustive verification of the fixed 536-integer coloring certificate",
+      "summary": "The original deterministic checker exactly validates the fixed certificate and exhaustively tests all 71,824 relevant Schur triples through 536. The later verifier uses baseline data agreeing entry-for-entry with the certificate and independently repeats the baseline check. The method remains specialized to the fixed 536-integer, six-color format; missing LRAT payloads affect the separate local radius theorem, not this baseline verification.",
+      "reportSection": "## Node: programs/explicit-coloring-certificates/exact-checker-536",
+      "baseDigest": "sha256:67d34dfddc18d375c37e196fa077c4d712ce7e62aeb97074a1b419a7abeb532d",
+      "baseRevisionId": "sha256:7a8802b3f1ddb3f2abf7cc39f17f3a52aa47748ea9e9b93879a44ca0330deb24",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+          "digest": "sha256:8ec8f005952dfe36611e70f5c11fc631845f5275a391ec498f1f65448c3918f4",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+          "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: programs/explicit-coloring-certificates/exact-checker-536"
+    },
+    {
+      "action": "create",
+      "nodeId": "programs/explicit-coloring-certificates/blocker-pairs-at-537",
+      "parentId": "programs/explicit-coloring-certificates",
+      "nodeType": "lemma",
+      "title": "Blocker pairs for assigning a color to 537 relative to the fixed baseline",
+      "summary": "Relative to the fixed Fredricksen–Sweet coloring, the blocker-pair counts for prospective colors 1 through 6 at 537 are (64,43,55,38,32,35). The 268 complementary pairs are disjoint, so each color-c blocker forces at least one changed baseline position. Colors 1 and 3 therefore require at least 64 and 55 changes respectively and are directly outside Hamming radius 43. The lemma does not exclude the other colors or more distant colorings.",
+      "reportSection": "## Node: programs/explicit-coloring-certificates/blocker-pairs-at-537",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+          "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: programs/explicit-coloring-certificates/blocker-pairs-at-537"
+    },
+    {
+      "action": "create",
+      "nodeId": "programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537",
+      "parentId": "programs/explicit-coloring-certificates",
+      "nodeType": "lemma",
+      "title": "Hamming-distance decomposition for extensions through 537",
+      "summary": "For a prospective extension assigning color c to 537, the distance from the fixed baseline on the first 536 positions equals the blocker count b_c plus the number of extra changes. At radius 43, the remaining conditioned colors 2, 4, 5, and 6 permit at most 0, 5, 11, and 8 extra changes respectively. This is an exact supported reduction, not a proof that those four cases are unsatisfiable.",
+      "reportSection": "## Node: programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+          "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: programs/explicit-coloring-certificates/hamming-distance-decomposition-at-537"
+    },
+    {
+      "action": "create",
+      "nodeId": "programs/explicit-coloring-certificates/sat-lrat-radius-43-method",
+      "parentId": "programs/explicit-coloring-certificates",
+      "nodeType": "method",
+      "title": "SAT encoding and RUP/LRAT checking method for the radius-43 cases",
+      "summary": "The exact CNF encoding and RUP-only LRAT checker are logically appropriate for the four remaining conditioned radius-43 cases. The formulas enforce exactly one color, all Schur constraints through 537, the selected color of 537, and the corresponding extra-change bounds 0, 5, 11, and 8. The checker architecture is sound, but the four decisive LRAT payloads are unavailable, so the formulas' unsatisfiability is not certified by the supplied artifacts.",
+      "reportSection": "## Node: programs/explicit-coloring-certificates/sat-lrat-radius-43-method",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+          "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: programs/explicit-coloring-certificates/sat-lrat-radius-43-method"
+    },
+    {
+      "action": "create",
+      "nodeId": "programs/explicit-coloring-certificates/radius-43-exclusion-at-537",
+      "parentId": "programs/explicit-coloring-certificates",
+      "nodeType": "claim",
+      "title": "Radius-43 exclusion around the fixed Fredricksen–Sweet baseline",
+      "summary": "The proposed claim is that every valid six-coloring through 537 differs from the fixed labeled Fredricksen–Sweet baseline in at least 44 of the first 536 positions. Colors 1 and 3 are proved outside radius 43, while the other four cases have supported exact reductions and checking machinery but lack their referenced LRAT proofs. The universal claim is therefore not established and would not, even if certified, determine S(6) or improve its known bounds.",
+      "reportSection": "## Node: programs/explicit-coloring-certificates/radius-43-exclusion-at-537",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+          "digest": "sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b",
+          "relation": "qualifies"
+        }
+      ],
+      "changeSection": "## Change: programs/explicit-coloring-certificates/radius-43-exclusion-at-537"
+    }
+  ]
+}
