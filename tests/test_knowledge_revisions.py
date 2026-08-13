@@ -11,6 +11,8 @@ from math_flow.artifacts import load_manifest, read_verified_artifact
 from math_flow.coordination import claim_due_build, record_completed_inputs
 from math_flow.errors import MathFlowError
 from math_flow.formation import (
+    _expand_taxonomy_selection,
+    _knowledge_revision_delta_schema,
     _load_base_knowledge_revision_state,
     run_knowledge_build_bundle,
 )
@@ -48,8 +50,9 @@ def operation(
     base_revision_id: str | None,
     subjects: list[dict[str, str]] | None = None,
     evidence: list[dict[str, object]] | None = None,
+    lineage: list[dict[str, str]] | None = None,
 ) -> dict[str, object]:
-    return {
+    value = {
         "action": action,
         "nodeId": node_id,
         "parentId": parent_id,
@@ -63,6 +66,9 @@ def operation(
         "subjects": subjects or [],
         "evidence": evidence or [],
     }
+    if lineage is not None:
+        value["lineage"] = lineage
+    return value
 
 
 class NeutralKnowledgeRevisionTests(unittest.TestCase):
@@ -210,6 +216,202 @@ class NeutralKnowledgeRevisionTests(unittest.TestCase):
         ):
             validate_knowledge_revisions(dishonest, "demo")
 
+    def test_atomic_program_split_moves_content_and_records_reciprocal_lineage(self) -> None:
+        program = self.state["nodes"]["program/a"]
+        state, revisions = apply_knowledge_revision_deltas(
+            self.state,
+            self.revisions,
+            ["program/a"],
+            [
+                operation(
+                    action="create",
+                    node_id="result/left",
+                    parent_id="program/a",
+                    node_type="result",
+                    title="Left result",
+                    summary="A certificate result.",
+                    base_digest=None,
+                    base_revision_id=None,
+                    subjects=[{"kind": "transaction", "id": TRANSACTION}],
+                ),
+                operation(
+                    action="create",
+                    node_id="result/right",
+                    parent_id="program/a",
+                    node_type="result",
+                    title="Right result",
+                    summary="A symmetry result.",
+                    base_digest=None,
+                    base_revision_id=None,
+                    subjects=[{"kind": "transaction", "id": TRANSACTION}],
+                ),
+            ],
+            DIGEST_B,
+            "## Node: result/left\nCertificate body.\n\n## Change: result/left\nCreated the certificate result.\n\n## Node: result/right\nSymmetry body.\n\n## Change: result/right\nCreated the symmetry result.\n",
+            "ledger-head-2",
+            self.positions,
+        )
+        left = state["nodes"]["result/left"]
+        right = state["nodes"]["result/right"]
+        state, revisions = apply_knowledge_revision_deltas(
+            state,
+            revisions,
+            ["root", "program/a", "result/left", "result/right"],
+            [
+                operation(
+                    action="create",
+                    node_id="program/certificates",
+                    parent_id="root",
+                    node_type="program",
+                    title="Certificate methods",
+                    summary="Certificate-based research.",
+                    base_digest=None,
+                    base_revision_id=None,
+                    subjects=[{"kind": "transaction", "id": TRANSACTION}],
+                    lineage=[{"relation": "split-from", "nodeId": "program/a"}],
+                ),
+                operation(
+                    action="create",
+                    node_id="program/symmetry",
+                    parent_id="root",
+                    node_type="program",
+                    title="Symmetry methods",
+                    summary="Symmetry-restricted research.",
+                    base_digest=None,
+                    base_revision_id=None,
+                    subjects=[{"kind": "transaction", "id": TRANSACTION}],
+                    lineage=[{"relation": "split-from", "nodeId": "program/a"}],
+                ),
+                operation(
+                    action="move",
+                    node_id="result/left",
+                    parent_id="program/certificates",
+                    node_type=left["type"],
+                    title=left["title"],
+                    summary=left["summary"],
+                    base_digest=left["digest"],
+                    base_revision_id=left["currentRevision"]["revisionId"],
+                    subjects=[{"kind": "transaction", "id": TRANSACTION}],
+                ),
+                operation(
+                    action="move",
+                    node_id="result/right",
+                    parent_id="program/symmetry",
+                    node_type=right["type"],
+                    title=right["title"],
+                    summary=right["summary"],
+                    base_digest=right["digest"],
+                    base_revision_id=right["currentRevision"]["revisionId"],
+                    subjects=[{"kind": "transaction", "id": TRANSACTION}],
+                ),
+                operation(
+                    action="retire",
+                    node_id="program/a",
+                    parent_id="root",
+                    node_type="program",
+                    title="Former umbrella program",
+                    summary="Split into certificate and symmetry programs.",
+                    base_digest=program["digest"],
+                    base_revision_id=program["currentRevision"]["revisionId"],
+                    subjects=[{"kind": "transaction", "id": TRANSACTION}],
+                    lineage=[
+                        {"relation": "split-into", "nodeId": "program/certificates"},
+                        {"relation": "split-into", "nodeId": "program/symmetry"},
+                    ],
+                ),
+            ],
+            DIGEST_C,
+            "## Node: program/certificates\nCertificate program.\n\n## Change: program/certificates\nCreated as a split successor.\n\n## Node: program/symmetry\nSymmetry program.\n\n## Change: program/symmetry\nCreated as a split successor.\n\n## Change: result/left\nMoved without rewriting its mathematical content.\n\n## Change: result/right\nMoved without rewriting its mathematical content.\n\n## Node: program/a\nRetired umbrella program.\n\n## Change: program/a\nRetired after the atomic split.\n",
+            "ledger-head-3",
+            self.positions,
+        )
+        validate_state_v3(state, revisions, "demo")
+        self.assertEqual(state["nodes"]["program/a"]["status"], "retired")
+        self.assertEqual(state["nodes"]["result/left"]["parentId"], "program/certificates")
+        self.assertEqual(state["nodes"]["result/right"]["parentId"], "program/symmetry")
+        left_move = next(
+            item
+            for item in reversed(revisions)
+            if item["nodeId"] == "result/left"
+        )
+        self.assertEqual(left_move["action"], "move")
+        self.assertEqual(left_move["facets"], ["topology"])
+        self.assertEqual(left_move["reportRef"], left["reportRef"])
+        self.assertEqual(left_move["changeRef"]["digest"], DIGEST_C)
+
+    def test_new_delta_rejects_active_descendant_beneath_retired_program(self) -> None:
+        program = self.state["nodes"]["program/a"]
+        state, revisions = apply_knowledge_revision_deltas(
+            self.state,
+            self.revisions,
+            ["program/a"],
+            [
+                operation(
+                    action="create",
+                    node_id="result/child",
+                    parent_id="program/a",
+                    node_type="result",
+                    title="Child",
+                    summary="Active child.",
+                    base_digest=None,
+                    base_revision_id=None,
+                    subjects=[{"kind": "transaction", "id": TRANSACTION}],
+                )
+            ],
+            DIGEST_B,
+            "## Node: result/child\nChild body.\n\n## Change: result/child\nCreated child.\n",
+            "ledger-head-2",
+            self.positions,
+        )
+        program = state["nodes"]["program/a"]
+        with self.assertRaisesRegex(MathFlowError, "retired ancestor"):
+            apply_knowledge_revision_deltas(
+                state,
+                revisions,
+                ["program/a"],
+                [
+                    operation(
+                        action="retire",
+                        node_id="program/a",
+                        parent_id="root",
+                        node_type="program",
+                        title=program["title"],
+                        summary="Retired too early.",
+                        base_digest=program["digest"],
+                        base_revision_id=program["currentRevision"]["revisionId"],
+                        subjects=[{"kind": "transaction", "id": TRANSACTION}],
+                    )
+                ],
+                DIGEST_C,
+                "## Node: program/a\nRetired.\n\n## Change: program/a\nAttempted partial split.\n",
+                "ledger-head-3",
+                self.positions,
+            )
+
+    def test_taxonomy_selection_expands_active_subtree_and_ancestors(self) -> None:
+        state = copy.deepcopy(self.state)
+        state["nodes"]["result/child"] = {"parentId": "program/a", "status": "active"}
+        selected = _expand_taxonomy_selection(state, [], ["program/a"])
+        self.assertEqual(selected, ["program/a", "result/child", "root"])
+
+    def test_v2_control_schema_remains_frozen_while_v3_enables_taxonomy(self) -> None:
+        legacy = _knowledge_revision_delta_schema([], [], [], [])
+        evolved = _knowledge_revision_delta_schema(
+            [], [], [], [], taxonomy_evolution=True
+        )
+        legacy_operation = legacy["properties"]["operations"]["items"]
+        evolved_operation = evolved["properties"]["operations"]["items"]
+        self.assertEqual(
+            legacy_operation["properties"]["action"]["enum"],
+            ["create", "update", "retire", "restore"],
+        )
+        self.assertNotIn("lineage", legacy_operation["properties"])
+        self.assertEqual(
+            evolved_operation["properties"]["action"]["enum"],
+            ["create", "update", "move", "retire", "restore"],
+        )
+        self.assertIn("lineage", evolved_operation["properties"])
+
     def test_report_pointer_only_update_is_rejected_as_a_no_op(self) -> None:
         prior = self.state["nodes"]["program/a"]
         with self.assertRaisesRegex(MathFlowError, "makes no material change"):
@@ -277,7 +479,7 @@ class NeutralKnowledgeRevisionTests(unittest.TestCase):
         with self.assertRaisesRegex(MathFlowError, "canonical seed"):
             validate_state_v3(state, [], "demo")
 
-    def test_v2_builder_serializes_and_reloads_neutral_artifacts(self) -> None:
+    def test_v3_builder_serializes_and_reloads_taxonomy_aware_artifacts(self) -> None:
         repository_root = Path(__file__).parents[1]
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -364,7 +566,7 @@ class NeutralKnowledgeRevisionTests(unittest.TestCase):
 
             builder_path = (
                 repository_root
-                / "protocol/judges/openrouter-research-program-builder-v2.json"
+                / "protocol/judges/openrouter-research-program-builder-v3.json"
             )
             builder_digest = f"sha256:{sha256_json(load_judge_spec(builder_path))}"
             scheduler = root / "scheduler.json"
@@ -391,6 +593,7 @@ class NeutralKnowledgeRevisionTests(unittest.TestCase):
                                     "content": json.dumps(
                                         {
                                             "selectedNodeIds": ["root"],
+                                            "taxonomyReviewNodeIds": [],
                                             "rationale": "Create a durable program.",
                                         }
                                     )
@@ -484,8 +687,9 @@ class NeutralKnowledgeRevisionTests(unittest.TestCase):
             ]["schema"]["properties"]["operations"]["items"]
             self.assertEqual(
                 operation_schema["properties"]["action"]["enum"],
-                ["create", "update", "retire", "restore"],
+                ["create", "update", "move", "retire", "restore"],
             )
+            self.assertIn("lineage", operation_schema["properties"])
             self.assertNotIn("adjudicationId", operation_schema["properties"])
             self.assertNotIn("facets", operation_schema["properties"])
             self.assertIn("changeSection", operation_schema["properties"])

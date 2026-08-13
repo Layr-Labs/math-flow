@@ -34,6 +34,7 @@ type KnowledgeNode = {
   contentMarkdown: string;
   subjects: Ref[];
   evidence: Ref[];
+  lineage?: Array<{ relation: "split-from" | "split-into" | "merged-from" | "merged-into"; nodeId: string }>;
   currentRevision?: RevisionPointer | null;
   currentAdjudication?: AdjudicationPointer | null;
   reportRef: { digest: string; section: string } | null;
@@ -1322,6 +1323,16 @@ export function KnowledgeViewer({
                 <div><span>Current revision</span><strong>r{currentRevision(selectedNode)?.revisionNumber ?? 0}</strong></div>
               </div>
               <div className="relation-block">
+                {(selectedNode.lineage?.length ?? 0) > 0 && (
+                  <>
+                    <h3>Taxonomy lineage</h3>
+                    <div className="chip-row">{selectedNode.lineage?.map((item) => (
+                      <button key={`${item.relation}-${item.nodeId}`} onClick={() => onViewerStateChange({ nodeId: item.nodeId, transactionId: undefined, directionId: undefined, judgmentId: undefined, detailMode: "node" })}>
+                        {item.relation} · {label(item.nodeId)}
+                      </button>
+                    ))}</div>
+                  </>
+                )}
                 <h3>Subjects</h3>
                 <div className="chip-row">{selectedNode.subjects.length ? selectedNode.subjects.map((item) => <button key={item.id} onClick={() => openTransaction(item.id)}>tx {item.ledgerPosition ?? "·"} · {short(item.id)}</button>) : <span className="muted">No transaction subjects</span>}</div>
                 <h3>Evidence</h3>

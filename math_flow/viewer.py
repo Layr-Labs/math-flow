@@ -119,23 +119,44 @@ def _validate_new_revision_report_links(
                 break
         return "\n".join(lines[start_line:end_line]).strip() + "\n"
 
-    for revision in revisions[start:]:
+    for revision_index, revision in enumerate(revisions[start:], start=start):
         report_ref = revision.get("reportRef")
-        if not isinstance(report_ref, dict) or report_ref.get("digest") != report_digest:
-            raise MathFlowError(
-                "viewer knowledge revision does not reference its run report"
-            )
         node_id = revision.get("nodeId")
-        heading = report_ref.get("section")
-        if not isinstance(node_id, str) or heading != f"## Node: {node_id}":
-            raise MathFlowError(
-                "viewer knowledge revision report section does not match its node"
+        if not isinstance(node_id, str) or not isinstance(report_ref, dict):
+            raise MathFlowError("viewer knowledge revision has an invalid report reference")
+        if revision.get("action") == "move":
+            base_revision_id = revision.get("baseRevisionId")
+            prior = next(
+                (
+                    item
+                    for item in revisions[:revision_index]
+                    if item.get("revisionId") == base_revision_id
+                ),
+                None,
             )
-        section = exact_section(heading, "report")
-        if revision.get("contentDigest") != sha256_bytes(section.encode("utf-8")):
-            raise MathFlowError(
-                "viewer knowledge revision content does not match its report section"
-            )
+            if (
+                not isinstance(prior, dict)
+                or report_ref != prior.get("reportRef")
+                or revision.get("contentDigest") != prior.get("contentDigest")
+            ):
+                raise MathFlowError(
+                    "viewer topology move does not reuse its prior node report"
+                )
+        else:
+            if report_ref.get("digest") != report_digest:
+                raise MathFlowError(
+                    "viewer knowledge revision does not reference its run report"
+                )
+            heading = report_ref.get("section")
+            if heading != f"## Node: {node_id}":
+                raise MathFlowError(
+                    "viewer knowledge revision report section does not match its node"
+                )
+            section = exact_section(heading, "report")
+            if revision.get("contentDigest") != sha256_bytes(section.encode("utf-8")):
+                raise MathFlowError(
+                    "viewer knowledge revision content does not match its report section"
+                )
         change_ref = revision.get("changeRef")
         if (
             not isinstance(change_ref, dict)

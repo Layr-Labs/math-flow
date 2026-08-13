@@ -11,14 +11,14 @@ class ResearchProgramProjectionTests(unittest.TestCase):
     def setUp(self) -> None:
         self.root = Path(__file__).parents[1]
 
-    def test_builder_uses_neutral_v2_profile_and_additive_program_policy(self) -> None:
+    def test_v3_builder_uses_revisable_taxonomy_policy(self) -> None:
         builder_path = (
             self.root
-            / "protocol/judges/openrouter-research-program-builder-v2.json"
+            / "protocol/judges/openrouter-research-program-builder-v3.json"
         )
         builder = load_judge_spec(builder_path)
 
-        self.assertEqual(builder["implementation"], "openrouter-knowledge-builder-v2")
+        self.assertEqual(builder["implementation"], "openrouter-knowledge-builder-v3")
         self.assertEqual(
             builder["outputProfile"], "math-flow/knowledge-build-markdown-v2"
         )
@@ -27,9 +27,19 @@ class ResearchProgramProjectionTests(unittest.TestCase):
             "select-form-extract-knowledge-revisions-v2",
         )
         self.assertEqual(builder["reducer"], "hierarchical-knowledge-revisions-v3")
-        self.assertIn("additive institutional memory", builder["systemPrompt"])
+        self.assertIn("do not treat the current taxonomy as immutable", builder["systemPrompt"])
+        self.assertIn("split a broad program into sibling successors", builder["systemPrompt"])
         self.assertIn("central exact-value question", builder["systemPrompt"])
         self.assertIn("never itself a knowledge node", builder["systemPrompt"])
+
+    def test_v2_builder_remains_frozen_for_active_projection_replay(self) -> None:
+        builder = load_judge_spec(
+            self.root
+            / "protocol/judges/openrouter-research-program-builder-v2.json"
+        )
+        self.assertEqual(builder["implementation"], "openrouter-knowledge-builder-v2")
+        self.assertIn("additive institutional memory", builder["systemPrompt"])
+        self.assertNotIn("split a broad program", builder["systemPrompt"])
 
     def test_specialized_projection_has_distinct_scope_and_shared_judges(self) -> None:
         default = json.loads(

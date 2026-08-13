@@ -136,6 +136,49 @@ automatic squash merge to main
 - Retroactive changes append `issue`, `revise`, `retract`, or `reinstate`
   revisions with base digest/revision guards. Old runs remain reproducible.
 
+### Research-program taxonomy evolution
+
+Knowledge revision history, mathematical node identities, and provenance are
+additive, but the materialized program taxonomy is not immutable. Preserve a
+node ID while the same mathematical concept or research agenda continues; do
+not preserve a program boundary solely because it appeared in an earlier run.
+
+The versioned neutral v3 builder may introduce a durable subprogram, promote or reparent a
+program, split one broad program into sibling successors, merge overlapping
+programs, move stable nodes without rewriting their mathematical content, and
+retire predecessor programs. These are organizational operations over supplied
+judgments, not permission to make new mathematical conclusions. A program must
+remain meaningful without contributor names, transaction names, or chronology.
+
+When the selector identifies an active program for taxonomy review, the adapter
+expands selection to that program's active subtree and ancestors. For a split,
+the report and extracted delta must form one atomic change set:
+
+1. create the active successor programs with reciprocal `split-from` lineage;
+2. move every active descendant subtree to a successor or genuinely shared
+   active scope without duplicating it;
+3. retire the predecessor with reciprocal `split-into` lineage; and
+4. validate the final tree before writing any artifact.
+
+Merges use `merged-from` and `merged-into` in the same way. A topology-only
+`move` reuses the exact prior node content, subjects, evidence, and report
+reference while appending a new change rationale. New runs reject an active node
+beneath a retired ancestor, missing or one-sided lineage, cycles, stale base
+guards, and partial splits. Historical schema-v3 states remain readable without
+lineage fields, so existing projection histories and exact revision hashes do not
+change.
+
+The v3 runtime and builder are implemented as an additive candidate; no active
+projection references them until the separate shadow-projection admission used
+for hosted evaluation. Existing v2 projections retain their original prompt and
+control schema.
+
+Cross-program claims belong at root or another genuinely shared active scope.
+Do not duplicate a mathematical node merely because multiple programs depend on
+it. A dispute follows the claim it disputes. Taxonomy changes must never be based
+only on contributor identity, transaction boundaries, chronology, or display
+preference.
+
 ### Projection protocol and publication
 
 - The core run envelope standardizes identity, provenance, and artifact
@@ -460,6 +503,13 @@ current knowledge or scoring from the checked-in viewer fallback file.
    protocol governance, and a mathematical contribution in one PR.
 5. Preserve replayability and validate old artifacts when changing schemas or
    reducers. Prefer additive versions to in-place semantic changes.
+   In particular, never update a builder file referenced by an active governed
+   projection in place. Projection lanes are named by the projection-spec digest
+   but retain their original builder-spec digest; an in-place builder change can
+   leave the lane bound to the old digest and is rejected before a new claim is
+   formed. Add a versioned builder/implementation, preserve the old file for
+   replay, and admit a new or edited projection in its required separate one-file
+   governed PR. Deploy runtime support before admitting that projection.
 6. Never print, commit, or pass repository/OpenRouter tokens in command arguments.
 7. Report commands run, test results, remaining risks, and any external settings
    required for the change to be effective.

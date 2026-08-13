@@ -45,7 +45,7 @@
   "properties": {
     "revisionId": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
     "revisionNumber": { "type": "integer", "minimum": 1 },
-    "action": { "enum": ["create", "update", "retire", "restore"] },
+    "action": { "enum": ["create", "update", "move", "retire", "restore"] },
     "baseRevisionId": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
     "nodeId": { "type": "string" },
     "facets": {
@@ -67,7 +67,20 @@
     "contentDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
     "summary": { "type": "string", "minLength": 1 },
     "changeRationale": { "type": "string", "minLength": 1 },
-    "status": { "enum": ["active", "retired"] }
+    "status": { "enum": ["active", "retired"] },
+    "lineage": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["relation", "nodeId"],
+        "properties": {
+          "relation": { "enum": ["split-from", "split-into", "merged-from", "merged-into"] },
+          "nodeId": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
   },
   "additionalProperties": false
 }

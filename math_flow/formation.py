@@ -61,6 +61,59 @@ NODE_ID = re.compile(r"^[a-z0-9][a-z0-9/_-]*$")
 EMPTY_RESPONSE_ATTEMPTS = 3
 
 
+def _knowledge_selector_schema(node_ids: list[str]) -> dict[str, object]:
+    item_schema: dict[str, object] = {"type": "string"}
+    if node_ids:
+        item_schema["enum"] = node_ids
+    return {
+        "type": "object",
+        "properties": {
+            "selectedNodeIds": {"type": "array", "items": item_schema},
+            "taxonomyReviewNodeIds": {"type": "array", "items": item_schema},
+            "rationale": {"type": "string"},
+        },
+        "required": ["selectedNodeIds", "taxonomyReviewNodeIds", "rationale"],
+        "additionalProperties": False,
+    }
+
+
+def _expand_taxonomy_selection(
+    state: dict[str, object],
+    selected_ids: list[str],
+    taxonomy_review_ids: list[str],
+) -> list[str]:
+    nodes = state["nodes"]
+    included = set(selected_ids) | set(taxonomy_review_ids)
+    for review_id in taxonomy_review_ids:
+        if review_id not in nodes:
+            raise MathFlowError(
+                f"taxonomy review selected an unknown program: {review_id}"
+            )
+        review = nodes[review_id]
+        if review.get("type") != "program" or review.get("status") != "active":
+            raise MathFlowError(
+                f"taxonomy review must name an active program: {review_id}"
+            )
+        changed = True
+        descendants = {review_id}
+        while changed:
+            changed = False
+            for node_id, node in nodes.items():
+                if (
+                    node_id not in descendants
+                    and node.get("status") == "active"
+                    and node.get("parentId") in descendants
+                ):
+                    descendants.add(str(node_id))
+                    changed = True
+        included.update(descendants)
+        parent_id = review.get("parentId")
+        while isinstance(parent_id, str):
+            included.add(parent_id)
+            parent_id = nodes[parent_id].get("parentId")
+    return [node_id for node_id in sorted(nodes) if node_id in included]
+
+
 def _digest(value: object, label: str, nullable: bool = False) -> str | None:
     if nullable and value is None:
         return None
@@ -431,6 +484,7 @@ def _knowledge_revision_delta_schema(
     evidence_kinds: list[str],
     evidence_ids: list[str],
     evidence_digests: list[str | None],
+    taxonomy_evolution: bool = False,
 ) -> dict[str, object]:
     """Return the v3 control schema without model-declared revision facets."""
 
@@ -448,12 +502,33 @@ def _knowledge_revision_delta_schema(
         "minLength": 1,
     }
     operation["required"].append("changeSection")
-    operation["properties"]["action"]["enum"] = [
-        "create",
-        "update",
-        "retire",
-        "restore",
-    ]
+    if taxonomy_evolution:
+        operation["properties"]["lineage"] = {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "relation": {
+                        "type": "string",
+                        "enum": [
+                            "split-from",
+                            "split-into",
+                            "merged-from",
+                            "merged-into",
+                        ],
+                    },
+                    "nodeId": {"type": "string"},
+                },
+                "required": ["relation", "nodeId"],
+                "additionalProperties": False,
+            },
+        }
+        operation["required"].append("lineage")
+    operation["properties"]["action"]["enum"] = (
+        ["create", "update", "move", "retire", "restore"]
+        if taxonomy_evolution
+        else ["create", "update", "retire", "restore"]
+    )
     return schema
 
 
@@ -461,6 +536,7 @@ def _canonicalize_knowledge_revision_delta(
     state: dict[str, object],
     selected_node_ids: list[str],
     delta: dict[str, object],
+    taxonomy_evolution: bool = False,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
     """Canonicalize only state-derived controls for the neutral v3 reducer."""
 
@@ -485,6 +561,10 @@ def _canonicalize_knowledge_revision_delta(
             existing.get("currentRevision") if isinstance(existing, dict) else None
         )
         action = operation.get("action")
+        if taxonomy_evolution and "lineage" not in operation:
+            operation["lineage"] = copy.deepcopy(
+                existing.get("lineage", []) if isinstance(existing, dict) else []
+            )
         if existing is None:
             if action == "update":
                 operation["action"] = "create"
@@ -518,6 +598,25 @@ def _canonicalize_knowledge_revision_delta(
                     toParentId="root",
                 )
             continue
+
+        if taxonomy_evolution and action == "move":
+            operation["nodeType"] = existing.get("type")
+            operation["title"] = existing.get("title")
+            operation["summary"] = existing.get("summary")
+            report_ref = existing.get("reportRef")
+            if isinstance(report_ref, dict):
+                operation["reportSection"] = report_ref.get("section")
+            operation["subjects"] = [
+                {"kind": "transaction", "id": item.get("id")}
+                for item in existing.get("subjects", [])
+                if isinstance(item, dict)
+            ]
+            operation["evidence"] = copy.deepcopy(existing.get("evidence", []))
+            record(
+                "topology-move-reuses-node-snapshot",
+                node_id,
+                "A topology-only move reuses the authoritative node content and provenance.",
+            )
 
         expected_digest = existing.get("digest")
         expected_revision_id = (
@@ -643,9 +742,14 @@ def run_knowledge_build_bundle(
     if implementation not in {
         "openrouter-knowledge-builder-v1",
         "openrouter-knowledge-builder-v2",
+        "openrouter-knowledge-builder-v3",
     }:
         raise MathFlowError("knowledge-build command requires a knowledge builder spec")
-    neutral_revisions = implementation == "openrouter-knowledge-builder-v2"
+    neutral_revisions = implementation in {
+        "openrouter-knowledge-builder-v2",
+        "openrouter-knowledge-builder-v3",
+    }
+    taxonomy_evolution = implementation == "openrouter-knowledge-builder-v3"
     builder_digest = f"sha256:{sha256_json(spec)}"
     build_input = validate_build_claim(claim, problem, builder_digest)
     judgments = _load_judgments(
@@ -753,8 +857,15 @@ def run_knowledge_build_bundle(
 
     selector_prompt = "\n\n".join(
         [
-            "Select the smallest set of existing knowledge nodes that may need organizational updates for this exact judgment batch.",
+            "Select the smallest sufficient set of existing knowledge nodes that may need organizational updates for this exact judgment batch.",
             "Select root when a new top-level program, claim, or dispute may be needed.",
+            *(
+                [
+                    "Also assess whether accumulated judged knowledge has made an existing program structurally misleading: for example, it now contains multiple coherent, separately extensible agendas or overlaps another program. Put each active program needing a subtree-wide split, merge, promotion, or reparenting review in taxonomyReviewNodeIds. Do not preserve a boundary solely because it was created earlier. The adapter will expand each named program to its active descendants and ancestors so the reorganization can be atomic. Use an empty array when no taxonomy review is warranted."
+                ]
+                if taxonomy_evolution
+                else []
+            ),
             "This is knowledge formation, not mathematical adjudication. The supplied judgments and reconciliation outcomes are immutable inputs.",
             f"Problem:\n{problem_statement}",
             f"Current knowledge-state index:\n{json.dumps(index, indent=2, ensure_ascii=False)}",
@@ -769,21 +880,57 @@ def run_knowledge_build_bundle(
             {"role": "system", "content": str(spec["systemPrompt"])},
             {"role": "user", "content": selector_prompt},
         ],
-        _selector_schema(node_ids),
+        _knowledge_selector_schema(node_ids)
+        if taxonomy_evolution
+        else _selector_schema(node_ids),
     )
     selector_response = send_stage("select", selector_request)
     selection = _structured_content(selector_response, "select")
-    if set(selection) != {"selectedNodeIds", "rationale"}:
+    expected_selection_fields = (
+        {"selectedNodeIds", "taxonomyReviewNodeIds", "rationale"}
+        if taxonomy_evolution
+        else {"selectedNodeIds", "rationale"}
+    )
+    legacy_neutral_selection = taxonomy_evolution and set(selection) == {
+        "selectedNodeIds",
+        "rationale",
+    }
+    if set(selection) != expected_selection_fields and not legacy_neutral_selection:
         raise MathFlowError("knowledge builder selector returned unexpected fields")
     selected_ids = selection["selectedNodeIds"]
+    taxonomy_review_ids = selection.get("taxonomyReviewNodeIds", [])
     if (
         not isinstance(selected_ids, list)
         or any(not isinstance(value, str) for value in selected_ids)
         or len(selected_ids) != len(set(selected_ids))
+        or not isinstance(taxonomy_review_ids, list)
+        or any(not isinstance(value, str) for value in taxonomy_review_ids)
+        or len(taxonomy_review_ids) != len(set(taxonomy_review_ids))
         or not isinstance(selection["rationale"], str)
         or not selection["rationale"].strip()
     ):
         raise MathFlowError("knowledge builder selector returned an invalid selection")
+    selection_normalizations: list[dict[str, object]] = []
+    if taxonomy_evolution:
+        requested_ids = list(selected_ids)
+        selected_ids = _expand_taxonomy_selection(
+            state, selected_ids, taxonomy_review_ids
+        )
+        selection = {
+            "selectedNodeIds": selected_ids,
+            "taxonomyReviewNodeIds": taxonomy_review_ids,
+            "rationale": selection["rationale"],
+        }
+        if selected_ids != requested_ids:
+            selection_normalizations.append(
+                {
+                    "kind": "taxonomy-subtree-selection",
+                    "nodeId": None,
+                    "reason": "Taxonomy reviews include each active affected subtree and its ancestors.",
+                    "requestedNodeIds": requested_ids,
+                    "selectedNodeIds": selected_ids,
+                }
+            )
     selected = (
         selected_nodes_v3(state, revisions, selected_ids)
         if neutral_revisions
@@ -801,12 +948,21 @@ def run_knowledge_build_bundle(
         for judgment_id, item in sorted(judgments.items())
     )
     change_report_guidance = (
-        "For every changed node, follow its holistic `## Node: <stable-id>` section "
-        "with one unique `## Change: <stable-id>` section. Its body must be a concise, "
-        "self-contained audit rationale explaining why this build changes the node; "
-        "do not repeat the holistic node assessment there."
-        if neutral_revisions
-        else "Put historical explanation under a separate `## Change: <stable-id>` heading so it remains in the report but outside materialized node content."
+        "For every created, updated, retired, or restored node, follow its holistic "
+        "`## Node: <stable-id>` section with one unique `## Change: <stable-id>` "
+        "section. For a topology-only move, emit only `## Change: <stable-id>`; the "
+        "adapter reuses the node's exact prior content and provenance. Every Change "
+        "body must be a concise, self-contained audit rationale explaining why this "
+        "build changes the node; do not repeat the holistic node assessment there."
+        if taxonomy_evolution
+        else (
+            "For every changed node, follow its holistic `## Node: <stable-id>` section "
+            "with one unique `## Change: <stable-id>` section. Its body must be a concise, "
+            "self-contained audit rationale explaining why this build changes the node; "
+            "do not repeat the holistic node assessment there."
+            if neutral_revisions
+            else "Put historical explanation under a separate `## Change: <stable-id>` heading so it remains in the report but outside materialized node content."
+        )
     )
     writer_prompt = "\n\n".join(
         [
@@ -814,6 +970,14 @@ def run_knowledge_build_bundle(
             "Organize the immutable judgment results into durable knowledge nodes. Attribute conclusions to their source judgments rather than presenting your own new mathematical conclusion.",
             "Treat the knowledge state as a holistic current account, not a collection of deltas. A submission, judgment, correction, or revision event belongs in provenance and is not itself a knowledge node.",
             "When a judgment changes an existing mathematical concept, update that concept's selected stable node. Propose a new node only for a distinct durable concept that would remain meaningful if transaction names and chronology were removed.",
+            *(
+                [
+                    "Revision history and mathematical concept identities are durable, but the current program taxonomy is revisable. When accumulated judged knowledge reveals multiple coherent, separately extensible agendas, you may create nested programs, split one program into sibling successors, merge overlapping programs, promote or reparent programs, move stable descendants without changing their mathematical content, and retire predecessor programs. Do not reorganize by contributor, transaction, or chronology.",
+                    "For every split or merge, record reciprocal lineage: active successors use split-from or merged-from, and retired predecessors use split-into or merged-into. A retired program must have no active descendants. Keep genuinely cross-program nodes at root or another genuinely shared active scope; do not duplicate them.",
+                ]
+                if taxonomy_evolution
+                else []
+            ),
             "A reconciliation outcome may resolve its named conflict. If a conflict has no reconciliation, has an unresolved or needs-evidence outcome, or has incompatible reconciliation outcomes, preserve it as an active dispute node and do not choose a side.",
             "Use explicit headings of the form `## Node: <stable-id>` for every existing or proposed node that should change.",
             "Each `## Node:` section must be a self-contained statement of the complete current knowledge after the proposed update. Do not title or frame it as a submission, correction, revision, or change log.",
@@ -881,9 +1045,13 @@ def run_knowledge_build_bundle(
     if neutral_revisions:
         action_guidance = (
             "Use create for a first node revision, update for a material change to an "
-            "active node, retire to make an active node inactive, and restore only for "
-            "a retired node. Do not classify revision facets; the reducer derives them "
-            "from actual topology, content, lifecycle, and provenance changes."
+            "active node, move for a topology-only parent or lineage change that must "
+            "reuse exact prior content and provenance, retire to make an active node "
+            "inactive, and restore only for a retired node. Do not classify revision "
+            "facets; the reducer derives them from actual topology, content, lifecycle, "
+            "and provenance changes."
+            if taxonomy_evolution
+            else "Use create for a first node revision, update for a material change to an active node, retire to make an active node inactive, and restore only for a retired node. Do not classify revision facets; the reducer derives them from actual topology, content, lifecycle, and provenance changes."
         )
         base_guidance = (
             "For an existing node copy its exact digest and current revisionId into "
@@ -927,15 +1095,31 @@ def run_knowledge_build_bundle(
     report_reference_guidance = (
         "reportSection must exactly equal `## Node: <nodeId>` and changeSection "
         "must exactly equal `## Change: <nodeId>`, both using the operation's exact "
-        "nodeId. The reducer copies the exact Change-section body into immutable "
+        "nodeId. For move, reportSection identifies the node's prior materialized "
+        "section and need not occur in this report; every other action requires it in "
+        "this report. The reducer copies the exact Change-section body into immutable "
         "revision provenance; do not place a change rationale in summary."
-        if neutral_revisions
-        else "reportSection must exactly equal `## Node: <nodeId>` using the operation's exact nodeId."
+        if taxonomy_evolution
+        else (
+            "reportSection must exactly equal `## Node: <nodeId>` and changeSection "
+            "must exactly equal `## Change: <nodeId>`, both using the operation's exact "
+            "nodeId. The reducer copies the exact Change-section body into immutable "
+            "revision provenance; do not place a change rationale in summary."
+            if neutral_revisions
+            else "reportSection must exactly equal `## Node: <nodeId>` using the operation's exact nodeId."
+        )
     )
     extractor_prompt = "\n\n".join(
         [
             "Extract only the sparse knowledge-state delta stated by the formation report. Do not perform mathematical reasoning or change any judgment outcome.",
             "Existing nodes may change only when selected. New nodes must be parented under a selected or newly created node. Create parents before children.",
+            *(
+                [
+                    "Use reciprocal lineage arrays for splits and merges. Each item has relation split-from, split-into, merged-from, or merged-into and the related stable nodeId. Preserve existing lineage unless the report explicitly changes the taxonomy. A split creates active successors with split-from links, moves every active descendant out of the predecessor, and retires the predecessor with reciprocal split-into links in the same delta."
+                ]
+                if taxonomy_evolution
+                else []
+            ),
             event_node_guidance,
             action_guidance,
             base_guidance,
@@ -987,7 +1171,9 @@ def run_knowledge_build_bundle(
     }
     delta_schema = (
         _knowledge_revision_delta_schema(
-            sorted(allowed_subject_ids), **delta_schema_args
+            sorted(allowed_subject_ids),
+            taxonomy_evolution=taxonomy_evolution,
+            **delta_schema_args,
         )
         if neutral_revisions
         else _revision_delta_schema(
@@ -1019,19 +1205,29 @@ def run_knowledge_build_bundle(
         )
         if neutral_revisions:
             extracted, state_normalizations = _canonicalize_knowledge_revision_delta(
-                state, selected_ids, extracted
+                state,
+                selected_ids,
+                extracted,
+                taxonomy_evolution=taxonomy_evolution,
             )
         else:
             extracted, state_normalizations = _canonicalize_revision_delta(
                 state, selected_ids, extracted
             )
-        return extracted, [*heading_normalizations, *state_normalizations]
+        return extracted, [
+            *selection_normalizations,
+            *heading_normalizations,
+            *state_normalizations,
+        ]
 
     extractor_response = send_stage("extract", extractor_request)
     delta, normalizations = normalized_delta(extractor_response)
     if any(
         not isinstance(operation, dict)
-        or operation.get("reportSection") not in report_headings
+        or (
+            operation.get("action") != "move"
+            and operation.get("reportSection") not in report_headings
+        )
         or (
             neutral_revisions
             and operation.get("changeSection") not in report_headings
@@ -1046,7 +1242,10 @@ def run_knowledge_build_bundle(
     for operation in delta["operations"]:
         if not isinstance(operation, dict):
             raise MathFlowError("knowledge builder extractor returned a non-object operation")
-        if operation.get("reportSection") not in report_headings:
+        if (
+            operation.get("action") != "move"
+            and operation.get("reportSection") not in report_headings
+        ):
             raise MathFlowError("knowledge delta references a missing Markdown report heading")
         if operation.get("reportSection") != f"## Node: {operation.get('nodeId')}":
             raise MathFlowError(

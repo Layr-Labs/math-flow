@@ -57,6 +57,32 @@ class CoordinationDependencyTests(unittest.TestCase):
             now,
         )
 
+    def test_governed_lane_rejects_in_place_builder_digest_change(self) -> None:
+        projection = digest(200)
+        record_completed_inputs(
+            self.scheduler,
+            "demo",
+            self.builder,
+            [digest(1)],
+            [],
+            minimum_interval_seconds=0,
+            now=1,
+            projection_spec_digest=projection,
+        )
+        with self.assertRaisesRegex(
+            MathFlowError, "builder digest changed without a new projection identity"
+        ):
+            record_completed_inputs(
+                self.scheduler,
+                "demo",
+                digest(101),
+                [digest(1)],
+                [],
+                minimum_interval_seconds=0,
+                now=2,
+                projection_spec_digest=projection,
+            )
+
     def test_incremental_conflict_and_reconciliation_are_claimed_atomically(self) -> None:
         primary_one = digest(1)
         primary_two = digest(2)

@@ -385,6 +385,10 @@ def record_completed_inputs(
         lanes[identifier] = lane
     elif lane.get("projectionSpecDigest") != projection_spec_digest:
         raise MathFlowError("knowledge-build lane projection does not match its existing policy")
+    elif lane.get("builderSpecDigest") != builder_spec_digest:
+        raise MathFlowError(
+            "knowledge-build lane builder digest changed without a new projection identity"
+        )
     elif lane.get("minimumIntervalSeconds") != minimum_interval_seconds:
         raise MathFlowError("knowledge-build lane interval does not match its existing policy")
     _persist_input_dependencies(

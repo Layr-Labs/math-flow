@@ -162,8 +162,8 @@ immutable `knowledge-revisions` artifact contains neutral knowledge revisions.
 Version 1 knowledge-build bundles and version 2 adjudication-revision state remain
 valid and replayable; there is no in-place conversion of their histories.
 
-Builder operations use the lifecycle verbs `create`, `update`, `retire`, and
-`restore`. An operation is a full proposed node snapshot and does not declare
+Builder operations use `create`, `update`, `move`, `retire`, and `restore`.
+Except for topology-only `move`, an operation is a full proposed node snapshot and does not declare
 what kind of change it made. The `hierarchical-knowledge-revisions-v3` reducer
 compares the materialized snapshot with the prior revision and deterministically
 records one or more ordered facets:
@@ -189,6 +189,30 @@ Consequently, a topology-only revision is possible only when content, lifecycle,
 and provenance are byte-for-byte and structurally unchanged. A change rationale,
 report pointer, or timestamp change by itself is audit metadata, not a material
 knowledge revision, and is rejected as a no-op.
+
+#### Taxonomy-only moves and program lineage
+
+The `openrouter-knowledge-builder-v3` neutral formation implementation also
+supports a `move` operation for an active node.
+It changes only `parentId` and, when part of a split or merge, structural lineage;
+the reducer reuses the exact prior title, summary, Markdown, subjects, evidence,
+and report reference. The current report therefore needs only the node's unique
+`## Change: <nodeId>` audit section. This keeps a large program reorganization
+from spending tokens reproducing unchanged mathematical content.
+
+Program splits and merges use reciprocal optional lineage records:
+
+- active split successors name retired predecessors with `split-from`;
+- retired split predecessors name active successors with `split-into`;
+- active merge successors use `merged-from`; and
+- retired merge predecessors use `merged-into`.
+
+The lineage fields are optional for compatibility with previously published
+schema-v3 histories. Once present they must reference existing nodes, be
+reciprocal, agree with predecessor/successor lifecycle, and place split
+successors as siblings under the predecessor's former parent. A new delta is
+applied atomically and rejected if it leaves an active node beneath a retired
+ancestor. Existing bundles retain their exact bytes, digests, and revision IDs.
 
 ## Judge-builder flexibility
 
@@ -241,6 +265,16 @@ run, judgment IDs, conflict IDs, and judgment-set digest. New completions during
 the build remain pending for the next eligible interval. Failed claims are
 returned atomically and carry a bounded exponential-retry marker tied to the
 claim and problem ledger.
+
+This split identity has an important upgrade consequence. A governed lane's ID
+does not change merely because the contents of its referenced builder file
+change, but its stored builder digest also does not silently migrate. Therefore
+an active builder must never be edited in place: the scheduler rejects the
+builder mismatch before claiming work, and formation independently checks it.
+Builder upgrades require a
+new versioned builder and a governed projection addition or edit whose own digest
+creates a new lane. Published builder files remain immutable replay inputs; see
+`GOVERNANCE.md` for rollout order and shadow-projection guidance.
 
 Knowledge formation is intentionally not implemented by the primary or
 reconciliation judge adapters. The example `openrouter-knowledge-builder-v1`

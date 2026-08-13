@@ -21,6 +21,30 @@ the wrong execution engine, and refuse a dispatch from any other ref. A digest
 of the entire specification is part of run and lane identity, so projections do
 not share logical state merely because they reuse one component.
 
+### Referenced builder upgrades
+
+Do not edit a knowledge-builder specification in place while an active governed
+projection references it. Governed lane identity uses the projection-spec digest,
+while each existing lane also retains the exact builder-spec digest with which it
+was created. Changing only the referenced builder file leaves the projection
+digest—and therefore the lane ID—unchanged, but the next build request still
+belongs to a lane carrying the old builder digest. The scheduler rejects the
+mismatched builder before claiming work, and formation independently rejects a
+claim/spec mismatch. This failure is intentional: silently changing the
+executable semantics of an established projection chain would undermine replay.
+
+Instead, add a versioned builder with a new `id` and implementation version, then
+add or edit a governed projection so its own specification digest changes. Use a
+new shadow projection when the old chain must remain active for comparison or as
+a dependency. The new projection receives a fresh scheduler lane and does not
+inherit a base state unless a separately governed migration mechanism explicitly
+provides one. Keep the old builder file byte-for-byte available for replay while
+published runs or active projections reference its digest.
+
+Roll out the runtime and versioned builder before admitting the projection that
+uses them. A projection addition or edit remains a separate one-file governed PR
+under the admission policy below.
+
 Overlay cadence is governed projection identity, not an advisory runner hint.
 With only `minimumIntervalSeconds`, a rolling overlay becomes eligible when its
 verified dependency state changes and the interval after the preceding run has

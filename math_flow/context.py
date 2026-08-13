@@ -347,6 +347,16 @@ def _markdown(context: dict[str, object], scoped_nodes: list[dict[str, object]])
     )
     lines.append("")
     for node in scoped_nodes:
+        lineage = node.get("lineage", [])
+        lineage_text = (
+            ", ".join(
+                f"`{item.get('relation')}` `{item.get('nodeId')}`"
+                for item in lineage
+                if isinstance(item, dict)
+            )
+            if isinstance(lineage, list) and lineage
+            else "none"
+        )
         lines.extend(
             [
                 f"### {node.get('title', node.get('id'))}",
@@ -354,6 +364,7 @@ def _markdown(context: dict[str, object], scoped_nodes: list[dict[str, object]])
                 f"- Node ID: `{node.get('id')}`",
                 f"- Parent: `{node.get('parentId')}`",
                 f"- Type/status: `{node.get('type')}` / `{node.get('status')}`",
+                f"- Taxonomy lineage: {lineage_text}",
                 f"- Node digest: `{node.get('digest')}`",
                 "",
                 "<knowledge-node>",

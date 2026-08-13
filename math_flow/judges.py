@@ -23,6 +23,7 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-markdown-reconciliation-v1",
     "openrouter-knowledge-builder-v1",
     "openrouter-knowledge-builder-v2",
+    "openrouter-knowledge-builder-v3",
     "openrouter-credit-assignment-v1",
     "openrouter-credit-assignment-v2",
 }
@@ -152,6 +153,12 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputAdapter": "select-form-extract-knowledge-revisions-v2",
             "reducer": "hierarchical-knowledge-revisions-v3",
         },
+        "openrouter-knowledge-builder-v3": {
+            "inputBuilder": "judgment-batch-v1",
+            "outputProfile": "math-flow/knowledge-build-markdown-v2",
+            "outputAdapter": "select-form-extract-knowledge-revisions-v2",
+            "reducer": "hierarchical-knowledge-revisions-v3",
+        },
         "openrouter-credit-assignment-v1": {
             "inputBuilder": "locked-knowledge-ledger-v1",
             "outputProfile": "math-flow/credit-assignment-markdown-v1",
@@ -180,6 +187,7 @@ def load_judge_spec(path: Path) -> dict[str, object]:
         "openrouter-markdown-reconciliation-v1",
         "openrouter-knowledge-builder-v1",
         "openrouter-knowledge-builder-v2",
+        "openrouter-knowledge-builder-v3",
         "openrouter-credit-assignment-v1",
         "openrouter-credit-assignment-v2",
     }:

@@ -14,7 +14,7 @@
           "reportSection", "changeSection", "baseDigest", "baseRevisionId", "subjects", "evidence"
         ],
         "properties": {
-          "action": { "enum": ["create", "update", "retire", "restore"] },
+          "action": { "enum": ["create", "update", "move", "retire", "restore"] },
           "nodeId": { "type": "string" },
           "parentId": { "type": ["string", "null"] },
           "nodeType": {
@@ -48,6 +48,19 @@
                 "id": { "type": "string" },
                 "digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
                 "relation": { "enum": ["supports", "refutes", "qualifies", "context", "formalizes", "supersedes"] }
+              },
+              "additionalProperties": false
+            }
+          },
+          "lineage": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "required": ["relation", "nodeId"],
+              "properties": {
+                "relation": { "enum": ["split-from", "split-into", "merged-from", "merged-into"] },
+                "nodeId": { "type": "string" }
               },
               "additionalProperties": false
             }

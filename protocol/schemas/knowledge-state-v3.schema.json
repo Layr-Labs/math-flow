@@ -55,7 +55,20 @@
               }
             ]
           },
-          "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+          "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+          "lineage": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "required": ["relation", "nodeId"],
+              "properties": {
+                "relation": { "enum": ["split-from", "split-into", "merged-from", "merged-into"] },
+                "nodeId": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          }
         },
         "additionalProperties": false
       }
