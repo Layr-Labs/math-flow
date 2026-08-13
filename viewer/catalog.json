@@ -33613,7 +33613,7 @@
     {
       "schemaVersion": 1,
       "problemId": "bssc-sum-capacity",
-      "ledgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+      "ledgerHead": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
       "directionLedgerHead": null,
       "directionLedgerDigest": "sha256:a468d6764b505dd3000014aa672a34ce3b6d92c06b7ca069b72c6489bc67abd5",
       "events": [],
@@ -33622,7 +33622,7 @@
     {
       "schemaVersion": 1,
       "problemId": "maximal-determinant-23",
-      "ledgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+      "ledgerHead": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
       "directionLedgerHead": null,
       "directionLedgerDigest": "sha256:77f7ecca0ed20abb9c6602202389af88a89410187dbb2fd85102e807a656f4fe",
       "events": [],
@@ -33631,7 +33631,7 @@
     {
       "schemaVersion": 1,
       "problemId": "no-three-in-line-77",
-      "ledgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+      "ledgerHead": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
       "directionLedgerHead": "bbf27430c8b61446236371c57c58e3b8d6278921",
       "directionLedgerDigest": "sha256:07ee521c46e228157b5de06a87c30bbfc736710b5f1f210a75f1a1bfb8ecae95",
       "events": [
@@ -33724,16 +33724,74 @@
     {
       "schemaVersion": 1,
       "problemId": "schur-number-6",
-      "ledgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
-      "directionLedgerHead": null,
-      "directionLedgerDigest": "sha256:d904d2135a6de0acfbdb9ce1cfd81a12ee400358318e973edf37251202839757",
-      "events": [],
-      "directions": []
+      "ledgerHead": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
+      "directionLedgerHead": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
+      "directionLedgerDigest": "sha256:c05f9175217c4dd6cf2aee28493f95b4059debbbfeec57ec9cafe699c210c4a5",
+      "events": [
+        {
+          "ordinal": 1,
+          "canonicalOrdinal": 106,
+          "transactionId": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
+          "committedAt": 1786600543,
+          "eventId": "initial-plan",
+          "directionId": "schur537-exact-search",
+          "eventType": "register",
+          "path": "problems/schur-number-6/directions/schur537-exact-search/events/initial-plan",
+          "author": {
+            "displayName": "Robert Raynor",
+            "email": "35671663+mooselumph@users.noreply.github.com"
+          },
+          "contentDigest": "sha256:281c917423dd27b016c3e5b9e1230aa757a1ea0ddd5b230e1ce7459380f482e7",
+          "contentMarkdown": "# Exact search and certification around 537\n\n## Objective\n\nDetermine as much as can be certified, within repository-practical proof and\nreplay limits, about six-colorability of \\(\\{1,\\ldots,537\\}\\). The work has two\ncoupled tracks:\n\n1. extend the certified Hamming-neighborhood exclusion around the attributed\n   Fredricksen--Sweet coloring of \\(\\{1,\\ldots,536\\}\\) as far as compact,\n   independently checkable proof objects permit; and\n2. conduct a sound, reproducible exact search for either a valid six-coloring\n   of \\(\\{1,\\ldots,537\\}\\) or a global unsatisfiability proof.\n\nThe direction is non-exclusive and records intent only. It does not reserve\nthe problem or assert that a coloring or global impossibility proof exists.\n\n## Exact instance\n\nUse Boolean variables \\(v_{i,c}\\) for integers \\(1\\le i\\le537\\) and colors\n\\(1\\le c\\le6\\). Enforce exactly one color per integer with an at-least-one\nclause and a sound at-most-one encoding whose generated clauses are checked.\n\nEnumerate every Schur equation in the canonical range\n\n\\[\n1\\le x\\le y,\\qquad z=x+y\\le537.\n\\]\n\nFor every color \\(c\\), forbid \\(x,y,z\\) from all receiving color \\(c\\). When\n\\(x<y\\), this is the clause\n\\(\\neg v_{x,c}\\lor\\neg v_{y,c}\\lor\\neg v_{z,c}\\). When \\(x=y\\), the required\nconstraint is retained explicitly and simplified only soundly to\n\\(\\neg v_{x,c}\\lor\\neg v_{2x,c}\\); equal-summand equations must never be\ndropped. A checker will independently regenerate the complete equation list,\ncount it, hash the CNF, and compare generated clauses rather than trusting a\nsolver-produced formula.\n\n## Neighborhood-exclusion track\n\nMeasure Hamming distance on the first 536 labeled positions from the canonical\nexpanded Fredricksen--Sweet baseline. Color-label normalization, if used, must\nbe justified by an explicit permutation action and an exhaustive orbit or case\npartition. A local exclusion must state exactly whether it concerns labeled\ncolorings, color-permutation-normalized colorings, or both.\n\nFor a proposed radius \\(r\\), encode the complete condition that at most \\(r\\)\nof positions \\(1,\\ldots,536\\) differ from the baseline. Use a checked\ncardinality encoding or an equivalent exact case split. If cases are split by\nthe color of 537, baseline automorphisms, distance layers, or other assumptions,\nthe manifest must prove that their union covers the entire claimed Hamming\nball and that no case is silently omitted. Each UNSAT case must carry a\nreplayable proof checked against the exact CNF.\n\nPending PR #44 proposes a radius-43 exclusion. It is not canonical evidence at\nregistration time. If it merges, subsequent work will fetch its canonical\ntransaction, judgment, objective attestation, and formed knowledge before\nreusing it. The first planned checkpoint is an independent audit and\nproof-size-aware extension beyond its claimed radius, not a duplicate claim.\nIf #44 changes or does not merge, the work will reproduce the necessary base\nencoding independently and document that provenance.\n\nCandidate radii will be attempted monotonically when practical. A checkpoint\nmay be contributed when it strictly extends the strongest canonical radius and\nits complete proof bundle remains independently replayable. No radius will be\nreported from solver exit status, elapsed time, or an unverified proof file.\n\n## Global 537 search track\n\nRun deterministic or seed-recorded SAT/constraint searches on the same exact\n537 instance. Symmetry breaking is optional, but every added breaker must have\na proof that each color-permutation orbit retains a representative; otherwise\nthe breaker may guide candidate search only and may not support global UNSAT.\n\nThere are only two certifying global outcomes:\n\n- **SAT:** publish all 537 color assignments in a canonical encoding and use an\n  independent exact-integer checker to verify coverage, color range, and every\n  equation above, including \\(x=y\\). This would certify \\(S(6)\\ge537\\).\n- **UNSAT:** publish a proof-producing CNF pipeline, exhaustive symmetry/case\n  coverage, content hashes, and a checked LRAT/DRAT-equivalent proof for every\n  terminal case. Only a complete checked proof may support \\(S(6)<537\\), hence\n  \\(S(6)=536\\) with the canonical baseline.\n\nSearch timeouts, solver crashes, proof-generation failures, failed local\nsearch, or absence of a found coloring are reproducible non-findings only.\nThey must never be described as a new upper bound or as evidence of global\nUNSAT.\n\n## Proof checking and reproducibility\n\n- Inspect every generator and checker before execution.\n- Pin tool versions and record deterministic seeds, command lines, instance\n  hashes, proof hashes, case manifests, wall time, and peak-memory observations.\n- Prefer an independently implemented standard-library instance/witness\n  checker. For UNSAT, replay a proof checker against regenerated exact CNF\n  bytes; solver self-report alone is insufficient.\n- Include corruption tests or comparable negative controls showing that the\n  proof checker rejects a modified CNF/proof, within reasonable cost.\n- Keep search code separate from the trusted checking path. Floating-point\n  heuristics may prioritize cases but cannot decide a mathematical claim.\n- Every mathematical checkpoint is a separate atomic contribution with exact\n  commands and limitations. Direction lifecycle events remain separate PRs.\n\n## Resource and repository constraints\n\nThe search may use larger scratch data outside Git, but committed evidence must\nremain practical for GitHub and hosted replay:\n\n- no committed file may reach GitHub's 100 MiB hard limit; target at most\n  90 MiB per compressed proof shard;\n- target at most 250 MiB total committed proof data per atomic contribution;\n- split proofs only along an explicit exhaustive case manifest, with SHA-256\n  for every shard and deterministic reconstruction instructions;\n- avoid committing solver installations, caches, raw exploratory logs, or\n  redundant uncompressed formulas;\n- provide a fast structural/hash check and state the full proof replay's\n  expected time and memory; target a full independent replay within 8 CPU\n  hours and 32 GiB RAM on documented commodity hardware;\n- if a larger proof is mathematically useful but cannot meet these limits,\n  report it as uncommitted exploratory evidence and seek a smaller encoding or\n  stronger case decomposition rather than weakening verification.\n\nThese are engineering limits, not mathematical assumptions. Hitting them does\nnot imply satisfiability or unsatisfiability.\n\n## Strict claim discipline\n\n- A Hamming-ball exclusion is local to its precisely defined baseline,\n  labeling convention, and radius; it is not global UNSAT.\n- A larger certified radius does not improve the published Schur interval by\n  itself.\n- A SAT witness changes the lower endpoint only after exact verification.\n- A global upper-bound claim requires exhaustive checked UNSAT coverage.\n- Pending pull requests, unformed judgments, objective attestations, and search\n  logs are not canonical mathematical knowledge.\n- Attribution of the 536 baseline remains with Fredricksen and Sweet; new work\n  claims only its own encoding, search, and certificate engineering.\n\n## Completion criterion\n\nComplete this registered direction only after canonical contributions record:\n\n1. an independently replayed neighborhood certificate that strictly extends\n   the strongest canonical Fredricksen--Sweet radius available when the work\n   begins, or a documented proof-size frontier showing that all attempted\n   larger radii exceeded the stated repository/replay limits without treating\n   that resource outcome as mathematics; **and**\n2. a reproducible exact 537 search with one of the following explicitly\n   classified outcomes:\n   - an exactly checked 537 coloring;\n   - a globally exhaustive checked UNSAT proof; or\n   - a bounded, reproducible non-finding whose incomplete coverage and lack of\n     bound improvement are stated unambiguously.\n\nIf the first item becomes impossible because the pending checkpoint is not\ncanonical or is invalidated, completion instead requires an independently\nverified replacement checkpoint plus the second item. The final `complete`\nevent will cite only canonical contribution transactions in ledger order.\n",
+          "data": {
+            "schemaVersion": 1,
+            "eventType": "register",
+            "eventId": "initial-plan",
+            "directionId": "schur537-exact-search",
+            "title": "Exact search and certification around 537",
+            "summary": "Extend checked Fredricksen-Sweet Hamming exclusions while running a proof-producing exact search for a 537 coloring or global UNSAT.",
+            "relatedKnowledgeNodeIds": [
+              "programs/explicit-coloring-certificates",
+              "programs/explicit-coloring-certificates/coloring-1-536",
+              "programs/explicit-coloring-certificates/exact-checker-536",
+              "root"
+            ]
+          }
+        }
+      ],
+      "directions": [
+        {
+          "directionId": "schur537-exact-search",
+          "title": "Exact search and certification around 537",
+          "summary": "Extend checked Fredricksen-Sweet Hamming exclusions while running a proof-producing exact search for a 537 coloring or global UNSAT.",
+          "relatedKnowledgeNodeIds": [
+            "programs/explicit-coloring-certificates",
+            "programs/explicit-coloring-certificates/coloring-1-536",
+            "programs/explicit-coloring-certificates/exact-checker-536",
+            "root"
+          ],
+          "status": "active",
+          "registeredEventId": "initial-plan",
+          "registeredTransactionId": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
+          "registeredAt": 1786600543,
+          "registeredBy": {
+            "displayName": "Robert Raynor",
+            "email": "35671663+mooselumph@users.noreply.github.com"
+          },
+          "currentEventId": "initial-plan",
+          "currentTransactionId": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
+          "currentAt": 1786600543,
+          "completionTransactionIds": [],
+          "eventIds": [
+            "initial-plan"
+          ]
+        }
+      ]
     },
     {
       "schemaVersion": 1,
       "problemId": "triangle-midpoints",
-      "ledgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+      "ledgerHead": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
       "directionLedgerHead": null,
       "directionLedgerDigest": "sha256:ecdcbed4ec39db1bdd46bb93855ea58bb55304e05282df274a0ea2877a935a0b",
       "events": [],
