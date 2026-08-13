@@ -12163,8 +12163,8 @@
         "id": "openrouter-research-program-builder-v3",
         "digest": "sha256:8dbfc0666d364444fd0e237c4465a6bdca502d6eb06318f2b8a9bfb99d001d8f"
       },
-      "latestRunDigest": "sha256:cc94c6abd5db53040c4f8eddaa5783778d83091fa99e19bfed45dd35b1155bb2",
-      "runCount": 1,
+      "latestRunDigest": "sha256:5951ff24fd51041ae3b4a520c5260e456e62da07d65b8c4147ca9c615fdc5e7c",
+      "runCount": 2,
       "data": {
         "schemaVersion": 1,
         "problem": {
@@ -12231,6 +12231,125 @@
           }
         ],
         "judgments": [
+          {
+            "judgmentId": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+            "runDigest": "sha256:4015757c48bab25332d8c54790ccff997653549ffc1a5a1090524855e1d0a6c3",
+            "judgmentKind": "primary",
+            "ledgerHead": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+            "problemLedgerHead": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+            "judgeSpec": {
+              "id": "openrouter-markdown-judgment-v1",
+              "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.44863625,
+            "reportDigest": "sha256:f933ca41348f6ff7d404fa874b6139664919d354a56bbe6273afe5a10f5f5272",
+            "reportMarkdown": "# Mathematical Judgment\n\n## Overall assessment\n\nThe subject transaction provides a **substantial and reproducible local rigidity result** for the known 152-point configuration, but it does **not determine \\(D(77)\\)** and does not improve the certified interval\n\n\\[\n152\\le D(77)\\le 154.\n\\]\n\nThe formal computational claims are well scoped and are supported by complete Python source, exact integer arithmetic, explicit expected results, and two complementary enumerations. Static inspection finds the mathematical logic of the checker sound. The strongest justified conclusion is that every specified embedding of this particular 152-point record is resistant to modifications involving the removal of at most two of its points.\n\nThe introductory statement that the computation “prunes the entire ‘perturb the known record’ strategy” is too broad: perturbations removing three or more record points remain entirely unexplored. The later formal claims and “Known gaps and limitations” section correctly state the narrower scope.\n\n---\n\n## Finding 1: Quarter-turn symmetry and the eight specified embeddings\n\n**Claim key:** `no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit`\n\n**Claim.** The supplied 152-point configuration \\(C\\subseteq G_{76}\\) is invariant under\n\n\\[\n(x,y)\\longmapsto (75-y,x),\n\\]\n\nhas exactly two distinct images under the dihedral group of the square, and consequently gives exactly eight distinct subsets of \\(G_{77}\\) after applying those images and translations by \\((t_x,t_y)\\in\\{0,1\\}^2\\).\n\n**Judgment:** **Supported with high confidence.**\n\n### Decisive evidence\n\nThe checker:\n\n1. independently decodes the supplied coordinate string;\n2. verifies that it gives 152 distinct points in \\(G_{76}\\);\n3. checks all\n   \\[\n   \\binom{152}{3}=573{,}800\n   \\]\n   triples by the exact determinant test;\n4. explicitly applies the quarter-turn and compares the resulting point set with the original;\n5. enumerates all eight dihedral transformations and deduplicates their images;\n6. applies all four allowed translations to every distinct image and deduplicates the resulting subsets of \\(G_{77}\\);\n7. asserts that the resulting numbers are exactly two dihedral images and eight embeddings.\n\nThese operations use finite set equality and integer coordinates, so there is no numerical ambiguity.\n\nThe translations \\((0,0),(0,1),(1,0),(1,1)\\) are the natural placements of the \\(76\\times76\\) square inside \\(G_{77}\\). The computation’s use of the term “embedding” is explicitly restricted to dihedral images followed by these translations. It should not be interpreted as covering unrelated affine images or other 152-point configurations.\n\n### Scope\n\nThis verifies symmetry of the particular supplied record, not a general symmetry property of all optimal or near-optimal configurations on \\(G_{76}\\) or \\(G_{77}\\).\n\n---\n\n## Finding 2: Saturation of every specified embedding in \\(G_{77}\\)\n\n**Claim key:** `no-three-in-line/d77-saturation-of-embedded-g76-152-record`\n\n**Claim.** For each of the eight specified embeddings \\(E\\subseteq G_{77}\\), every cell of \\(G_{77}\\setminus E\\) is collinear with a pair of points of \\(E\\). In fact, every such cell has at least two distinct blocking pairs. Therefore \\(E\\) is inclusion-maximal in \\(G_{77}\\).\n\n**Judgment:** **Supported with high confidence as an exact computational certificate.**\n\n### Decisive reasoning\n\nFor a fixed outside cell \\(c\\), the primary computation groups the 152 points according to the sign-normalized primitive direction of \\(p-c\\). Two points lie with \\(c\\) on the same line exactly when they belong to the same direction group. Thus a direction group of size at least two gives a blocking pair.\n\nThe checker fails if any outside cell has no heavy direction group. The generated result reports:\n\n- \\(77^2-152=5777\\) outside cells for every embedding;\n- minimum blocking-pair count equal to \\(2\\);\n- total blocking incidence \\(51449\\) for every embedding.\n\nThe independent line-walk enumeration starts from every pair of configuration points, walks the complete primitive lattice line through that pair inside \\(G_{77}\\), and reconstructs the blocking-pair table. It requires exact agreement with the direction census both in the set of blocked cells and in the number of blocking pairs at every cell.\n\nSince the no-three-in-line property is hereditary, if a proper superset of \\(E\\) were valid, then adding any one of its new points to \\(E\\) would also be valid. Saturation rules this out. Thus the conclusion that \\(E\\) is maximal is valid.\n\n### Important distinction\n\n“Maximal” here means that no further point can be added while retaining the property. It does **not** mean “maximum cardinality.” A saturated 152-point set is compatible with the possible existence of unrelated 153- or 154-point sets.\n\n---\n\n## Finding 3: Robust saturation after one removal\n\n**Claim key:** `no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record`\n\n**Claim.** For every specified embedding \\(E\\) and every \\(r\\in E\\), removing \\(r\\) does not make any previously outside cell \\(c\\in G_{77}\\setminus E\\) addable.\n\n**Judgment:** **Supported with high confidence.**\n\n### Decisive reasoning\n\nFor a fixed outside cell \\(c\\), the blocking lines through \\(c\\) are disjoint away from \\(c\\). Therefore one removed configuration point can affect at most one blocking line through \\(c\\). The census explicitly enumerates all minimal removal sets of size at most two that would destroy every blocking pair at \\(c\\).\n\nThe checker fails if it finds any singleton removal that frees a previously outside cell. The committed computation reports zero such singleton freeings for all eight embeddings, and the line-walk/hitting-set reconstruction is required to agree cell by cell.\n\nThe wording “no cell is freed” must retain the contribution’s stated qualification: it concerns cells in \\(G_{77}\\setminus E\\). The removed point \\(r\\) itself can of course be added back.\n\n---\n\n## Finding 4: Complete two-removal accounting\n\n**Claim key:** `no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record`\n\n**Claim.** For every specified embedding \\(E\\), removing any unordered pair of points of \\(E\\) frees at most one cell of \\(G_{77}\\setminus E\\). Exactly 16 removal pairs free a cell; these 16 pairs are distributed over four cells, four removal pairs per cell.\n\n**Judgment:** **Supported with high confidence as a finite exact computation.**\n\n### Why the enumeration is exhaustive\n\nFor a fixed outside cell \\(c\\), let the heavy lines through \\(c\\) contain \\(n_1,n_2,\\ldots\\) configuration points. To make \\(c\\) addable, every heavy line must be reduced to at most one surviving point. Because distinct lines through \\(c\\) have disjoint configuration-point sets, this requires\n\n\\[\n\\sum_i (n_i-1)\n\\]\n\nremovals.\n\nWith a budget of at most two removals, the only generic possibilities are:\n\n1. one line containing two points, requiring one removal;\n2. one line containing three points, requiring two removals;\n3. two lines containing two points each, requiring one removal on each line.\n\nThe base set is already verified to have no three collinear points, so a heavy line containing three configuration points cannot actually occur here. The reported pair freeings are all of the third type, labeled “two-lines-of-two.”\n\nThe checker then independently treats the blocking pairs through a cell as a hitting-set problem. Any pair of removed points that frees the cell must hit every blocking pair. Its hitting-set routine exhaustively finds all such sets of size at most two and compares them against the census enumeration.\n\nFinally:\n\n- pair-removal freeings are stored by unordered removal pair;\n- the checker fails if one removal pair frees more than one outside cell;\n- every reported freeing is directly simulated by testing the freed cell against all\n  \\[\n  \\binom{150}{2}\n  \\]\n  remaining pairs;\n- the full generated output must byte-match the committed `results.json`;\n- each embedding is required to have exactly 16 freeing pairs.\n\nThis is sufficient to establish the claimed two-removal accounting, assuming successful execution of the supplied checker.\n\n### Independence qualification\n\nThe census and line-walk methods are structurally different, which is a valuable cross-check. They are not wholly independent implementations: they share the decoded configuration and the small `primitive` direction routine. That shared routine is simple and auditable, so this does not create a serious correctness concern, but “independent” should be understood in this limited computational sense.\n\n---\n\n## Finding 5: Distance constraint for any 153- or 154-point configuration\n\n**Claim key:** `no-three-in-line/d77-distance-from-embedded-g76-152-record`\n\n**Claim.** Let \\(E\\) be any one of the eight specified embeddings. If \\(S\\subseteq G_{77}\\) is no-three-in-line and \\(|E\\setminus S|\\le2\\), then\n\n\\[\n|S\\setminus E|\\le1\n\\quad\\text{and}\\quad\n|S|\\le152.\n\\]\n\nConsequently, any no-three-in-line set \\(S\\) with \\(|S|\\ge153\\) must satisfy\n\n\\[\n|E\\setminus S|\\ge3,\\qquad |S\\setminus E|\\ge4,\n\\]\n\nand hence\n\n\\[\n|E\\triangle S|\\ge7.\n\\]\n\n**Judgment:** **Proved from the supported computational findings.**\n\n### Decisive proof\n\nWrite\n\n\\[\nR=E\\setminus S,\\qquad A=S\\setminus E,\n\\]\n\nso that\n\n\\[\nS=(E\\setminus R)\\cup A.\n\\]\n\nEvery \\(a\\in A\\) must be unblocked by \\(E\\setminus R\\); otherwise \\(a\\) and a surviving pair from \\(E\\) would form a collinear triple in \\(S\\).\n\n- If \\(|R|=0\\), saturation permits no points of \\(A\\).\n- If \\(|R|=1\\), one-removal robustness permits no points of \\(A\\).\n- If \\(|R|=2\\), the two-removal result permits at most one point of \\(A\\).\n\nTherefore \\(|A|\\le1\\) whenever \\(|R|\\le2\\), and\n\n\\[\n|S|=152-|R|+|A|\\le152.\n\\]\n\nIf instead \\(|S|\\ge153\\), then \\(|R|\\ge3\\), and\n\n\\[\n|A|=|S|-152+|R|\\ge153-152+3=4.\n\\]\n\nThus\n\n\\[\n|E\\triangle S|=|R|+|A|\\ge3+4=7.\n\\]\n\nThis implication is purely deductive once the local computational claims are accepted.\n\n---\n\n## Finding 6: No improvement to the global value of \\(D(77)\\)\n\n**Claim key:** `no-three-in-line/d77-exact-value`\n\n**Claim addressed.** Whether \\(D(77)\\) equals \\(152\\), \\(153\\), or \\(154\\).\n\n**Judgment:** **Unresolved by this transaction.**\n\nThe transaction supplies neither:\n\n- a 153- or 154-point coordinate certificate, nor\n- a global impossibility proof for 153 or 154 points.\n\nIt only excludes larger configurations within a precisely described neighborhood of eight embeddings of one known 152-point set. Other 152-point configurations, or configurations differing from every listed embedding by at least seven points, are not constrained by the computation.\n\nAccordingly, the certified interval remains\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\n---\n\n## Overstatement and internal scope tension\n\nThe sentence claiming that the result\n\n> “prunes the entire ‘perturb the known record’ strategy for reaching 153 or 154 points”\n\nis not justified literally. The computation explores only removals of depth at most two. Its own later limitation states that depth three and beyond is unexamined. A set obtained by removing three record points and adding four new points is still naturally describable as a perturbation, and such a set is not ruled out.\n\nThe defensible replacement is:\n\n> The computation rules out every improvement obtained from any specified embedding after removing at most two of its points.\n\nThe formal corollary and the limitations section use the correct restricted scope, so this promotional overstatement does not invalidate the mathematical certificate.\n\n---\n\n## Reproducibility and missing evidence\n\nThe supplied evidence is unusually complete for a computational local result:\n\n- the exact base certificate is supplied;\n- its source path and expected hash are recorded;\n- the decoder is included;\n- all collinearity tests use exact integer determinants;\n- all transformations and translations are explicitly enumerated;\n- there is no randomness or external solver;\n- the output is committed in full;\n- recomputation must byte-match that output.\n\nThe main evidentiary limitation is that this judgment is based on source inspection and the supplied result file rather than an independently documented execution in a separate environment. Nevertheless, the program is standard-library-only, deterministic, and short enough in its decisive routines to audit. The warranted confidence is therefore high.\n\nNo evidence is supplied for:\n\n- removal neighborhoods of depth at least three;\n- other 152-point configurations in \\(G_{77}\\);\n- a global exhaustive search;\n- a symmetry-class impossibility theorem;\n- an improved upper or lower bound.\n\n---\n\n## Contribution and priority\n\nThe underlying 152-point coordinate set is attributed in the supplied materials to Achim Flammenkamp’s maintained database. The earlier contribution packaged that coordinate certificate and supplied a baseline verifier.\n\nThe present transaction’s distinct contribution is the local rigidity analysis: verification of quarter-turn symmetry, enumeration of the eight specified embeddings, saturation, one-removal robustness, exhaustive two-removal accounting, and the resulting symmetric-difference constraint. The authorship disclosure states that the analysis, code, and text were produced by an AI research agent at Robert Raynor’s request. These attributions are consistent within the supplied evidence.\n",
+            "record": {
+              "schemaVersion": 1,
+              "judgmentKind": "primary",
+              "problemId": "no-three-in-line-77",
+              "ledgerHead": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+              "problemLedgerDigest": "sha256:9b28f63e12a006ccabb31e3d62274e046b7f06e3a3f42863ebb33a73945a6828",
+              "judgeSpec": {
+                "id": "openrouter-markdown-judgment-v1",
+                "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                  "ledgerPosition": 2
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit",
+                  "stance": "supports",
+                  "summary": "Supported with high confidence: the supplied 152-point configuration in G_76 is invariant under (x,y)↦(75−y,x), has exactly two distinct dihedral images, and yields exactly eight distinct subsets of G_77 after the four translations in {0,1}². This concerns only the specified record and these dihedral-and-translation embeddings, not unrelated affine images or other configurations.",
+                  "subjectTransactionIds": [
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ],
+                  "evidenceTransactionIds": [
+                    "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ]
+                },
+                {
+                  "claimKey": "no-three-in-line/d77-saturation-of-embedded-g76-152-record",
+                  "stance": "supports",
+                  "summary": "Supported with high confidence as an exact computational certificate: for each of the eight specified embeddings, all 5,777 outside cells are blocked by pairs of embedded points, with at least two blocking pairs per cell and total blocking incidence 51,449. Each embedding is therefore inclusion-maximal in G_77, but this does not establish maximum cardinality or exclude unrelated 153- or 154-point sets.",
+                  "subjectTransactionIds": [
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ],
+                  "evidenceTransactionIds": [
+                    "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ]
+                },
+                {
+                  "claimKey": "no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record",
+                  "stance": "supports",
+                  "summary": "Supported with high confidence: for every specified embedding and every removal of one embedded point, no cell that was originally outside the embedding becomes addable. The claim concerns cells in G_77\\E; the removed point itself can be restored.",
+                  "subjectTransactionIds": [
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ],
+                  "evidenceTransactionIds": [
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ]
+                },
+                {
+                  "claimKey": "no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record",
+                  "stance": "supports",
+                  "summary": "Supported with high confidence as a finite exact computation: removing any unordered pair from a specified embedding frees at most one originally outside cell. Exactly 16 removal pairs per embedding free a cell, distributed over four cells with four pairs per cell, all through the two-lines-of-two mechanism. The direction census and line-walk/hitting-set enumeration provide structurally different cross-checks, though they share the decoded configuration and primitive-direction routine.",
+                  "subjectTransactionIds": [
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ],
+                  "evidenceTransactionIds": [
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ]
+                },
+                {
+                  "claimKey": "no-three-in-line/d77-distance-from-embedded-g76-152-record",
+                  "stance": "supports",
+                  "summary": "Proved from the supported local computations: if E is a specified embedding and S is no-three-in-line with |E\\S|≤2, then |S\\E|≤1 and |S|≤152. Consequently, every no-three-in-line S with |S|≥153 must have |E\\S|≥3, |S\\E|≥4, and symmetric difference |E△S|≥7.",
+                  "subjectTransactionIds": [
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ],
+                  "evidenceTransactionIds": [
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ]
+                },
+                {
+                  "claimKey": "no-three-in-line/d77-exact-value",
+                  "stance": "uncertain",
+                  "summary": "The transaction does not determine whether D(77) is 152, 153, or 154 and does not improve the certified interval 152≤D(77)≤154. It supplies neither a 153- or 154-point certificate nor a global impossibility proof; other 152-point configurations and configurations at symmetric-difference distance at least seven from every specified embedding remain unconstrained.",
+                  "subjectTransactionIds": [
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ],
+                  "evidenceTransactionIds": [
+                    "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ]
+                },
+                {
+                  "claimKey": "no-three-in-line/d77-perturb-known-record-strategy",
+                  "stance": "qualifies",
+                  "summary": "The claim that the computation prunes the entire strategy of perturbing the known record is too broad. The justified scope is only that no improvement can be obtained from a specified embedding after removing at most two points; removal depth three or greater, including removing three points and adding four, remains unexplored.",
+                  "subjectTransactionIds": [
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ],
+                  "evidenceTransactionIds": [
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ]
+                }
+              ],
+              "reportDigest": "sha256:f933ca41348f6ff7d404fa874b6139664919d354a56bbe6273afe5a10f5f5272",
+              "judgmentId": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927"
+            }
+          },
           {
             "judgmentId": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
             "runDigest": "sha256:f6c8941bbfb3621d14884050f5e0ce95e1a65c9bb9f5c0f1e5aba3374a0c65af",
@@ -12825,6 +12944,1046 @@
             ],
             "reportDigest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
             "revisionSemantics": "neutral-knowledge"
+          },
+          {
+            "id": "5951ff24fd51041ae3b4a520c5260e456e62da07d65b8c4147ca9c615fdc5e7c",
+            "ordinal": 2,
+            "ledgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "problemLedgerHead": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "runDigest": "sha256:5951ff24fd51041ae3b4a520c5260e456e62da07d65b8c4147ca9c615fdc5e7c",
+            "baseRun": "sha256:cc94c6abd5db53040c4f8eddaa5783778d83091fa99e19bfed45dd35b1155bb2",
+            "runKind": "knowledge-build",
+            "inputs": {
+              "projectionSpecDigest": "sha256:17286f418e1335fd718c1c7f7a87d04863bae14de496efd790d3ea6bc4b6cee9",
+              "schemaVersion": 1,
+              "conflictIds": [],
+              "builderSpecDigest": "sha256:8dbfc0666d364444fd0e237c4465a6bdca502d6eb06318f2b8a9bfb99d001d8f",
+              "laneId": "sha256:c2eccc232f4dc66ce6e6802682bcf0ff027c762023d7048689156d8bcc3b8742",
+              "baseStateRun": "sha256:cc94c6abd5db53040c4f8eddaa5783778d83091fa99e19bfed45dd35b1155bb2",
+              "problemId": "no-three-in-line-77",
+              "judgmentIds": [
+                "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927"
+              ],
+              "judgmentSetDigest": "sha256:bbd9bdb59b90dc32064a246d3b8d61128ec690b280fe70ae7f9af69e5c354605",
+              "buildToken": "sha256:04337be76d810c4b68d5da7cb4159f77de9d94cfc5b5b95cc081dbfbf717be0f"
+            },
+            "judgeSpec": {
+              "id": "openrouter-research-program-builder-v3",
+              "digest": "sha256:8dbfc0666d364444fd0e237c4465a6bdca502d6eb06318f2b8a9bfb99d001d8f"
+            },
+            "runner": {
+              "implementation": "openrouter-knowledge-builder-v3",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.53570875,
+            "selection": {
+              "selectedNodeIds": [
+                "no-three-in-line/d77-exact-value",
+                "root"
+              ],
+              "taxonomyReviewNodeIds": [],
+              "rationale": "Select root because the accepted batch introduces a coherent, separately extensible agenda concerning the specific embedded G_76 record: its orbit, saturation, removal robustness, two-removal rigidity, distance bounds, and the precisely limited perturbation strategy. This may warrant a new top-level program and several new claims. Select the existing D(77) exact-value node to record that these results leave the certified interval 152 ≤ D(77) ≤ 154 unchanged and do not resolve existence at 153 or 154. The existing rotational-symmetry program is not structurally misleading and none of its current general or G_77 conditional claims is changed by this batch, so no taxonomy review is warranted."
+            },
+            "normalizations": [
+              {
+                "kind": "taxonomy-subtree-selection",
+                "nodeId": null,
+                "reason": "Taxonomy reviews include each active affected subtree and its ancestors.",
+                "requestedNodeIds": [
+                  "root",
+                  "no-three-in-line/d77-exact-value"
+                ],
+                "selectedNodeIds": [
+                  "no-three-in-line/d77-exact-value",
+                  "root"
+                ]
+              }
+            ],
+            "delta": {
+              "operations": [
+                {
+                  "action": "update",
+                  "nodeId": "root",
+                  "parentId": null,
+                  "nodeType": "root",
+                  "title": "Research state for no-three-in-line at grid size 77",
+                  "summary": "The exact value of D(77) remains undecided, with certified interval 152 ≤ D(77) ≤ 154. The state has active root-level branches for the global exact-value question, rotational-symmetry results, and local rigidity of the eight specified embeddings of a 152-point G76 record. No active disputes exist.",
+                  "reportSection": "## Node: root",
+                  "baseDigest": "sha256:5fdf63f7f3e9a25c25f490a7441c1d85fbf1ea3758b6e28450887ab82f9659ff",
+                  "baseRevisionId": "sha256:ae533eae07c86fc248dc2ff4c4681cbd37290c460fbea4ffddace7e9dd65c206",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: root",
+                  "lineage": []
+                },
+                {
+                  "action": "update",
+                  "nodeId": "no-three-in-line/d77-exact-value",
+                  "parentId": "root",
+                  "nodeType": "question",
+                  "title": "Exact value and certified interval for D(77)",
+                  "summary": "The exact value of D(77) remains unresolved, with certified interval 152 ≤ D(77) ≤ 154. Accepted rotational restrictions and the distance restriction around the eight specified embeddings do not select among 152, 153, and 154 or constrain configurations outside their stated scopes.",
+                  "reportSection": "## Node: no-three-in-line/d77-exact-value",
+                  "baseDigest": "sha256:32d5791554f210e941cf0d025f43502ac399a8d22133741bc83000748bdf9bb7",
+                  "baseRevisionId": "sha256:2d77dff2c158634e7eec59e56b39e3c5a5d7df0a83fea54db8d3ab1fe2fe6e8f",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: no-three-in-line/d77-exact-value",
+                  "lineage": []
+                },
+                {
+                  "action": "create",
+                  "nodeId": "programs/embedded-g76-record-rigidity",
+                  "parentId": "root",
+                  "nodeType": "program",
+                  "title": "Local rigidity of the embedded 152-point G76 record",
+                  "summary": "This program organizes accepted local results for the particular 152-point G76 record and its eight specified embeddings in G77, including their orbit, saturation, removal robustness, distance consequences, and perturbation scope. It does not cover unrelated records or arbitrary near-optimal configurations.",
+                  "reportSection": "## Node: programs/embedded-g76-record-rigidity",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: programs/embedded-g76-record-rigidity",
+                  "lineage": []
+                },
+                {
+                  "action": "create",
+                  "nodeId": "no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit",
+                  "parentId": "programs/embedded-g76-record-rigidity",
+                  "nodeType": "result",
+                  "title": "Quarter-turn symmetry and specified embedding orbit of the 152-point G76 record",
+                  "summary": "The particular 152-point G76 record has quarter-turn symmetry. Its eight dihedral transformations yield exactly two distinct images, and translating those images by vectors in {0,1}² yields exactly eight distinct specified embeddings in G77.",
+                  "reportSection": "## Node: no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit",
+                  "lineage": []
+                },
+                {
+                  "action": "create",
+                  "nodeId": "no-three-in-line/d77-saturation-of-embedded-g76-152-record",
+                  "parentId": "programs/embedded-g76-record-rigidity",
+                  "nodeType": "result",
+                  "title": "Saturation of the eight specified 152-point embeddings in G77",
+                  "summary": "Each of the eight specified 152-point embeddings is saturated and inclusion-maximal in G77: every originally outside cell is blocked by a pair of embedded points. This does not exclude unrelated sets of size 153 or 154.",
+                  "reportSection": "## Node: no-three-in-line/d77-saturation-of-embedded-g76-152-record",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: no-three-in-line/d77-saturation-of-embedded-g76-152-record",
+                  "lineage": []
+                },
+                {
+                  "action": "create",
+                  "nodeId": "no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record",
+                  "parentId": "programs/embedded-g76-record-rigidity",
+                  "nodeType": "result",
+                  "title": "One-removal robustness of the specified embeddings",
+                  "summary": "After removing any one point from a specified embedding, every cell that was originally outside the embedding remains blocked by a pair of remaining embedded points. The removed point itself can be restored, and the result does not apply to other 152-point configurations.",
+                  "reportSection": "## Node: no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record",
+                  "lineage": []
+                },
+                {
+                  "action": "create",
+                  "nodeId": "no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record",
+                  "parentId": "programs/embedded-g76-record-rigidity",
+                  "nodeType": "result",
+                  "title": "Complete two-removal accounting for the specified embeddings",
+                  "summary": "For each specified embedding, removing any unordered pair frees at most one originally outside cell. Exactly 16 removal pairs free an outside cell, distributed over four cells with four removal pairs per cell; the result is limited to removal depth two.",
+                  "reportSection": "## Node: no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record",
+                  "lineage": []
+                },
+                {
+                  "action": "create",
+                  "nodeId": "no-three-in-line/d77-distance-from-embedded-g76-152-record",
+                  "parentId": "programs/embedded-g76-record-rigidity",
+                  "nodeType": "result",
+                  "title": "Distance of any 153- or 154-point set from the specified embeddings",
+                  "summary": "For each specified embedding E, every no-three-in-line set S with |S| ≥ 153 satisfies |E∖S| ≥ 3, |S∖E| ≥ 4, and |E△S| ≥ 7. This local distance restriction neither establishes existence nor excludes larger sets outside these neighborhoods.",
+                  "reportSection": "## Node: no-three-in-line/d77-distance-from-embedded-g76-152-record",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: no-three-in-line/d77-distance-from-embedded-g76-152-record",
+                  "lineage": []
+                },
+                {
+                  "action": "create",
+                  "nodeId": "no-three-in-line/d77-perturb-known-record-strategy",
+                  "parentId": "programs/embedded-g76-record-rigidity",
+                  "nodeType": "method",
+                  "title": "Certified scope of perturbations around the specified 152-point embeddings",
+                  "summary": "For the eight specified embeddings, perturbations after zero, one, or two removals cannot produce a set larger than 152. Perturbations requiring three or more removals, including removing three points and adding four, remain unexplored, as do perturbations of other records.",
+                  "reportSection": "## Node: no-three-in-line/d77-perturb-known-record-strategy",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "qualifies"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: no-three-in-line/d77-perturb-known-record-strategy",
+                  "lineage": []
+                }
+              ]
+            },
+            "state": {
+              "schemaVersion": 3,
+              "problemId": "no-three-in-line-77",
+              "rootId": "root",
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "root",
+                  "title": "Research state for no-three-in-line at grid size 77",
+                  "summary": "The exact value of D(77) remains undecided, with certified interval 152 ≤ D(77) ≤ 154. The state has active root-level branches for the global exact-value question, rotational-symmetry results, and local rigidity of the eight specified embeddings of a 152-point G76 record. No active disputes exist.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+                    "section": "## Node: root"
+                  },
+                  "contentMarkdown": "## Node: root\n\n- **Type:** Root\n- **Title:** Research state for no-three-in-line at grid size 77\n- **Status:** Active\n- **Parent:** None\n\nFor\n\n\\[\nG_{77}=\\{0,1,\\ldots,76\\}^2,\n\\]\n\nthe exact maximum cardinality \\(D(77)\\) of a subset containing no three distinct collinear points remains undecided. The current certified interval is\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nNeither accepted primary judgment improves either bound or establishes whether the exact value is \\(152\\), \\(153\\), or \\(154\\).\n\nThe current organization has three active root-level branches:\n\n1. **`no-three-in-line/d77-exact-value`** records the central exact-value question and certified bounds as genuinely global knowledge.\n2. **`programs/rotational-symmetry`** organizes the accepted classification of rotations preserving finite noncollinear lattice sets and its conditional consequences for hypothetical 153- and 154-point configurations in \\(G_{77}\\).\n3. **`programs/embedded-g76-record-rigidity`** organizes the accepted local analysis of the particular 152-point \\(G_{76}\\) record and its eight specified embeddings into \\(G_{77}\\), including their orbit, saturation, removal robustness, two-removal rigidity, and distance consequences.\n\nAccording to primary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`, the new local results exclude improvements obtained from one of the eight specified embeddings after removing at most two embedded points. They do not constrain unrelated configurations or perturbations requiring at least three removals and therefore do not resolve the global problem.\n\nThere are no active disputes because no conflict records, unresolved reconciliations, needs-evidence reconciliations, or incompatible reconciliation outcomes were supplied.\n\n**Authoritative provenance**\n\n- Earlier primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Earlier judged transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`, ledger position 4\n- Current primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Current judged transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`, ledger position 2\n- Supporting evidence transaction for the current judgment: `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:26c194f83772e66fda86d089d6e96fc303ef68dff1cbfbd1897937df18b92434",
+                    "revisionNumber": 2
+                  },
+                  "digest": "sha256:683ffa5b6a21a18c77b787fb81c3f827a3099103c3773a1438b9f1420ec885ce"
+                },
+                "no-three-in-line/d77-exact-value": {
+                  "id": "no-three-in-line/d77-exact-value",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Exact value and certified interval for D(77)",
+                  "summary": "The exact value of D(77) remains unresolved, with certified interval 152 ≤ D(77) ≤ 154. Accepted rotational restrictions and the distance restriction around the eight specified embeddings do not select among 152, 153, and 154 or constrain configurations outside their stated scopes.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+                    "section": "## Node: no-three-in-line/d77-exact-value"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-exact-value\n\n- **Type:** Central question and global bounds\n- **Title:** Exact value and certified interval for \\(D(77)\\)\n- **Status:** Active and unresolved\n- **Parent:** `root`\n\nThe central question is to determine the maximum size \\(D(77)\\) of a no-three-in-line subset of \\(G_{77}\\).\n\nThe accepted primary judgments leave the current certified interval at\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nNo accepted contribution supplies:\n\n- a 153- or 154-point coordinate certificate;\n- a global impossibility proof for either cardinality; or\n- a global exhaustive search resolving the interval.\n\nPrimary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts the following rotational-symmetry restrictions without improving the global bounds:\n\n- any hypothetical 153-point configuration has no nonidentity rotational symmetry, although reflection-symmetric and asymmetric possibilities remain;\n- if a hypothetical 154-point configuration has nontrivial rotational symmetry, it must have the half-turn about \\((38,38)\\), with that center unselected;\n- asymmetric and reflection-symmetric 154-point configurations remain possible in principle; and\n- general centered-half-turn symmetry is broader than the previously referenced `rct4` class.\n\nPrimary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927` accepts a separate local restriction around eight specified embeddings of one 152-point \\(G_{76}\\) record:\n\n- none of those embeddings can be improved after removing at most two embedded points;\n- for each specified embedding \\(E\\), any no-three-in-line set \\(S\\) with \\(|S|\\ge153\\) must satisfy\n  \\[\n  |E\\setminus S|\\ge3,\\qquad |S\\setminus E|\\ge4,\\qquad |E\\triangle S|\\ge7;\n  \\]\n- configurations based on three or more removals remain unexamined; and\n- other 152-point configurations and larger configurations sufficiently far from every specified embedding remain unconstrained by this local computation.\n\nThese accepted restrictions do not select among\n\n\\[\nD(77)=152,\\qquad D(77)=153,\\qquad D(77)=154.\n\\]\n\n**Authoritative provenance**\n\n- Primary judgment on rotational restrictions: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Subject and evidence transaction for that judgment: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n- Primary judgment on embedded-record rigidity: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject transaction for that judgment: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n- Additional evidence transaction: `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n- Claim key in both judgments: `no-three-in-line/d77-exact-value`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:e84a05a21331d224bb1267909eace2f7cb2613d789e1af48ab5b6acab5da8dc7",
+                    "revisionNumber": 2
+                  },
+                  "digest": "sha256:4ed1418da0044e79dfb70f67f3ab72f459e209e12c255015dafb44175a6d8417"
+                },
+                "programs/rotational-symmetry": {
+                  "id": "programs/rotational-symmetry",
+                  "parentId": "root",
+                  "type": "program",
+                  "title": "Rotational symmetry of finite lattice configurations",
+                  "summary": "This program organizes the accepted classification of nonidentity rotations preserving finite noncollinear lattice sets and its consequences for hypothetical 153- and 154-point no-three-in-line configurations in G_77. It does not establish existence or impossibility at either cardinality.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+                    "section": "## Node: programs/rotational-symmetry"
+                  },
+                  "contentMarkdown": "## Node: programs/rotational-symmetry\n\n- **Type:** Research program\n- **Title:** Rotational symmetry of finite lattice configurations\n- **Status:** Active\n- **Parent:** `root`\n- **Lineage:** None; this program was not formed by a split or merge.\n\nThis program studies which nonidentity Euclidean rotations can preserve finite noncollinear lattice sets and what those classifications imply for large no-three-in-line configurations in \\(G_{77}\\).\n\nIts current accepted knowledge consists of:\n\n- the classification that a nonidentity Euclidean rotation preserving a finite noncollinear subset of \\(\\mathbb Z^2\\) must be a half-turn or quarter-turn, even when the rotation center is arbitrary;\n- the resulting exclusion of all nontrivial rotational symmetry for a hypothetical 153-point no-three-in-line subset of \\(G_{77}\\);\n- the conclusion that any rotationally symmetric hypothetical 154-point subset must be invariant under the half-turn about \\((38,38)\\), with the center unselected.\n\nThe program does not currently classify reflections, affine automorphisms, or approximate symmetries. It does not establish the existence or nonexistence of 153- or 154-point configurations and does not identify centered-half-turn symmetry with the narrower `rct4` class.\n\nThe primary judgment assigns high confidence to the accepted rotation results and reports that their proof uses no computational or external factual assumptions.\n\n**Active descendants**\n\n- `finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn`\n- `no-three-in-line/g77-153-has-no-nontrivial-rotation`\n- `no-three-in-line/g77-154-rotation-is-centered-half-turn`\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:6e53a9549ef8a3aaac90481714dce9bf01c1ce4779213bd80498000ff95e61bb",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:32f43440e5639f99d78e09e9fc43821bbc754eeeff6283b888125bb821ed6772"
+                },
+                "finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn": {
+                  "id": "finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn",
+                  "parentId": "programs/rotational-symmetry",
+                  "type": "claim",
+                  "title": "Classification of rotations preserving a finite noncollinear lattice set",
+                  "summary": "If a nonidentity Euclidean rotation about an arbitrary center preserves a finite noncollinear subset of Z², then it is a half-turn or quarter-turn. The result does not classify reflections, affine symmetries, or approximate symmetries.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+                    "section": "## Node: finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn"
+                  },
+                  "contentMarkdown": "## Node: finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn\n\n- **Type:** Theorem\n- **Title:** Classification of rotations preserving a finite noncollinear lattice set\n- **Status:** Accepted as proved\n- **Parent:** `programs/rotational-symmetry`\n\nPrimary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts the following statement as proved:\n\n> If \\(S\\subset\\mathbb Z^2\\) is finite and noncollinear, and a nonidentity Euclidean rotation about an arbitrary center satisfies \\(T(S)=S\\), then the rotation is a half-turn or a quarter-turn.\n\nThus the only admitted nonidentity rotation angles are \\(180^\\circ\\) and \\(\\pm90^\\circ\\).\n\nThe judgment reports that the proof:\n\n- obtains a rational rotation matrix from the images of three noncollinear lattice points;\n- obtains finite rotation order from the induced permutation of the finite set; and\n- uses the rational algebraic-integer trace to exclude all remaining finite rotation orders.\n\nThe arbitrary-center scope is material: the theorem does not require the center to be a lattice point or require the rotation to preserve the whole lattice.\n\nThe noncollinearity assumption is essential. The accepted theorem concerns Euclidean rotations only and does not classify reflections, affine symmetries, or approximate symmetries.\n\n**Credit and priority carried from the judgment**\n\nThe subject transaction supplies the decisive arbitrary-center finite-rotation argument and closes the logical gap identified in earlier rotational reasoning. The supplied evidence is insufficient to adjudicate broader historical priority for the theorem.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:58c726ab4cd2c63a604d57df9976bae00d29dec4301d40f8991afec4908c85ac",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:59593b3ffde56eac79763e22185d62020161ac1f6131d15b580b58b763586f6d"
+                },
+                "no-three-in-line/g77-153-has-no-nontrivial-rotation": {
+                  "id": "no-three-in-line/g77-153-has-no-nontrivial-rotation",
+                  "parentId": "programs/rotational-symmetry",
+                  "type": "claim",
+                  "title": "Rotational asymmetry of any 153-point configuration in G_77",
+                  "summary": "Every 153-point no-three-in-line subset of G_77, if one exists, has no nonidentity rotational symmetry about any center. This does not exclude reflection-symmetric or asymmetric configurations and does not improve the certified bounds.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+                    "section": "## Node: no-three-in-line/g77-153-has-no-nontrivial-rotation"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/g77-153-has-no-nontrivial-rotation\n\n- **Type:** Structural theorem\n- **Title:** Rotational asymmetry of any 153-point configuration in \\(G_{77}\\)\n- **Status:** Accepted as proved\n- **Parent:** `programs/rotational-symmetry`\n\nPrimary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts as proved that every 153-point no-three-in-line subset of \\(G_{77}\\), if such a subset exists, has no nonidentity rotational symmetry about any center.\n\nThe accepted conclusion uses the general finite-lattice rotation classification to reduce the possibilities to half-turns and quarter-turns. The judgment accepts the corresponding orbit and collinearity obstructions for odd cardinality and for cardinality \\(153\\equiv1\\pmod 4\\).\n\nThis theorem is only a symmetry restriction. It does not prove that a 153-point configuration is impossible. In particular:\n\n- reflection symmetry is not excluded;\n- asymmetric configurations are not excluded; and\n- no improvement to the certified lower or upper bound follows from this result alone.\n\n**Credit carried from the judgment**\n\nThe half-turn and quarter-turn orbit arguments were already present in earlier supplied evidence. The subject transaction repeats them self-containedly and supplies the general arbitrary-center classification needed to exclude every other possible rotational order.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `no-three-in-line/g77-153-has-no-nontrivial-rotation`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:536c509790357d094a74b14df39accea35cc7ca6f87c8313e2fe23302bfe3fad",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:94168e17f2af045857026c5ed907681263e7f6982c5e19884747854d2c7fd5f0"
+                },
+                "no-three-in-line/g77-154-rotation-is-centered-half-turn": {
+                  "id": "no-three-in-line/g77-154-rotation-is-centered-half-turn",
+                  "parentId": "programs/rotational-symmetry",
+                  "type": "claim",
+                  "title": "Rotational symmetry of a 154-point configuration in G_77",
+                  "summary": "If a 154-point no-three-in-line subset of G_77 has nontrivial rotational symmetry, that symmetry is the half-turn about (38,38), and (38,38) is unselected. The result is conditional and does not exclude asymmetric or reflection-symmetric configurations or identify centered half-turn symmetry with the narrower rct4 class.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
+                    "section": "## Node: no-three-in-line/g77-154-rotation-is-centered-half-turn"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/g77-154-rotation-is-centered-half-turn\n\n- **Type:** Structural theorem\n- **Title:** Rotational symmetry of a 154-point configuration in \\(G_{77}\\)\n- **Status:** Accepted as proved\n- **Parent:** `programs/rotational-symmetry`\n\nPrimary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts as proved that if a 154-point no-three-in-line subset \\(S\\subset G_{77}\\) has a nontrivial rotational symmetry, then:\n\n- the symmetry is the half-turn about \\((38,38)\\); and\n- \\((38,38)\\notin S\\).\n\nThe judgment accepts the following associated constraints:\n\n- quarter-turn symmetry is excluded by orbit cardinalities;\n- equality in the row and column bounds forces exactly two selected points in every row and every column;\n- consequently the coordinatewise bounding box is \\([0,76]^2\\);\n- invariance of that bounding box forces the half-turn center to be \\((38,38)\\); and\n- the unique fixed point of the half-turn is unselected.\n\nThe theorem is conditional on a 154-point configuration existing and having nontrivial rotational symmetry. It does not establish existence. It also does not exclude asymmetric or reflection-symmetric 154-point configurations.\n\nCentered-half-turn invariance is not identified with the narrower `rct4` search class. The judgment explicitly preserves that distinction.\n\n**Credit carried from the judgment**\n\nThe half-turn and quarter-turn orbit counting and the row/column occupancy observation were already present in earlier supplied evidence. The subject transaction presents the argument self-containedly and supplies the missing arbitrary-center rotation classification. It does not claim the earlier `rct4` construction methodology or known certificates.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `no-three-in-line/g77-154-rotation-is-centered-half-turn`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:fdcd789090edf1c5a1a0aea479ffca87432d6f096bd3207b7cf2b59fe4f6f7c2",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:aac77795a1d05d0fe85b84cf307e2fe88b54b77741788f2cf33ea415bd64bdf0"
+                },
+                "programs/embedded-g76-record-rigidity": {
+                  "id": "programs/embedded-g76-record-rigidity",
+                  "parentId": "root",
+                  "type": "program",
+                  "title": "Local rigidity of the embedded 152-point G76 record",
+                  "summary": "This program organizes accepted local results for the particular 152-point G76 record and its eight specified embeddings in G77, including their orbit, saturation, removal robustness, distance consequences, and perturbation scope. It does not cover unrelated records or arbitrary near-optimal configurations.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+                    "section": "## Node: programs/embedded-g76-record-rigidity"
+                  },
+                  "contentMarkdown": "## Node: programs/embedded-g76-record-rigidity\n\n- **Type:** Research program\n- **Title:** Local rigidity of the embedded 152-point \\(G_{76}\\) record\n- **Status:** Active\n- **Parent:** `root`\n- **Lineage:** No predecessor; this program was not formed by a split or merge.\n\nThis program studies the local structure of the particular 152-point no-three-in-line configuration \\(C\\subseteq G_{76}\\) supplied in the judged evidence and its specified placements in \\(G_{77}\\).\n\nThe program’s scope is limited to:\n\n1. the two distinct dihedral images of this particular record;\n2. the four translations by vectors in \\(\\{0,1\\}^2\\); and\n3. the resulting eight distinct subsets of \\(G_{77}\\).\n\nIt does not cover unrelated affine images, other 152-point records, or arbitrary near-optimal configurations.\n\nAccording to primary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`, the accepted current results are:\n\n- the record has quarter-turn symmetry, two distinct dihedral images, and eight specified embeddings in \\(G_{77}\\);\n- each embedding is saturated and therefore inclusion-maximal in \\(G_{77}\\);\n- saturation against originally outside cells survives every single removal;\n- every two-point removal frees at most one originally outside cell, with an exact accounting of the exceptional removal pairs;\n- any no-three-in-line set of size at least 153 has symmetric-difference distance at least seven from each specified embedding; and\n- the associated perturbation strategy is ruled out only through removal depth two.\n\nThe judgment describes these as substantial, reproducible local rigidity results. It does not treat them as a maximum-cardinality theorem or as an improvement to the interval for \\(D(77)\\).\n\nThe computational evidence uses an explicit coordinate certificate, exact integer determinant tests, deterministic standard-library Python, a committed result file, and two structurally different blocking enumerations. The judgment’s confidence is high, while noting that its assessment was based on source inspection and the supplied results rather than a separately documented execution. The two enumerations share the decoded configuration and the primitive-direction routine and are therefore complementary rather than wholly independent implementations.\n\n**Credit recorded by the judgment**\n\n- The underlying 152-point coordinate set is attributed in the supplied materials to Achim Flammenkamp’s maintained database.\n- An earlier contribution packaged that coordinate certificate and supplied a baseline verifier.\n- The judged transaction’s distinct contribution is the local rigidity analysis, code, and exposition.\n- The authorship disclosure records that this analysis, code, and text were produced by an AI research agent at Robert Raynor’s request.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`, ledger position 2\n- Supporting evidence transaction: `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:c7dbb000aaf0b930f86a324729a519a1db37eb16c3037dc7e6bf26457411afaa",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:4df18b2924fb7f97f1c32e8feeac6c3285fe81bb7ff3314aa13257b5d518cad2"
+                },
+                "no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit": {
+                  "id": "no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit",
+                  "parentId": "programs/embedded-g76-record-rigidity",
+                  "type": "result",
+                  "title": "Quarter-turn symmetry and specified embedding orbit of the 152-point G76 record",
+                  "summary": "The particular 152-point G76 record has quarter-turn symmetry. Its eight dihedral transformations yield exactly two distinct images, and translating those images by vectors in {0,1}² yields exactly eight distinct specified embeddings in G77.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+                    "section": "## Node: no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit\n\n- **Type:** Structural result\n- **Title:** Quarter-turn symmetry and specified embedding orbit of the 152-point \\(G_{76}\\) record\n- **Status:** Active; supported with high confidence\n- **Parent:** `programs/embedded-g76-record-rigidity`\n\nLet \\(C\\subseteq G_{76}\\) be the particular 152-point configuration supplied in the judged evidence.\n\nPrimary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927` supports with high confidence that:\n\n\\[\n(x,y)\\longmapsto(75-y,x)\n\\]\n\npreserves \\(C\\). Thus this particular record has quarter-turn symmetry.\n\nThe same judgment accepts that:\n\n- the coordinate string decodes to 152 distinct points in \\(G_{76}\\);\n- the no-three-in-line property was checked for all\n  \\[\n  \\binom{152}{3}=573{,}800\n  \\]\n  triples using exact integer determinants;\n- the eight transformations in the dihedral group of the square produce exactly two distinct images of \\(C\\); and\n- applying the four translations\n  \\[\n  (t_x,t_y)\\in\\{0,1\\}^2\n  \\]\n  to those two images produces exactly eight distinct subsets of \\(G_{77}\\).\n\nHere “specified embedding” means only a dihedral image followed by one of those four translations. The result does not classify unrelated affine images, other \\(G_{76}\\) records, or general 152-point configurations in \\(G_{77}\\).\n\n**Credit recorded by the judgment**\n\nThe underlying coordinate set is attributed to Achim Flammenkamp’s maintained database. The orbit verification and embedding enumeration are attributed to the judged local-rigidity analysis, whose disclosure states that the analysis, code, and text were produced by an AI research agent at Robert Raynor’s request.\n\n**Authoritative provenance**\n\n- Claim key: `no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit`\n- Primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n- Evidence transactions:\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:4bea692c8c12d121eb4f708e6e2a5b15ee1a518ce336383fb56f413f9757d974",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:3534b98c8ab42a082676d2916bceec8426ac744082410a967b0e6af7cdd15b3e"
+                },
+                "no-three-in-line/d77-saturation-of-embedded-g76-152-record": {
+                  "id": "no-three-in-line/d77-saturation-of-embedded-g76-152-record",
+                  "parentId": "programs/embedded-g76-record-rigidity",
+                  "type": "result",
+                  "title": "Saturation of the eight specified 152-point embeddings in G77",
+                  "summary": "Each of the eight specified 152-point embeddings is saturated and inclusion-maximal in G77: every originally outside cell is blocked by a pair of embedded points. This does not exclude unrelated sets of size 153 or 154.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+                    "section": "## Node: no-three-in-line/d77-saturation-of-embedded-g76-152-record"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-saturation-of-embedded-g76-152-record\n\n- **Type:** Computationally certified result\n- **Title:** Saturation of the eight specified 152-point embeddings in \\(G_{77}\\)\n- **Status:** Active; supported with high confidence\n- **Parent:** `programs/embedded-g76-record-rigidity`\n\nLet \\(E\\subseteq G_{77}\\) be any one of the eight specified embeddings of the supplied 152-point \\(G_{76}\\) record.\n\nPrimary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927` supports with high confidence that every cell in\n\n\\[\nG_{77}\\setminus E\n\\]\n\nis collinear with a pair of points of \\(E\\). Consequently, no outside cell can be added to \\(E\\) while preserving the no-three-in-line property.\n\nThe accepted exact computation reports, for each specified embedding:\n\n- \\(5{,}777\\) originally outside cells;\n- at least two distinct blocking pairs for every outside cell; and\n- total blocking incidence \\(51{,}449\\).\n\nThe primary direction census and the complementary primitive-line walk were required to agree on the blocked cells and the number of blocking pairs at every cell.\n\nEach specified embedding is therefore **inclusion-maximal** in \\(G_{77}\\). The judgment expressly distinguishes this from maximum cardinality: saturation of these 152-point sets does not exclude unrelated no-three-in-line sets with 153 or 154 points.\n\n**Credit recorded by the judgment**\n\nThe embedded coordinate set is attributed to Achim Flammenkamp’s maintained database. The saturation certificate and its computational analysis are attributed to the judged local-rigidity work disclosed as produced by an AI research agent at Robert Raynor’s request.\n\n**Authoritative provenance**\n\n- Claim key: `no-three-in-line/d77-saturation-of-embedded-g76-152-record`\n- Primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n- Evidence transactions:\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:37e5cce51f0378bbb7b6e505374ed765a777cab1ddf684949137ce8053a54638",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:10057fb915bab77200e5d9dfc4d2d7d9aaabee361bf4c3d7e01e9da5155471f8"
+                },
+                "no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record": {
+                  "id": "no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record",
+                  "parentId": "programs/embedded-g76-record-rigidity",
+                  "type": "result",
+                  "title": "One-removal robustness of the specified embeddings",
+                  "summary": "After removing any one point from a specified embedding, every cell that was originally outside the embedding remains blocked by a pair of remaining embedded points. The removed point itself can be restored, and the result does not apply to other 152-point configurations.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+                    "section": "## Node: no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record\n\n- **Type:** Local rigidity result\n- **Title:** One-removal robustness of the specified embeddings\n- **Status:** Active; supported with high confidence\n- **Parent:** `programs/embedded-g76-record-rigidity`\n\nLet \\(E\\subseteq G_{77}\\) be a specified embedding of the supplied 152-point record, and let \\(r\\in E\\).\n\nPrimary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927` supports with high confidence that removing \\(r\\) does not make any cell that was originally outside \\(E\\) addable. In other words, every\n\n\\[\nc\\in G_{77}\\setminus E\n\\]\n\nremains blocked by a pair of points in \\(E\\setminus\\{r\\}\\).\n\nThe scope qualification is essential: the result concerns cells originally in \\(G_{77}\\setminus E\\). The removed point \\(r\\) itself can be restored.\n\nThe accepted computation reports no singleton removal that frees an originally outside cell for any of the eight specified embeddings. The direction-census enumeration and the line-walk/hitting-set reconstruction were required to agree cell by cell.\n\nThis is a local statement about the specified record. It does not apply to other 152-point configurations.\n\n**Credit recorded by the judgment**\n\nThe robustness computation is attributed to the judged local-rigidity analysis, whose disclosure records production by an AI research agent at Robert Raynor’s request.\n\n**Authoritative provenance**\n\n- Claim key: `no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record`\n- Primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject and evidence transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:657b7d1a4c44337945153d991634d55e14ea6426ea61988b9a3802b2356f11b3",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:2cba1a25ecaa0e41936de1629ac90285b5d54dc48490445bbb29d098e2438603"
+                },
+                "no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record": {
+                  "id": "no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record",
+                  "parentId": "programs/embedded-g76-record-rigidity",
+                  "type": "result",
+                  "title": "Complete two-removal accounting for the specified embeddings",
+                  "summary": "For each specified embedding, removing any unordered pair frees at most one originally outside cell. Exactly 16 removal pairs free an outside cell, distributed over four cells with four removal pairs per cell; the result is limited to removal depth two.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+                    "section": "## Node: no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record\n\n- **Type:** Exact finite computational result\n- **Title:** Complete two-removal accounting for the specified embeddings\n- **Status:** Active; supported with high confidence\n- **Parent:** `programs/embedded-g76-record-rigidity`\n\nLet \\(E\\subseteq G_{77}\\) be any one of the eight specified embeddings of the supplied 152-point record.\n\nPrimary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927` supports with high confidence that removing any unordered pair of points from \\(E\\) frees at most one cell that was originally outside \\(E\\).\n\nFor each specified embedding, the accepted exact accounting is:\n\n- exactly 16 unordered removal pairs free an outside cell;\n- those 16 pairs are distributed over exactly four outside cells;\n- each of the four cells is freed by four removal pairs; and\n- all such freeings use the “two-lines-of-two” mechanism.\n\nThe accepted checker:\n\n- enumerates the relevant blocking structures;\n- stores freeings by unordered removal pair;\n- fails if a removal pair frees more than one outside cell;\n- directly tests each reported freed cell against all remaining pairs; and\n- requires the recomputed output to match the committed result file.\n\nA direction census and a line-walk/hitting-set enumeration provide structurally different cross-checks. The judgment qualifies their independence because they share the decoded configuration and primitive-direction routine.\n\nThe result is confined to removal depth two around the eight specified embeddings. It does not address three-point or deeper removals.\n\n**Credit recorded by the judgment**\n\nThe two-removal enumeration and cross-checking analysis are attributed to the judged local-rigidity work disclosed as produced by an AI research agent at Robert Raynor’s request.\n\n**Authoritative provenance**\n\n- Claim key: `no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record`\n- Primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n- Evidence transactions:\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:20039545522f0bd083effeb8e5b545ceb8115c3b963fc852e38f9d86dc7cefa5",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:eebd72687bf49ffea14145a42be324c2c33894bc662b14a7c7d0b411ffa63f2c"
+                },
+                "no-three-in-line/d77-distance-from-embedded-g76-152-record": {
+                  "id": "no-three-in-line/d77-distance-from-embedded-g76-152-record",
+                  "parentId": "programs/embedded-g76-record-rigidity",
+                  "type": "result",
+                  "title": "Distance of any 153- or 154-point set from the specified embeddings",
+                  "summary": "For each specified embedding E, every no-three-in-line set S with |S| ≥ 153 satisfies |E∖S| ≥ 3, |S∖E| ≥ 4, and |E△S| ≥ 7. This local distance restriction neither establishes existence nor excludes larger sets outside these neighborhoods.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+                    "section": "## Node: no-three-in-line/d77-distance-from-embedded-g76-152-record"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-distance-from-embedded-g76-152-record\n\n- **Type:** Deductive structural consequence\n- **Title:** Distance of any 153- or 154-point set from the specified embeddings\n- **Status:** Active; proved from accepted local computations\n- **Parent:** `programs/embedded-g76-record-rigidity`\n\nLet \\(E\\) be any one of the eight specified 152-point embeddings, and let \\(S\\subseteq G_{77}\\) be no-three-in-line.\n\nPrimary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927` concludes from the accepted saturation and removal computations that if\n\n\\[\n|E\\setminus S|\\le2,\n\\]\n\nthen\n\n\\[\n|S\\setminus E|\\le1\n\\qquad\\text{and}\\qquad\n|S|\\le152.\n\\]\n\nConsequently, the judgment accepts that every no-three-in-line set \\(S\\) with\n\n\\[\n|S|\\ge153\n\\]\n\nmust, for each specified embedding \\(E\\), satisfy\n\n\\[\n|E\\setminus S|\\ge3,\n\\qquad\n|S\\setminus E|\\ge4,\n\\]\n\nand therefore\n\n\\[\n|E\\triangle S|\\ge7.\n\\]\n\nThis is a distance restriction relative to the eight specified embeddings of one record. It neither proves that a 153- or 154-point set exists nor excludes sets lying outside these local neighborhoods.\n\n**Credit recorded by the judgment**\n\nThe symmetric-difference consequence is attributed to the judged local-rigidity analysis, whose disclosure records production by an AI research agent at Robert Raynor’s request.\n\n**Authoritative provenance**\n\n- Claim key: `no-three-in-line/d77-distance-from-embedded-g76-152-record`\n- Primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n- Evidence transactions:\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:c50ba418b761def53c015a622b607ca281366c3652ae983ba8d12a4a3ec146c2",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:2dba1e169487bc401b5d7286b772793332dc0e9681c795c73f8d04dcf592fdb0"
+                },
+                "no-three-in-line/d77-perturb-known-record-strategy": {
+                  "id": "no-three-in-line/d77-perturb-known-record-strategy",
+                  "parentId": "programs/embedded-g76-record-rigidity",
+                  "type": "method",
+                  "title": "Certified scope of perturbations around the specified 152-point embeddings",
+                  "summary": "For the eight specified embeddings, perturbations after zero, one, or two removals cannot produce a set larger than 152. Perturbations requiring three or more removals, including removing three points and adding four, remain unexplored, as do perturbations of other records.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+                    "section": "## Node: no-three-in-line/d77-perturb-known-record-strategy"
+                  },
+                  "contentMarkdown": "## Node: no-three-in-line/d77-perturb-known-record-strategy\n\n- **Type:** Method-scope assessment\n- **Title:** Certified scope of perturbations around the specified 152-point embeddings\n- **Status:** Active and partially constrained\n- **Parent:** `programs/embedded-g76-record-rigidity`\n\nThe accepted local computations rule out every improvement obtained from one of the eight specified embeddings after removing at most two of its points.\n\nPrimary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927` does not accept the broader claim that the entire strategy of perturbing the known record has been pruned.\n\nThe current certified scope is precisely:\n\n- removal depth zero cannot add an outside point because the embedding is saturated;\n- removal depth one frees no originally outside cell;\n- removal depth two frees at most one originally outside cell and cannot produce a set larger than 152; and\n- removal depth three or greater remains unexplored.\n\nIn particular, the judgment identifies removing three embedded points and adding four new points as an example of a perturbation not excluded by the accepted computation.\n\nThis method assessment applies only to the eight specified embeddings of the supplied record. It makes no claim about perturbations of other 152-point configurations.\n\n**Credit recorded by the judgment**\n\nThe scoped perturbation analysis is attributed to the judged local-rigidity work disclosed as produced by an AI research agent at Robert Raynor’s request.\n\n**Authoritative provenance**\n\n- Claim key: `no-three-in-line/d77-perturb-known-record-strategy`\n- Judgment stance: Qualifies\n- Primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject and evidence transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "ledgerPosition": 2
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                      "relation": "qualifies"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                      "digest": null,
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:53988612f169bcd9f873a37c2dfff355d5e3d7ed9788efc4160a79a75415c325",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:c79ca3ba08a2ba579802444a604e329196e2bd53c0c2e7af02b5c3f65ca4b24f"
+                }
+              },
+              "stateDigest": "sha256:ab3c726d7ebe6195aa8871695ced6d15edf79020dcb31f36b1c172a017163890"
+            },
+            "revisionIds": [
+              "sha256:ae533eae07c86fc248dc2ff4c4681cbd37290c460fbea4ffddace7e9dd65c206",
+              "sha256:2d77dff2c158634e7eec59e56b39e3c5a5d7df0a83fea54db8d3ab1fe2fe6e8f",
+              "sha256:6e53a9549ef8a3aaac90481714dce9bf01c1ce4779213bd80498000ff95e61bb",
+              "sha256:58c726ab4cd2c63a604d57df9976bae00d29dec4301d40f8991afec4908c85ac",
+              "sha256:536c509790357d094a74b14df39accea35cc7ca6f87c8313e2fe23302bfe3fad",
+              "sha256:fdcd789090edf1c5a1a0aea479ffca87432d6f096bd3207b7cf2b59fe4f6f7c2",
+              "sha256:26c194f83772e66fda86d089d6e96fc303ef68dff1cbfbd1897937df18b92434",
+              "sha256:e84a05a21331d224bb1267909eace2f7cb2613d789e1af48ab5b6acab5da8dc7",
+              "sha256:c7dbb000aaf0b930f86a324729a519a1db37eb16c3037dc7e6bf26457411afaa",
+              "sha256:4bea692c8c12d121eb4f708e6e2a5b15ee1a518ce336383fb56f413f9757d974",
+              "sha256:37e5cce51f0378bbb7b6e505374ed765a777cab1ddf684949137ce8053a54638",
+              "sha256:657b7d1a4c44337945153d991634d55e14ea6426ea61988b9a3802b2356f11b3",
+              "sha256:20039545522f0bd083effeb8e5b545ceb8115c3b963fc852e38f9d86dc7cefa5",
+              "sha256:c50ba418b761def53c015a622b607ca281366c3652ae983ba8d12a4a3ec146c2",
+              "sha256:53988612f169bcd9f873a37c2dfff355d5e3d7ed9788efc4160a79a75415c325"
+            ],
+            "addedRevisionIds": [
+              "sha256:26c194f83772e66fda86d089d6e96fc303ef68dff1cbfbd1897937df18b92434",
+              "sha256:e84a05a21331d224bb1267909eace2f7cb2613d789e1af48ab5b6acab5da8dc7",
+              "sha256:c7dbb000aaf0b930f86a324729a519a1db37eb16c3037dc7e6bf26457411afaa",
+              "sha256:4bea692c8c12d121eb4f708e6e2a5b15ee1a518ce336383fb56f413f9757d974",
+              "sha256:37e5cce51f0378bbb7b6e505374ed765a777cab1ddf684949137ce8053a54638",
+              "sha256:657b7d1a4c44337945153d991634d55e14ea6426ea61988b9a3802b2356f11b3",
+              "sha256:20039545522f0bd083effeb8e5b545ceb8115c3b963fc852e38f9d86dc7cefa5",
+              "sha256:c50ba418b761def53c015a622b607ca281366c3652ae983ba8d12a4a3ec146c2",
+              "sha256:53988612f169bcd9f873a37c2dfff355d5e3d7ed9788efc4160a79a75415c325"
+            ],
+            "changedNodeIds": [
+              "root",
+              "no-three-in-line/d77-exact-value",
+              "programs/embedded-g76-record-rigidity",
+              "no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit",
+              "no-three-in-line/d77-saturation-of-embedded-g76-152-record",
+              "no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record",
+              "no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record",
+              "no-three-in-line/d77-distance-from-embedded-g76-152-record",
+              "no-three-in-line/d77-perturb-known-record-strategy"
+            ],
+            "reportDigest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+            "revisionSemantics": "neutral-knowledge"
           }
         ],
         "revisions": [
@@ -13139,6 +14298,531 @@
             ],
             "summary": "If a 154-point no-three-in-line subset of G_77 has nontrivial rotational symmetry, that symmetry is the half-turn about (38,38), and (38,38) is unselected. The result is conditional and does not exclude asymmetric or reflection-symmetric configurations or identify centered half-turn symmetry with the narrower rct4 class.",
             "title": "Rotational symmetry of a 154-point configuration in G_77"
+          },
+          {
+            "action": "update",
+            "baseRevisionId": "sha256:ae533eae07c86fc248dc2ff4c4681cbd37290c460fbea4ffddace7e9dd65c206",
+            "changeRationale": "Update the root to add the durable program for local rigidity of the embedded \\(G_{76}\\) record while preserving the global exact-value node and the unchanged rotational-symmetry program. The new judgment leaves the certified interval unchanged and creates no dispute.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Change: root"
+            },
+            "contentDigest": "sha256:6397eeae8cb45a61b727fb73a9bdf1f46659a9b08cccf970594623b92cebae7c",
+            "evidence": [
+              {
+                "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                "kind": "transaction",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "content",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "root",
+            "nodeType": "root",
+            "parentId": null,
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Node: root"
+            },
+            "revisionId": "sha256:26c194f83772e66fda86d089d6e96fc303ef68dff1cbfbd1897937df18b92434",
+            "revisionNumber": 2,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "ledgerPosition": 4
+              },
+              {
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "The exact value of D(77) remains undecided, with certified interval 152 ≤ D(77) ≤ 154. The state has active root-level branches for the global exact-value question, rotational-symmetry results, and local rigidity of the eight specified embeddings of a 152-point G76 record. No active disputes exist.",
+            "title": "Research state for no-three-in-line at grid size 77"
+          },
+          {
+            "action": "update",
+            "baseRevisionId": "sha256:2d77dff2c158634e7eec59e56b39e3c5a5d7df0a83fea54db8d3ab1fe2fe6e8f",
+            "changeRationale": "Update the global question to incorporate the newly accepted distance restriction around the eight specified embeddings. The new judgment explicitly leaves the interval \\(152\\le D(77)\\le154\\) unresolved, so the node’s stance and bounds remain unchanged.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Change: no-three-in-line/d77-exact-value"
+            },
+            "contentDigest": "sha256:d30818ca14551e285665dd93e66da27c86a65486ce1b71969df221b2338f5037",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "id": "sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                "kind": "transaction",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "content",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "no-three-in-line/d77-exact-value",
+            "nodeType": "question",
+            "parentId": "root",
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Node: no-three-in-line/d77-exact-value"
+            },
+            "revisionId": "sha256:e84a05a21331d224bb1267909eace2f7cb2613d789e1af48ab5b6acab5da8dc7",
+            "revisionNumber": 2,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "kind": "transaction",
+                "ledgerPosition": 4
+              },
+              {
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "The exact value of D(77) remains unresolved, with certified interval 152 ≤ D(77) ≤ 154. Accepted rotational restrictions and the distance restriction around the eight specified embeddings do not select among 152, 153, and 154 or constrain configurations outside their stated scopes.",
+            "title": "Exact value and certified interval for D(77)"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "Create a root-level program because the accepted orbit, saturation, removal, distance, and search-scope results form a coherent record-specific agenda that can be extended independently of the global exact-value and rotational-classification programs.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Change: programs/embedded-g76-record-rigidity"
+            },
+            "contentDigest": "sha256:722545df2f3035eb42120c137ff68b1734092620fa0db0af34271a52339abcdd",
+            "evidence": [
+              {
+                "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                "kind": "transaction",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "programs/embedded-g76-record-rigidity",
+            "nodeType": "program",
+            "parentId": "root",
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Node: programs/embedded-g76-record-rigidity"
+            },
+            "revisionId": "sha256:c7dbb000aaf0b930f86a324729a519a1db37eb16c3037dc7e6bf26457411afaa",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "This program organizes accepted local results for the particular 152-point G76 record and its eight specified embeddings in G77, including their orbit, saturation, removal robustness, distance consequences, and perturbation scope. It does not cover unrelated records or arbitrary near-optimal configurations.",
+            "title": "Local rigidity of the embedded 152-point G76 record"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "Create a stable structural node for the accepted symmetry and finite embedding orbit of the particular record. Its scope is narrower than the existing general rotational-symmetry program and belongs with the record-specific rigidity agenda.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Change: no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit"
+            },
+            "contentDigest": "sha256:0100e4cdbbaf3faef41cae0d8b521f38f0ebc3f429343d357e66b279b601f9ff",
+            "evidence": [
+              {
+                "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit",
+            "nodeType": "result",
+            "parentId": "programs/embedded-g76-record-rigidity",
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Node: no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit"
+            },
+            "revisionId": "sha256:4bea692c8c12d121eb4f708e6e2a5b15ee1a518ce336383fb56f413f9757d974",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "The particular 152-point G76 record has quarter-turn symmetry. Its eight dihedral transformations yield exactly two distinct images, and translating those images by vectors in {0,1}² yields exactly eight distinct specified embeddings in G77.",
+            "title": "Quarter-turn symmetry and specified embedding orbit of the 152-point G76 record"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "Create a stable result node for the accepted exact saturation certificate. The result is durable and distinct from both the orbit computation and the global maximum-cardinality question.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Change: no-three-in-line/d77-saturation-of-embedded-g76-152-record"
+            },
+            "contentDigest": "sha256:7fbf70878fadba8b29a48ee98bf639348bdf2ce392d7d3070588b5d8fd9e22a8",
+            "evidence": [
+              {
+                "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "no-three-in-line/d77-saturation-of-embedded-g76-152-record",
+            "nodeType": "result",
+            "parentId": "programs/embedded-g76-record-rigidity",
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Node: no-three-in-line/d77-saturation-of-embedded-g76-152-record"
+            },
+            "revisionId": "sha256:37e5cce51f0378bbb7b6e505374ed765a777cab1ddf684949137ce8053a54638",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "Each of the eight specified 152-point embeddings is saturated and inclusion-maximal in G77: every originally outside cell is blocked by a pair of embedded points. This does not exclude unrelated sets of size 153 or 154.",
+            "title": "Saturation of the eight specified 152-point embeddings in G77"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "Create a stable node for the accepted one-removal robustness result, retaining the judgment’s qualification that only cells originally outside the embedding remain blocked.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Change: no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record"
+            },
+            "contentDigest": "sha256:5a18fc75a250f40a6ee8d1f2d26946e462d5a4d9f248bd9cef1b1a25ee656bb8",
+            "evidence": [
+              {
+                "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record",
+            "nodeType": "result",
+            "parentId": "programs/embedded-g76-record-rigidity",
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Node: no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record"
+            },
+            "revisionId": "sha256:657b7d1a4c44337945153d991634d55e14ea6426ea61988b9a3802b2356f11b3",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "After removing any one point from a specified embedding, every cell that was originally outside the embedding remains blocked by a pair of remaining embedded points. The removed point itself can be restored, and the result does not apply to other 152-point configurations.",
+            "title": "One-removal robustness of the specified embeddings"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "Create a stable node for the exhaustive two-removal computation, including its exact exceptional counts, limited implementation-independence qualification, and removal-depth scope.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Change: no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record"
+            },
+            "contentDigest": "sha256:b0662ae865a913c1fd2487335eb5ff9af0e404d820dde6d9ae5c97f5f382c946",
+            "evidence": [
+              {
+                "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record",
+            "nodeType": "result",
+            "parentId": "programs/embedded-g76-record-rigidity",
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Node: no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record"
+            },
+            "revisionId": "sha256:20039545522f0bd083effeb8e5b545ceb8115c3b963fc852e38f9d86dc7cefa5",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "For each specified embedding, removing any unordered pair frees at most one originally outside cell. Exactly 16 removal pairs free an outside cell, distributed over four cells with four removal pairs per cell; the result is limited to removal depth two.",
+            "title": "Complete two-removal accounting for the specified embeddings"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "Create a stable structural node for the distance consequence proved by the judgment from the accepted local computations. Its explicit scope prevents the local result from being mistaken for a global impossibility theorem.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Change: no-three-in-line/d77-distance-from-embedded-g76-152-record"
+            },
+            "contentDigest": "sha256:1df9cd41f2028cfa69f5b290a5b498b3b99072bfded608e0e7679f0fbca989bd",
+            "evidence": [
+              {
+                "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "kind": "judgment",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": null,
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "no-three-in-line/d77-distance-from-embedded-g76-152-record",
+            "nodeType": "result",
+            "parentId": "programs/embedded-g76-record-rigidity",
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Node: no-three-in-line/d77-distance-from-embedded-g76-152-record"
+            },
+            "revisionId": "sha256:c50ba418b761def53c015a622b607ca281366c3652ae983ba8d12a4a3ec146c2",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "For each specified embedding E, every no-three-in-line set S with |S| ≥ 153 satisfies |E∖S| ≥ 3, |S∖E| ≥ 4, and |E△S| ≥ 7. This local distance restriction neither establishes existence nor excludes larger sets outside these neighborhoods.",
+            "title": "Distance of any 153- or 154-point set from the specified embeddings"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "Create a durable method-scope node because the judgment accepts a precise restriction on shallow perturbations while rejecting the broader whole-strategy claim. The node preserves that qualification without extending it to removal depth three or beyond.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Change: no-three-in-line/d77-perturb-known-record-strategy"
+            },
+            "contentDigest": "sha256:0a3a029f210960abf253d0565dbd9ed6527d0d5848da6dbd76176ab52340e425",
+            "evidence": [
+              {
+                "digest": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "id": "sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927",
+                "kind": "judgment",
+                "relation": "qualifies"
+              },
+              {
+                "digest": null,
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "no-three-in-line/d77-perturb-known-record-strategy",
+            "nodeType": "method",
+            "parentId": "programs/embedded-g76-record-rigidity",
+            "recordedAtLedgerHead": "38b177651ff047e40147468d24676fa01e0cf24f",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+              "section": "## Node: no-three-in-line/d77-perturb-known-record-strategy"
+            },
+            "revisionId": "sha256:53988612f169bcd9f873a37c2dfff355d5e3d7ed9788efc4160a79a75415c325",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "kind": "transaction",
+                "ledgerPosition": 2
+              }
+            ],
+            "summary": "For the eight specified embeddings, perturbations after zero, one, or two removals cannot produce a set larger than 152. Perturbations requiring three or more removals, including removing three points and adding four, remain unexplored, as do perturbations of other records.",
+            "title": "Certified scope of perturbations around the specified 152-point embeddings"
           }
         ],
         "reports": [
@@ -13146,9 +14830,14 @@
             "runId": "cc94c6abd5db53040c4f8eddaa5783778d83091fa99e19bfed45dd35b1155bb2",
             "digest": "sha256:6dedd3d02361b7b4f0f26b84c315be74fe49d2dcc2187ead34cb5c2bb666f351",
             "markdown": "# Knowledge-formation report\n\n## Node: root\n\n- **Type:** Root\n- **Title:** Research state for no-three-in-line at grid size 77\n- **Status:** Active\n- **Parent:** None\n\nFor\n\n\\[\nG_{77}=\\{0,1,\\ldots,76\\}^2,\n\\]\n\nthe exact maximum cardinality \\(D(77)\\) of a subset containing no three distinct collinear points remains undecided. The current certified interval is\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nThe primary judgment establishes no improvement to either bound. It accepts structural restrictions on rotationally symmetric configurations but does not establish the existence or global impossibility of configurations with 153 or 154 points.\n\nThe current organization has two active root-level branches:\n\n1. **`no-three-in-line/d77-exact-value`** records the central exact-value question and current certified bounds as a genuinely global fact.\n2. **`programs/rotational-symmetry`** organizes the accepted classification of rotations preserving finite noncollinear lattice sets and its consequences for hypothetical 153- and 154-point configurations in \\(G_{77}\\).\n\nThere are no active disputes, because no conflict records or incompatible reconciliation outcomes were supplied.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Judged subject transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n- Ledger position: 4\n\n## Change: root\n\nThe previously empty root at digest `sha256:182fd4ab3cff13c2410f364403d9962b96944122acda56bea8389df70bd43d03` is updated to represent the certified global bounds and the first durable research program warranted by the supplied primary judgment. No split, merge, restoration, or reparenting is involved because no prior program taxonomy existed.\n\n## Node: no-three-in-line/d77-exact-value\n\n- **Type:** Central question and global bounds\n- **Title:** Exact value and certified interval for \\(D(77)\\)\n- **Status:** Active and unresolved\n- **Parent:** `root`\n\nThe central question is to determine the maximum size \\(D(77)\\) of a no-three-in-line subset of \\(G_{77}\\).\n\nAccording to primary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`, the exact value remains undecided and the current certified interval remains\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nThe judged contribution does not provide:\n\n- a 153- or 154-point coordinate certificate;\n- an impossibility proof for either cardinality; or\n- a global exhaustive search.\n\nThe accepted rotational-symmetry results therefore do not improve either side of the interval. They only narrow the possible symmetry classes:\n\n- any hypothetical 153-point configuration has no nonidentity rotational symmetry, although reflection-symmetric and asymmetric possibilities remain;\n- if a hypothetical 154-point configuration has nontrivial rotational symmetry, it must have the half-turn about \\((38,38)\\), with that center unselected;\n- asymmetric and reflection-symmetric 154-point configurations remain possible in principle;\n- general centered-half-turn symmetry is broader than the previously referenced `rct4` class.\n\nNo conclusion has been accepted that selects among \\(D(77)=152\\), \\(153\\), or \\(154\\).\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `no-three-in-line/d77-exact-value`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n\n## Change: no-three-in-line/d77-exact-value\n\nThis node is created as the durable root-level home for the unresolved exact-value question and best certified bounds. It remains outside any individual program because the bounds and exact value govern the entire problem.\n\n## Node: programs/rotational-symmetry\n\n- **Type:** Research program\n- **Title:** Rotational symmetry of finite lattice configurations\n- **Status:** Active\n- **Parent:** `root`\n- **Lineage:** None; this program was not formed by a split or merge.\n\nThis program studies which nonidentity Euclidean rotations can preserve finite noncollinear lattice sets and what those classifications imply for large no-three-in-line configurations in \\(G_{77}\\).\n\nIts current accepted knowledge consists of:\n\n- the classification that a nonidentity Euclidean rotation preserving a finite noncollinear subset of \\(\\mathbb Z^2\\) must be a half-turn or quarter-turn, even when the rotation center is arbitrary;\n- the resulting exclusion of all nontrivial rotational symmetry for a hypothetical 153-point no-three-in-line subset of \\(G_{77}\\);\n- the conclusion that any rotationally symmetric hypothetical 154-point subset must be invariant under the half-turn about \\((38,38)\\), with the center unselected.\n\nThe program does not currently classify reflections, affine automorphisms, or approximate symmetries. It does not establish the existence or nonexistence of 153- or 154-point configurations and does not identify centered-half-turn symmetry with the narrower `rct4` class.\n\nThe primary judgment assigns high confidence to the accepted rotation results and reports that their proof uses no computational or external factual assumptions.\n\n**Active descendants**\n\n- `finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn`\n- `no-three-in-line/g77-153-has-no-nontrivial-rotation`\n- `no-three-in-line/g77-154-rotation-is-centered-half-turn`\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n\n## Change: programs/rotational-symmetry\n\nThis program is created because the accepted general rotation-classification theorem and its \\(G_{77}\\) consequences form a coherent, separately extensible research agenda. No predecessor program exists, so no reciprocal split or merge lineage is required.\n\n## Node: finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn\n\n- **Type:** Theorem\n- **Title:** Classification of rotations preserving a finite noncollinear lattice set\n- **Status:** Accepted as proved\n- **Parent:** `programs/rotational-symmetry`\n\nPrimary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts the following statement as proved:\n\n> If \\(S\\subset\\mathbb Z^2\\) is finite and noncollinear, and a nonidentity Euclidean rotation about an arbitrary center satisfies \\(T(S)=S\\), then the rotation is a half-turn or a quarter-turn.\n\nThus the only admitted nonidentity rotation angles are \\(180^\\circ\\) and \\(\\pm90^\\circ\\).\n\nThe judgment reports that the proof:\n\n- obtains a rational rotation matrix from the images of three noncollinear lattice points;\n- obtains finite rotation order from the induced permutation of the finite set; and\n- uses the rational algebraic-integer trace to exclude all remaining finite rotation orders.\n\nThe arbitrary-center scope is material: the theorem does not require the center to be a lattice point or require the rotation to preserve the whole lattice.\n\nThe noncollinearity assumption is essential. The accepted theorem concerns Euclidean rotations only and does not classify reflections, affine symmetries, or approximate symmetries.\n\n**Credit and priority carried from the judgment**\n\nThe subject transaction supplies the decisive arbitrary-center finite-rotation argument and closes the logical gap identified in earlier rotational reasoning. The supplied evidence is insufficient to adjudicate broader historical priority for the theorem.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n\n## Change: finite-lattice-sets/nontrivial-rotation-is-half-or-quarter-turn\n\nThis theorem node is created because the accepted arbitrary-center rotation classification is a durable general mathematical result supporting, but not limited to, the \\(G_{77}\\) applications.\n\n## Node: no-three-in-line/g77-153-has-no-nontrivial-rotation\n\n- **Type:** Structural theorem\n- **Title:** Rotational asymmetry of any 153-point configuration in \\(G_{77}\\)\n- **Status:** Accepted as proved\n- **Parent:** `programs/rotational-symmetry`\n\nPrimary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts as proved that every 153-point no-three-in-line subset of \\(G_{77}\\), if such a subset exists, has no nonidentity rotational symmetry about any center.\n\nThe accepted conclusion uses the general finite-lattice rotation classification to reduce the possibilities to half-turns and quarter-turns. The judgment accepts the corresponding orbit and collinearity obstructions for odd cardinality and for cardinality \\(153\\equiv1\\pmod 4\\).\n\nThis theorem is only a symmetry restriction. It does not prove that a 153-point configuration is impossible. In particular:\n\n- reflection symmetry is not excluded;\n- asymmetric configurations are not excluded; and\n- no improvement to the certified lower or upper bound follows from this result alone.\n\n**Credit carried from the judgment**\n\nThe half-turn and quarter-turn orbit arguments were already present in earlier supplied evidence. The subject transaction repeats them self-containedly and supplies the general arbitrary-center classification needed to exclude every other possible rotational order.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `no-three-in-line/g77-153-has-no-nontrivial-rotation`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n\n## Change: no-three-in-line/g77-153-has-no-nontrivial-rotation\n\nThis node is created to preserve the accepted 153-point rotational restriction as a distinct durable consequence, separate from both the general lattice theorem and the unresolved existence question.\n\n## Node: no-three-in-line/g77-154-rotation-is-centered-half-turn\n\n- **Type:** Structural theorem\n- **Title:** Rotational symmetry of a 154-point configuration in \\(G_{77}\\)\n- **Status:** Accepted as proved\n- **Parent:** `programs/rotational-symmetry`\n\nPrimary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts as proved that if a 154-point no-three-in-line subset \\(S\\subset G_{77}\\) has a nontrivial rotational symmetry, then:\n\n- the symmetry is the half-turn about \\((38,38)\\); and\n- \\((38,38)\\notin S\\).\n\nThe judgment accepts the following associated constraints:\n\n- quarter-turn symmetry is excluded by orbit cardinalities;\n- equality in the row and column bounds forces exactly two selected points in every row and every column;\n- consequently the coordinatewise bounding box is \\([0,76]^2\\);\n- invariance of that bounding box forces the half-turn center to be \\((38,38)\\); and\n- the unique fixed point of the half-turn is unselected.\n\nThe theorem is conditional on a 154-point configuration existing and having nontrivial rotational symmetry. It does not establish existence. It also does not exclude asymmetric or reflection-symmetric 154-point configurations.\n\nCentered-half-turn invariance is not identified with the narrower `rct4` search class. The judgment explicitly preserves that distinction.\n\n**Credit carried from the judgment**\n\nThe half-turn and quarter-turn orbit counting and the row/column occupancy observation were already present in earlier supplied evidence. The subject transaction presents the argument self-containedly and supplies the missing arbitrary-center rotation classification. It does not claim the earlier `rct4` construction methodology or known certificates.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Claim key: `no-three-in-line/g77-154-rotation-is-centered-half-turn`\n- Subject and evidence transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n\n## Change: no-three-in-line/g77-154-rotation-is-centered-half-turn\n\nThis node is created to preserve the accepted conditional classification of rotational symmetry at cardinality 154 without conflating it with existence, global impossibility, or the narrower `rct4` model.\n"
+          },
+          {
+            "runId": "5951ff24fd51041ae3b4a520c5260e456e62da07d65b8c4147ca9c615fdc5e7c",
+            "digest": "sha256:37ede3f1996d61c040232adb05c2ed8bd3cf56c56e8bd6d0bd5e9493dffee26f",
+            "markdown": "# Knowledge-Formation Report\n\n## Organizational assessment\n\nThe accepted judgment identifies a coherent and separately extensible research agenda concerning the local rigidity of one particular 152-point record from \\(G_{76}\\) after its specified embeddings into \\(G_{77}\\). A new root-level program, `programs/embedded-g76-record-rigidity`, is therefore warranted.\n\nThis is a new program rather than a split or merge:\n\n- it has no predecessor lineage;\n- it does not alter the existing rotational-symmetry program;\n- the central exact-value question and certified interval remain global at root level; and\n- all record-specific symmetry, saturation, removal, distance, and perturbation claims are placed beneath the new program.\n\nNo conflict records or incompatible reconciliation outcomes were supplied, so no active dispute node is required.\n\n## Node: root\n\n- **Type:** Root\n- **Title:** Research state for no-three-in-line at grid size 77\n- **Status:** Active\n- **Parent:** None\n\nFor\n\n\\[\nG_{77}=\\{0,1,\\ldots,76\\}^2,\n\\]\n\nthe exact maximum cardinality \\(D(77)\\) of a subset containing no three distinct collinear points remains undecided. The current certified interval is\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nNeither accepted primary judgment improves either bound or establishes whether the exact value is \\(152\\), \\(153\\), or \\(154\\).\n\nThe current organization has three active root-level branches:\n\n1. **`no-three-in-line/d77-exact-value`** records the central exact-value question and certified bounds as genuinely global knowledge.\n2. **`programs/rotational-symmetry`** organizes the accepted classification of rotations preserving finite noncollinear lattice sets and its conditional consequences for hypothetical 153- and 154-point configurations in \\(G_{77}\\).\n3. **`programs/embedded-g76-record-rigidity`** organizes the accepted local analysis of the particular 152-point \\(G_{76}\\) record and its eight specified embeddings into \\(G_{77}\\), including their orbit, saturation, removal robustness, two-removal rigidity, and distance consequences.\n\nAccording to primary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`, the new local results exclude improvements obtained from one of the eight specified embeddings after removing at most two embedded points. They do not constrain unrelated configurations or perturbations requiring at least three removals and therefore do not resolve the global problem.\n\nThere are no active disputes because no conflict records, unresolved reconciliations, needs-evidence reconciliations, or incompatible reconciliation outcomes were supplied.\n\n**Authoritative provenance**\n\n- Earlier primary judgment: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Earlier judged transaction: `29ccbd396781fd36d436ed2e6d0952a4730361b9`, ledger position 4\n- Current primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Current judged transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`, ledger position 2\n- Supporting evidence transaction for the current judgment: `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n\n## Change: root\n\nUpdate the root to add the durable program for local rigidity of the embedded \\(G_{76}\\) record while preserving the global exact-value node and the unchanged rotational-symmetry program. The new judgment leaves the certified interval unchanged and creates no dispute.\n\n## Node: no-three-in-line/d77-exact-value\n\n- **Type:** Central question and global bounds\n- **Title:** Exact value and certified interval for \\(D(77)\\)\n- **Status:** Active and unresolved\n- **Parent:** `root`\n\nThe central question is to determine the maximum size \\(D(77)\\) of a no-three-in-line subset of \\(G_{77}\\).\n\nThe accepted primary judgments leave the current certified interval at\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\nNo accepted contribution supplies:\n\n- a 153- or 154-point coordinate certificate;\n- a global impossibility proof for either cardinality; or\n- a global exhaustive search resolving the interval.\n\nPrimary judgment `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca` accepts the following rotational-symmetry restrictions without improving the global bounds:\n\n- any hypothetical 153-point configuration has no nonidentity rotational symmetry, although reflection-symmetric and asymmetric possibilities remain;\n- if a hypothetical 154-point configuration has nontrivial rotational symmetry, it must have the half-turn about \\((38,38)\\), with that center unselected;\n- asymmetric and reflection-symmetric 154-point configurations remain possible in principle; and\n- general centered-half-turn symmetry is broader than the previously referenced `rct4` class.\n\nPrimary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927` accepts a separate local restriction around eight specified embeddings of one 152-point \\(G_{76}\\) record:\n\n- none of those embeddings can be improved after removing at most two embedded points;\n- for each specified embedding \\(E\\), any no-three-in-line set \\(S\\) with \\(|S|\\ge153\\) must satisfy\n  \\[\n  |E\\setminus S|\\ge3,\\qquad |S\\setminus E|\\ge4,\\qquad |E\\triangle S|\\ge7;\n  \\]\n- configurations based on three or more removals remain unexamined; and\n- other 152-point configurations and larger configurations sufficiently far from every specified embedding remain unconstrained by this local computation.\n\nThese accepted restrictions do not select among\n\n\\[\nD(77)=152,\\qquad D(77)=153,\\qquad D(77)=154.\n\\]\n\n**Authoritative provenance**\n\n- Primary judgment on rotational restrictions: `sha256:21f3e6bb405eaaf804b58020a1695c213023b0dd3f1d25a08248fb5a48750eca`\n- Subject and evidence transaction for that judgment: `29ccbd396781fd36d436ed2e6d0952a4730361b9`\n- Primary judgment on embedded-record rigidity: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject transaction for that judgment: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n- Additional evidence transaction: `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n- Claim key in both judgments: `no-three-in-line/d77-exact-value`\n\n## Change: no-three-in-line/d77-exact-value\n\nUpdate the global question to incorporate the newly accepted distance restriction around the eight specified embeddings. The new judgment explicitly leaves the interval \\(152\\le D(77)\\le154\\) unresolved, so the node’s stance and bounds remain unchanged.\n\n## Node: programs/embedded-g76-record-rigidity\n\n- **Type:** Research program\n- **Title:** Local rigidity of the embedded 152-point \\(G_{76}\\) record\n- **Status:** Active\n- **Parent:** `root`\n- **Lineage:** No predecessor; this program was not formed by a split or merge.\n\nThis program studies the local structure of the particular 152-point no-three-in-line configuration \\(C\\subseteq G_{76}\\) supplied in the judged evidence and its specified placements in \\(G_{77}\\).\n\nThe program’s scope is limited to:\n\n1. the two distinct dihedral images of this particular record;\n2. the four translations by vectors in \\(\\{0,1\\}^2\\); and\n3. the resulting eight distinct subsets of \\(G_{77}\\).\n\nIt does not cover unrelated affine images, other 152-point records, or arbitrary near-optimal configurations.\n\nAccording to primary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`, the accepted current results are:\n\n- the record has quarter-turn symmetry, two distinct dihedral images, and eight specified embeddings in \\(G_{77}\\);\n- each embedding is saturated and therefore inclusion-maximal in \\(G_{77}\\);\n- saturation against originally outside cells survives every single removal;\n- every two-point removal frees at most one originally outside cell, with an exact accounting of the exceptional removal pairs;\n- any no-three-in-line set of size at least 153 has symmetric-difference distance at least seven from each specified embedding; and\n- the associated perturbation strategy is ruled out only through removal depth two.\n\nThe judgment describes these as substantial, reproducible local rigidity results. It does not treat them as a maximum-cardinality theorem or as an improvement to the interval for \\(D(77)\\).\n\nThe computational evidence uses an explicit coordinate certificate, exact integer determinant tests, deterministic standard-library Python, a committed result file, and two structurally different blocking enumerations. The judgment’s confidence is high, while noting that its assessment was based on source inspection and the supplied results rather than a separately documented execution. The two enumerations share the decoded configuration and the primitive-direction routine and are therefore complementary rather than wholly independent implementations.\n\n**Credit recorded by the judgment**\n\n- The underlying 152-point coordinate set is attributed in the supplied materials to Achim Flammenkamp’s maintained database.\n- An earlier contribution packaged that coordinate certificate and supplied a baseline verifier.\n- The judged transaction’s distinct contribution is the local rigidity analysis, code, and exposition.\n- The authorship disclosure records that this analysis, code, and text were produced by an AI research agent at Robert Raynor’s request.\n\n**Authoritative provenance**\n\n- Primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`, ledger position 2\n- Supporting evidence transaction: `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n\n## Change: programs/embedded-g76-record-rigidity\n\nCreate a root-level program because the accepted orbit, saturation, removal, distance, and search-scope results form a coherent record-specific agenda that can be extended independently of the global exact-value and rotational-classification programs.\n\n## Node: no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit\n\n- **Type:** Structural result\n- **Title:** Quarter-turn symmetry and specified embedding orbit of the 152-point \\(G_{76}\\) record\n- **Status:** Active; supported with high confidence\n- **Parent:** `programs/embedded-g76-record-rigidity`\n\nLet \\(C\\subseteq G_{76}\\) be the particular 152-point configuration supplied in the judged evidence.\n\nPrimary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927` supports with high confidence that:\n\n\\[\n(x,y)\\longmapsto(75-y,x)\n\\]\n\npreserves \\(C\\). Thus this particular record has quarter-turn symmetry.\n\nThe same judgment accepts that:\n\n- the coordinate string decodes to 152 distinct points in \\(G_{76}\\);\n- the no-three-in-line property was checked for all\n  \\[\n  \\binom{152}{3}=573{,}800\n  \\]\n  triples using exact integer determinants;\n- the eight transformations in the dihedral group of the square produce exactly two distinct images of \\(C\\); and\n- applying the four translations\n  \\[\n  (t_x,t_y)\\in\\{0,1\\}^2\n  \\]\n  to those two images produces exactly eight distinct subsets of \\(G_{77}\\).\n\nHere “specified embedding” means only a dihedral image followed by one of those four translations. The result does not classify unrelated affine images, other \\(G_{76}\\) records, or general 152-point configurations in \\(G_{77}\\).\n\n**Credit recorded by the judgment**\n\nThe underlying coordinate set is attributed to Achim Flammenkamp’s maintained database. The orbit verification and embedding enumeration are attributed to the judged local-rigidity analysis, whose disclosure states that the analysis, code, and text were produced by an AI research agent at Robert Raynor’s request.\n\n**Authoritative provenance**\n\n- Claim key: `no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit`\n- Primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n- Evidence transactions:\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n\n## Change: no-three-in-line/g76-record-quarter-turn-symmetry-and-dihedral-orbit\n\nCreate a stable structural node for the accepted symmetry and finite embedding orbit of the particular record. Its scope is narrower than the existing general rotational-symmetry program and belongs with the record-specific rigidity agenda.\n\n## Node: no-three-in-line/d77-saturation-of-embedded-g76-152-record\n\n- **Type:** Computationally certified result\n- **Title:** Saturation of the eight specified 152-point embeddings in \\(G_{77}\\)\n- **Status:** Active; supported with high confidence\n- **Parent:** `programs/embedded-g76-record-rigidity`\n\nLet \\(E\\subseteq G_{77}\\) be any one of the eight specified embeddings of the supplied 152-point \\(G_{76}\\) record.\n\nPrimary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927` supports with high confidence that every cell in\n\n\\[\nG_{77}\\setminus E\n\\]\n\nis collinear with a pair of points of \\(E\\). Consequently, no outside cell can be added to \\(E\\) while preserving the no-three-in-line property.\n\nThe accepted exact computation reports, for each specified embedding:\n\n- \\(5{,}777\\) originally outside cells;\n- at least two distinct blocking pairs for every outside cell; and\n- total blocking incidence \\(51{,}449\\).\n\nThe primary direction census and the complementary primitive-line walk were required to agree on the blocked cells and the number of blocking pairs at every cell.\n\nEach specified embedding is therefore **inclusion-maximal** in \\(G_{77}\\). The judgment expressly distinguishes this from maximum cardinality: saturation of these 152-point sets does not exclude unrelated no-three-in-line sets with 153 or 154 points.\n\n**Credit recorded by the judgment**\n\nThe embedded coordinate set is attributed to Achim Flammenkamp’s maintained database. The saturation certificate and its computational analysis are attributed to the judged local-rigidity work disclosed as produced by an AI research agent at Robert Raynor’s request.\n\n**Authoritative provenance**\n\n- Claim key: `no-three-in-line/d77-saturation-of-embedded-g76-152-record`\n- Primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n- Evidence transactions:\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n\n## Change: no-three-in-line/d77-saturation-of-embedded-g76-152-record\n\nCreate a stable result node for the accepted exact saturation certificate. The result is durable and distinct from both the orbit computation and the global maximum-cardinality question.\n\n## Node: no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record\n\n- **Type:** Local rigidity result\n- **Title:** One-removal robustness of the specified embeddings\n- **Status:** Active; supported with high confidence\n- **Parent:** `programs/embedded-g76-record-rigidity`\n\nLet \\(E\\subseteq G_{77}\\) be a specified embedding of the supplied 152-point record, and let \\(r\\in E\\).\n\nPrimary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927` supports with high confidence that removing \\(r\\) does not make any cell that was originally outside \\(E\\) addable. In other words, every\n\n\\[\nc\\in G_{77}\\setminus E\n\\]\n\nremains blocked by a pair of points in \\(E\\setminus\\{r\\}\\).\n\nThe scope qualification is essential: the result concerns cells originally in \\(G_{77}\\setminus E\\). The removed point \\(r\\) itself can be restored.\n\nThe accepted computation reports no singleton removal that frees an originally outside cell for any of the eight specified embeddings. The direction-census enumeration and the line-walk/hitting-set reconstruction were required to agree cell by cell.\n\nThis is a local statement about the specified record. It does not apply to other 152-point configurations.\n\n**Credit recorded by the judgment**\n\nThe robustness computation is attributed to the judged local-rigidity analysis, whose disclosure records production by an AI research agent at Robert Raynor’s request.\n\n**Authoritative provenance**\n\n- Claim key: `no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record`\n- Primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject and evidence transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n\n## Change: no-three-in-line/d77-one-removal-robustness-of-embedded-g76-record\n\nCreate a stable node for the accepted one-removal robustness result, retaining the judgment’s qualification that only cells originally outside the embedding remain blocked.\n\n## Node: no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record\n\n- **Type:** Exact finite computational result\n- **Title:** Complete two-removal accounting for the specified embeddings\n- **Status:** Active; supported with high confidence\n- **Parent:** `programs/embedded-g76-record-rigidity`\n\nLet \\(E\\subseteq G_{77}\\) be any one of the eight specified embeddings of the supplied 152-point record.\n\nPrimary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927` supports with high confidence that removing any unordered pair of points from \\(E\\) frees at most one cell that was originally outside \\(E\\).\n\nFor each specified embedding, the accepted exact accounting is:\n\n- exactly 16 unordered removal pairs free an outside cell;\n- those 16 pairs are distributed over exactly four outside cells;\n- each of the four cells is freed by four removal pairs; and\n- all such freeings use the “two-lines-of-two” mechanism.\n\nThe accepted checker:\n\n- enumerates the relevant blocking structures;\n- stores freeings by unordered removal pair;\n- fails if a removal pair frees more than one outside cell;\n- directly tests each reported freed cell against all remaining pairs; and\n- requires the recomputed output to match the committed result file.\n\nA direction census and a line-walk/hitting-set enumeration provide structurally different cross-checks. The judgment qualifies their independence because they share the decoded configuration and primitive-direction routine.\n\nThe result is confined to removal depth two around the eight specified embeddings. It does not address three-point or deeper removals.\n\n**Credit recorded by the judgment**\n\nThe two-removal enumeration and cross-checking analysis are attributed to the judged local-rigidity work disclosed as produced by an AI research agent at Robert Raynor’s request.\n\n**Authoritative provenance**\n\n- Claim key: `no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record`\n- Primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n- Evidence transactions:\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n\n## Change: no-three-in-line/d77-two-removal-rigidity-of-embedded-g76-record\n\nCreate a stable node for the exhaustive two-removal computation, including its exact exceptional counts, limited implementation-independence qualification, and removal-depth scope.\n\n## Node: no-three-in-line/d77-distance-from-embedded-g76-152-record\n\n- **Type:** Deductive structural consequence\n- **Title:** Distance of any 153- or 154-point set from the specified embeddings\n- **Status:** Active; proved from accepted local computations\n- **Parent:** `programs/embedded-g76-record-rigidity`\n\nLet \\(E\\) be any one of the eight specified 152-point embeddings, and let \\(S\\subseteq G_{77}\\) be no-three-in-line.\n\nPrimary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927` concludes from the accepted saturation and removal computations that if\n\n\\[\n|E\\setminus S|\\le2,\n\\]\n\nthen\n\n\\[\n|S\\setminus E|\\le1\n\\qquad\\text{and}\\qquad\n|S|\\le152.\n\\]\n\nConsequently, the judgment accepts that every no-three-in-line set \\(S\\) with\n\n\\[\n|S|\\ge153\n\\]\n\nmust, for each specified embedding \\(E\\), satisfy\n\n\\[\n|E\\setminus S|\\ge3,\n\\qquad\n|S\\setminus E|\\ge4,\n\\]\n\nand therefore\n\n\\[\n|E\\triangle S|\\ge7.\n\\]\n\nThis is a distance restriction relative to the eight specified embeddings of one record. It neither proves that a 153- or 154-point set exists nor excludes sets lying outside these local neighborhoods.\n\n**Credit recorded by the judgment**\n\nThe symmetric-difference consequence is attributed to the judged local-rigidity analysis, whose disclosure records production by an AI research agent at Robert Raynor’s request.\n\n**Authoritative provenance**\n\n- Claim key: `no-three-in-line/d77-distance-from-embedded-g76-152-record`\n- Primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n- Evidence transactions:\n  - `dfc0cc40d41105292a119840dcdbe6f22860cf43`\n  - `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n\n## Change: no-three-in-line/d77-distance-from-embedded-g76-152-record\n\nCreate a stable structural node for the distance consequence proved by the judgment from the accepted local computations. Its explicit scope prevents the local result from being mistaken for a global impossibility theorem.\n\n## Node: no-three-in-line/d77-perturb-known-record-strategy\n\n- **Type:** Method-scope assessment\n- **Title:** Certified scope of perturbations around the specified 152-point embeddings\n- **Status:** Active and partially constrained\n- **Parent:** `programs/embedded-g76-record-rigidity`\n\nThe accepted local computations rule out every improvement obtained from one of the eight specified embeddings after removing at most two of its points.\n\nPrimary judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927` does not accept the broader claim that the entire strategy of perturbing the known record has been pruned.\n\nThe current certified scope is precisely:\n\n- removal depth zero cannot add an outside point because the embedding is saturated;\n- removal depth one frees no originally outside cell;\n- removal depth two frees at most one originally outside cell and cannot produce a set larger than 152; and\n- removal depth three or greater remains unexplored.\n\nIn particular, the judgment identifies removing three embedded points and adding four new points as an example of a perturbation not excluded by the accepted computation.\n\nThis method assessment applies only to the eight specified embeddings of the supplied record. It makes no claim about perturbations of other 152-point configurations.\n\n**Credit recorded by the judgment**\n\nThe scoped perturbation analysis is attributed to the judged local-rigidity work disclosed as produced by an AI research agent at Robert Raynor’s request.\n\n**Authoritative provenance**\n\n- Claim key: `no-three-in-line/d77-perturb-known-record-strategy`\n- Judgment stance: Qualifies\n- Primary judgment: `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`\n- Subject and evidence transaction: `c5e8096d942d57228bb4fed00f7617fb6b43af9f`\n\n## Change: no-three-in-line/d77-perturb-known-record-strategy\n\nCreate a durable method-scope node because the judgment accepts a precise restriction on shallow perturbations while rejecting the broader whole-strategy claim. The node preserves that qualification without extending it to removal depth three or beyond.\n"
           }
         ],
-        "latestRunId": "cc94c6abd5db53040c4f8eddaa5783778d83091fa99e19bfed45dd35b1155bb2"
+        "latestRunId": "5951ff24fd51041ae3b4a520c5260e456e62da07d65b8c4147ca9c615fdc5e7c"
       }
     },
     {
