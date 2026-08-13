@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "subject": {
+    "transactionId": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+    "contributionId": "fredricksen-sweet-537-radius-43-exclusion",
+    "path": "problems/schur-number-6/contributions/fredricksen-sweet-537-radius-43-exclusion"
+  },
+  "verifier": {
+    "id": "python-stdlib-3-13-v1",
+    "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "implementation": "oci-command-v1"
+  },
+  "environment": {
+    "kind": "oci",
+    "image": "python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689",
+    "platform": "linux/amd64",
+    "network": "none",
+    "readOnlyRoot": true,
+    "user": "65534:65534",
+    "capabilities": [],
+    "noNewPrivileges": true,
+    "memoryBytes": 536870912,
+    "cpuCount": 1,
+    "pidsLimit": 128,
+    "tmpfsBytes": 67108864
+  },
+  "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+  "requestDigest": "sha256:1c0a65d188273ba52cfca39e227e4b55d53e5c7eb26a1843ef5fa818f1bcbb8d",
+  "inputs": [
+    {
+      "path": "README.md",
+      "digest": "sha256:200e10d93c479bb6f46caf3a4f9f67a33c0d23d21d51d23a6228776187945eaa",
+      "bytes": 6703
+    },
+    {
+      "path": "baseline-536.csv",
+      "digest": "sha256:5e2cd4854c20e8441ff52e09e02472657309d35eb4b35c6957a1be37f6a8cbc9",
+      "bytes": 3122
+    },
+    {
+      "path": "case-color-2-extra-0.lrat.gz",
+      "digest": "sha256:a6e45f1231ef6d723e7dccdd06af3c3d225f0f9105c3cd98d90434557e957ead",
+      "bytes": 16894
+    },
+    {
+      "path": "case-color-4-extra-5.lrat.gz",
+      "digest": "sha256:fe573362f2c49a83146ad4f81a4d73c4ab1f48a3e5269afee8ebcda273851139",
+      "bytes": 175688
+    },
+    {
+      "path": "case-color-5-extra-11.lrat.gz",
+      "digest": "sha256:28e954d98f0e5ae3ba40ad65cda62578f93c7bc9b84e038904dc43826c4b13b8",
+      "bytes": 2018222
+    },
+    {
+      "path": "case-color-6-extra-8.lrat.gz",
+      "digest": "sha256:362e6ab0a2dfdcabf6b3cb6c3d01c16c960c9f89dc6da3423da3c3ddb6facfa2",
+      "bytes": 1159352
+    },
+    {
+      "path": "cases.json",
+      "digest": "sha256:8299e6e2995680aecc2276b4e1fa12617d9e9b368efcc4157152566bc693519d",
+      "bytes": 2932
+    },
+    {
+      "path": "verification.json",
+      "digest": "sha256:979aa90ec3258125b5cd9f7267005decfc66530e7f88a192b5b9910e5bf37cc7",
+      "bytes": 253
+    },
+    {
+      "path": "verify.py",
+      "digest": "sha256:0db4b379ca0ed9ffa0918676334975d04f42c75c64be2020508fbed925667182",
+      "bytes": 21606
+    }
+  ],
+  "invocation": {
+    "executable": "python3",
+    "fixedArguments": [
+      "-I",
+      "-B"
+    ],
+    "entrypoint": "verify.py",
+    "arguments": [
+      "cases.json",
+      "baseline-536.csv"
+    ],
+    "timeoutSeconds": 300,
+    "maximumOutputBytes": 262144,
+    "successExitCodes": [
+      0
+    ]
+  },
+  "result": {
+    "status": "passed",
+    "exitCode": 0,
+    "timedOut": false
+  },
+  "outputs": {
+    "stdout": {
+      "digest": "sha256:c25d1be772355249154469075c77960831d7d062ef97946e4452e23b1076dd29",
+      "bytes": 211
+    },
+    "stderr": {
+      "digest": "sha256:f0acba4a50ab4265563f0b165fabfab1ff30676f561443a1148e2875353e2e3e",
+      "bytes": 948
+    }
+  },
+  "producer": {
+    "implementation": "math-flow-oci-attestation-producer-v1",
+    "mathFlowVersion": "0.6.0"
+  },
+  "attestationId": "sha256:e94be6887eae99f4a90c85651f249e0e228fd084ec13728bef43b2e92729eb66"
+}
