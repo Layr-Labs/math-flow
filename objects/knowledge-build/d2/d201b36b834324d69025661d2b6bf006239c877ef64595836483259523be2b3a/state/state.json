@@ -1,0 +1,397 @@
+{
+  "schemaVersion": 3,
+  "problemId": "maximal-determinant-23",
+  "rootId": "root",
+  "nodes": {
+    "root": {
+      "id": "root",
+      "parentId": null,
+      "type": "root",
+      "title": "Research state for maximal-determinant-23",
+      "summary": "For D_23, the certified interval is 2,779,447,296,000,000 ≤ D_23 ≤ 2,982,295,321,444,352. The explicit sign-matrix witness continues to certify the unchanged lower endpoint. Universal divisibility by 2^22 permits rounding the supplied real upper estimate at the quotient level, yielding the improved upper endpoint 2^22·711,034,613. This is an arithmetic sharpening only and does not strengthen the underlying analytic inequality. The exact value remains unresolved: no larger witness, optimality proof, endpoint-attainability proof, structural exclusion, exhaustive classification, or search certificate is supplied. The current programs are exact-witness-certification and arithmetic-divisibility-reduction.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:067655e20db1086793aa760c236e7c0988002a9c6f8313c31b0b852b81628f33",
+        "section": "## Node: root"
+      },
+      "contentMarkdown": "## Node: root\n\n**Title:** Research state for maximal-determinant-23  \n**Type:** Root  \n**Status:** Active\n\nFor\n\n\\[\nD_{23}=\\max\\left\\{|\\det A|:A\\in\\{-1,+1\\}^{23\\times23}\\right\\},\n\\]\n\nthe current supplied judgments support the certified interval\n\n\\[\n\\boxed{\n2{,}779{,}447{,}296{,}000{,}000\n\\le D_{23}\\le\n2{,}982{,}295{,}321{,}444{,}352\n}.\n\\]\n\nThe lower endpoint is equivalently\n\n\\[\n2^{22}\\,3\\,5^6\\,67\\,211.\n\\]\n\nIt remains certified by the explicit \\(23\\times23\\) sign-matrix witness assessed in immutable primary judgment\n\n`sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`.\n\nThat judgment found that the witness reproduces the published record rather than improving it. The new judgment supplies no matrix with a larger determinant, so the certified lower bound is unchanged.\n\nThe previously supplied real upper estimate is\n\n\\[\nD_{23}\\le 2^{22}\\,3\\,5^6\\,675\\sqrt{505}\n      =2^{22}\\cdot31{,}640{,}625\\sqrt{505}.\n\\]\n\nImmutable primary judgment\n\n`sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`\n\nsupports a stronger arithmetic rounding of that estimate. It finds that every order-\\(23\\) sign-matrix determinant is divisible by \\(2^{22}\\), so the quotient \\(D_{23}/2^{22}\\) is an integer. The exact floor calculation\n\n\\[\n\\left\\lfloor31{,}640{,}625\\sqrt{505}\\right\\rfloor\n=711{,}034{,}613\n\\]\n\ntherefore gives\n\n\\[\nD_{23}\\le\n2^{22}\\cdot711{,}034{,}613\n=\n2{,}982{,}295{,}321{,}444{,}352.\n\\]\n\nThe ordinary integer floor of the real-valued endpoint is\n\n\\[\n2{,}982{,}295{,}321{,}630{,}773,\n\\]\n\nso the divisibility-rounded endpoint is \\(186{,}421\\) smaller. The new judgment characterizes this as an arithmetic sharpening only: it relies on, and does not rederive or strengthen, the supplied analytic inequality.\n\nThe exact value of \\(D_{23}\\) remains unresolved. In particular, the supplied judgments do not:\n\n- prove that the published lower endpoint is optimal;\n- exhibit a determinant strictly above that endpoint;\n- establish that \\(711{,}034{,}613\\) occurs as a \\(22\\times22\\) zero-one determinant;\n- prove that the rounded upper endpoint is attainable;\n- exclude the rounded upper endpoint through Gram, congruence, or other structural restrictions; or\n- provide an exhaustive classification or search certificate.\n\nThe current program layer consists of:\n\n- `exact-witness-certification` — the established program for exact, independently replayable certification of explicit sign-matrix witnesses and their determinants;\n- `arithmetic-divisibility-reduction` — exact reduction of order-\\(23\\) sign determinants to zero-one determinants, universal divisibility, and arithmetic rounding of determinant bounds.\n\nThe best global lower and upper bounds and the unresolved exact-value question remain at the root because they span witness, arithmetic, analytic, classification, and search approaches.\n\n**Provenance**\n\n- Frontier source: William P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith, *New lower bounds for the maximal determinant problem* (2003), arXiv:`math/0304410`.\n- Existing-witness judgment: `sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`.\n- Existing-witness subject transaction: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n- Arithmetic-reduction judgment: `sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`.\n- Arithmetic-reduction subject transaction: `7b28860c418486cb41e6379e68cc355ff861b1a5`, ledger position 2.\n- No conflict records or reconciliation judgments were supplied.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "ledgerPosition": 1
+        },
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:6151abfc8332a525adfb26dc66eeb8220ec3b23067c1a729a1366054c3f950b5",
+        "revisionNumber": 2
+      },
+      "digest": "sha256:9d09b7d7d942e1017443411f7ef7ff044d0741a5111c14be9815c7d4f404e20a"
+    },
+    "exact-witness-certification": {
+      "id": "exact-witness-certification",
+      "parentId": "root",
+      "type": "program",
+      "title": "Exact certification of explicit maximal-determinant witnesses",
+      "summary": "This program organizes exact, independently replayable certification of explicit sign matrices offered as lower-bound witnesses for D_23. Its scope includes validating 23×23 dimensions and ±1 entries, computing determinants with exact arithmetic, retaining replayable artifacts, and distinguishing certification of a witness from proof of global optimality. It contains the certified order-23 record witness and its fraction-free Bareiss replay method. The assessed artifact is valid, exact, and replayable, but does not improve either numerical frontier or establish optimality. Matrix and determinant-record credit is carried forward to William P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith; Robert Raynor is credited with transcription, documentation, and construction of the compact exact verifier.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:6ac5be05f5171b01eb96cf06ccabe4ae5cc8e9885d47b6ebff3ace229cd7f55c",
+        "section": "## Node: exact-witness-certification"
+      },
+      "contentMarkdown": "## Node: exact-witness-certification\n\n**Title:** Exact certification of explicit maximal-determinant witnesses  \n**Type:** Program  \n**Parent:** `root`  \n**Status:** Active\n\nThis program organizes exact and independently replayable certification of explicit sign matrices offered as witnesses for lower bounds on \\(D_{23}\\). Its scope includes:\n\n- checking that a supplied matrix has exactly \\(23\\) rows and \\(23\\) columns;\n- checking that all entries belong to \\(\\{-1,+1\\}\\);\n- evaluating the determinant using exact rather than floating-point arithmetic;\n- retaining sufficient artifacts for independent replay; and\n- distinguishing certification of a particular witness from proof that the witness is globally optimal.\n\nThe program currently contains two durable concepts:\n\n1. `exact-witness-certification/order-23-record-witness`, representing the explicit order-\\(23\\) sign matrix certified at the published lower endpoint; and\n2. `exact-witness-certification/bareiss-replay-method`, representing the fraction-free exact verification method supplied for that matrix.\n\nAccording to primary judgment\n\n`sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`,\n\nthe current artifact is valid, exact, and independently replayable. Its mathematical role is reproducibility and certification of the published witness. It does not improve either numerical frontier and does not establish optimality.\n\nThe judgment carries forward the artifact’s allocation of credit: the matrix and determinant record are attributed to William P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith, while Robert Raynor is credited with transcription, documentation, and construction of the compact exact verifier. The judgment does not independently reassess discovery or priority.\n\n**Provenance**\n\n- Immutable primary judgment: `sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`.\n- Subject and evidence transaction: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n- The complete matrix and verifier are reported by the judgment as included in that transaction.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:a1123e2f8ff2f8eae3e5c205f4c95eccc274af6e5c124299198bcb52b60288f4",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:06a5cb110440f3d8787fbf86648b273e81855466bb81484101780ec47995e743"
+    },
+    "exact-witness-certification/order-23-record-witness": {
+      "id": "exact-witness-certification/order-23-record-witness",
+      "parentId": "exact-witness-certification",
+      "type": "result",
+      "title": "Certified order-23 record witness",
+      "summary": "The transaction preserves an explicit 23×23 matrix A with entries in {−1,+1} and |det A| = 2^22·3·5^6·67·211 = 2,779,447,296,000,000. With high confidence, the judgment finds that the complete matrix and deterministic exact verifier certify D_23 ≥ 2,779,447,296,000,000. This reproduces the published lower endpoint and neither proves optimality nor improves the upper bound. No generated execution transcript or intermediate Bareiss pivot list is included, but the complete matrix and verifier permit independent execution. Attribution to Orrick, Solomon, Dowdeswell, and Smith is carried forward. External source files referenced by included hashes are not part of the transaction, so row-for-row transcription from a particular external version is not independently established; this does not weaken certification of the included matrix’s determinant.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:6ac5be05f5171b01eb96cf06ccabe4ae5cc8e9885d47b6ebff3ace229cd7f55c",
+        "section": "## Node: exact-witness-certification/order-23-record-witness"
+      },
+      "contentMarkdown": "## Node: exact-witness-certification/order-23-record-witness\n\n**Title:** Certified order-\\(23\\) record witness  \n**Type:** Result  \n**Parent:** `exact-witness-certification`  \n**Status:** Supported with high confidence\n\nThe explicit matrix preserved in transaction\n\n`fb88b7832c0fa7e84c1583110a7df800571bca02`\n\nis assessed by primary judgment\n\n`sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`\n\nas a \\(23\\times23\\) matrix \\(A\\) with entries in \\(\\{-1,+1\\}\\) and\n\n\\[\n|\\det A|\n=\n2^{22}\\,3\\,5^6\\,67\\,211\n=\n2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThe judgment supports this claim with high confidence because the transaction supplies both the complete sign matrix and a deterministic exact verifier. The verifier enforces the dimensions and admissible entries and compares the determinant computed from the parsed matrix with the stated factor product.\n\nAs an admissible matrix with that determinant, the witness certifies\n\n\\[\nD_{23}\\ge 2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThis is the published lower endpoint already present in the problem statement. The witness therefore certifies the known record but does not establish a strictly larger lower bound.\n\nThe witness does not establish that its determinant equals \\(D_{23}\\). The primary judgment records that the artifact contains no exhaustive enumeration, Gram-matrix classification, replayable nonexistence certificate, or other optimality proof excluding matrices with larger determinants. No upper-bound improvement follows from this witness.\n\n**Evidentiary qualification**\n\nThe transaction does not include a generated execution transcript or a list of intermediate Bareiss pivots. Consequently, the large determinant arithmetic is not displayed step by step in the preserved report. The primary judgment does not treat this as a material defect because the complete matrix and deterministic exact verifier are supplied and can be independently executed.\n\n**Attribution and source qualification**\n\nThe judgment carries forward the README attribution of the matrix and determinant record to William P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith.\n\nThe included hashes can assist in checking an externally retrieved arXiv archive and `matData.tex`, but those external source files are not themselves included in the assessed transaction. The judgment therefore does not regard row-for-row transcription from that particular external source version as independently established solely by the included files. This provenance qualification does not weaken the determinant certification, which depends on the matrix and exact verifier actually included in the transaction.\n\n**Provenance**\n\n- Immutable primary judgment: `sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`.\n- Subject and evidence transaction: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n- Frontier attribution carried by the judgment: Orrick, Solomon, Dowdeswell, and Smith.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:8c93fa121021f2ff19b6951f48b3e6c12aed53e5d7b27408273ecacb9c2c8e65",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:541154086098a6ba1290aa3588818be45d97d308b6f49381788b1b97280450c1"
+    },
+    "exact-witness-certification/bareiss-replay-method": {
+      "id": "exact-witness-certification/bareiss-replay-method",
+      "parentId": "exact-witness-certification",
+      "type": "method",
+      "title": "Fraction-free exact determinant replay for the order-23 witness",
+      "summary": "The supplied verifier is a high-confidence, exact, deterministic replay method for the explicit order-23 witness, using fraction-free Bareiss elimination with Python integers. It validates exactly 23 rows of 23 sign characters, converts signs to ±1, copies the input, searches for nonzero pivots, tracks row-swap sign, performs exact integer elimination, aborts on inexact required divisions, and compares the resulting absolute determinant with the expected factor product. The method is independently replayable from the supplied matrix and standard-library Python. Its scope is certification of this witness’s determinant, not exhaustive search, Gram-matrix classification, an upper-bound argument, or an optimality proof. No execution transcript or intermediate pivot list is included. Credit for transcription, documentation, and construction of the compact verifier is carried forward to Robert Raynor.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:6ac5be05f5171b01eb96cf06ccabe4ae5cc8e9885d47b6ebff3ace229cd7f55c",
+        "section": "## Node: exact-witness-certification/bareiss-replay-method"
+      },
+      "contentMarkdown": "## Node: exact-witness-certification/bareiss-replay-method\n\n**Title:** Fraction-free exact determinant replay for the order-\\(23\\) witness  \n**Type:** Method  \n**Parent:** `exact-witness-certification`  \n**Status:** Supported with high confidence\n\nThe verifier assessed in transaction\n\n`fb88b7832c0fa7e84c1583110a7df800571bca02`\n\nprovides an exact, deterministic replay method for the determinant of the explicit order-\\(23\\) witness. Primary judgment\n\n`sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`\n\ncharacterizes the implementation as a standard fraction-free Bareiss elimination using Python integers rather than floating-point arithmetic.\n\nAs recorded by the judgment, the verifier:\n\n1. requires exactly \\(23\\) matrix rows;\n2. requires exactly \\(23\\) sign characters in every row;\n3. rejects characters other than `+` and `-`;\n4. converts those characters to \\(+1\\) and \\(-1\\);\n5. copies the input before determinant elimination;\n6. searches for a nonzero pivot in the active column;\n7. tracks the determinant sign resulting from row interchanges;\n8. performs elimination using exact integer operations;\n9. uses `divmod` and aborts if a required Bareiss division is not exact;\n10. returns the final Bareiss entry with the accumulated row-swap sign correction; and\n11. compares the absolute determinant computed from the matrix against the expected factor product.\n\nThe judgment finds that row pivoting among active rows is handled consistently through the recorded row-swap sign and that failure to find a required pivot would result in a zero determinant, which would fail the expected nonzero comparison.\n\nThe verifier is independently replayable using the supplied matrix and the Python standard library. Its supported scope is exact certification of the determinant of the supplied witness. It is not an exhaustive search, a Gram-matrix classification, an upper-bound argument, or a proof that the witness is optimal.\n\nNo execution transcript or intermediate pivot list is included. The primary judgment treats this as a non-material evidentiary qualification because the complete deterministic verifier is available for direct audit and execution.\n\n**Credit**\n\nThe judgment carries forward credit to Robert Raynor for transcription, documentation, and construction of the compact exact verifier. It does not attribute discovery of the matrix or determinant record to him.\n\n**Provenance**\n\n- Immutable primary judgment: `sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`.\n- Subject and evidence transaction containing the matrix and verifier: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:ab35abfef39120bf11cbe4b95afb4e84df0c6da4cd3ab3edccdab267e152d144",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:3e9cb1df9551a178feab6bc696ab488258bdee9f90a2525161d4e296be57e4ed"
+    },
+    "arithmetic-divisibility-reduction": {
+      "id": "arithmetic-divisibility-reduction",
+      "parentId": "root",
+      "type": "program",
+      "title": "Arithmetic divisibility and zero-one reduction for order 23",
+      "summary": "This program organizes exact arithmetic reductions for determinants of 23×23 sign matrices: the correspondence with 22×22 zero-one determinants, universal divisibility by 2^22 and its sharpness, divisibility rounding of the supplied real upper estimate, and exact replay of the arithmetic constants and determinant examples. These results certify D_23 ≤ 2^22·711,034,613 = 2,982,295,321,444,352. The program does not derive or improve the underlying analytic estimate and provides no exhaustive classification, endpoint-attainability proof, or restriction specific to near-maximal determinants.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:067655e20db1086793aa760c236e7c0988002a9c6f8313c31b0b852b81628f33",
+        "section": "## Node: arithmetic-divisibility-reduction"
+      },
+      "contentMarkdown": "## Node: arithmetic-divisibility-reduction\n\n**Title:** Arithmetic divisibility and zero-one reduction for order 23  \n**Type:** Program  \n**Parent:** `root`  \n**Status:** Active\n\nThis program organizes exact arithmetic reductions for determinants of \\(23\\times23\\) sign matrices. Its established scope includes:\n\n1. the determinant correspondence between normalized \\(23\\times23\\) sign matrices and \\(22\\times22\\) zero-one matrices;\n2. the universal divisibility of order-\\(23\\) sign determinants by \\(2^{22}\\), including the sharpness of that universal divisor;\n3. divisibility rounding of the supplied real upper estimate; and\n4. exact replay of the relevant arithmetic constants and determinant examples.\n\nAccording to immutable primary judgment\n\n`sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`,\n\nthese results produce the certified upper-bound improvement\n\n\\[\nD_{23}\\le2^{22}\\cdot711{,}034{,}613\n=2{,}982{,}295{,}321{,}444{,}352.\n\\]\n\nThe program does not presently include a derivation or improvement of the underlying real analytic estimate. It also contains no exhaustive test of all sign or zero-one matrices, no classification of candidate Gram matrices, no proof about endpoint attainability, and no restriction shown to apply specifically to near-maximal determinants.\n\nThe program contains the following durable nodes:\n\n- `arithmetic-divisibility-reduction/sign-zero-one-correspondence`;\n- `arithmetic-divisibility-reduction/universal-divisor`;\n- `arithmetic-divisibility-reduction/rounded-upper-bound`;\n- `arithmetic-divisibility-reduction/exact-replay`.\n\n**Attribution**\n\nThe immutable judgment preserves attribution to Orrick, Solomon, Dowdeswell, and Smith for the supplied real upper estimate and published record matrix. It supports attribution to Robert Raynor for the assessed exact presentation and application of the normalization/divisibility argument, the numerical divisibility rounding, and the replay script. It does not establish historical priority for the general \\(2^{n-1}\\) divisibility observation or the sign/zero-one correspondence.\n\n**Provenance**\n\n- Primary judgment: `sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`.\n- Subject and direct evidence transaction: `7b28860c418486cb41e6379e68cc355ff861b1a5`, ledger position 2.\n- Earlier bound and record evidence transaction: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n- No associated conflict or reconciliation record was supplied.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "context"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:d083701b73144b6ce8e976ba75a5c3589a2c626e2d08957f3494cc355e540d0b",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:e041ad4eefd917b23044745ab3e2bb1be4067b7eade4cfe1b0513384166c0531"
+    },
+    "arithmetic-divisibility-reduction/sign-zero-one-correspondence": {
+      "id": "arithmetic-divisibility-reduction/sign-zero-one-correspondence",
+      "parentId": "arithmetic-divisibility-reduction",
+      "type": "result",
+      "title": "Order-23 sign/zero-one determinant correspondence",
+      "summary": "There is an exact correspondence D_23 = 2^22 max{|det B| : B is a 22×22 zero-one matrix}. Normalizing a 23×23 sign matrix and subtracting its first row gives |det A| = 2^22|det B|; conversely, A(B) = [[1,1^T],[1,J−2B]] satisfies det A(B) = (−2)^22 det B. Examples with B=0, B=I_22, and B=C⊕I_19 produce quotient values 0, 1, and −2, ruling out a nontrivial universal quotient residue class and exhibiting both parities among nonsingular examples. These examples do not exclude restrictions applying only near the maximum.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:067655e20db1086793aa760c236e7c0988002a9c6f8313c31b0b852b81628f33",
+        "section": "## Node: arithmetic-divisibility-reduction/sign-zero-one-correspondence"
+      },
+      "contentMarkdown": "## Node: arithmetic-divisibility-reduction/sign-zero-one-correspondence\n\n**Title:** Order-23 sign/zero-one determinant correspondence  \n**Type:** Result  \n**Parent:** `arithmetic-divisibility-reduction`  \n**Status:** Established\n\nImmutable primary judgment\n\n`sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`\n\nsupports the exact correspondence\n\n\\[\nD_{23}\n=\n2^{22}\n\\max\\left\\{|\\det B|:B\\in\\{0,1\\}^{22\\times22}\\right\\}.\n\\]\n\nUnder the judgment’s assessment, signed row and column operations normalize the first row and first column of any \\(23\\times23\\) sign matrix without changing the absolute determinant. Subtracting the normalized first row from the remaining rows produces a lower-right block of the form \\(-2B\\), where \\(B\\) is a \\(22\\times22\\) zero-one matrix. Consequently,\n\n\\[\n|\\det A|=2^{22}|\\det B|.\n\\]\n\nConversely, for every \\(B\\in\\{0,1\\}^{22\\times22}\\), the sign matrix\n\n\\[\nA(B)=\n\\begin{pmatrix}\n1&\\mathbf 1^{\\mathsf T}\\\\\n\\mathbf 1&J-2B\n\\end{pmatrix}\n\\]\n\nsatisfies\n\n\\[\n\\det A(B)=(-2)^{22}\\det B.\n\\]\n\nThe judgment therefore finds that neither direction loses determinant values after accounting for the factor \\(2^{22}\\).\n\nThe same judgment supports the quotient examples:\n\n- \\(B=0\\) gives \\(\\det A(B)/2^{22}=0\\);\n- \\(B=I_{22}\\) gives \\(\\det A(B)/2^{22}=1\\);\n- \\(B=C\\oplus I_{19}\\), with\n  \\[\n  C=\n  \\begin{pmatrix}\n  1&1&0\\\\\n  1&0&1\\\\\n  0&1&1\n  \\end{pmatrix},\n  \\qquad \\det C=-2,\n  \\]\n  gives \\(\\det A(B)/2^{22}=-2\\).\n\nAccording to the judgment, the quotient values \\(0\\) and \\(1\\) rule out any nontrivial residue class modulo \\(m>1\\) containing all order-\\(23\\) determinant quotients. The nonsingular quotient examples \\(1\\) and \\(-2\\) also exhibit both parities.\n\nThis conclusion is qualified: the examples do not exclude congruence, Gram, or other structural restrictions that apply only to matrices whose determinants are near the maximum.\n\n**Provenance**\n\n- Primary judgment: `sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`.\n- Subject and evidence transaction: `7b28860c418486cb41e6379e68cc355ff861b1a5`, ledger position 2.\n- Relevant judgment finding: `order-23-sign-zero-one/determinant-correspondence`.\n- No conflict record was supplied.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:e1a30150459f1a2dd6b968193359ea5f5854ec6979fe390aff22d9795604f6d5",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:a6fd3b719f7591b902bdfe2389b9e51075193d28b6b6cf4770ae774b4a5c7f93"
+    },
+    "arithmetic-divisibility-reduction/universal-divisor": {
+      "id": "arithmetic-divisibility-reduction/universal-divisor",
+      "parentId": "arithmetic-divisibility-reduction",
+      "type": "result",
+      "title": "Greatest universal divisor of order-23 sign determinants",
+      "summary": "Every 23×23 sign-matrix determinant, including zero, is divisible by 2^22. This follows from the normalized zero-one reduction |det A| = 2^22|det B|. The divisor is sharp: taking B=I_22 in the converse construction gives a sign matrix with determinant 2^22, so 2^22 is the greatest positive integer dividing all order-23 sign determinants. This does not establish attainability or sharpness of an upper bound and leaves open stronger restrictions specific to high-determinant matrices.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:067655e20db1086793aa760c236e7c0988002a9c6f8313c31b0b852b81628f33",
+        "section": "## Node: arithmetic-divisibility-reduction/universal-divisor"
+      },
+      "contentMarkdown": "## Node: arithmetic-divisibility-reduction/universal-divisor\n\n**Title:** Greatest universal divisor of order-23 sign determinants  \n**Type:** Result  \n**Parent:** `arithmetic-divisibility-reduction`  \n**Status:** Established\n\nImmutable primary judgment\n\n`sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`\n\nsupports the universal divisibility statement\n\n\\[\n2^{22}\\mid\\det A\n\\qquad\n\\text{for every }A\\in\\{-1,+1\\}^{23\\times23}.\n\\]\n\nThe judgment finds that this includes singular matrices and follows from the normalized zero-one reduction\n\n\\[\n|\\det A|=2^{22}|\\det B|.\n\\]\n\nIt further supports the sharpness statement that \\(2^{22}\\) is the greatest positive integer dividing the determinants of all order-\\(23\\) sign matrices. The assessed witness for sharpness takes \\(B=I_{22}\\) in\n\n\\[\nA(B)=\n\\begin{pmatrix}\n1&\\mathbf 1^{\\mathsf T}\\\\\n\\mathbf 1&J-2B\n\\end{pmatrix},\n\\]\n\nwhich gives\n\n\\[\n\\det A(B)=2^{22}.\n\\]\n\nThus the judgment concludes that every universal divisor must divide \\(2^{22}\\), while \\(2^{22}\\) divides every determinant.\n\nThe sharpness of this universal divisor does not establish sharpness or attainability of any upper bound for \\(D_{23}\\). The judgment expressly leaves open the possibility of stronger restrictions that apply only in the high-determinant regime.\n\n**Provenance**\n\n- Primary judgment: `sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`.\n- Subject and evidence transaction: `7b28860c418486cb41e6379e68cc355ff861b1a5`, ledger position 2.\n- Relevant judgment finding: `order-23-sign-determinant/universal-divisor`.\n- No conflict record was supplied.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:47b165110746840307e82fdc4fb9cdf0c1f179b06441a499a911ad55d6510845",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:b51d4b98523fb0fb9f182845286fb13880d507260d42f9d428182f54493eb458"
+    },
+    "arithmetic-divisibility-reduction/rounded-upper-bound": {
+      "id": "arithmetic-divisibility-reduction/rounded-upper-bound",
+      "parentId": "arithmetic-divisibility-reduction",
+      "type": "result",
+      "title": "Divisibility-rounded upper estimate for D_23",
+      "summary": "Using the supplied analytic estimate D_23 ≤ 2^22·31,640,625√505 and universal divisibility by 2^22, write D_23=2^22q with integer q. The exact floor is q ≤ floor(31,640,625√505)=711,034,613, giving D_23 ≤ 2,982,295,321,444,352. This endpoint is 186,421 below the ordinary integer floor of the real endpoint. It is the strongest rounding based solely on a common universal determinant divisor, but the result does not establish that quotient 711,034,613 occurs, that the endpoint is attainable, or that it equals D_23.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:067655e20db1086793aa760c236e7c0988002a9c6f8313c31b0b852b81628f33",
+        "section": "## Node: arithmetic-divisibility-reduction/rounded-upper-bound"
+      },
+      "contentMarkdown": "## Node: arithmetic-divisibility-reduction/rounded-upper-bound\n\n**Title:** Divisibility-rounded upper estimate for \\(D_{23}\\)  \n**Type:** Certified result  \n**Parent:** `arithmetic-divisibility-reduction`  \n**Status:** Established\n\nImmutable primary judgment\n\n`sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`\n\nsupports the exact arithmetic sharpening\n\n\\[\nD_{23}\\le\n2{,}982{,}295{,}321{,}444{,}352.\n\\]\n\nThe result uses, without rederiving, the supplied analytic estimate\n\n\\[\nD_{23}\\le2^{22}\\cdot c\\sqrt{505},\n\\qquad\nc=3\\cdot5^6\\cdot675=31{,}640{,}625.\n\\]\n\nBy the established universal divisor, the judgment writes\n\n\\[\nD_{23}=2^{22}q\n\\]\n\nfor a nonnegative integer \\(q\\). It then supports\n\n\\[\nq\\le\\left\\lfloor c\\sqrt{505}\\right\\rfloor\n=711{,}034{,}613.\n\\]\n\nThe accepted exact square certificate is\n\n\\[\n711{,}034{,}613^2\n=\n505{,}570{,}220{,}884{,}059{,}769,\n\\]\n\n\\[\nc^2\\cdot505\n=\n505{,}570{,}220{,}947{,}265{,}625,\n\\]\n\nand\n\n\\[\n711{,}034{,}614^2\n=\n505{,}570{,}222{,}306{,}128{,}996.\n\\]\n\nThe middle value lies strictly between the adjacent squares, establishing the quoted quotient floor. The judgment also verifies\n\n\\[\n2^{22}\\cdot711{,}034{,}613\n=\n2{,}982{,}295{,}321{,}444{,}352.\n\\]\n\nFor comparison, the ordinary integer floor of the supplied real endpoint is\n\n\\[\n\\left\\lfloor2^{22}c\\sqrt{505}\\right\\rfloor\n=\n2{,}982{,}295{,}321{,}630{,}773,\n\\]\n\nand the accepted difference is\n\n\\[\n186{,}421.\n\\]\n\nAccording to the judgment, this is the strongest rounding obtainable solely from a common universal determinant divisor, because \\(2^{22}\\) is the greatest such divisor. That qualification does not rule out stronger upper bounds based on Gram conditions, congruences, or other restrictions specific to high-determinant matrices.\n\nThe judgment does not establish that the quotient \\(711{,}034{,}613\\) occurs as a zero-one determinant, that the rounded endpoint is attainable, or that it is the exact value of \\(D_{23}\\).\n\n**Provenance**\n\n- Primary judgment: `sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`.\n- Arithmetic subject transaction: `7b28860c418486cb41e6379e68cc355ff861b1a5`, ledger position 2.\n- Supporting transaction for the supplied analytic estimate: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n- Relevant judgment finding: `d23/divisibility-rounded-upper-bound`.\n- No conflict record was supplied.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:673a61f088926e3fee498ad252c3ab10d0a2393b035fe25d4a2bca2e174018fb",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:c8d271877619901a78e9db66a8964bba641bb7e642dadc39c30dfdc3cfa28ff0"
+    },
+    "arithmetic-divisibility-reduction/exact-replay": {
+      "id": "arithmetic-divisibility-reduction/exact-replay",
+      "parentId": "arithmetic-divisibility-reduction",
+      "type": "method",
+      "title": "Exact replay method for order-23 divisibility rounding",
+      "summary": "The supplied verifier is an independently replayable exact-arithmetic resource for the divisibility-rounding constants and determinant examples. It uses integer arithmetic and integer square root, checks the quotient and endpoint floors and rounded-endpoint multiplication, constructs sign matrices from B=I_22 and B=C⊕I_19, and evaluates their determinants by integer Bareiss elimination with exact-divisibility checks. It is not exhaustive, does not classify near-maximal determinants or establish endpoint attainability, and no execution transcript was supplied; the universal theorem rests on the accepted symbolic argument rather than computational enumeration.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:067655e20db1086793aa760c236e7c0988002a9c6f8313c31b0b852b81628f33",
+        "section": "## Node: arithmetic-divisibility-reduction/exact-replay"
+      },
+      "contentMarkdown": "## Node: arithmetic-divisibility-reduction/exact-replay\n\n**Title:** Exact replay method for order-23 divisibility rounding  \n**Type:** Method  \n**Parent:** `arithmetic-divisibility-reduction`  \n**Status:** Available with qualifications\n\nImmutable primary judgment\n\n`sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`\n\nassesses the supplied verifier as a reproducible exact replay artifact for the arithmetic constants and determinant examples used by the divisibility-reduction program.\n\nThe judgment reports that the verifier:\n\n- uses integer arithmetic and integer square root rather than floating-point arithmetic;\n- checks the quotient floor and ordinary endpoint floor exactly;\n- checks multiplication producing the rounded endpoint;\n- deterministically constructs the sign matrices arising from \\(B=I_{22}\\) and \\(B=C\\oplus I_{19}\\);\n- evaluates their determinants by integer Bareiss elimination; and\n- checks exact divisibility at each Bareiss step.\n\nThe verifier is not an exhaustive test of all \\(23\\times23\\) sign matrices or all \\(22\\times22\\) zero-one matrices. The universal divisibility theorem rests on the symbolic argument accepted by the judgment rather than on computational enumeration. The code provides independently replayable consistency checks but does not classify near-maximal determinants or verify the attainability of the rounded endpoint.\n\nNo execution transcript was supplied. The judgment nevertheless finds that the code and displayed exact arithmetic permit independent replay without reliance on floating-point output or an opaque computation.\n\n**Provenance**\n\n- Primary judgment: `sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`.\n- Subject and evidence transaction containing the replay artifact: `7b28860c418486cb41e6379e68cc355ff861b1a5`, ledger position 2.\n- Relevant judgment finding: `order-23-rounding/exact-replay`.\n- No conflict record was supplied.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:d2459fcb812c60a698be6be4abfbca3b7c7985afe2e4da2595abc6db86097b64",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:d4ddb8697311ba6a566b2c5795bf15970494c61048df18bd30f81c86311b5072"
+    }
+  },
+  "stateDigest": "sha256:45758a82d0dc4f427f24840a30ee3d81ad015537592990e297cb5b5446997156"
+}

@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "maximal-determinant-23",
+  "ledgerHead": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+  "problemLedgerDigest": "sha256:3e5d6debb78ec4235b84ef335d2330dea778f6bc302cd167c640c3b6d43ea2fb",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+      "ledgerPosition": 2
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "order-23-sign-determinant/universal-divisor",
+      "stance": "supports",
+      "summary": "The subject correctly proves that every 23×23 sign-matrix determinant is divisible by 2^22. After normalizing the first row and column, row subtraction produces a 22×22 block −2B with B zero-one, so |det A|=2^22|det B|, including singular cases. Taking B=I_22 constructs a sign matrix with determinant 2^22, proving that 2^22 is the greatest universal divisor.",
+      "subjectTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ],
+      "evidenceTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ]
+    },
+    {
+      "claimKey": "order-23-sign-zero-one/determinant-correspondence",
+      "stance": "supports",
+      "summary": "The subject establishes both directions of the sign/zero-one correspondence and hence D_23=2^22 max{|det B|: B∈{0,1}^{22×22}}. Every normalized sign matrix yields a zero-one core B, and every B yields A(B) with det A(B)=(−2)^22 det B. The examples B=0, B=I_22, and B=C⊕I_19 correctly give quotient values 0, 1, and −2, showing that all quotients do not occupy one residue class modulo any m>1 and that nonsingular examples have both parities.",
+      "subjectTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ],
+      "evidenceTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ]
+    },
+    {
+      "claimKey": "order-23-sign-zero-one/determinant-correspondence",
+      "stance": "qualifies",
+      "summary": "The quotient examples rule out a universal nontrivial congruence restriction across all order-23 sign matrices, but they do not exclude additional congruence, Gram, or structural restrictions applying only to near-maximal determinants.",
+      "subjectTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ],
+      "evidenceTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ]
+    },
+    {
+      "claimKey": "d23/divisibility-rounded-upper-bound",
+      "stance": "supports",
+      "summary": "Combining the supplied real estimate D_23≤2^22·31,640,625√505 with 2^22 divisibility gives an integer quotient q≤⌊31,640,625√505⌋=711,034,613. The exact square comparisons certify this floor, and multiplication by 2^22 gives D_23≤2,982,295,321,444,352. This is exactly 186,421 below the ordinary integer floor 2,982,295,321,630,773.",
+      "subjectTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ],
+      "evidenceTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02",
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ]
+    },
+    {
+      "claimKey": "d23/divisibility-rounded-upper-bound",
+      "stance": "qualifies",
+      "summary": "The new endpoint is the strongest rounding obtainable solely from a common universal determinant divisor, because 2^22 is the greatest such divisor. It does not strengthen or rederive the underlying real analytic inequality, and it does not rule out stronger exclusions based on structural conditions specific to high-determinant matrices.",
+      "subjectTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ],
+      "evidenceTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02",
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ]
+    },
+    {
+      "claimKey": "order-23-rounding/exact-replay",
+      "stance": "supports",
+      "summary": "The supplied verifier is a reproducible exact replay artifact: it uses integer arithmetic and isqrt for the bound, checks endpoint multiplication and the ordinary floor exactly, deterministically generates the matrices from B=I_22 and B=C⊕I_19, and evaluates their determinants by integer Bareiss elimination with exact-divisibility checks.",
+      "subjectTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ],
+      "evidenceTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ]
+    },
+    {
+      "claimKey": "order-23-rounding/exact-replay",
+      "stance": "qualifies",
+      "summary": "The verifier is not an exhaustive test of all sign matrices, and no execution transcript is supplied. The universal divisibility statement rests on the symbolic proof rather than computation; the code supplies independently replayable consistency checks without floating-point or opaque computational dependence.",
+      "subjectTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ],
+      "evidenceTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ]
+    },
+    {
+      "claimKey": "d23/certified-interval",
+      "stance": "supports",
+      "summary": "Together with the supplied published-record lower endpoint, the subject’s rounded upper bound supports the certified interval 2,779,447,296,000,000≤D_23≤2,982,295,321,444,352. No contradiction appears between the new upper-bound argument and the existing lower-record replay.",
+      "subjectTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ],
+      "evidenceTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02",
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ]
+    },
+    {
+      "claimKey": "d23/exact-value-and-endpoint-attainability",
+      "stance": "uncertain",
+      "summary": "The supplied material does not determine D_23, prove that quotient 711,034,613 occurs as a zero-one determinant, show that the rounded upper endpoint is attainable, exclude that endpoint, classify candidate Gram matrices, or establish optimality of the published record.",
+      "subjectTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ],
+      "evidenceTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02",
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ]
+    },
+    {
+      "claimKey": "d23/lower-bound-improvement",
+      "stance": "qualifies",
+      "summary": "The accepted contribution is an arithmetic upper-bound sharpening only. The subject exhibits no matrix exceeding the published lower endpoint and therefore supplies no new lower record.",
+      "subjectTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ],
+      "evidenceTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02",
+        "7b28860c418486cb41e6379e68cc355ff861b1a5"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:89823aa10ec5346271be19942fc3176ceecb8ed36b06dda36d301a82b9c238d2",
+  "judgmentId": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3"
+}

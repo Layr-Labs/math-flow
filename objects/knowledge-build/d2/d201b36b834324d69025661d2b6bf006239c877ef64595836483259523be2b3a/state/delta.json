@@ -1,0 +1,224 @@
+{
+  "operations": [
+    {
+      "action": "update",
+      "nodeId": "root",
+      "parentId": null,
+      "nodeType": "root",
+      "title": "Research state for maximal-determinant-23",
+      "summary": "For D_23, the certified interval is 2,779,447,296,000,000 ≤ D_23 ≤ 2,982,295,321,444,352. The explicit sign-matrix witness continues to certify the unchanged lower endpoint. Universal divisibility by 2^22 permits rounding the supplied real upper estimate at the quotient level, yielding the improved upper endpoint 2^22·711,034,613. This is an arithmetic sharpening only and does not strengthen the underlying analytic inequality. The exact value remains unresolved: no larger witness, optimality proof, endpoint-attainability proof, structural exclusion, exhaustive classification, or search certificate is supplied. The current programs are exact-witness-certification and arithmetic-divisibility-reduction.",
+      "reportSection": "## Node: root",
+      "baseDigest": "sha256:074e45ad0f6828598c324c2b2b834d918e6a461bcd94801c2ac3d2ddf62bda7e",
+      "baseRevisionId": "sha256:6cf9afce99e73d0d759b9e2b70159a4b119cee7986bea38da08b880b2b31cb1e",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02"
+        },
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: root"
+    },
+    {
+      "action": "create",
+      "nodeId": "arithmetic-divisibility-reduction",
+      "parentId": "root",
+      "nodeType": "program",
+      "title": "Arithmetic divisibility and zero-one reduction for order 23",
+      "summary": "This program organizes exact arithmetic reductions for determinants of 23×23 sign matrices: the correspondence with 22×22 zero-one determinants, universal divisibility by 2^22 and its sharpness, divisibility rounding of the supplied real upper estimate, and exact replay of the arithmetic constants and determinant examples. These results certify D_23 ≤ 2^22·711,034,613 = 2,982,295,321,444,352. The program does not derive or improve the underlying analytic estimate and provides no exhaustive classification, endpoint-attainability proof, or restriction specific to near-maximal determinants.",
+      "reportSection": "## Node: arithmetic-divisibility-reduction",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "context"
+        }
+      ],
+      "changeSection": "## Change: arithmetic-divisibility-reduction"
+    },
+    {
+      "action": "create",
+      "nodeId": "arithmetic-divisibility-reduction/sign-zero-one-correspondence",
+      "parentId": "arithmetic-divisibility-reduction",
+      "nodeType": "result",
+      "title": "Order-23 sign/zero-one determinant correspondence",
+      "summary": "There is an exact correspondence D_23 = 2^22 max{|det B| : B is a 22×22 zero-one matrix}. Normalizing a 23×23 sign matrix and subtracting its first row gives |det A| = 2^22|det B|; conversely, A(B) = [[1,1^T],[1,J−2B]] satisfies det A(B) = (−2)^22 det B. Examples with B=0, B=I_22, and B=C⊕I_19 produce quotient values 0, 1, and −2, ruling out a nontrivial universal quotient residue class and exhibiting both parities among nonsingular examples. These examples do not exclude restrictions applying only near the maximum.",
+      "reportSection": "## Node: arithmetic-divisibility-reduction/sign-zero-one-correspondence",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: arithmetic-divisibility-reduction/sign-zero-one-correspondence"
+    },
+    {
+      "action": "create",
+      "nodeId": "arithmetic-divisibility-reduction/universal-divisor",
+      "parentId": "arithmetic-divisibility-reduction",
+      "nodeType": "result",
+      "title": "Greatest universal divisor of order-23 sign determinants",
+      "summary": "Every 23×23 sign-matrix determinant, including zero, is divisible by 2^22. This follows from the normalized zero-one reduction |det A| = 2^22|det B|. The divisor is sharp: taking B=I_22 in the converse construction gives a sign matrix with determinant 2^22, so 2^22 is the greatest positive integer dividing all order-23 sign determinants. This does not establish attainability or sharpness of an upper bound and leaves open stronger restrictions specific to high-determinant matrices.",
+      "reportSection": "## Node: arithmetic-divisibility-reduction/universal-divisor",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: arithmetic-divisibility-reduction/universal-divisor"
+    },
+    {
+      "action": "create",
+      "nodeId": "arithmetic-divisibility-reduction/rounded-upper-bound",
+      "parentId": "arithmetic-divisibility-reduction",
+      "nodeType": "result",
+      "title": "Divisibility-rounded upper estimate for D_23",
+      "summary": "Using the supplied analytic estimate D_23 ≤ 2^22·31,640,625√505 and universal divisibility by 2^22, write D_23=2^22q with integer q. The exact floor is q ≤ floor(31,640,625√505)=711,034,613, giving D_23 ≤ 2,982,295,321,444,352. This endpoint is 186,421 below the ordinary integer floor of the real endpoint. It is the strongest rounding based solely on a common universal determinant divisor, but the result does not establish that quotient 711,034,613 occurs, that the endpoint is attainable, or that it equals D_23.",
+      "reportSection": "## Node: arithmetic-divisibility-reduction/rounded-upper-bound",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: arithmetic-divisibility-reduction/rounded-upper-bound"
+    },
+    {
+      "action": "create",
+      "nodeId": "arithmetic-divisibility-reduction/exact-replay",
+      "parentId": "arithmetic-divisibility-reduction",
+      "nodeType": "method",
+      "title": "Exact replay method for order-23 divisibility rounding",
+      "summary": "The supplied verifier is an independently replayable exact-arithmetic resource for the divisibility-rounding constants and determinant examples. It uses integer arithmetic and integer square root, checks the quotient and endpoint floors and rounded-endpoint multiplication, constructs sign matrices from B=I_22 and B=C⊕I_19, and evaluates their determinants by integer Bareiss elimination with exact-divisibility checks. It is not exhaustive, does not classify near-maximal determinants or establish endpoint attainability, and no execution transcript was supplied; the universal theorem rests on the accepted symbolic argument rather than computational enumeration.",
+      "reportSection": "## Node: arithmetic-divisibility-reduction/exact-replay",
+      "baseDigest": null,
+      "baseRevisionId": null,
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        }
+      ],
+      "changeSection": "## Change: arithmetic-divisibility-reduction/exact-replay"
+    }
+  ]
+}
