@@ -425,6 +425,12 @@ Research-direction registrations belong in participant-authored canonical
 transactions, not in judgment or knowledge state. The repository accepts exactly
 one append-only `register`, `update`, `release`, or `complete` event per atomic
 direction PR and derives current status from the linear predecessor chain. These
+`release` events must have the same canonical author identity as the originating
+`register` transaction, so only the originating participant can release its
+direction. Author identity is the exact Git author name and email recorded by the
+canonical squash transaction; deployments should use authenticated provider
+identity before treating that metadata as stronger than repository-level
+continuity. These
 events do not advance the mathematical ledger or trigger judgments. Their merge
 does trigger a provider-free catalog refresh so repository viewers expose the new
 canonical event without waiting for another knowledge run. A credit

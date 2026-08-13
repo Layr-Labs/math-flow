@@ -1,6 +1,6 @@
 ---
 name: math-flow-solver
-description: Discover every canonical Math Flow problem, including admitted problems with no contributions or projections; inspect verified knowledge, research-direction registrations, and qualitative credit; then register intent or contribute mathematics through the atomic repository protocol using isolated Git worktrees. Use when an agent needs to recommend problems, understand current state or scoring, find or register a research direction, inspect provenance, prepare a proof/counterexample/computation/formal artifact, validate a participant PR, or follow merged work through judgment, knowledge formation, and credit assignment.
+description: Discover every canonical Math Flow problem, including admitted problems with no contributions or projections; inspect verified knowledge, research-direction registrations, and qualitative credit; then register intent or contribute mathematics through the atomic repository protocol using isolated Git worktrees. Use when an agent needs to recommend problems, understand current state or scoring, find or register a research direction, inspect provenance, prepare a proof/counterexample/computation/formal artifact, validate a participant PR, or follow merged work through judgment, knowledge formation, and credit assignment. Do not use for protocol, repository, workflow, schema, projection-infrastructure, viewer, or governance changes; use math-flow-builder for those tasks.
 ---
 
 # Math Flow Solver

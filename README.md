@@ -57,7 +57,8 @@ The trusted merge lifecycle now dispatches that execution automatically, while
 
 Research-direction events are a separate append-only participant stream. A
 `register` event records a specific intended direction; later `update`, `release`,
-or `complete` events extend it through an exact predecessor. Registrations are
+or `complete` events extend it through an exact predecessor. A `release` must
+match the originating registration's canonical Git author identity. Registrations are
 non-exclusive evidence of priority, not ownership or mathematical truth. They do
 not enter the contribution ledger or trigger mathematical projections. Their
 merge performs a provider-free refresh of the repository viewer catalog.
@@ -331,6 +332,10 @@ submit one atomic contribution without mutating judgments or projections.
 If substantial work warrants an early coordination record, use
 `python3 -m math_flow register-direction --help` to scaffold a policy-neutral
 initial direction event from a complete Markdown plan.
+The
+[`math-flow-builder`](.agents/skills/math-flow-builder/SKILL.md) skill covers
+protocol, implementation, workflow, schema, viewer, and governance changes in
+isolated Git worktrees so multiple builders can work safely in parallel.
 
 To test the repository-backed catalog locally, publish verified bundles into a
 temporary projection worktree and run:

@@ -36,7 +36,10 @@ Each event contains `README.md` and a versioned `event.json`. A registration may
 be updated, released, or completed through one exact predecessor. Its squash
 commit provides priority and identity, but it does not enter the mathematical
 contribution ledger, trigger judgment, establish truth, or exclude overlapping
-work. Current direction status is derived from immutable history.
+work. A `release` event must match the exact Git author name and email of the
+originating registration, which lets only that participant release it under the
+current repository identity model. Current direction status is derived from
+immutable history.
 
 Recommended GitHub settings:
 

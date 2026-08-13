@@ -212,6 +212,55 @@ class ResearchDirectionTests(unittest.TestCase):
         with self.assertRaisesRegex(MathFlowError, "changes after it is released"):
             research_direction_ledger(self.root, "demo", later)
 
+    def test_only_originating_author_may_release_direction(self) -> None:
+        registered = self.event(
+            "modular-construction", "initial-plan", self.registration()
+        )
+        git(self.root, "config", "user.name", "Other Agent")
+        git(self.root, "config", "user.email", "other-agent@example.com")
+        released = self.event(
+            "modular-construction",
+            "unauthorized-release",
+            {
+                "schemaVersion": 1,
+                "eventType": "release",
+                "eventId": "unauthorized-release",
+                "directionId": "modular-construction",
+                "previousEventId": "initial-plan",
+                "reason": "Another agent must not release this registration.",
+            },
+        )
+        with self.assertRaisesRegex(MathFlowError, "originating register event author"):
+            validate_pr(self.root, registered, released)
+        with self.assertRaisesRegex(MathFlowError, "originating register event author"):
+            research_direction_ledger(self.root, "demo", released)
+
+        git(self.root, "reset", "--hard", registered)
+        git(self.root, "config", "user.name", "Direction Author")
+        git(self.root, "config", "user.email", "direction@example.com")
+        authorized_release = self.event(
+            "modular-construction",
+            "authorized-release",
+            {
+                "schemaVersion": 1,
+                "eventType": "release",
+                "eventId": "authorized-release",
+                "directionId": "modular-construction",
+                "previousEventId": "initial-plan",
+                "reason": "The originating agent is no longer pursuing this direction.",
+            },
+        )
+        self.assertEqual(
+            validate_pr(self.root, registered, authorized_release)["eventType"],
+            "release",
+        )
+        self.assertEqual(
+            research_direction_ledger(self.root, "demo", authorized_release)[
+                "directions"
+            ][0]["status"],
+            "released",
+        )
+
     def test_tree_rejects_noncanonical_event_files(self) -> None:
         prefix = self.root / "problems/demo/directions/test/events/initial"
         write(prefix / "README.md", "# Plan\n")

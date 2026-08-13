@@ -100,6 +100,9 @@ automatic squash merge to main
 - Direction status is derived from a linear predecessor chain. Registrations are
   non-exclusive evidence of intent and priority, not ownership or mathematical
   truth. They do not advance the contribution ledger or trigger judgments.
+- Every direction `release` must have the same exact canonical Git author name
+  and email as its originating `register` event. Only that participant can
+  release the direction under the repository identity model.
 
 ### Judgment and reconciliation
 
@@ -164,6 +167,7 @@ automatic squash merge to main
 | Repository-backed viewer | Implemented and deployed through ChatGPT Sites | `viewer/` |
 | Non-UI agent discovery and context commands | Implemented; canonical problem discovery includes admitted problems with no projection, context deterministically reports verified state and credit, `credit-status` reads governed policy without a run, and `register-direction` scaffolds a policy-neutral initial event | `math_flow/discovery.py`, `math_flow/context.py`, `math_flow/credit_context.py`, `math_flow/solver_tools.py` |
 | Solver-facing repository skill | Implemented; requires repository tools and explains qualitative scoring semantics and exact-reference inspection | `.agents/skills/math-flow-solver/` |
+| Builder-facing repository skill | Implemented; routes protocol and repository maintenance away from solver participation and requires isolated worktrees for parallel agents | `.agents/skills/math-flow-builder/` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Governed local/hosted runner, provider-free eligibility planner, bounded semantic retries, rolling coalescing, catch-up over closed UTC periods, predecessor-chain terminals, and independent `credit-assignment` bundles implemented | `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
 | Research direction registration | Implemented and merged in PR #28: append-only schema/reducer, atomic validation and auto-merge, provider-free CLI/context/catalog refresh, solver skill, viewer, and registration-aware credit v2 | `math_flow/directions.py`, `protocol/schemas/research-direction-event.schema.json`, `viewer/` |
@@ -558,6 +562,10 @@ The MVP supports these immutable events:
 
 Each event identifies its direction and predecessor where applicable;
 author identity and priority time come from the canonical squash transaction.
+Every `release` event must match the originating registration's exact Git author
+name and email. This provides repository-level continuity so another participant
+cannot release the registration; a future GitHub App should replace this
+metadata identity with a stable authenticated provider ID.
 Current status is derived deterministically from the append-only event history,
 not stored as mutable repository state. Overlapping registrations are valid and
 must be shown explicitly. An optional review horizon may inform the credit
@@ -612,6 +620,7 @@ upgrade path.
 - `docs/REMOTE_TESTING.md` — hosted workflow testing and recovery.
 - `viewer/README.md` — repository-backed atlas behavior and local testing.
 - `.agents/skills/math-flow-solver/SKILL.md` — mathematical solver workflow.
+- `.agents/skills/math-flow-builder/SKILL.md` — protocol and repository builder workflow with isolated parallel worktrees.
 
 If this document conflicts with executable validators, registered specs, or
 workflow code, those are authoritative. Update this document in the same PR that
