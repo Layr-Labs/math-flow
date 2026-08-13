@@ -148,6 +148,29 @@ jobs:
           echo "problem=$(jq -r '.problemId' "$result")" >> "$GITHUB_OUTPUT"
           echo "transaction_kind=$(jq -r '.transactionKind' "$result")" >> "$GITHUB_OUTPUT"
 
+      - id: approval
+        if: steps.transaction.outputs.atomic == 'true'
+        name: Approve the re-verified participant transaction
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          REPOSITORY: "${{ github.repository }}"
+          PR_NUMBER: "${{ steps.pr.outputs.number }}"
+          HEAD_SHA: "${{ steps.pr.outputs.head_sha }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          review="${RUNNER_TEMP}/approval.json"
+          gh api --method POST \
+            "repos/${REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
+            -f event=APPROVE \
+            -f commit_id="$HEAD_SHA" \
+            -f body="Approved by the trusted base-branch workflow after atomic revalidation against current main." \
+            > "$review"
+          if [[ "$(jq -r '.state' "$review")" != "APPROVED" ]]; then
+            jq -r '.message // "GitHub did not record an approving review."' "$review" >&2
+            exit 1
+          fi
+
       - id: merge
         if: steps.transaction.outputs.atomic == 'true'
         name: Squash-merge the validated participant transaction
