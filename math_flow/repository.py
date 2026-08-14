@@ -81,6 +81,7 @@ def validate_tree(root: Path) -> dict[str, int]:
     from .directions import validate_direction_tree
     from .governance import validate_projection_registry
     from .attestations import validate_contribution_verification_at, validate_verifier_tree
+    from .claims import validate_claim_manifest
 
     validate_projection_registry(root)
     validate_verifier_tree(root)
@@ -114,6 +115,15 @@ def validate_tree(root: Path) -> dict[str, int]:
                     raise MathFlowError(f"contributions may not be symlinks: {contribution}")
                 validate_slug(contribution.name, "contribution id")
                 _check_nonempty(contribution / "README.md", "contribution README")
+                claims_path = contribution / "claims.json"
+                if claims_path.exists():
+                    try:
+                        claims = json.loads(claims_path.read_text(encoding="utf-8"))
+                    except json.JSONDecodeError as exc:
+                        raise MathFlowError(
+                            f"contribution claims manifest is not valid JSON: {claims_path}"
+                        ) from exc
+                    validate_claim_manifest(claims, problem=problem_dir.name)
                 for artifact in contribution.rglob("*"):
                     if artifact.is_symlink():
                         raise MathFlowError(f"contribution artifacts may not be symlinks: {artifact}")
@@ -257,8 +267,26 @@ def validate_pr(root: Path, base: str, head: str) -> dict[str, object]:
                 )
 
         from .attestations import validate_contribution_verification_at
+        from .claims import validate_claim_manifest
 
         validate_contribution_verification_at(root, head_sha, prefix)
+        claims_path = f"{prefix}/claims.json"
+        if claims_path in list_files_at(root, head_sha, prefix):
+            try:
+                claims = json.loads(read_at(root, head_sha, claims_path))
+            except json.JSONDecodeError as exc:
+                raise MathFlowError(
+                    "contribution claims manifest is not valid JSON"
+                ) from exc
+            prior = ledger(root, problem, base_sha)
+            validate_claim_manifest(
+                claims,
+                problem=problem,
+                subject_transaction_id=head_sha,
+                prior_transaction_ids={
+                    str(item["transactionId"]) for item in prior["transactions"]
+                },
+            )
 
         return {
             "base": base_sha,

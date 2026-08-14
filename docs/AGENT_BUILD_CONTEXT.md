@@ -106,8 +106,17 @@ automatic squash merge to main
 
 ### Judgment and reconciliation
 
-- A primary judgment is immutable, content-addressed, and has no base knowledge
-  state. Independent judgments must remain parallelizable.
+- A primary judgment is immutable, content-addressed, and has no mutable base
+  knowledge state. Independent judgments must remain parallelizable. A bounded
+  validity judge may receive a content-addressed pre-subject dependency packet:
+  declared claims, explicitly cited prior transactions, and only historical
+  knowledge nodes grounded in those dependencies. It must never receive the
+  current post-subject state or an automatically embedded preceding ledger.
+- A validity-only primary judge assesses every declared claim exactly once.
+  Missing premises, evidence issues, and scope qualifications are properties of
+  that assessment, not additional mathematical claims. Novelty, frontier
+  placement, research-program organization, and cumulative state belong to the
+  knowledge builder.
 - The current OpenRouter judges have no shell, code interpreter, or tool calls.
   They receive supported repository artifacts as quoted text and return model
   output. Executable evidence must use a separately governed objective verifier;

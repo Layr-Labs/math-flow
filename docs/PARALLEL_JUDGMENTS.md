@@ -17,8 +17,8 @@ contributions
 
 ## Run a primary judgment
 
-Use one command per independently adjudicated subject. Additional transactions
-may be supplied as evidence without becoming subjects:
+Use one command per independently adjudicated subject. The legacy v1 judge may
+receive additional transactions as evidence without making them subjects:
 
 ```bash
 python -m math_flow judgment \
@@ -35,6 +35,36 @@ The resulting bundle contains `report.md`, `judgment.json`, and `run.json` with
 The manifest records both the repository-wide ledger head and a
 `problemLedgerDigest`, so unrelated problem commits do not invalidate scheduling
 or caches for this problem.
+
+The v2 validity judge has a narrower contract:
+
+```bash
+python -m math_flow judgment \
+  --problem bssc-sum-capacity \
+  --judge protocol/judges/openrouter-validity-judgment-v2.json \
+  --head HEAD \
+  --subject <transaction-sha> \
+  --projection-dir /path/to/projections-worktree \
+  --output-dir projections/staging/judgment-1
+```
+
+It accepts exactly one subject and rejects `--evidence`. A contribution may
+declare claims in an optional `claims.json`; each claim supplies a stable
+`claimKey`, its exact statement, and prior canonical transaction IDs on which it
+depends. Existing contributions remain compatible: the runner derives one claim
+from the first `## Claim`, `## Claims`, `## Claim and scope`, or
+`## Claims and exact scope` section, falling back to the full README, and treats
+full prior transaction IDs cited there as explicit dependencies.
+
+The runner writes a content-addressed `dependency-packet.json`. It contains the
+declared claims, only their declared prior transactions, and—when available—only
+nodes from a historical knowledge state that cite those dependencies. The state
+must precede the subject; the current state and the rest of the contribution
+ledger are never sent. The output has exactly one assessment and one derived
+routing finding per declared claim. Missing premises, defects, and scope
+qualifications remain fields of that assessment rather than becoming claims.
+Novelty, global placement, program organization, and cumulative state remain
+the knowledge builder's responsibility.
 
 Before dispatching work, automation can compare the canonical problem ledger
 with the published projection index:

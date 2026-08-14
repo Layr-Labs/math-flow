@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from . import __version__
@@ -20,6 +21,7 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-hierarchical-markdown-v1",
     "openrouter-hierarchical-markdown-v2",
     "openrouter-markdown-judgment-v1",
+    "openrouter-validity-judgment-v2",
     "openrouter-markdown-reconciliation-v1",
     "openrouter-knowledge-builder-v1",
     "openrouter-knowledge-builder-v2",
@@ -30,6 +32,7 @@ SUPPORTED_IMPLEMENTATIONS = {
 SUPPORTED_INPUT_BUILDERS = {
     "ledger-index-v1",
     "ledger-text-artifacts-v1",
+    "claim-dependency-packet-v2",
     "judgment-batch-v1",
     "locked-knowledge-ledger-v1",
     "locked-knowledge-ledger-directions-v2",
@@ -40,6 +43,7 @@ SUPPORTED_OUTPUT_PROFILES = {
     "math-flow/hierarchical-markdown-v1",
     "math-flow/hierarchical-markdown-v2",
     "math-flow/judgment-markdown-v1",
+    "math-flow/validity-judgment-v2",
     "math-flow/knowledge-build-markdown-v1",
     "math-flow/knowledge-build-markdown-v2",
     "math-flow/credit-assignment-markdown-v1",
@@ -51,6 +55,7 @@ SUPPORTED_OUTPUT_ADAPTERS = {
     "select-report-extract-v1",
     "select-report-extract-revisions-v2",
     "report-extract-findings-v1",
+    "report-extract-validity-v2",
     "report-extract-reconciliation-v1",
     "select-form-extract-revisions-v1",
     "select-form-extract-knowledge-revisions-v2",
@@ -136,6 +141,12 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputAdapter": "report-extract-findings-v1",
             "reducer": None,
         },
+        "openrouter-validity-judgment-v2": {
+            "inputBuilder": "claim-dependency-packet-v2",
+            "outputProfile": "math-flow/validity-judgment-v2",
+            "outputAdapter": "report-extract-validity-v2",
+            "reducer": None,
+        },
         "openrouter-markdown-reconciliation-v1": {
             "outputProfile": "math-flow/judgment-markdown-v1",
             "outputAdapter": "report-extract-reconciliation-v1",
@@ -179,11 +190,21 @@ def load_judge_spec(path: Path) -> dict[str, object]:
                 raise MathFlowError(
                     f"judge {field} is incompatible with {spec['implementation']}: {spec[field]}"
                 )
+    if spec["implementation"] == "openrouter-validity-judgment-v2":
+        context_projection = spec.get("contextProjection")
+        if context_projection is not None and (
+            not isinstance(context_projection, str)
+            or not re.fullmatch(r"[a-z0-9][a-z0-9-]*", context_projection)
+        ):
+            raise MathFlowError(
+                "validity judge contextProjection must be a projection ID"
+            )
     if spec["implementation"] in {
         "openrouter-chat-completions-v1",
         "openrouter-hierarchical-markdown-v1",
         "openrouter-hierarchical-markdown-v2",
         "openrouter-markdown-judgment-v1",
+        "openrouter-validity-judgment-v2",
         "openrouter-markdown-reconciliation-v1",
         "openrouter-knowledge-builder-v1",
         "openrouter-knowledge-builder-v2",

@@ -346,7 +346,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     judgment_parser.add_argument(
         "--evidence", action="append", default=[], dest="evidence",
-        help="additional context transaction ID (repeatable)",
+        help="v1-only additional context transaction ID (repeatable)",
+    )
+    judgment_parser.add_argument(
+        "--projection-dir",
+        type=Path,
+        help="published projection state used to resolve bounded v2 dependency context",
     )
     judgment_parser.add_argument("--output-dir", required=True, type=Path)
 
@@ -843,6 +848,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.subjects,
                 args.output_dir,
                 context_transaction_ids=args.evidence,
+                projection_root=args.projection_dir,
             )
         elif args.command == "judgment-plan":
             result = plan_primary_judgment_coverage(

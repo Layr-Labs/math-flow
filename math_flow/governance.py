@@ -56,7 +56,10 @@ SCHEDULING_FIELDS = {
     "maximumJudgmentsPerBuild",
 }
 EXPECTED_IMPLEMENTATIONS = {
-    "primaryJudge": {"openrouter-markdown-judgment-v1"},
+    "primaryJudge": {
+        "openrouter-markdown-judgment-v1",
+        "openrouter-validity-judgment-v2",
+    },
     "reconciliationJudge": {"openrouter-markdown-reconciliation-v1"},
     "knowledgeBuilder": {
         "openrouter-knowledge-builder-v1",

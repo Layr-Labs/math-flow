@@ -140,10 +140,17 @@ to an endpoint that supports all requested parameters.
 ### Parallel judgments and serialized knowledge formation
 
 The v0.5 execution path separates immutable primary and reconciliation judgments
-from rate-limited knowledge formation. Judgments have no base run and can execute
+from rate-limited knowledge formation. Judgments have no mutable base run and can execute
 concurrently; opposed findings create explicit conflict records for targeted
 reconciliation. Completed judgments coalesce in a single-writer knowledge-builder
 lane instead of immediately rebuilding state.
+
+The additive v2 primary-judge path narrows that first stage to validity. It
+assesses each contribution-declared claim exactly once against an immutable
+packet of explicit prior dependencies and dependency-linked, pre-subject
+knowledge. It does not discover additional claims or decide global placement;
+the serialized knowledge builder retains responsibility for the holistic
+knowledge state. Existing v1 projections and contributions remain valid.
 
 The included knowledge builder consumes one exact scheduler claim. It is
 deliberately non-adjudicative: it may organize primary findings and supplied
