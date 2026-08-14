@@ -1,0 +1,1094 @@
+{
+  "schemaVersion": 3,
+  "problemId": "bssc-sum-capacity",
+  "rootId": "root",
+  "nodes": {
+    "root": {
+      "id": "root",
+      "parentId": null,
+      "type": "root",
+      "title": "Research state for BSSC private-message sum-capacity",
+      "summary": "The exact private-message sum-capacity remains open, with governed benchmark 0.361642884421954615663441578150587… ≤ C_sum ≤ 0.369296945969202842443. A distinct accepted UV-scalar program establishes tensorization and symmetry results and the valid but weaker upper bound 2h₂(1/4)−5/4. That UV converse is separate from the coarse entropy witness attaining the same value, and neither endpoint of the governed capacity interval changes.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:36aaec96b8bca78810d5d27c04251d47d1a084100cd5cf17443cdab8062c4643",
+        "section": "## Node: root"
+      },
+      "contentMarkdown": "## Node: root\n\n- **Title:** Research state for BSSC private-message sum-capacity\n- **Type:** Root\n- **Status:** Active\n- **Parent:** None\n\n### Current knowledge\n\nFor the binary-input broadcast channel with marginals\n\n\\[\nP_{Y|X}=\n\\begin{pmatrix}\n\\tfrac12&\\tfrac12\\\\\n0&1\n\\end{pmatrix},\n\\qquad\nP_{Z|X}=\n\\begin{pmatrix}\n1&0\\\\\n\\tfrac12&\\tfrac12\n\\end{pmatrix},\n\\]\n\nthe exact private-message sum-capacity\n\n\\[\nC_{\\mathrm{sum}}\n=\\sup\\{R_1+R_2:(R_1,R_2)\\text{ is achievable}\\}\n\\]\n\nremains unknown.\n\nThe governed current benchmark is unchanged:\n\n\\[\n\\boxed{\n0.361642884421954615663441578150587\\ldots\n\\le C_{\\mathrm{sum}}\n\\le 0.369296945969202842443\n}.\n\\]\n\nThe lower endpoint remains the randomized-time-division value within Marton’s inner bound, as identified by the supplied problem statement. No supplied judgment establishes a larger achievable rate.\n\nPrimary judgment `sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44` supports the universal upper bound\n\n\\[\nC_{\\mathrm{sum}}\\le 0.369296945969202842443.\n\\]\n\nAccording to that judgment, the bound is obtained from the full Gohari–Liu–Nair Theorem 9 outer bound at a specified reflected binary auxiliary-receiver pair. Its fixed-pair certificate uses an exact nonnegative six-row dual combination, outward-rounded interval majorants over the full posterior interval \\([0,1]\\), and analytic maximization over every input prior. It is not merely a finite posterior-grid calculation.\n\nThe fixed-pair certificate does not establish:\n\n- matching achievability;\n- global optimality of the selected auxiliary-receiver pair;\n- global sufficiency of binary or reflected auxiliary receivers;\n- global optimality of the selected six-row dual face; or\n- certification of the smaller numerical lead\n  \\[\n  0.369296340638082.\n  \\]\n\nThe earlier exact three-point-grid result remains a lower approximation to a fixed-receiver outer-bound functional rather than a capacity upper bound. The earlier midpoint-localization result remains a necessary localization statement relative to its supplied threshold. Neither determines the global auxiliary-receiver optimization.\n\nPrimary judgment `sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f` accepts, within its stated scope, a separate structural program concerning:\n\n- an exact finite-block dependence-balance telescope;\n- selected-coordinate fixed-map factorization and four rate inequalities;\n- a sharp scalar BSSC posterior-support inequality;\n- an actual finite entropic counterfeit for a specified coarse entropy relaxation; and\n- a no-go result for strengthening that relaxation through universally valid finite-variable information inequalities or finitely many standard copy-lemma extensions.\n\nThose results do not determine \\(C_{\\mathrm{sum}}\\) or improve either endpoint of the governed interval.\n\nPrimary judgment `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318` additionally accepts a distinct program concerning two separately relaxed UV sum-rate scalar functionals. It supports:\n\n- exact product additivity of the averaged scalar for arbitrary finite-alphabet broadcast channels, including correlated product-channel inputs and joint envelope auxiliaries;\n- equality of the branchwise and averaged scalars for receiver-skew-symmetric channels;\n- exact product additivity of the branchwise scalar for finite products of receiver-skew-symmetric channels; and\n- the half-skew BSSC evaluation\n  \\[\n  B_{\\mathrm{br}}(P)=B_{\\mathrm{avg}}(P)\n  =2h_2(1/4)-\\frac54\n  =0.3725562489182657\\ldots,\n  \\]\n  together with the corresponding exact linear value at every finite product blocklength.\n\nUnder the UV derivation, this number is a valid but noncompetitive sum-rate upper bound:\n\n\\[\nC_{\\mathrm{sum}}\n\\le 2h_2(1/4)-\\frac54.\n\\]\n\nIt is weaker than both the published benchmark upper endpoint \\(0.369316568803963\\) and the governed fixed-pair upper bound \\(0.369296945969202842443\\). It therefore changes neither side of the current capacity frontier and supplies no achievable-rate evidence.\n\nThe same decimal consequently has two distinct, separately governed meanings:\n\n1. In the specified coarse entropy relaxation, it is an attained objective value whose witness alone supplies neither a lower nor an upper bound on BSSC capacity.\n2. In the separately relaxed UV program, it is independently derived as a valid but weaker capacity upper bound.\n\nThese interpretations are compatible and must not be conflated.\n\n### Durable program structure\n\nThe durable programs directly beneath the root are:\n\n- `programs/auxiliary_receiver_outer_bound` — structural reductions, finite-grid analysis, continuous fixed-pair converses, exact dual-functional identities, certificate reproducibility, and unresolved global auxiliary-receiver optimization associated with the Gohari–Liu–Nair outer bound.\n- `programs/dependence_balance_entropy_relaxation` — finite-block dependence-balance and selected-coordinate structure, together with BSSC-specific analysis of the capabilities and limitations of a specified coarse entropy relaxation.\n- `programs/uv_relaxed_scalar` — averaged and branchwise separately relaxed UV scalar functionals, their tensorization properties, receiver-skew-symmetry reduction, and exact half-skew BSSC evaluation.\n\nNo conflict or reconciliation records were supplied. The remaining limitations are open mathematical or evidentiary dependencies rather than disputes between opposed primary judgments.\n\n### Provenance\n\n- **Lower-bound source:** Supplied problem statement\n- **Earlier subject transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Earlier primary judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Fixed-pair subject transaction:** `7e7626cbff7270572d51a8fda719154ab602907f`\n- **Fixed-pair primary judgment:** `sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44`\n- **Dependence-balance subject transaction:** `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`\n- **Dependence-balance primary judgment:** `sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f`\n- **UV-scalar subject transaction:** `f236017c62c67ce4218c1f81ea34134f0954b556`\n- **UV-scalar primary judgment:** `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318`\n- **Conflict status:** No supplied conflict or reconciliation records\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "ledgerPosition": 1
+        },
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "ledgerPosition": 2
+        },
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "ledgerPosition": 3
+        },
+        {
+          "kind": "transaction",
+          "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "ledgerPosition": 4
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "relation": "qualifies"
+        },
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44",
+          "digest": "sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f",
+          "digest": "sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f",
+          "relation": "qualifies"
+        },
+        {
+          "kind": "transaction",
+          "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "digest": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:41ce2082c0e29ca8da72a60d7f275b005b3dc45de918cdd9ae3cff9362ba007c",
+        "revisionNumber": 4
+      },
+      "digest": "sha256:ec77ed6181407aac60106aec679a630c10727b8b69b1f8e8e7e5afdd3117ce27"
+    },
+    "programs/auxiliary_receiver_outer_bound": {
+      "id": "programs/auxiliary_receiver_outer_bound",
+      "parentId": "root",
+      "type": "program",
+      "title": "Auxiliary-receiver outer-bound program",
+      "summary": "This program studies the Gohari–Liu–Nair two-auxiliary-receiver outer bound through input-only structural reductions, finite-grid analysis, exact symbolic dual certificates, continuous posterior majorants, symmetry identities, and optimization over auxiliary-receiver pairs and dual choices. It includes a certified continuous fixed-pair converse C_sum ≤ 0.369296945969202842443 and an exact skew-invariant representation of its six-row functional. Global receiver cardinality, binary or reflected-pair sufficiency, invariant-dual sufficiency, global minimization, matching achievability, and the exact capacity remain unresolved, with stated source-transcription and implementation trust boundaries.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:8c9c4553a03041d46e82fa2611aadbb3f9cead6e035c7617833bacf6362381b5",
+        "section": "## Node: programs/auxiliary_receiver_outer_bound"
+      },
+      "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound\n\n- **Title:** Auxiliary-receiver outer-bound program\n- **Type:** Program\n- **Status:** Active\n- **Parent:** `root`\n\n### Program scope\n\nThis program studies the Gohari–Liu–Nair two-auxiliary-receiver outer bound through structural reductions of the receiver channels \\(G,K\\), finite-posterior-grid optimization, exact symbolic dual certificates, continuous posterior majorants, symmetry identities, and the unresolved optimization over all admissible auxiliary-receiver pairs and dual choices.\n\n### Established results\n\nThe supplied primary judgments support the following results within their stated scopes:\n\n1. **Input-only reduction.** Suitable finite laws \\(T_{G,K|X,Y,Z}\\) can be reduced to conditionally independent input-only receiver channels under the conditions assessed by the earlier judgment.\n\n2. **Finite-grid receiver cardinality.** For a fixed finite posterior grid, each auxiliary receiver can be reduced to at most the grid size in the corresponding finite-grid optimization.\n\n3. **Exact three-point-grid evaluation.** The encoded three-point-grid receiver infimum has an exact symbolic evaluation. This is a finite-grid lower approximation to a receiver functional, not a universal capacity upper bound.\n\n4. **Midpoint coercivity.** A midpoint-information lower bound supplies a necessary localization tool for auxiliary-receiver pairs relative to a separately supplied threshold.\n\n5. **Continuous fixed-pair converse.** For the specified reflected binary pair\n   \\[\n   G=(0.206961624915382,0.826953249115544),\n   \\qquad\n   K=(0.173046750884456,0.793038375084618),\n   \\]\n   the full Theorem 9 outer bound gives\n   \\[\n   C_{\\mathrm{sum}}\\le0.369296945969202842443.\n   \\]\n   The accepted certificate covers the complete posterior continuum and analytically maximizes over all input priors.\n\n6. **Exact skew-invariant representation.** For \\(0\\le\\epsilon\\le1/3\\), the particular frontier six-row functional has an exactly equal nonnegative skew-invariant six-row representation for every input prior, every auxiliary-receiver pair, and every admissible three-group hierarchy. This is an identity for that functional, not a theorem that invariant duals are globally sufficient.\n\n7. **Narrow rounded-majorant repair.** For one earlier frozen group-\\(b\\) slope and contact construction, the zero-intercept affine line is infeasible; an intercept of \\(10^{-33}\\) repairs the directed gap. This does not rule out every possible zero-intercept supporting line.\n\n### Remaining limitations\n\nThe program does not currently establish:\n\n- a continuum receiver-output cardinality theorem;\n- convergence of finite posterior-grid receiver optimizations to the full receiver functional;\n- interchange of the receiver infimum with a posterior-grid limit;\n- global sufficiency of binary auxiliary receivers;\n- global sufficiency of reflected receiver pairs;\n- global sufficiency of skew-invariant duals;\n- optimality of the certified receiver pair or its chosen value of \\(\\epsilon\\);\n- a certified global minimum over all \\(G,K\\) and all admissible Theorem 9 dual choices;\n- certification or refutation of the numerical lead \\(0.369296340638082\\);\n- a matching achievable rate; or\n- the exact private-message sum-capacity.\n\nThe fixed-pair result is nevertheless a valid universal converse according to the frontier judgment. Its validity does not depend on proving that the selected pair is globally optimal.\n\n### Source and formalization boundary\n\nThe internal exact row expansion, rate normalization, posterior-functional identity, and continuous interval strategy are supported by the judgments. External trust remains in:\n\n- the validity of the cited Theorem 9;\n- correct transcription of the six selected manuscript rows and the side-condition orientation;\n- the documented behavior of Python’s `Decimal.ln` used by the interval implementation; and\n- the previously established quotient convention when the invariant functional is identified with named rank-eight coordinates.\n\nThe complete manuscript row comparison and a proof-assistant formalization were not supplied.\n\n### Current program nodes\n\n- `programs/auxiliary_receiver_outer_bound/input_only_reduction`\n- `programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality`\n- `programs/auxiliary_receiver_outer_bound/three_point_grid_optimum`\n- `programs/auxiliary_receiver_outer_bound/midpoint_coercivity`\n- `programs/auxiliary_receiver_outer_bound/fixed_pair_continuous_converse`\n- `programs/auxiliary_receiver_outer_bound/skew_invariant_six_row_functional`\n- `programs/auxiliary_receiver_outer_bound/source_transcription_fidelity`\n- `programs/auxiliary_receiver_outer_bound/certificate_reproducibility`\n- `programs/auxiliary_receiver_outer_bound/continuum_bridge`\n\n### Credit and provenance\n\nThe immutable judgments carry forward the following attribution without independent reassessment:\n\n- the first continuous certificate, improved frontier certificate, and invariant-functional artifact are attributed to **Robert Raynor**;\n- the microscopic-backoff repair is attributed to **Red Team D**, committed by Robert Raynor;\n- the transactions are attributed ports and do not claim new mathematical authorship merely from porting.\n\nProvenance:\n\n- `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- `sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44`\n- `d638c346212db3e75f6a53dcebcfd09f55125852`\n- `7e7626cbff7270572d51a8fda719154ab602907f`\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "ledgerPosition": 1
+        },
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "relation": "qualifies"
+        },
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44",
+          "digest": "sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:574f34b5b099c0449600271e243868ffac5352df0d37ca4221d76fe105d4a83a",
+        "revisionNumber": 2
+      },
+      "digest": "sha256:0fb3c710d51a9bf0d9cee82c1fd2ddac2dfe6fe9bd5dadba2b4515f363adb748"
+    },
+    "programs/auxiliary_receiver_outer_bound/input_only_reduction": {
+      "id": "programs/auxiliary_receiver_outer_bound/input_only_reduction",
+      "parentId": "programs/auxiliary_receiver_outer_bound",
+      "type": "result",
+      "title": "Input-only reduction for the auxiliary receivers",
+      "summary": "For finite auxiliary-receiver laws whose constraints use only audited single-output quantities, replacing T_{G,K|X,Y,Z} by the product of its induced input-only marginals preserves the relevant G- and K-based mutual informations, leaves the Y- and Z-marginal terms unchanged, and preserves constraint systems formed from those quantities. The reduction does not cover joint or output-conditioned terms such as I(S;G,K|R) or I(S;Y|G), and its application to every cited manuscript branch remains conditional on transcription fidelity.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+        "section": "## Node: programs/auxiliary_receiver_outer_bound/input_only_reduction"
+      },
+      "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/input_only_reduction\n\n- **Title:** Input-only reduction for the auxiliary receivers\n- **Type:** Structural result\n- **Status:** Supported with qualification\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` supports the following reduction with high confidence for constraint systems having the audited single-output structure.\n\nFor any finite channel \\(T_{G,K|X,Y,Z}\\), let \\(\\bar T_{G|X}\\) and \\(\\bar T_{K|X}\\) be its induced single-receiver channels. Replacing it by\n\n\\[\nT'_{G,K|X,Y,Z}(g,k|x,y,z)\n=\n\\bar T_{G|X}(g|x)\\bar T_{K|X}(k|x)\n\\]\n\npreserves the joint laws needed to evaluate terms of the forms\n\n\\[\nI(S;G|R)\n\\qquad\\text{and}\\qquad\nI(S;K|R),\n\\]\n\nwhere \\(S\\) and \\(R\\) are formed from \\(X\\) and the auxiliary variables. The \\(Y\\)- and \\(Z\\)-marginal terms are unchanged as well. Signed sums and minima made only from those preserved quantities therefore remain unchanged. Conversely, any input-only pair \\(Q_{G|X},Q_{K|X}\\) is already admissible in the original family by ignoring \\(Y,Z\\).\n\nUnder that syntactic condition, conditional correlation between \\(G\\) and \\(K\\), and output dependence beyond \\(X\\), are irrelevant to the attainable constraint set.\n\n### Scope and uncertainty\n\nThe reduction does not cover formulations containing joint or output-conditioned terms such as\n\n\\[\nI(S;G,K|R)\n\\quad\\text{or}\\quad\nI(S;Y|G).\n\\]\n\nIts application to every branch of the cited equations (19a)–(19p) and both side conditions remains conditional on the supplied term audit being faithful and exhaustive. The complete manuscript equations were not included in the evidence, so that external identification is not independently certified.\n\n### Provenance\n\n- **Supporting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Confidence recorded by judgment:** High, conditional on transcription fidelity\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "relation": "qualifies"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:f165b9da963f1251ee563ea11a35672084b803b714590a41bb41251ae0b14fcc",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:dc725b05a447f007ebb79c3d05d2f05f0c336ef51764b0f109e69a8b4a5a3b9b"
+    },
+    "programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality": {
+      "id": "programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality",
+      "parentId": "programs/auxiliary_receiver_outer_bound",
+      "type": "result",
+      "title": "Receiver cardinality on a finite posterior grid",
+      "summary": "For a fixed N-point posterior grid Q containing 0, 1/2, and 1, each finite-output binary-input receiver in the fair-input grid-restricted auxiliary optimization can be replaced by one with at most N outputs without changing the restricted LP value. The result follows by preserving the posterior mean and the N−2 nonendpoint information samples and applying Carathéodory in dimension N−1. It does not require the replacement atoms to lie on Q and does not establish continuum cardinality, grid convergence, infimum interchange, or continuum reflected-pair sufficiency.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+        "section": "## Node: programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality"
+      },
+      "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/finite_grid_receiver_cardinality\n\n- **Title:** Receiver cardinality on a finite posterior grid\n- **Type:** Cardinality theorem\n- **Status:** Supported with qualification\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nLet \\(Q\\subset[0,1]\\) be an \\(N\\)-point posterior grid containing\n\n\\[\n0,\\quad \\frac12,\\quad 1.\n\\]\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` supports with high confidence that, for the fair-input auxiliary optimization in which every auxiliary posterior is restricted to \\(Q\\), each finite-output binary-input receiver can be replaced by a receiver with at most \\(N\\) outputs without changing the restricted LP value.\n\nThe judgment records the following basis for the cardinality count:\n\n- a finite-output receiver is represented by a posterior measure of mean \\(1/2\\);\n- preserving the mean and the \\(N-2\\) nonendpoint information samples gives a vector in dimension \\(N-1\\);\n- Carathéodory’s theorem therefore yields a representing measure with at most \\(N\\) atoms, rather than \\(N+1\\);\n- preserving receiver information samples on \\(Q\\) preserves the relevant single-receiver mutual-information terms for auxiliary posteriors in \\(Q\\).\n\nIf \\(Q\\) is closed under \\(q\\mapsto1-q\\), the reduction also preserves reflected receiver pairs through the relation between a receiver and its reflected posterior measure.\n\n### Scope\n\nThis result is only a receiver-output cardinality theorem for a **fixed finite-grid auxiliary optimization**. It does not establish that:\n\n- the replacement receiver’s posterior atoms lie on \\(Q\\);\n- a comparable output-cardinality bound holds for the continuum problem;\n- finite-grid values converge to the full receiver functional;\n- a receiver infimum can be interchanged with a grid limit;\n- reflected pairs suffice among arbitrary continuum receiver pairs.\n\nApplication to the named 30-row LP also depends on the asserted fact that every relevant row can be expressed using the audited single-receiver posterior samples.\n\n### Provenance\n\n- **Supporting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Confidence recorded by judgment:** High for the finite-grid theorem\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "relation": "qualifies"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:f24903eeda6cd62068de9b467377a303cc017828fe919765a51280dd8320b0ba",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:9d59f776e94c7acfed20e9ae2c730928c2667f71790e6c3baa9940dbe01ed4dc"
+    },
+    "programs/auxiliary_receiver_outer_bound/three_point_grid_optimum": {
+      "id": "programs/auxiliary_receiver_outer_bound/three_point_grid_optimum",
+      "parentId": "programs/auxiliary_receiver_outer_bound",
+      "type": "result",
+      "title": "Exact auxiliary-receiver optimum on the three-point posterior grid",
+      "summary": "For Q₀={0,1/2,1} and c=h₂(1/4)−1/2, the supplied encoded 30-row formulation has exact receiver infimum inf_{G,K} V_{Q₀}(G,K)=inf_m V_{Q₀}(m,m°)=c. A W=X witness supplies the universal lower bound, while a reflection-invariant revealing-erasure posterior measure supplies the matching reflected-pair construction. The direct W=X checker is missing as documented, manuscript-row fidelity is unverified, and the result is only a lower approximation to the fixed-receiver functional rather than a capacity converse.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+        "section": "## Node: programs/auxiliary_receiver_outer_bound/three_point_grid_optimum"
+      },
+      "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/three_point_grid_optimum\n\n- **Title:** Exact auxiliary-receiver optimum on the three-point posterior grid\n- **Type:** Exact finite-grid result\n- **Status:** Supported with documentation and transcription qualifications\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nDefine\n\n\\[\nQ_0=\\left\\{0,\\frac12,1\\right\\},\n\\qquad\nc=h_2(1/4)-\\frac12.\n\\]\n\nFor the supplied encoded 30-row formulation, primary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` supports with high confidence that\n\n\\[\n\\inf_{G,K}V_{Q_0}(G,K)\n=\n\\inf_m V_{Q_0}(m,m^\\circ)\n=\nc.\n\\]\n\nThe first infimum ranges over finite-output receiver pairs, while the second is restricted to reflected pairs.\n\nThe judgment records two matching components:\n\n- A \\(W=X\\) witness, with \\(U,V\\) constant in each auxiliary group, supports the universal lower bound\n  \\[\n  V_{Q_0}(G,K)\\ge c\n  \\]\n  for every receiver pair in the encoded system.\n- The reflection-invariant revealing-erasure posterior measure\n  \\[\n  m_E=\\frac c2\\delta_0+(1-c)\\delta_{1/2}+\\frac c2\\delta_1\n  \\]\n  gives identical sampled curves for \\(Y,G,K,Z\\) on \\(Q_0\\). The supplied `SL(1,U)` row then yields\n  \\[\n  R_1+R_2\\le c,\n  \\]\n  providing the matching upper construction in the reflected class.\n\n### Certification and scope\n\nThe exact symbolic code checks the hard-coded row system, including the cancellation used for the matching upper row. The supplied checker described as a direct `W=X` audit is not actually that checker; consequently, the direct lower-witness argument is carried by the prose and row table, with additional support from the coercivity certificate.\n\nThe result’s identification with the external manuscript remains conditional on row-transcription fidelity.\n\nThis exact value is not a capacity converse. The judgment expressly records\n\n\\[\nV_{Q_0}(G,K)\\le B(G,K),\n\\]\n\nbecause restricting auxiliary posteriors lowers the inner maximization. Thus the value \\(c\\) cannot replace the governed upper bound on \\(C_{\\mathrm{sum}}\\).\n\n### Provenance\n\n- **Supporting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Confidence recorded by judgment:** High for the encoded 30-row formulation\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "relation": "qualifies"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:98c9a49c7163bd04aea4f028c90dd05d431b0abc436f70f6e0e2564b92032528",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:98953a37a7f7dec8ba622d6aa4e25918b34834212af0ab9bef4e69f5f8ed10f7"
+    },
+    "programs/auxiliary_receiver_outer_bound/midpoint_coercivity": {
+      "id": "programs/auxiliary_receiver_outer_bound/midpoint_coercivity",
+      "parentId": "programs/auxiliary_receiver_outer_bound",
+      "type": "result",
+      "title": "Midpoint-information coercive lower bound",
+      "summary": "For g=I_G(1/2), k=I_K(1/2), c=h₂(1/4)−1/2, and F(x)=2c·max{c,x}/(c+x), the encoded 30-row Q₀ problem satisfies B(G,K)≥V₀(g,k)≥max{F(g),F(k)}. For c≤U<2c, B(G,K)≤U necessarily implies 2c²/U−c≤g,k≤Uc/(2c−U). The result is an exact-symbolically audited necessary localization bound for the encoded rows, not a sufficient condition, global minimization, reflected-optimality theorem, or capacity converse; external row fidelity remains unverified.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+        "section": "## Node: programs/auxiliary_receiver_outer_bound/midpoint_coercivity"
+      },
+      "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/midpoint_coercivity\n\n- **Title:** Midpoint-information coercive lower bound\n- **Type:** Finite-grid lower-bound theorem\n- **Status:** Supported with scope qualification\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nLet\n\n\\[\ng=I_G(1/2),\\qquad k=I_K(1/2),\n\\qquad\nc=h_2(1/4)-\\frac12,\n\\]\n\nand define\n\n\\[\nF(x)=\\frac{2c\\max\\{c,x\\}}{c+x}.\n\\]\n\nFor the encoded 30-row \\(Q_0\\) problem, primary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` supports with high confidence that\n\n\\[\nB(G,K)\\ge V_0(g,k)\\ge \\max\\{F(g),F(k)\\}.\n\\]\n\nThe judgment attributes this lower bound to the supplied H, L, and X witness families and their exact rational-polynomial row audit. It records that the three witness regimes cover high, low, and crossing configurations of the two midpoint informations. The symbolic checker:\n\n- rebuilds the 30 labeled rows from hard-coded path formulas;\n- verifies the witness block constraints;\n- computes exact rational-polynomial slacks;\n- verifies their coefficientwise nonnegativity after the stated substitutions;\n- uses no floating-point optimizer.\n\nThe passage from the restricted \\(Q_0\\) witnesses to the full fixed-receiver functional has the supported direction\n\n\\[\nB(G,K)\\ge V(1/2;G,K)\\ge V_0(g,k).\n\\]\n\nFor any \\(U\\) satisfying\n\n\\[\nc\\le U<2c,\n\\]\n\nthe judgment also supports the necessary implication\n\n\\[\nB(G,K)\\le U\n\\quad\\Longrightarrow\\quad\n\\frac{2c^2}{U}-c\n\\le g,k\\le\n\\frac{Uc}{2c-U}.\n\\]\n\n### Scope\n\nThe midpoint interval is a necessary localization condition. It is not:\n\n- a sufficient condition for \\(B(G,K)\\le U\\);\n- a global minimization of \\(B(G,K)\\);\n- a proof of reflected optimality;\n- a capacity converse.\n\nThe exact symbolic certification begins after accepting the hard-coded rows as the intended manuscript constraint system. External row fidelity remains unverified.\n\n### Provenance\n\n- **Supporting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Confidence recorded by judgment:** High for the encoded \\(Q_0\\) row system\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "relation": "qualifies"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:223122bf355610c7546559cccf6f0224145e9d3f14d999d7fdec03bcff7dd507",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:eda237dafcc7cdef86cd13f63f751fa827f094b822d5c68545c8ee6b019b4198"
+    },
+    "programs/auxiliary_receiver_outer_bound/source_transcription_fidelity": {
+      "id": "programs/auxiliary_receiver_outer_bound/source_transcription_fidelity",
+      "parentId": "programs/auxiliary_receiver_outer_bound",
+      "type": "question",
+      "title": "Fidelity of the Theorem 9 transcription and quotient-coordinate identification",
+      "summary": "Internal exact audits support the selected six-row weights, rate normalization, sparse posterior-tensor expansion, root-level cancellations, and equality of the original and skew-invariant functionals. The fixed-pair converse remains conditional on the cited Theorem 9, correct transcription of the selected rows and side-condition orientation, and documented logarithm behavior. Complete manuscript comparison remains unavailable, and the named rank-eight quotient-coordinate identification remains conditional on the prior quotient convention, although the functional identity is independently supported.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:8c9c4553a03041d46e82fa2611aadbb3f9cead6e035c7617833bacf6362381b5",
+        "section": "## Node: programs/auxiliary_receiver_outer_bound/source_transcription_fidelity"
+      },
+      "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/source_transcription_fidelity\n\n- **Title:** Fidelity of the Theorem 9 transcription and quotient-coordinate identification\n- **Type:** Active evidence dependency\n- **Status:** Partially supported and partially unresolved\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nThe supplied judgments distinguish internally audited algebra from comparison against the complete external Gohari–Liu–Nair manuscript.\n\nFor the fixed-pair converse, primary judgment `sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44` supports the internal exact audit of:\n\n- the six selected row weights;\n- nonnegativity of those weights;\n- exact normalization to rate coefficients \\((1,1)\\);\n- the sparse posterior-tensor expansion;\n- the claimed three-group closed form;\n- the root-level coefficient cancellation; and\n- the exact equality between the original and skew-invariant six-row functionals.\n\nThe judgment accepts the resulting full-Theorem-9 fixed-pair converse with high confidence, conditional on:\n\n1. validity of the cited Theorem 9;\n2. correct transcription of the six selected manuscript rows;\n3. correct orientation of the selected side condition; and\n4. the documented logarithm behavior used by the interval implementation.\n\nThe complete external equations and a row-by-row comparison against all manuscript branches were not supplied. It therefore remains an external trust point whether the selected rows and side-condition signs exactly reproduce the source manuscript.\n\nFor the invariant representation, the encoded map to the claimed rank-eight quotient coordinates is algebraically consistent. The supplied evidence does not independently reproduce the full quotient theorem or derive the named map from all 15 skew-paired rows. The functional identity is supported independently of that coordinate naming, while the coordinate identification remains conditional on the prior quotient convention.\n\nThe earlier finite-grid symbolic code likewise certifies its hard-coded rows after accepting their transcription. Uncertainty about full source comparison does not overturn the internally supported algebraic statements for the encoded systems.\n\nNo opposing primary judgment or reconciliation outcome was supplied. These are evidentiary qualifications rather than an active adjudicatory conflict.\n\n### Provenance\n\n- **Earlier uncertainty judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Frontier judgment:** `sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44`\n- **Evidence transactions:** `d638c346212db3e75f6a53dcebcfd09f55125852`, `7e7626cbff7270572d51a8fda719154ab602907f`\n- **Conflict status:** No supplied conflict or reconciliation record\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "ledgerPosition": 1
+        },
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "relation": "qualifies"
+        },
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44",
+          "digest": "sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44",
+          "relation": "qualifies"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:b606145611cbaac0a83d76a0989753597418312f3c36e66996914b4c8d64a3e7",
+        "revisionNumber": 2
+      },
+      "digest": "sha256:120301eedcba12306161572a7a345e019df75828d2c8f0ac3d610801a898dd24"
+    },
+    "programs/auxiliary_receiver_outer_bound/certificate_reproducibility": {
+      "id": "programs/auxiliary_receiver_outer_bound/certificate_reproducibility",
+      "parentId": "programs/auxiliary_receiver_outer_bound",
+      "type": "result",
+      "title": "Reproducibility status of the three-point-grid certificates",
+      "summary": "The supplied frontier-global-bridge checker does not directly audit the documented W=X witness table; it is byte-for-byte the coercivity checker supplied as frontier-q0-coercive. The two commands therefore execute duplicate mathematical content and are not independent corroborations. This documentation defect does not invalidate the encoded finite-grid conclusions: the checker verifies the stronger coercive bound and matching upper row, while the prose and row table carry the direct W=X argument. Certification remains limited to the hard-coded rows.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:aea92599a4e4ba7300813ce961ae103f192aa2deea997cc791dac0e17455e334",
+        "section": "## Node: programs/auxiliary_receiver_outer_bound/certificate_reproducibility"
+      },
+      "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/certificate_reproducibility\n\n- **Title:** Reproducibility status of the three-point-grid certificates\n- **Type:** Certification finding\n- **Status:** Confirmed documentation defect with mathematical scope preserved\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nPrimary judgment `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99` refutes the documentation claim that the supplied `frontier-global-bridge` checker directly audits the \\(W=X\\) witness table and prints the described \\(W=X\\) messages.\n\nThe judgment finds that this checker is instead byte-for-byte the coercivity checker supplied under `frontier-q0-coercive`. Consequently:\n\n- the two documented reproduction commands execute duplicate mathematical content;\n- they are not independent corroborations;\n- the `frontier-global-bridge` reproduction description is inaccurate;\n- the supplied executable does not perform the specifically described direct \\(W=X\\) audit.\n\nThe judgment does not treat this defect as invalidating the finite-grid mathematical conclusions. The included checker verifies the stronger coercive lower bound and the matching upper row for the hard-coded system, while the prose proof and row table carry the direct \\(W=X\\) argument.\n\nThe executable certification remains subject to the separate source-transcription uncertainty: it checks the encoded rows, not their fidelity to the absent external manuscript equations.\n\n### Provenance\n\n- **Refuting and qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Subject and evidence transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "relation": "refutes"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:77670654a816132e09f1d8cbbb834b9148edf8ddfc7f802ebd58d80b91ddd170",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:be3678e413727b0d2cb3fc3b1df52ae96335213f3013190065ff6671e568f538"
+    },
+    "programs/auxiliary_receiver_outer_bound/continuum_bridge": {
+      "id": "programs/auxiliary_receiver_outer_bound/continuum_bridge",
+      "parentId": "programs/auxiliary_receiver_outer_bound",
+      "type": "question",
+      "title": "Bridge from local or finite auxiliary-receiver analyses to the global receiver functional",
+      "summary": "A continuum-wide certificate for one specified reflected binary auxiliary-receiver pair now yields the universal converse C_sum ≤ 0.369296945969202842443 without requiring a finite-grid-to-continuum theorem. The global bridge remains unresolved: no supplied result establishes continuum receiver cardinality, finite-grid convergence or infimum interchange, global binary-, reflected-pair-, or invariant-dual sufficiency, optimality of the certified pair or dual face, global minimization, certification of the smaller numerical lead, matching achievability, or the exact capacity.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:8c9c4553a03041d46e82fa2611aadbb3f9cead6e035c7617833bacf6362381b5",
+        "section": "## Node: programs/auxiliary_receiver_outer_bound/continuum_bridge"
+      },
+      "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/continuum_bridge\n\n- **Title:** Bridge from local or finite auxiliary-receiver analyses to the global receiver functional\n- **Type:** Open research question\n- **Status:** Active and unresolved\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nA continuum certificate is now established for one specified reflected binary auxiliary-receiver pair. Primary judgment `sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44` supports that this fixed-pair full-Theorem-9 calculation yields the universal converse\n\n\\[\nC_{\\mathrm{sum}}\\le0.369296945969202842443.\n\\]\n\nThus the absence of a finite-grid-to-continuum theorem does not prevent that particular fixed-pair converse: its posterior majorants directly cover all of \\([0,1]\\), and its maximization over the input prior is analytic.\n\nThe larger global bridge remains unresolved. The supplied judgments do not establish:\n\n1. a continuum receiver-output cardinality theorem for the global optimization;\n2. convergence of finite posterior-grid receiver optimizations to the full receiver functional;\n3. interchange of the receiver infimum with a posterior-grid limit;\n4. global sufficiency of binary auxiliary receivers;\n5. global sufficiency or optimality of reflected receiver pairs;\n6. global sufficiency of skew-invariant duals;\n7. optimality of the certified pair, the selected \\(\\epsilon\\), or the selected dual face;\n8. a certified global minimization over all admissible \\(G,K\\) and dual choices;\n9. certification or refutation of the numerical lead \\(0.369296340638082\\); or\n10. matching achievability at the certified upper endpoint.\n\nThe exact three-point-grid result remains a finite-grid lower approximation to a receiver functional. Midpoint coercivity remains a necessary localization tool. The continuous fixed-pair certificate is stronger in a different direction: it supplies a valid universal converse without resolving the global auxiliary-receiver optimization.\n\nNo supplied judgment determines the exact private-message sum-capacity.\n\n### Provenance\n\n- **Earlier qualifying judgment:** `sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99`\n- **Frontier qualifying judgment:** `sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44`\n- **Evidence transactions:** `d638c346212db3e75f6a53dcebcfd09f55125852`, `7e7626cbff7270572d51a8fda719154ab602907f`\n- **Conflict status:** No supplied conflict or reconciliation; the global question remains open for lack of a resolving result\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "ledgerPosition": 1
+        },
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "digest": "sha256:5e3cc6409a4bd37685561d3bf00cb162be0b060f12b942a0ba346cd4c8cf0f99",
+          "relation": "qualifies"
+        },
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44",
+          "digest": "sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44",
+          "relation": "qualifies"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:cce56d21020f55fcc177d67b475ad982cdc40e5ef9991dae846f4f40fb8e3946",
+        "revisionNumber": 2
+      },
+      "digest": "sha256:eee04bfae0ebdc6e196e4560667feb300ad5c65f9f6abf668e868983ff803242"
+    },
+    "programs/auxiliary_receiver_outer_bound/fixed_pair_continuous_converse": {
+      "id": "programs/auxiliary_receiver_outer_bound/fixed_pair_continuous_converse",
+      "parentId": "programs/auxiliary_receiver_outer_bound",
+      "type": "result",
+      "title": "Continuous full-Theorem-9 converse for a fixed reflected binary receiver pair",
+      "summary": "For the reflected binary pair G=(0.206961624915382,0.826953249115544) and K=(0.173046750884456,0.793038375084618), a continuum-wide full-Theorem-9 certificate establishes C_sum ≤ 0.369296945969202842443. The certificate uses an exact nonnegative six-row combination, posterior-functional audits, affine majorants over all posterior values in [0,1], analytic maximization over every input prior, and outward-rounded interval evaluation. It does not establish optimality of the pair or dual, global binary or reflected-pair sufficiency, matching achievability, or the smaller numerical lead.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:8c9c4553a03041d46e82fa2611aadbb3f9cead6e035c7617833bacf6362381b5",
+        "section": "## Node: programs/auxiliary_receiver_outer_bound/fixed_pair_continuous_converse"
+      },
+      "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/fixed_pair_continuous_converse\n\n- **Title:** Continuous full-Theorem-9 converse for a fixed reflected binary receiver pair\n- **Type:** Result\n- **Status:** Established within stated trust boundaries\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nPrimary judgment `sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44` supports a continuous universal converse obtained from the full Gohari–Liu–Nair Theorem 9 outer bound at the exact binary auxiliary-receiver pair\n\n\\[\nG=(0.206961624915382,0.826953249115544),\n\\]\n\n\\[\nK=(0.173046750884456,0.793038375084618),\n\\]\n\nwhere each ordered pair gives \\(P(A=0|X=0),P(A=0|X=1)\\), and \\(K\\) is the input/output reflection of \\(G\\).\n\nThe certified value satisfies\n\n\\[\n\\begin{aligned}\nU\\in[&\n0.36929694596920284244271335135600317726937686320586339865039784778686683932875798,\\\\\n&\n0.36929694596920284244271335135600317726937686320586339865039784778686683932875818].\n\\end{aligned}\n\\]\n\nConsequently,\n\n\\[\n\\boxed{C_{\\mathrm{sum}}\\le0.369296945969202842443}.\n\\]\n\n### Certified proof components\n\nThe judgment accepts the following components as supporting the converse:\n\n1. With\n   \\[\n   \\epsilon=0.000173428163029,\n   \\]\n   five rate inequalities and one nonnegative side-condition expression are combined with weights\n   \\[\n   \\epsilon,\\ \\epsilon,\\ \\epsilon,\\ \n   \\frac{1-\\epsilon}{2},\\\n   \\frac{1-3\\epsilon}{2},\\\n   \\epsilon.\n   \\]\n   Exact rational arithmetic verifies nonnegativity and coefficient one on each of \\(R_1\\) and \\(R_2\\).\n\n2. Standard binary-posterior mutual-information identities rewrite the selected right side in terms of posterior variables. Dropping compatibility conditions beyond the required martingale constraints enlarges the optimization class in the direction permitted for a converse.\n\n3. An exact sparse posterior-tensor audit verifies the claimed three-group functional and the root-level cancellation\n   \\[\n   c_Y=c_Z=\\frac{1+\\epsilon}{2},\n   \\qquad\n   c_G=c_K=0.\n   \\]\n\n4. Affine majorants are certified over the entire posterior interval \\([0,1]\\). The judgment reports exact curvature-sign reductions, analytic control of concave and convex regions, directed interval checks at required contact and endpoint quantities, and adaptive fail-closed interval subdivision elsewhere.\n\n5. After cancellation of the auxiliary-receiver root coefficients and total affine slope, the remaining prior-dependent term is\n   \\[\n   \\frac{1+\\epsilon}{2}\\bigl(I_Y(q_0)+I_Z(q_0)\\bigr)+\\text{constant}.\n   \\]\n   The judgment supports analytic maximization at \\(q_0=1/2\\) using concavity and the reflection relation \\(I_Z(q)=I_Y(1-q)\\).\n\n6. The final numerical enclosure uses outward-rounded high-precision decimal intervals. The upper endpoint lies below the displayed rounded bound.\n\n### Scope and limitations\n\nThis result is a universal capacity upper bound at one permitted fixed auxiliary-receiver pair. It does not establish:\n\n- optimality of that pair;\n- binary- or reflected-pair sufficiency for the global receiver optimization;\n- global optimality of the selected six-row dual;\n- equality between the Theorem 9 outer bound and capacity;\n- validity of the smaller numerical lead \\(0.369296340638082\\); or\n- any matching achievable sum rate.\n\nThe judgment assigns high confidence conditional on the cited Theorem 9, correct transcription of the six selected rows and side-condition orientation, and the documented logarithm behavior used by the interval implementation.\n\n### Credit and provenance\n\nThe improved frontier certificate is attributed by the immutable judgment to **Robert Raynor**. The act of porting it is not credited as new mathematical authorship.\n\n- **Primary judgment:** `sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44`\n- **Subject and evidence transaction:** `7e7626cbff7270572d51a8fda719154ab602907f`\n- **Conflict status:** No supplied conflict or reconciliation record\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44",
+          "digest": "sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:338aa7d347792625fbcb1789b993ba934625bd8c03cb6330988ca3238ccdcb6e",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:8f14a9cda86dfffd5265229da588a5ca948f423fa11cb31c1107a0e5972f20b3"
+    },
+    "programs/auxiliary_receiver_outer_bound/skew_invariant_six_row_functional": {
+      "id": "programs/auxiliary_receiver_outer_bound/skew_invariant_six_row_functional",
+      "parentId": "programs/auxiliary_receiver_outer_bound",
+      "type": "result",
+      "title": "Exact skew-invariant representation of the frontier six-row functional",
+      "summary": "For every 0 ≤ epsilon ≤ 1/3, the frontier non-invariant six-row combination induces exactly the same posterior-hierarchy functional as a nonnegative skew-invariant six-row combination for every input prior, auxiliary-receiver pair, and admissible three-group hierarchy. This identity does not establish global sufficiency of invariant duals or reflected receiver pairs, or optimality of the certified pair or epsilon. Identification with the named rank-eight quotient coordinates remains conditional on the prior quotient convention.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:8c9c4553a03041d46e82fa2611aadbb3f9cead6e035c7617833bacf6362381b5",
+        "section": "## Node: programs/auxiliary_receiver_outer_bound/skew_invariant_six_row_functional"
+      },
+      "contentMarkdown": "## Node: programs/auxiliary_receiver_outer_bound/skew_invariant_six_row_functional\n\n- **Title:** Exact skew-invariant representation of the frontier six-row functional\n- **Type:** Structural result\n- **Status:** Established, with a quotient-coordinate qualification\n- **Parent:** `programs/auxiliary_receiver_outer_bound`\n\n### Current knowledge\n\nPrimary judgment `sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44` supports the following functional identity.\n\nFor every\n\n\\[\n0\\le\\epsilon\\le\\frac13,\n\\]\n\nthe non-invariant six-row combination used by the frontier certificate induces exactly the same posterior-hierarchy functional as a nonnegative six-row combination whose weights are invariant under the BSSC skew involution.\n\nThe identity holds for:\n\n- every input prior;\n- every auxiliary-receiver pair \\(G,K\\); and\n- every admissible three-group hierarchy.\n\nIt is not restricted to the particular reflected pair used by the continuous numerical certificate.\n\nThe exact audit supports that:\n\n- both row combinations have rate vector \\((1,1)\\);\n- their \\(W,U,V\\) tensor coefficients agree group by group;\n- their only root-level residuals occur in the \\(G,K\\) columns;\n- those residuals sum to zero across the three groups for each receiver column; and\n- all invariant weights are nonnegative throughout \\(0\\le\\epsilon\\le1/3\\).\n\nThe equality is therefore an identity of the weighted hierarchy functionals before posterior-envelope optimization or maximization over the input prior.\n\n### Scope limitations\n\nThe result establishes that this particular frontier functional has a representative inside the skew-invariant dual cone. It does not establish:\n\n- that every optimal Theorem 9 dual has an invariant representative;\n- that optimization may globally be restricted to invariant duals;\n- that auxiliary-receiver pairs may be restricted to reflected pairs;\n- that the certified pair or value of \\(\\epsilon\\) is optimal; or\n- that leaving the invariant cone cannot improve the global converse.\n\n### Rank-eight quotient coordinates\n\nThe encoded invariant functional is algebraically consistent with the asserted quotient point\n\n\\[\n\\left(\n\\frac{1-\\epsilon}{2},\n0,\n\\epsilon,\n0,\n0,\n0,\n0,\n\\frac{1-\\epsilon}{2}\n\\right)\n\\]\n\nand normalization\n\n\\[\n2s_B+s_C+s_D+s_E=1.\n\\]\n\nThe judgment does not independently reproduce the full rank-eight quotient theorem or derive the named coordinate map from all 15 skew-paired rows. Identification with the particular named coordinates\n\n\\[\n(s_B,s_C,s_D,s_E,s_{N_0},s_{N_1},s_{F_0},s_{F_1})\n\\]\n\ntherefore remains conditional on the previously established quotient convention. This qualification does not affect the exact functional identity or the capacity upper bound.\n\n### Credit and provenance\n\nThe invariant-functional artifact is attributed by the immutable judgment to **Robert Raynor**.\n\n- **Primary judgment:** `sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44`\n- **Subject and evidence transaction:** `7e7626cbff7270572d51a8fda719154ab602907f`\n- **Conflict status:** No supplied conflict or reconciliation record\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44",
+          "digest": "sha256:7900cd147fe7e4ff768646a2ed7a0ad6e9afa8d92e904fe8f62aa4af756c6a44",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:922945b28be320819a104b8e79dc69fde8380688e6d0e81736700a8d846f291a",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:81a95b972079aaa55ee604598edcf79b6b1662f9a9679800342c61290b2b869d"
+    },
+    "programs/dependence_balance_entropy_relaxation": {
+      "id": "programs/dependence_balance_entropy_relaxation",
+      "parentId": "root",
+      "type": "program",
+      "title": "Finite-block dependence balance and limits of coarse entropy relaxation",
+      "summary": "Program for exact finite-block and selected-coordinate constraints from reliable private-message broadcast codes and for the capabilities and limitations of a specified coarse BSSC entropy relaxation. Its attained value 2h₂(1/4)−5/4 supplies no capacity bound within this program, despite the same number being independently accepted as a valid upper bound under a separate UV relaxation. No capacity-frontier improvement or fixed-alphabet compactness theorem is established.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:36aaec96b8bca78810d5d27c04251d47d1a084100cd5cf17443cdab8062c4643",
+        "section": "## Node: programs/dependence_balance_entropy_relaxation"
+      },
+      "contentMarkdown": "## Node: programs/dependence_balance_entropy_relaxation\n\n- **Title:** Finite-block dependence balance and limits of coarse entropy relaxation\n- **Type:** Program\n- **Status:** Active\n- **Parent:** `root`\n\n### Current knowledge\n\nThis program collects two related agendas accepted by primary judgment `sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f`:\n\n1. extracting exact finite-block and selected-coordinate constraints from reliable private-message broadcast codes; and\n2. determining what a specified coarse BSSC entropy relaxation can and cannot prove.\n\nFor the first agenda, the judgment accepts with high confidence:\n\n- an exact dependence-balance telescope for every deterministic finite-block private-message code;\n- a Fano-controlled normalized defect that vanishes along reliable bounded-rate code sequences;\n- selected-coordinate factorization retaining the stronger property\n  \\[\n  X=f_T(U,V),\n  \\]\n  independent of the selected state \\(W\\); and\n- two individual-rate and two sum-rate inequalities compatible with that factorization.\n\nThese conclusions remain sequence-level. The judgment finds that no simultaneous cardinality or compactness reduction has been established. Optimization over arbitrarily chosen small auxiliary alphabets would therefore not, by itself, certify a universal converse.\n\nFor the second agenda, the judgment accepts with high confidence:\n\n- a global affine support for the fair-input BSSC posterior-information difference, sharp in its stated scalar direction;\n- an actual finite joint distribution satisfying the specified structural, entropy, disjoint-subtuple BEC, and support constraints of the coarse relaxation;\n- the relaxation objective value\n  \\[\n  2h_2(1/4)-\\frac54\n  =0.3725562489182657\\ldots;\n  \\]\n- exact component accounting corroborated by a formal-entropy checker; and\n- the conclusion that universal finite-variable information inequalities and any finite sequence of standard copy-lemma extensions cannot exclude this witness or force this particular relaxation below that value.\n\nThe no-go conclusion is restricted to the specified relaxation and the named universal-inequality and copy-lemma strengthening methods. It does not establish a limitation for every possible entropy formulation or converse method.\n\nWithin this program, attaining\n\n\\[\n2h_2(1/4)-\\frac54\n\\]\n\ndoes not itself provide either an achievable rate or a capacity upper bound. The coarse relaxation is deliberately too weak for that interpretation. Primary judgment `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318` separately accepts the same numerical value as a valid upper bound derived from a different, separately relaxed UV functional. That independent UV interpretation does not convert the coarse entropy witness into a converse certificate.\n\nThis program currently provides no improvement to the governed BSSC sum-capacity interval and establishes no fixed-alphabet compactness theorem.\n\n### Program nodes\n\n- `programs/dependence_balance_entropy_relaxation/finite_block_telescope`\n- `programs/dependence_balance_entropy_relaxation/selected_coordinate_constraints`\n- `programs/dependence_balance_entropy_relaxation/uniform_bssc_posterior_support`\n- `programs/dependence_balance_entropy_relaxation/coarse_entropy_counterfeit`\n- `programs/dependence_balance_entropy_relaxation/universal_inequality_copy_no_go`\n\n### Provenance\n\n- **Principal subject transaction:** `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`\n- **Principal primary judgment:** `sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f`\n- **Interpretive context transaction:** `f236017c62c67ce4218c1f81ea34134f0954b556`\n- **Interpretive context judgment:** `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318`\n- **Conflict status:** No supplied conflict or reconciliation records\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f",
+          "digest": "sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "digest": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "relation": "qualifies"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:49df989c4e6eec3144b95269c13b869cdfa12cf8e8050d14f1968d5825f80490",
+        "revisionNumber": 2
+      },
+      "digest": "sha256:3e9c97fa282a7d889325e2245c01076be85105bb32dfe3c12b37fb17aaf33829"
+    },
+    "programs/dependence_balance_entropy_relaxation/finite_block_telescope": {
+      "id": "programs/dependence_balance_entropy_relaxation/finite_block_telescope",
+      "parentId": "programs/dependence_balance_entropy_relaxation",
+      "type": "result",
+      "title": "Exact finite-block private-message dependence-balance telescope",
+      "summary": "For deterministic finite-block private-message codes, the accepted exact telescope equates the sum of coordinatewise conditional-dependence differences to I(A;B|Yⁿ)−I(A;B|Zⁿ). Fano bounds imply a normalized defect bounded by max{δ₁,δ₂}, which vanishes along reliable bounded-rate code sequences. This is a sequence-level condition because the induced auxiliary alphabets may grow with blocklength; no compact fixed-alphabet single-letter region follows.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:0f0ae80aa9de5b714c9aebc8e89a840ad5a751a11dc9c790ded0f50818458ef3",
+        "section": "## Node: programs/dependence_balance_entropy_relaxation/finite_block_telescope"
+      },
+      "contentMarkdown": "## Node: programs/dependence_balance_entropy_relaxation/finite_block_telescope\n\n- **Title:** Exact finite-block private-message dependence-balance telescope\n- **Type:** Structural result\n- **Status:** Active\n- **Parent:** `programs/dependence_balance_entropy_relaxation`\n\n### Current knowledge\n\nPrimary judgment `sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f` accepts this result with high confidence.\n\nFor independent private messages \\(A,B\\), a deterministic length-\\(n\\) encoder, and\n\n\\[\nS_i=(Y^{i-1},Z_{i+1}^n),\n\\]\n\nthe accepted exact identity is\n\n\\[\n\\sum_{i=1}^n\n\\left[\nI(A;B\\mid S_i,Y_i)-I(A;B\\mid S_i,Z_i)\n\\right]\n=\nI(A;B\\mid Y^n)-I(A;B\\mid Z^n).\n\\]\n\nIf \\(F_1,F_2\\) are the corresponding Fano quantities and\n\n\\[\n\\delta_j=\\frac{F_j}{n},\n\\]\n\nthe accepted finite-block estimate is\n\n\\[\n\\left|\n\\frac1n\\sum_{i=1}^n\n\\left[\nI(A;B\\mid S_i,Y_i)-I(A;B\\mid S_i,Z_i)\n\\right]\n\\right|\n\\le \\max\\{\\delta_1,\\delta_2\\}.\n\\]\n\nWith a uniform independent time \\(T\\) and\n\n\\[\nU=A,\\qquad V=B,\\qquad W=S_T,\\qquad Y=Y_T,\\qquad Z=Z_T,\n\\]\n\nthe selected-coordinate condition is\n\n\\[\n\\left|\nI(U;V\\mid W,T,Y)-I(U;V\\mid W,T,Z)\n\\right|\n\\le \\max\\{\\delta_1,\\delta_2\\}.\n\\]\n\nAccording to the judgment, \\(\\delta_1,\\delta_2\\to0\\) along reliable bounded-rate code sequences. Thus the selected-coordinate dependence-balance defect vanishes along such sequences.\n\nThe judgment also preserves a decisive limitation: the induced alphabets of \\(U,V,W\\) may grow with blocklength. The vanishing scalar defect is therefore a sequence-level condition and does not itself produce a compact fixed-alphabet single-letter outer region.\n\nThe judgment attributes the exact telescope to the quantities\n\n\\[\nD_i=I(A;B\\mid Y^i,Z_{i+1}^n),\n\\]\n\nwhose consecutive differences are the displayed summands, and attributes the endpoint estimate to Fano bounds. These are recorded as the judgment’s proof basis rather than independently reassessed here.\n\n### Provenance\n\n- **Claim key:** `finite-block-private-message-dependence-balance-telescope`\n- **Subject and evidence transaction:** `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`\n- **Primary judgment:** `sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f`\n- **Judgment stance:** Supports; accepted with high confidence\n- **Conflict status:** No supplied conflict or reconciliation records\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f",
+          "digest": "sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:38abf8cd7f6e2a3da8a8f87e575d52e3712fb17fba473e7ba6959b18d24a1219",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:b621dfcc610753ddae928fae05efd2b522af910ae54b12a1da49511994503a3b"
+    },
+    "programs/dependence_balance_entropy_relaxation/selected_coordinate_constraints": {
+      "id": "programs/dependence_balance_entropy_relaxation/selected_coordinate_constraints",
+      "parentId": "programs/dependence_balance_entropy_relaxation",
+      "type": "result",
+      "title": "Selected-coordinate fixed-map factorization and rate constraints",
+      "summary": "Every deterministic private-message code induces the accepted selected-coordinate factorization with the stronger fixed-map property X=f_T(U,V), independent of the realized state W. Two individual-rate and two sum-rate inequalities are accepted with Fano defects. No simultaneous cardinality or compactness reduction for U,V,W,T is established, so arbitrary small-alphabet optimization would not certify a universal capacity converse.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:0f0ae80aa9de5b714c9aebc8e89a840ad5a751a11dc9c790ded0f50818458ef3",
+        "section": "## Node: programs/dependence_balance_entropy_relaxation/selected_coordinate_constraints"
+      },
+      "contentMarkdown": "## Node: programs/dependence_balance_entropy_relaxation/selected_coordinate_constraints\n\n- **Title:** Selected-coordinate fixed-map factorization and rate constraints\n- **Type:** Structural outer constraints\n- **Status:** Active\n- **Parent:** `programs/dependence_balance_entropy_relaxation`\n\n### Current knowledge\n\nPrimary judgment `sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f` accepts this result with high confidence.\n\nFor the selected-coordinate variables\n\n\\[\nU=A,\\qquad V=B,\\qquad W=(Y^{T-1},Z_{T+1}^n),\n\\]\n\nwith \\(T\\) uniform and independent, every deterministic private-message code induces the factorization\n\n\\[\np(t,u,v,w,x,y,z)\n=\n\\frac1n p_U(u)p_V(v)p(w\\mid u,v,t)\n\\mathbf 1\\{x=f_t(u,v)\\}P_{YZ\\mid X}(y,z\\mid x).\n\\]\n\nThe accepted factorization retains the stronger fixed-map property\n\n\\[\nX=f_T(U,V),\n\\qquad\\text{equivalently}\\qquad\nH(X\\mid U,V,T)=0.\n\\]\n\nIn particular, the encoder map at time \\(T\\) does not depend on the realized state \\(W\\). The judgment distinguishes this from the weaker relaxation \\(H(X\\mid U,V,W,T)=0\\), which would allow \\(W\\) to select among different encoder maps.\n\nThe following four finite-block inequalities are accepted:\n\n\\[\nR_1\\le I(U,W;Y\\mid T)+\\delta_1,\n\\]\n\n\\[\nR_2\\le I(V,W;Z\\mid T)+\\delta_2,\n\\]\n\n\\[\nR_1+R_2\n\\le I(U,W;Y\\mid T)\n   +I(X;Z\\mid U,W,T)\n   +\\delta_1+\\delta_2,\n\\]\n\nand\n\n\\[\nR_1+R_2\n\\le I(V,W;Z\\mid T)\n   +I(X;Y\\mid V,W,T)\n   +\\delta_1+\\delta_2.\n\\]\n\nThe judgment attributes these rows to Fano’s inequality, the forward and reverse chain rules, memorylessness, deterministic encoding, and conditioned Csiszár sum identities. It reports that only nonnegative remainder terms are discarded in deriving the two sum-rate rows.\n\nNo simultaneous cardinality or compactness reduction for \\(U,V,W,T\\) is established. Consequently, the judgment expressly warns that optimizing these constraints over arbitrarily selected small alphabets would not certify a universal capacity converse.\n\n### Provenance\n\n- **Claim key:** `selected-coordinate-fixed-map-factorization-and-rate-inequalities`\n- **Subject and evidence transaction:** `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`\n- **Primary judgment:** `sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f`\n- **Judgment stance:** Supports; accepted with high confidence\n- **Conflict status:** No supplied conflict or reconciliation records\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f",
+          "digest": "sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:c4c383ba82c6e74c23b4f1afc72082907b105be8dd85877715b6891c8600407f",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:208b02ca22cab9d33bb925b9d97318a85c8438ce078db6570bd1717d96d2f412"
+    },
+    "programs/dependence_balance_entropy_relaxation/uniform_bssc_posterior_support": {
+      "id": "programs/dependence_balance_entropy_relaxation/uniform_bssc_posterior_support",
+      "parentId": "programs/dependence_balance_entropy_relaxation",
+      "type": "lemma",
+      "title": "Sharp fair-input BSSC posterior-difference support",
+      "summary": "With h=h₂(1/4), r=h−3/4, and g(q)=I_Z(q)−I_Y(q), the accepted global affine support is g(q)≤2r(1−q) on [0,1], with tangent contact at q=1/5. For fair input it yields I(X;Z|A)−I(X;Y|A)≤r and the reflected inequality. The constant is sharp for the stated posterior mixture. The result is limited to this fair-input scalar direction and is not a capacity theorem.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:0f0ae80aa9de5b714c9aebc8e89a840ad5a751a11dc9c790ded0f50818458ef3",
+        "section": "## Node: programs/dependence_balance_entropy_relaxation/uniform_bssc_posterior_support"
+      },
+      "contentMarkdown": "## Node: programs/dependence_balance_entropy_relaxation/uniform_bssc_posterior_support\n\n- **Title:** Sharp fair-input BSSC posterior-difference support\n- **Type:** Analytic lemma\n- **Status:** Active\n- **Parent:** `programs/dependence_balance_entropy_relaxation`\n\n### Current knowledge\n\nPrimary judgment `sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f` accepts this analytic result with high confidence.\n\nLet\n\n\\[\nh=h_2(1/4),\n\\qquad\nr=h-\\frac34,\n\\]\n\nand let\n\n\\[\ng(q)=I_Z(q)-I_Y(q)\n\\]\n\ndenote the difference between the two BSSC marginal mutual informations when \\(P(X=1)=q\\). The accepted global affine support is\n\n\\[\ng(q)\\le 2r(1-q),\n\\qquad 0\\le q\\le1.\n\\]\n\nThe judgment records exact tangent contact at\n\n\\[\nq=\\frac15,\n\\qquad\ng\\!\\left(\\frac15\\right)=\\frac85r,\n\\qquad\ng'\\!\\left(\\frac15\\right)=-2r.\n\\]\n\nFor fair input and every auxiliary satisfying \\(A-X-(Y,Z)\\), the support yields the accepted scalar inequality\n\n\\[\nI(X;Z\\mid A)-I(X;Y\\mid A)\\le r.\n\\]\n\nThe reflected inequality holds with the same right-hand side.\n\nThe constant is sharp in this scalar direction: the judgment accepts equality for the posterior mixture placing probability \\(5/8\\) at \\(q=1/5\\) and probability \\(3/8\\) at \\(q=1\\), whose mean posterior is \\(1/2\\).\n\nThe judgment characterizes this as a globally proved analytic support rather than a numerical-grid observation. Its scope is the stated fair-input scalar posterior direction; it is not itself a capacity theorem.\n\n### Provenance\n\n- **Claim key:** `uniform-bssc-posterior-difference-support-at-r`\n- **Subject and evidence transaction:** `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`\n- **Primary judgment:** `sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f`\n- **Judgment stance:** Supports; accepted with high confidence\n- **Conflict status:** No supplied conflict or reconciliation records\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f",
+          "digest": "sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:ca36eec7d3044c5d591ff2187f3c4ac5a9396a6f0b7ec6cec72cb0a4da256f4f",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:dd086e93370e5b4aa6b64b8c62ddc5e447cc6f14cdd2e80e54c37710703bc172"
+    },
+    "programs/dependence_balance_entropy_relaxation/coarse_entropy_counterfeit": {
+      "id": "programs/dependence_balance_entropy_relaxation/coarse_entropy_counterfeit",
+      "parentId": "programs/dependence_balance_entropy_relaxation",
+      "type": "result",
+      "title": "Finite entropic counterfeit for the specified coarse BSSC relaxation",
+      "summary": "An actual finite joint distribution satisfies the specified coarse BSSC entropy relaxation and attains B₁=B₂=2h₂(1/4)−5/4. The witness and coarse formulation alone provide neither a lower nor an upper BSSC capacity bound. A separate UV judgment independently derives the same number as a valid but weaker converse, without changing what the counterfeit establishes.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:36aaec96b8bca78810d5d27c04251d47d1a084100cd5cf17443cdab8062c4643",
+        "section": "## Node: programs/dependence_balance_entropy_relaxation/coarse_entropy_counterfeit"
+      },
+      "contentMarkdown": "## Node: programs/dependence_balance_entropy_relaxation/coarse_entropy_counterfeit\n\n- **Title:** Finite entropic counterfeit for the specified coarse BSSC relaxation\n- **Type:** Constructive relaxation result\n- **Status:** Active\n- **Parent:** `programs/dependence_balance_entropy_relaxation`\n\n### Current knowledge\n\nPrimary judgment `sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f` accepts with high confidence an actual finite joint distribution satisfying the specified coarse BSSC entropy relaxation and attaining\n\n\\[\nB_1=B_2\n=2h_2(1/4)-\\frac54\n=0.3725562489182657\\ldots.\n\\]\n\nLet\n\n\\[\nh=h_2(1/4),\\qquad\ns=1-h,\\qquad\nr=h-\\frac34,\\qquad\nt=2r.\n\\]\n\nThe accepted witness uses mutually independent binary components\n\n\\[\nC,A,B1c,B2c,Eu,Ev,Ny,Nz\n\\]\n\nwith respective entropies\n\n\\[\nt,\\quad\ns,\\quad\nr,\\quad\ns-r,\\quad\n\\frac12-r,\\quad\nr,\\quad\n\\frac12,\\quad\n\\frac12.\n\\]\n\nIts tuple variables are\n\n\\[\nU=(C,A,B2c,Eu),\n\\qquad\nV=(B1c,Ev),\n\\]\n\n\\[\nX=(C,A,B1c,B2c,Eu,Ev),\n\\]\n\n\\[\nY=(C,A,Ny),\n\\qquad\nZ=(C,B1c,B2c,Nz),\n\\]\n\nwith \\(W,T\\) constant.\n\nThe judgment accepts the base entropy vector\n\n\\[\nH(X)=1,\n\\qquad\nH(Y)=H(Z)=h,\n\\]\n\n\\[\nH(X,Y)=H(X,Z)=H(Y,Z)=\\frac32,\n\\qquad\nH(X,Y,Z)=2.\n\\]\n\nIt also accepts that:\n\n- \\(U\\) and \\(V\\) consist of disjoint independent components;\n- \\(U,V\\) together determine \\(X\\);\n- conditional on \\(X\\), only the independent output-noise components remain;\n- the joint output reveals exactly half the entropy of each of \\(U\\) and \\(V\\);\n- all stated disjoint-subtuple BEC identities hold, including the 65 nonempty-left-subtuple cases; and\n- both scalar support rows are tight.\n\nThe accepted component accounting gives\n\n\\[\nI(U;Y)=I(X;Y\\mid V)=h-\\frac12\n\\]\n\nand\n\n\\[\nI(X;Z\\mid U)=I(V;Z)=r.\n\\]\n\nConsequently,\n\n\\[\nB_1=B_2\n=\\left(h-\\frac12\\right)+r\n=2h-\\frac54.\n\\]\n\nThe judgment emphasizes that this is an actual finite distribution rather than an abstract polymatroid or sampled entropy vector. An exact formal-entropy checker using rational coefficients in the formal parameter \\(h\\) corroborates the component bookkeeping and the 65 disjoint-subtuple identities.\n\nThe mathematical interpretation remains specific:\n\n- the witness proves that the specified coarse relaxation can attain\n  \\[\n  2h_2(1/4)-\\frac54;\n  \\]\n- the witness and that coarse formulation alone provide neither a lower nor an upper bound on the actual BSSC capacity;\n- they do not determine \\(C_{\\mathrm{sum}}\\);\n- they do not improve or contradict the governed capacity frontier.\n\nPrimary judgment `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318` separately accepts the same numerical value as a valid branchwise-relaxed UV converse. That is a distinct derivation in a different program. It does not alter what the entropic counterfeit establishes or turn the counterfeit into a capacity certificate.\n\n### Provenance\n\n- **Claim key:** `coarse-bssc-entropy-relaxation-entropic-counterfeit`\n- **Capacity-interpretation claim key:** `coarse-bssc-entropy-relaxation-value-capacity-interpretation`\n- **Principal subject transaction:** `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`\n- **Context transactions:**  \n  `d638c346212db3e75f6a53dcebcfd09f55125852`  \n  `7e7626cbff7270572d51a8fda719154ab602907f`\n- **Primary judgment:** `sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f`\n- **UV-interpretation context transaction:** `f236017c62c67ce4218c1f81ea34134f0954b556`\n- **UV-interpretation judgment:** `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318`\n- **Conflict status:** No supplied conflict or reconciliation records\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f",
+          "digest": "sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f",
+          "relation": "qualifies"
+        },
+        {
+          "kind": "transaction",
+          "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "digest": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "relation": "qualifies"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:5367a1ce755c3cfe52bf21ead95e979abae5cf393d5d4ca452dfd931dc553c5c",
+        "revisionNumber": 2
+      },
+      "digest": "sha256:ab1e8e66679f078781348e4ca3396aa1b93cafa81f7a9222e4c869fde2ccd930"
+    },
+    "programs/dependence_balance_entropy_relaxation/universal_inequality_copy_no_go": {
+      "id": "programs/dependence_balance_entropy_relaxation/universal_inequality_copy_no_go",
+      "parentId": "programs/dependence_balance_entropy_relaxation",
+      "type": "result",
+      "title": "Universal-information-inequality and finite-copy no-go for the coarse relaxation",
+      "summary": "Because the accepted counterfeit is an actual finite joint distribution, universally valid finite-variable information inequalities cannot exclude it, and standard copy-lemma extensions can be realized by conditional resampling. Thus neither such inequalities nor any finite sequence of standard copy-lemma extensions can force the specified coarse relaxation below 2h₂(1/4)−5/4. This obstruction is limited to the specified relaxation and methods and does not determine BSSC sum-capacity or rule out other converse techniques.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:0f0ae80aa9de5b714c9aebc8e89a840ad5a751a11dc9c790ded0f50818458ef3",
+        "section": "## Node: programs/dependence_balance_entropy_relaxation/universal_inequality_copy_no_go"
+      },
+      "contentMarkdown": "## Node: programs/dependence_balance_entropy_relaxation/universal_inequality_copy_no_go\n\n- **Title:** Universal-information-inequality and finite-copy no-go for the coarse relaxation\n- **Type:** Scoped methodology limitation\n- **Status:** Active\n- **Parent:** `programs/dependence_balance_entropy_relaxation`\n\n### Current knowledge\n\nPrimary judgment `sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f` supports the following scoped obstruction.\n\nBecause the entropic counterfeit in `programs/dependence_balance_entropy_relaxation/coarse_entropy_counterfeit` is an actual finite joint distribution, it satisfies every universally valid finite-variable information inequality, including non-Shannon inequalities.\n\nThe judgment further accepts that standard copy-lemma extensions can be realized for this witness by the required conditional resampling. Therefore, no finite sequence of such standard copy-lemma extensions can exclude the witness.\n\nConsequently, neither:\n\n- adding universally valid finite-variable information inequalities, nor\n- adding any finite sequence of standard copy-lemma extensions\n\ncan force the specified coarse entropy relaxation below\n\n\\[\n2h_2(1/4)-\\frac54.\n\\]\n\nThis conclusion is limited to the specified coarse relaxation and the named universal-information-inequality and finite-copy strengthening methods. It does not determine the BSSC sum-capacity, does not turn the relaxation value into a capacity bound, and does not rule out converse methods outside that stated scope.\n\n### Provenance\n\n- **Claim key:** `universal-information-inequality-and-finite-copy-no-go-for-specified-relaxation`\n- **Subject and evidence transaction:** `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`\n- **Primary judgment:** `sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f`\n- **Judgment stance:** Supports, with the obstruction explicitly limited to the specified relaxation and methods\n- **Conflict status:** No supplied conflict or reconciliation records\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f",
+          "digest": "sha256:dd536a4c3d9fc68fdf3768af2fc9d9f0bedef487a207375d7820bfc6c49ed99f",
+          "relation": "qualifies"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:7df88ebf47124f45b1d4c67820b7ac6f51ac59b90877ec53efc55f65cba89087",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:c1d38461c486c54ccf28fde84dccc166d1c628e06290e2a0abfcaf88e0485a40"
+    },
+    "programs/uv_relaxed_scalar": {
+      "id": "programs/uv_relaxed_scalar",
+      "parentId": "root",
+      "type": "program",
+      "title": "Tensorization and symmetry of separately relaxed UV sum-rate scalars",
+      "summary": "Program for the averaged and branchwise separately relaxed UV sum-rate scalars. Accepted results establish exact averaged product additivity, branch-average equality under receiver-skew symmetry, branchwise additivity for finite products of such channels, and the exact half-skew BSSC value 2h₂(1/4)−5/4. The resulting BSSC upper bound is valid but weaker than the governed frontier.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:36aaec96b8bca78810d5d27c04251d47d1a084100cd5cf17443cdab8062c4643",
+        "section": "## Node: programs/uv_relaxed_scalar"
+      },
+      "contentMarkdown": "## Node: programs/uv_relaxed_scalar\n\n- **Title:** Tensorization and symmetry of separately relaxed UV sum-rate scalars\n- **Type:** Program\n- **Status:** Active\n- **Parent:** `root`\n\n### Current knowledge\n\nThis program studies two separately relaxed UV sum-rate scalar functionals for finite-alphabet broadcast channels.\n\nFor a channel \\(W:X\\to(Y,Z)\\) and input law \\(p\\), define\n\n\\[\nt_W(p)=I_p(X;Y)-I_p(X;Z),\n\\]\n\nand let \\(\\mathfrak C[f]\\) denote the upper concave envelope of \\(f\\) over input laws. Define the two scalar branches\n\n\\[\nA_W(p)=I_p(X;Y)+\\mathfrak C[-t_W](p),\n\\]\n\n\\[\nD_W(p)=I_p(X;Z)+\\mathfrak C[t_W](p).\n\\]\n\nThe averaged and branchwise channel functionals are\n\n\\[\nB_{\\mathrm{avg}}(W)\n=\\sup_p\\frac{A_W(p)+D_W(p)}2\n\\]\n\nand\n\n\\[\nB_{\\mathrm{br}}(W)\n=\\sup_p\\min\\{A_W(p),D_W(p)\\}.\n\\]\n\nPrimary judgment `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318` accepts the following theorem chain:\n\n1. For arbitrary finite-alphabet broadcast channels,\n   \\[\n   B_{\\mathrm{avg}}(W_1\\times W_2)\n   =B_{\\mathrm{avg}}(W_1)+B_{\\mathrm{avg}}(W_2).\n   \\]\n   The conclusion includes correlated product-channel inputs and envelope auxiliaries that range jointly across factors.\n\n2. If a channel is receiver-skew-symmetric, then\n   \\[\n   B_{\\mathrm{br}}(W)=B_{\\mathrm{avg}}(W),\n   \\]\n   and the optimization may be restricted to input laws invariant under the symmetry.\n\n3. For every finite product of receiver-skew-symmetric finite-alphabet channels,\n   \\[\n   B_{\\mathrm{br}}\\!\\left(\\prod_i W_i\\right)\n   =\\sum_i B_{\\mathrm{br}}(W_i).\n   \\]\n\n4. For the half-skew BSSC \\(P\\),\n   \\[\n   B_{\\mathrm{br}}(P)=B_{\\mathrm{avg}}(P)\n   =2h_2(1/4)-\\frac54,\n   \\]\n   and for every finite \\(n\\ge1\\),\n   \\[\n   B_{\\mathrm{br}}(P^{\\times n})\n   =B_{\\mathrm{avg}}(P^{\\times n})\n   =n\\left(2h_2(1/4)-\\frac54\\right).\n   \\]\n\n5. The branchwise scalar supplies a valid relaxed UV sum-rate converse. For the BSSC this yields\n   \\[\n   C_{\\mathrm{sum}}\n   \\le 2h_2(1/4)-\\frac54\n   =0.3725562489182657\\ldots.\n   \\]\n\nThe BSSC bound is noncompetitive. It is larger, and therefore weaker, than the published benchmark upper endpoint \\(0.369316568803963\\) and the governed continuous full-Theorem-9 fixed-pair bound \\(0.369296945969202842443\\). It changes neither the current lower bound nor the current upper frontier and is not achievable-rate evidence.\n\n### Scope boundaries\n\nThe accepted results concern scalar functionals built from separately optimized upper concave envelopes. They do not establish additivity or equivalence for:\n\n- the complete UV outer region;\n- formulations retaining one common joint \\((U,V)\\) law for both rows;\n- arbitrary weighted UV scalarizations;\n- the simplified Gohari–Liu–Nair functional;\n- the full Gohari–Liu–Nair Theorem 9 bound; or\n- nonsymmetric channels in the branch-average equality statement.\n\nThus the program closes the specified finite-product route through the separately relaxed scalars, not tensorization of stronger converse regions.\n\n### Program nodes\n\n- `programs/uv_relaxed_scalar/averaged_product_additivity`\n- `programs/uv_relaxed_scalar/skew_symmetry_branch_average`\n- `programs/uv_relaxed_scalar/skew_symmetric_branchwise_product_additivity`\n- `programs/uv_relaxed_scalar/half_skew_bssc_exact_value`\n\n### Credit and provenance\n\nThe primary judgment records the subject as an attributed port of earlier accepted artifacts. Mathematical authorship is attributed to Robert Raynor, and the port disclaims new authorship of the original results.\n\nThe judgment distinguishes two contributions:\n\n1. exact product additivity of the averaged separately relaxed UV scalar; and\n2. the symmetry argument identifying the branchwise and averaged scalars and transferring additivity to the branchwise functional.\n\nThe exact BSSC specialization additionally uses the sharp posterior-support calculation from transaction `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`; that supporting calculation is distinct from the tensorization and symmetry arguments.\n\n- **Subject transaction:** `f236017c62c67ce4218c1f81ea34134f0954b556`\n- **Primary judgment:** `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318`\n- **Supporting transactions:**  \n  `d638c346212db3e75f6a53dcebcfd09f55125852`  \n  `7e7626cbff7270572d51a8fda719154ab602907f`  \n  `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`\n- **Judgment disposition:** Accepted as a correct structural contribution\n- **Conflict status:** No supplied conflict or reconciliation records\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "ledgerPosition": 4
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "digest": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:4221ae29dae77e3a8c9411936e47705cfc8d71969fbc7e7e2293405ad277b972",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:2474703202dc496803861aeb081b44a4111dff84fbe546841010af8eb4e7d4ef"
+    },
+    "programs/uv_relaxed_scalar/averaged_product_additivity": {
+      "id": "programs/uv_relaxed_scalar/averaged_product_additivity",
+      "parentId": "programs/uv_relaxed_scalar",
+      "type": "result",
+      "title": "Exact product additivity of the averaged separately relaxed UV scalar",
+      "summary": "For arbitrary finite-alphabet broadcast channels W₁ and W₂, B_avg(W₁×W₂)=B_avg(W₁)+B_avg(W₂). The theorem permits correlated product-channel inputs and envelope auxiliaries joint across factors, but does not imply additivity of stronger UV or Gohari–Liu–Nair formulations.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:36aaec96b8bca78810d5d27c04251d47d1a084100cd5cf17443cdab8062c4643",
+        "section": "## Node: programs/uv_relaxed_scalar/averaged_product_additivity"
+      },
+      "contentMarkdown": "## Node: programs/uv_relaxed_scalar/averaged_product_additivity\n\n- **Title:** Exact product additivity of the averaged separately relaxed UV scalar\n- **Type:** Structural theorem\n- **Status:** Active\n- **Parent:** `programs/uv_relaxed_scalar`\n\n### Current knowledge\n\nFor a finite-alphabet broadcast channel \\(W\\), define\n\n\\[\nt_W(p)=I_p(X;Y)-I_p(X;Z),\n\\]\n\n\\[\nA_W(p)=I_p(X;Y)+\\mathfrak C[-t_W](p),\n\\qquad\nD_W(p)=I_p(X;Z)+\\mathfrak C[t_W](p),\n\\]\n\nand\n\n\\[\nB_{\\mathrm{avg}}(W)\n=\\sup_p\\frac{A_W(p)+D_W(p)}2.\n\\]\n\nPrimary judgment `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318` accepts with high confidence that for arbitrary finite-alphabet broadcast channels \\(W_1,W_2\\),\n\n\\[\n\\boxed{\nB_{\\mathrm{avg}}(W_1\\times W_2)\n=\nB_{\\mathrm{avg}}(W_1)+B_{\\mathrm{avg}}(W_2)\n}.\n\\]\n\nThe theorem covers arbitrarily correlated input laws on the product channel. It also permits concave-envelope auxiliaries joint across the two factors; the upper-bound direction does not impose a hidden product-input restriction.\n\nThe accepted reverse direction uses product input laws and independent posterior decompositions approaching the separately optimized envelope values. No common auxiliary for the \\(t\\) and \\(-t\\) envelopes is asserted or required because the definition of \\(B_{\\mathrm{avg}}\\) optimizes those envelopes separately.\n\nThe judgment treats the analytic chain-rule and concave-envelope argument as decisive. Accompanying numerical experiments are corroborative rather than necessary evidence.\n\n### Scope boundaries\n\nThis exact additivity result does not imply product additivity of:\n\n- the complete UV rate region;\n- a scalar retaining a common joint law for both UV auxiliaries;\n- arbitrary weighted UV scalarizations;\n- the simplified Gohari–Liu–Nair functional; or\n- the full Gohari–Liu–Nair Theorem 9 outer bound.\n\n### Credit and provenance\n\nThe primary judgment attributes mathematical authorship to Robert Raynor and records the subject as an attributed port that disclaims new authorship.\n\n- **Claim key:** `uv-averaged-functional-product-additivity`\n- **Subject transaction:** `f236017c62c67ce4218c1f81ea34134f0954b556`\n- **Context transaction:** `d638c346212db3e75f6a53dcebcfd09f55125852`\n- **Primary judgment:** `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318`\n- **Judgment stance:** Supported with high confidence\n- **Conflict status:** No supplied conflict or reconciliation records\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "ledgerPosition": 4
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "digest": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:0e1c79aae2b3a09cbab5ac4734c466c3bba305707be90ce441cb2399711a7d5a",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:7d2b32744f42d0bdbabb29e2d1d742da22c27ab921be626a910eeef72456b2ef"
+    },
+    "programs/uv_relaxed_scalar/skew_symmetry_branch_average": {
+      "id": "programs/uv_relaxed_scalar/skew_symmetry_branch_average",
+      "parentId": "programs/uv_relaxed_scalar",
+      "type": "result",
+      "title": "Equality of branchwise and averaged UV scalars under receiver-skew symmetry",
+      "summary": "For a finite-alphabet receiver-skew-symmetric broadcast channel, B_br(W)=B_avg(W), and optimization may be restricted to input laws invariant under the receiver-exchanging input involution. The result does not extend to nonsymmetric channels or common-auxiliary and stronger converse formulations.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:36aaec96b8bca78810d5d27c04251d47d1a084100cd5cf17443cdab8062c4643",
+        "section": "## Node: programs/uv_relaxed_scalar/skew_symmetry_branch_average"
+      },
+      "contentMarkdown": "## Node: programs/uv_relaxed_scalar/skew_symmetry_branch_average\n\n- **Title:** Equality of branchwise and averaged UV scalars under receiver-skew symmetry\n- **Type:** Symmetry theorem\n- **Status:** Active\n- **Parent:** `programs/uv_relaxed_scalar`\n\n### Current knowledge\n\nLet\n\n\\[\nB_{\\mathrm{avg}}(W)\n=\\sup_p\\frac{A_W(p)+D_W(p)}2\n\\]\n\nand\n\n\\[\nB_{\\mathrm{br}}(W)\n=\\sup_p\\min\\{A_W(p),D_W(p)\\},\n\\]\n\nwhere \\(A_W,D_W\\) are the separately relaxed UV branches.\n\nSuppose a finite-alphabet broadcast channel has an involutive input relabeling \\(S\\) that exchanges the two receiver channels up to bijective output relabeling. Primary judgment `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318` accepts with high confidence that\n\n\\[\n\\boxed{\nB_{\\mathrm{br}}(W)=B_{\\mathrm{avg}}(W)\n}.\n\\]\n\nThe optimization may be restricted to \\(S\\)-invariant input laws.\n\nThe accepted result uses covariance of the two scalar branches under receiver exchange and concavity under symmetrization. At an invariant input law, the two branches agree. The conclusion does not require the input alphabet to be binary.\n\n### Scope boundaries\n\nThe theorem does not establish:\n\n- the same equality for nonsymmetric channels;\n- a simultaneous common-\\((U,V)\\) representation of the two separately relaxed rows; or\n- equality between these scalars and stronger UV or Gohari–Liu–Nair outer-bound formulations.\n\n### Credit and provenance\n\nThe primary judgment attributes the symmetry contribution to Robert Raynor and records the subject as an attributed port.\n\n- **Claim key:** `receiver-skew-symmetric-uv-branch-average-equality`\n- **Subject transaction:** `f236017c62c67ce4218c1f81ea34134f0954b556`\n- **Context transaction:** `7e7626cbff7270572d51a8fda719154ab602907f`\n- **Primary judgment:** `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318`\n- **Judgment stance:** Supported with high confidence\n- **Conflict status:** No supplied conflict or reconciliation records\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "ledgerPosition": 4
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "digest": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:b50a707f26a43ead27c1f1cf194a62cffd241173b33f408906be0f08469089fa",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:dabf77ee9ffcb6b23c8345e5a6fa0bef562d065c4a3e52d4497acea202581626"
+    },
+    "programs/uv_relaxed_scalar/skew_symmetric_branchwise_product_additivity": {
+      "id": "programs/uv_relaxed_scalar/skew_symmetric_branchwise_product_additivity",
+      "parentId": "programs/uv_relaxed_scalar",
+      "type": "result",
+      "title": "Product additivity of the branchwise scalar for receiver-skew-symmetric channels",
+      "summary": "For every finite family of receiver-skew-symmetric finite-alphabet broadcast channels, the branchwise scalar of the product equals the sum of the factor scalars. Correlated product-channel inputs are permitted. The theorem does not establish branchwise additivity for arbitrary nonsymmetric channels or tensorization of stronger converse regions.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:36aaec96b8bca78810d5d27c04251d47d1a084100cd5cf17443cdab8062c4643",
+        "section": "## Node: programs/uv_relaxed_scalar/skew_symmetric_branchwise_product_additivity"
+      },
+      "contentMarkdown": "## Node: programs/uv_relaxed_scalar/skew_symmetric_branchwise_product_additivity\n\n- **Title:** Product additivity of the branchwise scalar for receiver-skew-symmetric channels\n- **Type:** Tensorization theorem\n- **Status:** Active\n- **Parent:** `programs/uv_relaxed_scalar`\n\n### Current knowledge\n\nFor every finite family of receiver-skew-symmetric finite-alphabet broadcast channels \\(W_1,\\ldots,W_n\\), primary judgment `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318` accepts with high confidence that\n\n\\[\n\\boxed{\nB_{\\mathrm{br}}\\!\\left(\\prod_{i=1}^n W_i\\right)\n=\n\\sum_{i=1}^n B_{\\mathrm{br}}(W_i)\n}.\n\\]\n\nThe product channel remains receiver-skew-symmetric under coordinatewise input involutions and output relabelings. The accepted theorem is a dependency-ordered consequence of:\n\n- exact additivity of \\(B_{\\mathrm{avg}}\\) for arbitrary finite-alphabet product channels; and\n- equality \\(B_{\\mathrm{br}}=B_{\\mathrm{avg}}\\) on receiver-skew-symmetric channels.\n\nThe theorem inherits the generality of the averaged additivity result: correlated input laws on the product channel are permitted, and there is no hidden product-input restriction.\n\n### Scope boundaries\n\nThe result is product additivity of the specified branchwise scalar, not tensorization of:\n\n- the complete UV outer region;\n- a common-joint-\\((U,V)\\) formulation;\n- the simplified Gohari–Liu–Nair functional; or\n- the full Theorem 9 outer-bound system.\n\nIt also does not establish branchwise additivity for arbitrary nonsymmetric factors.\n\n### Credit and provenance\n\nThe primary judgment attributes the underlying tensorization and symmetry results to Robert Raynor and records the subject as an attributed port.\n\n- **Claim key:** `receiver-skew-symmetric-uv-branchwise-product-additivity`\n- **Subject transaction:** `f236017c62c67ce4218c1f81ea34134f0954b556`\n- **Context transactions:**  \n  `d638c346212db3e75f6a53dcebcfd09f55125852`  \n  `7e7626cbff7270572d51a8fda719154ab602907f`\n- **Primary judgment:** `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318`\n- **Judgment stance:** Supported with high confidence\n- **Conflict status:** No supplied conflict or reconciliation records\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "ledgerPosition": 4
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "digest": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:12b6fe43bf30aba1d08d7ae9cb8802c7cfe88ce633639f05d0f1a5933fd0fd8b",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:deb9f7336e94ee657b38dcc9ce00457926334cbea8075bac894546c40a5545fe"
+    },
+    "programs/uv_relaxed_scalar/half_skew_bssc_exact_value": {
+      "id": "programs/uv_relaxed_scalar/half_skew_bssc_exact_value",
+      "parentId": "programs/uv_relaxed_scalar",
+      "type": "result",
+      "title": "Exact half-skew BSSC value of the separately relaxed UV scalars",
+      "summary": "For the half-skew BSSC P, B_br(P)=B_avg(P)=2h₂(1/4)−5/4, and both finite-product values equal n times this number. The branchwise scalar gives a valid UV sum-rate upper bound, but it is weaker than the governed fixed-pair bound, changes no capacity-frontier endpoint, and supplies no achievability evidence.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:36aaec96b8bca78810d5d27c04251d47d1a084100cd5cf17443cdab8062c4643",
+        "section": "## Node: programs/uv_relaxed_scalar/half_skew_bssc_exact_value"
+      },
+      "contentMarkdown": "## Node: programs/uv_relaxed_scalar/half_skew_bssc_exact_value\n\n- **Title:** Exact half-skew BSSC value of the separately relaxed UV scalars\n- **Type:** Exact evaluation and converse result\n- **Status:** Active\n- **Parent:** `programs/uv_relaxed_scalar`\n\n### Current knowledge\n\nFor the half-skew BSSC \\(P\\), primary judgment `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318` accepts with high confidence that\n\n\\[\n\\boxed{\nB_{\\mathrm{br}}(P)=B_{\\mathrm{avg}}(P)\n=\n2h_2(1/4)-\\frac54\n}.\n\\]\n\nNumerically,\n\n\\[\n2h_2(1/4)-\\frac54\n=0.3725562489182657\\ldots.\n\\]\n\nThe input flip \\(x\\mapsto1-x\\), together with output flips, exchanges the two BSSC receiver marginals. Thus the channel satisfies the receiver-skew-symmetry condition. For the one-letter binary input, the invariant input law is the fair prior \\(q=1/2\\).\n\nWriting\n\n\\[\nh=h_2(1/4),\\qquad\nc=h-\\frac12,\\qquad\nr=h-\\frac34,\n\\]\n\nthe accepted specialization has\n\n\\[\nI_Y(1/2)=I_Z(1/2)=c\n\\]\n\nand\n\n\\[\n\\mathfrak C[t](1/2)\n=\\mathfrak C[-t](1/2)\n=r.\n\\]\n\nThe exact envelope value uses the sharp BSSC posterior support accepted in the earlier dependence-balance and entropy-relaxation judgment. The equality-achieving posterior mixture recorded by the UV judgment is\n\n\\[\n\\frac58\\delta_{4/5}+\\frac38\\delta_0\n\\]\n\nfor the relevant orientation, with reflection supplying the opposite branch. Consequently,\n\n\\[\nA_P(1/2)=D_P(1/2)=c+r\n=2h_2(1/4)-\\frac54.\n\\]\n\nFor every finite \\(n\\ge1\\), the accepted tensorization results give\n\n\\[\n\\boxed{\nB_{\\mathrm{br}}(P^{\\times n})\n=\nB_{\\mathrm{avg}}(P^{\\times n})\n=\nn\\left(2h_2(1/4)-\\frac54\\right)\n}.\n\\]\n\nThe branchwise scalar is a valid relaxed UV sum-rate converse, so the evaluation yields\n\n\\[\nC_{\\mathrm{sum}}\n\\le 2h_2(1/4)-\\frac54.\n\\]\n\nThis is not a new frontier bound. It is weaker than\n\n\\[\nC_{\\mathrm{sum}}\\le0.369316568803963\n\\]\n\nand weaker than the governed continuous fixed-pair certificate\n\n\\[\nC_{\\mathrm{sum}}\\le0.369296945969202842443.\n\\]\n\nIt therefore changes neither the governed capacity interval nor the unresolved status of the exact sum-capacity. It is not evidence of achievability.\n\nThe same numerical value also occurs as the objective attained by the finite counterfeit in the specified coarse entropy relaxation. That separate occurrence is not itself a capacity bound and is not the source of the UV converse.\n\n### Scope boundaries\n\nThe exact finite-block scalar evaluation does not establish:\n\n- the exact BSSC sum-capacity;\n- a matching achievable rate;\n- tensorization of the complete UV outer region;\n- tensorization of the simplified Gohari–Liu–Nair functional;\n- tensorization of the full Theorem 9 system; or\n- equality between this relaxed scalar and any stronger converse.\n\n### Credit and provenance\n\nThe primary judgment attributes the tensorization and symmetry arguments to Robert Raynor and records the subject as an attributed port. It separately identifies the sharp posterior-support calculation from the earlier dependence-balance transaction as supporting the exact BSSC specialization.\n\n- **Exact-value claim key:** `half-skew-bssc-uv-relaxed-scalar-value`\n- **Converse-interpretation claim key:** `half-skew-bssc-uv-relaxed-converse-does-not-improve-frontier`\n- **Subject transaction:** `f236017c62c67ce4218c1f81ea34134f0954b556`\n- **Supporting transactions:**  \n  `d638c346212db3e75f6a53dcebcfd09f55125852`  \n  `7e7626cbff7270572d51a8fda719154ab602907f`  \n  `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`\n- **Primary judgment:** `sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318`\n- **Judgment stance:** Exact scalar value supported with high confidence; converse interpretation accepted\n- **Conflict status:** No supplied conflict or reconciliation records\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "ledgerPosition": 4
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "d638c346212db3e75f6a53dcebcfd09f55125852",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "7e7626cbff7270572d51a8fda719154ab602907f",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "digest": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:ec9c4fbef081e2a6c26d6e7b5ca4b447d6e12f530b506a8ac7297d82dfa7bb64",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:0533be6b53c7c9c2f638018a099f7305c5b83ce37e69be75caa3a95c2e9038b8"
+    }
+  },
+  "stateDigest": "sha256:e82956f88b8d6dc1bd5f1c3b70a216eb2dc3afaa925d050ff4396ed6441e9efd"
+}

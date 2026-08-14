@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "f236017c62c67ce4218c1f81ea34134f0954b556",
+  "problemLedgerDigest": "sha256:c09072335d25b15b56d9c6d7db078168c5a0bf40eb84ccfd5b6655221c19b4bc",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+      "ledgerPosition": 4
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "uv-averaged-functional-product-additivity",
+      "stance": "supports",
+      "summary": "Accepted with high confidence: for arbitrary finite-alphabet broadcast channels, the averaged UV scalar formed from separately optimized upper concave envelopes satisfies B_avg(W₁×W₂)=B_avg(W₁)+B_avg(W₂), even with correlated product-channel inputs and joint envelope auxiliaries. This does not establish additivity of the complete UV region, common-joint-(U,V) formulations, arbitrary weighted scalarizations, the simplified GK functional, or the full Gohari–Liu–Nair Theorem 9 bound.",
+      "subjectTransactionIds": [
+        "f236017c62c67ce4218c1f81ea34134f0954b556"
+      ],
+      "evidenceTransactionIds": [
+        "d638c346212db3e75f6a53dcebcfd09f55125852",
+        "f236017c62c67ce4218c1f81ea34134f0954b556"
+      ]
+    },
+    {
+      "claimKey": "receiver-skew-symmetric-uv-branch-average-equality",
+      "stance": "supports",
+      "summary": "Accepted with high confidence: receiver-skew symmetry implies B_br(W)=B_avg(W), and the optimization may be restricted to invariant input laws. The result follows by covariance of the two scalar branches and concavity under symmetrization; it does not extend the separately relaxed rows to a simultaneous common-(U,V) formulation or establish equality for nonsymmetric channels.",
+      "subjectTransactionIds": [
+        "f236017c62c67ce4218c1f81ea34134f0954b556"
+      ],
+      "evidenceTransactionIds": [
+        "7e7626cbff7270572d51a8fda719154ab602907f",
+        "f236017c62c67ce4218c1f81ea34134f0954b556"
+      ]
+    },
+    {
+      "claimKey": "receiver-skew-symmetric-uv-branchwise-product-additivity",
+      "stance": "supports",
+      "summary": "Accepted with high confidence: for every finite product of receiver-skew-symmetric finite-alphabet broadcast channels, B_br(∏ᵢWᵢ)=∑ᵢB_br(Wᵢ). This follows from preservation of skew symmetry under products, branch-average equality, and exact additivity of B_avg, without a hidden product-input restriction.",
+      "subjectTransactionIds": [
+        "f236017c62c67ce4218c1f81ea34134f0954b556"
+      ],
+      "evidenceTransactionIds": [
+        "d638c346212db3e75f6a53dcebcfd09f55125852",
+        "7e7626cbff7270572d51a8fda719154ab602907f",
+        "f236017c62c67ce4218c1f81ea34134f0954b556"
+      ]
+    },
+    {
+      "claimKey": "half-skew-bssc-uv-relaxed-scalar-value",
+      "stance": "supports",
+      "summary": "Accepted with high confidence: for the half-skew BSSC P, B_br(P)=B_avg(P)=2h₂(1/4)−5/4=0.3725562489182657…, and for every finite n both scalars on P^{×n} equal n(2h₂(1/4)−5/4). The specialization correctly uses receiver symmetry and the sharp posterior-support calculation, including the equality-achieving posterior mixture.",
+      "subjectTransactionIds": [
+        "f236017c62c67ce4218c1f81ea34134f0954b556"
+      ],
+      "evidenceTransactionIds": [
+        "d638c346212db3e75f6a53dcebcfd09f55125852",
+        "7e7626cbff7270572d51a8fda719154ab602907f",
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+        "f236017c62c67ce4218c1f81ea34134f0954b556"
+      ]
+    },
+    {
+      "claimKey": "half-skew-bssc-uv-relaxed-converse-does-not-improve-frontier",
+      "stance": "supports",
+      "summary": "Accepted: 2h₂(1/4)−5/4 is a valid branchwise-relaxed UV sum-rate converse, but it is not achievable-rate evidence and does not improve the governed BSSC capacity interval. Its value exceeds both the benchmark upper endpoint 0.369316568803963 and the supplied continuously certified full-Theorem-9 bound 0.369296945969202842443, so it changes neither capacity frontier.",
+      "subjectTransactionIds": [
+        "f236017c62c67ce4218c1f81ea34134f0954b556"
+      ],
+      "evidenceTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+        "f236017c62c67ce4218c1f81ea34134f0954b556"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:5ecad42ebb573b1a85370ab72a084402346f4d139c2f56d8edc142ddc7e8775b",
+  "judgmentId": "sha256:0534c0e3521650e63989cffa2530883e74095b980b811738b6f696919c77b318"
+}
