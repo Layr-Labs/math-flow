@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "multiway-cut-ckr-gap",
+  "ledgerHead": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+  "problemLedgerDigest": "sha256:50dc914b74ffb26ec85d0611ad67f98b86d31792ad116d5e073e7e4464361ab2",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+      "ledgerPosition": 1
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "freund-karloff-midpoint/ckr-exact",
+      "stance": "supports",
+      "summary": "The specified midpoint graph H_k has exact CKR value (7k-6)/(8(k-1)); the feasible midpoint embedding gives this value, and the constant-vector subgradient certificate proves matching optimality.",
+      "subjectTransactionIds": [
+        "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+      ],
+      "evidenceTransactionIds": [
+        "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+      ]
+    },
+    {
+      "claimKey": "freund-karloff-midpoint/integral-optimum",
+      "stance": "supports",
+      "summary": "For every integer k>=3, OPT(H_k)=1. The local lemma is exactly certified by exhaustive enumeration, the averaging argument proves the lower bound, and the stated labeling attains it.",
+      "subjectTransactionIds": [
+        "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+      ],
+      "evidenceTransactionIds": [
+        "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+      ]
+    },
+    {
+      "claimKey": "freund-karloff-midpoint/h4-exact-instance",
+      "stance": "supports",
+      "summary": "The committed H_4 instance has 10 vertices and 24 edges, with CKR=11/12, integral optimum 1, and ratio 12/11. Exhaustion of all 4^6 nonterminal assignments independently checks the finite instance.",
+      "subjectTransactionIds": [
+        "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+      ],
+      "evidenceTransactionIds": [
+        "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+      ]
+    },
+    {
+      "claimKey": "freund-karloff-midpoint/integrality-ratio",
+      "stance": "supports",
+      "summary": "The H_k family has ratio 8(k-1)/(7k-6), tending to 8/7. It therefore supplies the classical lower bounds Gamma_k>=8(k-1)/(7k-6) and Gamma>=8/7, but this is weaker than the governed benchmark.",
+      "subjectTransactionIds": [
+        "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+      ],
+      "evidenceTransactionIds": [
+        "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+      ]
+    },
+    {
+      "claimKey": "integrality-gap/governed-bracket-improvement",
+      "stance": "refutes",
+      "summary": "The transaction does not improve the bracket 1.20016<=Gamma<=1.2787: its four-terminal ratio is 12/11 and the family's supremum is 8/7, both below 1.20016, while no universal rounding argument or upper bound below 1.2787 is supplied.",
+      "subjectTransactionIds": [
+        "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+      ],
+      "evidenceTransactionIds": [
+        "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:33aa40552e7b43b0392a066ab9e6ef42d204a6e40dd3255721f5920f01e6d2d7",
+  "judgmentId": "sha256:23d8efa092943fae2b782a0804f04f8e78142612a3553f56806b14a7a6762f07"
+}
