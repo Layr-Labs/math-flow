@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "schur-number-6",
+  "ledgerHead": "6a72758caaeb34a56d8d55653c8a3184ffbbe65e",
+  "problemLedgerDigest": "sha256:c9188dbe0372874de247898e909429615e6a30cb4275786aaeac4012f53a0f12",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "6a72758caaeb34a56d8d55653c8a3184ffbbe65e",
+      "ledgerPosition": 3
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "fredricksen-sweet-536/sum-free-six-coloring",
+      "stance": "supports",
+      "summary": "The subject supplies the complete fixed Fredricksen–Sweet coloring of 1 through 536, its digest, and an exact checker covering all 71,824 unordered Schur triples, including x=y. All witness bytes needed for independent replay are present, so the baseline sum-free six-coloring claim is well supported, although no execution attestation is supplied and originality remains with Fredricksen and Sweet.",
+      "subjectTransactionIds": [
+        "6a72758caaeb34a56d8d55653c8a3184ffbbe65e"
+      ],
+      "evidenceTransactionIds": [
+        "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+        "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+        "6a72758caaeb34a56d8d55653c8a3184ffbbe65e"
+      ]
+    },
+    {
+      "claimKey": "radius-60/blocker-distance-decomposition",
+      "stance": "supports",
+      "summary": "For each fixed color of 537, the complementary pairs {x,537−x} partition the first 536 coordinates, every baseline-monochromatic pair forces a change, and the blocker counts are consistent with the supplied baseline. The auxiliary clauses make each blocker variable true exactly when both endpoints change, yielding an exact decomposition into the unavoidable blocker count plus extra changes. In particular, the 64 color-1 blockers directly exclude C(537)=1 within radius 60.",
+      "subjectTransactionIds": [
+        "6a72758caaeb34a56d8d55653c8a3184ffbbe65e"
+      ],
+      "evidenceTransactionIds": [
+        "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+        "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+        "6a72758caaeb34a56d8d55653c8a3184ffbbe65e"
+      ]
+    },
+    {
+      "claimKey": "radius-60/conditioned-cnf-faithfulness",
+      "stance": "supports",
+      "summary": "The five conditioned CNFs for colors 2 through 6 soundly and completely encode labeled six-colorings through 537, all Schur constraints including x=y, the selected color of 537, and Hamming distance at most 60 from the fixed baseline. The blocker splits, signed-literal Sinz counters, formula dimensions, and case exhaustion are internally consistent, and no invalid color-symmetry reduction is used.",
+      "subjectTransactionIds": [
+        "6a72758caaeb34a56d8d55653c8a3184ffbbe65e"
+      ],
+      "evidenceTransactionIds": [
+        "6a72758caaeb34a56d8d55653c8a3184ffbbe65e"
+      ]
+    },
+    {
+      "claimKey": "radius-60/conditioned-cnf-unsatisfiability",
+      "stance": "uncertain",
+      "summary": "The assessment cannot verify that the five conditioned CNFs are unsatisfiable because none of the referenced LRAT proof payloads is supplied. Their names, hashes, sizes, proof statistics, provenance claims, and a plausible strict replay checker are present and internally consistent, but they do not substitute for the missing proof bytes or a trusted replay attestation. No contradiction is identified; the decisive certificate evidence is absent.",
+      "subjectTransactionIds": [
+        "6a72758caaeb34a56d8d55653c8a3184ffbbe65e"
+      ],
+      "evidenceTransactionIds": [
+        "6a72758caaeb34a56d8d55653c8a3184ffbbe65e"
+      ]
+    },
+    {
+      "claimKey": "radius-60/exclusion-theorem",
+      "stance": "uncertain",
+      "summary": "The theorem that every valid labeled six-coloring through 537 differs from the fixed baseline on at least 61 old coordinates is not established by the supplied artifact set. The color-1 case and the finite reduction are established, but the other five cases depend on missing LRAT proofs. The theorem would follow exactly if proof payloads matching the recorded hashes passed the included verifier against the regenerated formulas.",
+      "subjectTransactionIds": [
+        "6a72758caaeb34a56d8d55653c8a3184ffbbe65e"
+      ],
+      "evidenceTransactionIds": [
+        "6a72758caaeb34a56d8d55653c8a3184ffbbe65e"
+      ]
+    },
+    {
+      "claimKey": "schur-number-6/bounds-unchanged",
+      "stance": "supports",
+      "summary": "The subject correctly limits the result to a neighborhood of one fixed labeled coloring. Even a fully certified radius-60 exclusion would leave colorings at distance at least 61 possible, so it neither constructs a coloring through 537 nor proves global impossibility. No change to 536≤S(6)≤1836 is warranted.",
+      "subjectTransactionIds": [
+        "6a72758caaeb34a56d8d55653c8a3184ffbbe65e"
+      ],
+      "evidenceTransactionIds": [
+        "6a72758caaeb34a56d8d55653c8a3184ffbbe65e"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:2ae01704027d0f382159966bd404bc93164a1490e8c93ee223b89342f59b13bd",
+  "judgmentId": "sha256:f8d51a0852eb5c904f4ced22e6c60aeededf65f464dbafd0855503b96739a8e1"
+}
