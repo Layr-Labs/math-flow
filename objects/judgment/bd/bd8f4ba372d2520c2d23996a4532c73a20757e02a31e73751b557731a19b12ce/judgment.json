@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "maximal-determinant-23",
+  "ledgerHead": "f236017c62c67ce4218c1f81ea34134f0954b556",
+  "problemLedgerDigest": "sha256:26d584bf0173084bf3aeb59baf052fc6194494f5b8fc47f257b414d5a80f591d",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+      "ledgerPosition": 3
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "order-23-ehlich-three-star/orbit-classification",
+      "stance": "supports",
+      "summary": "The classification method for three-edge star perturbations up to parent-block automorphisms and leaf permutations is mathematically sound: the canonical descriptor records block sizes, block-equality relations, the distinguished center, unordered leaves, and capacity constraints, while reconstruction and partition generation cover the intended finite family.",
+      "subjectTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ],
+      "evidenceTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ]
+    },
+    {
+      "claimKey": "order-23-ehlich-three-star/orbit-classification",
+      "stance": "qualifies",
+      "summary": "The reported totals of 1,255 partitions, 1,882,943 feasible indexed specifications, and 102,799 canonical specifications are credible replayable outputs but are not independently derived in the prose. The implemented set-equality diagnostic is tautological, so completeness rests on the descriptor’s mathematical converse, which is stated rather than fully proved but appears straightforward.",
+      "subjectTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ],
+      "evidenceTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ]
+    },
+    {
+      "claimKey": "order-23-ehlich-three-star/rank-two-determinant-formula",
+      "stance": "supports",
+      "summary": "The parent determinant and inverse formulas, the representation of the three-star edge toggles as a rank-two symmetric update, and the resulting determinant correction are correct. Fraction arithmetic and integer Bareiss elimination provide exact computation, with direct determinant reconstruction materially cross-checking the rank-two formula for relevant survivors.",
+      "subjectTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ],
+      "evidenceTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ]
+    },
+    {
+      "claimKey": "order-23-ehlich-three-star/record-threshold-enumeration",
+      "stance": "supports",
+      "summary": "The record-square threshold and its arithmetic encoding are correct, and exact comparison against that threshold is sufficient for the stated local theorem. The exhaustive deterministic verifier reports 74,896 canonical specifications strictly above the record square and none equal to it.",
+      "subjectTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ],
+      "evidenceTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02",
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ]
+    },
+    {
+      "claimKey": "order-23-ehlich-three-star/record-threshold-enumeration",
+      "stance": "qualifies",
+      "summary": "The numerical totals 74,896 and zero are execution-dependent computational findings: static source inspection establishes a complete exact certificate design but cannot itself confirm millions of generated cases without a successful verifier run.",
+      "subjectTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ],
+      "evidenceTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ]
+    },
+    {
+      "claimKey": "order-23-sign-gram/normalized-determinant-square-condition",
+      "stance": "supports",
+      "summary": "Universal divisibility 2^22 | det(A) implies that any order-23 sign Gram matrix G=AA^T must have det(G)/2^44 equal to an integer square. The verifier applies this exact necessary condition correctly, decisively excluding the reported 74,792 above-threshold specifications with nonsquare normalized determinant.",
+      "subjectTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ],
+      "evidenceTransactionIds": [
+        "7b28860c418486cb41e6379e68cc355ff861b1a5",
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ]
+    },
+    {
+      "claimKey": "order-23-ehlich-three-star/local-quadratic-form-obstruction",
+      "stance": "supports",
+      "summary": "Rational congruence of any nonsingular Gram factorization G=AA^T to the identity makes matching local Hasse invariants necessary. The verifier’s exact rational diagonalization, pivot cross-checks, determinant check, and standard odd-prime and 2-adic Hilbert-symbol formulas correctly provide conclusive local obstructions for the reported 83 normalized-square candidates.",
+      "subjectTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ],
+      "evidenceTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ]
+    },
+    {
+      "claimKey": "order-23-ehlich-three-star/local-quadratic-form-obstruction",
+      "stance": "qualifies",
+      "summary": "The count of 83 and the detecting primes are recomputed during replay rather than supplied as a standalone certificate transcript. The argument and implementation appear correct, but the numerical count cannot be audited from prose alone without running the verifier.",
+      "subjectTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ],
+      "evidenceTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ]
+    },
+    {
+      "claimKey": "order-23-ehlich-three-star/cell-moment-nonfactorization",
+      "stance": "supports",
+      "summary": "The inverse-quadratic condition x^T G^-1 x=1 is a valid necessary condition for every sign column, and cell constancy makes exhaustive enumeration by parity-compatible cell sums complete. This excludes the two empty-pattern cases. For the remaining 19 cases, the exact aggregate moment identities and verified integer separating functionals give valid finite Farkas-type contradictions; the certificate logic also checks distinctness and complete accounting of all square candidates.",
+      "subjectTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ],
+      "evidenceTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ]
+    },
+    {
+      "claimKey": "order-23-ehlich-three-star/record-level-nonrealizability",
+      "stance": "supports",
+      "summary": "The accounting 74,896 = 74,792 + 83 + 2 + 19, together with the absence of record-square cases, supports the theorem that no matrix in the precisely specified three-star perturbation family is the Gram matrix of an order-23 sign matrix reaching or exceeding the published record determinant, conditional on successful replay of the classification and exact counts.",
+      "subjectTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ],
+      "evidenceTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02",
+        "7b28860c418486cb41e6379e68cc355ff861b1a5",
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ]
+    },
+    {
+      "claimKey": "order-23-ehlich-three-star/record-level-nonrealizability",
+      "stance": "qualifies",
+      "summary": "The theorem is a strong replayable computational proof only for three-edge star perturbations of Ehlich block matrices. Its assurance remains conditional on execution because no run transcript is supplied, and the artifact is an exact conventional program rather than a formally verified development.",
+      "subjectTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ],
+      "evidenceTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ]
+    },
+    {
+      "claimKey": "order-23-maxdet/global-interval-consequence",
+      "stance": "qualifies",
+      "summary": "The local exclusion does not determine D_23, improve either endpoint of its certified global interval, classify all high-determinant Gram matrices, cover other perturbation graph shapes or off-diagonal values, or supply a larger witness. A global consequence would require an additional reduction theorem or exhaustive treatment of all remaining candidate families, neither of which is supplied.",
+      "subjectTransactionIds": [
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ],
+      "evidenceTransactionIds": [
+        "fb88b7832c0fa7e84c1583110a7df800571bca02",
+        "7b28860c418486cb41e6379e68cc355ff861b1a5",
+        "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:66142c0e261ff722384ba581f38be111103da3cdd5c854c45a9170e8e7fd3c0b",
+  "judgmentId": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e"
+}

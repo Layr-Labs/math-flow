@@ -1,0 +1,785 @@
+{
+  "schemaVersion": 3,
+  "problemId": "maximal-determinant-23",
+  "rootId": "root",
+  "nodes": {
+    "root": {
+      "id": "root",
+      "parentId": null,
+      "type": "root",
+      "title": "Research state for maximal-determinant-23",
+      "summary": "For D_23, the certified interval remains 2,779,447,296,000,000 ≤ D_23 ≤ 2,982,295,321,444,352. The explicit witness certifies the unchanged lower endpoint, and universal divisibility by 2^22 supports the quotient-rounded upper endpoint. A new exact, replayable classification conditionally excludes every candidate in the specified family of three-edge star perturbations of order-23 Ehlich block matrices from record-level sign-Gram realizability. This local structural result does not change either global endpoint and is qualified by the absence of an execution transcript or a reduction covering all globally relevant Gram families. The exact value remains unresolved. The durable programs are exact-witness-certification, arithmetic-divisibility-reduction, and ehlich-three-star-classification.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:32e65b2bbd07d697bffefdc7595f5a415428d6c97c5aace05fdc29990a92f8f9",
+        "section": "## Node: root"
+      },
+      "contentMarkdown": "## Node: root\n\n**Title:** Research state for maximal-determinant-23  \n**Type:** Root  \n**Status:** Active\n\nFor\n\n\\[\nD_{23}=\\max\\left\\{|\\det A|:A\\in\\{-1,+1\\}^{23\\times23}\\right\\},\n\\]\n\nthe immutable judgments currently support the certified global interval\n\n\\[\n\\boxed{\n2{,}779{,}447{,}296{,}000{,}000\n\\le D_{23}\\le\n2{,}982{,}295{,}321{,}444{,}352\n}.\n\\]\n\nThe lower endpoint is\n\n\\[\nR=2^{22}\\,3\\,5^6\\,67\\,211\n =2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nIt remains certified by the explicit \\(23\\times23\\) sign-matrix witness assessed in primary judgment\n\n`sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`.\n\nThat judgment found that the witness reproduces the published record rather than improving it. No supplied judgment exhibits a sign matrix with determinant strictly larger than \\(R\\).\n\nThe supplied real upper estimate is\n\n\\[\nD_{23}\\le\n2^{22}\\,3\\,5^6\\,675\\sqrt{505}\n=\n2^{22}\\cdot31{,}640{,}625\\sqrt{505}.\n\\]\n\nPrimary judgment\n\n`sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`\n\nsupports the universal divisibility statement\n\n\\[\n2^{22}\\mid \\det A\n\\]\n\nfor every order-\\(23\\) sign matrix. Hence \\(D_{23}/2^{22}\\) is an integer, and the exact quotient-level floor\n\n\\[\n\\left\\lfloor31{,}640{,}625\\sqrt{505}\\right\\rfloor\n=711{,}034{,}613\n\\]\n\ngives\n\n\\[\nD_{23}\\le\n2^{22}\\cdot711{,}034{,}613\n=\n2{,}982{,}295{,}321{,}444{,}352.\n\\]\n\nThe ordinary integer floor of the real endpoint is\n\n\\[\n2{,}982{,}295{,}321{,}630{,}773,\n\\]\n\nso divisibility rounding lowers that integer endpoint by \\(186{,}421\\). The supporting judgment characterizes this only as an arithmetic sharpening of the supplied analytic estimate, not as a stronger analytic inequality.\n\nPrimary judgment\n\n`sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`\n\nadditionally supports a sharply scoped structural exclusion for three-edge star perturbations of order-\\(23\\) Ehlich block matrices. According to that judgment, the supplied exact verifier:\n\n- canonically enumerates the specified family up to parent-block automorphisms and permutations of the three leaves;\n- evaluates candidate determinants using exact rank-two update formulas and exact Bareiss cross-checks;\n- reports no candidate at the record square \\(R^2\\);\n- reports \\(74{,}896\\) canonical candidates strictly above \\(R^2\\); and\n- excludes all of those candidates from being sign-matrix Gram matrices through normalized-square, local quadratic-form, inverse-quadratic, and aggregate cell-moment obstructions.\n\nThe judgment treats this as a strong, replayable computational proof for that local family, conditional on successful execution of the supplied verifier. No execution transcript was supplied, so the reported enumeration and exclusion totals remain execution-dependent computational findings rather than totals independently established by the judgment’s prose review.\n\nThis structural exclusion does not change either endpoint of the global interval. In particular, the supporting judgment expressly does not infer that all high-determinant order-\\(23\\) Gram matrices lie in the treated family. It does not cover all perturbation graph shapes, all possible off-diagonal values, or all other candidate Gram families.\n\nThe exact value of \\(D_{23}\\) therefore remains unresolved. The supplied judgments do not:\n\n- prove that the record lower endpoint \\(R\\) is optimal;\n- exhibit a determinant strictly above \\(R\\);\n- prove that the current rounded upper endpoint is attainable;\n- exclude the current upper endpoint globally;\n- classify all high-determinant order-\\(23\\) Gram matrices;\n- supply a reduction theorem placing every globally relevant Gram matrix in the three-star family; or\n- provide an exhaustive search or classification across all remaining candidate families.\n\nThe durable research programs directly under the root are:\n\n- `exact-witness-certification` — exact, independently replayable certification of explicit sign-matrix witnesses and their determinants;\n- `arithmetic-divisibility-reduction` — reduction of order-\\(23\\) sign determinants to exact arithmetic divisibility and quotient-level rounding;\n- `ehlich-three-star-classification` — exact classification and nonrealizability analysis for three-edge star perturbations of order-\\(23\\) Ehlich block Gram matrices.\n\nThe global interval and the unresolved exact-value question remain at root because they span witness, arithmetic, analytic, classification, and search approaches.\n\n**Provenance**\n\n- Frontier source: William P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith, *New lower bounds for the maximal determinant problem* (2003), arXiv:`math/0304410`.\n- Record-witness transaction: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n- Record-witness judgment: `sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`.\n- Arithmetic-reduction transaction: `7b28860c418486cb41e6379e68cc355ff861b1a5`, ledger position 2.\n- Arithmetic-reduction judgment: `sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`.\n- Three-star classification transaction: `f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5`, ledger position 3.\n- Three-star classification judgment: `sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`.\n- No conflict records or reconciliation judgments were supplied.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "ledgerPosition": 1
+        },
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "ledgerPosition": 2
+        },
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "digest": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:fd8e9101785f57ae28831769b324b80cbdeea935e0c2ffaf70816179557c22aa",
+        "revisionNumber": 3
+      },
+      "digest": "sha256:e95208e15fe1f70cb1c65ce08df27a393b18dbcc68c45c17030f17c501f8b374"
+    },
+    "exact-witness-certification": {
+      "id": "exact-witness-certification",
+      "parentId": "root",
+      "type": "program",
+      "title": "Exact certification of explicit maximal-determinant witnesses",
+      "summary": "This program organizes exact, independently replayable certification of explicit sign matrices offered as lower-bound witnesses for D_23. Its scope includes validating 23×23 dimensions and ±1 entries, computing determinants with exact arithmetic, retaining replayable artifacts, and distinguishing certification of a witness from proof of global optimality. It contains the certified order-23 record witness and its fraction-free Bareiss replay method. The assessed artifact is valid, exact, and replayable, but does not improve either numerical frontier or establish optimality. Matrix and determinant-record credit is carried forward to William P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith; Robert Raynor is credited with transcription, documentation, and construction of the compact exact verifier.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:6ac5be05f5171b01eb96cf06ccabe4ae5cc8e9885d47b6ebff3ace229cd7f55c",
+        "section": "## Node: exact-witness-certification"
+      },
+      "contentMarkdown": "## Node: exact-witness-certification\n\n**Title:** Exact certification of explicit maximal-determinant witnesses  \n**Type:** Program  \n**Parent:** `root`  \n**Status:** Active\n\nThis program organizes exact and independently replayable certification of explicit sign matrices offered as witnesses for lower bounds on \\(D_{23}\\). Its scope includes:\n\n- checking that a supplied matrix has exactly \\(23\\) rows and \\(23\\) columns;\n- checking that all entries belong to \\(\\{-1,+1\\}\\);\n- evaluating the determinant using exact rather than floating-point arithmetic;\n- retaining sufficient artifacts for independent replay; and\n- distinguishing certification of a particular witness from proof that the witness is globally optimal.\n\nThe program currently contains two durable concepts:\n\n1. `exact-witness-certification/order-23-record-witness`, representing the explicit order-\\(23\\) sign matrix certified at the published lower endpoint; and\n2. `exact-witness-certification/bareiss-replay-method`, representing the fraction-free exact verification method supplied for that matrix.\n\nAccording to primary judgment\n\n`sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`,\n\nthe current artifact is valid, exact, and independently replayable. Its mathematical role is reproducibility and certification of the published witness. It does not improve either numerical frontier and does not establish optimality.\n\nThe judgment carries forward the artifact’s allocation of credit: the matrix and determinant record are attributed to William P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith, while Robert Raynor is credited with transcription, documentation, and construction of the compact exact verifier. The judgment does not independently reassess discovery or priority.\n\n**Provenance**\n\n- Immutable primary judgment: `sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`.\n- Subject and evidence transaction: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n- The complete matrix and verifier are reported by the judgment as included in that transaction.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:a1123e2f8ff2f8eae3e5c205f4c95eccc274af6e5c124299198bcb52b60288f4",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:06a5cb110440f3d8787fbf86648b273e81855466bb81484101780ec47995e743"
+    },
+    "exact-witness-certification/order-23-record-witness": {
+      "id": "exact-witness-certification/order-23-record-witness",
+      "parentId": "exact-witness-certification",
+      "type": "result",
+      "title": "Certified order-23 record witness",
+      "summary": "The transaction preserves an explicit 23×23 matrix A with entries in {−1,+1} and |det A| = 2^22·3·5^6·67·211 = 2,779,447,296,000,000. With high confidence, the judgment finds that the complete matrix and deterministic exact verifier certify D_23 ≥ 2,779,447,296,000,000. This reproduces the published lower endpoint and neither proves optimality nor improves the upper bound. No generated execution transcript or intermediate Bareiss pivot list is included, but the complete matrix and verifier permit independent execution. Attribution to Orrick, Solomon, Dowdeswell, and Smith is carried forward. External source files referenced by included hashes are not part of the transaction, so row-for-row transcription from a particular external version is not independently established; this does not weaken certification of the included matrix’s determinant.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:6ac5be05f5171b01eb96cf06ccabe4ae5cc8e9885d47b6ebff3ace229cd7f55c",
+        "section": "## Node: exact-witness-certification/order-23-record-witness"
+      },
+      "contentMarkdown": "## Node: exact-witness-certification/order-23-record-witness\n\n**Title:** Certified order-\\(23\\) record witness  \n**Type:** Result  \n**Parent:** `exact-witness-certification`  \n**Status:** Supported with high confidence\n\nThe explicit matrix preserved in transaction\n\n`fb88b7832c0fa7e84c1583110a7df800571bca02`\n\nis assessed by primary judgment\n\n`sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`\n\nas a \\(23\\times23\\) matrix \\(A\\) with entries in \\(\\{-1,+1\\}\\) and\n\n\\[\n|\\det A|\n=\n2^{22}\\,3\\,5^6\\,67\\,211\n=\n2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThe judgment supports this claim with high confidence because the transaction supplies both the complete sign matrix and a deterministic exact verifier. The verifier enforces the dimensions and admissible entries and compares the determinant computed from the parsed matrix with the stated factor product.\n\nAs an admissible matrix with that determinant, the witness certifies\n\n\\[\nD_{23}\\ge 2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThis is the published lower endpoint already present in the problem statement. The witness therefore certifies the known record but does not establish a strictly larger lower bound.\n\nThe witness does not establish that its determinant equals \\(D_{23}\\). The primary judgment records that the artifact contains no exhaustive enumeration, Gram-matrix classification, replayable nonexistence certificate, or other optimality proof excluding matrices with larger determinants. No upper-bound improvement follows from this witness.\n\n**Evidentiary qualification**\n\nThe transaction does not include a generated execution transcript or a list of intermediate Bareiss pivots. Consequently, the large determinant arithmetic is not displayed step by step in the preserved report. The primary judgment does not treat this as a material defect because the complete matrix and deterministic exact verifier are supplied and can be independently executed.\n\n**Attribution and source qualification**\n\nThe judgment carries forward the README attribution of the matrix and determinant record to William P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith.\n\nThe included hashes can assist in checking an externally retrieved arXiv archive and `matData.tex`, but those external source files are not themselves included in the assessed transaction. The judgment therefore does not regard row-for-row transcription from that particular external source version as independently established solely by the included files. This provenance qualification does not weaken the determinant certification, which depends on the matrix and exact verifier actually included in the transaction.\n\n**Provenance**\n\n- Immutable primary judgment: `sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`.\n- Subject and evidence transaction: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n- Frontier attribution carried by the judgment: Orrick, Solomon, Dowdeswell, and Smith.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:8c93fa121021f2ff19b6951f48b3e6c12aed53e5d7b27408273ecacb9c2c8e65",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:541154086098a6ba1290aa3588818be45d97d308b6f49381788b1b97280450c1"
+    },
+    "exact-witness-certification/bareiss-replay-method": {
+      "id": "exact-witness-certification/bareiss-replay-method",
+      "parentId": "exact-witness-certification",
+      "type": "method",
+      "title": "Fraction-free exact determinant replay for the order-23 witness",
+      "summary": "The supplied verifier is a high-confidence, exact, deterministic replay method for the explicit order-23 witness, using fraction-free Bareiss elimination with Python integers. It validates exactly 23 rows of 23 sign characters, converts signs to ±1, copies the input, searches for nonzero pivots, tracks row-swap sign, performs exact integer elimination, aborts on inexact required divisions, and compares the resulting absolute determinant with the expected factor product. The method is independently replayable from the supplied matrix and standard-library Python. Its scope is certification of this witness’s determinant, not exhaustive search, Gram-matrix classification, an upper-bound argument, or an optimality proof. No execution transcript or intermediate pivot list is included. Credit for transcription, documentation, and construction of the compact verifier is carried forward to Robert Raynor.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:6ac5be05f5171b01eb96cf06ccabe4ae5cc8e9885d47b6ebff3ace229cd7f55c",
+        "section": "## Node: exact-witness-certification/bareiss-replay-method"
+      },
+      "contentMarkdown": "## Node: exact-witness-certification/bareiss-replay-method\n\n**Title:** Fraction-free exact determinant replay for the order-\\(23\\) witness  \n**Type:** Method  \n**Parent:** `exact-witness-certification`  \n**Status:** Supported with high confidence\n\nThe verifier assessed in transaction\n\n`fb88b7832c0fa7e84c1583110a7df800571bca02`\n\nprovides an exact, deterministic replay method for the determinant of the explicit order-\\(23\\) witness. Primary judgment\n\n`sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`\n\ncharacterizes the implementation as a standard fraction-free Bareiss elimination using Python integers rather than floating-point arithmetic.\n\nAs recorded by the judgment, the verifier:\n\n1. requires exactly \\(23\\) matrix rows;\n2. requires exactly \\(23\\) sign characters in every row;\n3. rejects characters other than `+` and `-`;\n4. converts those characters to \\(+1\\) and \\(-1\\);\n5. copies the input before determinant elimination;\n6. searches for a nonzero pivot in the active column;\n7. tracks the determinant sign resulting from row interchanges;\n8. performs elimination using exact integer operations;\n9. uses `divmod` and aborts if a required Bareiss division is not exact;\n10. returns the final Bareiss entry with the accumulated row-swap sign correction; and\n11. compares the absolute determinant computed from the matrix against the expected factor product.\n\nThe judgment finds that row pivoting among active rows is handled consistently through the recorded row-swap sign and that failure to find a required pivot would result in a zero determinant, which would fail the expected nonzero comparison.\n\nThe verifier is independently replayable using the supplied matrix and the Python standard library. Its supported scope is exact certification of the determinant of the supplied witness. It is not an exhaustive search, a Gram-matrix classification, an upper-bound argument, or a proof that the witness is optimal.\n\nNo execution transcript or intermediate pivot list is included. The primary judgment treats this as a non-material evidentiary qualification because the complete deterministic verifier is available for direct audit and execution.\n\n**Credit**\n\nThe judgment carries forward credit to Robert Raynor for transcription, documentation, and construction of the compact exact verifier. It does not attribute discovery of the matrix or determinant record to him.\n\n**Provenance**\n\n- Immutable primary judgment: `sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d`.\n- Subject and evidence transaction containing the matrix and verifier: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "digest": "sha256:34be73e7adced95684a58544e50a7ce03a8781b860fa3ba1640129f3bdfb687d",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:ab35abfef39120bf11cbe4b95afb4e84df0c6da4cd3ab3edccdab267e152d144",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:3e9cb1df9551a178feab6bc696ab488258bdee9f90a2525161d4e296be57e4ed"
+    },
+    "arithmetic-divisibility-reduction": {
+      "id": "arithmetic-divisibility-reduction",
+      "parentId": "root",
+      "type": "program",
+      "title": "Arithmetic divisibility and zero-one reduction for order 23",
+      "summary": "This program organizes exact arithmetic reductions for determinants of 23×23 sign matrices: the correspondence with 22×22 zero-one determinants, universal divisibility by 2^22 and its sharpness, divisibility rounding of the supplied real upper estimate, and exact replay of the arithmetic constants and determinant examples. These results certify D_23 ≤ 2^22·711,034,613 = 2,982,295,321,444,352. The program does not derive or improve the underlying analytic estimate and provides no exhaustive classification, endpoint-attainability proof, or restriction specific to near-maximal determinants.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:067655e20db1086793aa760c236e7c0988002a9c6f8313c31b0b852b81628f33",
+        "section": "## Node: arithmetic-divisibility-reduction"
+      },
+      "contentMarkdown": "## Node: arithmetic-divisibility-reduction\n\n**Title:** Arithmetic divisibility and zero-one reduction for order 23  \n**Type:** Program  \n**Parent:** `root`  \n**Status:** Active\n\nThis program organizes exact arithmetic reductions for determinants of \\(23\\times23\\) sign matrices. Its established scope includes:\n\n1. the determinant correspondence between normalized \\(23\\times23\\) sign matrices and \\(22\\times22\\) zero-one matrices;\n2. the universal divisibility of order-\\(23\\) sign determinants by \\(2^{22}\\), including the sharpness of that universal divisor;\n3. divisibility rounding of the supplied real upper estimate; and\n4. exact replay of the relevant arithmetic constants and determinant examples.\n\nAccording to immutable primary judgment\n\n`sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`,\n\nthese results produce the certified upper-bound improvement\n\n\\[\nD_{23}\\le2^{22}\\cdot711{,}034{,}613\n=2{,}982{,}295{,}321{,}444{,}352.\n\\]\n\nThe program does not presently include a derivation or improvement of the underlying real analytic estimate. It also contains no exhaustive test of all sign or zero-one matrices, no classification of candidate Gram matrices, no proof about endpoint attainability, and no restriction shown to apply specifically to near-maximal determinants.\n\nThe program contains the following durable nodes:\n\n- `arithmetic-divisibility-reduction/sign-zero-one-correspondence`;\n- `arithmetic-divisibility-reduction/universal-divisor`;\n- `arithmetic-divisibility-reduction/rounded-upper-bound`;\n- `arithmetic-divisibility-reduction/exact-replay`.\n\n**Attribution**\n\nThe immutable judgment preserves attribution to Orrick, Solomon, Dowdeswell, and Smith for the supplied real upper estimate and published record matrix. It supports attribution to Robert Raynor for the assessed exact presentation and application of the normalization/divisibility argument, the numerical divisibility rounding, and the replay script. It does not establish historical priority for the general \\(2^{n-1}\\) divisibility observation or the sign/zero-one correspondence.\n\n**Provenance**\n\n- Primary judgment: `sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`.\n- Subject and direct evidence transaction: `7b28860c418486cb41e6379e68cc355ff861b1a5`, ledger position 2.\n- Earlier bound and record evidence transaction: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n- No associated conflict or reconciliation record was supplied.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "context"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:d083701b73144b6ce8e976ba75a5c3589a2c626e2d08957f3494cc355e540d0b",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:e041ad4eefd917b23044745ab3e2bb1be4067b7eade4cfe1b0513384166c0531"
+    },
+    "arithmetic-divisibility-reduction/sign-zero-one-correspondence": {
+      "id": "arithmetic-divisibility-reduction/sign-zero-one-correspondence",
+      "parentId": "arithmetic-divisibility-reduction",
+      "type": "result",
+      "title": "Order-23 sign/zero-one determinant correspondence",
+      "summary": "There is an exact correspondence D_23 = 2^22 max{|det B| : B is a 22×22 zero-one matrix}. Normalizing a 23×23 sign matrix and subtracting its first row gives |det A| = 2^22|det B|; conversely, A(B) = [[1,1^T],[1,J−2B]] satisfies det A(B) = (−2)^22 det B. Examples with B=0, B=I_22, and B=C⊕I_19 produce quotient values 0, 1, and −2, ruling out a nontrivial universal quotient residue class and exhibiting both parities among nonsingular examples. These examples do not exclude restrictions applying only near the maximum.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:067655e20db1086793aa760c236e7c0988002a9c6f8313c31b0b852b81628f33",
+        "section": "## Node: arithmetic-divisibility-reduction/sign-zero-one-correspondence"
+      },
+      "contentMarkdown": "## Node: arithmetic-divisibility-reduction/sign-zero-one-correspondence\n\n**Title:** Order-23 sign/zero-one determinant correspondence  \n**Type:** Result  \n**Parent:** `arithmetic-divisibility-reduction`  \n**Status:** Established\n\nImmutable primary judgment\n\n`sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`\n\nsupports the exact correspondence\n\n\\[\nD_{23}\n=\n2^{22}\n\\max\\left\\{|\\det B|:B\\in\\{0,1\\}^{22\\times22}\\right\\}.\n\\]\n\nUnder the judgment’s assessment, signed row and column operations normalize the first row and first column of any \\(23\\times23\\) sign matrix without changing the absolute determinant. Subtracting the normalized first row from the remaining rows produces a lower-right block of the form \\(-2B\\), where \\(B\\) is a \\(22\\times22\\) zero-one matrix. Consequently,\n\n\\[\n|\\det A|=2^{22}|\\det B|.\n\\]\n\nConversely, for every \\(B\\in\\{0,1\\}^{22\\times22}\\), the sign matrix\n\n\\[\nA(B)=\n\\begin{pmatrix}\n1&\\mathbf 1^{\\mathsf T}\\\\\n\\mathbf 1&J-2B\n\\end{pmatrix}\n\\]\n\nsatisfies\n\n\\[\n\\det A(B)=(-2)^{22}\\det B.\n\\]\n\nThe judgment therefore finds that neither direction loses determinant values after accounting for the factor \\(2^{22}\\).\n\nThe same judgment supports the quotient examples:\n\n- \\(B=0\\) gives \\(\\det A(B)/2^{22}=0\\);\n- \\(B=I_{22}\\) gives \\(\\det A(B)/2^{22}=1\\);\n- \\(B=C\\oplus I_{19}\\), with\n  \\[\n  C=\n  \\begin{pmatrix}\n  1&1&0\\\\\n  1&0&1\\\\\n  0&1&1\n  \\end{pmatrix},\n  \\qquad \\det C=-2,\n  \\]\n  gives \\(\\det A(B)/2^{22}=-2\\).\n\nAccording to the judgment, the quotient values \\(0\\) and \\(1\\) rule out any nontrivial residue class modulo \\(m>1\\) containing all order-\\(23\\) determinant quotients. The nonsingular quotient examples \\(1\\) and \\(-2\\) also exhibit both parities.\n\nThis conclusion is qualified: the examples do not exclude congruence, Gram, or other structural restrictions that apply only to matrices whose determinants are near the maximum.\n\n**Provenance**\n\n- Primary judgment: `sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`.\n- Subject and evidence transaction: `7b28860c418486cb41e6379e68cc355ff861b1a5`, ledger position 2.\n- Relevant judgment finding: `order-23-sign-zero-one/determinant-correspondence`.\n- No conflict record was supplied.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:e1a30150459f1a2dd6b968193359ea5f5854ec6979fe390aff22d9795604f6d5",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:a6fd3b719f7591b902bdfe2389b9e51075193d28b6b6cf4770ae774b4a5c7f93"
+    },
+    "arithmetic-divisibility-reduction/universal-divisor": {
+      "id": "arithmetic-divisibility-reduction/universal-divisor",
+      "parentId": "arithmetic-divisibility-reduction",
+      "type": "result",
+      "title": "Greatest universal divisor of order-23 sign determinants",
+      "summary": "Every 23×23 sign-matrix determinant, including zero, is divisible by 2^22. This follows from the normalized zero-one reduction |det A| = 2^22|det B|. The divisor is sharp: taking B=I_22 in the converse construction gives a sign matrix with determinant 2^22, so 2^22 is the greatest positive integer dividing all order-23 sign determinants. This does not establish attainability or sharpness of an upper bound and leaves open stronger restrictions specific to high-determinant matrices.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:067655e20db1086793aa760c236e7c0988002a9c6f8313c31b0b852b81628f33",
+        "section": "## Node: arithmetic-divisibility-reduction/universal-divisor"
+      },
+      "contentMarkdown": "## Node: arithmetic-divisibility-reduction/universal-divisor\n\n**Title:** Greatest universal divisor of order-23 sign determinants  \n**Type:** Result  \n**Parent:** `arithmetic-divisibility-reduction`  \n**Status:** Established\n\nImmutable primary judgment\n\n`sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`\n\nsupports the universal divisibility statement\n\n\\[\n2^{22}\\mid\\det A\n\\qquad\n\\text{for every }A\\in\\{-1,+1\\}^{23\\times23}.\n\\]\n\nThe judgment finds that this includes singular matrices and follows from the normalized zero-one reduction\n\n\\[\n|\\det A|=2^{22}|\\det B|.\n\\]\n\nIt further supports the sharpness statement that \\(2^{22}\\) is the greatest positive integer dividing the determinants of all order-\\(23\\) sign matrices. The assessed witness for sharpness takes \\(B=I_{22}\\) in\n\n\\[\nA(B)=\n\\begin{pmatrix}\n1&\\mathbf 1^{\\mathsf T}\\\\\n\\mathbf 1&J-2B\n\\end{pmatrix},\n\\]\n\nwhich gives\n\n\\[\n\\det A(B)=2^{22}.\n\\]\n\nThus the judgment concludes that every universal divisor must divide \\(2^{22}\\), while \\(2^{22}\\) divides every determinant.\n\nThe sharpness of this universal divisor does not establish sharpness or attainability of any upper bound for \\(D_{23}\\). The judgment expressly leaves open the possibility of stronger restrictions that apply only in the high-determinant regime.\n\n**Provenance**\n\n- Primary judgment: `sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`.\n- Subject and evidence transaction: `7b28860c418486cb41e6379e68cc355ff861b1a5`, ledger position 2.\n- Relevant judgment finding: `order-23-sign-determinant/universal-divisor`.\n- No conflict record was supplied.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:47b165110746840307e82fdc4fb9cdf0c1f179b06441a499a911ad55d6510845",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:b51d4b98523fb0fb9f182845286fb13880d507260d42f9d428182f54493eb458"
+    },
+    "arithmetic-divisibility-reduction/rounded-upper-bound": {
+      "id": "arithmetic-divisibility-reduction/rounded-upper-bound",
+      "parentId": "arithmetic-divisibility-reduction",
+      "type": "result",
+      "title": "Divisibility-rounded upper estimate for D_23",
+      "summary": "Using the supplied analytic estimate D_23 ≤ 2^22·31,640,625√505 and universal divisibility by 2^22, write D_23=2^22q with integer q. The exact floor is q ≤ floor(31,640,625√505)=711,034,613, giving D_23 ≤ 2,982,295,321,444,352. This endpoint is 186,421 below the ordinary integer floor of the real endpoint. It is the strongest rounding based solely on a common universal determinant divisor, but the result does not establish that quotient 711,034,613 occurs, that the endpoint is attainable, or that it equals D_23.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:067655e20db1086793aa760c236e7c0988002a9c6f8313c31b0b852b81628f33",
+        "section": "## Node: arithmetic-divisibility-reduction/rounded-upper-bound"
+      },
+      "contentMarkdown": "## Node: arithmetic-divisibility-reduction/rounded-upper-bound\n\n**Title:** Divisibility-rounded upper estimate for \\(D_{23}\\)  \n**Type:** Certified result  \n**Parent:** `arithmetic-divisibility-reduction`  \n**Status:** Established\n\nImmutable primary judgment\n\n`sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`\n\nsupports the exact arithmetic sharpening\n\n\\[\nD_{23}\\le\n2{,}982{,}295{,}321{,}444{,}352.\n\\]\n\nThe result uses, without rederiving, the supplied analytic estimate\n\n\\[\nD_{23}\\le2^{22}\\cdot c\\sqrt{505},\n\\qquad\nc=3\\cdot5^6\\cdot675=31{,}640{,}625.\n\\]\n\nBy the established universal divisor, the judgment writes\n\n\\[\nD_{23}=2^{22}q\n\\]\n\nfor a nonnegative integer \\(q\\). It then supports\n\n\\[\nq\\le\\left\\lfloor c\\sqrt{505}\\right\\rfloor\n=711{,}034{,}613.\n\\]\n\nThe accepted exact square certificate is\n\n\\[\n711{,}034{,}613^2\n=\n505{,}570{,}220{,}884{,}059{,}769,\n\\]\n\n\\[\nc^2\\cdot505\n=\n505{,}570{,}220{,}947{,}265{,}625,\n\\]\n\nand\n\n\\[\n711{,}034{,}614^2\n=\n505{,}570{,}222{,}306{,}128{,}996.\n\\]\n\nThe middle value lies strictly between the adjacent squares, establishing the quoted quotient floor. The judgment also verifies\n\n\\[\n2^{22}\\cdot711{,}034{,}613\n=\n2{,}982{,}295{,}321{,}444{,}352.\n\\]\n\nFor comparison, the ordinary integer floor of the supplied real endpoint is\n\n\\[\n\\left\\lfloor2^{22}c\\sqrt{505}\\right\\rfloor\n=\n2{,}982{,}295{,}321{,}630{,}773,\n\\]\n\nand the accepted difference is\n\n\\[\n186{,}421.\n\\]\n\nAccording to the judgment, this is the strongest rounding obtainable solely from a common universal determinant divisor, because \\(2^{22}\\) is the greatest such divisor. That qualification does not rule out stronger upper bounds based on Gram conditions, congruences, or other restrictions specific to high-determinant matrices.\n\nThe judgment does not establish that the quotient \\(711{,}034{,}613\\) occurs as a zero-one determinant, that the rounded endpoint is attainable, or that it is the exact value of \\(D_{23}\\).\n\n**Provenance**\n\n- Primary judgment: `sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`.\n- Arithmetic subject transaction: `7b28860c418486cb41e6379e68cc355ff861b1a5`, ledger position 2.\n- Supporting transaction for the supplied analytic estimate: `fb88b7832c0fa7e84c1583110a7df800571bca02`, ledger position 1.\n- Relevant judgment finding: `d23/divisibility-rounded-upper-bound`.\n- No conflict record was supplied.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:673a61f088926e3fee498ad252c3ab10d0a2393b035fe25d4a2bca2e174018fb",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:c8d271877619901a78e9db66a8964bba641bb7e642dadc39c30dfdc3cfa28ff0"
+    },
+    "arithmetic-divisibility-reduction/exact-replay": {
+      "id": "arithmetic-divisibility-reduction/exact-replay",
+      "parentId": "arithmetic-divisibility-reduction",
+      "type": "method",
+      "title": "Exact replay method for order-23 divisibility rounding",
+      "summary": "The supplied verifier is an independently replayable exact-arithmetic resource for the divisibility-rounding constants and determinant examples. It uses integer arithmetic and integer square root, checks the quotient and endpoint floors and rounded-endpoint multiplication, constructs sign matrices from B=I_22 and B=C⊕I_19, and evaluates their determinants by integer Bareiss elimination with exact-divisibility checks. It is not exhaustive, does not classify near-maximal determinants or establish endpoint attainability, and no execution transcript was supplied; the universal theorem rests on the accepted symbolic argument rather than computational enumeration.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:067655e20db1086793aa760c236e7c0988002a9c6f8313c31b0b852b81628f33",
+        "section": "## Node: arithmetic-divisibility-reduction/exact-replay"
+      },
+      "contentMarkdown": "## Node: arithmetic-divisibility-reduction/exact-replay\n\n**Title:** Exact replay method for order-23 divisibility rounding  \n**Type:** Method  \n**Parent:** `arithmetic-divisibility-reduction`  \n**Status:** Available with qualifications\n\nImmutable primary judgment\n\n`sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`\n\nassesses the supplied verifier as a reproducible exact replay artifact for the arithmetic constants and determinant examples used by the divisibility-reduction program.\n\nThe judgment reports that the verifier:\n\n- uses integer arithmetic and integer square root rather than floating-point arithmetic;\n- checks the quotient floor and ordinary endpoint floor exactly;\n- checks multiplication producing the rounded endpoint;\n- deterministically constructs the sign matrices arising from \\(B=I_{22}\\) and \\(B=C\\oplus I_{19}\\);\n- evaluates their determinants by integer Bareiss elimination; and\n- checks exact divisibility at each Bareiss step.\n\nThe verifier is not an exhaustive test of all \\(23\\times23\\) sign matrices or all \\(22\\times22\\) zero-one matrices. The universal divisibility theorem rests on the symbolic argument accepted by the judgment rather than on computational enumeration. The code provides independently replayable consistency checks but does not classify near-maximal determinants or verify the attainability of the rounded endpoint.\n\nNo execution transcript was supplied. The judgment nevertheless finds that the code and displayed exact arithmetic permit independent replay without reliance on floating-point output or an opaque computation.\n\n**Provenance**\n\n- Primary judgment: `sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`.\n- Subject and evidence transaction containing the replay artifact: `7b28860c418486cb41e6379e68cc355ff861b1a5`, ledger position 2.\n- Relevant judgment finding: `order-23-rounding/exact-replay`.\n- No conflict record was supplied.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "ledgerPosition": 2
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        }
+      ],
+      "currentRevision": {
+        "revisionId": "sha256:d2459fcb812c60a698be6be4abfbca3b7c7985afe2e4da2595abc6db86097b64",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:d4ddb8697311ba6a566b2c5795bf15970494c61048df18bd30f81c86311b5072"
+    },
+    "ehlich-three-star-classification": {
+      "id": "ehlich-three-star-classification",
+      "parentId": "root",
+      "type": "program",
+      "title": "Three-edge star perturbations of order-23 Ehlich block matrices",
+      "summary": "This program studies exact classification and sign-Gram nonrealizability for matrices obtained by toggling three edges joining a distinguished center to three unordered leaves in order-23 Ehlich block matrices. The exact verifier reportedly enumerates 1,255 partitions, 1,882,943 feasible indexed specifications, and 102,799 canonical specifications. It reports no candidate at the record square and excludes all 74,896 candidates above it through normalized-square, local quadratic-form, inverse-quadratic, and aggregate cell-moment obstructions. These conclusions are local to the specified family and execution-dependent because no verifier transcript was supplied; they do not alter the certified global interval for D_23.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:32e65b2bbd07d697bffefdc7595f5a415428d6c97c5aace05fdc29990a92f8f9",
+        "section": "## Node: ehlich-three-star-classification"
+      },
+      "contentMarkdown": "## Node: ehlich-three-star-classification\n\n**Title:** Three-edge star perturbations of order-\\(23\\) Ehlich block matrices  \n**Type:** Program  \n**Parent:** `root`  \n**Status:** Active\n\nThis program studies exact classification and sign-Gram nonrealizability for a finite family derived from order-\\(23\\) Ehlich block matrices.\n\nFor every positive integer partition\n\n\\[\nr=(r_1,\\ldots,r_s),\\qquad \\sum_i r_i=23,\n\\]\n\nthe parent matrix is\n\n\\[\nE(r)=20I_{23}-J_{23}\n     +4\\operatorname{diag}(J_{r_1},\\ldots,J_{r_s}).\n\\]\n\nA family member is obtained by selecting four distinct vertices\n\n\\[\n(c,\\ell_1,\\ell_2,\\ell_3)\n\\]\n\nand toggling the three off-diagonal edges between the distinguished center \\(c\\) and the unordered leaves \\(\\ell_1,\\ell_2,\\ell_3\\). An edge value changes from \\(3\\) to \\(-1\\) when its endpoints lie in the same parent block and from \\(-1\\) to \\(3\\) when they lie in different parent blocks.\n\nPrimary judgment\n\n`sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`\n\nfinds the following components mathematically sound:\n\n1. classification up to permutations within parent blocks, permutations of equal-sized parent blocks, and permutations of the three leaves;\n2. exact determinant evaluation through the parent inverse and a rank-two symmetric update;\n3. exact comparison with the published record square;\n4. application of the necessary normalized-square condition for sign Gram matrices;\n5. local Hasse-invariant obstructions;\n6. inverse-quadratic sign-column enumeration by cell sums; and\n7. aggregate cell-moment contradictions certified by integer separating functionals.\n\nThe verifier reportedly enumerates:\n\n\\[\n1{,}255\n\\]\n\npartitions of \\(23\\),\n\n\\[\n1{,}882{,}943\n\\]\n\nfeasible indexed center/leaf-block specifications, and\n\n\\[\n102{,}799\n\\]\n\ncanonical specifications. It reportedly finds no canonical specification at the record square and \\(74{,}896\\) strictly above it.\n\nThe exact reported exclusion accounting is\n\n\\[\n74{,}896\n=\n74{,}792+83+2+19,\n\\]\n\nwhere the four terms correspond respectively to:\n\n- nonsquare normalized determinant;\n- a local Hasse-invariant obstruction;\n- absence of any admissible sign-column pattern satisfying the inverse-quadratic condition; and\n- failure of aggregate cell-moment constraints.\n\nOn that accounting, the judgment supports the local theorem that no matrix in this precisely specified three-star family is the Gram matrix of an order-\\(23\\) sign matrix whose determinant reaches or exceeds the published record \\(R\\).\n\nThe judgment qualifies the program’s computational conclusions in several ways:\n\n- the exact numerical totals depend on successful execution of the verifier;\n- no execution transcript accompanies the source;\n- the orbit-completeness argument relies on the mathematical converse for the canonical descriptor rather than the implemented set-equality diagnostic, which the judgment identifies as tautological;\n- the local Hasse detecting primes are recomputed during replay rather than furnished as a standalone transcript; and\n- the artifact is an exact conventional Python program, not a formally verified development.\n\nStatic inspection found no decisive mathematical error. The judgment describes the source as deterministic, exact, and replayable using only the Python standard library.\n\nThis program is local rather than globally exhaustive. It does not classify all order-\\(23\\) Gram matrices, all three-edge perturbation shapes, perturbations with other off-diagonal values, or every family relevant to the current global upper bound. Its result therefore supplies structural progress without changing the certified interval for \\(D_{23}\\).\n\nThe program’s durable subordinate nodes are:\n\n- `ehlich-three-star-classification/orbit-classification`;\n- `ehlich-three-star-classification/exact-determinant-evaluation`;\n- `ehlich-three-star-classification/record-threshold-enumeration`;\n- `ehlich-three-star-classification/normalized-square-obstruction`;\n- `ehlich-three-star-classification/local-quadratic-form-obstruction`;\n- `ehlich-three-star-classification/cell-moment-nonfactorization`; and\n- `ehlich-three-star-classification/record-level-nonrealizability`.\n\n**Credit carried forward from the judgment**\n\nThe judgment preserves attribution of the Ehlich block framework to Ehlich, the record determinant and bound context to Orrick, Solomon, Dowdeswell, and Smith, and the general candidate-Gram and local quadratic-form methodology to prior literature. The preserved judgment text also identifies Robert Raynor with the specific three-star canonicalization and exact enumeration; the supplied attribution text ends at that point, so no broader credit is inferred here.\n\n**Provenance**\n\n- Subject transaction: `f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5`, ledger position 3.\n- Primary judgment: `sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`.\n- Record evidence transaction: `fb88b7832c0fa7e84c1583110a7df800571bca02`.\n- Arithmetic-divisibility evidence transaction: `7b28860c418486cb41e6379e68cc355ff861b1a5`.\n- No conflict or reconciliation record applies.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "digest": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "context"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:b7c8fd08e41125b2f8af9a4ae68d03b9b9b20ae8966e1986f5d9831bb6c7ec0b",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:adc83fa0fc15af4add2adc8a6867a3cbda447157ef6726798cb62d8e5149b353"
+    },
+    "ehlich-three-star-classification/orbit-classification": {
+      "id": "ehlich-three-star-classification/orbit-classification",
+      "parentId": "ehlich-three-star-classification",
+      "type": "result",
+      "title": "Orbit classification of three-star specifications",
+      "summary": "Three-star specifications are classified up to permutations within parent blocks, permutations of equal-sized parent blocks, and permutations of the three leaves. The canonical descriptor records occupied block sizes, equality relations, the distinguished center, unordered leaves, and capacity constraints. The verifier reportedly produces 1,255 partitions, 1,882,943 feasible indexed specifications, and 102,799 canonical specifications. The counts require successful replay, and completeness rests on the descriptor converse rather than the implemented set-equality diagnostic, which the judgment identifies as tautological.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:32e65b2bbd07d697bffefdc7595f5a415428d6c97c5aace05fdc29990a92f8f9",
+        "section": "## Node: ehlich-three-star-classification/orbit-classification"
+      },
+      "contentMarkdown": "## Node: ehlich-three-star-classification/orbit-classification\n\n**Title:** Orbit classification of three-star specifications  \n**Type:** Classification result  \n**Parent:** `ehlich-three-star-classification`  \n**Status:** Supported with computational qualification\n\nFor each positive partition of \\(23\\), the three-star family selects a distinguished center and three unordered leaves from four distinct vertices of the associated Ehlich block matrix. Primary judgment\n\n`sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`\n\nsupports classification up to:\n\n- arbitrary vertex permutations within each parent block;\n- permutations of parent blocks having equal size; and\n- permutations of the three leaves.\n\nAccording to the judgment, an orbit is determined by:\n\n- the block sizes occupied by the center and leaves;\n- the equality relations specifying which selected vertices occupy the same parent block;\n- the distinguished role of the center;\n- the unordered status of the leaves; and\n- capacity constraints preventing a block from supplying more selected vertices than its size.\n\nThe verifier’s canonical descriptor records this information by using first-occurrence labels separately among blocks of each size and minimizing over leaf permutations. Its reconstruction routine selects distinct representative vertices and checks that reconstruction preserves the descriptor. The recursive partition generator covers nondecreasing positive partitions, while combinations with replacement correctly permit repeated leaf-block membership without imposing a leaf order.\n\nThe reported classification totals are:\n\n\\[\n1{,}255\n\\]\n\npositive partitions of \\(23\\),\n\n\\[\n1{,}882{,}943\n\\]\n\nfeasible indexed specifications, and\n\n\\[\n102{,}799\n\\]\n\ncanonical specifications.\n\nThe judgment considers the descriptor method mathematically sound and the totals credible replayable outputs. It nevertheless records two assurance limitations:\n\n1. the exact totals are not independently derived in the prose and require successful execution for confirmation; and\n2. the implemented test comparing `set(expanded)` with `set(specs)` is tautological because `specs` is constructed from `expanded`.\n\nAccordingly, completeness rests on the stated converse that two assignments have the same descriptor exactly when they are related by equal-size block permutations and leaf permutations. The judgment says this converse is stated rather than fully proved but appears straightforward from the descriptor’s equality-relation encoding.\n\n**Provenance**\n\n- Subject transaction: `f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5`.\n- Supporting and qualifying judgment: `sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`.\n- Claim key: `order-23-ehlich-three-star/orbit-classification`.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "digest": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:751cbe0bb12d45af824d3b01bead34db6da06a8448b77048b5d13e1681a39495",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:8be57c1ee5ea0c61da9d2312a61e6055717052a897be2a429c06ae8bb39c6d0e"
+    },
+    "ehlich-three-star-classification/exact-determinant-evaluation": {
+      "id": "ehlich-three-star-classification/exact-determinant-evaluation",
+      "parentId": "ehlich-three-star-classification",
+      "type": "method",
+      "title": "Exact rank-two determinant evaluation for three-star perturbations",
+      "summary": "The method evaluates determinants of three-star perturbations exactly from closed formulas for the parent Ehlich block determinant and inverse. The three toggled center-leaf edges form a symmetric update of rank at most two, giving an exact determinant correction through the matrix determinant lemma. The verifier uses rational arithmetic and independently reconstructs relevant 23×23 integer matrices for fraction-free Bareiss determinant cross-checks; no floating-point determinant is used.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:32e65b2bbd07d697bffefdc7595f5a415428d6c97c5aace05fdc29990a92f8f9",
+        "section": "## Node: ehlich-three-star-classification/exact-determinant-evaluation"
+      },
+      "contentMarkdown": "## Node: ehlich-three-star-classification/exact-determinant-evaluation\n\n**Title:** Exact rank-two determinant evaluation for three-star perturbations  \n**Type:** Method and formula  \n**Parent:** `ehlich-three-star-classification`  \n**Status:** Supported\n\nFor a partition \\(r=(r_1,\\ldots,r_s)\\) of \\(23\\), write\n\n\\[\nH=20I_{23}+4\\operatorname{diag}(J_{r_1},\\ldots,J_{r_s}),\n\\qquad\nE(r)=H-J.\n\\]\n\nPrimary judgment\n\n`sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`\n\nsupports the parent determinant formula\n\n\\[\n\\det E(r)\n=\n20^{23-s}\\prod_i(20+4r_i)\\,\\Delta,\n\\qquad\n\\Delta=\n1-\\sum_i\\frac{r_i}{4(5+r_i)}.\n\\]\n\nFor vertices \\(x,y\\) in parent blocks \\(i,j\\), respectively, it also supports\n\n\\[\n(E(r)^{-1})_{xy}\n=\n\\frac{\\mathbf 1_{x=y}}{20}\n-\\frac{\\mathbf 1_{i=j}}{20(5+r_i)}\n+\\frac{1}{16(5+r_i)(5+r_j)\\Delta}.\n\\]\n\nIf \\(c\\) is the center and the three leaf-edge changes are encoded by coefficients \\(a_k\\), define\n\n\\[\nv=\\sum_{k=1}^3 a_k e_{\\ell_k}.\n\\]\n\nThe complete symmetric perturbation is then\n\n\\[\ne_cv^{\\mathsf T}+ve_c^{\\mathsf T},\n\\]\n\nwhich has rank at most two. The supported determinant correction is\n\n\\[\n\\det\\!\\left(E+e_cv^{\\mathsf T}+ve_c^{\\mathsf T}\\right)\n=\n\\det(E)\n\\left[\n(1+e_c^{\\mathsf T}E^{-1}v)^2\n-\n(e_c^{\\mathsf T}E^{-1}e_c)\n(v^{\\mathsf T}E^{-1}v)\n\\right].\n\\]\n\nThe verifier implements these calculations with exact rational arithmetic. For the relevant normalized-square survivors, it reconstructs the full \\(23\\times23\\) integer matrix and recomputes its determinant by fraction-free Bareiss elimination. The judgment regards this direct reconstruction as a material arithmetic cross-check of the rank-two formula.\n\nNo floating-point determinant is used.\n\n**Provenance**\n\n- Subject transaction: `f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5`.\n- Supporting judgment: `sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`.\n- Claim key: `order-23-ehlich-three-star/rank-two-determinant-formula`.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "digest": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:d27707b78fe16c8147386d04cbe95d12adeb12786ccb6340243359d24d0d94c8",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:500b1cfddce0bdb3b6fb8f56d59ce989fd22f9637370f0e980f2383962cca938"
+    },
+    "ehlich-three-star-classification/record-threshold-enumeration": {
+      "id": "ehlich-three-star-classification/record-threshold-enumeration",
+      "parentId": "ehlich-three-star-classification",
+      "type": "result",
+      "title": "Exact enumeration at and above the published record square",
+      "summary": "Using the published record R=2^22·3·5^6·67·211 and the condition det(G)=(det A)^2, the exact verifier compares canonical three-star determinants with R^2. Across the reportedly 102,799 canonical specifications, it finds none exactly at R^2 and 74,896 strictly above R^2. The threshold logic and exact certificate design are supported, while the numerical totals remain conditional on successful verifier execution because no run transcript was supplied.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:32e65b2bbd07d697bffefdc7595f5a415428d6c97c5aace05fdc29990a92f8f9",
+        "section": "## Node: ehlich-three-star-classification/record-threshold-enumeration"
+      },
+      "contentMarkdown": "## Node: ehlich-three-star-classification/record-threshold-enumeration\n\n**Title:** Exact enumeration at and above the published record square  \n**Type:** Computational classification result  \n**Parent:** `ehlich-three-star-classification`  \n**Status:** Supported conditional on replay\n\nLet\n\n\\[\nR=2^{22}\\,3\\,5^6\\,67\\,211.\n\\]\n\nFor a sign matrix \\(A\\) with Gram matrix \\(G=AA^{\\mathsf T}\\),\n\n\\[\n\\det G=(\\det A)^2.\n\\]\n\nThus any member of the three-star family capable of supporting\n\n\\[\n|\\det A|\\ge R\n\\]\n\nmust satisfy\n\n\\[\n\\det G\\ge R^2.\n\\]\n\nPrimary judgment\n\n`sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`\n\nsupports the threshold arithmetic used by the verifier:\n\n\\[\n3\\cdot5^6\\cdot67\\cdot211=662{,}671{,}875,\n\\]\n\nand hence\n\n\\[\nR^2=\n\\left(2^{22}\\cdot662{,}671{,}875\\right)^2.\n\\]\n\nAcross the reportedly \\(102{,}799\\) canonical specifications, the deterministic exact verifier reports:\n\n- no specification with determinant exactly \\(R^2\\); and\n- \\(74{,}896\\) specifications with determinant strictly greater than \\(R^2\\).\n\nCandidates below \\(R^2\\) are irrelevant to the stated local record-level exclusion and are not claimed to be nonrealizable by that theorem.\n\nThe verifier compares exact integer determinants and contains no random or heuristic step. The judgment supports the threshold logic and regards the enumeration as a valid replayable certificate design. It qualifies the numerical totals as execution-dependent because static source inspection cannot itself confirm all generated cases and no execution transcript was supplied.\n\nThe verifier also requires the candidate determinants to be divisible by \\(2^{44}\\). The judgment finds this consistent with the family’s entries: the diagonal \\(23\\) and off-diagonal entries \\(3\\) and \\(-1\\) are all congruent to \\(-1\\pmod 4\\), allowing \\(22\\) row differences to contribute the factor \\(4^{22}=2^{44}\\).\n\n**Provenance**\n\n- Subject transaction: `f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5`.\n- Record evidence transaction: `fb88b7832c0fa7e84c1583110a7df800571bca02`.\n- Supporting and qualifying judgment: `sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`.\n- Claim key: `order-23-ehlich-three-star/record-threshold-enumeration`.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "digest": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:be781b12cf430480a61d71cded4a39f379f9be721530b916be8dda4e4bc5aed3",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:a7cc1df1e2f2f9ea0d830a826c099cd2af4cb0ac6929d79e96cbdf893f7b3e4a"
+    },
+    "ehlich-three-star-classification/normalized-square-obstruction": {
+      "id": "ehlich-three-star-classification/normalized-square-obstruction",
+      "parentId": "ehlich-three-star-classification",
+      "type": "result",
+      "title": "Normalized determinant square obstruction in the three-star family",
+      "summary": "Universal divisibility 2^22 | det A implies that det(G)/2^44 must be an integer square whenever G=AA^T is an order-23 sign Gram matrix. The verifier applies this exact necessary condition using integer square root and a squaring check. It reportedly excludes 74,792 of the 74,896 above-record three-star candidates. The criterion is supported, while the exclusion count remains dependent on successful replay.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:32e65b2bbd07d697bffefdc7595f5a415428d6c97c5aace05fdc29990a92f8f9",
+        "section": "## Node: ehlich-three-star-classification/normalized-square-obstruction"
+      },
+      "contentMarkdown": "## Node: ehlich-three-star-classification/normalized-square-obstruction\n\n**Title:** Normalized determinant square obstruction in the three-star family  \n**Type:** Nonrealizability criterion and result  \n**Parent:** `ehlich-three-star-classification`  \n**Status:** Supported with replay-dependent count\n\nFor every order-\\(23\\) sign matrix \\(A\\), the previously supported universal divisibility result gives\n\n\\[\n2^{22}\\mid\\det A.\n\\]\n\nConsequently, if a candidate matrix \\(G\\) is a sign Gram matrix,\n\n\\[\nG=AA^{\\mathsf T},\n\\]\n\nthen\n\n\\[\n\\frac{\\det G}{2^{44}}\n=\n\\left(\\frac{\\det A}{2^{22}}\\right)^2\n\\]\n\nmust be an integer square.\n\nPrimary judgment\n\n`sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`\n\nfinds that the verifier applies this necessary condition correctly. It computes the normalized quotient exactly, applies integer square root, and verifies the result by squaring.\n\nOf the reportedly \\(74{,}896\\) canonical three-star specifications strictly above the record square, the verifier reports that\n\n\\[\n74{,}792\n\\]\n\nhave nonsquare normalized determinant. Subject to successful replay of the enumeration, each of these candidates is conclusively incompatible with an order-\\(23\\) sign-matrix Gram factorization.\n\nThe mathematical criterion is supported without qualification. The count \\(74{,}792\\) remains dependent on successful execution of the exact verifier.\n\n**Provenance**\n\n- Subject transaction: `f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5`.\n- Divisibility evidence transaction: `7b28860c418486cb41e6379e68cc355ff861b1a5`.\n- Divisibility judgment: `sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`.\n- Supporting three-star judgment: `sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`.\n- Claim key: `order-23-sign-gram/normalized-determinant-square-condition`.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "digest": "sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3",
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "digest": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:ec1bb00c610aa4461a29290b05dca38068de963fa81bcaa5f0d2a9c056bbf2db",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:a23c63583b5b933796c9f23fda1fe148462070b373f1c703ec9d3f71b283eebb"
+    },
+    "ehlich-three-star-classification/local-quadratic-form-obstruction": {
+      "id": "ehlich-three-star-classification/local-quadratic-form-obstruction",
+      "parentId": "ehlich-three-star-classification",
+      "type": "result",
+      "title": "Local Hasse-invariant obstruction for normalized-square candidates",
+      "summary": "A rational sign-Gram factorization makes the candidate quadratic form rationally congruent to the identity, so a local Hasse invariant of −1 at any prime rules out the factorization. The verifier reconstructs candidates, obtains exact rational diagonalizations through two cross-checked methods, verifies determinant consistency, and evaluates odd-prime and 2-adic Hilbert symbols. It reportedly excludes 83 of the 104 candidates surviving the normalized-square test. The criterion and implementation are supported, while the count and detecting primes require replay.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:32e65b2bbd07d697bffefdc7595f5a415428d6c97c5aace05fdc29990a92f8f9",
+        "section": "## Node: ehlich-three-star-classification/local-quadratic-form-obstruction"
+      },
+      "contentMarkdown": "## Node: ehlich-three-star-classification/local-quadratic-form-obstruction\n\n**Title:** Local Hasse-invariant obstruction for normalized-square candidates  \n**Type:** Nonrealizability criterion and result  \n**Parent:** `ehlich-three-star-classification`  \n**Status:** Supported with replay-dependent count\n\nIf a nonsingular rational matrix \\(G\\) has a sign-matrix Gram factorization\n\n\\[\nG=AA^{\\mathsf T},\n\\]\n\nthen over \\(\\mathbb Q\\),\n\n\\[\nG=A I_{23}A^{\\mathsf T}.\n\\]\n\nIt is therefore rationally congruent to the identity quadratic form. Matching local Hasse invariants is a necessary condition, and the identity form has local Hasse invariant \\(+1\\). A prime \\(p\\) for which\n\n\\[\n\\epsilon_p(G)=-1\n\\]\n\nconclusively rules out the proposed Gram factorization.\n\nPrimary judgment\n\n`sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`\n\nsupports the verifier’s exact implementation. According to the judgment, it:\n\n1. reconstructs the full candidate matrix;\n2. diagonalizes the associated form through exact rational Schur complements;\n3. independently obtains the same diagonal pivots from ratios of exact leading principal minors;\n4. verifies that the pivot product equals the determinant;\n5. evaluates standard odd-prime and \\(2\\)-adic Hilbert-symbol formulas; and\n6. searches relevant prime divisors until it finds a local invariant of \\(-1\\).\n\nOf the reportedly \\(104\\) above-threshold candidates that survive the normalized-square test, the verifier reports local obstructions for\n\n\\[\n83.\n\\]\n\nThe judgment finds both the rational-congruence argument and the implementation mathematically valid. The count of \\(83\\) and the associated detecting primes are replay-dependent: the primes are recomputed during execution rather than supplied in a separate certificate transcript.\n\n**Provenance**\n\n- Subject transaction: `f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5`.\n- Supporting and qualifying judgment: `sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`.\n- Claim key: `order-23-ehlich-three-star/local-quadratic-form-obstruction`.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "digest": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:af8dfb43cce930807adb99e53f71c957e753e889d91b106573b89f3812d44bc8",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:1b720036b652539a1493f47cf8300d9c33816d88e0322f066f8e0448137c422f"
+    },
+    "ehlich-three-star-classification/cell-moment-nonfactorization": {
+      "id": "ehlich-three-star-classification/cell-moment-nonfactorization",
+      "parentId": "ehlich-three-star-classification",
+      "type": "result",
+      "title": "Inverse-quadratic and aggregate cell-moment nonfactorization",
+      "summary": "For a sign-Gram factorization G=AA^T, every sign column must satisfy x^T G^−1 x=1. Cell constancy reduces this condition to exact finite enumeration by cell sums. Of the final 21 reported normalized-square candidates not excluded locally, 2 reportedly admit no valid sign-column pattern and 19 admit individual patterns but violate necessary aggregate cell moments. Integer separating functionals certify the latter contradictions. The criteria and exact certificate checks are supported, while the 2-plus-19 accounting remains conditional on replay.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:32e65b2bbd07d697bffefdc7595f5a415428d6c97c5aace05fdc29990a92f8f9",
+        "section": "## Node: ehlich-three-star-classification/cell-moment-nonfactorization"
+      },
+      "contentMarkdown": "## Node: ehlich-three-star-classification/cell-moment-nonfactorization\n\n**Title:** Inverse-quadratic and aggregate cell-moment nonfactorization  \n**Type:** Nonrealizability criterion and result  \n**Parent:** `ehlich-three-star-classification`  \n**Status:** Supported with replay-dependent accounting\n\nIf\n\n\\[\nG=AA^{\\mathsf T}\n\\]\n\nand \\(x\\) is a column of the nonsingular sign matrix \\(A\\), then the necessary inverse-quadratic condition is\n\n\\[\nx^{\\mathsf T}G^{-1}x=1.\n\\]\n\nPrimary judgment\n\n`sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`\n\nsupports the verifier’s reduction of this condition to a finite enumeration by cell sums.\n\nThe cells consist of:\n\n- singleton cells for the center and the three leaves; and\n- one residual cell for the unselected vertices of each nonempty parent block.\n\nThe verifier checks the required cell constancy of both \\(G\\) and \\(G^{-1}\\). Consequently, the quadratic value depends only on\n\n\\[\nt_i=\\sum_{a\\in C_i}x_a.\n\\]\n\nFor a cell of size \\(m\\), every possible sign sum is included through\n\n\\[\n-m,-m+2,\\ldots,m.\n\\]\n\nThe judgment finds that the implemented quadratic formula correctly includes the fixed diagonal terms, the within-cell \\(t_i^2\\) terms, and twice the between-cell \\(t_it_j\\) terms.\n\nAmong the final \\(21\\) reported normalized-square candidates not excluded by local Hasse invariants:\n\n- \\(2\\) reportedly admit no sign-column pattern satisfying \\(x^{\\mathsf T}G^{-1}x=1\\);\n- \\(19\\) reportedly admit individual patterns but fail the necessary aggregate cell moments.\n\nFor hypothetical columns \\(x^{(1)},\\ldots,x^{(23)}\\), those moments must satisfy\n\n\\[\n\\sum_{k=1}^{23}t_i^{(k)}t_j^{(k)}\n=\n\\sum_{a\\in C_i}\\sum_{b\\in C_j}G_{ab}.\n\\]\n\nFor each of the \\(19\\) remaining cases, the supplied certificates give an integer linear functional that is nonnegative on every individually admissible pattern but strictly negative on the required aggregate target. The judgment accepts these as valid finite Farkas-type contradictions.\n\nThe verifier reconstructs all admissible patterns and checks the functional inequalities with exact integers rather than trusting an external linear-programming solver. It also reportedly verifies distinctness and complete accounting of the final square candidates.\n\nThe judgment finds no logical gap in these criteria or in the certificate-checking design. The split into \\(2\\) and \\(19\\), like the other family totals, remains conditional on successful replay.\n\n**Provenance**\n\n- Subject transaction: `f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5`.\n- Supporting judgment: `sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`.\n- Claim key: `order-23-ehlich-three-star/cell-moment-nonfactorization`.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "digest": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:64fa31b1a01042bce291dd811504853bd487d4d9a38a626c84b6efc529df01f5",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:67e04ca4174a6f2c66952502d6626589614ea544efae080ef5eb1f8bbd11843e"
+    },
+    "ehlich-three-star-classification/record-level-nonrealizability": {
+      "id": "ehlich-three-star-classification/record-level-nonrealizability",
+      "parentId": "ehlich-three-star-classification",
+      "type": "result",
+      "title": "Record-level nonrealizability of the three-star family",
+      "summary": "Conditional on successful replay, no matrix in the specified family of three-edge star perturbations of order-23 Ehlich block matrices is the Gram matrix of an order-23 sign matrix with determinant magnitude at least the published record R. The verifier reportedly finds no candidate at R^2 and excludes all 74,896 candidates above R^2 through the exact partition 74,792+83+2+19. This is a local nonrealizability theorem only: it does not cover all relevant Gram families, improve either global bound, or determine D_23.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:32e65b2bbd07d697bffefdc7595f5a415428d6c97c5aace05fdc29990a92f8f9",
+        "section": "## Node: ehlich-three-star-classification/record-level-nonrealizability"
+      },
+      "contentMarkdown": "## Node: ehlich-three-star-classification/record-level-nonrealizability\n\n**Title:** Record-level nonrealizability of the three-star family  \n**Type:** Local exclusion theorem  \n**Parent:** `ehlich-three-star-classification`  \n**Status:** Supported conditional on replay\n\nLet\n\n\\[\nR=2^{22}\\,3\\,5^6\\,67\\,211\n\\]\n\nbe the published order-\\(23\\) record determinant.\n\nPrimary judgment\n\n`sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`\n\nsupports the following local conclusion, conditional on successful replay of the supplied exact classification and counts:\n\n> No three-edge star perturbation of an order-\\(23\\) Ehlich block matrix in the precisely specified family is the Gram matrix of an order-\\(23\\) sign matrix \\(A\\) satisfying \\(|\\det A|\\ge R\\).\n\nThe supporting accounting is:\n\n- reportedly no canonical specification has determinant \\(R^2\\);\n- reportedly \\(74{,}896\\) canonical specifications have determinant greater than \\(R^2\\); and\n- all \\(74{,}896\\) are excluded through the exact partition\n\n\\[\n74{,}896\n=\n74{,}792+83+2+19.\n\\]\n\nThe categories are:\n\n1. \\(74{,}792\\) with nonsquare normalized determinant;\n2. \\(83\\) with a local Hasse-invariant obstruction;\n3. \\(2\\) with no admissible sign-column pattern under the inverse-quadratic condition; and\n4. \\(19\\) contradicted by aggregate cell-moment separating functionals.\n\nThe judgment characterizes this as a proof of nonrealizability for the stated family rather than a heuristic non-finding. Its assurance remains conditional on execution because no verifier-run transcript is supplied and the artifact is not formally verified.\n\nThis theorem has no certified global numerical consequence for \\(D_{23}\\). The judgment expressly states that the artifact does not:\n\n- prove that every high-determinant Gram matrix belongs to an Ehlich block perturbation family;\n- cover all three-edge perturbation graph shapes;\n- cover off-diagonal values other than \\(3\\) and \\(-1\\);\n- classify all other candidate Gram families;\n- lower the current global upper bound;\n- improve the record lower bound; or\n- determine \\(D_{23}\\).\n\nA global consequence would require an additional reduction theorem or exhaustive treatment of the remaining candidate families, neither of which is supplied.\n\n**Provenance**\n\n- Subject transaction: `f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5`.\n- Record evidence transaction: `fb88b7832c0fa7e84c1583110a7df800571bca02`.\n- Divisibility evidence transaction: `7b28860c418486cb41e6379e68cc355ff861b1a5`.\n- Supporting and qualifying judgment: `sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e`.\n- Claim key: `order-23-ehlich-three-star/record-level-nonrealizability`.\n- Global-scope qualification: claim key `order-23-maxdet/global-interval-consequence`.\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "ledgerPosition": 3
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+          "digest": null,
+          "relation": "supports"
+        },
+        {
+          "kind": "transaction",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "transaction",
+          "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "digest": "sha256:270a5cfb09d5e967f5ef4bcaf8f7cc659eed00bcf50a2f1148124f4b135fdc1e",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:87b012acc109abbc1dd6a9b4784b6a0070bf203fde03388238372588136dfda3",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:a4fb2c66873a1c8bbdf31b93803701e12c626b7e462846bbeb68469f9b3ad30a"
+    }
+  },
+  "stateDigest": "sha256:bd80e35d1a2492114f04bef62922be1d14ac178b5ef4afcc309759bd838c783f"
+}
