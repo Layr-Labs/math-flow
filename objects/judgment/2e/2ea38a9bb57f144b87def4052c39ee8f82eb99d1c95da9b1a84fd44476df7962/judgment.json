@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "metric-universality-price",
+  "ledgerHead": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+  "problemLedgerDigest": "sha256:3e24c35c1fb305cfd0a675649f584f838bd13e21e7deea673119621ef22813f0",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+      "ledgerPosition": 1
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "simultaneous-nonorthogonality-for-finite-unit-vector-families",
+      "stance": "supports",
+      "summary": "The supplied probabilistic argument proves the simultaneous lower and upper bounds on all projections and the resulting ratio bound, uniformly over arbitrary finite unit-vector families.",
+      "subjectTransactionIds": [
+        "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+      ],
+      "evidenceTransactionIds": [
+        "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+      ]
+    },
+    {
+      "claimKey": "collinear-codebook-distortion-bound-for-finite-rank-one-metric-families",
+      "stance": "supports",
+      "summary": "The supplied collinear construction proves the stated simultaneous distortion bound B(M,m), including the grid-spacing estimate, Gaussian-tail calculation, and exact reduction of normalized rank-one distortion to scalar mean-square error.",
+      "subjectTransactionIds": [
+        "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+      ],
+      "evidenceTransactionIds": [
+        "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+      ]
+    },
+    {
+      "claimKey": "collinear-codebook-construction/algorithmic-explicitness",
+      "stance": "qualifies",
+      "summary": "The codebook formula is explicit once a suitable vector v is supplied, but v is obtained only existentially by the probabilistic method; no deterministic algorithm, complexity bound, finite-precision analysis, or efficient explicit construction is established.",
+      "subjectTransactionIds": [
+        "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+      ],
+      "evidenceTransactionIds": [
+        "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+      ]
+    },
+    {
+      "claimKey": "finite-rank-one-family-overhead-upper-bound",
+      "stance": "supports",
+      "summary": "Assuming the supplied Gaussian rate-distortion converse, the rank-one water-filling calculation and distortion bound prove 0≤Π_n(U,M)≤(1/(2n))log_2(M^2B(M,m)) whenever B(M,m)<1.",
+      "subjectTransactionIds": [
+        "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+      ],
+      "evidenceTransactionIds": [
+        "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+      ]
+    },
+    {
+      "claimKey": "subexponential-rank-one-families-have-zero-restricted-minimax-overhead",
+      "stance": "supports",
+      "summary": "The asymptotic estimates prove that for M_n=ceil(2^{nR}) and ln|U_n|=o(n), B(M_n,|U_n|)=o(1), log_2(M_n^2B)=o(n), and consequently Π_n(U_n,M_n) tends to zero.",
+      "subjectTransactionIds": [
+        "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+      ],
+      "evidenceTransactionIds": [
+        "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+      ]
+    },
+    {
+      "claimKey": "subexponential-fixed-rank-one-families-cannot-witness-positive-universality-price",
+      "stance": "qualifies",
+      "summary": "The corollary is valid for a prescribed subexponential family fixed independently of the codebook. It does not exclude exponentially large or continuous orientation families, codebook-dependent adversaries, higher-rank metrics, or other incompatibility-based lower bounds.",
+      "subjectTransactionIds": [
+        "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+      ],
+      "evidenceTransactionIds": [
+        "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+      ]
+    },
+    {
+      "claimKey": "strict-cost-of-full-gaussian-metric-universality",
+      "stance": "uncertain",
+      "summary": "The supplied evidence decides neither whether π(R_0) is positively bounded for some rate nor whether π(R)=0 for every fixed positive rate. The family-dependent collinear construction gives no new bound for the full positive-semidefinite trace-n metric class and does not improve 0≤π(R)≤R.",
+      "subjectTransactionIds": [
+        "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+      ],
+      "evidenceTransactionIds": [
+        "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:744f3cb8bedf5e9eaa40ff1df8394bbde03cdc8fe043310da50440c196300ab4",
+  "judgmentId": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5"
+}

@@ -1,0 +1,307 @@
+{
+  "schemaVersion": 3,
+  "problemId": "metric-universality-price",
+  "rootId": "root",
+  "nodes": {
+    "root": {
+      "id": "root",
+      "parentId": null,
+      "type": "root",
+      "title": "Research state for metric-universality-price",
+      "summary": "The full Gaussian metric-universality problem remains open: it is unresolved whether some R_0>0 has π(R_0)≥δ>0 or whether π(R)=0 for every fixed R>0. The certified global bracket remains 0≤π(R)≤R. One durable program is active for prescribed finite families of trace-normalized rank-one metrics. Its restricted results do not improve either global bound and do not control all rank-one orientations or higher-rank metrics. No conflict records were supplied, so there is no active adjudicative dispute.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:ffb4c0a67e99ef06846a949170e2f5f1e7bf9b897d87151540f289e53afc5a04",
+        "section": "## Node: root"
+      },
+      "contentMarkdown": "## Node: root\n\n- **Type:** Root\n- **Title:** Research state for metric-universality-price\n- **Status:** Active\n- **Parent:** None\n\n### Global question\n\nFor the minimax overhead\n\n\\[\n\\pi(R)=\\liminf_{n\\to\\infty}\n\\inf_{\\substack{C\\subset\\mathbb R^n\\\\|C|=\\lceil2^{nR}\\rceil}}\n\\sup_{\\substack{\\Sigma\\succeq0\\\\\\operatorname{tr}\\Sigma=n}}\n\\left[\n\\frac1n\\log_2\\lceil2^{nR}\\rceil\n-\nR_{\\mathrm{wf}}\\bigl(\\Sigma,D(C,\\Sigma)\\bigr)\n\\right],\n\\]\n\nthe central question remains whether there exist \\(R_0>0\\) and \\(\\delta>0\\) such that\n\n\\[\n\\pi(R_0)\\geq\\delta,\n\\]\n\nor instead whether universal codebooks can establish\n\n\\[\n\\pi(R)=0\n\\qquad\\text{for every fixed }R>0.\n\\]\n\nThe immutable primary judgment does not decide between these alternatives.\n\n### Current certified global bounds\n\nFor the full deterministic worst-case class of all positive-semidefinite trace-\\(n\\) metrics, the supplied judgment leaves the definition-immediate bracket unchanged:\n\n\\[\n0\\leq \\pi(R)\\leq R.\n\\]\n\nThe newly established restricted rank-one-family result gives neither:\n\n- a positive lower bound for the full \\(\\pi(R)\\), nor\n- a smaller upper bound for the full \\(\\pi(R)\\).\n\nIts codebooks may depend on a prescribed finite orientation family and have no established control over all rank-one orientations or over higher-rank metrics.\n\n### Durable research programs\n\nOne program is active:\n\n- [`program/finite-rank-one-families`](#node-programfinite-rank-one-families): restricted minimax quantization for prescribed finite families of trace-normalized rank-one metrics, including collinear codebooks and limitations on subexponential finite-family lower-bound strategies.\n\n### Conflict status\n\nNo conflict records were supplied. There is consequently no active adjudicative dispute node in the current state. The full minimax question remains open because the judgment records insufficient evidence to resolve it, not because opposed judgments require reconciliation.\n\n### Provenance\n\n- **Primary judgment:** `sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5`\n- **Subject transaction:** `5e12e53d70d9d24eae78099abae00df3e384d0e3`\n- **Evidence transaction:** `5e12e53d70d9d24eae78099abae00df3e384d0e3`\n- **Relevant judgment finding:** `strict-cost-of-full-gaussian-metric-universality`\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "digest": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "relation": "qualifies"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:a780631e9363876318957389537dc22d7659b875e9617570b3a3d7da04cad9ec",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:bf935f2cfd826f646a751190de2c24d1cad8d0597ec9f2dda8480a69537a791a"
+    },
+    "program/finite-rank-one-families": {
+      "id": "program/finite-rank-one-families",
+      "parentId": "root",
+      "type": "program",
+      "title": "Prescribed finite families of trace-normalized rank-one metrics",
+      "summary": "This program studies the restricted minimax functional Π_n(𝒰,M) for a prescribed finite orientation family 𝒰⊂S^{n−1} with metrics Σ_u=nuuᵀ, where the codebook may depend on 𝒰 but must work simultaneously over the family. It establishes simultaneous quantitative nonorthogonality, a collinear scalar-quantization construction, a conditional finite-dimensional overhead bound, zero restricted overhead for prescribed subexponential families at fixed positive rate, and a limitation on using such families as universal lower-bound witnesses. These conclusions do not control exponentially large or continuous orientation classes, codebook-dependent adversaries, higher-rank metrics, or the full trace-normalized positive-semidefinite minimax problem. The required direction vector is obtained existentially by the probabilistic method; no deterministic efficient construction, complexity bound, or finite-precision guarantee is established.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:ffb4c0a67e99ef06846a949170e2f5f1e7bf9b897d87151540f289e53afc5a04",
+        "section": "## Node: program/finite-rank-one-families"
+      },
+      "contentMarkdown": "## Node: program/finite-rank-one-families\n\n- **Type:** Research program\n- **Title:** Prescribed finite families of trace-normalized rank-one metrics\n- **Status:** Active\n- **Parent:** `root`\n\n### Program scope\n\nThis program studies restricted minimax overhead when the uncertainty set is a prescribed finite family\n\n\\[\n\\mathcal U=\\{u_1,\\ldots,u_m\\}\\subset S^{n-1}\n\\]\n\nof orientations, with corresponding metrics\n\n\\[\n\\Sigma_u=n uu^{\\mathsf T}.\n\\]\n\nThe codebook may be tailored to the entire prescribed family \\(\\mathcal U\\), but must work simultaneously for every metric in that family.\n\nFor \\(M\\) codewords, the restricted minimax functional is\n\n\\[\n\\Pi_n(\\mathcal U,M)\n=\n\\inf_{\\substack{C\\subset\\mathbb R^n\\\\|C|=M}}\n\\max_{u\\in\\mathcal U}\n\\left[\n\\frac{\\log_2M}{n}\n-\nR_{\\mathrm{wf}}\n\\bigl(nuu^{\\mathsf T},D(C,nuu^{\\mathsf T})\\bigr)\n\\right].\n\\]\n\nAccording to the primary judgment, the program currently establishes:\n\n1. an existential vector simultaneously nonorthogonal to every orientation in an arbitrary finite family, with quantitative projection bounds;\n2. a collinear \\(M\\)-word codebook with a uniform scalar-quantization distortion bound over the family;\n3. a finite-dimensional restricted-overhead upper bound whenever that distortion bound is below one;\n4. convergence\n   \\[\n   \\Pi_n(\\mathcal U_n,M_n)\\to0\n   \\]\n   for fixed positive rate and prescribed subexponential-size orientation families;\n5. the resulting limitation that a prescribed subexponential family of rank-one orientations cannot itself witness a positive asymptotic universality price against every codebook.\n\n### Program boundary\n\nThe judgment expressly limits these conclusions to prescribed finite rank-one families. They do not control:\n\n- exponentially large orientation families;\n- the continuum of all rank-one orientations;\n- adversarial families selected in a genuinely codebook-dependent way from a larger class;\n- higher-rank or full-rank metrics; or\n- the full trace-\\(n\\) positive-semidefinite minimax problem.\n\nThe collinear codebook may perform poorly outside its selected family. In particular, an orientation orthogonal to its codebook line can give all codewords identical scalar projections. No covering, continuity, or approximation theorem has been supplied to pass from the restricted family to the full metric class.\n\n### Construction status\n\nThe codebook has an explicit formula after a suitable direction vector is supplied. The direction vector itself is obtained only by the probabilistic method. The program therefore establishes an existence result, not a deterministic efficient construction with complexity or finite-precision guarantees.\n\n### Credit and priority provenance\n\nThe primary judgment reports that the underlying artifact attributes the proof and exposition to its named contributor and an OpenAI Codex research agent. It also records that no independent literature search or external priority evidence was supplied. The current organization carries that credit statement forward without independently reassessing novelty or priority.\n\n### Child nodes\n\n- `program/finite-rank-one-families/simultaneous-nonorthogonality`\n- `program/finite-rank-one-families/collinear-quantization`\n- `program/finite-rank-one-families/restricted-overhead-bound`\n\n### Provenance\n\n- **Primary judgment:** `sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5`\n- **Subject transaction:** `5e12e53d70d9d24eae78099abae00df3e384d0e3`\n- **Evidence transaction:** `5e12e53d70d9d24eae78099abae00df3e384d0e3`\n- **Relevant judgment findings:** all six routed findings concerning finite rank-one families and the unresolved full problem\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "digest": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:4b23f527986ec882669f894198a9a91cc4bcd946672d896d1efd04c7a267b7d1",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:1fd615280bf81e06f25381dc1531fecc8f96e083b87453a0a5bc223726ba57bb"
+    },
+    "program/finite-rank-one-families/simultaneous-nonorthogonality": {
+      "id": "program/finite-rank-one-families/simultaneous-nonorthogonality",
+      "parentId": "program/finite-rank-one-families",
+      "type": "lemma",
+      "title": "Simultaneous quantitative nonorthogonality for finite orientation families",
+      "summary": "For every finite family u_1,…,u_m∈S^{n−1}, there exists v∈ℝ^n such that 1/(4m)≤|u_iᵀv|≤√(2 ln(8m)) for every i. If α_i=u_iᵀv and α_*=min_i|α_i|, then max_i|α_i|/α_*≤4m√(2 ln(8m))=:β_m. The result allows arbitrary dependence, repetition, clustering, and linear dependence among the orientations. It is existential and supplies no deterministic algorithm, complexity bound, finite-precision procedure, or numerical-stability guarantee for finding v.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:ffb4c0a67e99ef06846a949170e2f5f1e7bf9b897d87151540f289e53afc5a04",
+        "section": "## Node: program/finite-rank-one-families/simultaneous-nonorthogonality"
+      },
+      "contentMarkdown": "## Node: program/finite-rank-one-families/simultaneous-nonorthogonality\n\n- **Type:** Lemma\n- **Title:** Simultaneous quantitative nonorthogonality for finite orientation families\n- **Status:** Supported\n- **Parent:** `program/finite-rank-one-families`\n\nFor every arbitrary finite family\n\n\\[\nu_1,\\ldots,u_m\\in S^{n-1},\n\\]\n\nthe primary judgment assesses the supplied probabilistic argument as proving the existence of a vector \\(v\\in\\mathbb R^n\\) such that\n\n\\[\n\\frac1{4m}\\leq |u_i^{\\mathsf T}v|\n\\leq \\sqrt{2\\ln(8m)}\n\\qquad\\text{for every }i.\n\\]\n\nWriting\n\n\\[\n\\alpha_i=u_i^{\\mathsf T}v,\n\\qquad\n\\alpha_*=\\min_i|\\alpha_i|,\n\\]\n\nthe same result gives\n\n\\[\n\\frac{\\max_i|\\alpha_i|}{\\alpha_*}\n\\leq\n4m\\sqrt{2\\ln(8m)}\n=:\\beta_m.\n\\]\n\nThe judgment records that this existence statement is uniform over arbitrary geometry of the family: the orientations may be repeated, linearly dependent, highly clustered, or otherwise dependent. Independence among the random Gaussian projections is not required by the supplied argument.\n\nThe result is existential. The judgment does not recognize any deterministic algorithm, complexity bound, numerical-stability guarantee, or finite-precision procedure for finding such a vector \\(v\\).\n\n### Provenance\n\n- **Primary judgment:** `sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5`\n- **Subject transaction:** `5e12e53d70d9d24eae78099abae00df3e384d0e3`\n- **Evidence transaction:** `5e12e53d70d9d24eae78099abae00df3e384d0e3`\n- **Claim key:** `simultaneous-nonorthogonality-for-finite-unit-vector-families`\n- **Judgment stance:** Supports\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "digest": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:a727c3006bdbc5495e9ec5293f4cc095db08a6adaf24aa673de35df13abec5c9",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:7b9e973f68a0f73a377476dab8576f426ce22e1a941cd14f35e33e04729e2c0d"
+    },
+    "program/finite-rank-one-families/collinear-quantization": {
+      "id": "program/finite-rank-one-families/collinear-quantization",
+      "parentId": "program/finite-rank-one-families",
+      "type": "method",
+      "title": "Simultaneous collinear quantization for finite rank-one metric families",
+      "summary": "For 𝒰={u_1,…,u_m}⊂S^{n−1}, choose the existential vector v with α_i=u_iᵀv, α_*=min_i|α_i|>0, and max_i|α_i|/α_*≤β_m=4m√(2 ln(8m)). For M≥2, set A=2√(ln M) and use the collinear codebook c_j=s_jv, where s_j=−A/α_*+2A(j−1)/(α_*(M−1)). Simultaneously for Σ_i=nu_iu_iᵀ, its distortion satisfies D(C,Σ_i)≤B(M,m), where B(M,m)=4β_m² ln(M)/(M−1)²+[2/(√(2π)M²)](2√(ln M)+1/(2√(ln M))). The normalized rank-one distortion is exactly the corresponding scalar Gaussian mean-square quantization error, with no extra factor of n. The guarantee applies only to the prescribed family. The formula is explicit after v is supplied, but v is only established existentially, so no efficient deterministic construction or numerical guarantee is established.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:ffb4c0a67e99ef06846a949170e2f5f1e7bf9b897d87151540f289e53afc5a04",
+        "section": "## Node: program/finite-rank-one-families/collinear-quantization"
+      },
+      "contentMarkdown": "## Node: program/finite-rank-one-families/collinear-quantization\n\n- **Type:** Construction and distortion theorem\n- **Title:** Simultaneous collinear quantization for finite rank-one metric families\n- **Status:** Supported with an explicitness qualification\n- **Parent:** `program/finite-rank-one-families`\n\nLet\n\n\\[\n\\mathcal U=\\{u_1,\\ldots,u_m\\}\\subset S^{n-1},\n\\qquad\n\\Sigma_i=n u_i u_i^{\\mathsf T},\n\\]\n\nand define\n\n\\[\n\\beta_m=4m\\sqrt{2\\ln(8m)}.\n\\]\n\nAccording to the primary judgment, there exists a vector \\(v\\) with\n\n\\[\n\\alpha_i=u_i^{\\mathsf T}v,\\qquad\n\\alpha_*=\\min_i|\\alpha_i|>0,\\qquad\n\\frac{\\max_i|\\alpha_i|}{\\alpha_*}\\leq\\beta_m.\n\\]\n\nFor \\(M\\geq2\\), set\n\n\\[\nA=2\\sqrt{\\ln M}\n\\]\n\nand define the collinear codebook\n\n\\[\nC=\\{c_1,\\ldots,c_M\\},\\qquad c_j=s_jv,\n\\]\n\nwhere\n\n\\[\ns_j\n=\n-\\frac{A}{\\alpha_*}\n+\n\\frac{2A(j-1)}{\\alpha_*(M-1)}.\n\\]\n\nThe judgment assesses the construction as proving, simultaneously for all \\(i\\),\n\n\\[\nD(C,\\Sigma_i)\\leq B(M,m),\n\\]\n\nwith\n\n\\[\nB(M,m)=\n\\frac{4\\beta_m^2\\ln M}{(M-1)^2}\n+\n\\frac{2}{\\sqrt{2\\pi}\\,M^2}\n\\left(\n2\\sqrt{\\ln M}\n+\n\\frac{1}{2\\sqrt{\\ln M}}\n\\right).\n\\]\n\nFor metric \\(i\\), the projected codewords form an equally spaced scalar grid with endpoint magnitude\n\n\\[\nL_i=A\\frac{|\\alpha_i|}{\\alpha_*}\\geq A\n\\]\n\nand spacing\n\n\\[\nh_i=\\frac{2L_i}{M-1}\n\\leq\\frac{2A\\beta_m}{M-1}.\n\\]\n\nThe primary judgment validates the reduction\n\n\\[\nD(C,\\Sigma_i)\n=\n\\mathbb E\\min_{c\\in C}\n\\bigl(Z-u_i^{\\mathsf T}c\\bigr)^2,\n\\qquad Z\\sim N(0,1),\n\\]\n\nso the normalized rank-one distortion is exactly the associated scalar mean-square quantization error. No extra factor of \\(n\\) is required.\n\n### Explicitness qualification\n\nThe codeword formula is explicit after a suitable vector \\(v\\) is supplied. The judgment qualifies stronger algorithmic claims because \\(v\\) is established only existentially through a Gaussian probabilistic argument. The current result does not provide:\n\n- a deterministic construction or search algorithm;\n- a computational complexity bound;\n- finite-precision guarantees; or\n- a numerical-stability analysis.\n\nThus the construction is explicit only in the weak formulaic sense and is not established as an efficient explicit codebook construction.\n\n### Scope\n\nThe guarantee applies only to the prescribed family \\(\\mathcal U\\). It supplies no uniform distortion control for orientations outside that family and no control for general higher-rank metrics.\n\n### Provenance\n\n- **Primary judgment:** `sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5`\n- **Subject transaction:** `5e12e53d70d9d24eae78099abae00df3e384d0e3`\n- **Evidence transaction:** `5e12e53d70d9d24eae78099abae00df3e384d0e3`\n- **Claim keys:**\n  - `collinear-codebook-distortion-bound-for-finite-rank-one-metric-families`\n  - `collinear-codebook-construction/algorithmic-explicitness`\n- **Judgment stances:** Supports the distortion theorem; qualifies algorithmic explicitness\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "digest": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "digest": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "relation": "qualifies"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:b8c261c624199679cbbccc50fd289a3d6714d3039884d67c06aaed3fe7083333",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:3ceb1809fad87351a408866a06a36f143d06b7a26aa8abf654ba6018a2cc7f89"
+    },
+    "program/finite-rank-one-families/restricted-overhead-bound": {
+      "id": "program/finite-rank-one-families/restricted-overhead-bound",
+      "parentId": "program/finite-rank-one-families",
+      "type": "result",
+      "title": "Restricted overhead bound for a finite rank-one family",
+      "summary": "For a prescribed finite family 𝒰={u_1,…,u_m}⊂S^{n−1}, define Π_n(𝒰,M) as the infimum over M-word codebooks of the maximum restricted overhead across metrics nuuᵀ. With β_m=4m√(2 ln(8m)) and B(M,m)=4β_m² ln(M)/(M−1)²+[2/(√(2π)M²)](2√(ln M)+1/(2√(ln M))), whenever B(M,m)<1 the supplied argument proves 0≤Π_n(𝒰,M)≤(1/(2n))log₂(M²B(M,m)), subject to the supplied Gaussian rate-distortion converse. The conversion uses R_wf(nuuᵀ,D)=(1/(2n))log₂(1/D) for 0<D<1. Because the optimizing codebook may depend on 𝒰, this result does not bound the full minimax overhead π(R).",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:ffb4c0a67e99ef06846a949170e2f5f1e7bf9b897d87151540f289e53afc5a04",
+        "section": "## Node: program/finite-rank-one-families/restricted-overhead-bound"
+      },
+      "contentMarkdown": "## Node: program/finite-rank-one-families/restricted-overhead-bound\n\n- **Type:** Finite-dimensional minimax result\n- **Title:** Restricted overhead bound for a finite rank-one family\n- **Status:** Supported subject to the supplied Gaussian rate-distortion converse\n- **Parent:** `program/finite-rank-one-families`\n\nFor a prescribed finite family\n\n\\[\n\\mathcal U=\\{u_1,\\ldots,u_m\\}\\subset S^{n-1},\n\\]\n\ndefine\n\n\\[\n\\Pi_n(\\mathcal U,M)\n=\n\\inf_{\\substack{C\\subset\\mathbb R^n\\\\|C|=M}}\n\\max_{u\\in\\mathcal U}\n\\left[\n\\frac{\\log_2M}{n}\n-\nR_{\\mathrm{wf}}\n\\bigl(nuu^{\\mathsf T},D(C,nuu^{\\mathsf T})\\bigr)\n\\right].\n\\]\n\nLet\n\n\\[\n\\beta_m=4m\\sqrt{2\\ln(8m)}\n\\]\n\nand\n\n\\[\nB(M,m)=\n\\frac{4\\beta_m^2\\ln M}{(M-1)^2}\n+\n\\frac{2}{\\sqrt{2\\pi}\\,M^2}\n\\left(\n2\\sqrt{\\ln M}\n+\n\\frac{1}{2\\sqrt{\\ln M}}\n\\right).\n\\]\n\nWhenever\n\n\\[\nB(M,m)<1,\n\\]\n\nthe primary judgment assesses the supplied argument as proving\n\n\\[\n0\\leq \\Pi_n(\\mathcal U,M)\n\\leq\n\\frac1{2n}\\log_2\\!\\bigl(M^2B(M,m)\\bigr).\n\\]\n\nThe lower bound is attributed to the Gaussian rate-distortion converse supplied with the problem.\n\nFor a rank-one metric\n\n\\[\n\\Sigma=n uu^{\\mathsf T},\n\\]\n\nwhose spectrum is \\((n,0,\\ldots,0)\\), the judgment validates the water-filling identity\n\n\\[\nR_{\\mathrm{wf}}(\\Sigma,D)\n=\n\\frac1{2n}\\log_2\\frac1D\n\\qquad (0<D<1).\n\\]\n\nThe collinear codebook has positive distortion and satisfies \\(D\\leq B(M,m)<1\\), placing it in this water-filling regime. The distortion bound therefore yields the stated restricted-overhead upper bound.\n\nThis is a family-dependent restricted theorem. The optimizing codebook may depend on \\(\\mathcal U\\), so the result does not provide an upper bound for the full minimax overhead \\(\\pi(R)\\).\n\n### Child node\n\n- `program/finite-rank-one-families/subexponential-zero-overhead`\n\n### Provenance\n\n- **Primary judgment:** `sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5`\n- **Subject transaction:** `5e12e53d70d9d24eae78099abae00df3e384d0e3`\n- **Evidence transaction:** `5e12e53d70d9d24eae78099abae00df3e384d0e3`\n- **Claim key:** `finite-rank-one-family-overhead-upper-bound`\n- **Judgment stance:** Supports, assuming the supplied converse\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "digest": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:56f1cfdb0a9ed85cbbe9232139d499f7f803478fa9a39380eb7c400621836971",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:ee44e046ef768a798a946c0409a686791f4dda10f749d34403ccf0db6f62b3eb"
+    },
+    "program/finite-rank-one-families/subexponential-zero-overhead": {
+      "id": "program/finite-rank-one-families/subexponential-zero-overhead",
+      "parentId": "program/finite-rank-one-families/restricted-overhead-bound",
+      "type": "result",
+      "title": "Zero restricted minimax overhead for prescribed subexponential rank-one families",
+      "summary": "Fix R>0 and M_n=⌈2^{nR}⌉. For every prescribed sequence 𝒰_n⊂S^{n−1} satisfying ln|𝒰_n|=o(n), the restricted minimax overhead obeys Π_n(𝒰_n,M_n)→0. Writing m_n=|𝒰_n|, the validated estimates give B(M_n,m_n)=o(1) and log₂(M_n²B(M_n,m_n))=o(n), so the finite-dimensional restricted bound is o(1). The family may have arbitrary geometry but must be prescribed independently of the selected codebook and have subexponential cardinality. This theorem concerns only Π_n and does not establish π(R)=0 for the full metric class.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:ffb4c0a67e99ef06846a949170e2f5f1e7bf9b897d87151540f289e53afc5a04",
+        "section": "## Node: program/finite-rank-one-families/subexponential-zero-overhead"
+      },
+      "contentMarkdown": "## Node: program/finite-rank-one-families/subexponential-zero-overhead\n\n- **Type:** Asymptotic theorem\n- **Title:** Zero restricted minimax overhead for prescribed subexponential rank-one families\n- **Status:** Supported\n- **Parent:** `program/finite-rank-one-families/restricted-overhead-bound`\n\nFix \\(R>0\\) and let\n\n\\[\nM_n=\\lceil2^{nR}\\rceil.\n\\]\n\nFor any prescribed sequence of finite orientation families\n\n\\[\n\\mathcal U_n\\subset S^{n-1}\n\\]\n\nsatisfying\n\n\\[\n\\ln|\\mathcal U_n|=o(n),\n\\]\n\nthe primary judgment assesses the supplied asymptotic estimates as proving\n\n\\[\n\\Pi_n(\\mathcal U_n,M_n)\\longrightarrow0.\n\\]\n\nWriting \\(m_n=|\\mathcal U_n|\\), the judgment specifically validates:\n\n\\[\nB(M_n,m_n)=o(1),\n\\]\n\nso \\(B(M_n,m_n)<1\\) for all sufficiently large \\(n\\), and\n\n\\[\n\\log_2\\!\\bigl(M_n^2B(M_n,m_n)\\bigr)=o(n).\n\\]\n\nConsequently, the finite-dimensional restricted bound gives\n\n\\[\n0\\leq\n\\Pi_n(\\mathcal U_n,M_n)\n\\leq\n\\frac1{2n}\n\\log_2\\!\\bigl(M_n^2B(M_n,m_n)\\bigr)\n=o(1).\n\\]\n\nThe quantifier over \\(\\mathcal U_n\\) permits arbitrary prescribed family geometry but requires subexponential cardinality. The family is fixed independently of the selected codebook, after which the codebook may be tailored to that family.\n\nThis theorem concerns only the restricted functional \\(\\Pi_n\\). It does not establish \\(\\pi(R)=0\\) for the full positive-semidefinite trace-\\(n\\) uncertainty class.\n\n### Child node\n\n- `program/finite-rank-one-families/subexponential-witness-limitation`\n\n### Provenance\n\n- **Primary judgment:** `sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5`\n- **Subject transaction:** `5e12e53d70d9d24eae78099abae00df3e384d0e3`\n- **Evidence transaction:** `5e12e53d70d9d24eae78099abae00df3e384d0e3`\n- **Claim key:** `subexponential-rank-one-families-have-zero-restricted-minimax-overhead`\n- **Judgment stance:** Supports\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "digest": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "relation": "supports"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:14a10acd3bbce688af7d3d9c754c3a0737af322548984f1af3c72cf99df30ad6",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:87699b600ebb3b4bfa5e3cec166d89fe831975b063413bafb59bdfe804069c87"
+    },
+    "program/finite-rank-one-families/subexponential-witness-limitation": {
+      "id": "program/finite-rank-one-families/subexponential-witness-limitation",
+      "parentId": "program/finite-rank-one-families/subexponential-zero-overhead",
+      "type": "result",
+      "title": "Limitation of prescribed subexponential rank-one witness families",
+      "summary": "A sequence of prescribed rank-one orientation families 𝒰_n with ln|𝒰_n|=o(n), fixed independently of the codebook, cannot by itself witness a positive asymptotic universality price against every codebook at fixed positive rate: the corresponding restricted minimax quantity tends to zero. This excludes fixed finite, polynomial-size, and more generally subexponential-size lists as standalone lower-bound witnesses. It does not exclude exponentially large or continuous orientation families, codebook-dependent adversarial choices, higher-rank metrics, or incompatibility mechanisms not captured by one prescribed subexponential list, and it does not rule out a positive universality price for the full problem.",
+      "status": "active",
+      "reportRef": {
+        "artifact": "report.md",
+        "digest": "sha256:ffb4c0a67e99ef06846a949170e2f5f1e7bf9b897d87151540f289e53afc5a04",
+        "section": "## Node: program/finite-rank-one-families/subexponential-witness-limitation"
+      },
+      "contentMarkdown": "## Node: program/finite-rank-one-families/subexponential-witness-limitation\n\n- **Type:** Methodological corollary\n- **Title:** Limitation of prescribed subexponential rank-one witness families\n- **Status:** Supported with a quantifier restriction\n- **Parent:** `program/finite-rank-one-families/subexponential-zero-overhead`\n\nAccording to the primary judgment, a prescribed sequence of subexponential-size rank-one orientation families cannot by itself witness a positive asymptotic universality price against every codebook.\n\nMore precisely, if a lower-bound strategy fixes\n\n\\[\n\\mathcal U_n\\subset S^{n-1}\n\\]\n\nindependently of the codebook, with\n\n\\[\n\\ln|\\mathcal U_n|=o(n),\n\\]\n\nand seeks a positive asymptotic lower bound on\n\n\\[\n\\inf_{\\substack{C\\subset\\mathbb R^n\\\\|C|=M_n}}\n\\max_{u\\in\\mathcal U_n}\n\\left[\nr_n-\nR_{\\mathrm{wf}}\n\\bigl(nuu^{\\mathsf T},D(C,nuu^{\\mathsf T})\\bigr)\n\\right],\n\\]\n\nthen the zero restricted-overhead theorem shows that this quantity tends to zero for fixed \\(R>0\\) and \\(M_n=\\lceil2^{nR}\\rceil\\).\n\nThus fixed finite, polynomial-size, and more generally subexponential-size lists of differently oriented rank-one metrics cannot alone establish a positive asymptotic lower bound against arbitrary codebooks.\n\nThe judgment expressly does **not** extend this limitation to:\n\n1. exponentially large rank-one orientation families;\n2. a continuum of orientations combined with a uniformity or covering argument;\n3. families chosen in a genuinely codebook-dependent way from a larger class;\n4. low-rank, higher-rank, or full-rank adversarial metrics; or\n5. incompatibility mechanisms not captured by one prescribed subexponential list.\n\nAccordingly, this node rules out only the stated restricted lower-bound mechanism. It does not rule out a positive universality price in the full problem.\n\n### Provenance\n\n- **Primary judgment:** `sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5`\n- **Subject transaction:** `5e12e53d70d9d24eae78099abae00df3e384d0e3`\n- **Evidence transaction:** `5e12e53d70d9d24eae78099abae00df3e384d0e3`\n- **Claim key:** `subexponential-fixed-rank-one-families-cannot-witness-positive-universality-price`\n- **Judgment stance:** Qualifies the corollary by its fixed-family quantifier\n",
+      "subjects": [
+        {
+          "kind": "transaction",
+          "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+          "ledgerPosition": 1
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "transaction",
+          "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+          "digest": null,
+          "relation": "context"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "digest": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "relation": "supports"
+        },
+        {
+          "kind": "judgment",
+          "id": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "digest": "sha256:240a3302014101ed126cfb505e28cd63f7dda98218281513772886c2d60e1bc5",
+          "relation": "qualifies"
+        }
+      ],
+      "lineage": [],
+      "currentRevision": {
+        "revisionId": "sha256:eb95e19da8bcb8361f2486a2975e046e2573fcc0de7fd26adb20ca8a85e87426",
+        "revisionNumber": 1
+      },
+      "digest": "sha256:ab218f66d6a4196521ba5b18aaceee6976e12a8cd3fb0071cbb3e7f56ff6e6ff"
+    }
+  },
+  "stateDigest": "sha256:339bda451b69091c21d3b8dbe1f50f92921a5ea1331dffb66cf1ccdfab4b1bee"
+}
