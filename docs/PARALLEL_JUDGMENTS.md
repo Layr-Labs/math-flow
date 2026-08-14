@@ -60,11 +60,21 @@ The runner writes a content-addressed `dependency-packet.json`. It contains the
 declared claims, only their declared prior transactions, and—when available—only
 nodes from a historical knowledge state that cite those dependencies. The state
 must precede the subject; the current state and the rest of the contribution
-ledger are never sent. The output has exactly one assessment and one derived
-routing finding per declared claim. Missing premises, defects, and scope
-qualifications remain fields of that assessment rather than becoming claims.
-Novelty, global placement, program organization, and cumulative state remain
-the knowledge builder's responsibility.
+ledger are never sent.
+
+The judge's overriding objective is to prevent false acceptance. It audits every
+material inference, hypothesis, quantifier, domain restriction, edge case,
+calculation, and dependency application, and it may decompose the proof into as
+many intermediate obligations as rigorous verification requires. A claim is
+valid only after affirmative verification; decisive defects produce `invalid`,
+and unresolved material obligations produce `indeterminate`.
+
+The output still has one assessment and one derived routing finding per declared
+claim, but this is only an identity and indexing invariant. It does not limit the
+depth or breadth of the mathematical audit. Missing premises, proof defects, and
+scope qualifications remain attached to that assessment rather than becoming
+new top-level claim identities. Novelty, global placement, program organization,
+and cumulative state remain the knowledge builder's responsibility.
 
 Before dispatching work, automation can compare the canonical problem ledger
 with the published projection index:

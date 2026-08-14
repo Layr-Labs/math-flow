@@ -462,8 +462,10 @@ def _run_validity_primary_judgment_bundle(
     send = transport or send_chat_completion
     report_prompt = "\n\n".join(
         [
-            "Determine only whether each declared claim is valid from the supplied subject and its explicitly declared premises. Do not identify additional claims, build global knowledge state, assess novelty or priority, organize research programs, or assign credit.",
-            "Write exactly one Markdown section for each declared claim key. Put missing premises, evidence defects, and scope qualifications inside that claim's assessment; they are not separate claims. Return indeterminate when the bounded evidence is insufficient.",
+            "Perform a rigorous, adversarial mathematical correctness audit of each declared claim using the supplied subject and its explicitly declared premises. The dominant objective is to prevent false acceptance: mark a claim valid only after affirmatively verifying its exact statement and every material proof obligation.",
+            "Check all logical inferences, lemma applications, assumptions, quantifiers, domains, edge and degenerate cases, calculations, and dependency hypotheses. Actively look for counterexamples and hidden gaps. Never repair an omitted step or give the submission the benefit of the doubt. Use invalid for a decisive defect and indeterminate whenever any material obligation remains unresolved.",
+            "The declared claim keys organize the final verdicts; they do not constrain the analysis. Within each claim's Markdown section, decompose the proof into as many intermediate obligations and discuss as many defects as rigorous verification requires. Keep those obligations, missing premises, evidence defects, and scope qualifications attached to the corresponding declared claim rather than promoting them to new top-level claim identities.",
+            "Do not build global knowledge state, assess novelty or priority, organize research programs, or assign credit.",
             f"Rubric:\n{json.dumps(spec['rubric'], indent=2, ensure_ascii=False)}",
             f"Problem:\n{problem_statement}",
             f"Dependency packet:\n{json.dumps(packet, indent=2, ensure_ascii=False)}",
@@ -485,7 +487,7 @@ def _run_validity_primary_judgment_bundle(
     claim_keys = [str(claim["claimKey"]) for claim in claims]
     extract_prompt = "\n\n".join(
         [
-            "Extract exactly one validity assessment for each declared claim. Do not create, split, merge, or rename claims. Preserve defects and qualifications as fields of their claim assessment.",
+            "Create one structured validity record for each declared claim key. This is an indexing rule for the already-completed rigorous audit, not a limit on the report's mathematical decomposition. Do not create, split, merge, or rename the declared claim identities. Preserve every material proof defect, unresolved obligation, and qualification within its claim record.",
             "valid means the supplied argument establishes the claim under satisfied premises; invalid means a decisive error or counterexample defeats it; indeterminate means the bounded record does not decide it.",
             f"Declared claims:\n{json.dumps(claims, indent=2, ensure_ascii=False)}",
             f"Allowed dependency evidence IDs:\n{json.dumps(dependency_ids, indent=2)}",

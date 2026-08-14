@@ -597,6 +597,13 @@ class GitProtocolTests(unittest.TestCase):
         report_prompt = str(requests[0]["messages"][1]["content"])
         self.assertIn(dependency, report_prompt)
         self.assertNotIn(unrelated, report_prompt)
+        self.assertIn("prevent false acceptance", report_prompt)
+        self.assertIn("every material proof obligation", report_prompt)
+        self.assertIn("do not constrain the analysis", report_prompt)
+        self.assertIn(
+            "overriding priority is to prevent an incorrect or unsupported result",
+            str(requests[0]["messages"][0]["content"]),
+        )
 
         projection = self.root / "projection"
         publish_batch(projection, [bundle])

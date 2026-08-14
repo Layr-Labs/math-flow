@@ -112,11 +112,16 @@ automatic squash merge to main
   declared claims, explicitly cited prior transactions, and only historical
   knowledge nodes grounded in those dependencies. It must never receive the
   current post-subject state or an automatically embedded preceding ledger.
-- A validity-only primary judge assesses every declared claim exactly once.
-  Missing premises, evidence issues, and scope qualifications are properties of
-  that assessment, not additional mathematical claims. Novelty, frontier
-  placement, research-program organization, and cumulative state belong to the
-  knowledge builder.
+- A validity-only primary judge devotes its mathematical work to rigorous,
+  conservative correctness verification, with prevention of false acceptance
+  as its overriding priority. It may decompose a proof into any number of
+  intermediate obligations and must audit every material inference, assumption,
+  quantifier, domain restriction, edge case, calculation, and dependency use.
+  One structured assessment per declared claim is an identity/indexing rule,
+  not a restriction on the analysis. Missing premises, evidence issues, and
+  scope qualifications remain properties of that assessment rather than new
+  top-level claim identities. Novelty, frontier placement, research-program
+  organization, and cumulative state belong to the knowledge builder.
 - The current OpenRouter judges have no shell, code interpreter, or tool calls.
   They receive supported repository artifacts as quoted text and return model
   output. Executable evidence must use a separately governed objective verifier;
