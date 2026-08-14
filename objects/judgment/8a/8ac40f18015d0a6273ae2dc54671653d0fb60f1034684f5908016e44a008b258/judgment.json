@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "judgmentKind": "primary",
+  "problemId": "replicable-pac-sample-complexity",
+  "ledgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+  "problemLedgerDigest": "sha256:59e95bedfc06795891eb39aadfa5e86f60a4a42c424fdf6f47dbcaba94f508dc",
+  "judgeSpec": {
+    "id": "openrouter-markdown-judgment-v1",
+    "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+      "ledgerPosition": 1
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "uniform-cyclic-half-interval-proper-replicable-upper-bound",
+      "stance": "supports",
+      "summary": "Proven by the supplied argument: for odd k under the uniform distribution on Z_k, there is a proper replicable learner with sample complexity O((log(1/δ)+1/ρ)/ε), specifically n at least max{(1/ε)log(2/δ), 12/(ερ)}. The shifted-partition accuracy argument, version-space concentration, and exact-output replicability bound are mathematically sound.",
+      "subjectTransactionIds": [
+        "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+      ],
+      "evidenceTransactionIds": [
+        "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+      ]
+    },
+    {
+      "claimKey": "uniform-cyclic-half-interval-replicable-lower-bound",
+      "stance": "supports",
+      "summary": "Proven in the stated regime, including against randomized, computationally unbounded, improper learners: when 0<ε≤1/4, 0<δ,ρ≤1/20, and odd k≥1/(5ερ), every learner working for all targets under the fixed uniform distribution requires n≥1/(120ερ). The mode extraction, symmetric coupling, adjacent-mode agreement bound, and long-path accuracy argument are valid.",
+      "subjectTransactionIds": [
+        "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+      ],
+      "evidenceTransactionIds": [
+        "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+      ]
+    },
+    {
+      "claimKey": "uniform-cyclic-half-interval-sample-complexity-characterization",
+      "stance": "qualifies",
+      "summary": "The Θ(1/(ερ)) characterization is correct for fixed small confidence parameters, or more generally when log(2/δ)=O(1/ρ), but is overstated if δ may vary arbitrarily. For extremely small δ, the proved upper bound is governed by (1/ε)log(1/δ), and no matching confidence-dependent lower bound is supplied; this qualification does not affect the two numbered bounds themselves.",
+      "subjectTransactionIds": [
+        "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+      ],
+      "evidenceTransactionIds": [
+        "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+      ]
+    },
+    {
+      "claimKey": "worst-case-replicable-lower-bound-from-uniform-half-intervals",
+      "stance": "supports",
+      "summary": "The transfer to the worst-case quantity n_rep is logically valid under the stated odd-k and parameter conditions: any learner required to work for every distribution must work for the uniform distribution on Z_k, so n_rep≥1/(120ερ). The resulting corollary is weak, has no growing log k factor, and does not improve the established headline lower bound.",
+      "subjectTransactionIds": [
+        "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+      ],
+      "evidenceTransactionIds": [
+        "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+      ]
+    },
+    {
+      "claimKey": "absence-of-log-k-cost-for-uniform-one-coordinate-half-intervals",
+      "stance": "qualifies",
+      "summary": "The absence of an additional growing log k cost is supported only for the fixed uniform-distribution experiment, because the proper learner’s bound is independent of k for fixed ε,δ,ρ. It does not rule out greater replicable sample complexity for the same class H_k under an adversarial nonuniform distribution; the warranted conclusion is only that the uniform one-coordinate mechanism does not itself generate a growing log k factor.",
+      "subjectTransactionIds": [
+        "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+      ],
+      "evidenceTransactionIds": [
+        "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+      ]
+    },
+    {
+      "claimKey": "naive-coordinatewise-replicability-tensorization-scaling",
+      "stance": "qualifies",
+      "summary": "The coordinatewise tensorization calculation is a plausible heuristic, not a theorem about the original multidimensional i.i.d. family. Allocating about n/d samples per coordinate suggests per-coordinate instability d/(nε), total mismatch d²/(nε), and the naive scaling n=O(d²/(ερ)); however, random coordinate counts and possible global structure prevent this calculation from establishing a multidimensional theorem.",
+      "subjectTransactionIds": [
+        "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+      ],
+      "evidenceTransactionIds": [
+        "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+      ]
+    }
+  ],
+  "reportDigest": "sha256:182428b91985ed9a9da41242a71e0d6c8178a772301d4f5c611d8eee896abfc2",
+  "judgmentId": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c"
+}
