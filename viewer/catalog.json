@@ -30565,6 +30565,1271 @@
     },
     {
       "id": "openrouter-research-v1",
+      "problemId": "replicable-pac-sample-complexity",
+      "label": "openrouter-research-v1",
+      "projectionSpec": {
+        "id": "openrouter-research-v1",
+        "description": "The default parallel OpenRouter judgment projection with serialized, program-oriented hierarchical knowledge formation.",
+        "digest": "sha256:eb2e997ae1f7ee8a619c0c7cd0362f696ab6c70682ffb12a856407a43684abd3",
+        "engine": "openrouter-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [],
+        "scheduling": {
+          "judgmentMaxParallel": 16,
+          "knowledgeMinimumIntervalSeconds": 300,
+          "maximumJudgmentsPerBuild": 500
+        },
+        "runner": null
+      },
+      "builder": {
+        "id": "openrouter-research-program-builder-v2",
+        "digest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c"
+      },
+      "latestRunDigest": "sha256:3435eae819a6188d62f74a7a18886dd28f0d8bf2f68a6b546d6c95ec98cb47d7",
+      "runCount": 1,
+      "data": {
+        "schemaVersion": 1,
+        "problem": {
+          "id": "replicable-pac-sample-complexity",
+          "title": "Sample complexity of replicable realizable PAC learning",
+          "statementMarkdown": "# Sample complexity of replicable realizable PAC learning\n\nLet \\(H\\subseteq\\{0,1\\}^X\\) be a finite hypothesis class. A realizable labeled\ndistribution is obtained by choosing a distribution \\(D\\) on \\(X\\) and a\ntarget \\(h^\\star\\in H\\), then labeling \\(x\\sim D\\) by \\(h^\\star(x)\\). For an\narbitrary classifier \\(g\\in\\{0,1\\}^X\\), write\n\n\\[\n\\operatorname{err}_{D,h^\\star}(g)\n=\\Pr_{x\\sim D}[g(x)\\ne h^\\star(x)].\n\\]\n\nA randomized, possibly improper learner \\(A\\), given \\(n\\) independent labeled\nexamples, returns a classifier \\(A(S;r)\\in\\{0,1\\}^X\\). It is\n\\((\\varepsilon,\\delta)\\)-accurate if for every \\(D\\) and \\(h^\\star\\in H\\),\n\n\\[\n\\Pr_{S,r}\\!\\left[\n\\operatorname{err}_{D,h^\\star}(A(S;r))>\\varepsilon\n\\right]\\le\\delta.\n\\]\n\nIt is \\(\\rho\\)-replicable if, for every \\(D\\) and \\(h^\\star\\in H\\), two\nindependent samples \\(S_1,S_2\\) from that realizable distribution, processed\nwith the same internal random seed \\(r\\), satisfy\n\n\\[\n\\Pr_{S_1,S_2,r}[A(S_1;r)=A(S_2;r)]\\ge1-\\rho.\n\\]\n\nLet \\(n_{\\mathrm{rep}}(N,\\varepsilon,\\delta,\\rho)\\) be the supremum, over all\ndomains \\(X\\) and finite classes \\(H\\subseteq\\{0,1\\}^X\\) with \\(|H|\\le N\\),\nof the least sample size of an unrestricted, computationally unbounded,\npossibly improper randomized learner satisfying both conditions above.\nAll logarithms below are natural. Determine this worst-case sample complexity.\nIn particular, for fixed sufficiently small positive \\(\\rho\\) and \\(\\delta\\),\nclose the current gap in the exponent of \\(\\log N\\):\n\n\\[\n\\widetilde\\Omega\\!\\left(\n\\frac{(\\log N)^{3/2}}{\\varepsilon}\n\\right)\n\\ \\le\\ n_{\\mathrm{rep}}(N,\\varepsilon,\\delta,\\rho)\n\\ \\le\\ O\\!\\left(\\frac{(\\log N)^2}{\\varepsilon}\\right).\n\\]\n\nHere the tilde on the established lower bound suppresses factors logarithmic\nin \\(\\log N\\) and \\(1/\\varepsilon\\); \\(\\rho\\) and \\(\\delta\\) are fixed in\nthis exponent comparison.\n\nThus a headline result may take either form:\n\n- construct an explicit parameterized family \\((X_m,H_m)\\) and prove\n  \\(n_{\\mathrm{rep}}(|H_m|,\\varepsilon,\\delta,\\rho)\n  =\\widetilde\\Omega((\\log|H_m|)^c/\\varepsilon)\\) for some \\(c>3/2\\), ideally\n  \\(c=2\\), by showing that every learner which is both\n  \\((\\varepsilon,\\delta)\\)-accurate and \\(\\rho\\)-replicable has an adversarial\n  realizable choice of \\(D\\) and \\(h^\\star\\) requiring that many samples; or\n- give a universal learner with an upper bound\n  \\[\n  O\\!\\left(\\frac{(\\log|H|)^c}{\\varepsilon}\n  \\operatorname{polylog}\\!\\left(\n  \\log|H|,\\frac1\\varepsilon,\\frac1\\rho,\\frac1\\delta\n  \\right)\\right)\n  \\]\n  for some \\(c<2\\), ideally \\(c=3/2\\), with every suppressed factor and its\n  dependence on \\(\\rho\\) and \\(\\delta\\) explicit.\n\nThe universal finite-class upper bound of Bun et al. is\n\n\\[\nO\\!\\left(\n\\frac{\\log^2|H|+\\log(1/(\\rho\\delta))}\n{\\varepsilon\\rho^2}\\log^3\\frac1\\rho\n\\right).\n\\]\n\nLarsen--Mathiasen--Pabbaraju--Svendsen prove that for every\n\\(d\\ge10^{11}\\) and \\(0<\\varepsilon,\\delta,\\rho\\le10^{-4}\\), there is a\nfinite class of VC dimension \\(d\\) for which every learner has an adversarial\nrealizable distribution requiring at least\n\n\\[\n\\frac{10^{-9}(\\log|H|)^{3/2}}\n{\\varepsilon(\\log\\log|H|)^2\\log(\\log|H|/\\varepsilon)}.\n\\]\n\nTheir hard family uses \\(X=[d]\\times\\mathbb Z_k\\) for prime \\(k\\),\n\\(|H|=k^d\\), cyclic half-interval hypotheses, and a uniform distribution.\nThey also report a family-specific\n\\(\\widetilde O((\\log|H|)^{3/2}/(\\rho\\varepsilon))\\) learner. This is the\nsource's notation and its summary leaves the suppressed polylogarithmic\ndependence implicit. It nevertheless rules out a stronger \\(\\log|H|\\)\nexponent for essentially the same family, so such a lower bound requires a\ngenuinely different hard family or technique.\nThese are established external baselines, not Math Flow ledger evidence.\n\nUseful contributions include:\n\n- a new explicit hard family and a proof quantified over every learner that is\n  both accurate and replicable, with the order of all asymptotic parameters\n  stated and any dependence of the family on\n  \\(\\varepsilon,\\delta,\\rho\\) disclosed;\n- a universal replicable-learning algorithm improving the logarithmic\n  exponent or the current \\(\\rho^{-2}\\) dependence toward \\(\\rho^{-1}\\);\n- a combinatorial, expansion, isoperimetric, spectral, or information-theoretic\n  hardness criterion and an explicit family satisfying it;\n- a matching learner or counterexample that rules out a proposed hard family;\n- a sharp theorem for a substantial restricted class, with the restriction\n  stated in the claim;\n- removal of polylogarithmic losses or extension of the known parameter regime;\n  or\n- finite computation or numerical evidence used as a clearly labeled lead for\n  an asymptotic theorem.\n\nA single finite instance, empirical instability, or a construction without a\nuniversal lower-bound proof against randomized learners does not establish the\nheadline lower bound. Proper-only, efficient-only, or distribution-restricted\nclaims must be labeled if they do not cover the general definition above.\n\n## Frontier sources\n\n- Mark Bun, Marco Gaboardi, Max Hopkins, Russell Impagliazzo, Rex Lei, Toniann\n  Pitassi, Satchit Sivakumar, and Jessica Sorrell,\n  [Stability is Stable: Connections between Replicability, Privacy, and Adaptive Generalization](https://arxiv.org/abs/2303.12921),\n  STOC 2023.\n- Kasper Green Larsen, Markus Engelund Mathiasen, Chirag Pabbaraju, and\n  Clement Svendsen,\n  [The Sample Complexity of Replicable Realizable PAC Learning](https://arxiv.org/abs/2602.19552),\n  STOC 2026.\n\nThe open exponent gap was checked against these primary sources on 2026-08-12.\n"
+        },
+        "ledgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+        "transactions": [
+          {
+            "ordinal": 1,
+            "transactionId": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "contributionId": "one-coordinate-half-interval-matching-bound",
+            "path": "problems/replicable-pac-sample-complexity/contributions/one-coordinate-half-interval-matching-bound",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# One-coordinate cyclic half-intervals have matching uniform-distribution bounds\n\n## Exact restricted theorem and quantifiers\n\nLet \\(k\\geq 3\\) be odd, let \\(X=\\mathbb Z_k\\), and put\n\n\\[\n\\ell=\\frac{k-1}{2},\\qquad\nI_i=\\{i,i+1,\\ldots,i+\\ell-1\\}\\pmod k,\n\\qquad h_i=\\mathbf 1_{I_i}.\n\\]\n\nWrite \\(H_k=\\{h_i:i\\in\\mathbb Z_k\\}\\), and fix \\(D\\) to be the uniform\ndistribution on \\(\\mathbb Z_k\\).  This is one coordinate of the cyclic\nhalf-interval construction of Larsen--Mathiasen--Pabbaraju--Svendsen.\n\nThe following result is **distribution-restricted**: \\(D\\) is fixed to be\nuniform.  The upper bound is proper, while the lower bound allows every\nrandomized, computationally unbounded, possibly improper learner.\n\n**Theorem.**\n\n1. For every odd \\(k\\geq3\\) and every\n   \\(\\varepsilon,\\delta,\\rho\\in(0,1)\\), define\n   \\[\n   L=\\left\\lfloor\\frac{\\varepsilon k}{2}\\right\\rfloor+1,\n   \\qquad q=\\left\\lceil\\frac{k}{L}\\right\\rceil.\n   \\]\n   There is a proper randomized learner \\(A_{k,\\varepsilon}\\) such that, for\n   every target \\(h_i\\in H_k\\), \\(A_{k,\\varepsilon}\\) is simultaneously\n   \\((\\varepsilon,\\delta)\\)-accurate and \\(\\rho\\)-replicable under \\(D\\) whenever\n   \\[\n   n\\geq\n   \\max\\left\\{\n      \\frac{1}{\\varepsilon}\\log\\frac{2}{\\delta},\n      \\frac{4q}{\\rho}\n   \\right\\}.\n   \\]\n   Since \\(q<2/\\varepsilon+1\\leq3/\\varepsilon\\), it suffices that\n   \\[\n   n\\geq\n   \\max\\left\\{\n      \\frac{1}{\\varepsilon}\\log\\frac{2}{\\delta},\n      \\frac{12}{\\varepsilon\\rho}\n   \\right\\}.\n   \\]\n\n2. Conversely, suppose\n   \\[\n   0<\\varepsilon\\leq\\frac14,qquad\n   0<\\delta,\\rho\\leq\\frac1{20},qquad\n   k\\geq\\frac{1}{5\\varepsilon\\rho}.\n   \\]\n   If a randomized, possibly improper learner \\(A\\), using \\(n\\) samples, is\n   \\((\\varepsilon,\\delta)\\)-accurate and \\(\\rho\\)-replicable under the fixed\n   uniform \\(D\\) for **every** target \\(h_i\\in H_k\\), then\n   \\[\n   n\\geq\\frac{1}{120\\varepsilon\\rho}.\n   \\]\n\nThe order of quantifiers in the lower bound is therefore\n\n\\[\n\\forall A\\;\\forall n\\;\n\\left[\n  \\left(\\forall i\\;\\Pr_{S,r}[\\operatorname{err}_i(A(S;r))>\n  \\varepsilon]\\leq\\delta\\right)\n  \\land\n  \\left(\\forall i\\;\\Pr_{S_1,S_2,r}[A(S_1;r)=A(S_2;r)]\n  \\geq1-\\rho\\right)\n\\right]\n\\Longrightarrow n\\geq\\frac{1}{120\\varepsilon\\rho}.\n\\]\n\nHere each \\(S,S_1,S_2\\) is independently drawn from the realizable labeled\ndistribution determined by the already quantified target \\(h_i\\), and the two\nruns in the replicability probability share the seed \\(r\\).  The distribution\n\\(D\\) is not chosen after the learner: it is the fixed uniform distribution.\n\nThus, in the lower-bound regime\n\\(0<\\varepsilon\\leq1/4\\), \\(0<\\delta,\\rho\\leq1/20\\), and sufficiently large\n\\(k\\), the restricted sample complexity is\n\\(\\Theta(1/(\\varepsilon\\rho))\\), with no dependence on\n\\(\\log |H_k|=\\log k\\).\n\n## Half-interval geometry\n\nFor \\(0\\leq t\\leq\\ell\\), direct inspection of the two shifted half-intervals\ngives\n\n\\[\n\\Pr_{x\\sim D}[h_i(x)\\ne h_{i+t}(x)]=\\frac{2t}{k}.\n\\tag{1}\n\\]\n\nThe same formula holds for \\(i-t\\).  Moreover, along either orientation the\ndisagreement sets are nested: if \\(0\\leq t\\leq s\\leq\\ell\\), then\n\n\\[\n\\{x:h_i(x)\\ne h_{i+t}(x)\\}\n\\subseteq\n\\{x:h_i(x)\\ne h_{i+s}(x)\\},\n\\tag{2}\n\\]\n\nand likewise with \\(+t,+s\\) replaced by \\(-t,-s\\).  These two elementary facts\ndrive both bounds.\n\n## Upper bound\n\n### The learner\n\nFix a partition of the cycle \\(\\mathbb Z_k\\) into \\(q\\) nonempty consecutive\nblocks, each of length at most \\(L\\), and distinguish one representative in\neach block.  The shared random seed is a uniform shift \\(U\\in\\mathbb Z_k\\) of\nthis entire partition, including its representatives.\n\nFor a labeled sample \\(S\\) generated by target \\(h_i\\), let\n\n\\[\nV(S)=\\{j\\in\\mathbb Z_k:h_j\\text{ is consistent with }S\\}\n\\]\n\nbe the version space.  It is nonempty because \\(i\\in V(S)\\).  The learner does\nthe following.\n\n- If \\(V(S)\\) is contained in one shifted block, output that block's fixed\n  representative hypothesis.\n- Otherwise, output the least-indexed member of \\(V(S)\\) in the fixed numeric\n  representation \\(\\{0,\\ldots,k-1\\}\\).\n\nBoth outputs belong to \\(H_k\\), so the learner is proper.\n\n### Accuracy\n\nIf \\(V(S)\\) is contained in one block, that block contains the target \\(i\\), and\nits representative is at circular distance at most \\(L-1\\) from \\(i\\).  By\n(1), its error is at most\n\n\\[\n\\frac{2(L-1)}{k}\n=\\frac{2\\lfloor\\varepsilon k/2\\rfloor}{k}\n\\leq\\varepsilon.\n\\]\n\nIn the fallback case the learner outputs a consistent hypothesis.  A\nconsistent hypothesis with error greater than \\(\\varepsilon\\) has circular\ndistance at least\n\n\\[\nL=\\left\\lfloor\\frac{\\varepsilon k}{2}\\right\\rfloor+1\n\\]\n\nfrom \\(i\\).  If \\(L>\\ell\\), no such hypothesis exists.  Otherwise, nesting (2)\nshows that the existence of any such consistent hypothesis implies that at\nleast one of \\(h_{i+L}\\) and \\(h_{i-L}\\) is consistent.  Each of these events\nhas probability \\((1-2L/k)^n\\).  Hence\n\n\\[\n\\Pr_{S,U}[\\operatorname{err}_i(A(S;U))>\\varepsilon]\n\\leq 2\\left(1-\\frac{2L}{k}\\right)^n\n\\leq 2e^{-2Ln/k}\n\\leq2e^{-\\varepsilon n}.\n\\tag{3}\n\\]\n\nThis is at most \\(\\delta\\) under the first displayed sample-size condition.\n\n### Replicability\n\nLet\n\n\\[\nR(S)=\\max_{j\\in V(S)}d_{\\mathrm{cyc}}(i,j).\n\\]\n\nFor every \\(1\\leq t\\leq\\ell\\), nesting (2) and a union bound over the two\norientations give\n\n\\[\n\\Pr[R(S)\\geq t]\n\\leq2\\left(1-\\frac{2t}{k}\\right)^n\n\\leq2e^{-2nt/k}.\n\\]\n\nConsequently,\n\n\\[\n\\mathbb E R(S)\n\\leq2\\sum_{t\\geq1}e^{-2nt/k}\n=\\frac{2}{e^{2n/k}-1}\n\\leq\\frac{k}{n}.\n\\tag{4}\n\\]\n\nView a block boundary as a cut edge of the cycle.  The base partition has\nexactly \\(q\\) cut edges.  After a uniform shift, each fixed cycle edge is a cut\nwith probability \\(q/k\\).  The union of the shortest paths from \\(i\\) to all\nmembers of \\(V(S)\\) contains at most \\(2R(S)\\) edges.  If none is cut, the whole\nversion space lies in the shifted block containing \\(i\\).  Thus, by a union\nbound and (4),\n\n\\[\n\\Pr_{S,U}[V(S)\\text{ is not contained in the block containing }i]\n\\leq\\frac{2q}{k}\\mathbb E R(S)\n\\leq\\frac{2q}{n}.\n\\tag{5}\n\\]\n\nFor two independent samples with the same \\(U\\), if neither bad event in (5)\noccurs, both version spaces lie in the same block containing \\(i\\), and both\nruns output the same representative.  Therefore\n\n\\[\n\\Pr_{S_1,S_2,U}[A(S_1;U)\\ne A(S_2;U)]\n\\leq\\frac{4q}{n}\n\\leq\\rho.\n\\]\n\nThis proves the upper bound.\n\n## Lower bound\n\nThe proof keeps the learner, seed, samples, target, and distribution quantifiers\nseparate.  Its key device is a symmetric, sample-dependent coupling that makes\ntwo differently targeted labeled data sets exactly equal while preserving both\ntarget/sample marginals.\n\n### Modes from accuracy and replicability\n\nFor target \\(i\\) and fixed internal seed \\(r\\), let \\(\\mu_{i,r}\\) be the output\ndistribution of \\(A\\) over a fresh sample, let\n\n\\[\np_{i,r}=\\max_f\\mu_{i,r}(f),\n\\]\n\nand choose a canonical maximizer \\(m_r(i)\\).  This mode exists even for an\nimproper learner because \\(X\\) is finite, so the classifier range\n\\(\\{0,1\\}^{X}\\) is finite.  If\n\n\\[\nc_{i,r}=\\sum_f\\mu_{i,r}(f)^2\n\\]\n\nis the fixed-seed collision probability, then \\(c_{i,r}\\leq p_{i,r}\\).\nReplicability therefore implies, for every \\(i\\),\n\n\\[\n\\mathbb E_r[1-p_{i,r}]\\leq\n\\mathbb E_r[1-c_{i,r}]\\leq\\rho.\n\\tag{6}\n\\]\n\nLet \\(a_{i,r}\\) be the fixed-seed probability that the learner's output has\nerror greater than \\(\\varepsilon\\).  If the mode \\(m_r(i)\\) itself has error\ngreater than \\(\\varepsilon\\), then \\(a_{i,r}\\geq p_{i,r}\\), and hence\n\n\\[\n\\mathbf1\\{\\operatorname{err}_i(m_r(i))>\\varepsilon\\}\n\\leq a_{i,r}+1-p_{i,r}.\n\\]\n\nAveraging over a uniform \\(i\\in\\mathbb Z_k\\) and the seed gives\n\n\\[\n\\Pr_{i,r}[\\operatorname{err}_i(m_r(i))>\\varepsilon]\n\\leq\\delta+\\rho.\n\\tag{7}\n\\]\n\nNo seed has been selected or moved across a target quantifier here.\n\n### An exact symmetric coupling at scale \\(M\\)\n\nIf \\(n\\geq k/24\\), the assumed lower bound on \\(k\\) immediately yields\n\n\\[\nn\\geq\\frac{k}{24}\\geq\\frac{1}{120\\varepsilon\\rho}.\n\\]\n\nIt remains to consider \\(1\\leq n<k/24\\).  (The case \\(n=0\\) is already\nimpossible: two targets at mutual error greater than \\(2\\varepsilon\\) have\ndisjoint \\(\\varepsilon\\)-accuracy events, while a zero-sample learner has the\nsame output law for both and \\(\\delta<1/2\\).)\n\nSet\n\n\\[\nM=\\left\\lfloor\\frac{k}{12n}\\right\\rfloor.\n\\]\n\nThen\n\n\\[\n\\frac{k}{24n}\\leq M\\leq\\frac{k}{12n}\\leq\\frac{k}{12}.\n\\tag{8}\n\\]\n\nLet \\(S=(x_1,\\ldots,x_n)\\sim D^n\\) be an unlabeled sample and write\n\\(T_i(S)=((x_j,h_i(x_j)))_{j=1}^n\\).  For a fixed target \\(i\\), the probability\nthat \\(T_i(S)=T_{i+M}(S)\\) is\n\n\\[\n\\alpha=\\left(1-\\frac{2M}{k}\\right)^n\n\\geq1-\\frac{2nM}{k}\n\\geq\\frac56.\n\\tag{9}\n\\]\n\nPut \\(\\gamma=1/(3\\alpha)\\leq2/5\\).  Conditional on \\(S\\), define a Markov\nkernel on target indices by\n\n\\[\n\\begin{aligned}\nK_S(i,i+M)&=\\gamma\\,\n \\mathbf1\\{T_i(S)=T_{i+M}(S)\\},\\\\\nK_S(i,i-M)&=\\gamma\\,\n \\mathbf1\\{T_i(S)=T_{i-M}(S)\\},\\\\\nK_S(i,i)&=1-K_S(i,i+M)-K_S(i,i-M).\n\\end{aligned}\n\\tag{10}\n\\]\n\nThe diagonal entry is nonnegative because \\(2\\gamma\\leq4/5\\).  The kernel is\nsymmetric: availability of the move \\(i\\to i+M\\) is exactly availability of\nthe reverse move.  It is therefore doubly stochastic.\n\nNow draw \\(i\\) uniformly, independently draw \\(S\\sim D^n\\), and draw \\(v\\)\nfrom \\(K_S(i,\\cdot)\\).  Symmetry gives the following exact properties.\n\n1. Conditional on every fixed \\(S\\), \\(v\\) is uniform.  Hence \\(v\\) and \\(S\\)\n   are independent with the correct target/sample marginal.\n2. Whenever \\(K_S(i,v)>0\\), the labeled data sets are identical:\n   \\(T_i(S)=T_v(S)\\).\n3. By (9)--(10), conditional on every \\(i\\), after averaging over \\(S\\),\n   \\[\n   v-i\\ \\text{is uniform on }\\{-M,0,M\\}.\n   \\tag{11}\n   \\]\n\nFixing the learner seed \\(r\\), identical labeled inputs produce identical\noutputs.  If \\(m_r(i)\\ne m_r(v)\\), at least one of those two identical outputs\nis not its corresponding mode.  Using both correct marginals and (6) therefore\ngives\n\n\\[\n\\Pr_{i,v,r}[m_r(i)\\ne m_r(v)]\\leq2\\rho.\n\\tag{12}\n\\]\n\nLet\n\n\\[\nb=\\Pr_{i,r}[m_r(i)\\ne m_r(i+M)].\n\\]\n\nTranslation invariance makes the analogous probability for \\(-M\\) equal to\n\\(b\\).  Combining (11) and (12) yields\n\n\\[\n\\frac{2b}{3}\\leq2\\rho,\n\\qquad\\text{so}\\qquad b\\leq3\\rho.\n\\tag{13}\n\\]\n\n### A long mode-constant path is impossible\n\nTake\n\n\\[\nt=\\left\\lfloor\\frac{\\varepsilon k}{M}\\right\\rfloor+1.\n\\]\n\nThen\n\n\\[\n\\varepsilon k<tM\\leq\\varepsilon k+M\n\\leq\\frac{k}{4}+\\frac{k}{12}<\\frac{k}{2}.\n\\tag{14}\n\\]\n\nBy (1), the targets \\(h_i\\) and \\(h_{i+tM}\\) have mutual error\n\\(2tM/k>2\\varepsilon\\).  Thus their modes cannot be equal if both modes have\nerror at most \\(\\varepsilon\\): the triangle inequality for disagreement would\ngive mutual error at most \\(2\\varepsilon\\).\n\nIf none of the \\(t\\) consecutive mode edges\n\n\\[\ni\\to i+M\\to\\cdots\\to i+tM\n\\]\n\nchanges value, the endpoint modes are equal.  A union bound, (7), and the fact\nthat every translated edge start remains uniform therefore give\n\n\\[\n1\\leq2(\\delta+\\rho)+tb.\n\\tag{15}\n\\]\n\nFrom (8),\n\n\\[\nt\\leq\\frac{\\varepsilon k}{M}+1\\leq24\\varepsilon n+1.\n\\tag{16}\n\\]\n\nCombining (13)--(16),\n\n\\[\n1-2\\delta-2\\rho\n\\leq3\\rho(24\\varepsilon n+1),\n\\]\n\nand hence\n\n\\[\nn\\geq\\frac{1-2\\delta-5\\rho}{72\\varepsilon\\rho}.\n\\tag{17}\n\\]\n\nFor \\(\\delta,\\rho\\leq1/20\\), the numerator in (17) is at least \\(13/20\\),\nwhich is larger than \\(72/120\\).  Therefore\n\\(n\\geq1/(120\\varepsilon\\rho)\\), completing the lower bound.\n\n## What this says about the open exponent\n\nThis theorem isolates the one-coordinate statistical mechanism and shows that\nit costs \\(\\Theta(1/(\\varepsilon\\rho))\\), not a power of \\(\\log k\\).  Merely\nincreasing the alphabet size \\(k=|H_k|\\) therefore cannot produce the open\n\\((\\log|H|)^c\\) lower-bound exponent.\n\nBecause a learner for the canonical worst-case problem must in particular work\nfor this uniform distribution, the restricted lower bound does imply the valid\nworst-case corollary\n\n\\[\nn_{\\mathrm{rep}}(k,\\varepsilon,\\delta,\\rho)\n\\geq \\frac{1}{120\\varepsilon\\rho}\n\\]\n\nin the stated parameter range.  Its point is negative with respect to the open\nexponent: this corollary has no growing factor in \\(\\log k\\).\n\nIt also explains why direct coordinatewise tensorization is lossy.  In a\nstratified \\(d\\)-coordinate version with \\(n/d\\) samples per coordinate, (5)\nis of order \\(d/(n\\varepsilon)\\) per coordinate.  Requiring exact equality of\nthe full \\(d\\)-coordinate output and applying a union bound incurs another\nfactor \\(d\\), suggesting \\(n=O(d^2/(\\varepsilon\\rho))\\) for this naive method.\nThis scaling observation is **not** claimed as a theorem for the original\ni.i.d. \\(d\\)-coordinate instance.  The known family-specific\n\\(\\widetilde O((\\log|H|)^{3/2}/(\\varepsilon\\rho))\\) learner uses more global\nstructure; recovering that improvement is precisely where a one-coordinate\nargument stops scaling.\n\n## Provenance, authorship, and limitations\n\n- The half-interval family and the motivation to inspect one coordinate are\n  attributed to Kasper Green Larsen, Markus Engelund Mathiasen, Chirag\n  Pabbaraju, and Clement Svendsen, *The Sample Complexity of Replicable\n  Realizable PAC Learning*, arXiv:2602.19552 (2026),\n  <https://arxiv.org/abs/2602.19552>.\n- The new theorem, proof, and exposition were produced by an OpenAI Codex Math\n  Flow solver agent in this session; no human authorship is inferred.  The\n  proof uses only the displayed elementary half-interval geometry, collision\n  probabilities, and a symmetric coupling; no external theorem is imported.\n- The canonical Math Flow ledger had no prior contribution or research\n  direction for this problem when this artifact was prepared.\n- The fixed-uniform-\\(D\\) restriction is essential to the claim.  The theorem\n  does **not** supply a learner for arbitrary \\(D\\).  Its lower bound transfers\n  to the worst-case definition as just noted, but only at order\n  \\(1/(\\varepsilon\\rho)\\), with no \\(\\log k\\) gain.\n- The result is only for one coordinate.  It neither improves the headline\n  exponent beyond \\(3/2\\) nor improves the known universal upper bound.\n- The lower-bound family size is allowed to depend on\n  \\(\\varepsilon,\\rho\\) through \\(k\\geq1/(5\\varepsilon\\rho)\\); this dependence is\n  explicit.\n- This is a proof-only artifact with no computational evidence and no\n  objective-verification request.\n- No research direction was registered, updated, or completed.\n\n## Reproduction\n\nThere is no executable artifact.  The result is reproduced by checking the\nfinite identities (1)--(2), the version-space tail calculation (3)--(5), and\nthe symmetric-kernel calculation (6)--(17).  Repository-level validation is:\n\n```bash\npython3 -m math_flow validate-tree\npython3 -m unittest discover -s tests -v\ngit diff --check\n```\n"
+          }
+        ],
+        "judgments": [
+          {
+            "judgmentId": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+            "runDigest": "sha256:8ac40f18015d0a6273ae2dc54671653d0fb60f1034684f5908016e44a008b258",
+            "judgmentKind": "primary",
+            "ledgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "problemLedgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "judgeSpec": {
+              "id": "openrouter-markdown-judgment-v1",
+              "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.4078425,
+            "reportDigest": "sha256:182428b91985ed9a9da41242a71e0d6c8178a772301d4f5c611d8eee896abfc2",
+            "reportMarkdown": "# Mathematical judgment\n\n## Overall assessment\n\nThe contribution gives a convincing, self-contained proof of a **distribution-restricted, one-coordinate theorem** for cyclic half-intervals under the uniform distribution. Both principal bounds appear mathematically correct:\n\n\\[\n\\frac{1}{120\\varepsilon\\rho}\n\\;\\le\\;\nn_{\\mathrm{unif}}(H_k,\\varepsilon,\\delta,\\rho)\n\\;\\le\\;\n\\max\\!\\left\\{\n\\frac1\\varepsilon\\log\\frac2\\delta,\\,\n\\frac{12}{\\varepsilon\\rho}\n\\right\\}\n\\]\n\nin the stated lower-bound parameter regime, where the left side also requires odd \\(k\\ge 1/(5\\varepsilon\\rho)\\).\n\nThe upper-bound proof correctly uses a randomly shifted coarse partition of the cycle and concentration of the version space. The lower-bound proof contains a substantive and apparently valid symmetric coupling: two different targets are coupled so that their labeled samples are identical while both target/sample marginals remain correct. Replicability then forces neighboring target-dependent output modes to change rarely, while accuracy forces a change over a sufficiently long path.\n\nThis is a meaningful restricted result, but it does **not** close or improve the \\(\\log |H|\\) exponent gap in the original worst-case problem. Two interpretive claims need qualification:\n\n1. The asserted \\(\\Theta(1/(\\varepsilon\\rho))\\) characterization is only justified when the confidence term satisfies\n   \\[\n   \\log(2/\\delta)=O(1/\\rho),\n   \\]\n   including the intended regime of fixed small \\(\\delta,\\rho\\). It is not established uniformly for arbitrarily small \\(\\delta\\).\n\n2. The uniform-distribution upper bound rules out a growing \\(\\log k\\) factor for this **fixed uniform experiment**, but it does not by itself rule out a stronger lower bound for the same class \\(H_k\\) under a different, adversarially chosen distribution.\n\nSubject to those scope qualifications, the mathematical core is strong and warrants high confidence.\n\n---\n\n## Finding 1: Uniform cyclic half-intervals admit a proper \\(O((\\log(1/\\delta)+1/\\rho)/\\varepsilon)\\)-sample replicable learner\n\n**Claim key:** `uniform-cyclic-half-interval-proper-replicable-upper-bound`\n\n**Judgment:** Proven by the supplied argument.\n\nFor odd \\(k\\), let \\(H_k\\) be the \\(k\\) cyclic translates of an interval of length \\((k-1)/2\\), and fix \\(D\\) to be uniform on \\(\\mathbb Z_k\\). The contribution constructs a proper learner satisfying accuracy and replicability once\n\n\\[\nn\\ge\n\\max\\left\\{\n\\frac1\\varepsilon\\log\\frac2\\delta,\\,\n\\frac{4q}{\\rho}\n\\right\\},\n\\qquad\nq=\\left\\lceil \\frac{k}{\\lfloor\\varepsilon k/2\\rfloor+1}\\right\\rceil.\n\\]\n\nThe simplification \\(q<2/\\varepsilon+1\\le 3/\\varepsilon\\) is correct, yielding the sufficient condition \\(n\\ge 12/(\\varepsilon\\rho)\\) for replicability.\n\n### Decisive geometric facts\n\nFor targets at cyclic distance \\(t\\le (k-1)/2\\), the disagreement probability is\n\n\\[\n\\Pr_D[h_i\\ne h_{i+t}]=\\frac{2t}{k}.\n\\]\n\nThe relevant disagreement sets are nested as \\(t\\) increases in either orientation. These facts correctly imply:\n\n- a hypothesis at cyclic distance at most\n  \\[\n  L-1=\\left\\lfloor\\frac{\\varepsilon k}{2}\\right\\rfloor\n  \\]\n  has error at most \\(\\varepsilon\\);\n- if any consistent hypothesis has error greater than \\(\\varepsilon\\), then one of \\(h_{i+L}\\) or \\(h_{i-L}\\) is also consistent.\n\nThe second point follows because consistency of a farther hypothesis means that the sample avoids its disagreement set, and hence also avoids the nested disagreement set of the nearer shift.\n\n### Accuracy argument\n\nThe cycle is partitioned into \\(q\\) consecutive blocks of length at most \\(L\\), and the seed chooses a uniform cyclic shift of this partition and its representatives.\n\nIf the version space lies in one block, that block contains the true target, and its representative is within cyclic distance \\(L-1\\). Thus the output has error at most \\(\\varepsilon\\).\n\nOtherwise the learner outputs a consistent hypothesis. A bad consistent hypothesis can exist only if \\(h_{i+L}\\) or \\(h_{i-L}\\) is consistent. Each such event has probability\n\n\\[\n\\left(1-\\frac{2L}{k}\\right)^n.\n\\]\n\nConsequently,\n\n\\[\n\\Pr[\\operatorname{err}_i(A(S;U))>\\varepsilon]\n\\le\n2\\left(1-\\frac{2L}{k}\\right)^n\n\\le 2e^{-\\varepsilon n}.\n\\]\n\nThe displayed accuracy threshold follows. This part has the correct quantifiers and does not rely on properness beyond the explicit construction.\n\n### Replicability argument\n\nLet \\(R(S)\\) be the maximum cyclic distance from the target to an element of the version space. Nesting gives\n\n\\[\n\\Pr[R(S)\\ge t]\n\\le\n2\\left(1-\\frac{2t}{k}\\right)^n\n\\le 2e^{-2nt/k}.\n\\]\n\nSumming the tail yields\n\n\\[\n\\mathbb E R(S)\n\\le\n\\frac{2}{e^{2n/k}-1}\n\\le \\frac{k}{n}.\n\\]\n\nThe union of the shortest paths from the target to the version space contains at most \\(2R(S)\\) cycle edges. Since a uniformly shifted partition with \\(q\\) blocks cuts each fixed edge with probability \\(q/k\\),\n\n\\[\n\\Pr[V(S)\\text{ crosses a block boundary}]\n\\le\n\\frac{2q}{k}\\mathbb E R(S)\n\\le \\frac{2q}{n}.\n\\]\n\nFor two independent samples sharing the same shifted partition, if neither version space crosses a boundary then both runs output the representative of the same block containing the target. A union bound therefore gives mismatch probability at most \\(4q/n\\).\n\nThis is sufficient for the exact equality notion of replicability in the problem.\n\n### Minor technical observations\n\n- The proof works even when blocks have unequal sizes; a uniform cyclic shift still makes each edge a boundary with probability \\(q/k\\).\n- Because \\(X=\\mathbb Z_k\\) is finite, the output classifiers form a finite set, so no issue arises from improper output in the later mode argument.\n- Standard measurability of the randomized learner is tacitly assumed, as is customary.\n\n---\n\n## Finding 2: A matching \\( \\Omega(1/(\\varepsilon\\rho)) \\) lower bound holds for the fixed uniform distribution\n\n**Claim key:** `uniform-cyclic-half-interval-replicable-lower-bound`\n\n**Judgment:** Proven in the stated regime, including against randomized, computationally unbounded, improper learners.\n\nThe lower-bound statement has the correct order of quantifiers: a learner that works for every target \\(h_i\\) under the already fixed uniform distribution must have\n\n\\[\nn\\ge \\frac{1}{120\\varepsilon\\rho}\n\\]\n\nprovided\n\n\\[\n0<\\varepsilon\\le\\frac14,\\qquad\n0<\\delta,\\rho\\le\\frac1{20},\\qquad\nk\\ge\\frac{1}{5\\varepsilon\\rho}.\n\\]\n\n### Modes extracted from replicability\n\nFor fixed target \\(i\\) and seed \\(r\\), let \\(\\mu_{i,r}\\) be the output distribution over the sample and let\n\n\\[\np_{i,r}=\\max_f\\mu_{i,r}(f).\n\\]\n\nThe fixed-seed collision probability is\n\n\\[\nc_{i,r}=\\sum_f\\mu_{i,r}(f)^2.\n\\]\n\nSince \\(c_{i,r}\\le p_{i,r}\\), replicability implies\n\n\\[\n\\mathbb E_r[1-p_{i,r}]\n\\le \\rho.\n\\]\n\nThis is a correct conversion from average collision probability to concentration on a mode.\n\nIf the chosen mode \\(m_r(i)\\) has error greater than \\(\\varepsilon\\), then the fixed-seed probability of bad output is at least \\(p_{i,r}\\). Hence\n\n\\[\n\\mathbf 1\\{\\operatorname{err}_i(m_r(i))>\\varepsilon\\}\n\\le\na_{i,r}+1-p_{i,r},\n\\]\n\nwhere \\(a_{i,r}\\) is the fixed-seed bad-output probability. Averaging gives\n\n\\[\n\\Pr_{i,r}[\\operatorname{err}_i(m_r(i))>\\varepsilon]\n\\le \\delta+\\rho.\n\\]\n\nImportantly, this is only an average over targets and seeds; the later proof uses it only in that averaged form. No unjustified selection of a single favorable seed occurs.\n\n### Symmetric coupling\n\nFor \\(1\\le n<k/24\\), the proof defines\n\n\\[\nM=\\left\\lfloor\\frac{k}{12n}\\right\\rfloor.\n\\]\n\nThe bounds\n\n\\[\n\\frac{k}{24n}\\le M\\le \\frac{k}{12n}\\le\\frac{k}{12}\n\\]\n\nare valid. The first follows from \\(k/(12n)>2\\) and \\(\\lfloor x\\rfloor\\ge x/2\\) for \\(x\\ge2\\).\n\nTargets \\(i\\) and \\(i+M\\) produce identical labels on a uniform sample with probability\n\n\\[\n\\alpha=\\left(1-\\frac{2M}{k}\\right)^n\n\\ge 1-\\frac{2nM}{k}\n\\ge \\frac56.\n\\]\n\nThe sample-dependent kernel \\(K_S\\) moves from \\(i\\) to \\(i+M\\) or \\(i-M\\) only when the corresponding labeled samples are identical. Its off-diagonal coefficient\n\n\\[\n\\gamma=\\frac{1}{3\\alpha}\n\\]\n\nsatisfies \\(2\\gamma\\le4/5\\), so the diagonal entry is nonnegative. The kernel is symmetric and row-stochastic, hence doubly stochastic.\n\nThis establishes the crucial marginal facts:\n\n- \\((i,S)\\) has the uniform-target/product-sample marginal;\n- \\((v,S)\\) has the same correct marginal because \\(K_S\\) is doubly stochastic;\n- whenever the coupling assigns positive probability, the two labeled inputs are identical;\n- after averaging over \\(S\\), \\(v-i\\) is uniform on \\(\\{-M,0,M\\}\\).\n\nThese statements are enough to compare modes without feeding either learner a sample from the wrong target distribution.\n\n### Replicability forces adjacent modes to agree\n\nFor a shared seed, identical labeled inputs give the same output. If the two target modes differ, that common output cannot equal both modes. Therefore\n\n\\[\n\\mathbf1\\{m_r(i)\\ne m_r(v)\\}\n\\le\n\\mathbf1\\{A(T_i(S);r)\\ne m_r(i)\\}\n+\n\\mathbf1\\{A(T_v(S);r)\\ne m_r(v)\\}.\n\\]\n\nEach term averages to at most \\(\\rho\\), using the two correct target/sample marginals. Thus\n\n\\[\n\\Pr[m_r(i)\\ne m_r(v)]\\le2\\rho.\n\\]\n\nIf\n\n\\[\nb=\\Pr_{i,r}[m_r(i)\\ne m_r(i+M)],\n\\]\n\ntranslation invariance of the uniform target index gives the same probability for the \\(-M\\) edge. Since the coupling chooses each of \\(-M,0,M\\) with probability \\(1/3\\),\n\n\\[\n\\frac{2b}{3}\\le2\\rho,\n\\qquad\nb\\le3\\rho.\n\\]\n\nThis is the central lower-bound consequence of replicability.\n\n### Accuracy forces a change along a long path\n\nSet\n\n\\[\nt=\\left\\lfloor\\frac{\\varepsilon k}{M}\\right\\rfloor+1.\n\\]\n\nThen\n\n\\[\n\\varepsilon k<tM\\le\\varepsilon k+M<\\frac{k}{2}.\n\\]\n\nThus the endpoint targets \\(h_i\\) and \\(h_{i+tM}\\) disagree on mass\n\n\\[\n\\frac{2tM}{k}>2\\varepsilon.\n\\]\n\nA single classifier cannot be within error \\(\\varepsilon\\) of both endpoints, by the triangle inequality for disagreement probability. Therefore, for every \\(i,r\\), either an endpoint mode is inaccurate or at least one of the \\(t\\) intervening mode edges changes.\n\nAveraging this deterministic alternative gives\n\n\\[\n1\\le2(\\delta+\\rho)+tb.\n\\]\n\nThe estimate \\(M\\ge k/(24n)\\) gives\n\n\\[\nt\\le24\\varepsilon n+1.\n\\]\n\nCombining this with \\(b\\le3\\rho\\) yields\n\n\\[\nn\\ge\n\\frac{1-2\\delta-5\\rho}{72\\varepsilon\\rho}.\n\\]\n\nUnder \\(\\delta,\\rho\\le1/20\\), the numerator is at least \\(13/20>72/120\\), giving\n\n\\[\nn\\ge\\frac{1}{120\\varepsilon\\rho}.\n\\]\n\nThe separate case \\(n\\ge k/24\\) also gives the desired bound from \\(k\\ge1/(5\\varepsilon\\rho)\\). The zero-sample case is correctly excluded using two targets whose \\(\\varepsilon\\)-accuracy sets are disjoint.\n\nNo missing lemma is apparent in this lower-bound proof.\n\n---\n\n## Finding 3: The exact parameter-dependent “matching” conclusion needs a confidence qualification\n\n**Claim key:** `uniform-cyclic-half-interval-sample-complexity-characterization`\n\n**Judgment:** Correct for fixed small confidence parameters, but overstated if \\(\\delta\\) is allowed to vary arbitrarily.\n\nThe proven bounds are\n\n\\[\nn_{\\mathrm{unif}}\n\\ge\n\\frac{1}{120\\varepsilon\\rho}\n\\]\n\nand\n\n\\[\nn_{\\mathrm{unif}}\n\\le\n\\max\\left\\{\n\\frac1\\varepsilon\\log\\frac2\\delta,\\,\n\\frac{12}{\\varepsilon\\rho}\n\\right\\}.\n\\]\n\nTherefore the supplied evidence establishes\n\n\\[\nn_{\\mathrm{unif}}\n=\n\\Theta\\!\\left(\\frac{1}{\\varepsilon\\rho}\\right)\n\\]\n\nwhen, for example:\n\n- \\(\\delta\\) and \\(\\rho\\) are fixed sufficiently small constants; or\n- more generally,\n  \\[\n  \\log(2/\\delta)=O(1/\\rho).\n  \\]\n\nIt does **not** establish this characterization uniformly over all\n\\(\\delta,\\rho\\le1/20\\). If \\(\\delta\\) is extremely small relative to \\(\\rho\\), the proved upper bound is governed by\n\n\\[\n\\frac{1}{\\varepsilon}\\log\\frac1\\delta,\n\\]\n\nand no matching confidence-dependent lower bound is supplied.\n\nAccordingly, the sentence asserting \\(\\Theta(1/(\\varepsilon\\rho))\\) “in the lower-bound regime” should explicitly say that \\(\\delta,\\rho\\) are fixed, or impose an appropriate relation between them. This issue does not affect either numbered theorem statement.\n\n---\n\n## Finding 4: The transfer to the worst-case quantity \\(n_{\\mathrm{rep}}\\) is valid, but weak\n\n**Claim key:** `worst-case-replicable-lower-bound-from-uniform-half-intervals`\n\n**Judgment:** Valid under the stated odd-\\(k\\) and parameter conditions.\n\nA learner counted by \\(n_{\\mathrm{rep}}(k,\\varepsilon,\\delta,\\rho)\\) must work for every distribution on the chosen domain. In particular, it must work for the uniform distribution on \\(\\mathbb Z_k\\) and every target in \\(H_k\\). Therefore the restricted lower bound implies\n\n\\[\nn_{\\mathrm{rep}}(k,\\varepsilon,\\delta,\\rho)\n\\ge\n\\frac{1}{120\\varepsilon\\rho}.\n\\]\n\nThis transfer is logically correct even though the restricted upper bound does not transfer.\n\nThe corollary has no growing \\(\\log k\\) factor and consequently does not improve the established headline lower bound. It is best understood as validating the local one-coordinate obstruction rather than advancing the worst-case exponent.\n\n---\n\n## Finding 5: The negative conclusion about alphabet size is valid only for the uniform-distribution mechanism\n\n**Claim key:** `absence-of-log-k-cost-for-uniform-one-coordinate-half-intervals`\n\n**Judgment:** Supported in the restricted setting; unsupported if read as a claim about all distributions on \\(H_k\\).\n\nThe proper learner has a sample bound independent of \\(k\\) once \\(\\varepsilon,\\delta,\\rho\\) are fixed. Thus increasing \\(k=|H_k|\\) cannot create an additional \\(\\log k\\) cost for learning this class under the fixed uniform distribution.\n\nHowever, the contribution proves no learner for arbitrary distributions \\(D\\) on \\(\\mathbb Z_k\\). Consequently, it does not exclude the possibility that the same hypothesis class \\(H_k\\), paired with a nonuniform adversarial distribution, has larger worst-case replicable sample complexity.\n\nThe strongest warranted interpretation is therefore:\n\n> The uniform one-coordinate component of the cyclic half-interval construction does not by itself generate a growing \\(\\log k\\) factor.\n\nA broader claim that the hypothesis family \\(H_k\\) can never support such a lower bound would require an arbitrary-distribution learner or another hardness classification, neither of which is supplied.\n\n---\n\n## Finding 6: The coordinatewise tensorization discussion is correctly labeled as heuristic\n\n**Claim key:** `naive-coordinatewise-replicability-tensorization-scaling`\n\n**Judgment:** Plausible scaling observation, not a theorem about the original multidimensional i.i.d. family.\n\nIf \\(d\\) coordinates each receive approximately \\(n/d\\) samples, applying the one-coordinate boundary estimate suggests a per-coordinate instability of order\n\n\\[\n\\frac{d}{n\\varepsilon}.\n\\]\n\nA union bound over \\(d\\) coordinates then suggests total mismatch of order\n\n\\[\n\\frac{d^2}{n\\varepsilon},\n\\]\n\nand hence the naive requirement\n\n\\[\nn=O\\!\\left(\\frac{d^2}{\\varepsilon\\rho}\\right).\n\\]\n\nThe contribution expressly acknowledges that the original i.i.d. multidimensional sample does not provide a deterministic \\(n/d\\) samples to every coordinate and that a global learner may exploit more structure. No theorem for the \\(d\\)-coordinate construction follows from this calculation. The disclaimer is appropriate.\n\n---\n\n## Relation to the original open problem\n\nThe contribution does not provide any of the following:\n\n- a lower bound with \\((\\log |H|)^c\\) for \\(c>3/2\\);\n- a universal learner with exponent \\(c<2\\);\n- an arbitrary-distribution learner for\n",
+            "record": {
+              "schemaVersion": 1,
+              "judgmentKind": "primary",
+              "problemId": "replicable-pac-sample-complexity",
+              "ledgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+              "problemLedgerDigest": "sha256:59e95bedfc06795891eb39aadfa5e86f60a4a42c424fdf6f47dbcaba94f508dc",
+              "judgeSpec": {
+                "id": "openrouter-markdown-judgment-v1",
+                "digest": "sha256:9454e0366e79edbf478711c214ec1b52d40b0252fd0c7f1d3c0df8639a43724a"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                  "ledgerPosition": 1
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "uniform-cyclic-half-interval-proper-replicable-upper-bound",
+                  "stance": "supports",
+                  "summary": "Proven by the supplied argument: for odd k under the uniform distribution on Z_k, there is a proper replicable learner with sample complexity O((log(1/δ)+1/ρ)/ε), specifically n at least max{(1/ε)log(2/δ), 12/(ερ)}. The shifted-partition accuracy argument, version-space concentration, and exact-output replicability bound are mathematically sound.",
+                  "subjectTransactionIds": [
+                    "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                  ],
+                  "evidenceTransactionIds": [
+                    "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                  ]
+                },
+                {
+                  "claimKey": "uniform-cyclic-half-interval-replicable-lower-bound",
+                  "stance": "supports",
+                  "summary": "Proven in the stated regime, including against randomized, computationally unbounded, improper learners: when 0<ε≤1/4, 0<δ,ρ≤1/20, and odd k≥1/(5ερ), every learner working for all targets under the fixed uniform distribution requires n≥1/(120ερ). The mode extraction, symmetric coupling, adjacent-mode agreement bound, and long-path accuracy argument are valid.",
+                  "subjectTransactionIds": [
+                    "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                  ],
+                  "evidenceTransactionIds": [
+                    "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                  ]
+                },
+                {
+                  "claimKey": "uniform-cyclic-half-interval-sample-complexity-characterization",
+                  "stance": "qualifies",
+                  "summary": "The Θ(1/(ερ)) characterization is correct for fixed small confidence parameters, or more generally when log(2/δ)=O(1/ρ), but is overstated if δ may vary arbitrarily. For extremely small δ, the proved upper bound is governed by (1/ε)log(1/δ), and no matching confidence-dependent lower bound is supplied; this qualification does not affect the two numbered bounds themselves.",
+                  "subjectTransactionIds": [
+                    "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                  ],
+                  "evidenceTransactionIds": [
+                    "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                  ]
+                },
+                {
+                  "claimKey": "worst-case-replicable-lower-bound-from-uniform-half-intervals",
+                  "stance": "supports",
+                  "summary": "The transfer to the worst-case quantity n_rep is logically valid under the stated odd-k and parameter conditions: any learner required to work for every distribution must work for the uniform distribution on Z_k, so n_rep≥1/(120ερ). The resulting corollary is weak, has no growing log k factor, and does not improve the established headline lower bound.",
+                  "subjectTransactionIds": [
+                    "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                  ],
+                  "evidenceTransactionIds": [
+                    "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                  ]
+                },
+                {
+                  "claimKey": "absence-of-log-k-cost-for-uniform-one-coordinate-half-intervals",
+                  "stance": "qualifies",
+                  "summary": "The absence of an additional growing log k cost is supported only for the fixed uniform-distribution experiment, because the proper learner’s bound is independent of k for fixed ε,δ,ρ. It does not rule out greater replicable sample complexity for the same class H_k under an adversarial nonuniform distribution; the warranted conclusion is only that the uniform one-coordinate mechanism does not itself generate a growing log k factor.",
+                  "subjectTransactionIds": [
+                    "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                  ],
+                  "evidenceTransactionIds": [
+                    "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                  ]
+                },
+                {
+                  "claimKey": "naive-coordinatewise-replicability-tensorization-scaling",
+                  "stance": "qualifies",
+                  "summary": "The coordinatewise tensorization calculation is a plausible heuristic, not a theorem about the original multidimensional i.i.d. family. Allocating about n/d samples per coordinate suggests per-coordinate instability d/(nε), total mismatch d²/(nε), and the naive scaling n=O(d²/(ερ)); however, random coordinate counts and possible global structure prevent this calculation from establishing a multidimensional theorem.",
+                  "subjectTransactionIds": [
+                    "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                  ],
+                  "evidenceTransactionIds": [
+                    "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                  ]
+                }
+              ],
+              "reportDigest": "sha256:182428b91985ed9a9da41242a71e0d6c8178a772301d4f5c611d8eee896abfc2",
+              "judgmentId": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c"
+            }
+          }
+        ],
+        "runs": [
+          {
+            "id": "3435eae819a6188d62f74a7a18886dd28f0d8bf2f68a6b546d6c95ec98cb47d7",
+            "ordinal": 1,
+            "ledgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "problemLedgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "runDigest": "sha256:3435eae819a6188d62f74a7a18886dd28f0d8bf2f68a6b546d6c95ec98cb47d7",
+            "baseRun": null,
+            "runKind": "knowledge-build",
+            "inputs": {
+              "problemId": "replicable-pac-sample-complexity",
+              "builderSpecDigest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c",
+              "conflictIds": [],
+              "schemaVersion": 1,
+              "judgmentIds": [
+                "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c"
+              ],
+              "projectionSpecDigest": "sha256:eb2e997ae1f7ee8a619c0c7cd0362f696ab6c70682ffb12a856407a43684abd3",
+              "judgmentSetDigest": "sha256:293e34868af2ce9fe0cf93e4fbf878f2ea09d96fae88932a4b9f43697f9c947c",
+              "baseStateRun": null,
+              "laneId": "sha256:f37d8825b854e9baea997768f82799d523ae407bb74e0ce65780cea015eac1ca",
+              "buildToken": "sha256:d264c54becb807acf33afe73760813cd434a1b26660f0474402d756efd7bb9b2"
+            },
+            "judgeSpec": {
+              "id": "openrouter-research-program-builder-v2",
+              "digest": "sha256:53a245fb9fd50b1dc218998e43806a6e479bbdea6a38253125bfb56775b5ad7c"
+            },
+            "runner": {
+              "implementation": "openrouter-knowledge-builder-v2",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.61248275,
+            "selection": {
+              "selectedNodeIds": [
+                "root"
+              ],
+              "rationale": "Only the root exists, and this batch introduces several durable findings requiring new organization: a restricted uniform cyclic-half-interval program with upper and lower bounds, a qualified characterization, a weak worst-case corollary, a limitation on the no-log-k conclusion, and a tensorization heuristic. New child nodes/program structure must therefore be created from the root."
+            },
+            "normalizations": [
+              {
+                "kind": "attach-current-base",
+                "nodeId": "root",
+                "reason": "Concurrency guards come from the authoritative selected state."
+              }
+            ],
+            "delta": {
+              "operations": [
+                {
+                  "action": "create",
+                  "nodeId": "root",
+                  "parentId": null,
+                  "nodeType": "root",
+                  "title": "Research state for replicable PAC sample complexity",
+                  "summary": "The central question is the worst-case replicable PAC sample complexity for finite classes. For fixed sufficiently small positive confidence parameters, the current global comparison remains between a soft lower bound of order (log N)^(3/2)/epsilon and an upper bound of order (log N)^2/epsilon. The uniform cyclic-half-interval results do not improve either side of this exponent gap. The root has one durable restricted program and no active unreconciled dispute.",
+                  "reportSection": "## Node: root",
+                  "baseDigest": "sha256:b07ce5a3a231b42774c783cd03d2a5aef47c7db8fded253d3ad458edae92d299",
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: root"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "program/uniform-cyclic-half-intervals",
+                  "parentId": "root",
+                  "nodeType": "program",
+                  "title": "Uniform cyclic half-interval replicability",
+                  "summary": "Studies exact-output replicable learning of the k cyclic translates of a half-interval on Z_k when the unlabeled distribution is fixed to be uniform. The program contains a proper upper bound, an unrestricted-learner lower bound, a confidence-qualified matching characterization, a weak worst-case corollary, a distributional limitation on the absence of log k dependence, and a coordinatewise tensorization heuristic. It supplies no arbitrary-distribution upper bound or improvement to the global logarithmic exponent.",
+                  "reportSection": "## Node: program/uniform-cyclic-half-intervals",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: program/uniform-cyclic-half-intervals"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "program/uniform-cyclic-half-intervals/proper-upper-bound",
+                  "parentId": "program/uniform-cyclic-half-intervals",
+                  "nodeType": "result",
+                  "title": "Proper replicable upper bound under the uniform distribution",
+                  "summary": "For odd k, there is a proper learner for H_k under the uniform distribution on Z_k. With q equal to ceil(k/(floor(epsilon k/2)+1)), accuracy and exact-output replicability hold when n is at least max{epsilon^(-1) log(2/delta), 4q/rho}. Since q<2/epsilon+1<=3/epsilon, it suffices that n is at least max{epsilon^(-1) log(2/delta), 12/(epsilon rho)}. This is only a fixed-uniform-distribution upper bound.",
+                  "reportSection": "## Node: program/uniform-cyclic-half-intervals/proper-upper-bound",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: program/uniform-cyclic-half-intervals/proper-upper-bound"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "program/uniform-cyclic-half-intervals/uniform-all-learners-lower-bound",
+                  "parentId": "program/uniform-cyclic-half-intervals",
+                  "nodeType": "result",
+                  "title": "Uniform-distribution lower bound against unrestricted learners",
+                  "summary": "For odd k, if 0<epsilon<=1/4, 0<delta,rho<=1/20, and k>=1/(5 epsilon rho), every randomized, computationally unbounded, possibly improper learner that is accurate and replicable for every target in H_k under the fixed uniform distribution requires n>=1/(120 epsilon rho). The restriction is to the fixed uniform distribution, not to proper, efficient, or deterministic learners.",
+                  "reportSection": "## Node: program/uniform-cyclic-half-intervals/uniform-all-learners-lower-bound",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: program/uniform-cyclic-half-intervals/uniform-all-learners-lower-bound"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "program/uniform-cyclic-half-intervals/parameter-characterization",
+                  "parentId": "program/uniform-cyclic-half-intervals",
+                  "nodeType": "result",
+                  "title": "Confidence-qualified sample-complexity characterization",
+                  "summary": "In the lower-bound regime, n_unif lies between 1/(120 epsilon rho) and max{epsilon^(-1) log(2/delta), 12/(epsilon rho)}. Hence n_unif=Theta(1/(epsilon rho)) for fixed sufficiently small delta and rho, and more generally when log(2/delta)=O(1/rho). This characterization is not established uniformly for arbitrarily small delta because no matching confidence-dependent lower bound is supplied.",
+                  "reportSection": "## Node: program/uniform-cyclic-half-intervals/parameter-characterization",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "changeSection": "## Change: program/uniform-cyclic-half-intervals/parameter-characterization"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "program/uniform-cyclic-half-intervals/worst-case-corollary",
+                  "parentId": "program/uniform-cyclic-half-intervals",
+                  "nodeType": "result",
+                  "title": "Worst-case lower-bound corollary from the uniform experiment",
+                  "summary": "In the stated parameter regime, the uniform lower bound transfers to n_rep(k,epsilon,delta,rho)>=1/(120 epsilon rho), because a worst-case learner must also work for the uniform distribution. The fixed-uniform upper bound does not transfer. The corollary has no growing log k factor and does not improve the established global lower baseline.",
+                  "reportSection": "## Node: program/uniform-cyclic-half-intervals/worst-case-corollary",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "supports"
+                    }
+                  ],
+                  "changeSection": "## Change: program/uniform-cyclic-half-intervals/worst-case-corollary"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "program/uniform-cyclic-half-intervals/no-log-k-scope",
+                  "parentId": "program/uniform-cyclic-half-intervals",
+                  "nodeType": "claim",
+                  "title": "Scope of the absence of a growing alphabet-size cost",
+                  "summary": "For fixed epsilon, delta, and rho, the proper upper bound under the uniform distribution is independent of k. Thus the uniform one-coordinate mechanism does not itself generate a growing log k sample cost. This does not establish the same conclusion for arbitrary or adversarial nonuniform distributions on Z_k, and it is not a global hardness classification of H_k.",
+                  "reportSection": "## Node: program/uniform-cyclic-half-intervals/no-log-k-scope",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "changeSection": "## Change: program/uniform-cyclic-half-intervals/no-log-k-scope"
+                },
+                {
+                  "action": "create",
+                  "nodeId": "program/uniform-cyclic-half-intervals/coordinatewise-tensorization-heuristic",
+                  "parentId": "program/uniform-cyclic-half-intervals",
+                  "nodeType": "method",
+                  "title": "Naive coordinatewise tensorization scaling",
+                  "summary": "If a d-coordinate construction supplied about n/d samples per coordinate, the one-coordinate boundary estimate would suggest per-coordinate instability of order d/(n epsilon), total mismatch of order d^2/(n epsilon), and a naive sample scale d^2/(epsilon rho). Random coordinate counts and possible global structure prevent this calculation from establishing either an upper or lower bound; it is only a heuristic lead.",
+                  "reportSection": "## Node: program/uniform-cyclic-half-intervals/coordinatewise-tensorization-heuristic",
+                  "baseDigest": null,
+                  "baseRevisionId": null,
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "changeSection": "## Change: program/uniform-cyclic-half-intervals/coordinatewise-tensorization-heuristic"
+                }
+              ]
+            },
+            "state": {
+              "schemaVersion": 3,
+              "problemId": "replicable-pac-sample-complexity",
+              "rootId": "root",
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "root",
+                  "title": "Research state for replicable PAC sample complexity",
+                  "summary": "The central question is the worst-case replicable PAC sample complexity for finite classes. For fixed sufficiently small positive confidence parameters, the current global comparison remains between a soft lower bound of order (log N)^(3/2)/epsilon and an upper bound of order (log N)^2/epsilon. The uniform cyclic-half-interval results do not improve either side of this exponent gap. The root has one durable restricted program and no active unreconciled dispute.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+                    "section": "## Node: root"
+                  },
+                  "contentMarkdown": "## Node: root\n\n- **Title:** Research state for replicable PAC sample complexity\n- **Type:** Root\n- **Parent:** None\n- **Status:** Active\n\nThe central question is the worst-case sample complexity\n\n\\[\nn_{\\mathrm{rep}}(N,\\varepsilon,\\delta,\\rho)\n\\]\n\nof unrestricted, computationally unbounded, possibly improper randomized learners that must simultaneously be \\((\\varepsilon,\\delta)\\)-accurate and \\(\\rho\\)-replicable for every realizable distribution generated by a finite class of size at most \\(N\\).\n\nThe supplied external frontier baselines leave the logarithmic exponent unresolved. For fixed sufficiently small positive \\(\\rho\\) and \\(\\delta\\), the current comparison remains\n\n\\[\n\\widetilde\\Omega\\!\\left(\n\\frac{(\\log N)^{3/2}}{\\varepsilon}\n\\right)\n\\le\nn_{\\mathrm{rep}}(N,\\varepsilon,\\delta,\\rho)\n\\le\nO\\!\\left(\n\\frac{(\\log N)^2}{\\varepsilon}\n\\right).\n\\]\n\nMore explicitly:\n\n- The universal finite-class upper bound attributed in the problem statement to Bun et al. is\n\n  \\[\n  O\\!\\left(\n  \\frac{\\log^2|H|+\\log(1/(\\rho\\delta))}\n       {\\varepsilon\\rho^2}\n  \\log^3\\frac1\\rho\n  \\right).\n  \\]\n\n- The lower bound attributed to Larsen–Mathiasen–Pabbaraju–Svendsen gives, in its stated parameter regime, a class requiring at least\n\n  \\[\n  \\frac{10^{-9}(\\log|H|)^{3/2}}\n       {\\varepsilon(\\log\\log|H|)^2\n       \\log(\\log|H|/\\varepsilon)}.\n  \\]\n\nThe primary judgment at\n`sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`\nfinds that the newly organized cyclic-half-interval results do **not** improve either side of this global exponent gap. Their worst-case corollary has no growing \\(\\log |H|\\) factor and is therefore weaker than the established global lower baseline.\n\nThe root has one durable child program:\n\n- `program/uniform-cyclic-half-intervals` — exact-output replicability for cyclic half-interval classes under the fixed uniform distribution, including its restricted bounds, scope limitations, worst-case corollary, and tensorization heuristic.\n\nThe supplied judgment routing contains no conflicts. No mathematical claim in the current state is subject to an active unreconciled dispute.\n\n**Provenance**\n\n- Primary judgment: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`.\n- Judgment subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- The Bun et al. and Larsen–Mathiasen–Pabbaraju–Svendsen bounds are external baselines supplied with the problem and are not Math Flow ledger evidence.\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:50c92c7de194b67b7abd5d77eb4fb060739e443b3219f9ccea134cc271ce1b48",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:cbe9f8d4c1ba42836b40b8368796f6fa0cb99a385aa27cc8063bc922f9c6c429"
+                },
+                "program/uniform-cyclic-half-intervals": {
+                  "id": "program/uniform-cyclic-half-intervals",
+                  "parentId": "root",
+                  "type": "program",
+                  "title": "Uniform cyclic half-interval replicability",
+                  "summary": "Studies exact-output replicable learning of the k cyclic translates of a half-interval on Z_k when the unlabeled distribution is fixed to be uniform. The program contains a proper upper bound, an unrestricted-learner lower bound, a confidence-qualified matching characterization, a weak worst-case corollary, a distributional limitation on the absence of log k dependence, and a coordinatewise tensorization heuristic. It supplies no arbitrary-distribution upper bound or improvement to the global logarithmic exponent.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+                    "section": "## Node: program/uniform-cyclic-half-intervals"
+                  },
+                  "contentMarkdown": "## Node: program/uniform-cyclic-half-intervals\n\n- **Title:** Uniform cyclic half-interval replicability\n- **Type:** Research program\n- **Parent:** `root`\n- **Status:** Active\n\nFor odd \\(k\\), let \\(X=\\mathbb Z_k\\), and let \\(H_k\\) be the \\(k\\) cyclic translates of an interval of length \\((k-1)/2\\). This program studies learning every target in \\(H_k\\) when the unlabeled distribution is fixed to be uniform on \\(\\mathbb Z_k\\).\n\nWrite\n\n\\[\nn_{\\mathrm{unif}}(H_k,\\varepsilon,\\delta,\\rho)\n\\]\n\nfor the least sample size required in this fixed-distribution experiment by a learner that must be accurate and replicable for every target in \\(H_k\\).\n\nAccording to primary judgment\n`sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`,\nthe complete current program state is:\n\n1. **Proper upper bound.** There is a proper learner with sufficient sample size\n\n   \\[\n   n\\ge\n   \\max\\left\\{\n   \\frac1\\varepsilon\\log\\frac2\\delta,\\,\n   \\frac{12}{\\varepsilon\\rho}\n   \\right\\}.\n   \\]\n\n2. **Lower bound against unrestricted learners.** If\n\n   \\[\n   0<\\varepsilon\\le\\frac14,\\qquad\n   0<\\delta,\\rho\\le\\frac1{20},\\qquad\n   k\\ge\\frac1{5\\varepsilon\\rho},\n   \\]\n\n   then every randomized, computationally unbounded, possibly improper learner that works for all targets under the uniform distribution requires\n\n   \\[\n   n\\ge\\frac1{120\\varepsilon\\rho}.\n   \\]\n\n3. **Qualified characterization.** These bounds yield\n\n   \\[\n   n_{\\mathrm{unif}}\n   =\\Theta\\!\\left(\\frac1{\\varepsilon\\rho}\\right)\n   \\]\n\n   for fixed sufficiently small confidence parameters, and more generally when\n\n   \\[\n   \\log(2/\\delta)=O(1/\\rho).\n   \\]\n\n   They do not establish that characterization uniformly for arbitrarily small \\(\\delta\\).\n\n4. **Worst-case implication.** The fixed-uniform lower bound transfers to the global quantity \\(n_{\\mathrm{rep}}\\), but only as the weak lower bound \\(1/(120\\varepsilon\\rho)\\), with no growing \\(\\log k\\) factor.\n\n5. **Alphabet-size limitation.** The program establishes that the fixed uniform one-coordinate mechanism does not generate an additional growing \\(\\log k\\) cost. It does not establish the same conclusion for adversarial nonuniform distributions on \\(\\mathbb Z_k\\).\n\n6. **Tensorization lead.** A coordinatewise calculation suggests a \\(d^2/(\\varepsilon\\rho)\\) sample scale for a naive multidimensional construction, but the primary judgment classifies this only as a heuristic.\n\nThis is a distribution-restricted program. It contains no arbitrary-distribution upper bound for \\(H_k\\), no lower bound with logarithmic exponent greater than \\(3/2\\), and no universal learner improving the global exponent or the established \\(\\rho^{-2}\\) dependence.\n\n**Provenance**\n\n- Primary judgment: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`.\n- Subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- The judgment credits the supplied argument with the proper shifted-partition learner and the symmetric-coupling lower-bound method.\n- No conflict or reconciliation record applies.\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:c481cb0eb7aa3cf08189643fb6d1c606e1a2e413044732ee5baef6e59a3c060f",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:05f852aa0986e3c85a54bcc227eb651c5719b57aa7b548c34ce05d7d098c82fb"
+                },
+                "program/uniform-cyclic-half-intervals/proper-upper-bound": {
+                  "id": "program/uniform-cyclic-half-intervals/proper-upper-bound",
+                  "parentId": "program/uniform-cyclic-half-intervals",
+                  "type": "result",
+                  "title": "Proper replicable upper bound under the uniform distribution",
+                  "summary": "For odd k, there is a proper learner for H_k under the uniform distribution on Z_k. With q equal to ceil(k/(floor(epsilon k/2)+1)), accuracy and exact-output replicability hold when n is at least max{epsilon^(-1) log(2/delta), 4q/rho}. Since q<2/epsilon+1<=3/epsilon, it suffices that n is at least max{epsilon^(-1) log(2/delta), 12/(epsilon rho)}. This is only a fixed-uniform-distribution upper bound.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+                    "section": "## Node: program/uniform-cyclic-half-intervals/proper-upper-bound"
+                  },
+                  "contentMarkdown": "## Node: program/uniform-cyclic-half-intervals/proper-upper-bound\n\n- **Title:** Proper replicable upper bound under the uniform distribution\n- **Type:** Result\n- **Parent:** `program/uniform-cyclic-half-intervals`\n- **Status:** Supported as proven by the primary judgment\n\nFor odd \\(k\\), the primary judgment finds that the supplied argument proves the existence of a proper learner for \\(H_k\\) under the uniform distribution on \\(\\mathbb Z_k\\).\n\nLet\n\n\\[\nL=\\left\\lfloor\\frac{\\varepsilon k}{2}\\right\\rfloor+1\n\\]\n\nand\n\n\\[\nq=\n\\left\\lceil\n\\frac{k}{\\lfloor\\varepsilon k/2\\rfloor+1}\n\\right\\rceil.\n\\]\n\nThe judged construction uses a seed-selected uniform cyclic shift of a partition into \\(q\\) consecutive blocks and chooses block representatives. It satisfies the required accuracy and exact-output replicability whenever\n\n\\[\nn\\ge\n\\max\\left\\{\n\\frac1\\varepsilon\\log\\frac2\\delta,\\,\n\\frac{4q}{\\rho}\n\\right\\}.\n\\]\n\nThe primary judgment accepts the simplification\n\n\\[\nq<\\frac2\\varepsilon+1\\le\\frac3\\varepsilon,\n\\]\n\nwhich yields the sufficient bound\n\n\\[\nn\\ge\n\\max\\left\\{\n\\frac1\\varepsilon\\log\\frac2\\delta,\\,\n\\frac{12}{\\varepsilon\\rho}\n\\right\\}.\n\\]\n\nThe judgment specifically assesses the following ingredients as mathematically sound:\n\n- the cyclic disagreement geometry and nesting of disagreement sets;\n- concentration of the version space around the target;\n- the shifted-partition accuracy argument;\n- the estimate that a version space crosses a random block boundary with probability at most \\(2q/n\\); and\n- the union-bound conclusion that two independent samples using the same seed produce different classifiers with probability at most \\(4q/n\\).\n\nThis is an upper bound only for the fixed uniform distribution. It is not an arbitrary-distribution learner for \\(H_k\\).\n\n**Provenance**\n\n- Claim key: `uniform-cyclic-half-interval-proper-replicable-upper-bound`.\n- Primary judgment and stance: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`, supports and regards as proven.\n- Subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- No conflicting judgment was supplied.\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:57a81e719bc8f3ddfef4854eb3184227daed8f577fa85f612da2c23152f435e1",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:c457ab87bcd780ab337955658ab2c823c89ea320762184bf6adc6d705945a5db"
+                },
+                "program/uniform-cyclic-half-intervals/uniform-all-learners-lower-bound": {
+                  "id": "program/uniform-cyclic-half-intervals/uniform-all-learners-lower-bound",
+                  "parentId": "program/uniform-cyclic-half-intervals",
+                  "type": "result",
+                  "title": "Uniform-distribution lower bound against unrestricted learners",
+                  "summary": "For odd k, if 0<epsilon<=1/4, 0<delta,rho<=1/20, and k>=1/(5 epsilon rho), every randomized, computationally unbounded, possibly improper learner that is accurate and replicable for every target in H_k under the fixed uniform distribution requires n>=1/(120 epsilon rho). The restriction is to the fixed uniform distribution, not to proper, efficient, or deterministic learners.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+                    "section": "## Node: program/uniform-cyclic-half-intervals/uniform-all-learners-lower-bound"
+                  },
+                  "contentMarkdown": "## Node: program/uniform-cyclic-half-intervals/uniform-all-learners-lower-bound\n\n- **Title:** Uniform-distribution lower bound against unrestricted learners\n- **Type:** Result\n- **Parent:** `program/uniform-cyclic-half-intervals`\n- **Status:** Supported as proven by the primary judgment\n\nFor odd \\(k\\), suppose\n\n\\[\n0<\\varepsilon\\le\\frac14,\\qquad\n0<\\delta,\\rho\\le\\frac1{20},\\qquad\nk\\ge\\frac1{5\\varepsilon\\rho}.\n\\]\n\nThe primary judgment finds that every randomized, computationally unbounded, possibly improper learner that is \\((\\varepsilon,\\delta)\\)-accurate and \\(\\rho\\)-replicable for every target \\(h_i\\in H_k\\) under the fixed uniform distribution on \\(\\mathbb Z_k\\) requires\n\n\\[\nn\\ge\\frac1{120\\varepsilon\\rho}.\n\\]\n\nThe lower bound therefore covers the unrestricted learner model from the original problem; its restriction is the fixed uniform distribution, not properness, computational efficiency, or determinism.\n\nThe primary judgment validates the supplied proof structure as follows:\n\n- Replicability is converted into concentration of each fixed-target, fixed-seed output distribution around a selected mode.\n- Accuracy implies that these modes are accurate on average over targets and seeds.\n- A symmetric, doubly stochastic coupling between nearby targets preserves the correct target/sample marginals while producing identical labeled inputs on coupled transitions.\n- Replicability consequently forces neighboring target-dependent modes to agree with high probability.\n- Accuracy for sufficiently separated endpoint targets forces at least one mode change along a long path.\n- Combining the mode-agreement and path-change estimates yields the stated lower bound.\n\nThe judgment expressly finds that the argument applies to randomized and improper learners and does not make an invalid selection of a single favorable seed.\n\n**Provenance**\n\n- Claim key: `uniform-cyclic-half-interval-replicable-lower-bound`.\n- Primary judgment and stance: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`, supports and regards as proven in the stated regime.\n- Subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- The judgment credits the supplied argument with the symmetric-coupling and long-path mode analysis.\n- No conflicting judgment was supplied.\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:acae3a13c4d5f07e4d2ad0063195c9221187b67bfd39081402e1b4717bc36914",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:8142bf16999a037f075604b9fc668f7d0aff161a9a5b38a156a41870be148d7b"
+                },
+                "program/uniform-cyclic-half-intervals/parameter-characterization": {
+                  "id": "program/uniform-cyclic-half-intervals/parameter-characterization",
+                  "parentId": "program/uniform-cyclic-half-intervals",
+                  "type": "result",
+                  "title": "Confidence-qualified sample-complexity characterization",
+                  "summary": "In the lower-bound regime, n_unif lies between 1/(120 epsilon rho) and max{epsilon^(-1) log(2/delta), 12/(epsilon rho)}. Hence n_unif=Theta(1/(epsilon rho)) for fixed sufficiently small delta and rho, and more generally when log(2/delta)=O(1/rho). This characterization is not established uniformly for arbitrarily small delta because no matching confidence-dependent lower bound is supplied.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+                    "section": "## Node: program/uniform-cyclic-half-intervals/parameter-characterization"
+                  },
+                  "contentMarkdown": "## Node: program/uniform-cyclic-half-intervals/parameter-characterization\n\n- **Title:** Confidence-qualified sample-complexity characterization\n- **Type:** Qualified result\n- **Parent:** `program/uniform-cyclic-half-intervals`\n- **Status:** Active with explicit scope qualification\n\nIn the lower-bound regime\n\n\\[\n0<\\varepsilon\\le\\frac14,\\qquad\n0<\\delta,\\rho\\le\\frac1{20},\\qquad\nk\\ge\\frac1{5\\varepsilon\\rho},\n\\]\n\nthe judged results give\n\n\\[\n\\frac1{120\\varepsilon\\rho}\n\\le\nn_{\\mathrm{unif}}(H_k,\\varepsilon,\\delta,\\rho)\n\\le\n\\max\\left\\{\n\\frac1\\varepsilon\\log\\frac2\\delta,\\,\n\\frac{12}{\\varepsilon\\rho}\n\\right\\}.\n\\]\n\nAccording to the primary judgment, these inequalities justify\n\n\\[\nn_{\\mathrm{unif}}(H_k,\\varepsilon,\\delta,\\rho)\n=\n\\Theta\\!\\left(\\frac1{\\varepsilon\\rho}\\right)\n\\]\n\nwhen \\(\\delta\\) and \\(\\rho\\) are fixed sufficiently small constants. The same characterization is justified more generally under the relation\n\n\\[\n\\log(2/\\delta)=O(1/\\rho).\n\\]\n\nThe characterization is **not** established uniformly over arbitrarily small \\(\\delta\\). When \\(\\delta\\) is extremely small relative to \\(\\rho\\), the proved upper bound can instead be governed by\n\n\\[\n\\frac1\\varepsilon\\log\\frac1\\delta,\n\\]\n\nand the supplied evidence contains no matching confidence-dependent lower bound.\n\nThis qualification affects only the broad matching characterization. It does not alter either the upper-bound theorem or the lower-bound theorem.\n\n**Provenance**\n\n- Claim key: `uniform-cyclic-half-interval-sample-complexity-characterization`.\n- Primary judgment and stance: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`, qualifies.\n- Subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- No competing characterization or reconciliation outcome was supplied.\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:cc21e0bc3e236e14eb7b4b17ea2266012b42687b42d8a70855cd1e74b88b95d9",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:2db4cae5f8c255cc486bf5d02fa3ea9b0acedee2316944c2918d35abc64ac8b8"
+                },
+                "program/uniform-cyclic-half-intervals/worst-case-corollary": {
+                  "id": "program/uniform-cyclic-half-intervals/worst-case-corollary",
+                  "parentId": "program/uniform-cyclic-half-intervals",
+                  "type": "result",
+                  "title": "Worst-case lower-bound corollary from the uniform experiment",
+                  "summary": "In the stated parameter regime, the uniform lower bound transfers to n_rep(k,epsilon,delta,rho)>=1/(120 epsilon rho), because a worst-case learner must also work for the uniform distribution. The fixed-uniform upper bound does not transfer. The corollary has no growing log k factor and does not improve the established global lower baseline.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+                    "section": "## Node: program/uniform-cyclic-half-intervals/worst-case-corollary"
+                  },
+                  "contentMarkdown": "## Node: program/uniform-cyclic-half-intervals/worst-case-corollary\n\n- **Title:** Worst-case lower-bound corollary from the uniform experiment\n- **Type:** Corollary\n- **Parent:** `program/uniform-cyclic-half-intervals`\n- **Status:** Supported but globally non-improving\n\nFor odd \\(k\\) satisfying\n\n\\[\n0<\\varepsilon\\le\\frac14,\\qquad\n0<\\delta,\\rho\\le\\frac1{20},\\qquad\nk\\ge\\frac1{5\\varepsilon\\rho},\n\\]\n\nthe primary judgment accepts the transfer\n\n\\[\nn_{\\mathrm{rep}}(k,\\varepsilon,\\delta,\\rho)\n\\ge\n\\frac1{120\\varepsilon\\rho}.\n\\]\n\nThe basis of the transfer is that a learner counted by the worst-case quantity must work for every distribution on the selected domain, and hence must work for the uniform distribution on \\(\\mathbb Z_k\\) and every target in \\(H_k\\).\n\nOnly the restricted lower bound transfers in this way. The fixed-uniform upper bound does not provide a worst-case upper bound for \\(H_k\\).\n\nThe primary judgment classifies this corollary as logically valid but weak:\n\n- it contains no growing \\(\\log k\\) factor;\n- it does not improve the established \\(\\widetilde\\Omega((\\log N)^{3/2}/\\varepsilon)\\) global lower baseline; and\n- it is evidence for a local one-coordinate obstruction rather than progress on the global logarithmic exponent.\n\n**Provenance**\n\n- Claim key: `worst-case-replicable-lower-bound-from-uniform-half-intervals`.\n- Primary judgment and stance: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`, supports with the stated interpretation.\n- Subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- No conflicting transfer judgment was supplied.\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "supports"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:e3292b421e425d82c191a9eebe3e5a04f4594a05a13217125baf5f2ba59dbafc",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:952d8b841af05722ad431e023babbad86bbde064d664be9c109771e24242ccf2"
+                },
+                "program/uniform-cyclic-half-intervals/no-log-k-scope": {
+                  "id": "program/uniform-cyclic-half-intervals/no-log-k-scope",
+                  "parentId": "program/uniform-cyclic-half-intervals",
+                  "type": "claim",
+                  "title": "Scope of the absence of a growing alphabet-size cost",
+                  "summary": "For fixed epsilon, delta, and rho, the proper upper bound under the uniform distribution is independent of k. Thus the uniform one-coordinate mechanism does not itself generate a growing log k sample cost. This does not establish the same conclusion for arbitrary or adversarial nonuniform distributions on Z_k, and it is not a global hardness classification of H_k.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+                    "section": "## Node: program/uniform-cyclic-half-intervals/no-log-k-scope"
+                  },
+                  "contentMarkdown": "## Node: program/uniform-cyclic-half-intervals/no-log-k-scope\n\n- **Title:** Scope of the absence of a growing alphabet-size cost\n- **Type:** Limitation\n- **Parent:** `program/uniform-cyclic-half-intervals`\n- **Status:** Active with explicit distributional restriction\n\nFor fixed \\(\\varepsilon,\\delta,\\rho\\), the judged proper upper bound under the uniform distribution is independent of \\(k=|H_k|\\). The primary judgment therefore supports the conclusion that increasing \\(k\\) does not create an additional growing \\(\\log k\\) sample cost in this fixed uniform one-coordinate experiment.\n\nThe strongest conclusion supported by the judgment is:\n\n> The uniform one-coordinate component of the cyclic half-interval construction does not by itself generate a growing \\(\\log k\\) factor.\n\nThe judgment does **not** support either of the following broader claims:\n\n- that \\(H_k\\) has the same sample complexity under every distribution on \\(\\mathbb Z_k\\); or\n- that no adversarial nonuniform distribution for \\(H_k\\) can produce greater replicable sample complexity.\n\nNo arbitrary-distribution learner or general hardness classification for \\(H_k\\) is present in the supplied evidence. Thus the absence of a growing \\(\\log k\\) factor is a conclusion about the uniform-distribution mechanism, not about the hypothesis class under the global worst-case definition.\n\n**Provenance**\n\n- Claim key: `absence-of-log-k-cost-for-uniform-one-coordinate-half-intervals`.\n- Primary judgment and stance: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`, qualifies.\n- Subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- No judgment resolving the arbitrary-distribution case was supplied.\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:6d394f7f3b7fe8f36d4268ab52f0e1d5220f34fa64535097514b25ffa622265f",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:0271d58aff0c7ef15f4b67b8ec555e82499d7168e4dd77ac61772510bba9cbde"
+                },
+                "program/uniform-cyclic-half-intervals/coordinatewise-tensorization-heuristic": {
+                  "id": "program/uniform-cyclic-half-intervals/coordinatewise-tensorization-heuristic",
+                  "parentId": "program/uniform-cyclic-half-intervals",
+                  "type": "method",
+                  "title": "Naive coordinatewise tensorization scaling",
+                  "summary": "If a d-coordinate construction supplied about n/d samples per coordinate, the one-coordinate boundary estimate would suggest per-coordinate instability of order d/(n epsilon), total mismatch of order d^2/(n epsilon), and a naive sample scale d^2/(epsilon rho). Random coordinate counts and possible global structure prevent this calculation from establishing either an upper or lower bound; it is only a heuristic lead.",
+                  "status": "active",
+                  "reportRef": {
+                    "artifact": "report.md",
+                    "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+                    "section": "## Node: program/uniform-cyclic-half-intervals/coordinatewise-tensorization-heuristic"
+                  },
+                  "contentMarkdown": "## Node: program/uniform-cyclic-half-intervals/coordinatewise-tensorization-heuristic\n\n- **Title:** Naive coordinatewise tensorization scaling\n- **Type:** Heuristic method\n- **Parent:** `program/uniform-cyclic-half-intervals`\n- **Status:** Plausible lead; not a theorem\n\nThe primary judgment records the following coordinatewise scaling observation.\n\nIf a \\(d\\)-coordinate construction effectively supplied about \\(n/d\\) samples to each coordinate, applying the one-coordinate boundary-instability estimate would suggest per-coordinate instability of order\n\n\\[\n\\frac{d}{n\\varepsilon}.\n\\]\n\nA union bound over all \\(d\\) coordinates would then suggest total mismatch of order\n\n\\[\n\\frac{d^2}{n\\varepsilon},\n\\]\n\nand a naive coordinatewise sample scale of order\n\n\\[\n\\frac{d^2}{\\varepsilon\\rho}.\n\\]\n\nThe primary judgment qualifies this calculation as a heuristic rather than a multidimensional theorem. In the original multidimensional i.i.d. setting:\n\n- coordinate sample counts are random rather than deterministically equal to \\(n/d\\);\n- some coordinates may receive substantially different numbers of observations; and\n- a global learner may exploit structure not captured by independent coordinatewise learning.\n\nConsequently, the calculation establishes neither an upper bound nor a lower bound for the original multidimensional family. It remains only a possible guide for studying tensorized constructions.\n\n**Provenance**\n\n- Claim key: `naive-coordinatewise-replicability-tensorization-scaling`.\n- Primary judgment and stance: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`, qualifies as a plausible heuristic.\n- Subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- No theorem-level judgment or reconciliation upgrades this heuristic.\n",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "ledgerPosition": 1
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                      "digest": null,
+                      "relation": "supports"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                      "relation": "qualifies"
+                    }
+                  ],
+                  "lineage": [],
+                  "currentRevision": {
+                    "revisionId": "sha256:e310867aeb13eb60f176c169d09434ad79d746a9d9a955eb7e65e140a5568ee5",
+                    "revisionNumber": 1
+                  },
+                  "digest": "sha256:a0d0a1544628aac52b3d77b338b3c9d4d9ed8e54d7d7d53d71d7fc4e94e93455"
+                }
+              },
+              "stateDigest": "sha256:70bf5994f9e1acfd5b34d933d0346882ac9f554d2926ca1141c909b5f2f0f008"
+            },
+            "revisionIds": [
+              "sha256:50c92c7de194b67b7abd5d77eb4fb060739e443b3219f9ccea134cc271ce1b48",
+              "sha256:c481cb0eb7aa3cf08189643fb6d1c606e1a2e413044732ee5baef6e59a3c060f",
+              "sha256:57a81e719bc8f3ddfef4854eb3184227daed8f577fa85f612da2c23152f435e1",
+              "sha256:acae3a13c4d5f07e4d2ad0063195c9221187b67bfd39081402e1b4717bc36914",
+              "sha256:cc21e0bc3e236e14eb7b4b17ea2266012b42687b42d8a70855cd1e74b88b95d9",
+              "sha256:e3292b421e425d82c191a9eebe3e5a04f4594a05a13217125baf5f2ba59dbafc",
+              "sha256:6d394f7f3b7fe8f36d4268ab52f0e1d5220f34fa64535097514b25ffa622265f",
+              "sha256:e310867aeb13eb60f176c169d09434ad79d746a9d9a955eb7e65e140a5568ee5"
+            ],
+            "addedRevisionIds": [
+              "sha256:50c92c7de194b67b7abd5d77eb4fb060739e443b3219f9ccea134cc271ce1b48",
+              "sha256:c481cb0eb7aa3cf08189643fb6d1c606e1a2e413044732ee5baef6e59a3c060f",
+              "sha256:57a81e719bc8f3ddfef4854eb3184227daed8f577fa85f612da2c23152f435e1",
+              "sha256:acae3a13c4d5f07e4d2ad0063195c9221187b67bfd39081402e1b4717bc36914",
+              "sha256:cc21e0bc3e236e14eb7b4b17ea2266012b42687b42d8a70855cd1e74b88b95d9",
+              "sha256:e3292b421e425d82c191a9eebe3e5a04f4594a05a13217125baf5f2ba59dbafc",
+              "sha256:6d394f7f3b7fe8f36d4268ab52f0e1d5220f34fa64535097514b25ffa622265f",
+              "sha256:e310867aeb13eb60f176c169d09434ad79d746a9d9a955eb7e65e140a5568ee5"
+            ],
+            "changedNodeIds": [
+              "root",
+              "program/uniform-cyclic-half-intervals",
+              "program/uniform-cyclic-half-intervals/proper-upper-bound",
+              "program/uniform-cyclic-half-intervals/uniform-all-learners-lower-bound",
+              "program/uniform-cyclic-half-intervals/parameter-characterization",
+              "program/uniform-cyclic-half-intervals/worst-case-corollary",
+              "program/uniform-cyclic-half-intervals/no-log-k-scope",
+              "program/uniform-cyclic-half-intervals/coordinatewise-tensorization-heuristic"
+            ],
+            "reportDigest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+            "revisionSemantics": "neutral-knowledge"
+          }
+        ],
+        "revisions": [
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "The prior root, digest `sha256:b07ce5a3a231b42774c783cd03d2a5aef47c7db8fded253d3ad458edae92d299`, contained no research programs. This build adds the first durable program while retaining the unresolved exact-value question and best global exponent bounds at root level. It also records that the judged restricted result does not close or improve the global exponent gap.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Change: root"
+            },
+            "contentDigest": "sha256:7d6949e9dc58c93341159c3d9c5a0e193cd286bf2e1babcc3e066278546beae5",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "root",
+            "nodeType": "root",
+            "parentId": null,
+            "recordedAtLedgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Node: root"
+            },
+            "revisionId": "sha256:50c92c7de194b67b7abd5d77eb4fb060739e443b3219f9ccea134cc271ce1b48",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "The central question is the worst-case replicable PAC sample complexity for finite classes. For fixed sufficiently small positive confidence parameters, the current global comparison remains between a soft lower bound of order (log N)^(3/2)/epsilon and an upper bound of order (log N)^2/epsilon. The uniform cyclic-half-interval results do not improve either side of this exponent gap. The root has one durable restricted program and no active unreconciled dispute.",
+            "title": "Research state for replicable PAC sample complexity"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This program is created because the primary judgment recognizes a coherent, durable restricted agenda with both upper and lower bounds, scope qualifications, and a possible multidimensional extension. Its identity is the uniform cyclic-half-interval problem rather than the transaction or judgment event.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Change: program/uniform-cyclic-half-intervals"
+            },
+            "contentDigest": "sha256:ba9874d89c78f1c6d8504e19e052edbd7da641948f65dbca24762a2094893451",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "program/uniform-cyclic-half-intervals",
+            "nodeType": "program",
+            "parentId": "root",
+            "recordedAtLedgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Node: program/uniform-cyclic-half-intervals"
+            },
+            "revisionId": "sha256:c481cb0eb7aa3cf08189643fb6d1c606e1a2e413044732ee5baef6e59a3c060f",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "Studies exact-output replicable learning of the k cyclic translates of a half-interval on Z_k when the unlabeled distribution is fixed to be uniform. The program contains a proper upper bound, an unrestricted-learner lower bound, a confidence-qualified matching characterization, a weak worst-case corollary, a distributional limitation on the absence of log k dependence, and a coordinatewise tensorization heuristic. It supplies no arbitrary-distribution upper bound or improvement to the global logarithmic exponent.",
+            "title": "Uniform cyclic half-interval replicability"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This result is materialized as a distinct node because the primary judgment independently validates a proper learner, its explicit parameter bound, and its exact-output replicability guarantee. The node preserves the fixed-uniform scope rather than extending the learner to arbitrary distributions.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Change: program/uniform-cyclic-half-intervals/proper-upper-bound"
+            },
+            "contentDigest": "sha256:0f39808f71eceead77cfa159ac55c3732b3ddfc12ba52597cced571d02b052e7",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "program/uniform-cyclic-half-intervals/proper-upper-bound",
+            "nodeType": "result",
+            "parentId": "program/uniform-cyclic-half-intervals",
+            "recordedAtLedgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Node: program/uniform-cyclic-half-intervals/proper-upper-bound"
+            },
+            "revisionId": "sha256:57a81e719bc8f3ddfef4854eb3184227daed8f577fa85f612da2c23152f435e1",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "For odd k, there is a proper learner for H_k under the uniform distribution on Z_k. With q equal to ceil(k/(floor(epsilon k/2)+1)), accuracy and exact-output replicability hold when n is at least max{epsilon^(-1) log(2/delta), 4q/rho}. Since q<2/epsilon+1<=3/epsilon, it suffices that n is at least max{epsilon^(-1) log(2/delta), 12/(epsilon rho)}. This is only a fixed-uniform-distribution upper bound.",
+            "title": "Proper replicable upper bound under the uniform distribution"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This node is created because the primary judgment validates a durable lower-bound theorem with explicit quantifiers and constants. Its title and content retain the fixed-uniform restriction while recording that the learner itself may be randomized, improper, and computationally unbounded.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Change: program/uniform-cyclic-half-intervals/uniform-all-learners-lower-bound"
+            },
+            "contentDigest": "sha256:d3871418b22034d92fb65a1c956a999904750cbc3ec81fbc80a650524c044661",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "program/uniform-cyclic-half-intervals/uniform-all-learners-lower-bound",
+            "nodeType": "result",
+            "parentId": "program/uniform-cyclic-half-intervals",
+            "recordedAtLedgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Node: program/uniform-cyclic-half-intervals/uniform-all-learners-lower-bound"
+            },
+            "revisionId": "sha256:acae3a13c4d5f07e4d2ad0063195c9221187b67bfd39081402e1b4717bc36914",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "For odd k, if 0<epsilon<=1/4, 0<delta,rho<=1/20, and k>=1/(5 epsilon rho), every randomized, computationally unbounded, possibly improper learner that is accurate and replicable for every target in H_k under the fixed uniform distribution requires n>=1/(120 epsilon rho). The restriction is to the fixed uniform distribution, not to proper, efficient, or deterministic learners.",
+            "title": "Uniform-distribution lower bound against unrestricted learners"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This node records the primary judgment’s explicit qualification of the matching claim. It prevents the valid fixed-confidence characterization from being silently generalized to arbitrary confidence parameters.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Change: program/uniform-cyclic-half-intervals/parameter-characterization"
+            },
+            "contentDigest": "sha256:68bf467ade61a6ea28cdb7b289479de5219838a7b4fbd345aeb6957b484460f6",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "kind": "judgment",
+                "relation": "qualifies"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "program/uniform-cyclic-half-intervals/parameter-characterization",
+            "nodeType": "result",
+            "parentId": "program/uniform-cyclic-half-intervals",
+            "recordedAtLedgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Node: program/uniform-cyclic-half-intervals/parameter-characterization"
+            },
+            "revisionId": "sha256:cc21e0bc3e236e14eb7b4b17ea2266012b42687b42d8a70855cd1e74b88b95d9",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "In the lower-bound regime, n_unif lies between 1/(120 epsilon rho) and max{epsilon^(-1) log(2/delta), 12/(epsilon rho)}. Hence n_unif=Theta(1/(epsilon rho)) for fixed sufficiently small delta and rho, and more generally when log(2/delta)=O(1/rho). This characterization is not established uniformly for arbitrarily small delta because no matching confidence-dependent lower bound is supplied.",
+            "title": "Confidence-qualified sample-complexity characterization"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This corollary is separated from the root’s best global bounds because its mathematical source and significance are specific to the cyclic-half-interval program. The node records both the valid transfer and the judgment’s conclusion that it does not advance the headline exponent.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Change: program/uniform-cyclic-half-intervals/worst-case-corollary"
+            },
+            "contentDigest": "sha256:20f717d1b1014b929d5f46d4e108694c89455900460c501efccad2492609e486",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "kind": "judgment",
+                "relation": "supports"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "program/uniform-cyclic-half-intervals/worst-case-corollary",
+            "nodeType": "result",
+            "parentId": "program/uniform-cyclic-half-intervals",
+            "recordedAtLedgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Node: program/uniform-cyclic-half-intervals/worst-case-corollary"
+            },
+            "revisionId": "sha256:e3292b421e425d82c191a9eebe3e5a04f4594a05a13217125baf5f2ba59dbafc",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "In the stated parameter regime, the uniform lower bound transfers to n_rep(k,epsilon,delta,rho)>=1/(120 epsilon rho), because a worst-case learner must also work for the uniform distribution. The fixed-uniform upper bound does not transfer. The corollary has no growing log k factor and does not improve the established global lower baseline.",
+            "title": "Worst-case lower-bound corollary from the uniform experiment"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This limitation is materialized to preserve the primary judgment’s distinction between a property of the fixed uniform experiment and a property of \\(H_k\\) under adversarial distributions. It prevents the restricted upper bound from being treated as a general no-\\(\\log k\\) theorem.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Change: program/uniform-cyclic-half-intervals/no-log-k-scope"
+            },
+            "contentDigest": "sha256:12b01d71fff9c5d75b904fd73e8884c87193c6a9a2f94e3587d4e69f7679ed78",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "kind": "judgment",
+                "relation": "qualifies"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "program/uniform-cyclic-half-intervals/no-log-k-scope",
+            "nodeType": "claim",
+            "parentId": "program/uniform-cyclic-half-intervals",
+            "recordedAtLedgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Node: program/uniform-cyclic-half-intervals/no-log-k-scope"
+            },
+            "revisionId": "sha256:6d394f7f3b7fe8f36d4268ab52f0e1d5220f34fa64535097514b25ffa622265f",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "For fixed epsilon, delta, and rho, the proper upper bound under the uniform distribution is independent of k. Thus the uniform one-coordinate mechanism does not itself generate a growing log k sample cost. This does not establish the same conclusion for arbitrary or adversarial nonuniform distributions on Z_k, and it is not a global hardness classification of H_k.",
+            "title": "Scope of the absence of a growing alphabet-size cost"
+          },
+          {
+            "action": "create",
+            "baseRevisionId": null,
+            "changeRationale": "This node is created because the tensorization calculation is a durable methodological lead distinct from the proved one-coordinate bounds. Its heuristic status and the obstacles to theorem-level use are retained exactly as qualified by the primary judgment.",
+            "changeRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Change: program/uniform-cyclic-half-intervals/coordinatewise-tensorization-heuristic"
+            },
+            "contentDigest": "sha256:4394ee0e7accd3995566a03e92a26406822819254226538cf9100891b21b64c0",
+            "evidence": [
+              {
+                "digest": null,
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "relation": "supports"
+              },
+              {
+                "digest": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "id": "sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c",
+                "kind": "judgment",
+                "relation": "qualifies"
+              }
+            ],
+            "facets": [
+              "topology",
+              "content",
+              "lifecycle",
+              "provenance"
+            ],
+            "lineage": [],
+            "nodeId": "program/uniform-cyclic-half-intervals/coordinatewise-tensorization-heuristic",
+            "nodeType": "method",
+            "parentId": "program/uniform-cyclic-half-intervals",
+            "recordedAtLedgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "reportRef": {
+              "artifact": "report.md",
+              "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+              "section": "## Node: program/uniform-cyclic-half-intervals/coordinatewise-tensorization-heuristic"
+            },
+            "revisionId": "sha256:e310867aeb13eb60f176c169d09434ad79d746a9d9a955eb7e65e140a5568ee5",
+            "revisionNumber": 1,
+            "status": "active",
+            "subjects": [
+              {
+                "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                "kind": "transaction",
+                "ledgerPosition": 1
+              }
+            ],
+            "summary": "If a d-coordinate construction supplied about n/d samples per coordinate, the one-coordinate boundary estimate would suggest per-coordinate instability of order d/(n epsilon), total mismatch of order d^2/(n epsilon), and a naive sample scale d^2/(epsilon rho). Random coordinate counts and possible global structure prevent this calculation from establishing either an upper or lower bound; it is only a heuristic lead.",
+            "title": "Naive coordinatewise tensorization scaling"
+          }
+        ],
+        "reports": [
+          {
+            "runId": "3435eae819a6188d62f74a7a18886dd28f0d8bf2f68a6b546d6c95ec98cb47d7",
+            "digest": "sha256:18dfd046a0e030ed807c298aaff67f7702d7a97af7a5c62051a6dd75c2b8ab07",
+            "markdown": "# Knowledge-Formation Report\n\nThe supplied primary judgment supports one durable restricted research program concerning cyclic half-intervals under a fixed uniform distribution. It establishes program-specific upper and lower bounds, while qualifying the resulting parameter characterization and the interpretation of alphabet-size dependence. It also records a coordinatewise tensorization heuristic that is not a theorem.\n\nNo conflict records or reconciliation outcomes were supplied. Accordingly, no active dispute node is required.\n\n## Node: root\n\n- **Title:** Research state for replicable PAC sample complexity\n- **Type:** Root\n- **Parent:** None\n- **Status:** Active\n\nThe central question is the worst-case sample complexity\n\n\\[\nn_{\\mathrm{rep}}(N,\\varepsilon,\\delta,\\rho)\n\\]\n\nof unrestricted, computationally unbounded, possibly improper randomized learners that must simultaneously be \\((\\varepsilon,\\delta)\\)-accurate and \\(\\rho\\)-replicable for every realizable distribution generated by a finite class of size at most \\(N\\).\n\nThe supplied external frontier baselines leave the logarithmic exponent unresolved. For fixed sufficiently small positive \\(\\rho\\) and \\(\\delta\\), the current comparison remains\n\n\\[\n\\widetilde\\Omega\\!\\left(\n\\frac{(\\log N)^{3/2}}{\\varepsilon}\n\\right)\n\\le\nn_{\\mathrm{rep}}(N,\\varepsilon,\\delta,\\rho)\n\\le\nO\\!\\left(\n\\frac{(\\log N)^2}{\\varepsilon}\n\\right).\n\\]\n\nMore explicitly:\n\n- The universal finite-class upper bound attributed in the problem statement to Bun et al. is\n\n  \\[\n  O\\!\\left(\n  \\frac{\\log^2|H|+\\log(1/(\\rho\\delta))}\n       {\\varepsilon\\rho^2}\n  \\log^3\\frac1\\rho\n  \\right).\n  \\]\n\n- The lower bound attributed to Larsen–Mathiasen–Pabbaraju–Svendsen gives, in its stated parameter regime, a class requiring at least\n\n  \\[\n  \\frac{10^{-9}(\\log|H|)^{3/2}}\n       {\\varepsilon(\\log\\log|H|)^2\n       \\log(\\log|H|/\\varepsilon)}.\n  \\]\n\nThe primary judgment at\n`sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`\nfinds that the newly organized cyclic-half-interval results do **not** improve either side of this global exponent gap. Their worst-case corollary has no growing \\(\\log |H|\\) factor and is therefore weaker than the established global lower baseline.\n\nThe root has one durable child program:\n\n- `program/uniform-cyclic-half-intervals` — exact-output replicability for cyclic half-interval classes under the fixed uniform distribution, including its restricted bounds, scope limitations, worst-case corollary, and tensorization heuristic.\n\nThe supplied judgment routing contains no conflicts. No mathematical claim in the current state is subject to an active unreconciled dispute.\n\n**Provenance**\n\n- Primary judgment: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`.\n- Judgment subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- The Bun et al. and Larsen–Mathiasen–Pabbaraju–Svendsen bounds are external baselines supplied with the problem and are not Math Flow ledger evidence.\n\n## Change: root\n\nThe prior root, digest `sha256:b07ce5a3a231b42774c783cd03d2a5aef47c7db8fded253d3ad458edae92d299`, contained no research programs. This build adds the first durable program while retaining the unresolved exact-value question and best global exponent bounds at root level. It also records that the judged restricted result does not close or improve the global exponent gap.\n\n## Node: program/uniform-cyclic-half-intervals\n\n- **Title:** Uniform cyclic half-interval replicability\n- **Type:** Research program\n- **Parent:** `root`\n- **Status:** Active\n\nFor odd \\(k\\), let \\(X=\\mathbb Z_k\\), and let \\(H_k\\) be the \\(k\\) cyclic translates of an interval of length \\((k-1)/2\\). This program studies learning every target in \\(H_k\\) when the unlabeled distribution is fixed to be uniform on \\(\\mathbb Z_k\\).\n\nWrite\n\n\\[\nn_{\\mathrm{unif}}(H_k,\\varepsilon,\\delta,\\rho)\n\\]\n\nfor the least sample size required in this fixed-distribution experiment by a learner that must be accurate and replicable for every target in \\(H_k\\).\n\nAccording to primary judgment\n`sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`,\nthe complete current program state is:\n\n1. **Proper upper bound.** There is a proper learner with sufficient sample size\n\n   \\[\n   n\\ge\n   \\max\\left\\{\n   \\frac1\\varepsilon\\log\\frac2\\delta,\\,\n   \\frac{12}{\\varepsilon\\rho}\n   \\right\\}.\n   \\]\n\n2. **Lower bound against unrestricted learners.** If\n\n   \\[\n   0<\\varepsilon\\le\\frac14,\\qquad\n   0<\\delta,\\rho\\le\\frac1{20},\\qquad\n   k\\ge\\frac1{5\\varepsilon\\rho},\n   \\]\n\n   then every randomized, computationally unbounded, possibly improper learner that works for all targets under the uniform distribution requires\n\n   \\[\n   n\\ge\\frac1{120\\varepsilon\\rho}.\n   \\]\n\n3. **Qualified characterization.** These bounds yield\n\n   \\[\n   n_{\\mathrm{unif}}\n   =\\Theta\\!\\left(\\frac1{\\varepsilon\\rho}\\right)\n   \\]\n\n   for fixed sufficiently small confidence parameters, and more generally when\n\n   \\[\n   \\log(2/\\delta)=O(1/\\rho).\n   \\]\n\n   They do not establish that characterization uniformly for arbitrarily small \\(\\delta\\).\n\n4. **Worst-case implication.** The fixed-uniform lower bound transfers to the global quantity \\(n_{\\mathrm{rep}}\\), but only as the weak lower bound \\(1/(120\\varepsilon\\rho)\\), with no growing \\(\\log k\\) factor.\n\n5. **Alphabet-size limitation.** The program establishes that the fixed uniform one-coordinate mechanism does not generate an additional growing \\(\\log k\\) cost. It does not establish the same conclusion for adversarial nonuniform distributions on \\(\\mathbb Z_k\\).\n\n6. **Tensorization lead.** A coordinatewise calculation suggests a \\(d^2/(\\varepsilon\\rho)\\) sample scale for a naive multidimensional construction, but the primary judgment classifies this only as a heuristic.\n\nThis is a distribution-restricted program. It contains no arbitrary-distribution upper bound for \\(H_k\\), no lower bound with logarithmic exponent greater than \\(3/2\\), and no universal learner improving the global exponent or the established \\(\\rho^{-2}\\) dependence.\n\n**Provenance**\n\n- Primary judgment: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`.\n- Subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- The judgment credits the supplied argument with the proper shifted-partition learner and the symmetric-coupling lower-bound method.\n- No conflict or reconciliation record applies.\n\n## Change: program/uniform-cyclic-half-intervals\n\nThis program is created because the primary judgment recognizes a coherent, durable restricted agenda with both upper and lower bounds, scope qualifications, and a possible multidimensional extension. Its identity is the uniform cyclic-half-interval problem rather than the transaction or judgment event.\n\n## Node: program/uniform-cyclic-half-intervals/proper-upper-bound\n\n- **Title:** Proper replicable upper bound under the uniform distribution\n- **Type:** Result\n- **Parent:** `program/uniform-cyclic-half-intervals`\n- **Status:** Supported as proven by the primary judgment\n\nFor odd \\(k\\), the primary judgment finds that the supplied argument proves the existence of a proper learner for \\(H_k\\) under the uniform distribution on \\(\\mathbb Z_k\\).\n\nLet\n\n\\[\nL=\\left\\lfloor\\frac{\\varepsilon k}{2}\\right\\rfloor+1\n\\]\n\nand\n\n\\[\nq=\n\\left\\lceil\n\\frac{k}{\\lfloor\\varepsilon k/2\\rfloor+1}\n\\right\\rceil.\n\\]\n\nThe judged construction uses a seed-selected uniform cyclic shift of a partition into \\(q\\) consecutive blocks and chooses block representatives. It satisfies the required accuracy and exact-output replicability whenever\n\n\\[\nn\\ge\n\\max\\left\\{\n\\frac1\\varepsilon\\log\\frac2\\delta,\\,\n\\frac{4q}{\\rho}\n\\right\\}.\n\\]\n\nThe primary judgment accepts the simplification\n\n\\[\nq<\\frac2\\varepsilon+1\\le\\frac3\\varepsilon,\n\\]\n\nwhich yields the sufficient bound\n\n\\[\nn\\ge\n\\max\\left\\{\n\\frac1\\varepsilon\\log\\frac2\\delta,\\,\n\\frac{12}{\\varepsilon\\rho}\n\\right\\}.\n\\]\n\nThe judgment specifically assesses the following ingredients as mathematically sound:\n\n- the cyclic disagreement geometry and nesting of disagreement sets;\n- concentration of the version space around the target;\n- the shifted-partition accuracy argument;\n- the estimate that a version space crosses a random block boundary with probability at most \\(2q/n\\); and\n- the union-bound conclusion that two independent samples using the same seed produce different classifiers with probability at most \\(4q/n\\).\n\nThis is an upper bound only for the fixed uniform distribution. It is not an arbitrary-distribution learner for \\(H_k\\).\n\n**Provenance**\n\n- Claim key: `uniform-cyclic-half-interval-proper-replicable-upper-bound`.\n- Primary judgment and stance: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`, supports and regards as proven.\n- Subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- No conflicting judgment was supplied.\n\n## Change: program/uniform-cyclic-half-intervals/proper-upper-bound\n\nThis result is materialized as a distinct node because the primary judgment independently validates a proper learner, its explicit parameter bound, and its exact-output replicability guarantee. The node preserves the fixed-uniform scope rather than extending the learner to arbitrary distributions.\n\n## Node: program/uniform-cyclic-half-intervals/uniform-all-learners-lower-bound\n\n- **Title:** Uniform-distribution lower bound against unrestricted learners\n- **Type:** Result\n- **Parent:** `program/uniform-cyclic-half-intervals`\n- **Status:** Supported as proven by the primary judgment\n\nFor odd \\(k\\), suppose\n\n\\[\n0<\\varepsilon\\le\\frac14,\\qquad\n0<\\delta,\\rho\\le\\frac1{20},\\qquad\nk\\ge\\frac1{5\\varepsilon\\rho}.\n\\]\n\nThe primary judgment finds that every randomized, computationally unbounded, possibly improper learner that is \\((\\varepsilon,\\delta)\\)-accurate and \\(\\rho\\)-replicable for every target \\(h_i\\in H_k\\) under the fixed uniform distribution on \\(\\mathbb Z_k\\) requires\n\n\\[\nn\\ge\\frac1{120\\varepsilon\\rho}.\n\\]\n\nThe lower bound therefore covers the unrestricted learner model from the original problem; its restriction is the fixed uniform distribution, not properness, computational efficiency, or determinism.\n\nThe primary judgment validates the supplied proof structure as follows:\n\n- Replicability is converted into concentration of each fixed-target, fixed-seed output distribution around a selected mode.\n- Accuracy implies that these modes are accurate on average over targets and seeds.\n- A symmetric, doubly stochastic coupling between nearby targets preserves the correct target/sample marginals while producing identical labeled inputs on coupled transitions.\n- Replicability consequently forces neighboring target-dependent modes to agree with high probability.\n- Accuracy for sufficiently separated endpoint targets forces at least one mode change along a long path.\n- Combining the mode-agreement and path-change estimates yields the stated lower bound.\n\nThe judgment expressly finds that the argument applies to randomized and improper learners and does not make an invalid selection of a single favorable seed.\n\n**Provenance**\n\n- Claim key: `uniform-cyclic-half-interval-replicable-lower-bound`.\n- Primary judgment and stance: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`, supports and regards as proven in the stated regime.\n- Subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- The judgment credits the supplied argument with the symmetric-coupling and long-path mode analysis.\n- No conflicting judgment was supplied.\n\n## Change: program/uniform-cyclic-half-intervals/uniform-all-learners-lower-bound\n\nThis node is created because the primary judgment validates a durable lower-bound theorem with explicit quantifiers and constants. Its title and content retain the fixed-uniform restriction while recording that the learner itself may be randomized, improper, and computationally unbounded.\n\n## Node: program/uniform-cyclic-half-intervals/parameter-characterization\n\n- **Title:** Confidence-qualified sample-complexity characterization\n- **Type:** Qualified result\n- **Parent:** `program/uniform-cyclic-half-intervals`\n- **Status:** Active with explicit scope qualification\n\nIn the lower-bound regime\n\n\\[\n0<\\varepsilon\\le\\frac14,\\qquad\n0<\\delta,\\rho\\le\\frac1{20},\\qquad\nk\\ge\\frac1{5\\varepsilon\\rho},\n\\]\n\nthe judged results give\n\n\\[\n\\frac1{120\\varepsilon\\rho}\n\\le\nn_{\\mathrm{unif}}(H_k,\\varepsilon,\\delta,\\rho)\n\\le\n\\max\\left\\{\n\\frac1\\varepsilon\\log\\frac2\\delta,\\,\n\\frac{12}{\\varepsilon\\rho}\n\\right\\}.\n\\]\n\nAccording to the primary judgment, these inequalities justify\n\n\\[\nn_{\\mathrm{unif}}(H_k,\\varepsilon,\\delta,\\rho)\n=\n\\Theta\\!\\left(\\frac1{\\varepsilon\\rho}\\right)\n\\]\n\nwhen \\(\\delta\\) and \\(\\rho\\) are fixed sufficiently small constants. The same characterization is justified more generally under the relation\n\n\\[\n\\log(2/\\delta)=O(1/\\rho).\n\\]\n\nThe characterization is **not** established uniformly over arbitrarily small \\(\\delta\\). When \\(\\delta\\) is extremely small relative to \\(\\rho\\), the proved upper bound can instead be governed by\n\n\\[\n\\frac1\\varepsilon\\log\\frac1\\delta,\n\\]\n\nand the supplied evidence contains no matching confidence-dependent lower bound.\n\nThis qualification affects only the broad matching characterization. It does not alter either the upper-bound theorem or the lower-bound theorem.\n\n**Provenance**\n\n- Claim key: `uniform-cyclic-half-interval-sample-complexity-characterization`.\n- Primary judgment and stance: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`, qualifies.\n- Subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- No competing characterization or reconciliation outcome was supplied.\n\n## Change: program/uniform-cyclic-half-intervals/parameter-characterization\n\nThis node records the primary judgment’s explicit qualification of the matching claim. It prevents the valid fixed-confidence characterization from being silently generalized to arbitrary confidence parameters.\n\n## Node: program/uniform-cyclic-half-intervals/worst-case-corollary\n\n- **Title:** Worst-case lower-bound corollary from the uniform experiment\n- **Type:** Corollary\n- **Parent:** `program/uniform-cyclic-half-intervals`\n- **Status:** Supported but globally non-improving\n\nFor odd \\(k\\) satisfying\n\n\\[\n0<\\varepsilon\\le\\frac14,\\qquad\n0<\\delta,\\rho\\le\\frac1{20},\\qquad\nk\\ge\\frac1{5\\varepsilon\\rho},\n\\]\n\nthe primary judgment accepts the transfer\n\n\\[\nn_{\\mathrm{rep}}(k,\\varepsilon,\\delta,\\rho)\n\\ge\n\\frac1{120\\varepsilon\\rho}.\n\\]\n\nThe basis of the transfer is that a learner counted by the worst-case quantity must work for every distribution on the selected domain, and hence must work for the uniform distribution on \\(\\mathbb Z_k\\) and every target in \\(H_k\\).\n\nOnly the restricted lower bound transfers in this way. The fixed-uniform upper bound does not provide a worst-case upper bound for \\(H_k\\).\n\nThe primary judgment classifies this corollary as logically valid but weak:\n\n- it contains no growing \\(\\log k\\) factor;\n- it does not improve the established \\(\\widetilde\\Omega((\\log N)^{3/2}/\\varepsilon)\\) global lower baseline; and\n- it is evidence for a local one-coordinate obstruction rather than progress on the global logarithmic exponent.\n\n**Provenance**\n\n- Claim key: `worst-case-replicable-lower-bound-from-uniform-half-intervals`.\n- Primary judgment and stance: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`, supports with the stated interpretation.\n- Subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- No conflicting transfer judgment was supplied.\n\n## Change: program/uniform-cyclic-half-intervals/worst-case-corollary\n\nThis corollary is separated from the root’s best global bounds because its mathematical source and significance are specific to the cyclic-half-interval program. The node records both the valid transfer and the judgment’s conclusion that it does not advance the headline exponent.\n\n## Node: program/uniform-cyclic-half-intervals/no-log-k-scope\n\n- **Title:** Scope of the absence of a growing alphabet-size cost\n- **Type:** Limitation\n- **Parent:** `program/uniform-cyclic-half-intervals`\n- **Status:** Active with explicit distributional restriction\n\nFor fixed \\(\\varepsilon,\\delta,\\rho\\), the judged proper upper bound under the uniform distribution is independent of \\(k=|H_k|\\). The primary judgment therefore supports the conclusion that increasing \\(k\\) does not create an additional growing \\(\\log k\\) sample cost in this fixed uniform one-coordinate experiment.\n\nThe strongest conclusion supported by the judgment is:\n\n> The uniform one-coordinate component of the cyclic half-interval construction does not by itself generate a growing \\(\\log k\\) factor.\n\nThe judgment does **not** support either of the following broader claims:\n\n- that \\(H_k\\) has the same sample complexity under every distribution on \\(\\mathbb Z_k\\); or\n- that no adversarial nonuniform distribution for \\(H_k\\) can produce greater replicable sample complexity.\n\nNo arbitrary-distribution learner or general hardness classification for \\(H_k\\) is present in the supplied evidence. Thus the absence of a growing \\(\\log k\\) factor is a conclusion about the uniform-distribution mechanism, not about the hypothesis class under the global worst-case definition.\n\n**Provenance**\n\n- Claim key: `absence-of-log-k-cost-for-uniform-one-coordinate-half-intervals`.\n- Primary judgment and stance: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`, qualifies.\n- Subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- No judgment resolving the arbitrary-distribution case was supplied.\n\n## Change: program/uniform-cyclic-half-intervals/no-log-k-scope\n\nThis limitation is materialized to preserve the primary judgment’s distinction between a property of the fixed uniform experiment and a property of \\(H_k\\) under adversarial distributions. It prevents the restricted upper bound from being treated as a general no-\\(\\log k\\) theorem.\n\n## Node: program/uniform-cyclic-half-intervals/coordinatewise-tensorization-heuristic\n\n- **Title:** Naive coordinatewise tensorization scaling\n- **Type:** Heuristic method\n- **Parent:** `program/uniform-cyclic-half-intervals`\n- **Status:** Plausible lead; not a theorem\n\nThe primary judgment records the following coordinatewise scaling observation.\n\nIf a \\(d\\)-coordinate construction effectively supplied about \\(n/d\\) samples to each coordinate, applying the one-coordinate boundary-instability estimate would suggest per-coordinate instability of order\n\n\\[\n\\frac{d}{n\\varepsilon}.\n\\]\n\nA union bound over all \\(d\\) coordinates would then suggest total mismatch of order\n\n\\[\n\\frac{d^2}{n\\varepsilon},\n\\]\n\nand a naive coordinatewise sample scale of order\n\n\\[\n\\frac{d^2}{\\varepsilon\\rho}.\n\\]\n\nThe primary judgment qualifies this calculation as a heuristic rather than a multidimensional theorem. In the original multidimensional i.i.d. setting:\n\n- coordinate sample counts are random rather than deterministically equal to \\(n/d\\);\n- some coordinates may receive substantially different numbers of observations; and\n- a global learner may exploit structure not captured by independent coordinatewise learning.\n\nConsequently, the calculation establishes neither an upper bound nor a lower bound for the original multidimensional family. It remains only a possible guide for studying tensorized constructions.\n\n**Provenance**\n\n- Claim key: `naive-coordinatewise-replicability-tensorization-scaling`.\n- Primary judgment and stance: `sha256:f026796afeef5d30732d0e6b4b985b9275ed5c05003a85faf8d59480f870913c`, qualifies as a plausible heuristic.\n- Subject and evidence: transaction `2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6`, ledger position 1.\n- No theorem-level judgment or reconciliation upgrades this heuristic.\n\n## Change: program/uniform-cyclic-half-intervals/coordinatewise-tensorization-heuristic\n\nThis node is created because the tensorization calculation is a durable methodological lead distinct from the proved one-coordinate bounds. Its heuristic status and the obstacles to theorem-level use are retained exactly as qualified by the primary judgment.\n"
+          }
+        ],
+        "latestRunId": "3435eae819a6188d62f74a7a18886dd28f0d8bf2f68a6b546d6c95ec98cb47d7"
+      }
+    },
+    {
+      "id": "openrouter-research-v1",
       "problemId": "schur-number-6",
       "label": "openrouter-research-v1",
       "projectionSpec": {
@@ -48416,6 +49681,15 @@
           ]
         }
       ]
+    },
+    {
+      "schemaVersion": 1,
+      "problemId": "replicable-pac-sample-complexity",
+      "ledgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+      "directionLedgerHead": null,
+      "directionLedgerDigest": "sha256:17384e06c04187e78a9b813506d9e2bbb5bb94ab1a788576545e5667420551a1",
+      "events": [],
+      "directions": []
     },
     {
       "schemaVersion": 1,
