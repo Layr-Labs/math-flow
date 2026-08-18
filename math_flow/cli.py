@@ -58,6 +58,11 @@ from .projection_queue import (
     plan_due_projection_dispatches,
 )
 from .repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
+from .research_projection import (
+    replay_research_protocol,
+    run_research_credit_refresh_bundle,
+    run_research_update_bundle,
+)
 from .runs import run_judge_bundle
 from .scale_probe import run_provider_free_scale_probe
 from .solver_tools import credit_status, register_direction
@@ -353,7 +358,57 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="published projection state used to resolve bounded v2 dependency context",
     )
+    judgment_parser.add_argument(
+        "--research-state-run",
+        type=Path,
+        help="prior serialized research-update bundle used for bounded dependency context",
+    )
     judgment_parser.add_argument("--output-dir", required=True, type=Path)
+
+    research_update_parser = commands.add_parser(
+        "research-update",
+        help="apply one accepted validity judgment to serialized program state and local credit",
+    )
+    research_update_parser.add_argument("--problem", required=True)
+    research_update_parser.add_argument("--judge", required=True, type=Path)
+    research_update_parser.add_argument("--head", default="HEAD")
+    research_update_parser.add_argument(
+        "--validity-bundle", required=True, type=Path
+    )
+    research_update_parser.add_argument("--base-run", type=Path)
+    research_update_parser.add_argument("--horizon-run", type=Path)
+    research_update_parser.add_argument("--output-dir", required=True, type=Path)
+
+    research_refresh_parser = commands.add_parser(
+        "research-credit-refresh",
+        help="reevaluate all hierarchical credit edges at one common hindsight horizon",
+    )
+    research_refresh_parser.add_argument("--problem", required=True)
+    research_refresh_parser.add_argument("--judge", required=True, type=Path)
+    research_refresh_parser.add_argument("--latest-run", required=True, type=Path)
+    research_refresh_parser.add_argument(
+        "--history-run",
+        required=True,
+        action="append",
+        type=Path,
+        dest="history_runs",
+    )
+    research_refresh_parser.add_argument("--horizon-run", type=Path)
+    research_refresh_parser.add_argument("--output-dir", required=True, type=Path)
+
+    research_replay_parser = commands.add_parser(
+        "research-replay",
+        help="replay a problem ledger through validity, serialized program state, and credit",
+    )
+    research_replay_parser.add_argument("--problem", required=True)
+    research_replay_parser.add_argument(
+        "--validity-judge", required=True, type=Path
+    )
+    research_replay_parser.add_argument(
+        "--research-judge", required=True, type=Path
+    )
+    research_replay_parser.add_argument("--head", default="HEAD")
+    research_replay_parser.add_argument("--output-dir", required=True, type=Path)
 
     judgment_plan_parser = commands.add_parser(
         "judgment-plan",
@@ -849,6 +904,37 @@ def main(argv: list[str] | None = None) -> int:
                 args.output_dir,
                 context_transaction_ids=args.evidence,
                 projection_root=args.projection_dir,
+                research_state_run=args.research_state_run,
+            )
+        elif args.command == "research-update":
+            result = run_research_update_bundle(
+                root,
+                args.problem,
+                args.judge,
+                args.head,
+                args.validity_bundle,
+                args.output_dir,
+                base_run=args.base_run,
+                horizon_run=args.horizon_run,
+            )
+        elif args.command == "research-credit-refresh":
+            result = run_research_credit_refresh_bundle(
+                root,
+                args.problem,
+                args.judge,
+                args.latest_run,
+                args.history_runs,
+                args.output_dir,
+                horizon_run=args.horizon_run,
+            )
+        elif args.command == "research-replay":
+            result = replay_research_protocol(
+                root,
+                args.problem,
+                args.validity_judge,
+                args.research_judge,
+                args.output_dir,
+                head=args.head,
             )
         elif args.command == "judgment-plan":
             result = plan_primary_judgment_coverage(

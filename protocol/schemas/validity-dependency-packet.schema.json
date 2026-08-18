@@ -58,6 +58,26 @@
             }
           },
           "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["sourceKind", "runDigest", "stateDigest", "stateArtifactDigest", "problemLedgerHead", "selectedPrograms", "selectedThreads", "selectedItems", "unresolvedDependencyTransactionIds"],
+          "properties": {
+            "sourceKind": { "const": "research-program-state" },
+            "runDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+            "stateDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+            "stateArtifactDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+            "problemLedgerHead": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+            "selectedPrograms": { "type": "object" },
+            "selectedThreads": { "type": "object" },
+            "selectedItems": { "type": "object" },
+            "unresolvedDependencyTransactionIds": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+            }
+          },
+          "additionalProperties": false
         }
       ]
     },

@@ -11,6 +11,7 @@ from .errors import MathFlowError
 from .governance import resolve_projection
 from .projection_queue import validate_scheduler_state
 from .repository import is_ancestor, list_files_at, read_at, sha256_json
+from .research_state import validate_research_program_state
 
 
 TRANSACTION_ID = re.compile(r"\b[0-9a-f]{40}\b")
@@ -187,6 +188,105 @@ def _historical_context(
     return None
 
 
+def research_state_dependency_context(
+    bundle_dir: Path,
+    problem: str,
+    source: dict[str, object],
+    subject_ordinal: int,
+    dependencies: list[str],
+) -> dict[str, object]:
+    manifest, run_digest = verify_bundle(bundle_dir)
+    if (
+        manifest.get("runKind") != "research-update"
+        or manifest.get("problemId") != problem
+    ):
+        raise MathFlowError("validity research-state context is not a research update")
+    try:
+        state = json.loads(
+            read_verified_artifact(bundle_dir, manifest, "research-program-state")
+        )
+    except json.JSONDecodeError as exc:
+        raise MathFlowError("validity research-state context is invalid JSON") from exc
+    validate_research_program_state(state, problem)
+    transaction_ordinals = {
+        str(item["transactionId"]): int(item["ordinal"])
+        for item in source["transactions"]
+    }
+    state_head = state.get("ledgerHead")
+    if (
+        not isinstance(state_head, str)
+        or transaction_ordinals.get(state_head, subject_ordinal) >= subject_ordinal
+    ):
+        raise MathFlowError("validity research-state context is not pre-subject")
+    state_artifacts = [
+        item
+        for item in manifest.get("artifacts", [])
+        if isinstance(item, dict) and item.get("role") == "research-program-state"
+    ]
+    if len(state_artifacts) != 1:
+        raise MathFlowError("validity research-state context has no unique state artifact")
+
+    selected_contributions = {
+        transaction_id: state["contributions"][transaction_id]
+        for transaction_id in dependencies
+        if transaction_id in state["contributions"]
+    }
+    selected_item_ids = {
+        str(item_id)
+        for contribution in selected_contributions.values()
+        for item_id in contribution.get("itemIds", [])
+    }
+    frontier = list(selected_item_ids)
+    while frontier:
+        item_id = frontier.pop()
+        item = state["items"].get(item_id)
+        if not isinstance(item, dict):
+            continue
+        for dependency_item_id in item.get("dependencyItemIds", []):
+            dependency_item_id = str(dependency_item_id)
+            if dependency_item_id not in selected_item_ids:
+                selected_item_ids.add(dependency_item_id)
+                frontier.append(dependency_item_id)
+    selected_items = {
+        item_id: state["items"][item_id]
+        for item_id in sorted(selected_item_ids)
+        if item_id in state["items"]
+    }
+    selected_program_ids = {
+        str(contribution["directProgramId"])
+        for contribution in selected_contributions.values()
+    } | {str(item["programId"]) for item in selected_items.values()}
+    for program_id in list(selected_program_ids):
+        cursor = state["programs"].get(program_id)
+        while isinstance(cursor, dict) and isinstance(cursor.get("parentId"), str):
+            parent_id = str(cursor["parentId"])
+            selected_program_ids.add(parent_id)
+            cursor = state["programs"].get(parent_id)
+    selected_threads = {
+        thread_id: state["threads"][thread_id]
+        for contribution in selected_contributions.values()
+        for thread_id in contribution.get("directThreadIds", [])
+        if thread_id in state["threads"]
+    }
+    return {
+        "sourceKind": "research-program-state",
+        "runDigest": run_digest,
+        "stateDigest": state["stateDigest"],
+        "stateArtifactDigest": state_artifacts[0]["digest"],
+        "problemLedgerHead": state_head,
+        "selectedPrograms": {
+            program_id: state["programs"][program_id]
+            for program_id in sorted(selected_program_ids)
+            if program_id in state["programs"]
+        },
+        "selectedThreads": selected_threads,
+        "selectedItems": selected_items,
+        "unresolvedDependencyTransactionIds": sorted(
+            set(dependencies) - set(selected_contributions)
+        ),
+    }
+
+
 def build_dependency_packet(
     root: Path,
     projection_root: Path | None,
@@ -195,6 +295,7 @@ def build_dependency_packet(
     head: str,
     subject_transaction_id: str,
     context_projection: str | None,
+    research_state_run: Path | None = None,
 ) -> dict[str, object]:
     transactions = list(source["transactions"])
     by_id = {str(item["transactionId"]): item for item in transactions}
@@ -212,11 +313,15 @@ def build_dependency_packet(
         )
     )
     context = None
-    if context_projection is not None and dependencies:
-        if projection_root is None:
-            raise MathFlowError(
-                "validity judgment requires a projection directory for knowledge context"
-            )
+    if research_state_run is not None and dependencies:
+        context = research_state_dependency_context(
+            research_state_run,
+            problem,
+            source,
+            int(subject["ordinal"]),
+            dependencies,
+        )
+    elif context_projection is not None and dependencies and projection_root is not None:
         historical = _historical_context(
             root,
             projection_root.resolve(),
@@ -334,7 +439,7 @@ def validate_dependency_packet(value: object) -> dict[str, object]:
         )
     context = value.get("knowledgeContext")
     if context is not None:
-        context_fields = {
+        legacy_context_fields = {
             "projectionId",
             "projectionSpecDigest",
             "runDigest",
@@ -344,6 +449,23 @@ def validate_dependency_packet(value: object) -> dict[str, object]:
             "selectedNodes",
             "unresolvedDependencyTransactionIds",
         }
-        if not isinstance(context, dict) or set(context) != context_fields:
+        research_context_fields = {
+            "sourceKind",
+            "runDigest",
+            "stateDigest",
+            "stateArtifactDigest",
+            "problemLedgerHead",
+            "selectedPrograms",
+            "selectedThreads",
+            "selectedItems",
+            "unresolvedDependencyTransactionIds",
+        }
+        if (
+            not isinstance(context, dict)
+            or (
+                set(context) != legacy_context_fields
+                and set(context) != research_context_fields
+            )
+        ):
             raise MathFlowError("validity dependency packet has invalid knowledge context")
     return value

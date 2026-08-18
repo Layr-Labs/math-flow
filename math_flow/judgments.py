@@ -412,6 +412,7 @@ def _run_validity_primary_judgment_bundle(
     output_dir: Path,
     projection_root: Path | None,
     context_transaction_ids: list[str] | None,
+    research_state_run: Path | None,
     transport: OpenRouterTransport | None,
 ) -> dict[str, object]:
     root = root.resolve()
@@ -444,6 +445,7 @@ def _run_validity_primary_judgment_bundle(
         head,
         subject_id,
         context_projection,
+        research_state_run,
     )
     validate_dependency_packet(packet)
     claims = list(packet["claims"])
@@ -572,15 +574,15 @@ def _run_validity_primary_judgment_bundle(
                 None
                 if packet["knowledgeContext"] is None
                 else {
-                    key: packet["knowledgeContext"][key]
-                    for key in (
-                        "projectionId",
-                        "projectionSpecDigest",
-                        "runDigest",
-                        "stateDigest",
-                        "stateArtifactDigest",
-                        "problemLedgerHead",
-                    )
+                    key: value
+                    for key, value in packet["knowledgeContext"].items()
+                    if key
+                    not in {
+                        "selectedNodes",
+                        "selectedPrograms",
+                        "selectedThreads",
+                        "selectedItems",
+                    }
                 }
             ),
         },
@@ -598,6 +600,7 @@ def run_primary_judgment_bundle(
     context_transaction_ids: list[str] | None = None,
     transport: OpenRouterTransport | None = None,
     projection_root: Path | None = None,
+    research_state_run: Path | None = None,
 ) -> dict[str, object]:
     spec = load_judge_spec(judge_path)
     if spec["implementation"] == "openrouter-validity-judgment-v2":
@@ -610,6 +613,7 @@ def run_primary_judgment_bundle(
             output_dir,
             projection_root,
             context_transaction_ids,
+            research_state_run,
             transport,
         )
     if spec["implementation"] == "openrouter-markdown-judgment-v1":

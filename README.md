@@ -104,6 +104,20 @@ python -m math_flow render-request \
 The older `project` command remains a compatibility interface for flat profiles;
 new integrations should use `run` and consume `run.json`.
 
+The serialized hierarchical research v1 path separates rigorous validity,
+accepted research-program state, and two-term hindsight credit. It stores one
+post-state per accepted submission, uses the previous post-state as the next
+pre-state, and supports a final full-history credit refresh. See
+[the hierarchical research protocol](docs/HIERARCHICAL_RESEARCH_PROTOCOL_V1.md).
+
+```bash
+python -m math_flow research-replay \
+  --problem bssc-sum-capacity \
+  --validity-judge protocol/judges/openrouter-validity-judgment-v2.json \
+  --research-judge protocol/judges/openrouter-hierarchical-research-v1.json \
+  --output-dir /tmp/bssc-hierarchical-replay
+```
+
 The recommended revision-aware hierarchical judge uses three calls: node
 selection, an unconstrained Markdown assessment, and structured delta extraction.
 The three-stage builder is an example, not a core protocol requirement. Export an

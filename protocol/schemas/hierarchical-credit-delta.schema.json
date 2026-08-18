@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/hierarchical-credit-delta.schema.json",
+  "title": "Hierarchical Two-Term Credit Evaluation Delta",
+  "type": "object",
+  "required": ["schemaVersion", "evaluations"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "evaluations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["programId", "unattributedWork", "rationale", "children"],
+        "properties": {
+          "programId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+          "unattributedWork": { "$ref": "#/$defs/work" },
+          "rationale": { "type": "string", "minLength": 1 },
+          "children": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/child" }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "work": { "type": "string", "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$" },
+    "effect": {
+      "type": "object",
+      "required": ["threadId", "withoutWork", "withWork", "rationale"],
+      "properties": {
+        "threadId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+        "withoutWork": { "$ref": "#/$defs/work" },
+        "withWork": { "$ref": "#/$defs/work" },
+        "rationale": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "child": {
+      "type": "object",
+      "required": [
+        "kind",
+        "id",
+        "counterfactual",
+        "directEffects",
+        "obviatedEffects",
+        "confidence",
+        "evidenceRefs"
+      ],
+      "properties": {
+        "kind": { "enum": ["program", "contribution"] },
+        "id": { "type": "string", "minLength": 1 },
+        "counterfactual": { "type": "string", "minLength": 1 },
+        "directEffects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+        "obviatedEffects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+        "confidence": { "enum": ["low", "medium", "high"] },
+        "evidenceRefs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
