@@ -547,9 +547,9 @@ class CurrentRegistryTests(unittest.TestCase):
         result = validate_projection_registry(root)
         self.assertGreaterEqual(result["projections"], 1)
         resolved = resolve_projection(
-            root, "openrouter-research-v1", "triangle-midpoints", "WORKTREE"
+            root, "openrouter-research-v1", "bssc-sum-capacity", "WORKTREE"
         )
-        self.assertEqual(resolved["problemId"], "triangle-midpoints")
+        self.assertEqual(resolved["problemId"], "bssc-sum-capacity")
 
     def test_credit_workflow_rechecks_canonical_and_projection_state(self) -> None:
         root = Path(__file__).parents[1]
