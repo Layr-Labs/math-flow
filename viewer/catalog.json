@@ -35994,6 +35994,657 @@
       }
     },
     {
+      "id": "openrouter-research-v1",
+      "problemId": "schur-number-6",
+      "label": "openrouter-research-v1",
+      "projectionSpec": {
+        "id": "openrouter-research-v1",
+        "description": "The default parallel validity projection with dependency-safe batched hierarchical research-state formation.",
+        "digest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+        "engine": "openrouter-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [],
+        "scheduling": {
+          "judgmentMaxParallel": 16,
+          "knowledgeMinimumIntervalSeconds": 300,
+          "maximumJudgmentsPerBuild": 500
+        },
+        "runner": null
+      },
+      "builder": {
+        "id": "openrouter-hierarchical-research-builder-v2",
+        "digest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb"
+      },
+      "latestRunDigest": "sha256:4bd9daeba90e0c20ab0b157221165fdf633750e61af8f10d109d2f6cd6a43678",
+      "runCount": 1,
+      "data": {
+        "schemaVersion": 1,
+        "problem": {
+          "id": "schur-number-6",
+          "title": "The sixth Schur number",
+          "statementMarkdown": "# The sixth Schur number\n\nA set of positive integers is *sum-free* if it contains no \\(x,y,z\\), with\n\\(x\\) and \\(y\\) allowed to be equal, such that \\(x+y=z\\). The Schur number\n\\(S(r)\\) is the largest integer \\(N\\) for which\n\\(\\{1,2,\\ldots,N\\}\\) can be partitioned into \\(r\\) sum-free sets.\nEquivalently, it is the largest \\(N\\) admitting an \\(r\\)-coloring with no\nmonochromatic solution to \\(x+y=z\\).\n\nDetermine \\(S(6)\\), or improve either side of the current published interval\n\n\\[\n536\\le S(6)\\le1836.\n\\]\n\nA lower-bound contribution should give an explicit coloring. An upper-bound\ncontribution must rule out every coloring at the claimed threshold; a search\nthat merely fails to find one is not an upper bound.\n\nUseful contributions include:\n\n- an explicit certified coloring of \\(\\{1,\\ldots,N\\}\\) for \\(N>536\\);\n- a compact exact checker and a canonical encoding of a coloring witness;\n- a combinatorial argument lowering the upper endpoint;\n- a SAT, pseudo-Boolean, or constraint-programming proof with a replayable\n  unsatisfiability certificate;\n- symmetry reductions proved to preserve all relevant colorings;\n- a formal proof of a structural lemma; or\n- reproducible search data or a negative search result with its non-global\n  scope stated explicitly.\n\nAll witness checks should use exact integer arithmetic. Certificate-producing\ncomputations should include enough source data and instructions for an\nindependent replay.\n\n## Frontier sources\n\n- Shalom Eliahou and Pastora Revuelta,\n  [The Schur degree of additive sets](https://arxiv.org/abs/2006.01502),\n  Discrete Mathematics 344 (2021), Article 112332; the paper records the\n  displayed interval and conjectures the conditional upper bound \\(966\\).\n- Marijn J. H. Heule,\n  [Schur Number Five](https://ojs.aaai.org/index.php/AAAI/article/view/12209),\n  AAAI 2018; this gives a model for certificate-based exact Schur-number work.\n"
+        },
+        "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+        "transactions": [
+          {
+            "ordinal": 1,
+            "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "contributionId": "fredricksen-sweet-536-certificate",
+            "path": "problems/schur-number-6/contributions/fredricksen-sweet-536-certificate",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Exact certificate for the published lower bound S(6) >= 536\n\n## Claim\n\nThe committed `coloring.csv` is a complete six-coloring of\n`{1, 2, ..., 536}` with no monochromatic solution to `x + y = z`, including\nthe case `x = y`. It therefore independently replays the published baseline\nlower bound\n\n```text\nS(6) >= 536.\n```\n\nThis certificate does not improve the bound. The problem's published interval\nremains `536 <= S(6) <= 1836`.\n\n## Witness encoding and exact check\n\n`coloring.csv` is the canonical expanded encoding: it has the exact header\n`integer,color`, followed by one row for every integer in increasing order,\nwith colors numbered 1 through 6. `published-symmetric.json` preserves the\ncompact form printed by the source paper. Each ordinary representative `r`\nencodes both `r` and `537-r` in the same color. The exceptional pair is\nrecorded explicitly as `[179, 4]` and `[358, 1]`, exactly as printed.\n\nRun from this directory with Python 3 and only the standard library:\n\n```bash\npython3 -I -B verify.py published-symmetric.json coloring.csv\n```\n\nExpected output:\n\n```text\nverified 6-coloring of 1..536: class sizes 129,86,110,77,64,70; all 71824 in-range x<=y Schur triples are nonmonochromatic\n```\n\nThe checker:\n\n1. validates the compact witness schema, `n = 536`, six nonempty color\n   classes, and symmetry modulus 537;\n2. rejects noncanonical, duplicate, out-of-range, or overlapping paired\n   representatives and special assignments;\n3. expands the compact source witness and requires exact coverage of `1..536`;\n4. validates the CSV header, row count, canonical integer order, and color\n   range, and requires exact agreement with the source witness; and\n5. enumerates every integer triple with `1 <= x <= y` and\n   `z = x + y <= 536`, rejecting a monochromatic triple. Thus `x = y` is\n   included rather than silently omitted.\n\n`verification.json` requests a replay by the repository's pinned, networkless\nPython-standard-library verifier. A passing hosted attestation is evidence only\nthat the pinned checker accepted the pinned artifact bytes; mathematical\njudgment remains separate.\n\n## Primary-source provenance and attribution\n\nThe construction is due to Harold Fredricksen and Melvin M. Sweet:\n\n- Harold Fredricksen and Melvin M. Sweet, “Symmetric Sum-Free Partitions and\n  Lower Bounds for Schur Numbers,” *The Electronic Journal of Combinatorics*\n  7 (2000), Research Paper 32, DOI\n  [10.37236/1510](https://doi.org/10.37236/1510).\n- [Official journal article page](https://www.combinatorics.org/ojs/index.php/eljc/article/view/v7i1r32).\n- [Official primary PDF](https://www.combinatorics.org/ojs/index.php/eljc/article/download/v7i1r32/pdf),\n  retrieved 2026-08-12, SHA-256\n  `ae8541c564efd65785a0e1d2c778108d58fec4c060707d7c277dd7f3eecad259`.\n\nPage 2 defines a symmetric partition and permits `(n+1)/3` and\n`2(n+1)/3` to occupy different sets when 3 divides `n+1`. Page 6 prints the\n536 construction, says that only the smaller ordinary member of each symmetric\npair is listed, and places the exceptional values 179 and 358 in sets 4 and 1,\nrespectively. `published-symmetric.json` is a transcription of that page,\nseparating those exceptions from the paired representatives. `coloring.csv`\nis the deterministic full expansion.\n\nThe official PDF was independently checked both by layout-preserving text\nextraction and by visual inspection of the rendered page. The construction,\nthe bound, and their mathematical authorship remain Fredricksen and Sweet's;\nthis contribution claims no originality or priority for the construction.\n\n## Limitations\n\n- The certificate proves only the already published lower bound `S(6) >= 536`.\n- It supplies no coloring of 537 or higher and no upper-bound information.\n- The PDF is not vendored. Its official URLs and exact content digest are\n  recorded, while all witness bytes needed for offline replay are committed.\n- The verifier establishes the encoded finite predicate; it does not explain\n  how Fredricksen and Sweet found the coloring.\n\n## Artifact authorship\n\nThe witness and mathematical construction are by Harold Fredricksen and Melvin\nM. Sweet. Transcription, canonical expansion design, checker, and documentation\nwere produced by an OpenAI Codex research agent operating the Math Flow solver\nworkflow at Robert Raynor's request. Any transcription or implementation errors\nin these artifacts are the agent's.\n"
+          },
+          {
+            "ordinal": 2,
+            "transactionId": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+            "contributionId": "fredricksen-sweet-537-radius-43-exclusion",
+            "path": "problems/schur-number-6/contributions/fredricksen-sweet-537-radius-43-exclusion",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Exact exclusion of the radius-43 extension neighborhood at 537\n\n## Claim\n\nLet `B` be the labeled Fredricksen-Sweet six-coloring of\n`{1, ..., 536}` committed as `baseline-536.csv`. If `C` is any valid\nsix-coloring of `{1, ..., 537}` with no monochromatic `x + y = z`, including\n`x = y`, then\n\n```text\n|{i in {1,...,536} : C(i) != B(i)}| >= 44.\n```\n\nNo color-symmetry constraint is imposed on `C`. Consequently every relabeling\nof every candidate coloring is covered, so the minimum distance over color\npermutations is also at least 44.\n\nThis is an exhaustive result for one finite Hamming neighborhood. It is **not**\nan impossibility proof for 537, does not supply a coloring of 537, and does not\nchange the published interval\n\n```text\n536 <= S(6) <= 1836.\n```\n\n## Why four cases suffice\n\nCondition on the color `c` assigned to 537. In the baseline, count the disjoint\npairs `{x, 537-x}` whose two endpoints both have color `c`. The counts for\ncolors 1 through 6 are\n\n```text\n64, 43, 55, 38, 32, 35.\n```\n\nFor every such pair, a valid extension with `C(537) = c` must recolor at least\none endpoint; otherwise `x + (537-x) = 537` is monochromatic. Thus colors 1 and\n3 already require more than 43 old assignments to change.\n\nFor each remaining color, let `b_c` be its blocker-pair count. Every blocker\npair contributes one unavoidable change. A second changed endpoint in a\nblocker pair contributes one *extra* change, as does any changed integer\noutside all blocker pairs. Therefore\n\n```text\nHamming distance from B = b_c + number of extra changes.\n```\n\nThe four committed unsatisfiability cases are exactly:\n\n| `C(537)` | blocker pairs | permitted extra changes | total radius |\n|---:|---:|---:|---:|\n| 2 | 43 | 0 | 43 |\n| 4 | 38 | 5 | 43 |\n| 5 | 32 | 11 | 43 |\n| 6 | 35 | 8 | 43 |\n\nTogether with the direct pair counts for colors 1 and 3, these cases exhaust\nall six possibilities for `C(537)`.\n\n## Exact encoding\n\n`verify.py` regenerates every formula rather than trusting a committed CNF.\nFor each integer `i` and labeled color `c`, variable `X(i,c)` means that `i`\nhas color `c`. The formula contains:\n\n1. one at-least-one and all pairwise at-most-one clauses for every\n   `i in {1,...,537}`;\n2. for every `1 <= x <= y` with `x+y <= 537` and every color `c`, the exact\n   Schur clause forbidding `X(x,c)`, `X(y,c)`, and `X(x+y,c)` simultaneously;\n   when `x = y`, this is correctly reduced to a binary clause;\n3. one unit clause fixing the conditioned color of 537;\n4. for each blocker pair, an auxiliary variable equivalent to both endpoints\n   changing from their baseline color; and\n5. a Sinz sequential counter bounding the signed extra-change literals.\n\nThere are 72,092 in-range triples with `x <= y` at `n = 537`. The verifier\nchecks this count, the blocker counts, each formula's dimensions, and the\nSHA-256 digest of its canonical DIMACS byte stream. It deliberately adds no\ncolor-label symmetry-breaking clauses because those could invalidate a\ndistance statement anchored to a labeled baseline.\n\n`cases.json` records the four case splits, formula digests, proof digests,\nproof statistics, and generation provenance. Each compressed proof is text\nLRAT and uses only ordered reverse-unit-propagation hints; no RAT additions are\nneeded. The standard-library checker decompresses each proof with a byte bound,\nreconstructs the initial clause table, processes deletions, checks every RUP\nhint in order, and requires a final derived empty clause. It does not invoke or\ntrust the solver that generated the proofs.\n\n## Independent replay\n\nFrom this directory, using Python 3 and only the standard library:\n\n```bash\npython3 -I -B verify.py cases.json baseline-536.csv\n```\n\nExpected output:\n\n```text\nverified baseline (71824 triples), blocker counts 64,43,55,38,32,35, and four RUP-only LRAT proofs (41022 lines): every valid coloring of 1..537 differs from the fixed baseline on at least 44 of integers 1..536\n```\n\nTo emit the exact canonical DIMACS files into a new or empty scratch directory:\n\n```bash\npython3 -I -B verify.py cases.json baseline-536.csv \\\n  --emit-cnf-dir /tmp/schur537-radius43-cnf\n```\n\nThe committed proofs were generated with CaDiCaL 3.0.1. For each emitted case,\nthe corresponding uncompressed proof can be regenerated and internally\nchecked by CaDiCaL with:\n\n```bash\ncadical --unsat --lrat=true --binary=false --checkproof=2 \\\n  /tmp/schur537-radius43-cnf/case-color-5-extra-11.cnf \\\n  /tmp/case-color-5-extra-11.lrat\ngzip -n -9 -k /tmp/case-color-5-extra-11.lrat\n```\n\nUse the analogous filename for colors 2, 4, and 6. Solver reproduction is\noptional: the first Python command independently checks the committed proof\nobjects. CaDiCaL is available from its\n[official source repository](https://github.com/arminbiere/cadical).\n\n`verification.json` requests the same Python replay in Math Flow's pinned,\nnetworkless standard-library verifier. A passing hosted attestation establishes\nonly that the pinned program accepted these pinned artifact bytes; mathematical\njudgment remains separate.\n\n## Baseline provenance and attribution\n\n`baseline-536.csv` is byte-for-byte identical (SHA-256\n`5e2cd4854c20e8441ff52e09e02472657309d35eb4b35c6957a1be37f6a8cbc9`)\nto the canonical coloring in contribution `fredricksen-sweet-536-certificate`,\ntransaction `b28dd977ae39eb77989de8e60b63f7eacd8982d2`. The underlying construction is\ndue to Harold Fredricksen and Melvin M. Sweet, “Symmetric Sum-Free Partitions\nand Lower Bounds for Schur Numbers,” *The Electronic Journal of Combinatorics*\n7 (2000), Research Paper 32, DOI\n[10.37236/1510](https://doi.org/10.37236/1510).\n\nThe baseline bytes are duplicated here only to make this proof transaction\nself-contained and digest-stable. This contribution claims no authorship or\npriority for that coloring or for `S(6) >= 536`.\n\nThe radius-43 case decomposition, exact CNF generator, independent LRAT\nchecker, proof production, and documentation were produced by an OpenAI Codex\nresearch agent operating the Math Flow solver workflow at Robert Raynor's\nrequest. The LRAT objects were generated by CaDiCaL 3.0.1; CaDiCaL and LRAT\nreceive tool/format attribution, not mathematical authorship of the baseline.\n\n## Limitations\n\n- No coloring of 537 or larger was found or is claimed.\n- The certificate rules out only candidates within distance 43 of this fixed\n  536 coloring (counting changes among the old 536 integers). Candidates at\n  distance 44 or greater remain possible.\n- The result is not an upper bound for `S(6)` and supplies no evidence that all\n  colorings of `{1,...,537}` are impossible.\n- The proof concerns exact finite formulas and contains no claim based on a\n  solver timeout, failed heuristic, or probabilistic search.\n"
+          },
+          {
+            "ordinal": 3,
+            "transactionId": "6a72758caaeb34a56d8d55653c8a3184ffbbe65e",
+            "contributionId": "fredricksen-sweet-537-radius-60-exclusion",
+            "path": "problems/schur-number-6/contributions/fredricksen-sweet-537-radius-60-exclusion",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Radius-60 exclusion around the Fredricksen–Sweet coloring\n\n## Claim\n\nLet `baseline-536.csv` be the fixed labeled six-color Fredricksen–Sweet\nsum-free coloring of the integers 1 through 536. Every valid labeled\nsix-coloring of the integers 1 through 537 differs from that baseline on at\nleast 61 of the old integers 1 through 536.\n\nEquivalently, there is no valid extension in the closed Hamming ball of radius\n60 around this fixed baseline, where distance is measured only on integers 1\nthrough 536. The conclusion is conditional on neither the existence nor the\nnonexistence of a six-coloring through 537.\n\n## Exact finite reduction\n\nCondition on the labeled color assigned to the new integer 537. If that color\nis `c`, every pair `(x, 537-x)` whose two baseline endpoints both have color\n`c` forces at least one old endpoint to change. The six blocker counts are\n\n```text\ncolor:     1   2   3   4   5   6\nblockers: 64  43  55  38  32  35\n```\n\nColor 1 is impossible inside radius 60 by counting alone. For each other\ncolor, the verifier builds a CNF with:\n\n- exactly one of six labeled colors for each integer 1 through 537;\n- every equation `x+y=z` with `x<=y`, including `x=y`;\n- a unit fixing the color of 537;\n- one auxiliary variable for each blocker pair, true exactly when both\n  endpoints change; and\n- a Sinz sequential counter limiting changes beyond the unavoidable\n  one-per-blocker cost to `60-blockers`.\n\nThe counter therefore bounds the old-coordinate Hamming distance by exactly\n60. The five regenerated case dimensions and SHA-256 digests are fixed in\n`cases.json`. RUP-only LRAT proofs show all five formulas UNSAT.\n\n## Certificate and dependency-core extraction\n\nThe committed proofs contain 1,532,713 LRAT additions and no deletion\ncommands:\n\n```text\ncolor 2:  47,973 additions\ncolor 3:     414 additions\ncolor 4: 108,901 additions\ncolor 5: 683,703 additions\ncolor 6: 691,722 additions\n```\n\n`trim_lrat_core.py` scans each independently checked normalized proof backward\nfrom its final empty-clause addition. It retains exactly the transitive closure\nof derived clauses named in the retained RUP hint chains and discards deletion\ncommands. Command identifiers are unchanged. Consequently every retained\nderived hint names an earlier retained addition or an original CNF clause.\n`normalize_lrat.py` then independently replays the extracted proof and emits\nthe byte-identical committed logical proof. The final verifier performs another\nstrict replay from the regenerated CNF.\n\nThe only proof partition is the explicit exhaustive semantic case split on the\ncolor of 537. There is one deterministic gzip file per proof case and no\ntransport-only line sharding. The five compressed files total 164,812,478\nbytes; the largest is 84,363,690 bytes. The verifier bounds each compressed\nfile by 90 MiB, each expanded file by 384 MiB, each logical proof by 600 MiB,\nand the compressed bundle by 250 MiB. Hashing, decompression, parsing, and\nproof checking are streamed.\n\n## Independent replay\n\nFrom this directory, run:\n\n```bash\npython3 -I -B verify.py cases.json baseline-536.csv\n```\n\nThe verifier independently:\n\n1. checks the canonical baseline bytes and all 71,824 Schur triples through\n   536;\n2. recomputes blocker counts;\n3. regenerates each complete CNF, including the `x=y` constraints;\n4. checks the CNF dimensions and canonical DIMACS digest;\n5. checks every compressed and expanded proof byte count and digest; and\n6. replays every derivation with a strict ordered-RUP checker that rejects\n   satisfied hints, nonunit hints, deleted reasons, and commands after the\n   conflict hint.\n\nTo emit the five canonical DIMACS files as an additional byte-identity check:\n\n```bash\npython3 -I -B verify.py cases.json baseline-536.csv \\\n  --emit-cnf-dir /tmp/schur537-radius60-cnf\n```\n\n`verification.json` requests the same replay in Math Flow's pinned\n`python-stdlib-3-13-v1` environment. The complete committed-shape bundle was\nalso replayed with image\n`python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689`\non `linux/amd64`, without network access, with a read-only root, UID/GID\n`65534:65534`, no capabilities, `no-new-privileges`, one CPU, 512 MiB RAM, 128\nPIDs, and a 64 MiB `/tmp` tmpfs.\nThe complete replay finished in about 119 seconds, within the profile's\n300-second limit.\n\n## Reproduction provenance\n\nThe raw proofs were produced by CaDiCaL 3.0.1 with\n`--unsat --lrat=true --binary=false --checkproof=2`. Colors 5 and 6 additionally\nused `--shuffle=true --shufflerandom=true --seed=1 -t 300`; neither result was\ninferred from a timeout. `normalize_lrat.py` independently replayed the raw\nproofs and emitted strict RUP proofs, removing four satisfied hints from color\n5 and none from the other cases. `trim_lrat_core.py` then extracted the\ntransitive dependency cores, which `normalize_lrat.py` independently replayed\nwithout changing any hint. The committed files were compressed with\n`gzip -n -9 -c`. Exact options, counts, byte sizes, and hashes are in\n`cases.json`.\n\nThe baseline is byte-identical (SHA-256\n`5e2cd4854c20e8441ff52e09e02472657309d35eb4b35c6957a1be37f6a8cbc9`)\nto canonical contribution `fredricksen-sweet-536-certificate`, transaction\n`b28dd977ae39eb77989de8e60b63f7eacd8982d2`. The construction is due to Harold\nFredricksen and Melvin M. Sweet, “Symmetric Sum-Free Partitions and Lower Bounds\nfor Schur Numbers,” *Electronic Journal of Combinatorics* 7 (2000), R32,\n[DOI 10.37236/1510](https://doi.org/10.37236/1510).\n\nThe blocker reduction and CNF method extend canonical contribution\n`fredricksen-sweet-537-radius-43-exclusion`, transaction\n`26a77f38a16f35641a8d8f0efe72132953af5d2e`, whose primary judgment is\n`sha256:cc7d422e52197a8590621c4590d68e27e5bb4231ec4a155fdff8eca67ffc550b`.\nThis work was carried out under registered direction `schur537-exact-search`,\ntransaction `7f040a79d9f38ea9b4d5aed66ec91c39af00b345`.\n\n## Limitations\n\nThis is a local-neighborhood exclusion around one fixed labeled coloring. It\ndoes not show that a valid coloring of 1 through 537 exists, does not rule out\ncolorings farther from the baseline, and does not change the known bounds on\nthe Schur number `S(6)`. Solver timing and search behavior are not mathematical\nevidence; the claim rests on the regenerated formulas and independently\nchecked finite proofs.\n"
+          }
+        ],
+        "judgments": [
+          {
+            "judgmentId": "sha256:132652e4d659b018427ef6f147da4243eccc59922867aba9d1a65aa993090295",
+            "runDigest": "sha256:645aeb488fdba049ffc1ef5f2ee48c39fedf69b3e951c2730104c622e8245ed3",
+            "judgmentKind": "primary",
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "6a72758caaeb34a56d8d55653c8a3184ffbbe65e",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v2",
+              "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.1087925,
+            "reportDigest": "sha256:4eec8061c5d537c27177609da861f446cc30597d2bbcbf9552a2fb48be6023cc",
+            "reportMarkdown": "## `schur-number-6/fredricksen-sweet-536-certificate`\n\n**Verdict: valid**\n\n### Encoding and coverage\n\n- `coloring.csv` has the required header and assigns one color in \\(\\{1,\\ldots,6\\}\\) to each integer \\(1,\\ldots,536\\), in order.\n- The compact witness expands each ordinary representative \\(r\\) to \\(r\\) and \\(537-r\\) in the same color. The exceptional complementary pair is assigned separately as\n  \\[\n  179\\mapsto4,\\qquad 358\\mapsto1.\n  \\]\n- The expanded compact witness and CSV agree exactly. Their class sizes are\n  \\[\n  129,\\ 86,\\ 110,\\ 77,\\ 64,\\ 70,\n  \\]\n  which sum to \\(536\\), so the six color classes form a complete partition.\n\n### Checker audit\n\nThe verifier correctly checks the relevant finite predicate:\n\n- It rejects missing, duplicate, overlapping, or out-of-range assignments and requires exact coverage of \\(\\{1,\\ldots,536\\}\\).\n- It requires the CSV integers to occur exactly once in canonical increasing order and restricts colors to \\(1,\\ldots,6\\).\n- Its Schur-triple loop uses\n  ```python\n  for x in range(1, n + 1):\n      for y in range(x, n - x + 1):\n  ```\n  so it enumerates precisely all pairs satisfying\n  \\[\n  1\\le x\\le y,\\qquad x+y\\le536.\n  \\]\n  Every possible solution can be put in this order because addition is commutative.\n- Cases \\(x=y\\) are included whenever \\(2x\\le536\\), so the definition’s repeated-summand case is not omitted.\n- The number of checked pairs is correctly\n  \\[\n  \\sum_{x=1}^{268}(537-2x)=268^2=71824.\n  \\]\n- The chained test\n  ```python\n  colors[x] == colors[y] == colors[z]\n  ```\n  rejects exactly monochromatic triples.\n- The computation uses Python integers and therefore exact integer arithmetic; no assertions, randomized behavior, or external services are involved.\n\nReplay on the supplied artifacts completes with the stated class sizes and all \\(71{,}824\\) triples nonmonochromatic. Thus every color class is sum-free.\n\n### Consequence and scope\n\nThe witness is therefore a six-coloring of \\(\\{1,\\ldots,536\\}\\) with no monochromatic solution of \\(x+y=z\\). By the definition of the Schur number,\n\\[\nS(6)\\ge536.\n\\]\n\nIt supplies neither a coloring beyond \\(536\\) nor an upper-bound argument. Consequently it does not improve either endpoint of the supplied published interval\n\\[\n536\\le S(6)\\le1836.\n\\]\n",
+            "record": {
+              "schemaVersion": 2,
+              "judgmentKind": "primary",
+              "problemId": "schur-number-6",
+              "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+              "problemLedgerDigest": "sha256:c9188dbe0372874de247898e909429615e6a30cb4275786aaeac4012f53a0f12",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v2",
+                "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                  "ledgerPosition": 1
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "schur-number-6/fredricksen-sweet-536-certificate",
+                  "status": "valid",
+                  "premiseStatus": "satisfied",
+                  "summary": "The audited artifacts establish that `coloring.csv` assigns exactly one of six colors to every integer from 1 through 536 and contains no monochromatic solution to x+y=z, including x=y. The verifier exhaustively checks all 71,824 relevant ordered representatives with 1≤x≤y and x+y≤536. This proves S(6)≥536.",
+                  "scopeQualifications": [
+                    "The certificate provides no coloring beyond 536 and therefore does not improve the lower bound.",
+                    "It contains no upper-bound argument; the supplied published interval remains 536≤S(6)≤1836."
+                  ],
+                  "evidenceIssues": [],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "schur-number-6/fredricksen-sweet-536-certificate",
+                  "stance": "supports",
+                  "summary": "The audited artifacts establish that `coloring.csv` assigns exactly one of six colors to every integer from 1 through 536 and contains no monochromatic solution to x+y=z, including x=y. The verifier exhaustively checks all 71,824 relevant ordered representatives with 1≤x≤y and x+y≤536. This proves S(6)≥536.",
+                  "subjectTransactionIds": [
+                    "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:981a82da282df79478a41189b39e7d4912279e8c9edfaf07971a2d0d63fbcdeb",
+              "reportDigest": "sha256:4eec8061c5d537c27177609da861f446cc30597d2bbcbf9552a2fb48be6023cc",
+              "judgmentId": "sha256:132652e4d659b018427ef6f147da4243eccc59922867aba9d1a65aa993090295"
+            }
+          },
+          {
+            "judgmentId": "sha256:f15700a4abe2463fcf2c4004fc1d16b78f6a9303d8db52efe5a791eb55391d7c",
+            "runDigest": "sha256:285483201232b46f33757e2386ca6ab424db0528bcf2ef84bfb7e140ed40681b",
+            "judgmentKind": "primary",
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "6a72758caaeb34a56d8d55653c8a3184ffbbe65e",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v2",
+              "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.11949125000000001,
+            "reportDigest": "sha256:6afcda5a1573b1af101708fd334ef235c3ca5a3e4993576f68fa5074aeb8da6b",
+            "reportMarkdown": "## `schur-number-6/fredricksen-sweet-537-radius-43-exclusion`\n\n**Verdict: indeterminate**\n\n### Combinatorial reduction\n\nThe proposed six-way case split is mathematically sound, conditional on the stated blocker counts and the four claimed unsatisfiability certificates.\n\nFor a fixed color \\(c=C(537)\\), the pairs\n\\[\n\\{x,537-x\\},\\qquad 1\\le x\\le268,\n\\]\nare disjoint. If both endpoints have baseline color \\(c\\), validity of \\(C\\) forces at least one endpoint to change, since otherwise\n\\[\nx+(537-x)=537\n\\]\nwould be monochromatic.\n\nThus, if the blocker counts really are\n\\[\n(64,43,55,38,32,35),\n\\]\ncolors \\(1\\) and \\(3\\) force respectively at least \\(64\\) and \\(55\\) changes and therefore cannot occur when the distance is at most \\(43\\).\n\nFor each remaining color with \\(b_c\\) blocker pairs:\n\n- every blocker pair contributes at least one change;\n- a blocker pair whose two endpoints both change contributes exactly one additional change;\n- every change outside all blocker-pair endpoints contributes one additional change.\n\nBecause the blocker pairs are disjoint, this gives the exact identity\n\\[\nd(C,B)=b_c+\n\\#\\{\\text{blocker pairs with both endpoints changed}\\}\n+\\#\\{\\text{changed nonblocker endpoints}\\}.\n\\]\nConsequently, distance at most \\(43\\) implies the listed extra-change limits \\(0,5,11,8\\) for colors \\(2,4,5,6\\).\n\n### CNF encoding audit\n\nThe source code’s principal encoding steps are appropriate:\n\n1. The at-least-one and pairwise at-most-one clauses enforce exactly one of six colors for every integer \\(1,\\dots,537\\).\n2. The loops enumerate every \\(1\\le x\\le y\\) with \\(x+y\\le537\\).\n3. For \\(x=y\\), reducing the repeated ternary clause to\n   \\[\n   \\neg X(x,c)\\lor\\neg X(2x,c)\n   \\]\n   correctly forbids \\(x+x=2x\\).\n4. The auxiliary variable for a blocker pair is encoded as true exactly when both endpoints have changed from their common baseline color.\n5. The signed literals counted by the sequential counter therefore represent exactly the “extra changes” above the unavoidable \\(b_c\\).\n6. The sequential-counter clauses implement an at-most-\\(k\\) constraint. The reported variable and clause dimensions are internally consistent with the construction.\n7. No color-symmetry restriction is added, so the encoding does not accidentally discard candidates on account of their labels.\n\nThe static LRAT checker also implements a sound, restrictive ordered-RUP verification procedure: each added clause is checked by assuming its negation, replaying unit hints from extant earlier clauses, and requiring a conflict. Deriving the empty clause by such additions would establish unsatisfiability of the generated CNF.\n\n### Material evidence failure\n\nThe four proof objects referenced by `cases.json` are not present in the supplied evidence:\n\n- `case-color-2-extra-0.lrat.gz`\n- `case-color-4-extra-5.lrat.gz`\n- `case-color-5-extra-11.lrat.gz`\n- `case-color-6-extra-8.lrat.gz`\n\nOnly their claimed filenames, hashes, and statistics are supplied. Those metadata assertions do not establish that the proofs exist, match the hashes, or pass the checker. No replay output or hosted verification attestation is included either.\n\nAccordingly, the central obligations\n\\[\nF_{2,0},\\quad F_{4,5},\\quad F_{5,11},\\quad F_{6,8}\n\\quad\\text{are unsatisfiable}\n\\]\nremain unverified. Static inspection of the generator and checker can show what a successful replay would prove, but cannot substitute for the missing LRAT derivations.\n\nThe blocker counts and baseline validity are algorithmically checked by `verify.py`, but no executed replay is supplied. This is secondary to the missing proofs, which alone prevent acceptance.\n\n### Color-permutation consequence\n\nConditional on the main distance theorem, the permutation statement is correct. For every permutation \\(\\pi\\) of the six colors, \\(\\pi\\circ C\\) remains a valid coloring, so applying the theorem to each \\(\\pi\\circ C\\) gives\n\\[\n\\min_\\pi d(\\pi\\circ C,B)\\ge44.\n\\]\n\n### Conclusion\n\nThe reduction, encoding, and checker appear logically suitable, and no decisive counterexample is established. However, the indispensable unsatisfiability certificates are absent from the supplied artifacts. The exact radius-43 exclusion therefore cannot be affirmatively verified and must be marked **indeterminate**, not valid.\n",
+            "record": {
+              "schemaVersion": 2,
+              "judgmentKind": "primary",
+              "problemId": "schur-number-6",
+              "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+              "problemLedgerDigest": "sha256:c9188dbe0372874de247898e909429615e6a30cb4275786aaeac4012f53a0f12",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v2",
+                "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+                  "ledgerPosition": 2
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "schur-number-6/fredricksen-sweet-537-radius-43-exclusion",
+                  "status": "indeterminate",
+                  "premiseStatus": "missing",
+                  "summary": "The combinatorial reduction, CNF encoding, and ordered-RUP checker are logically suitable, but the four indispensable LRAT certificates for the remaining color cases are absent. Their filenames, hashes, and reported statistics do not establish unsatisfiability, and no replay output or verification attestation is supplied. Thus the radius-43 exclusion is not verified, although no decisive error or counterexample defeats it.",
+                  "scopeQualifications": [
+                    "Colors 1 and 3 are excluded at distance at most 43 only conditional on the reported blocker counts (64,43,55,38,32,35).",
+                    "For colors 2, 4, 5, and 6, the claimed extra-change bounds are respectively 0, 5, 11, and 8.",
+                    "The color-permutation consequence is valid conditional on the main distance theorem because color relabeling preserves validity.",
+                    "The claim concerns only the stated finite Hamming neighborhood; it neither proves impossibility at 537 nor changes the published bounds 536 <= S(6) <= 1836."
+                  ],
+                  "evidenceIssues": [
+                    "Missing proof object: case-color-2-extra-0.lrat.gz.",
+                    "Missing proof object: case-color-4-extra-5.lrat.gz.",
+                    "Missing proof object: case-color-5-extra-11.lrat.gz.",
+                    "Missing proof object: case-color-6-extra-8.lrat.gz.",
+                    "The unsatisfiability of F_{2,0}, F_{4,5}, F_{5,11}, and F_{6,8} remains unverified.",
+                    "No executed replay is supplied for the baseline-validity and blocker-count checks; this is secondary to the missing certificates.",
+                    "No allowed dependency evidence IDs or hosted verification attestations are available."
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "schur-number-6/fredricksen-sweet-537-radius-43-exclusion",
+                  "stance": "uncertain",
+                  "summary": "The combinatorial reduction, CNF encoding, and ordered-RUP checker are logically suitable, but the four indispensable LRAT certificates for the remaining color cases are absent. Their filenames, hashes, and reported statistics do not establish unsatisfiability, and no replay output or verification attestation is supplied. Thus the radius-43 exclusion is not verified, although no decisive error or counterexample defeats it.",
+                  "subjectTransactionIds": [
+                    "26a77f38a16f35641a8d8f0efe72132953af5d2e"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:e7bd2d50f24a1441a5e87e43ea61d5029f5baec8831889d950b5f3decc9a310f",
+              "reportDigest": "sha256:6afcda5a1573b1af101708fd334ef235c3ca5a3e4993576f68fa5074aeb8da6b",
+              "judgmentId": "sha256:f15700a4abe2463fcf2c4004fc1d16b78f6a9303d8db52efe5a791eb55391d7c"
+            }
+          },
+          {
+            "judgmentId": "sha256:590f93a3a910baeea0df7c2e4106a9474d2d49dcf3dc02eeb15eef55e05d761a",
+            "runDigest": "sha256:3136294f8f0c05953f328175d088915b93390889f3d785ad94537fc8de678e40",
+            "judgmentKind": "primary",
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "6a72758caaeb34a56d8d55653c8a3184ffbbe65e",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v2",
+              "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.1529575,
+            "reportDigest": "sha256:398ad6dac7c0f2b214ac76331e2fb60a12f9a48553bde8e5bbcfe3ab5bfd6a13",
+            "reportMarkdown": "## `schur-number-6/fredricksen-sweet-537-radius-60-exclusion`\n\n**Verdict: INDETERMINATE**\n\n### Mathematical reduction\n\nThe proposed reduction from the Hamming-radius claim to six conditioned cases is sound.\n\nFor a fixed color \\(c\\) assigned to \\(537\\), a blocker pair is\n\\[\n(x,537-x)\n\\]\nwhose two endpoints both have baseline color \\(c\\). Because \\(537\\) is odd, these pairs are disjoint. In any valid coloring with \\(537\\) colored \\(c\\), the Schur constraint\n\\[\nx+(537-x)=537\n\\]\nprevents both endpoints from retaining color \\(c\\). Thus every blocker pair contributes at least one old-coordinate change.\n\nFor a blocker pair with baseline-color variables \\(b_x,b_y\\), the auxiliary variable \\(e\\) is constrained by\n\\[\n(\\neg e\\lor\\neg b_x),\\qquad\n(\\neg e\\lor\\neg b_y),\\qquad\n(b_x\\lor b_y\\lor e).\n\\]\nThese clauses indeed give\n\\[\ne\\iff(\\neg b_x\\land\\neg b_y).\n\\]\nConsequently, after the unavoidable one change per blocker pair, \\(e\\) counts exactly whether that pair contributes a second change. Outside the blocker endpoints, the literal \\(-b_v\\) counts exactly whether \\(v\\) changes from its baseline color. Therefore, for a valid coloring in the case where \\(537\\) has color \\(c\\),\n\\[\nd_{\\mathrm H}\n=\nb_c+\\sum_{\\text{blockers}}e\n+\\sum_{\\text{nonblocker }v}[-b_v],\n\\]\nwhere \\(b_c\\) is the blocker count. Bounding the final two sums by \\(60-b_c\\) is therefore equivalent to bounding the old-coordinate Hamming distance by \\(60\\).\n\nThe Sinz encoding used by `build_case_formula` is a sound and complete existential encoding of “at most \\(60-b_c\\)” for the counted signed literals. Its dimensions are internally consistent with `cases.json`. Writing \\(m=536-b_c\\) and \\(k=60-b_c\\), the variable count is\n\\[\n3222+b_c+(m-1)k,\n\\]\nand the clause count is\n\\[\n441145+3b_c+m+2k(m-2),\n\\]\nwhich reproduces all five recorded case dimensions.\n\nThe remaining CNF components are also correctly formed:\n\n- exactly one of six colors is imposed for every integer \\(1,\\dots,537\\);\n- all equations \\(x+y=z\\) with \\(x\\le y\\) and \\(z\\le537\\) are covered;\n- the \\(x=y\\) case correctly reduces to a binary prohibition;\n- the computed triple totals \\(71{,}824\\) through \\(536\\) and \\(72{,}092\\) through \\(537\\) are correct;\n- conditioning on the six possible labeled colors of \\(537\\) is exhaustive;\n- no unjustified color-symmetry reduction is used.\n\nIf the reported color-1 blocker count \\(64\\) is correct, that case is excluded directly because its distance is at least \\(64>60\\). The five remaining colors are represented by the five CNFs.\n\n### Certificate checker\n\nThe final checker’s ordered-RUP procedure is propositionally sound. It assumes the negation of a proposed clause, follows only unit or conflicting antecedent clauses, and accepts an addition only upon reaching conflict. Hence each accepted addition is implied by the current formula. Ending with a checked empty-clause addition would establish UNSAT.\n\nThe checker also regenerates the CNFs rather than trusting stored DIMACS files, checks the baseline and blocker counts, and directly replays the logical proofs. The normalization and trimming tools are not needed for the soundness of that final replay.\n\n### Material missing evidence\n\nThe five indispensable proof payloads are not present in the supplied subject evidence:\n\n- `case-color-2-extra-17.lrat.gz`\n- `case-color-3-extra-5.lrat.gz`\n- `case-color-4-extra-22.lrat.gz`\n- `case-color-5-extra-28.lrat.gz`\n- `case-color-6-extra-25.lrat.gz`\n\nOnly their claimed names, sizes, hashes, and proof statistics appear in `cases.json` and the README. Those metadata do not establish that the files exist with the stated contents or that any of the five generated CNFs is unsatisfiable. Likewise, `verification.json` requests a replay but is not a replay result, and the README’s statement that a replay occurred is an unsupported assertion within the contribution. No explicit dependency transaction supplies an independently verified replay or the omitted proof bytes.\n\nThus the crucial obligations\n\\[\nF_c\\text{ is UNSAT}\\qquad(c=2,3,4,5,6)\n\\]\ncannot be checked from the supplied evidence. The static verifier and semantically correct reduction do not by themselves prove these UNSAT assertions.\n\n### Conclusion\n\nNo counterexample or semantic encoding defect is apparent, but the local exclusion claim depends essentially on five unavailable unsatisfiability certificates. Because those material proof obligations remain unresolved, the exact claim cannot be accepted as valid from this packet.\n",
+            "record": {
+              "schemaVersion": 2,
+              "judgmentKind": "primary",
+              "problemId": "schur-number-6",
+              "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+              "problemLedgerDigest": "sha256:c9188dbe0372874de247898e909429615e6a30cb4275786aaeac4012f53a0f12",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v2",
+                "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "6a72758caaeb34a56d8d55653c8a3184ffbbe65e",
+                  "ledgerPosition": 3
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "schur-number-6/fredricksen-sweet-537-radius-60-exclusion",
+                  "status": "indeterminate",
+                  "premiseStatus": "missing",
+                  "summary": "The reduction to six conditioned color cases, the blocker/Hamming-distance accounting, the Sinz cardinality encoding, the Schur CNF construction, and the ordered-RUP checker are sound. Color 1 is directly excluded if its reported blocker count of 64 is correct. However, the five remaining essential UNSAT obligations for colors 2–6 are not established because their LRAT proof payloads are absent; names, hashes, statistics, a replay request, and an unsupported assertion of replay do not substitute for checkable certificates. Thus no decisive defect or counterexample is shown, but the claim is not proved by the supplied record.",
+                  "scopeQualifications": [
+                    "Distance is measured only on old integers 1 through 536 relative to the fixed labeled baseline.",
+                    "The conclusion is independent of whether any six-coloring through 537 exists globally.",
+                    "Conditioning on all six labeled colors of 537 is exhaustive and uses no color-symmetry reduction.",
+                    "Direct exclusion of the color-1 case is conditional on the reported blocker count 64 being correct."
+                  ],
+                  "evidenceIssues": [
+                    "Missing certificate: case-color-2-extra-17.lrat.gz.",
+                    "Missing certificate: case-color-3-extra-5.lrat.gz.",
+                    "Missing certificate: case-color-4-extra-22.lrat.gz.",
+                    "Missing certificate: case-color-5-extra-28.lrat.gz.",
+                    "Missing certificate: case-color-6-extra-25.lrat.gz.",
+                    "Metadata in cases.json and the README do not establish the certificates' contents or the five CNFs' unsatisfiability.",
+                    "verification.json requests replay but is not a replay result; the README's replay assertion is unsupported.",
+                    "No allowed dependency evidence or independent verified replay resolves the five UNSAT obligations."
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "schur-number-6/fredricksen-sweet-537-radius-60-exclusion",
+                  "stance": "uncertain",
+                  "summary": "The reduction to six conditioned color cases, the blocker/Hamming-distance accounting, the Sinz cardinality encoding, the Schur CNF construction, and the ordered-RUP checker are sound. Color 1 is directly excluded if its reported blocker count of 64 is correct. However, the five remaining essential UNSAT obligations for colors 2–6 are not established because their LRAT proof payloads are absent; names, hashes, statistics, a replay request, and an unsupported assertion of replay do not substitute for checkable certificates. Thus no decisive defect or counterexample is shown, but the claim is not proved by the supplied record.",
+                  "subjectTransactionIds": [
+                    "6a72758caaeb34a56d8d55653c8a3184ffbbe65e"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:b0d9ca506ba4a60d3065d70db0f35aca883f9b38704d6336120a32950338c3fa",
+              "reportDigest": "sha256:398ad6dac7c0f2b214ac76331e2fb60a12f9a48553bde8e5bbcfe3ab5bfd6a13",
+              "judgmentId": "sha256:590f93a3a910baeea0df7c2e4106a9474d2d49dcf3dc02eeb15eef55e05d761a"
+            }
+          }
+        ],
+        "runs": [
+          {
+            "id": "4bd9daeba90e0c20ab0b157221165fdf633750e61af8f10d109d2f6cd6a43678",
+            "ordinal": 1,
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "6a72758caaeb34a56d8d55653c8a3184ffbbe65e",
+            "runDigest": "sha256:4bd9daeba90e0c20ab0b157221165fdf633750e61af8f10d109d2f6cd6a43678",
+            "baseRun": null,
+            "runKind": "knowledge-build",
+            "inputs": {
+              "baseStateRun": null,
+              "conflictIds": [],
+              "schemaVersion": 1,
+              "judgmentSetDigest": "sha256:d0b4b5e3be7a19c7bb716a88e102b0f33c8c1901f17af9008cd7375d242c9159",
+              "problemId": "schur-number-6",
+              "projectionSpecDigest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+              "builderSpecDigest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb",
+              "judgmentIds": [
+                "sha256:132652e4d659b018427ef6f147da4243eccc59922867aba9d1a65aa993090295",
+                "sha256:590f93a3a910baeea0df7c2e4106a9474d2d49dcf3dc02eeb15eef55e05d761a",
+                "sha256:f15700a4abe2463fcf2c4004fc1d16b78f6a9303d8db52efe5a791eb55391d7c"
+              ],
+              "laneId": "sha256:d26d79f18bc549ca307fff526617ffcc938f3b7f3bfe15e845ba388e95332fef",
+              "buildToken": "sha256:74ca758a44a3e69f394a639cd2f5d7c42b6b3482ea92bee600a778ad073a15bd"
+            },
+            "judgeSpec": {
+              "id": "openrouter-hierarchical-research-builder-v2",
+              "digest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb"
+            },
+            "runner": {
+              "implementation": "openrouter-hierarchical-research-builder-v2",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.101378125,
+            "selection": {
+              "selectedNodeIds": [
+                "item:root/items/fredricksen-sweet-536-certificate-proof",
+                "item:root/items/fredricksen-sweet-536-coloring",
+                "item:root/items/fredricksen-sweet-536-verifier",
+                "item:root/items/fredricksen-sweet-536-witness-encoding",
+                "item:root/items/s6-lower-bound-536",
+                "root",
+                "thread:root/unstructured-search"
+              ],
+              "rationale": "Nodes changed by the accepted validity batch."
+            },
+            "normalizations": [],
+            "delta": {
+              "schemaVersion": 1,
+              "operations": [
+                {
+                  "entityKind": "item",
+                  "entityId": "root/items/fredricksen-sweet-536-witness-encoding",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/items/fredricksen-sweet-536-witness-encoding",
+                    "programId": "root",
+                    "type": "method",
+                    "title": "Canonical encodings of the Fredricksen–Sweet 536-coloring witness",
+                    "summary": "`coloring.csv` is the canonical expanded encoding: it has the exact header `integer,color`, followed by one row for every integer in increasing order, with colors numbered 1 through 6. `published-symmetric.json` preserves the compact form printed by the source paper. Each ordinary representative `r` encodes both `r` and `537-r` in the same color. The exceptional pair is recorded explicitly as `[179, 4]` and `[358, 1]`.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                        "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                    ],
+                    "dependencyItemIds": []
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/items/fredricksen-sweet-536-coloring",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/items/fredricksen-sweet-536-coloring",
+                    "programId": "root",
+                    "type": "computation",
+                    "title": "Explicit six-coloring of {1,...,536}",
+                    "summary": "The committed `coloring.csv` is a complete six-coloring of\n`{1, 2, ..., 536}` with no monochromatic solution to `x + y = z`, including\nthe case `x = y`.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                        "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                    ],
+                    "dependencyItemIds": [
+                      "root/items/fredricksen-sweet-536-witness-encoding"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/items/fredricksen-sweet-536-verifier",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/items/fredricksen-sweet-536-verifier",
+                    "programId": "root",
+                    "type": "tool",
+                    "title": "Exact checker for the Fredricksen–Sweet 536-coloring",
+                    "summary": "The pinned Python-standard-library checker validates the compact witness schema, expands it with exact coverage of `1..536`, validates the canonical CSV and its exact agreement with the compact witness, and enumerates all 71,824 in-range triples with `1 <= x <= y` and `x + y <= 536`, including `x = y`. It is replayed with `python3 -I -B verify.py published-symmetric.json coloring.csv`.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                        "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                    ],
+                    "dependencyItemIds": [
+                      "root/items/fredricksen-sweet-536-witness-encoding"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/items/fredricksen-sweet-536-certificate-proof",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/items/fredricksen-sweet-536-certificate-proof",
+                    "programId": "root",
+                    "type": "proof",
+                    "title": "Exhaustive certificate proof for the 536-coloring",
+                    "summary": "The audited artifacts establish that `coloring.csv` assigns exactly one of six colors to every integer from 1 through 536 and contains no monochromatic solution to `x+y=z`, including `x=y`. The verifier exhaustively checks all 71,824 relevant ordered representatives with `1≤x≤y` and `x+y≤536`.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                        "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                    ],
+                    "dependencyItemIds": [
+                      "root/items/fredricksen-sweet-536-coloring",
+                      "root/items/fredricksen-sweet-536-verifier"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/items/s6-lower-bound-536",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/items/s6-lower-bound-536",
+                    "programId": "root",
+                    "type": "result",
+                    "title": "Published baseline lower bound S(6) ≥ 536",
+                    "summary": "It therefore independently replays the published baseline lower bound\n\n```text\nS(6) >= 536.\n```\n\nThis certificate does not improve the bound. The problem's published interval\nremains `536 <= S(6) <= 1836`.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                        "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                    ],
+                    "dependencyItemIds": [
+                      "root/items/fredricksen-sweet-536-certificate-proof"
+                    ]
+                  }
+                }
+              ],
+              "contributions": [
+                {
+                  "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                  "claimKeys": [
+                    "schur-number-6/fredricksen-sweet-536-certificate"
+                  ],
+                  "directProgramId": "root",
+                  "directThreadIds": [
+                    "root/unstructured-search"
+                  ],
+                  "itemIds": [
+                    "root/items/fredricksen-sweet-536-witness-encoding",
+                    "root/items/fredricksen-sweet-536-coloring",
+                    "root/items/fredricksen-sweet-536-verifier",
+                    "root/items/fredricksen-sweet-536-certificate-proof",
+                    "root/items/s6-lower-bound-536"
+                  ]
+                }
+              ]
+            },
+            "state": {
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "program",
+                  "title": "Canonical problem",
+                  "summary": "Resolve the canonical problem.",
+                  "status": "active",
+                  "contentMarkdown": "## Objective\n\nResolve the canonical problem.\n\n## Local credit context\n\nRoot program.",
+                  "subjects": [],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:4bc4e85d0ca6e4224902591c71cf9cb813718dfe5961d8be774384d474797c99"
+                },
+                "thread:root/unstructured-search": {
+                  "id": "thread:root/unstructured-search",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Unstructured search and overhead",
+                  "summary": "Future work not yet assigned to a more specific research thread.",
+                  "status": "active",
+                  "contentMarkdown": "Future work not yet assigned to a more specific research thread.\n\n**Thread kind:** unstructured\n\n**Expected local exposure:** 1\n\n**Conditions:** none",
+                  "subjects": [],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+                },
+                "item:root/items/fredricksen-sweet-536-witness-encoding": {
+                  "id": "item:root/items/fredricksen-sweet-536-witness-encoding",
+                  "parentId": "root",
+                  "type": "method",
+                  "title": "Canonical encodings of the Fredricksen–Sweet 536-coloring witness",
+                  "summary": "`coloring.csv` is the canonical expanded encoding: it has the exact header `integer,color`, followed by one row for every integer in increasing order, with colors numbered 1 through 6. `published-symmetric.json` preserves the compact form printed by the source paper. Each ordinary representative `r` encodes both `r` and `537-r` in the same color. The exceptional pair is recorded explicitly as `[179, 4]` and `[358, 1]`.",
+                  "status": "active",
+                  "contentMarkdown": "`coloring.csv` is the canonical expanded encoding: it has the exact header `integer,color`, followed by one row for every integer in increasing order, with colors numbered 1 through 6. `published-symmetric.json` preserves the compact form printed by the source paper. Each ordinary representative `r` encodes both `r` and `537-r` in the same color. The exceptional pair is recorded explicitly as `[179, 4]` and `[358, 1]`.\n\n## Accepted claims\n\n- `schur-number-6/fredricksen-sweet-536-certificate` from `b28dd977ae39eb77989de8e60b63f7eacd8982d2`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "ledgerPosition": 1,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:80fb3e75f6425ce5115bd3356e526d3d6df2e99a5a6d6896f699012ae6977d6c"
+                },
+                "item:root/items/fredricksen-sweet-536-coloring": {
+                  "id": "item:root/items/fredricksen-sweet-536-coloring",
+                  "parentId": "root",
+                  "type": "computation",
+                  "title": "Explicit six-coloring of {1,...,536}",
+                  "summary": "The committed `coloring.csv` is a complete six-coloring of\n`{1, 2, ..., 536}` with no monochromatic solution to `x + y = z`, including\nthe case `x = y`.",
+                  "status": "active",
+                  "contentMarkdown": "The committed `coloring.csv` is a complete six-coloring of\n`{1, 2, ..., 536}` with no monochromatic solution to `x + y = z`, including\nthe case `x = y`.\n\n## Accepted claims\n\n- `schur-number-6/fredricksen-sweet-536-certificate` from `b28dd977ae39eb77989de8e60b63f7eacd8982d2`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "ledgerPosition": 1,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/items/fredricksen-sweet-536-witness-encoding",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:cf221e85925331c109f213154b67e1ea8b304ca32fab508ea53f31f4ead74c38"
+                },
+                "item:root/items/fredricksen-sweet-536-verifier": {
+                  "id": "item:root/items/fredricksen-sweet-536-verifier",
+                  "parentId": "root",
+                  "type": "tool",
+                  "title": "Exact checker for the Fredricksen–Sweet 536-coloring",
+                  "summary": "The pinned Python-standard-library checker validates the compact witness schema, expands it with exact coverage of `1..536`, validates the canonical CSV and its exact agreement with the compact witness, and enumerates all 71,824 in-range triples with `1 <= x <= y` and `x + y <= 536`, including `x = y`. It is replayed with `python3 -I -B verify.py published-symmetric.json coloring.csv`.",
+                  "status": "active",
+                  "contentMarkdown": "The pinned Python-standard-library checker validates the compact witness schema, expands it with exact coverage of `1..536`, validates the canonical CSV and its exact agreement with the compact witness, and enumerates all 71,824 in-range triples with `1 <= x <= y` and `x + y <= 536`, including `x = y`. It is replayed with `python3 -I -B verify.py published-symmetric.json coloring.csv`.\n\n## Accepted claims\n\n- `schur-number-6/fredricksen-sweet-536-certificate` from `b28dd977ae39eb77989de8e60b63f7eacd8982d2`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "ledgerPosition": 1,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/items/fredricksen-sweet-536-witness-encoding",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:2056e39a91de85279ac87ba8e4b251518a71f468af563d16f416332fb4d62101"
+                },
+                "item:root/items/fredricksen-sweet-536-certificate-proof": {
+                  "id": "item:root/items/fredricksen-sweet-536-certificate-proof",
+                  "parentId": "root",
+                  "type": "proof",
+                  "title": "Exhaustive certificate proof for the 536-coloring",
+                  "summary": "The audited artifacts establish that `coloring.csv` assigns exactly one of six colors to every integer from 1 through 536 and contains no monochromatic solution to `x+y=z`, including `x=y`. The verifier exhaustively checks all 71,824 relevant ordered representatives with `1≤x≤y` and `x+y≤536`.",
+                  "status": "active",
+                  "contentMarkdown": "The audited artifacts establish that `coloring.csv` assigns exactly one of six colors to every integer from 1 through 536 and contains no monochromatic solution to `x+y=z`, including `x=y`. The verifier exhaustively checks all 71,824 relevant ordered representatives with `1≤x≤y` and `x+y≤536`.\n\n## Accepted claims\n\n- `schur-number-6/fredricksen-sweet-536-certificate` from `b28dd977ae39eb77989de8e60b63f7eacd8982d2`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "ledgerPosition": 1,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/items/fredricksen-sweet-536-coloring",
+                      "relation": "depends-on"
+                    },
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/items/fredricksen-sweet-536-verifier",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:8a44bef170739c01e7f90b6ce75fe83aa331f412751fe5e796152c3d2012ce7e"
+                },
+                "item:root/items/s6-lower-bound-536": {
+                  "id": "item:root/items/s6-lower-bound-536",
+                  "parentId": "root",
+                  "type": "result",
+                  "title": "Published baseline lower bound S(6) ≥ 536",
+                  "summary": "It therefore independently replays the published baseline lower bound\n\n```text\nS(6) >= 536.\n```\n\nThis certificate does not improve the bound. The problem's published interval\nremains `536 <= S(6) <= 1836`.",
+                  "status": "active",
+                  "contentMarkdown": "It therefore independently replays the published baseline lower bound\n\n```text\nS(6) >= 536.\n```\n\nThis certificate does not improve the bound. The problem's published interval\nremains `536 <= S(6) <= 1836`.\n\n## Accepted claims\n\n- `schur-number-6/fredricksen-sweet-536-certificate` from `b28dd977ae39eb77989de8e60b63f7eacd8982d2`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                      "ledgerPosition": 1,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/items/fredricksen-sweet-536-certificate-proof",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:3183a797bce379b0ecc48f45d87cce120f324b51ac601a7bd23804e107829344"
+                }
+              },
+              "stateDigest": "sha256:d589f665cc4a0a2658e98c973beec49afe5acf22b1472dd68b5edc33f9376c72"
+            },
+            "revisionIds": [],
+            "addedRevisionIds": [],
+            "changedNodeIds": [
+              "item:root/items/fredricksen-sweet-536-certificate-proof",
+              "item:root/items/fredricksen-sweet-536-coloring",
+              "item:root/items/fredricksen-sweet-536-verifier",
+              "item:root/items/fredricksen-sweet-536-witness-encoding",
+              "item:root/items/s6-lower-bound-536",
+              "root",
+              "thread:root/unstructured-search"
+            ],
+            "reportDigest": "sha256:d589f665cc4a0a2658e98c973beec49afe5acf22b1472dd68b5edc33f9376c72",
+            "revisionSemantics": "neutral-knowledge"
+          }
+        ],
+        "revisions": [],
+        "reports": [],
+        "latestRunId": "4bd9daeba90e0c20ab0b157221165fdf633750e61af8f10d109d2f6cd6a43678"
+      }
+    },
+    {
       "id": "sha256:d86b7e9d80b73c89558f57ed3f72232ba0514d3eeb1c386985c31f760f2ed288",
       "problemId": "schur-number-6",
       "label": "openrouter-research-program-builder-v2",
@@ -55071,7 +55722,43 @@
       ]
     }
   ],
-  "hierarchicalCreditProjections": [],
+  "hierarchicalCreditProjections": [
+    {
+      "id": "openrouter-research-credit-v2",
+      "problemId": "schur-number-6",
+      "label": "openrouter-research-credit-v2",
+      "projectionSpec": {
+        "id": "openrouter-research-credit-v2",
+        "description": "A common-horizon two-term hierarchical credit overlay over the default batched research-program projection.",
+        "digest": "sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
+        "engine": "overlay-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [
+          {
+            "name": "research",
+            "projectionId": "openrouter-research-v1",
+            "artifactRole": "research-program-state"
+          }
+        ],
+        "scheduling": {
+          "minimumIntervalSeconds": 3600
+        },
+        "runner": {
+          "implementation": "openrouter-hierarchical-research-credit-v2",
+          "spec": "protocol/judges/openrouter-hierarchical-research-credit-v2.json"
+        }
+      },
+      "researchProjectionIds": [
+        "openrouter-research-v1"
+      ],
+      "latestRunDigest": null,
+      "selectionStatus": "pending",
+      "runCount": 0,
+      "runs": []
+    }
+  ],
   "researchDirections": [
     {
       "schemaVersion": 1,
