@@ -10621,6 +10621,430 @@
       }
     },
     {
+      "id": "openrouter-research-v1",
+      "problemId": "metric-universality-price",
+      "label": "openrouter-research-v1",
+      "projectionSpec": {
+        "id": "openrouter-research-v1",
+        "description": "The default parallel validity projection with dependency-safe batched hierarchical research-state formation.",
+        "digest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+        "engine": "openrouter-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [],
+        "scheduling": {
+          "judgmentMaxParallel": 16,
+          "knowledgeMinimumIntervalSeconds": 300,
+          "maximumJudgmentsPerBuild": 500
+        },
+        "runner": null
+      },
+      "builder": {
+        "id": "openrouter-hierarchical-research-builder-v2",
+        "digest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb"
+      },
+      "latestRunDigest": "sha256:6b23fb1864c40f1070dc8486c11c15760c6aae167eee3bc5f74cf75117653d17",
+      "runCount": 1,
+      "data": {
+        "schemaVersion": 1,
+        "problem": {
+          "id": "metric-universality-price",
+          "title": "Is metric universality strictly costly in Gaussian vector quantization?",
+          "statementMarkdown": "# Is metric universality strictly costly in Gaussian vector quantization?\n\nFor each dimension \\(n\\), let \\(W\\sim N(0,I_n)\\). An unknown quadratic\ndistortion is specified by a positive-semidefinite matrix\n\\(\\Sigma\\succeq0\\) with \\(\\operatorname{tr}\\Sigma=n\\), through the squared\nHilbert seminorm\n\n\\[\nd_\\Sigma(w,c)=(w-c)^\\mathsf T\\Sigma(w-c).\n\\]\n\nA universal codebook \\(C\\subset\\mathbb R^n\\) is chosen without knowing\n\\(\\Sigma\\). The encoder does know \\(\\Sigma\\) and may select a codeword\nminimizing this distortion. Define its normalized distortion by\n\n\\[\nD(C,\\Sigma)=\\frac1n\\mathbb E_W\\min_{c\\in C}d_\\Sigma(W,c).\n\\]\n\nIf \\(\\lambda_1,\\ldots,\\lambda_n\\) are the eigenvalues of \\(\\Sigma\\), the\nGaussian rate-distortion water-filling functions are\n\n\\[\nD_{\\mathrm{wf}}(\\Sigma,t)=\\frac1n\\sum_{i=1}^n\\min\\{\\lambda_i,t\\},\n\\qquad\nR_{\\mathrm{wf}}(\\Sigma,t)=\n\\frac1{2n}\\sum_{i=1}^n\\max\\!\\left\\{0,\n\\log_2\\frac{\\lambda_i}{t}\\right\\}.\n\\]\n\nFor \\(0<D<1\\), write \\(R_{\\mathrm{wf}}(\\Sigma,D)\\) for the second expression\nat a water level satisfying \\(D_{\\mathrm{wf}}(\\Sigma,t)=D\\), and set it to\nzero for \\(D\\ge1\\), and set \\(R_{\\mathrm{wf}}(\\Sigma,0)=+\\infty\\).\n\nFix \\(R>0\\), let \\(M_n=\\lceil2^{nR}\\rceil\\) and\n\\(r_n=n^{-1}\\log_2 M_n\\), and define the finite-dimensional minimax overhead\n\n\\[\n\\pi_n(R)=\n\\inf_{\\substack{C\\subset\\mathbb R^n\\\\|C|=M_n}}\n\\sup_{\\substack{\\Sigma\\succeq0\\\\\\operatorname{tr}\\Sigma=n}}\n\\left[r_n-R_{\\mathrm{wf}}\\bigl(\\Sigma,D(C,\\Sigma)\\bigr)\\right],\n\\qquad\n\\pi(R)=\\liminf_{n\\to\\infty}\\pi_n(R).\n\\]\n\nThe Gaussian rate-distortion converse makes this overhead nonnegative. Decide\nwhether metric universality is strictly costly:\n\n\\[\n\\text{Do there exist }R_0>0\\text{ and }\\delta>0\n\\text{ such that }\\pi(R_0)\\ge\\delta?\n\\]\n\nEither direction resolves the question: prove such an explicit positive lower\nbound, or construct universal codebooks proving \\(\\pi(R)=0\\) for every fixed\n\\(R>0\\). More generally, rigorously improve the definition-immediate bracket\n\n\\[\n0\\le\\pi(R)\\le R\n\\]\n\nin a clearly specified rate regime.\n\nThe 2026 upper-bound paper proves a \\(0.11\\)-bit universality result through a\nGaussian random-coding tradeoff. Its final version reduces the relevant bound\nto limiting two-point spectra and bounds the final one-variable objective by\napproximately \\(0.108<0.11\\). Its formal achievability theorem uses separate\nrate and additive-distortion limits; no uniform conversion of those limits to\nthe exact \\(\\pi(R)\\) definition above is assumed here. The paper does not prove\na positive minimax lower bound for arbitrary universal codebooks, and its\nrandom-coding optimization is not itself a lower bound on the price of\nuniversality. The two-sided minimax question above is therefore the governed\ntarget; it does not presume that the price is positive.\n\nUseful contributions include:\n\n- an adversarial family of incompatible, for example differently oriented,\n  metrics giving a positive lower bound against every codebook;\n- an explicit or probabilistic sequence of universal codebooks with a smaller\n  worst-case overhead, including a zero-price construction;\n- a finite-dimensional minimax theorem with quantified convergence to an\n  asymptotic bound;\n- a packing, covering, information-theoretic, or formal lemma that controls a\n  specified part of the minimax problem;\n- exact or rigorously interval-certified optimization over a stated finite\n  metric family;\n- an efficient explicit construction, separately labeled if it improves\n  implementability but not the minimax bound; or\n- a counterexample, restricted-codebook theorem, or numerical lead whose scope\n  and unresolved passage to the full problem are explicit.\n\nResults for diagonal metrics, lattices, product codebooks, stochastic metric\nmodels, or a finite metric family do not automatically settle the deterministic\nworst-case problem over arbitrary \\(\\Sigma\\) and arbitrary codebooks. Every\nsubmission should state those quantifiers precisely.\n\n## Frontier sources\n\n- Alina Harbuzova, Or Ordentlich, and Yury Polyanskiy,\n  [Price of metric universality in vector quantization is at most 0.11 bit](https://proceedings.mlr.press/v336/harbuzova26a.html),\n  COLT 2026; see also [arXiv:2602.05790v2](https://arxiv.org/abs/2602.05790v2).\n- Emin Martinian, Gregory W. Wornell, and Ram Zamir,\n  [Source Coding With Distortion Side Information](https://doi.org/10.1109/TIT.2008.928983),\n  IEEE Transactions on Information Theory 54 (2008).\n\nThe status and final-version formulation were checked on 2026-08-12.\n"
+        },
+        "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+        "transactions": [
+          {
+            "ordinal": 1,
+            "transactionId": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+            "contributionId": "subexponential-rank-one-families-zero-price",
+            "path": "problems/metric-universality-price/contributions/subexponential-rank-one-families-zero-price",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Subexponential rank-one families have zero restricted price\n\n## Claim\n\nFix a dimension \\(n\\), an integer \\(M\\ge 2\\), and any finite family of unit\nvectors\n\n\\[\n\\mathcal U=\\{u_1,\\ldots,u_m\\}\\subset S^{n-1}.\n\\]\n\nAssociate to these vectors the trace-normalized rank-one metrics\n\\(\\Sigma_i=n u_i u_i^{\\mathsf T}\\). Define the minimax overhead restricted to\nthis family by\n\n\\[\n\\Pi_n(\\mathcal U,M)=\n\\inf_{\\substack{C\\subset\\mathbb R^n\\\\ |C|=M}}\n\\max_{1\\le i\\le m}\n\\left[\n\\frac{\\log_2 M}{n}\n-R_{\\mathrm{wf}}\\bigl(\\Sigma_i,D(C,\\Sigma_i)\\bigr)\n\\right].\n\\]\n\nPut\n\n\\[\n\\beta_m=4m\\sqrt{2\\ln(8m)}\n\\]\n\nand\n\n\\[\nB(M,m)=\n\\frac{4\\beta_m^2\\ln M}{(M-1)^2}\n+\\frac{2}{\\sqrt{2\\pi}\\,M^2}\n\\left(2\\sqrt{\\ln M}+\\frac{1}{2\\sqrt{\\ln M}}\\right).\n\\]\n\nThere is an explicit collinear \\(M\\)-word codebook, depending on\n\\(\\mathcal U\\), for which\n\n\\[\nD(C,\\Sigma_i)\\le B(M,m)\\qquad(1\\le i\\le m).\n\\]\n\nConsequently, whenever \\(B(M,m)<1\\),\n\n\\[\n0\\le \\Pi_n(\\mathcal U,M)\n\\le \\frac{1}{2n}\\log_2\\!\\bigl(M^2B(M,m)\\bigr).\n\\tag{1}\n\\]\n\nIn particular, let \\(R>0\\), let \\(M_n=\\lceil 2^{nR}\\rceil\\), and allow the\nrank-one family \\(\\mathcal U_n\\) to vary with \\(n\\). If its cardinality\n\\(m_n\\) satisfies\n\n\\[\n\\ln m_n=o(n),\n\\]\n\nthen\n\n\\[\n\\lim_{n\\to\\infty}\\Pi_n(\\mathcal U_n,M_n)=0.\n\\tag{2}\n\\]\n\nThus no fixed, polynomial-size, or more generally subexponential-size family\nof differently oriented rank-one metrics can by itself prove a positive\nasymptotic minimax price against arbitrary codebooks. Any rank-one\nfinite-family lower-bound route must use exponentially many orientations (at\nthe relevant exponent) or add an argument that genuinely controls metrics\noutside the displayed family.\n\n## A simultaneous nonorthogonality lemma\n\nThe key elementary fact is uniform over the geometry of the vectors.\n\n**Lemma.** For every \\(u_1,\\ldots,u_m\\in S^{n-1}\\), there is a vector\n\\(v\\in\\mathbb R^n\\) such that\n\n\\[\n\\frac{1}{4m}\\le |u_i^{\\mathsf T}v|\n\\le \\sqrt{2\\ln(8m)}\n\\qquad(1\\le i\\le m).\n\\tag{3}\n\\]\n\n**Proof.** Draw \\(G\\sim N(0,I_n)\\). Each marginal\n\\(u_i^{\\mathsf T}G\\) is a standard normal random variable; independence is\nnot needed. For \\(a=1/(4m)\\), the standard normal density bound gives\n\n\\[\n\\Pr\\{|u_i^{\\mathsf T}G|<a\\}\n\\le \\sqrt{\\frac{2}{\\pi}}a.\n\\]\n\nFor \\(b=\\sqrt{2\\ln(8m)}\\), the Chernoff tail bound gives\n\n\\[\n\\Pr\\{|u_i^{\\mathsf T}G|>b\\}\n\\le 2e^{-b^2/2}=\\frac{1}{4m}.\n\\]\n\nThe union bound over all lower- and upper-tail events is at most\n\n\\[\n\\frac14\\sqrt{\\frac2\\pi}+\\frac14<1.\n\\]\n\nTherefore some realization \\(v\\) avoids every event and satisfies (3).\n\\(\\square\\)\n\nFor this \\(v\\), write\n\n\\[\n\\alpha_i=u_i^{\\mathsf T}v,\n\\qquad\n\\alpha_*=\\min_i|\\alpha_i|.\n\\]\n\nThe lemma implies\n\n\\[\n1\\le \\frac{\\max_i|\\alpha_i|}{\\alpha_*}\\le\\beta_m.\n\\tag{4}\n\\]\n\n## Collinear codebook and distortion bound\n\nLet\n\n\\[\nA=2\\sqrt{\\ln M}\n\\]\n\nand take the \\(M\\) distinct collinear codewords\n\n\\[\nc_j=s_jv,\n\\qquad\ns_j=-\\frac{A}{\\alpha_*}\n+\\frac{2A(j-1)}{\\alpha_*(M-1)},\n\\qquad 1\\le j\\le M.\n\\tag{5}\n\\]\n\nFor a fixed \\(i\\), the projected codebook\n\\(\\{u_i^{\\mathsf T}c_j\\}_{j=1}^M\\) is an equally spaced scalar grid with\nendpoints \\(\\pm L_i\\), up to reversal, where\n\n\\[\nL_i=A\\frac{|\\alpha_i|}{\\alpha_*}\\ge A.\n\\]\n\nIts spacing \\(h_i\\) obeys, by (4),\n\n\\[\nh_i=\\frac{2L_i}{M-1}\n\\le \\frac{2A\\beta_m}{M-1}.\n\\tag{6}\n\\]\n\nIf \\(Z\\sim N(0,1)\\) and \\(G_i\\) denotes this scalar grid, then pointwise\n\n\\[\n\\operatorname{dist}(Z,G_i)^2\n\\le \\frac{h_i^2}{4}+(|Z|-A)_+^2.\n\\tag{7}\n\\]\n\nIndeed, inside \\([-L_i,L_i]\\) the nearest-grid error is at most \\(h_i/2\\),\nwhile outside that interval the error is \\(|Z|-L_i\\le |Z|-A\\).\n\nLet \\(\\phi\\) and \\(Q\\) be the standard normal density and upper tail. By\nintegration by parts and the Mills bound,\n\n\\[\n\\begin{aligned}\n\\mathbb E (|Z|-A)_+^2\n&\\le \\mathbb E\\bigl[Z^2\\mathbf 1\\{|Z|>A\\}\\bigr]\\\\\n&=2\\bigl(A\\phi(A)+Q(A)\\bigr)\\\\\n&\\le 2(A+A^{-1})\\phi(A)\\\\\n&=\\frac{2}{\\sqrt{2\\pi}\\,M^2}\n\\left(2\\sqrt{\\ln M}+\\frac{1}{2\\sqrt{\\ln M}}\\right).\n\\end{aligned}\n\\tag{8}\n\\]\n\nFor \\(\\Sigma_i=n u_i u_i^{\\mathsf T}\\), normalization cancels the only\nnonzero eigenvalue:\n\n\\[\n\\begin{aligned}\nD(C,\\Sigma_i)\n&=\\frac1n\\mathbb E\\min_{c\\in C}\nn\\bigl(u_i^{\\mathsf T}(W-c)\\bigr)^2\\\\\n&=\\mathbb E\\min_{c\\in C}(Z-u_i^{\\mathsf T}c)^2.\n\\end{aligned}\n\\tag{9}\n\\]\n\nCombining (6)--(9), and using \\(A^2=4\\ln M\\), gives precisely\n\\(D(C,\\Sigma_i)\\le B(M,m)\\), simultaneously for every \\(i\\).\n\n## Conversion to overhead\n\nThe spectrum of \\(\\Sigma_i\\) is \\((n,0,\\ldots,0)\\). For \\(0<D<1\\), its\nwater level is \\(t=nD\\), and hence\n\n\\[\nR_{\\mathrm{wf}}(\\Sigma_i,D)\n=\\frac{1}{2n}\\log_2\\frac1D.\n\\tag{10}\n\\]\n\nWhen \\(B(M,m)<1\\), equations (9)--(10) give for the codebook (5)\n\n\\[\n\\frac{\\log_2 M}{n}\n-R_{\\mathrm{wf}}(\\Sigma_i,D(C,\\Sigma_i))\n\\le\n\\frac{1}{2n}\\log_2\\!\\bigl(M^2B(M,m)\\bigr),\n\\]\n\nuniformly in \\(i\\). Taking the maximum and then the infimum proves the upper\nbound in (1); its lower bound is the Gaussian rate-distortion converse already\nstated in the problem.\n\nFor a transparent asymptotic estimate, \\(M/(M-1)\\le2\\) gives\n\n\\[\nM^2B(M,m)\n\\le 16\\beta_m^2\\ln M\n+\\frac{2}{\\sqrt{2\\pi}}\n\\left(2\\sqrt{\\ln M}+\\frac{1}{2\\sqrt{\\ln M}}\\right).\n\\tag{11}\n\\]\n\nIf \\(M=M_n=\\lceil2^{nR}\\rceil\\), then \\(\\ln M_n=\\Theta(n)\\). If also\n\\(\\ln m_n=o(n)\\), then \\(\\ln\\beta_{m_n}=o(n)\\). The right side of (11) has\nbase-two logarithm \\(o(n)\\), whereas \\(B(M_n,m_n)=o(1)\\). Applying (1)\nproves (2).\n\n## Scope and limitations\n\nThis is a negative result about one proposed lower-bound mechanism, not a\nsolution of the governed minimax problem. The full definition lets the\nadversary choose from an uncountable family after seeing the codebook. The\ncollinear codebook (5) is tailored to the prescribed finite family and can\nperform very poorly for other rank-one orientations and for higher-rank\nmetrics. Therefore the result does **not** prove \\(\\pi(R)=0\\), nor does it\nexclude a lower bound using exponentially many rank-one orientations, a\ncontinuum argument with adequate uniform control, or a genuinely low-rank or\nfull-rank adversarial family.\n\nNo independence or general-position assumption is made on the orientations,\nand repeated or linearly dependent vectors are allowed. The family may depend\non \\(n\\); only its cardinality enters the bound.\n\nNo computational experiment or external mathematical source is used. The\nargument is self-contained apart from the Gaussian rate-distortion converse\nand water-filling definitions supplied in the canonical problem statement.\n\n## Reproduction and validation\n\nThe contribution contains a symbolic proof and no computational certificate.\nFrom the repository root, validate its protocol shape with:\n\n```sh\npython3 -m math_flow validate-tree\npython3 -m unittest discover -s tests -v\ngit diff --check\n```\n\n## Authorship\n\nProof and exposition by an OpenAI Codex research agent working through the\nMath Flow solver protocol at Robert Raynor's request.\n"
+          }
+        ],
+        "judgments": [
+          {
+            "judgmentId": "sha256:3181d55b097ffa920f8f89a980c1939b29ef3656b1fa86900d7be6e7d09580b9",
+            "runDigest": "sha256:deb981001200f66313804b31ff708fcdbbf4302085d73b10108a1d46e80d955b",
+            "judgmentKind": "primary",
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v2",
+              "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.14650625,
+            "reportDigest": "sha256:ddb598c7e06861e47f90664dba9f0855252e5d4d576f0307c489f55ab755912f",
+            "reportMarkdown": "## `metric-universality-price/subexponential-rank-one-families-zero-price`\n\n**Verdict: VALID**\n\nThe quantitative existence, distortion, overhead, and asymptotic claims are established by the supplied argument.\n\n### 1. Simultaneous nonorthogonality lemma\n\nImplicitly \\(m\\ge 1\\), as required for \\(\\beta_m\\) and the displayed maximum.\n\nFor \\(G\\sim N(0,I_n)\\), each \\(u_i^{\\mathsf T}G\\sim N(0,1)\\), regardless of dependence between the projections. For \\(a=1/(4m)\\),\n\n\\[\n\\Pr(|Z|<a)\\le 2a\\sup_x\\phi(x)\n=\\sqrt{\\frac2\\pi}\\,a.\n\\]\n\nFor \\(b=\\sqrt{2\\ln(8m)}\\),\n\n\\[\n\\Pr(|Z|>b)\\le 2e^{-b^2/2}=\\frac1{4m}.\n\\]\n\nThus the union of all \\(2m\\) bad events has probability at most\n\n\\[\nm\\sqrt{\\frac2\\pi}\\frac1{4m}+m\\frac1{4m}\n=\\frac14\\sqrt{\\frac2\\pi}+\\frac14<1.\n\\]\n\nConsequently, a witness \\(v\\) satisfying\n\n\\[\n\\frac1{4m}\\le |u_i^{\\mathsf T}v|\\le \\sqrt{2\\ln(8m)}\n\\]\n\nexists. In particular, \\(\\alpha_*=\\min_i|u_i^{\\mathsf T}v|>0\\), so \\(v\\ne0\\), and\n\n\\[\n\\frac{\\max_i|\\alpha_i|}{\\alpha_*}\n\\le 4m\\sqrt{2\\ln(8m)}=\\beta_m.\n\\]\n\nNo independence or general-position assumption is used.\n\n### 2. Codebook geometry and cardinality\n\nThe scalars \\(s_j\\) are distinct because \\(M\\ge2\\), \\(A>0\\), and \\(\\alpha_*>0\\). Since \\(v\\ne0\\), the codewords \\(c_j=s_jv\\) are also distinct, so the codebook has exactly \\(M\\) elements.\n\nFor each \\(i\\),\n\n\\[\nu_i^{\\mathsf T}c_j=\\alpha_i s_j\n\\]\n\nforms, up to reversal, an equally spaced grid with endpoints \\(\\pm L_i\\), where\n\n\\[\nL_i=A\\frac{|\\alpha_i|}{\\alpha_*}\\ge A.\n\\]\n\nIts spacing is\n\n\\[\nh_i=\\frac{2L_i}{M-1}\n\\le \\frac{2A\\beta_m}{M-1}.\n\\]\n\nThese conclusions remain valid for repeated or linearly dependent orientations.\n\n### 3. Scalar quantization bound\n\nFor \\(|z|\\le L_i\\), the nearest-grid error is at most \\(h_i/2\\). For \\(|z|>L_i\\), the nearest point is the corresponding endpoint and\n\n\\[\n\\operatorname{dist}(z,G_i)=|z|-L_i\\le |z|-A.\n\\]\n\nTherefore the claimed global, albeit non-tight, bound\n\n\\[\n\\operatorname{dist}(z,G_i)^2\n\\le \\frac{h_i^2}{4}+(|z|-A)_+^2\n\\]\n\nis correct in both regions.\n\nFor \\(Z\\sim N(0,1)\\),\n\n\\[\n(|Z|-A)_+^2\\le Z^2\\mathbf 1_{\\{|Z|>A\\}}.\n\\]\n\nIntegration by parts gives\n\n\\[\n\\mathbb E[Z^2\\mathbf 1_{\\{|Z|>A\\}}]\n=2(A\\phi(A)+Q(A)).\n\\]\n\nSince \\(A>0\\), Mills’ inequality \\(Q(A)\\le \\phi(A)/A\\) applies. With\n\\(A=2\\sqrt{\\ln M}\\),\n\n\\[\n\\phi(A)=\\frac{1}{\\sqrt{2\\pi}}e^{-A^2/2}\n=\\frac{1}{\\sqrt{2\\pi}M^2}.\n\\]\n\nThis yields exactly the stated tail term. The grid term satisfies\n\n\\[\n\\frac{h_i^2}{4}\n\\le \\frac{A^2\\beta_m^2}{(M-1)^2}\n=\\frac{4\\beta_m^2\\ln M}{(M-1)^2}.\n\\]\n\nThus their sum is precisely \\(B(M,m)\\).\n\n### 4. Reduction of the rank-one distortion\n\nFor \\(\\Sigma_i=nu_iu_i^{\\mathsf T}\\),\n\n\\[\n\\frac1n d_{\\Sigma_i}(W,c)\n=(u_i^{\\mathsf T}W-u_i^{\\mathsf T}c)^2.\n\\]\n\nBecause \\(u_i\\) is a unit vector, \\(u_i^{\\mathsf T}W\\sim N(0,1)\\). Hence\n\n\\[\nD(C,\\Sigma_i)\n=\\mathbb E\\operatorname{dist}(Z,G_i)^2\n\\le B(M,m).\n\\]\n\nThe distortion is also strictly positive: a finite grid cannot contain a continuously distributed \\(Z\\) almost surely. Therefore, when \\(B(M,m)<1\\), one has \\(0<D(C,\\Sigma_i)<1\\), so the interior water-filling formula is applicable.\n\n### 5. Water-filling and overhead conversion\n\nThe spectrum is \\((n,0,\\ldots,0)\\). For \\(0<D<1\\), the equation\n\n\\[\nD_{\\mathrm{wf}}(\\Sigma_i,t)=D\n\\]\n\ngives \\(t=nD\\), and therefore\n\n\\[\nR_{\\mathrm{wf}}(\\Sigma_i,D)\n=\\frac1{2n}\\log_2\\frac{n}{nD}\n=\\frac1{2n}\\log_2\\frac1D.\n\\]\n\nSince this overhead is increasing in \\(D\\),\n\n\\[\n\\begin{aligned}\n\\frac{\\log_2M}{n}\n-R_{\\mathrm{wf}}(\\Sigma_i,D(C,\\Sigma_i))\n&=\\frac1{2n}\\log_2\\!\\left(M^2D(C,\\Sigma_i)\\right)\\\\\n&\\le \\frac1{2n}\\log_2\\!\\left(M^2B(M,m)\\right).\n\\end{aligned}\n\\]\n\nTaking the maximum over \\(i\\) and then the infimum over all \\(M\\)-word codebooks proves the upper bound in (1).\n\nThe lower bound \\(\\Pi_n\\ge0\\) follows from the Gaussian rate-distortion converse explicitly supplied in the problem: an encoder whose reproduction takes at most \\(M\\) values has information rate at most \\(\\log_2M/n\\), which cannot be below \\(R_{\\mathrm{wf}}(\\Sigma_i,D)\\).\n\n### 6. Asymptotic passage\n\nFor \\(M_n=\\lceil2^{nR}\\rceil\\) with \\(R>0\\),\n\n\\[\n\\ln M_n=\\Theta(n).\n\\]\n\nIf \\(\\ln m_n=o(n)\\), then\n\n\\[\n\\ln\\beta_{m_n}\n=\\ln4+\\ln m_n+\\frac12\\ln\\!\\bigl(2\\ln(8m_n)\\bigr)\n=o(n).\n\\]\n\nConsequently, both terms in \\(B(M_n,m_n)\\) decay exponentially up to subexponential factors, so\n\n\\[\nB(M_n,m_n)=o(1).\n\\]\n\nThus \\(B<1\\) eventually. Moreover,\n\n\\[\nM_n^2B(M_n,m_n)\n\\le 16\\beta_{m_n}^2\\ln M_n+O(\\sqrt{\\ln M_n}),\n\\]\n\nwhose logarithm is \\(o(n)\\). Hence\n\n\\[\n0\\le \\Pi_n(\\mathcal U_n,M_n)\n\\le \\frac1{2n}\\log_2\\!\\left(M_n^2B(M_n,m_n)\\right)\n\\longrightarrow0.\n\\]\n\nThis proves (2).\n\n### 7. Scope and terminology\n\nThe final scope conclusion is justified: a lower bound based solely on maximizing over a prescribed subexponential rank-one family cannot give a positive asymptotic restricted minimax overhead. The result does not control the full uncountable metric family and therefore does not establish \\(\\pi(R)=0\\).\n\nThe witness \\(v\\) is obtained probabilistically rather than by an effective deterministic algorithm. Thus “explicit” is justified only in the sense that the codebook has the displayed formula once a valid witness is selected; no efficient algorithmic construction is proved. This does not affect the formal existence or minimax bounds.\n",
+            "record": {
+              "schemaVersion": 2,
+              "judgmentKind": "primary",
+              "problemId": "metric-universality-price",
+              "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+              "problemLedgerDigest": "sha256:3e24c35c1fb305cfd0a675649f584f838bd13e21e7deea673119621ef22813f0",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v2",
+                "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+                  "ledgerPosition": 1
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "metric-universality-price/subexponential-rank-one-families-zero-price",
+                  "status": "valid",
+                  "premiseStatus": "satisfied",
+                  "summary": "The argument establishes the simultaneous witness, the collinear M-word construction, the uniform distortion bound B(M,m), the water-filling overhead bound when B(M,m)<1, and convergence of the restricted minimax overhead to zero whenever ln(m_n)=o(n). The concluding obstruction to obtaining a positive asymptotic lower bound from only a prescribed subexponential rank-one family follows within that restricted scope.",
+                  "scopeQualifications": [
+                    "The family is implicitly nonempty (m>=1), as required by beta_m and the maximum over orientations.",
+                    "The result concerns only the displayed finite rank-one family; it does not control metrics outside that family or establish zero price for the full uncountable metric class.",
+                    "“Explicit” means that the codebook has a displayed formula after selecting a probabilistically proved witness v; no effective deterministic or efficient witness-construction algorithm is established.",
+                    "Repeated, dependent, or nongeneric orientations are allowed; no independence or general-position assumption is needed."
+                  ],
+                  "evidenceIssues": [],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "metric-universality-price/subexponential-rank-one-families-zero-price",
+                  "stance": "supports",
+                  "summary": "The argument establishes the simultaneous witness, the collinear M-word construction, the uniform distortion bound B(M,m), the water-filling overhead bound when B(M,m)<1, and convergence of the restricted minimax overhead to zero whenever ln(m_n)=o(n). The concluding obstruction to obtaining a positive asymptotic lower bound from only a prescribed subexponential rank-one family follows within that restricted scope.",
+                  "subjectTransactionIds": [
+                    "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:d8ebd9837934f257d61015151c0a505f543843c43617f68557e8cbec479c19b9",
+              "reportDigest": "sha256:ddb598c7e06861e47f90664dba9f0855252e5d4d576f0307c489f55ab755912f",
+              "judgmentId": "sha256:3181d55b097ffa920f8f89a980c1939b29ef3656b1fa86900d7be6e7d09580b9"
+            }
+          }
+        ],
+        "runs": [
+          {
+            "id": "6b23fb1864c40f1070dc8486c11c15760c6aae167eee3bc5f74cf75117653d17",
+            "ordinal": 1,
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+            "runDigest": "sha256:6b23fb1864c40f1070dc8486c11c15760c6aae167eee3bc5f74cf75117653d17",
+            "baseRun": null,
+            "runKind": "knowledge-build",
+            "inputs": {
+              "projectionSpecDigest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+              "laneId": "sha256:4c7afe3f3eba78aedba8f45fc7fb6a363e94076265aa3b358c08edcd2ed71d71",
+              "baseStateRun": null,
+              "problemId": "metric-universality-price",
+              "schemaVersion": 1,
+              "builderSpecDigest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb",
+              "judgmentIds": [
+                "sha256:3181d55b097ffa920f8f89a980c1939b29ef3656b1fa86900d7be6e7d09580b9"
+              ],
+              "conflictIds": [],
+              "judgmentSetDigest": "sha256:b13d1bf0fb1f2f53662a5549879a51d6f245d3ce420a7b2fe484c035e4e9ab39",
+              "buildToken": "sha256:4ee5180281ce9c712304671004c0c5134c1a7ec2a48393b06d08ed8d4fd9102c"
+            },
+            "judgeSpec": {
+              "id": "openrouter-hierarchical-research-builder-v2",
+              "digest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb"
+            },
+            "runner": {
+              "implementation": "openrouter-hierarchical-research-builder-v2",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.0741175,
+            "selection": {
+              "selectedNodeIds": [
+                "item:root/method-collinear-rank-one-family-codebook",
+                "item:root/proof-subexponential-rank-one-families-zero-price",
+                "item:root/result-subexponential-rank-one-families-zero-price",
+                "root",
+                "thread:root/unstructured-search"
+              ],
+              "rationale": "Nodes changed by the accepted validity batch."
+            },
+            "normalizations": [],
+            "delta": {
+              "schemaVersion": 1,
+              "operations": [
+                {
+                  "entityKind": "program",
+                  "entityId": "root",
+                  "baseDigest": "sha256:4bc4e85d0ca6e4224902591c71cf9cb813718dfe5961d8be774384d474797c99",
+                  "value": {
+                    "id": "root",
+                    "parentId": null,
+                    "title": "Canonical problem",
+                    "objective": "Resolve the canonical problem.",
+                    "status": "active",
+                    "parentThreadIds": [],
+                    "sourceTransactionIds": [
+                      "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "thread",
+                  "entityId": "root/unstructured-search",
+                  "baseDigest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e",
+                  "value": {
+                    "id": "root/unstructured-search",
+                    "programId": "root",
+                    "title": "Unstructured search and overhead",
+                    "summary": "Future work not yet assigned to a more specific research thread.",
+                    "kind": "unstructured",
+                    "status": "active",
+                    "expectedExposure": "1",
+                    "conditions": [],
+                    "sourceTransactionIds": [
+                      "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/result-subexponential-rank-one-families-zero-price",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/result-subexponential-rank-one-families-zero-price",
+                    "programId": "root",
+                    "type": "result",
+                    "title": "Subexponential rank-one metric families have zero restricted asymptotic price",
+                    "summary": "Fix a dimension \\(n\\), an integer \\(M\\ge 2\\), and any finite family of unit\nvectors\n\n\\[\n\\mathcal U=\\{u_1,\\ldots,u_m\\}\\subset S^{n-1}.\n\\]\n\nAssociate to these vectors the trace-normalized rank-one metrics\n\\(\\Sigma_i=n u_i u_i^{\\mathsf T}\\). Define the minimax overhead restricted to\nthis family by\n\n\\[\n\\Pi_n(\\mathcal U,M)=\n\\inf_{\\substack{C\\subset\\mathbb R^n\\\\ |C|=M}}\n\\max_{1\\le i\\le m}\n\\left[\n\\frac{\\log_2 M}{n}\n-R_{\\mathrm{wf}}\\bigl(\\Sigma_i,D(C,\\Sigma_i)\\bigr)\n\\right].\n\\]\n\nPut\n\n\\[\n\\beta_m=4m\\sqrt{2\\ln(8m)}\n\\]\n\nand\n\n\\[\nB(M,m)=\n\\frac{4\\beta_m^2\\ln M}{(M-1)^2}\n+\\frac{2}{\\sqrt{2\\pi}\\,M^2}\n\\left(2\\sqrt{\\ln M}+\\frac{1}{2\\sqrt{\\ln M}}\\right).\n\\]\n\nThere is an explicit collinear \\(M\\)-word codebook, depending on\n\\(\\mathcal U\\), for which\n\n\\[\nD(C,\\Sigma_i)\\le B(M,m)\\qquad(1\\le i\\le m).\n\\]\n\nConsequently, whenever \\(B(M,m)<1\\),\n\n\\[\n0\\le \\Pi_n(\\mathcal U,M)\n\\le \\frac{1}{2n}\\log_2\\!\\bigl(M^2B(M,m)\\bigr).\n\\tag{1}\n\\]\n\nIn particular, let \\(R>0\\), let \\(M_n=\\lceil 2^{nR}\\rceil\\), and allow the\nrank-one family \\(\\mathcal U_n\\) to vary with \\(n\\). If its cardinality\n\\(m_n\\) satisfies\n\n\\[\n\\ln m_n=o(n),\n\\]\n\nthen\n\n\\[\n\\lim_{n\\to\\infty}\\Pi_n(\\mathcal U_n,M_n)=0.\n\\tag{2}\n\\]\n\nThus no fixed, polynomial-size, or more generally subexponential-size family\nof differently oriented rank-one metrics can by itself prove a positive\nasymptotic minimax price against arbitrary codebooks. Any rank-one\nfinite-family lower-bound route must use exponentially many orientations (at\nthe relevant exponent) or add an argument that genuinely controls metrics\noutside the displayed family.\n\nScope qualifications: The family is implicitly nonempty (\\(m\\ge1\\)), as required by \\(\\beta_m\\) and the maximum over orientations. The result concerns only the displayed finite rank-one family; it does not control metrics outside that family or establish zero price for the full uncountable metric class. “Explicit” means that the codebook has a displayed formula after selecting a probabilistically proved witness \\(v\\); no effective deterministic or efficient witness-construction algorithm is established. Repeated, dependent, or nongeneric orientations are allowed; no independence or general-position assumption is needed.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+                        "claimKey": "metric-universality-price/subexponential-rank-one-families-zero-price"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+                    ],
+                    "dependencyItemIds": [
+                      "root/proof-subexponential-rank-one-families-zero-price",
+                      "root/method-collinear-rank-one-family-codebook"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/proof-subexponential-rank-one-families-zero-price",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/proof-subexponential-rank-one-families-zero-price",
+                    "programId": "root",
+                    "type": "proof",
+                    "title": "Gaussian witness, scalar-grid distortion, and water-filling proof",
+                    "summary": "Draw \\(G\\sim N(0,I_n)\\) and apply marginal Gaussian lower-tail and upper-tail bounds with a union bound—without requiring independence—to select \\(v\\) satisfying \\(1/(4m)\\le |u_i^{\\mathsf T}v|\\le\\sqrt{2\\ln(8m)}\\) simultaneously. The collinear construction then projects under each rank-one metric to an equally spaced scalar grid. Its nearest-grid error is bounded by the grid-spacing term plus \\((|Z|-2\\sqrt{\\ln M})_+^2\\); Gaussian tail integration yields \\(B(M,m)\\). The rank-one water-filling identity \\(R_{\\mathrm{wf}}(\\Sigma_i,D)=(2n)^{-1}\\log_2(1/D)\\) for \\(0<D<1\\) gives (1), and the estimate on \\(M_n^2B(M_n,m_n)\\) gives (2) when \\(\\ln m_n=o(n)\\).",
+                    "claimRefs": [
+                      {
+                        "transactionId": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+                        "claimKey": "metric-universality-price/subexponential-rank-one-families-zero-price"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+                    ],
+                    "dependencyItemIds": [
+                      "root/method-collinear-rank-one-family-codebook"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/method-collinear-rank-one-family-codebook",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/method-collinear-rank-one-family-codebook",
+                    "programId": "root",
+                    "type": "method",
+                    "title": "Collinear codebook tailored to a finite rank-one metric family",
+                    "summary": "After selecting a witness \\(v\\) with \\(1/(4m)\\le |u_i^{\\mathsf T}v|\\le\\sqrt{2\\ln(8m)}\\), set \\(\\alpha_*=\\min_i|u_i^{\\mathsf T}v|\\), \\(A=2\\sqrt{\\ln M}\\), \\(s_j=-A/\\alpha_*+2A(j-1)/(\\alpha_*(M-1))\\), and \\(c_j=s_jv\\) for \\(1\\le j\\le M\\). This produces the accepted simultaneous distortion bound for the prescribed finite family. The construction is tailored to that family and need not control other rank-one or higher-rank metrics. Its displayed formula is explicit after the probabilistic existence selection of \\(v\\); no effective deterministic or efficient witness-construction algorithm is established.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+                        "claimKey": "metric-universality-price/subexponential-rank-one-families-zero-price"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+                    ],
+                    "dependencyItemIds": []
+                  }
+                }
+              ],
+              "contributions": [
+                {
+                  "transactionId": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+                  "claimKeys": [
+                    "metric-universality-price/subexponential-rank-one-families-zero-price"
+                  ],
+                  "directProgramId": "root",
+                  "directThreadIds": [
+                    "root/unstructured-search"
+                  ],
+                  "itemIds": [
+                    "root/result-subexponential-rank-one-families-zero-price",
+                    "root/proof-subexponential-rank-one-families-zero-price",
+                    "root/method-collinear-rank-one-family-codebook"
+                  ]
+                }
+              ]
+            },
+            "state": {
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "program",
+                  "title": "Canonical problem",
+                  "summary": "Resolve the canonical problem.",
+                  "status": "active",
+                  "contentMarkdown": "## Objective\n\nResolve the canonical problem.\n\n## Local credit context\n\nRoot program.",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+                      "ledgerPosition": 1,
+                      "relation": "source"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:a9940c5a5fc35359003750e321e15266155437ae69dc047d35f9cad01289b517"
+                },
+                "thread:root/unstructured-search": {
+                  "id": "thread:root/unstructured-search",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Unstructured search and overhead",
+                  "summary": "Future work not yet assigned to a more specific research thread.",
+                  "status": "active",
+                  "contentMarkdown": "Future work not yet assigned to a more specific research thread.\n\n**Thread kind:** unstructured\n\n**Expected local exposure:** 1\n\n**Conditions:** none",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+                      "ledgerPosition": 1,
+                      "relation": "source"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:060c46f06c518684ec6fdbf96e19c922ee92a189e22d5f259a3733288ea2a419"
+                },
+                "item:root/result-subexponential-rank-one-families-zero-price": {
+                  "id": "item:root/result-subexponential-rank-one-families-zero-price",
+                  "parentId": "root",
+                  "type": "result",
+                  "title": "Subexponential rank-one metric families have zero restricted asymptotic price",
+                  "summary": "Fix a dimension \\(n\\), an integer \\(M\\ge 2\\), and any finite family of unit\nvectors\n\n\\[\n\\mathcal U=\\{u_1,\\ldots,u_m\\}\\subset S^{n-1}.\n\\]\n\nAssociate to these vectors the trace-normalized rank-one metrics\n\\(\\Sigma_i=n u_i u_i^{\\mathsf T}\\). Define the minimax overhead restricted to\nthis family by\n\n\\[\n\\Pi_n(\\mathcal U,M)=\n\\inf_{\\substack{C\\subset\\mathbb R^n\\\\ |C|=M}}\n\\max_{1\\le i\\le m}\n\\left[\n\\frac{\\log_2 M}{n}\n-R_{\\mathrm{wf}}\\bigl(\\Sigma_i,D(C,\\Sigma_i)\\bigr)\n\\right].\n\\]\n\nPut\n\n\\[\n\\beta_m=4m\\sqrt{2\\ln(8m)}\n\\]\n\nand\n\n\\[\nB(M,m)=\n\\frac{4\\beta_m^2\\ln M}{(M-1)^2}\n+\\frac{2}{\\sqrt{2\\pi}\\,M^2}\n\\left(2\\sqrt{\\ln M}+\\frac{1}{2\\sqrt{\\ln M}}\\right).\n\\]\n\nThere is an explicit collinear \\(M\\)-word codebook, depending on\n\\(\\mathcal U\\), for which\n\n\\[\nD(C,\\Sigma_i)\\le B(M,m)\\qquad(1\\le i\\le m).\n\\]\n\nConsequently, whenever \\(B(M,m)<1\\),\n\n\\[\n0\\le \\Pi_n(\\mathcal U,M)\n\\le \\frac{1}{2n}\\log_2\\!\\bigl(M^2B(M,m)\\bigr).\n\\tag{1}\n\\]\n\nIn particular, let \\(R>0\\), let \\(M_n=\\lceil 2^{nR}\\rceil\\), and allow the\nrank-one family \\(\\mathcal U_n\\) to vary with \\(n\\). If its cardinality\n\\(m_n\\) satisfies\n\n\\[\n\\ln m_n=o(n),\n\\]\n\nthen\n\n\\[\n\\lim_{n\\to\\infty}\\Pi_n(\\mathcal U_n,M_n)=0.\n\\tag{2}\n\\]\n\nThus no fixed, polynomial-size, or more generally subexponential-size family\nof differently oriented rank-one metrics can by itself prove a positive\nasymptotic minimax price against arbitrary codebooks. Any rank-one\nfinite-family lower-bound route must use exponentially many orientations (at\nthe relevant exponent) or add an argument that genuinely controls metrics\noutside the displayed family.\n\nScope qualifications: The family is implicitly nonempty (\\(m\\ge1\\)), as required by \\(\\beta_m\\) and the maximum over orientations. The result concerns only the displayed finite rank-one family; it does not control metrics outside that family or establish zero price for the full uncountable metric class. “Explicit” means that the codebook has a displayed formula after selecting a probabilistically proved witness \\(v\\); no effective deterministic or efficient witness-construction algorithm is established. Repeated, dependent, or nongeneric orientations are allowed; no independence or general-position assumption is needed.",
+                  "status": "active",
+                  "contentMarkdown": "Fix a dimension \\(n\\), an integer \\(M\\ge 2\\), and any finite family of unit\nvectors\n\n\\[\n\\mathcal U=\\{u_1,\\ldots,u_m\\}\\subset S^{n-1}.\n\\]\n\nAssociate to these vectors the trace-normalized rank-one metrics\n\\(\\Sigma_i=n u_i u_i^{\\mathsf T}\\). Define the minimax overhead restricted to\nthis family by\n\n\\[\n\\Pi_n(\\mathcal U,M)=\n\\inf_{\\substack{C\\subset\\mathbb R^n\\\\ |C|=M}}\n\\max_{1\\le i\\le m}\n\\left[\n\\frac{\\log_2 M}{n}\n-R_{\\mathrm{wf}}\\bigl(\\Sigma_i,D(C,\\Sigma_i)\\bigr)\n\\right].\n\\]\n\nPut\n\n\\[\n\\beta_m=4m\\sqrt{2\\ln(8m)}\n\\]\n\nand\n\n\\[\nB(M,m)=\n\\frac{4\\beta_m^2\\ln M}{(M-1)^2}\n+\\frac{2}{\\sqrt{2\\pi}\\,M^2}\n\\left(2\\sqrt{\\ln M}+\\frac{1}{2\\sqrt{\\ln M}}\\right).\n\\]\n\nThere is an explicit collinear \\(M\\)-word codebook, depending on\n\\(\\mathcal U\\), for which\n\n\\[\nD(C,\\Sigma_i)\\le B(M,m)\\qquad(1\\le i\\le m).\n\\]\n\nConsequently, whenever \\(B(M,m)<1\\),\n\n\\[\n0\\le \\Pi_n(\\mathcal U,M)\n\\le \\frac{1}{2n}\\log_2\\!\\bigl(M^2B(M,m)\\bigr).\n\\tag{1}\n\\]\n\nIn particular, let \\(R>0\\), let \\(M_n=\\lceil 2^{nR}\\rceil\\), and allow the\nrank-one family \\(\\mathcal U_n\\) to vary with \\(n\\). If its cardinality\n\\(m_n\\) satisfies\n\n\\[\n\\ln m_n=o(n),\n\\]\n\nthen\n\n\\[\n\\lim_{n\\to\\infty}\\Pi_n(\\mathcal U_n,M_n)=0.\n\\tag{2}\n\\]\n\nThus no fixed, polynomial-size, or more generally subexponential-size family\nof differently oriented rank-one metrics can by itself prove a positive\nasymptotic minimax price against arbitrary codebooks. Any rank-one\nfinite-family lower-bound route must use exponentially many orientations (at\nthe relevant exponent) or add an argument that genuinely controls metrics\noutside the displayed family.\n\nScope qualifications: The family is implicitly nonempty (\\(m\\ge1\\)), as required by \\(\\beta_m\\) and the maximum over orientations. The result concerns only the displayed finite rank-one family; it does not control metrics outside that family or establish zero price for the full uncountable metric class. “Explicit” means that the codebook has a displayed formula after selecting a probabilistically proved witness \\(v\\); no effective deterministic or efficient witness-construction algorithm is established. Repeated, dependent, or nongeneric orientations are allowed; no independence or general-position assumption is needed.\n\n## Accepted claims\n\n- `metric-universality-price/subexponential-rank-one-families-zero-price` from `5e12e53d70d9d24eae78099abae00df3e384d0e3`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+                      "ledgerPosition": 1,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/proof-subexponential-rank-one-families-zero-price",
+                      "relation": "depends-on"
+                    },
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/method-collinear-rank-one-family-codebook",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:b00800242de6b1239ebdd52e6848a0cb19548447af91c2af8e8ffde2854c4b46"
+                },
+                "item:root/proof-subexponential-rank-one-families-zero-price": {
+                  "id": "item:root/proof-subexponential-rank-one-families-zero-price",
+                  "parentId": "root",
+                  "type": "proof",
+                  "title": "Gaussian witness, scalar-grid distortion, and water-filling proof",
+                  "summary": "Draw \\(G\\sim N(0,I_n)\\) and apply marginal Gaussian lower-tail and upper-tail bounds with a union bound—without requiring independence—to select \\(v\\) satisfying \\(1/(4m)\\le |u_i^{\\mathsf T}v|\\le\\sqrt{2\\ln(8m)}\\) simultaneously. The collinear construction then projects under each rank-one metric to an equally spaced scalar grid. Its nearest-grid error is bounded by the grid-spacing term plus \\((|Z|-2\\sqrt{\\ln M})_+^2\\); Gaussian tail integration yields \\(B(M,m)\\). The rank-one water-filling identity \\(R_{\\mathrm{wf}}(\\Sigma_i,D)=(2n)^{-1}\\log_2(1/D)\\) for \\(0<D<1\\) gives (1), and the estimate on \\(M_n^2B(M_n,m_n)\\) gives (2) when \\(\\ln m_n=o(n)\\).",
+                  "status": "active",
+                  "contentMarkdown": "Draw \\(G\\sim N(0,I_n)\\) and apply marginal Gaussian lower-tail and upper-tail bounds with a union bound—without requiring independence—to select \\(v\\) satisfying \\(1/(4m)\\le |u_i^{\\mathsf T}v|\\le\\sqrt{2\\ln(8m)}\\) simultaneously. The collinear construction then projects under each rank-one metric to an equally spaced scalar grid. Its nearest-grid error is bounded by the grid-spacing term plus \\((|Z|-2\\sqrt{\\ln M})_+^2\\); Gaussian tail integration yields \\(B(M,m)\\). The rank-one water-filling identity \\(R_{\\mathrm{wf}}(\\Sigma_i,D)=(2n)^{-1}\\log_2(1/D)\\) for \\(0<D<1\\) gives (1), and the estimate on \\(M_n^2B(M_n,m_n)\\) gives (2) when \\(\\ln m_n=o(n)\\).\n\n## Accepted claims\n\n- `metric-universality-price/subexponential-rank-one-families-zero-price` from `5e12e53d70d9d24eae78099abae00df3e384d0e3`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+                      "ledgerPosition": 1,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/method-collinear-rank-one-family-codebook",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:32432a22178ae7100430f8c96701f262326976abda5e3daa0a57250770002a59"
+                },
+                "item:root/method-collinear-rank-one-family-codebook": {
+                  "id": "item:root/method-collinear-rank-one-family-codebook",
+                  "parentId": "root",
+                  "type": "method",
+                  "title": "Collinear codebook tailored to a finite rank-one metric family",
+                  "summary": "After selecting a witness \\(v\\) with \\(1/(4m)\\le |u_i^{\\mathsf T}v|\\le\\sqrt{2\\ln(8m)}\\), set \\(\\alpha_*=\\min_i|u_i^{\\mathsf T}v|\\), \\(A=2\\sqrt{\\ln M}\\), \\(s_j=-A/\\alpha_*+2A(j-1)/(\\alpha_*(M-1))\\), and \\(c_j=s_jv\\) for \\(1\\le j\\le M\\). This produces the accepted simultaneous distortion bound for the prescribed finite family. The construction is tailored to that family and need not control other rank-one or higher-rank metrics. Its displayed formula is explicit after the probabilistic existence selection of \\(v\\); no effective deterministic or efficient witness-construction algorithm is established.",
+                  "status": "active",
+                  "contentMarkdown": "After selecting a witness \\(v\\) with \\(1/(4m)\\le |u_i^{\\mathsf T}v|\\le\\sqrt{2\\ln(8m)}\\), set \\(\\alpha_*=\\min_i|u_i^{\\mathsf T}v|\\), \\(A=2\\sqrt{\\ln M}\\), \\(s_j=-A/\\alpha_*+2A(j-1)/(\\alpha_*(M-1))\\), and \\(c_j=s_jv\\) for \\(1\\le j\\le M\\). This produces the accepted simultaneous distortion bound for the prescribed finite family. The construction is tailored to that family and need not control other rank-one or higher-rank metrics. Its displayed formula is explicit after the probabilistic existence selection of \\(v\\); no effective deterministic or efficient witness-construction algorithm is established.\n\n## Accepted claims\n\n- `metric-universality-price/subexponential-rank-one-families-zero-price` from `5e12e53d70d9d24eae78099abae00df3e384d0e3`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+                      "ledgerPosition": 1,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:e73cdf2f8ff8f658311a54c1688cc11bc7461e092052a936a2974ac899754eff"
+                }
+              },
+              "stateDigest": "sha256:e9da0cd236309f36f51a4521e1544333dde5cb63f0ab4f78a02b523f4f9d632d"
+            },
+            "revisionIds": [],
+            "addedRevisionIds": [],
+            "changedNodeIds": [
+              "item:root/method-collinear-rank-one-family-codebook",
+              "item:root/proof-subexponential-rank-one-families-zero-price",
+              "item:root/result-subexponential-rank-one-families-zero-price",
+              "root",
+              "thread:root/unstructured-search"
+            ],
+            "reportDigest": "sha256:e9da0cd236309f36f51a4521e1544333dde5cb63f0ab4f78a02b523f4f9d632d",
+            "revisionSemantics": "neutral-knowledge"
+          }
+        ],
+        "revisions": [],
+        "reports": [],
+        "latestRunId": "6b23fb1864c40f1070dc8486c11c15760c6aae167eee3bc5f74cf75117653d17"
+      }
+    },
+    {
       "id": "sha256:865c939f67df67c4d1a9ec8d94210b9381f6933125056fe5c4fe52d0a583c222",
       "problemId": "metric-universality-price",
       "label": "openrouter-research-program-builder-v2",
@@ -56130,6 +56554,41 @@
     }
   ],
   "hierarchicalCreditProjections": [
+    {
+      "id": "openrouter-research-credit-v2@sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
+      "problemId": "metric-universality-price",
+      "label": "openrouter-research-credit-v2",
+      "projectionSpec": {
+        "id": "openrouter-research-credit-v2",
+        "description": "A common-horizon two-term hierarchical credit overlay over the default batched research-program projection.",
+        "digest": "sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
+        "engine": "overlay-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [
+          {
+            "name": "research",
+            "projectionId": "openrouter-research-v1",
+            "artifactRole": "research-program-state"
+          }
+        ],
+        "scheduling": {
+          "minimumIntervalSeconds": 3600
+        },
+        "runner": {
+          "implementation": "openrouter-hierarchical-research-credit-v2",
+          "spec": "protocol/judges/openrouter-hierarchical-research-credit-v2.json"
+        }
+      },
+      "researchProjectionIds": [
+        "openrouter-research-v1"
+      ],
+      "latestRunDigest": null,
+      "selectionStatus": "pending",
+      "runCount": 0,
+      "runs": []
+    },
     {
       "id": "openrouter-research-credit-v2@sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
       "problemId": "multiway-cut-ckr-gap",
