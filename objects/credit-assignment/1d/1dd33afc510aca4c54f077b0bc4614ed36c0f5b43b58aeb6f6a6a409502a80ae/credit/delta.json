@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "evaluations": [
+    {
+      "programId": "root",
+      "unattributedWork": "0.25",
+      "rationale": "Normalized expected-work units follow the supplied ledger scale. A small residual preserves uncertainty about how much of the compact verifier would otherwise be reconstructed versus bypassed by a competent solver. The contribution did not improve either published bound or establish optimality, so no broader problem-resolution value is assigned.",
+      "children": [
+        {
+          "kind": "contribution",
+          "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+          "counterfactual": "Remove the supplied 23×23 matrix transcription, exact Bareiss replay, verifier code, and uniquely inherited documentation. Retain the independently stated published lower endpoint, its factorization, the cited frontier source, and general knowledge of exact determinant algorithms. A competent solver may fetch and transcribe the published matrix or construct another exact verifier rather than repeat the historical workflow.",
+          "directEffects": [
+            {
+              "threadId": "root/exact-witness-verification",
+              "withoutWork": "1.75",
+              "withWork": "1",
+              "rationale": "The artifact avoids a modest amount of future exact-verification work by supplying a parsed witness, a standard-library Bareiss implementation, dimensional and alphabet checks, exact-division checks, and determinant/factorization comparisons. Remaining exposure is retained because the thread covers verification of future supplied witnesses and because independent replay may still be desired. The avoided amount is limited by the ease with which a competent solver could reconstruct an equivalent verifier."
+            }
+          ],
+          "obviatedEffects": [
+            {
+              "threadId": "root/unstructured-search",
+              "withoutWork": "1",
+              "withWork": "1",
+              "rationale": "The replay confirms only the already stated lower endpoint and supplies no improved witness, upper bound, exhaustive classification, or search reduction. Any work needed to recreate its determinant verifier is counted on the direct verification line, so it is not counted again as unstructured-search obviation."
+            }
+          ],
+          "confidence": "medium",
+          "evidenceRefs": [
+            "fb88b7832c0fa7e84c1583110a7df800571bca02",
+            "sha256:930cf727e2c0d558a55d2847a67b40028d598304fa2b3a294820747aef08f13c",
+            "root/published-record-lower-endpoint",
+            "root/published-record-matrix-replay",
+            "root/bareiss-exact-determinant-method",
+            "root/exact-determinant-verifier",
+            "sha256:84cfe84cca17f086e5bde4d6ed699586ae9f92e6a498af3a454884bc93ed94d0"
+          ]
+        }
+      ]
+    }
+  ]
+}
