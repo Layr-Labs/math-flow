@@ -42517,6 +42517,643 @@
       }
     },
     {
+      "id": "openrouter-research-v1",
+      "problemId": "triangle-midpoints",
+      "label": "openrouter-research-v1",
+      "projectionSpec": {
+        "id": "openrouter-research-v1",
+        "description": "The default parallel validity projection with dependency-safe batched hierarchical research-state formation.",
+        "digest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+        "engine": "openrouter-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [],
+        "scheduling": {
+          "judgmentMaxParallel": 16,
+          "knowledgeMinimumIntervalSeconds": 300,
+          "maximumJudgmentsPerBuild": 500
+        },
+        "runner": null
+      },
+      "builder": {
+        "id": "openrouter-hierarchical-research-builder-v2",
+        "digest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb"
+      },
+      "latestRunDigest": "sha256:c94d5dd44e0bcc3946703c35b9253dc35de379f4c076526342281fcf851c2db4",
+      "runCount": 1,
+      "data": {
+        "schemaVersion": 1,
+        "problem": {
+          "id": "triangle-midpoints",
+          "title": "Triangle midpoint quadrilateral",
+          "statementMarkdown": "# Triangle midpoint quadrilateral\n\nLet points \\(D\\), \\(E\\), and \\(F\\) be the midpoints of sides \\(BC\\), \\(CA\\), and\n\\(AB\\) of a nondegenerate triangle \\(ABC\\). Prove that the four small triangles\n\\(AEF\\), \\(BFD\\), \\(CDE\\), and \\(DEF\\) have equal area.\n\nContributions may give synthetic, coordinate, formal, or computational arguments,\nor may critique and extend earlier contributions.\n\n"
+        },
+        "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+        "transactions": [
+          {
+            "ordinal": 1,
+            "transactionId": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+            "contributionId": "affine-area-proof",
+            "path": "problems/triangle-midpoints/contributions/affine-area-proof",
+            "author": {
+              "displayName": "Robert",
+              "email": "robert.raynor@gmail.com"
+            },
+            "contentMarkdown": "# Affine area proof\n\nEach segment joining two side midpoints is parallel to the third side, so the\nmedial triangle \\(DEF\\) is similar to \\(ABC\\) with scale factor \\(1/2\\). Its area\nis therefore one quarter of the area of \\(ABC\\).\n\nThe same reasoning applies to each corner triangle: for example, \\(AE=AC/2\\) and\n\\(AF=AB/2\\), with the included angle unchanged, so \\(AEF\\) has one quarter of the\narea of \\(ABC\\). Cyclically, the other two corner triangles do as well. Hence all\nfour areas are equal.\n\n## Possible formalization\n\nAn eventual Lean artifact could express this through affine invariance or the\ndeterminant formula for oriented area.\n\n"
+          },
+          {
+            "ordinal": 2,
+            "transactionId": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+            "contributionId": "midpoint-lemma-detail",
+            "path": "problems/triangle-midpoints/contributions/midpoint-lemma-detail",
+            "author": {
+              "displayName": "Robert",
+              "email": "robert.raynor@gmail.com"
+            },
+            "contentMarkdown": "# Midpoint lemma detail\n\nThis contribution supplements the earlier `affine-area-proof` by making its\nmidpoint-segment step explicit.\n\nWrite the points as position vectors. For the midpoints\n\n\\[\nE = \\frac{A+C}{2}, \\qquad F = \\frac{A+B}{2},\n\\]\n\nwe have\n\n\\[\nE-F = \\frac{C-B}{2}.\n\\]\n\nThus `EF` is parallel to `BC` and has half its length. Cyclically, the same\ncalculation shows that `FD` is parallel to `CA` with half its length and that\n`DE` is parallel to `AB` with half its length.\n\nConsequently the medial triangle is similar to the original triangle with\nlinear scale factor `1/2`. The same midpoint identities give the corresponding\nscale factor for each corner triangle, closing the elementary lemma used by the\noriginal proof.\n\nThis supplies a missing detail in the presentation; it does not claim\noriginality for the classical theorem.\n"
+          },
+          {
+            "ordinal": 3,
+            "transactionId": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "contributionId": "base-height-correction",
+            "path": "problems/triangle-midpoints/contributions/base-height-correction",
+            "author": {
+              "displayName": "Robert",
+              "email": "robert.raynor@gmail.com"
+            },
+            "contentMarkdown": "# Correction to the base-height alternative\n\nThis contribution corrects one ancillary paragraph in the judge report with\nSHA-256 digest\n`sha256:561dbc76876de7977d2b77f8c0b81232c94c69c259535f1031da548926a1386b`.\nThe paragraph appears in the cumulative content associated with\n`triangle-midpoints/midpoint-lemma-detail`.\n\nThe report says that, because `EF` is parallel to `BC`, the altitude from `A`\nto `EF` equals the altitude from `A` to `BC`. That is false. Since `E` and `F`\nare the midpoints of `AC` and `AB`, the homothety centered at `A` with factor\n`1/2` maps `BC` to `EF`. Consequently,\n\n- `|EF| = |BC|/2`; and\n- the distance from `A` to the line `EF` is half the distance from `A` to the\n  line `BC`.\n\nBoth the base and the corresponding height are therefore scaled by `1/2`, so\n\n\\[\n\\frac{\\operatorname{area}(AEF)}{\\operatorname{area}(ABC)}\n= \\frac12 \\cdot \\frac12\n= \\frac14.\n\\]\n\nThis correction does not challenge the equal-area theorem, the original\naffine/homothety proof, or the midpoint lemma. Those conclusions remain correct.\nIt only replaces the erroneous explanation of the optional base-height\nalternative.\n"
+          }
+        ],
+        "judgments": [
+          {
+            "judgmentId": "sha256:774fd00ced19ea52ab2f61a06e803b9efc8707490ce2930cb37b8946e93ef428",
+            "runDigest": "sha256:d0339727dd051bcec2126355c8f1b7647641bbad0a1277bb824fc7d878a425b9",
+            "judgmentKind": "primary",
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v2",
+              "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.022720625,
+            "reportDigest": "sha256:174c241a328382eb4629b7bf86ee721f9857cb4e90154bbce49c7a4f423e19f6",
+            "reportMarkdown": "## `triangle-midpoints/affine-area-proof`\n\n**Verdict: valid**\n\nThe argument correctly establishes the required equality.\n\n- Since \\(D,E,F\\) are side midpoints, the midpoint theorem gives\n  \\[\n  EF\\parallel BC,\\qquad FD\\parallel CA,\\qquad DE\\parallel AB,\n  \\]\n  with each corresponding length equal to half the third side. Thus \\(DEF\\) is similar to \\(ABC\\) with linear scale factor \\(1/2\\), so\n  \\[\n  [DEF]=\\left(\\frac12\\right)^2[ABC]=\\frac14[ABC].\n  \\]\n\n- For \\(AEF\\), midpointhood gives\n  \\[\n  AE=\\frac12 AC,\\qquad AF=\\frac12 AB.\n  \\]\n  Because \\(E\\in AC\\) and \\(F\\in AB\\), the included angle satisfies\n  \\(\\angle EAF=\\angle CAB\\). Hence, by either the included-angle area formula or SAS similarity,\n  \\[\n  [AEF]\n  =\\frac12\\left(\\frac{AC}{2}\\right)\\left(\\frac{AB}{2}\\right)\\sin\\angle CAB\n  =\\frac14[ABC].\n  \\]\n\n- Cyclically, the identical calculation gives\n  \\[\n  [BFD]=\\frac14[ABC],\\qquad [CDE]=\\frac14[ABC].\n  \\]\n\nSince \\(ABC\\) is nondegenerate, these areas are well-defined and positive. Therefore\n\\[\n[AEF]=[BFD]=[CDE]=[DEF]=\\frac14[ABC].\n\\]\n\nThe mention of a possible future Lean formalization is not needed for, and does not weaken, the mathematical proof.\n",
+            "record": {
+              "schemaVersion": 2,
+              "judgmentKind": "primary",
+              "problemId": "triangle-midpoints",
+              "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+              "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v2",
+                "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                  "ledgerPosition": 1
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "triangle-midpoints/affine-area-proof",
+                  "status": "valid",
+                  "premiseStatus": "satisfied",
+                  "summary": "The proof correctly uses the midpoint theorem to show that the medial triangle has linear scale factor 1/2 relative to ABC and hence area 1/4 of ABC. Each corner triangle likewise has two adjacent side lengths halved with the included angle unchanged, so each has area 1/4 of ABC. Therefore all four triangles have equal area.",
+                  "scopeQualifications": [
+                    "The conclusion is stated for a nondegenerate triangle ABC, so ordinary unsigned areas are positive and the angle/area formulas apply directly.",
+                    "The proposed future Lean formalization is not part of the proof and is not required for validity."
+                  ],
+                  "evidenceIssues": [],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "triangle-midpoints/affine-area-proof",
+                  "stance": "supports",
+                  "summary": "The proof correctly uses the midpoint theorem to show that the medial triangle has linear scale factor 1/2 relative to ABC and hence area 1/4 of ABC. Each corner triangle likewise has two adjacent side lengths halved with the included angle unchanged, so each has area 1/4 of ABC. Therefore all four triangles have equal area.",
+                  "subjectTransactionIds": [
+                    "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:c35e5d2fc193293836184141ed9c121d8379bcb4311d9dab56d6366d22187817",
+              "reportDigest": "sha256:174c241a328382eb4629b7bf86ee721f9857cb4e90154bbce49c7a4f423e19f6",
+              "judgmentId": "sha256:774fd00ced19ea52ab2f61a06e803b9efc8707490ce2930cb37b8946e93ef428"
+            }
+          },
+          {
+            "judgmentId": "sha256:21c15fd5f5a2836a6ae1311796723eddd78bc116fd5bcac0d0506280a402790b",
+            "runDigest": "sha256:ba306bee96bc69da81b047fc437629bb0d2835f95e072a6ef626bc07bc305371",
+            "judgmentKind": "primary",
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v2",
+              "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.0410325,
+            "reportDigest": "sha256:e0ce869bb37bd65baead1339337797c8f23d7e3bc28add8aa690970e106add9e",
+            "reportMarkdown": "## `triangle-midpoints/midpoint-lemma-detail`\n\n**Verdict: VALID**\n\n### Verification\n\nSince \\(D,E,F\\) are the respective midpoints,\n\\[\nD=\\frac{B+C}{2},\\qquad E=\\frac{C+A}{2},\\qquad F=\\frac{A+B}{2}.\n\\]\n\nThe submitted calculation is correct:\n\\[\nE-F=\\frac{C-B}{2}.\n\\]\nLikewise,\n\\[\nD-F=\\frac{C-A}{2},\\qquad E-D=\\frac{A-B}{2}.\n\\]\nThus \\(EF,FD,DE\\) are respectively parallel to \\(BC,CA,AB\\), with half their lengths. Nondegeneracy of \\(ABC\\) ensures these sides have nonzero length.\n\nThe similarity assertion can be verified explicitly. Define\n\\[\nT(X)=\\frac{A+B+C}{2}-\\frac{X}{2}.\n\\]\nThen\n\\[\nT(A)=D,\\qquad T(B)=E,\\qquad T(C)=F.\n\\]\nThis is a similarity with length ratio \\(1/2\\), so \\(DEF\\) is similar to \\(ABC\\) with scale factor \\(1/2\\).\n\nEach corner triangle is likewise a half-scale image of \\(ABC\\):\n\n- dilation about \\(A\\) by \\(1/2\\) maps \\(B\\mapsto F\\) and \\(C\\mapsto E\\);\n- dilation about \\(B\\) by \\(1/2\\) maps \\(A\\mapsto F\\) and \\(C\\mapsto D\\);\n- dilation about \\(C\\) by \\(1/2\\) maps \\(A\\mapsto E\\) and \\(B\\mapsto D\\).\n\nHence \\(AEF,BFD,CDE\\), and \\(DEF\\) are all similar to \\(ABC\\) with length ratio \\(1/2\\). Their areas are therefore each\n\\[\n\\left(\\frac12\\right)^2[ABC]=\\frac14[ABC],\n\\]\nso the four areas are equal.\n\nThe references to an earlier `affine-area-proof` are not supported by a declared dependency, but they are unnecessary for the mathematical midpoint assertions made here.\n",
+            "record": {
+              "schemaVersion": 2,
+              "judgmentKind": "primary",
+              "problemId": "triangle-midpoints",
+              "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+              "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v2",
+                "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                  "ledgerPosition": 2
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "triangle-midpoints/midpoint-lemma-detail",
+                  "status": "valid",
+                  "premiseStatus": "not-required",
+                  "summary": "The midpoint-vector identities are correct and establish that each side of the medial triangle is parallel to the corresponding side of ABC and has half its length. An explicit similarity maps ABC to DEF with ratio 1/2, while dilations about A, B, and C map ABC to the three corner triangles with the same ratio. Thus the stated midpoint lemma and corresponding half-scale assertions are established.",
+                  "scopeQualifications": [
+                    "The conclusion assumes the usual nondegenerate-triangle setting so side lengths and triangle similarity are nontrivial.",
+                    "The undeclared earlier `affine-area-proof` is unnecessary to establish the mathematical assertions audited here.",
+                    "No originality claim is made or required."
+                  ],
+                  "evidenceIssues": [
+                    "The reference to an earlier `affine-area-proof` has no declared dependency evidence, but this does not affect validity because the proof is self-contained."
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "triangle-midpoints/midpoint-lemma-detail",
+                  "stance": "supports",
+                  "summary": "The midpoint-vector identities are correct and establish that each side of the medial triangle is parallel to the corresponding side of ABC and has half its length. An explicit similarity maps ABC to DEF with ratio 1/2, while dilations about A, B, and C map ABC to the three corner triangles with the same ratio. Thus the stated midpoint lemma and corresponding half-scale assertions are established.",
+                  "subjectTransactionIds": [
+                    "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:73674169ef85d379232190f1b7b098b98458d4f4754721c5f1cc87542e7c3413",
+              "reportDigest": "sha256:e0ce869bb37bd65baead1339337797c8f23d7e3bc28add8aa690970e106add9e",
+              "judgmentId": "sha256:21c15fd5f5a2836a6ae1311796723eddd78bc116fd5bcac0d0506280a402790b"
+            }
+          },
+          {
+            "judgmentId": "sha256:75da2a8cbb5246724f7067506f6799946ccc9987192a8d13f3fe01a12b503844",
+            "runDigest": "sha256:6c9b4dc87e17a78d0bcb40ef4f12ec245dcde9938dcf7ae7f1e0b4c6287090b7",
+            "judgmentKind": "primary",
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v2",
+              "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.038535625,
+            "reportDigest": "sha256:9b1e40471061c47b68e143dc796d40b028814e4cd7a9d115691d74210e6306e1",
+            "reportMarkdown": "## `triangle-midpoints/base-height-correction`\n\n**Verdict: indeterminate**\n\n### Verified mathematical core\n\nLet \\(A\\) be the origin and write the position vectors of \\(B,C\\) as \\(b,c\\). Since \\(E,F\\) are the respective midpoints of \\(AC,AB\\),\n\n\\[\nE=\\frac c2,\\qquad F=\\frac b2.\n\\]\n\nThus the homothety \\(x\\mapsto x/2\\), centered at \\(A\\), maps \\(B\\mapsto F\\), \\(C\\mapsto E\\), and therefore maps the segment and line \\(BC\\) to \\(FE\\). Consequently,\n\n\\[\n|EF|=\\frac12|BC|.\n\\]\n\nA homothety of positive factor \\(1/2\\) scales distances by \\(1/2\\), including the distance from its center to an image line. Hence\n\n\\[\n\\operatorname{dist}(A,EF)\n=\\frac12\\operatorname{dist}(A,BC).\n\\]\n\nBecause \\(ABC\\) is nondegenerate, \\(\\operatorname{dist}(A,BC)>0\\); in particular, the two altitudes are not equal. Applying the base-height area formula gives\n\n\\[\n\\frac{[AEF]}{[ABC]}\n=\n\\frac{|EF|}{|BC|}\n\\frac{\\operatorname{dist}(A,EF)}\n     {\\operatorname{dist}(A,BC)}\n=\n\\frac12\\cdot\\frac12\n=\n\\frac14.\n\\]\n\nTherefore the proposed correction to the altitude and area-scaling calculation is mathematically correct.\n\n### Unresolved parts of the exact declared claim\n\nThe contribution also asserts that:\n\n1. the cited external judge report contains the specified erroneous paragraph;\n2. an “original affine/homothety proof” remains correct;\n3. a “midpoint lemma” remains correct; and\n4. the full equal-area theorem remains established.\n\nNo dependency transaction is declared, and the cited report, original proof, and midpoint lemma are not supplied. Their contents and correctness therefore cannot be audited.\n\nMoreover, the argument actually presented proves only\n\n\\[\n[AEF]=\\frac14[ABC].\n\\]\n\nIt does not itself establish the corresponding statements for \\(BFD\\) and \\(CDE\\), nor the area of \\(DEF\\). Those conclusions are readily provable, but supplying the omitted cyclic and central-triangle arguments would repair or extend the submission rather than verify its supplied argument.\n\nThus the central base-height correction is verified, but the exact declared claim contains material unsupported assertions, so the overall record cannot be marked valid.\n",
+            "record": {
+              "schemaVersion": 2,
+              "judgmentKind": "primary",
+              "problemId": "triangle-midpoints",
+              "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+              "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v2",
+                "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                  "ledgerPosition": 3
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "triangle-midpoints/base-height-correction",
+                  "status": "indeterminate",
+                  "premiseStatus": "missing",
+                  "summary": "The base-height correction is mathematically sound: the homothety centered at A with factor 1/2 maps BC to EF, so both the base length and the distance from A to the corresponding line scale by 1/2, yielding area(AEF)/area(ABC)=1/4. However, the broader declared claim also makes unauditable assertions about the contents of an external judge report and the continuing correctness of an original proof, midpoint lemma, and full equal-area theorem.",
+                  "scopeQualifications": [
+                    "The supplied argument verifies only the corrected scaling and area calculation for triangle AEF.",
+                    "It does not itself establish the analogous area statements for BFD and CDE or the area of DEF.",
+                    "The correction does not mathematically undermine the referenced results, but their correctness cannot be confirmed from the bounded record."
+                  ],
+                  "evidenceIssues": [
+                    "The cited judge report with the specified SHA-256 digest was not supplied, so the alleged erroneous paragraph and its location cannot be verified.",
+                    "No dependency transaction was declared or allowed.",
+                    "The original affine/homothety proof, midpoint lemma, and full equal-area theorem were not supplied for audit.",
+                    "Establishing the omitted cyclic and central-triangle conclusions would require adding arguments not present in the supplied contribution."
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "triangle-midpoints/base-height-correction",
+                  "stance": "uncertain",
+                  "summary": "The base-height correction is mathematically sound: the homothety centered at A with factor 1/2 maps BC to EF, so both the base length and the distance from A to the corresponding line scale by 1/2, yielding area(AEF)/area(ABC)=1/4. However, the broader declared claim also makes unauditable assertions about the contents of an external judge report and the continuing correctness of an original proof, midpoint lemma, and full equal-area theorem.",
+                  "subjectTransactionIds": [
+                    "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:630f755df9bde32fd332f10c5dd751ffa7a190e2c321acd304ed988e8a41529f",
+              "reportDigest": "sha256:9b1e40471061c47b68e143dc796d40b028814e4cd7a9d115691d74210e6306e1",
+              "judgmentId": "sha256:75da2a8cbb5246724f7067506f6799946ccc9987192a8d13f3fe01a12b503844"
+            }
+          }
+        ],
+        "runs": [
+          {
+            "id": "c94d5dd44e0bcc3946703c35b9253dc35de379f4c076526342281fcf851c2db4",
+            "ordinal": 1,
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "runDigest": "sha256:c94d5dd44e0bcc3946703c35b9253dc35de379f4c076526342281fcf851c2db4",
+            "baseRun": null,
+            "runKind": "knowledge-build",
+            "inputs": {
+              "problemId": "triangle-midpoints",
+              "judgmentIds": [
+                "sha256:21c15fd5f5a2836a6ae1311796723eddd78bc116fd5bcac0d0506280a402790b",
+                "sha256:75da2a8cbb5246724f7067506f6799946ccc9987192a8d13f3fe01a12b503844",
+                "sha256:774fd00ced19ea52ab2f61a06e803b9efc8707490ce2930cb37b8946e93ef428"
+              ],
+              "projectionSpecDigest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+              "baseStateRun": null,
+              "schemaVersion": 1,
+              "laneId": "sha256:1070083c1794b89420e37d521c627a745e58fabb244d5724d1e4ce23831df1c6",
+              "conflictIds": [],
+              "judgmentSetDigest": "sha256:5e3d8c54df15fb4c6b46fddd40de832437c01399206eb9739223b4b06fe4584a",
+              "builderSpecDigest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb",
+              "buildToken": "sha256:9e1a451b9f64159a8a8daa3a500558e19ed969dd6646375ebbbbdeb1334b785a"
+            },
+            "judgeSpec": {
+              "id": "openrouter-hierarchical-research-builder-v2",
+              "digest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb"
+            },
+            "runner": {
+              "implementation": "openrouter-hierarchical-research-builder-v2",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.071784,
+            "selection": {
+              "selectedNodeIds": [
+                "item:root/affine-area-proof",
+                "item:root/equal-area-result",
+                "item:root/lean-formalization-direction",
+                "item:root/midpoint-half-scale-result",
+                "item:root/vector-midpoint-proof",
+                "root",
+                "thread:root/unstructured-search"
+              ],
+              "rationale": "Nodes changed by the accepted validity batch."
+            },
+            "normalizations": [],
+            "delta": {
+              "schemaVersion": 1,
+              "operations": [
+                {
+                  "entityKind": "item",
+                  "entityId": "root/equal-area-result",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/equal-area-result",
+                    "programId": "root",
+                    "type": "result",
+                    "title": "Equal areas of the medial and corner triangles",
+                    "summary": "For a nondegenerate triangle ABC whose side midpoints are D, E, and F, the triangles AEF, BFD, CDE, and DEF all have equal area; each has one quarter of the area of ABC.\n\nScope qualification: The conclusion is stated for a nondegenerate triangle ABC, so ordinary unsigned areas are positive and the angle/area formulas apply directly.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                        "claimKey": "triangle-midpoints/affine-area-proof"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                    ],
+                    "dependencyItemIds": [
+                      "root/affine-area-proof"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/affine-area-proof",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/affine-area-proof",
+                    "programId": "root",
+                    "type": "proof",
+                    "title": "Midpoint similarity and area-scaling proof",
+                    "summary": "Each segment joining two side midpoints is parallel to the third side, so the medial triangle \\(DEF\\) is similar to \\(ABC\\) with scale factor \\(1/2\\). Its area is therefore one quarter of the area of \\(ABC\\).\n\nThe same reasoning applies to each corner triangle: for example, \\(AE=AC/2\\) and \\(AF=AB/2\\), with the included angle unchanged, so \\(AEF\\) has one quarter of the area of \\(ABC\\). Cyclically, the other two corner triangles do as well. Hence all four areas are equal.\n\nScope qualifications: The conclusion is stated for a nondegenerate triangle ABC, so ordinary unsigned areas are positive and the angle/area formulas apply directly. The proposed future Lean formalization is not part of the proof and is not required for validity.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                        "claimKey": "triangle-midpoints/affine-area-proof"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                    ],
+                    "dependencyItemIds": []
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/lean-formalization-direction",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/lean-formalization-direction",
+                    "programId": "root",
+                    "type": "question",
+                    "title": "Possible Lean formalization",
+                    "summary": "An eventual Lean artifact could express this through affine invariance or the determinant formula for oriented area.\n\nScope qualification: The proposed future Lean formalization is not part of the proof and is not required for validity.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                        "claimKey": "triangle-midpoints/affine-area-proof"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                    ],
+                    "dependencyItemIds": [
+                      "root/affine-area-proof"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/midpoint-half-scale-result",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/midpoint-half-scale-result",
+                    "programId": "root",
+                    "type": "result",
+                    "title": "Midpoint-segment and half-scale assertions",
+                    "summary": "For the midpoints \\(E=(A+C)/2\\) and \\(F=(A+B)/2\\), \\(E-F=(C-B)/2\\). Thus \\(EF\\) is parallel to \\(BC\\) and has half its length. Cyclically, \\(FD\\) is parallel to \\(CA\\) with half its length, and \\(DE\\) is parallel to \\(AB\\) with half its length. Consequently, the medial triangle is similar to the original triangle with linear scale factor \\(1/2\\), and the corresponding scale factor for each corner triangle is also \\(1/2\\).\n\nScope qualifications: The conclusion assumes the usual nondegenerate-triangle setting so side lengths and triangle similarity are nontrivial. No originality claim is made or required.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                        "claimKey": "triangle-midpoints/midpoint-lemma-detail"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                    ],
+                    "dependencyItemIds": [
+                      "root/vector-midpoint-proof"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/vector-midpoint-proof",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/vector-midpoint-proof",
+                    "programId": "root",
+                    "type": "proof",
+                    "title": "Position-vector proof of the midpoint lemma",
+                    "summary": "This contribution supplements the earlier `affine-area-proof` by making its midpoint-segment step explicit.\n\nWrite the points as position vectors. For the midpoints\n\n\\[\nE = \\frac{A+C}{2}, \\qquad F = \\frac{A+B}{2},\n\\]\n\nwe have\n\n\\[\nE-F = \\frac{C-B}{2}.\n\\]\n\nThus `EF` is parallel to `BC` and has half its length. Cyclically, the same calculation shows that `FD` is parallel to `CA` with half its length and that `DE` is parallel to `AB` with half its length.\n\nConsequently the medial triangle is similar to the original triangle with linear scale factor `1/2`. The same midpoint identities give the corresponding scale factor for each corner triangle, closing the elementary lemma used by the original proof.\n\nThis supplies a missing detail in the presentation; it does not claim originality for the classical theorem.\n\nScope qualifications: The conclusion assumes the usual nondegenerate-triangle setting so side lengths and triangle similarity are nontrivial. The undeclared earlier `affine-area-proof` is unnecessary to establish the mathematical assertions audited here. No originality claim is made or required.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                        "claimKey": "triangle-midpoints/midpoint-lemma-detail"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                    ],
+                    "dependencyItemIds": []
+                  }
+                }
+              ],
+              "contributions": [
+                {
+                  "transactionId": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                  "claimKeys": [
+                    "triangle-midpoints/affine-area-proof"
+                  ],
+                  "directProgramId": "root",
+                  "directThreadIds": [
+                    "root/unstructured-search"
+                  ],
+                  "itemIds": [
+                    "root/equal-area-result",
+                    "root/affine-area-proof",
+                    "root/lean-formalization-direction"
+                  ]
+                },
+                {
+                  "transactionId": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                  "claimKeys": [
+                    "triangle-midpoints/midpoint-lemma-detail"
+                  ],
+                  "directProgramId": "root",
+                  "directThreadIds": [
+                    "root/unstructured-search"
+                  ],
+                  "itemIds": [
+                    "root/midpoint-half-scale-result",
+                    "root/vector-midpoint-proof"
+                  ]
+                }
+              ]
+            },
+            "state": {
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "program",
+                  "title": "Canonical problem",
+                  "summary": "Resolve the canonical problem.",
+                  "status": "active",
+                  "contentMarkdown": "## Objective\n\nResolve the canonical problem.\n\n## Local credit context\n\nRoot program.",
+                  "subjects": [],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:4bc4e85d0ca6e4224902591c71cf9cb813718dfe5961d8be774384d474797c99"
+                },
+                "thread:root/unstructured-search": {
+                  "id": "thread:root/unstructured-search",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Unstructured search and overhead",
+                  "summary": "Future work not yet assigned to a more specific research thread.",
+                  "status": "active",
+                  "contentMarkdown": "Future work not yet assigned to a more specific research thread.\n\n**Thread kind:** unstructured\n\n**Expected local exposure:** 1\n\n**Conditions:** none",
+                  "subjects": [],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+                },
+                "item:root/equal-area-result": {
+                  "id": "item:root/equal-area-result",
+                  "parentId": "root",
+                  "type": "result",
+                  "title": "Equal areas of the medial and corner triangles",
+                  "summary": "For a nondegenerate triangle ABC whose side midpoints are D, E, and F, the triangles AEF, BFD, CDE, and DEF all have equal area; each has one quarter of the area of ABC.\n\nScope qualification: The conclusion is stated for a nondegenerate triangle ABC, so ordinary unsigned areas are positive and the angle/area formulas apply directly.",
+                  "status": "active",
+                  "contentMarkdown": "For a nondegenerate triangle ABC whose side midpoints are D, E, and F, the triangles AEF, BFD, CDE, and DEF all have equal area; each has one quarter of the area of ABC.\n\nScope qualification: The conclusion is stated for a nondegenerate triangle ABC, so ordinary unsigned areas are positive and the angle/area formulas apply directly.\n\n## Accepted claims\n\n- `triangle-midpoints/affine-area-proof` from `64afc12868e150370e6c56e6eeceab6b7aabe158`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "ledgerPosition": 1,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/affine-area-proof",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:4d8d1210f9b0b8cc120b9fd9a175420c6635961c7b67e0a4eea3893e0eb3d92c"
+                },
+                "item:root/affine-area-proof": {
+                  "id": "item:root/affine-area-proof",
+                  "parentId": "root",
+                  "type": "proof",
+                  "title": "Midpoint similarity and area-scaling proof",
+                  "summary": "Each segment joining two side midpoints is parallel to the third side, so the medial triangle \\(DEF\\) is similar to \\(ABC\\) with scale factor \\(1/2\\). Its area is therefore one quarter of the area of \\(ABC\\).\n\nThe same reasoning applies to each corner triangle: for example, \\(AE=AC/2\\) and \\(AF=AB/2\\), with the included angle unchanged, so \\(AEF\\) has one quarter of the area of \\(ABC\\). Cyclically, the other two corner triangles do as well. Hence all four areas are equal.\n\nScope qualifications: The conclusion is stated for a nondegenerate triangle ABC, so ordinary unsigned areas are positive and the angle/area formulas apply directly. The proposed future Lean formalization is not part of the proof and is not required for validity.",
+                  "status": "active",
+                  "contentMarkdown": "Each segment joining two side midpoints is parallel to the third side, so the medial triangle \\(DEF\\) is similar to \\(ABC\\) with scale factor \\(1/2\\). Its area is therefore one quarter of the area of \\(ABC\\).\n\nThe same reasoning applies to each corner triangle: for example, \\(AE=AC/2\\) and \\(AF=AB/2\\), with the included angle unchanged, so \\(AEF\\) has one quarter of the area of \\(ABC\\). Cyclically, the other two corner triangles do as well. Hence all four areas are equal.\n\nScope qualifications: The conclusion is stated for a nondegenerate triangle ABC, so ordinary unsigned areas are positive and the angle/area formulas apply directly. The proposed future Lean formalization is not part of the proof and is not required for validity.\n\n## Accepted claims\n\n- `triangle-midpoints/affine-area-proof` from `64afc12868e150370e6c56e6eeceab6b7aabe158`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "ledgerPosition": 1,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:c9855d8d0045055da90679397e36e0779dd196964406118268f949523845449e"
+                },
+                "item:root/lean-formalization-direction": {
+                  "id": "item:root/lean-formalization-direction",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Possible Lean formalization",
+                  "summary": "An eventual Lean artifact could express this through affine invariance or the determinant formula for oriented area.\n\nScope qualification: The proposed future Lean formalization is not part of the proof and is not required for validity.",
+                  "status": "active",
+                  "contentMarkdown": "An eventual Lean artifact could express this through affine invariance or the determinant formula for oriented area.\n\nScope qualification: The proposed future Lean formalization is not part of the proof and is not required for validity.\n\n## Accepted claims\n\n- `triangle-midpoints/affine-area-proof` from `64afc12868e150370e6c56e6eeceab6b7aabe158`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "ledgerPosition": 1,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/affine-area-proof",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:6bb3a1868ca64d573cc98f292385e4f3275017a196bea65b9443fcce4d2dfd30"
+                },
+                "item:root/midpoint-half-scale-result": {
+                  "id": "item:root/midpoint-half-scale-result",
+                  "parentId": "root",
+                  "type": "result",
+                  "title": "Midpoint-segment and half-scale assertions",
+                  "summary": "For the midpoints \\(E=(A+C)/2\\) and \\(F=(A+B)/2\\), \\(E-F=(C-B)/2\\). Thus \\(EF\\) is parallel to \\(BC\\) and has half its length. Cyclically, \\(FD\\) is parallel to \\(CA\\) with half its length, and \\(DE\\) is parallel to \\(AB\\) with half its length. Consequently, the medial triangle is similar to the original triangle with linear scale factor \\(1/2\\), and the corresponding scale factor for each corner triangle is also \\(1/2\\).\n\nScope qualifications: The conclusion assumes the usual nondegenerate-triangle setting so side lengths and triangle similarity are nontrivial. No originality claim is made or required.",
+                  "status": "active",
+                  "contentMarkdown": "For the midpoints \\(E=(A+C)/2\\) and \\(F=(A+B)/2\\), \\(E-F=(C-B)/2\\). Thus \\(EF\\) is parallel to \\(BC\\) and has half its length. Cyclically, \\(FD\\) is parallel to \\(CA\\) with half its length, and \\(DE\\) is parallel to \\(AB\\) with half its length. Consequently, the medial triangle is similar to the original triangle with linear scale factor \\(1/2\\), and the corresponding scale factor for each corner triangle is also \\(1/2\\).\n\nScope qualifications: The conclusion assumes the usual nondegenerate-triangle setting so side lengths and triangle similarity are nontrivial. No originality claim is made or required.\n\n## Accepted claims\n\n- `triangle-midpoints/midpoint-lemma-detail` from `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "ledgerPosition": 2,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/vector-midpoint-proof",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:95b3c281d11bc9b1a85aad3c71f57640d8b10c61df487cb984c146adce77f7aa"
+                },
+                "item:root/vector-midpoint-proof": {
+                  "id": "item:root/vector-midpoint-proof",
+                  "parentId": "root",
+                  "type": "proof",
+                  "title": "Position-vector proof of the midpoint lemma",
+                  "summary": "This contribution supplements the earlier `affine-area-proof` by making its midpoint-segment step explicit.\n\nWrite the points as position vectors. For the midpoints\n\n\\[\nE = \\frac{A+C}{2}, \\qquad F = \\frac{A+B}{2},\n\\]\n\nwe have\n\n\\[\nE-F = \\frac{C-B}{2}.\n\\]\n\nThus `EF` is parallel to `BC` and has half its length. Cyclically, the same calculation shows that `FD` is parallel to `CA` with half its length and that `DE` is parallel to `AB` with half its length.\n\nConsequently the medial triangle is similar to the original triangle with linear scale factor `1/2`. The same midpoint identities give the corresponding scale factor for each corner triangle, closing the elementary lemma used by the original proof.\n\nThis supplies a missing detail in the presentation; it does not claim originality for the classical theorem.\n\nScope qualifications: The conclusion assumes the usual nondegenerate-triangle setting so side lengths and triangle similarity are nontrivial. The undeclared earlier `affine-area-proof` is unnecessary to establish the mathematical assertions audited here. No originality claim is made or required.",
+                  "status": "active",
+                  "contentMarkdown": "This contribution supplements the earlier `affine-area-proof` by making its midpoint-segment step explicit.\n\nWrite the points as position vectors. For the midpoints\n\n\\[\nE = \\frac{A+C}{2}, \\qquad F = \\frac{A+B}{2},\n\\]\n\nwe have\n\n\\[\nE-F = \\frac{C-B}{2}.\n\\]\n\nThus `EF` is parallel to `BC` and has half its length. Cyclically, the same calculation shows that `FD` is parallel to `CA` with half its length and that `DE` is parallel to `AB` with half its length.\n\nConsequently the medial triangle is similar to the original triangle with linear scale factor `1/2`. The same midpoint identities give the corresponding scale factor for each corner triangle, closing the elementary lemma used by the original proof.\n\nThis supplies a missing detail in the presentation; it does not claim originality for the classical theorem.\n\nScope qualifications: The conclusion assumes the usual nondegenerate-triangle setting so side lengths and triangle similarity are nontrivial. The undeclared earlier `affine-area-proof` is unnecessary to establish the mathematical assertions audited here. No originality claim is made or required.\n\n## Accepted claims\n\n- `triangle-midpoints/midpoint-lemma-detail` from `4ccbe3f18db7402d31a2ef795f6ad67962ff63e3`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "ledgerPosition": 2,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:a66034e9191102205bd8af02b64119cacaa77434aeaa3877c8142726122ac42c"
+                }
+              },
+              "stateDigest": "sha256:fe7d4014c7720b07d5a793653476d7eae61a8f20f58eb36e80d9caba1147b429"
+            },
+            "revisionIds": [],
+            "addedRevisionIds": [],
+            "changedNodeIds": [
+              "item:root/affine-area-proof",
+              "item:root/equal-area-result",
+              "item:root/lean-formalization-direction",
+              "item:root/midpoint-half-scale-result",
+              "item:root/vector-midpoint-proof",
+              "root",
+              "thread:root/unstructured-search"
+            ],
+            "reportDigest": "sha256:fe7d4014c7720b07d5a793653476d7eae61a8f20f58eb36e80d9caba1147b429",
+            "revisionSemantics": "neutral-knowledge"
+          }
+        ],
+        "revisions": [],
+        "reports": [],
+        "latestRunId": "c94d5dd44e0bcc3946703c35b9253dc35de379f4c076526342281fcf851c2db4"
+      }
+    },
+    {
       "id": "sha256:3bab25c8108050afbd12361ab97a192ab1d0fd6862a5d8aa9671f88b74388404",
       "problemId": "triangle-midpoints",
       "label": "openrouter-knowledge-builder-v1",
@@ -58235,6 +58872,41 @@
     {
       "id": "openrouter-research-credit-v2@sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
       "problemId": "schur-number-6",
+      "label": "openrouter-research-credit-v2",
+      "projectionSpec": {
+        "id": "openrouter-research-credit-v2",
+        "description": "A common-horizon two-term hierarchical credit overlay over the default batched research-program projection.",
+        "digest": "sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
+        "engine": "overlay-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [
+          {
+            "name": "research",
+            "projectionId": "openrouter-research-v1",
+            "artifactRole": "research-program-state"
+          }
+        ],
+        "scheduling": {
+          "minimumIntervalSeconds": 3600
+        },
+        "runner": {
+          "implementation": "openrouter-hierarchical-research-credit-v2",
+          "spec": "protocol/judges/openrouter-hierarchical-research-credit-v2.json"
+        }
+      },
+      "researchProjectionIds": [
+        "openrouter-research-v1"
+      ],
+      "latestRunDigest": null,
+      "selectionStatus": "pending",
+      "runCount": 0,
+      "runs": []
+    },
+    {
+      "id": "openrouter-research-credit-v2@sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
+      "problemId": "triangle-midpoints",
       "label": "openrouter-research-credit-v2",
       "projectionSpec": {
         "id": "openrouter-research-credit-v2",
