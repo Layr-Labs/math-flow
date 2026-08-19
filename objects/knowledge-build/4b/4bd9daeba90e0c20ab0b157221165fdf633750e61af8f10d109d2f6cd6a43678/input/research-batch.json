@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "problemId": "schur-number-6",
+  "baseProgramStateDigest": "sha256:08ef3fd7eab160a4b11040c307aa39bdd2d76f7134e19070324bc22ba440e3e0",
+  "judgments": [
+    {
+      "judgmentId": "sha256:132652e4d659b018427ef6f147da4243eccc59922867aba9d1a65aa993090295",
+      "runDigest": "sha256:645aeb488fdba049ffc1ef5f2ee48c39fedf69b3e951c2730104c622e8245ed3",
+      "subjectTransactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+      "acceptedClaimKeys": [
+        "schur-number-6/fredricksen-sweet-536-certificate"
+      ],
+      "excludedAssessments": []
+    },
+    {
+      "judgmentId": "sha256:f15700a4abe2463fcf2c4004fc1d16b78f6a9303d8db52efe5a791eb55391d7c",
+      "runDigest": "sha256:285483201232b46f33757e2386ca6ab424db0528bcf2ef84bfb7e140ed40681b",
+      "subjectTransactionId": "26a77f38a16f35641a8d8f0efe72132953af5d2e",
+      "acceptedClaimKeys": [],
+      "excludedAssessments": [
+        {
+          "claimKey": "schur-number-6/fredricksen-sweet-537-radius-43-exclusion",
+          "status": "indeterminate",
+          "premiseStatus": "missing",
+          "summary": "The combinatorial reduction, CNF encoding, and ordered-RUP checker are logically suitable, but the four indispensable LRAT certificates for the remaining color cases are absent. Their filenames, hashes, and reported statistics do not establish unsatisfiability, and no replay output or verification attestation is supplied. Thus the radius-43 exclusion is not verified, although no decisive error or counterexample defeats it.",
+          "scopeQualifications": [
+            "Colors 1 and 3 are excluded at distance at most 43 only conditional on the reported blocker counts (64,43,55,38,32,35).",
+            "For colors 2, 4, 5, and 6, the claimed extra-change bounds are respectively 0, 5, 11, and 8.",
+            "The color-permutation consequence is valid conditional on the main distance theorem because color relabeling preserves validity.",
+            "The claim concerns only the stated finite Hamming neighborhood; it neither proves impossibility at 537 nor changes the published bounds 536 <= S(6) <= 1836."
+          ],
+          "evidenceIssues": [
+            "Missing proof object: case-color-2-extra-0.lrat.gz.",
+            "Missing proof object: case-color-4-extra-5.lrat.gz.",
+            "Missing proof object: case-color-5-extra-11.lrat.gz.",
+            "Missing proof object: case-color-6-extra-8.lrat.gz.",
+            "The unsatisfiability of F_{2,0}, F_{4,5}, F_{5,11}, and F_{6,8} remains unverified.",
+            "No executed replay is supplied for the baseline-validity and blocker-count checks; this is secondary to the missing certificates.",
+            "No allowed dependency evidence IDs or hosted verification attestations are available."
+          ],
+          "evidenceTransactionIds": []
+        }
+      ]
+    },
+    {
+      "judgmentId": "sha256:590f93a3a910baeea0df7c2e4106a9474d2d49dcf3dc02eeb15eef55e05d761a",
+      "runDigest": "sha256:3136294f8f0c05953f328175d088915b93390889f3d785ad94537fc8de678e40",
+      "subjectTransactionId": "6a72758caaeb34a56d8d55653c8a3184ffbbe65e",
+      "acceptedClaimKeys": [],
+      "excludedAssessments": [
+        {
+          "claimKey": "schur-number-6/fredricksen-sweet-537-radius-60-exclusion",
+          "status": "indeterminate",
+          "premiseStatus": "missing",
+          "summary": "The reduction to six conditioned color cases, the blocker/Hamming-distance accounting, the Sinz cardinality encoding, the Schur CNF construction, and the ordered-RUP checker are sound. Color 1 is directly excluded if its reported blocker count of 64 is correct. However, the five remaining essential UNSAT obligations for colors 2–6 are not established because their LRAT proof payloads are absent; names, hashes, statistics, a replay request, and an unsupported assertion of replay do not substitute for checkable certificates. Thus no decisive defect or counterexample is shown, but the claim is not proved by the supplied record.",
+          "scopeQualifications": [
+            "Distance is measured only on old integers 1 through 536 relative to the fixed labeled baseline.",
+            "The conclusion is independent of whether any six-coloring through 537 exists globally.",
+            "Conditioning on all six labeled colors of 537 is exhaustive and uses no color-symmetry reduction.",
+            "Direct exclusion of the color-1 case is conditional on the reported blocker count 64 being correct."
+          ],
+          "evidenceIssues": [
+            "Missing certificate: case-color-2-extra-17.lrat.gz.",
+            "Missing certificate: case-color-3-extra-5.lrat.gz.",
+            "Missing certificate: case-color-4-extra-22.lrat.gz.",
+            "Missing certificate: case-color-5-extra-28.lrat.gz.",
+            "Missing certificate: case-color-6-extra-25.lrat.gz.",
+            "Metadata in cases.json and the README do not establish the certificates' contents or the five CNFs' unsatisfiability.",
+            "verification.json requests replay but is not a replay result; the README's replay assertion is unsupported.",
+            "No allowed dependency evidence or independent verified replay resolves the five UNSAT obligations."
+          ],
+          "evidenceTransactionIds": []
+        }
+      ]
+    }
+  ]
+}

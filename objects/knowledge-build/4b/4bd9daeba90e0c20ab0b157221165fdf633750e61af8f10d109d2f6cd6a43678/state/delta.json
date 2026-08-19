@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "entityKind": "item",
+      "entityId": "root/items/fredricksen-sweet-536-witness-encoding",
+      "baseDigest": null,
+      "value": {
+        "id": "root/items/fredricksen-sweet-536-witness-encoding",
+        "programId": "root",
+        "type": "method",
+        "title": "Canonical encodings of the Fredricksen–Sweet 536-coloring witness",
+        "summary": "`coloring.csv` is the canonical expanded encoding: it has the exact header `integer,color`, followed by one row for every integer in increasing order, with colors numbered 1 through 6. `published-symmetric.json` preserves the compact form printed by the source paper. Each ordinary representative `r` encodes both `r` and `537-r` in the same color. The exceptional pair is recorded explicitly as `[179, 4]` and `[358, 1]`.",
+        "claimRefs": [
+          {
+            "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+          }
+        ],
+        "sourceTransactionIds": [
+          "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/items/fredricksen-sweet-536-coloring",
+      "baseDigest": null,
+      "value": {
+        "id": "root/items/fredricksen-sweet-536-coloring",
+        "programId": "root",
+        "type": "computation",
+        "title": "Explicit six-coloring of {1,...,536}",
+        "summary": "The committed `coloring.csv` is a complete six-coloring of\n`{1, 2, ..., 536}` with no monochromatic solution to `x + y = z`, including\nthe case `x = y`.",
+        "claimRefs": [
+          {
+            "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+          }
+        ],
+        "sourceTransactionIds": [
+          "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+        ],
+        "dependencyItemIds": [
+          "root/items/fredricksen-sweet-536-witness-encoding"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/items/fredricksen-sweet-536-verifier",
+      "baseDigest": null,
+      "value": {
+        "id": "root/items/fredricksen-sweet-536-verifier",
+        "programId": "root",
+        "type": "tool",
+        "title": "Exact checker for the Fredricksen–Sweet 536-coloring",
+        "summary": "The pinned Python-standard-library checker validates the compact witness schema, expands it with exact coverage of `1..536`, validates the canonical CSV and its exact agreement with the compact witness, and enumerates all 71,824 in-range triples with `1 <= x <= y` and `x + y <= 536`, including `x = y`. It is replayed with `python3 -I -B verify.py published-symmetric.json coloring.csv`.",
+        "claimRefs": [
+          {
+            "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+          }
+        ],
+        "sourceTransactionIds": [
+          "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+        ],
+        "dependencyItemIds": [
+          "root/items/fredricksen-sweet-536-witness-encoding"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/items/fredricksen-sweet-536-certificate-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "root/items/fredricksen-sweet-536-certificate-proof",
+        "programId": "root",
+        "type": "proof",
+        "title": "Exhaustive certificate proof for the 536-coloring",
+        "summary": "The audited artifacts establish that `coloring.csv` assigns exactly one of six colors to every integer from 1 through 536 and contains no monochromatic solution to `x+y=z`, including `x=y`. The verifier exhaustively checks all 71,824 relevant ordered representatives with `1≤x≤y` and `x+y≤536`.",
+        "claimRefs": [
+          {
+            "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+          }
+        ],
+        "sourceTransactionIds": [
+          "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+        ],
+        "dependencyItemIds": [
+          "root/items/fredricksen-sweet-536-coloring",
+          "root/items/fredricksen-sweet-536-verifier"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/items/s6-lower-bound-536",
+      "baseDigest": null,
+      "value": {
+        "id": "root/items/s6-lower-bound-536",
+        "programId": "root",
+        "type": "result",
+        "title": "Published baseline lower bound S(6) ≥ 536",
+        "summary": "It therefore independently replays the published baseline lower bound\n\n```text\nS(6) >= 536.\n```\n\nThis certificate does not improve the bound. The problem's published interval\nremains `536 <= S(6) <= 1836`.",
+        "claimRefs": [
+          {
+            "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+            "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+          }
+        ],
+        "sourceTransactionIds": [
+          "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+        ],
+        "dependencyItemIds": [
+          "root/items/fredricksen-sweet-536-certificate-proof"
+        ]
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+      "claimKeys": [
+        "schur-number-6/fredricksen-sweet-536-certificate"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/unstructured-search"
+      ],
+      "itemIds": [
+        "root/items/fredricksen-sweet-536-witness-encoding",
+        "root/items/fredricksen-sweet-536-coloring",
+        "root/items/fredricksen-sweet-536-verifier",
+        "root/items/fredricksen-sweet-536-certificate-proof",
+        "root/items/s6-lower-bound-536"
+      ]
+    }
+  ]
+}
