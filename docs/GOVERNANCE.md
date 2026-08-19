@@ -85,14 +85,22 @@ registry digest and scheduler lane, not from additional Git branches.
 
 `.github/math-flow-governance.json` lists GitHub logins authorized to admit a new
 problem or projection and the number of approvals required. The admission check
-also protects changes to projection definitions and to its own policy,
-CODEOWNERS, and workflow.
+also protects the reversible problem-lifecycle registry, changes to projection
+definitions, and its own policy, CODEOWNERS, and workflow.
 
 Governed changes use a one-file PR:
 
 - a problem PR adds `problems/<problem-id>/problem.md`;
+- a problem-lifecycle PR adds or edits `protocol/problem-registry.json`;
 - a projection PR adds or edits one `protocol/projections/<id>.json`;
 - a policy PR edits one governance-control file.
+
+`protocol/problem-registry.json` stores only the sorted IDs of archived
+problems. Archiving never deletes or rewrites the problem statement,
+contributions, directions, judgments, or published projection objects. It
+removes the problem from ordinary discovery, new participant admission, active
+projection resolution, recovery scheduling, and the live viewer catalog.
+Removing an ID from the same governed registry restores the problem.
 
 The check counts either an approving review against the PR's current head commit
 or an exact head-bound command comment from a configured administrator:

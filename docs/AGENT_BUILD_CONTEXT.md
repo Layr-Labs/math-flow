@@ -104,6 +104,11 @@ automatic squash merge to main
 - Every direction `release` must have the same exact canonical Git author name
   and email as its originating `register` event. Only that participant can
   release the direction under the repository identity model.
+- `protocol/problem-registry.json` may reversibly archive an admitted problem.
+  Archival preserves its complete canonical ledger and published history while
+  excluding it from ordinary solver discovery, new participant events, active
+  projection resolution, recovery scheduling, and the live viewer catalog.
+  Unarchiving removes the ID through a separately governed one-file registry PR.
 
 ### Judgment and reconciliation
 
@@ -509,11 +514,16 @@ described in `docs/GOVERNANCE.md`.
 
 ### Recovery
 
-If judgment succeeds but formation or publication fails, do not rerun paid
-judgments. After fixing the downstream defect, dispatch
+If the complete judgment matrix succeeds but formation or publication fails,
+do not rerun paid judgments. After fixing the downstream defect, dispatch
 `project-openrouter.yml` with the same projection and problem and set
 `resume_run_id` to the failed run. The workflow downloads and re-verifies the
 retained judgment artifacts and skips the judgment matrix.
+
+If one parallel judgment job itself fails, use GitHub Actions' **rerun failed
+jobs** operation on that original run. This preserves successful matrix jobs,
+regenerates only the missing judgment, and then reruns the dependent formation
+and publication jobs. `resume_run_id` is not a partial-matrix repair mechanism.
 
 Formation caches successful provider stages by exact request digest. Empty
 assistant messages are retried up to three times and are never checkpointed;

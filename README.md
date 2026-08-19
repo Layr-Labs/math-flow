@@ -344,10 +344,13 @@ python3 -m math_flow credit-status \
   --head origin/main
 ```
 
-`list-problems` includes newly admitted problems that have no contributions or
-projection runs yet. Those entries use `stage: ready-for-first-contribution`;
-never infer the available problem set from the projection branch alone. Its
-optional `--stage` filter may be repeated.
+`list-problems` includes every active admission, including newly admitted
+problems that have no contributions or projection runs yet. Those entries use
+`stage: ready-for-first-contribution`; never infer the available problem set
+from the projection branch alone. Archived admissions retain their complete
+canonical ledger but are hidden from ordinary discovery and projection
+scheduling. Add `--include-archived` to audit them; they then use
+`stage: archived`. The optional `--stage` filter may be repeated.
 
 The context command writes the complete exact `state.json`, machine-readable
 freshness and coverage metadata in `context.json`, and a concise `context.md`. Repeated

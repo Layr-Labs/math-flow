@@ -180,7 +180,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     problems_parser = commands.add_parser(
         "list-problems",
-        help="list all canonical problems and their contribution/projection stage",
+        help="list active problems and their contribution/projection stage",
     )
     problems_parser.add_argument("--head", default="HEAD")
     problems_parser.add_argument(
@@ -197,8 +197,14 @@ def build_parser() -> argparse.ArgumentParser:
             "knowledge-pending",
             "knowledge-stale",
             "knowledge-current",
+            "archived",
         ],
         help="only return this lifecycle stage (repeatable)",
+    )
+    problems_parser.add_argument(
+        "--include-archived",
+        action="store_true",
+        help="include archived canonical problems in the result",
     )
     problems_parser.add_argument("--output")
 
@@ -790,7 +796,12 @@ def main(argv: list[str] | None = None) -> int:
             _write_json(result, args.output)
             return 0
         elif args.command == "list-problems":
-            result = discover_problems(root, args.head, args.projection_dir)
+            result = discover_problems(
+                root,
+                args.head,
+                args.projection_dir,
+                include_archived=args.include_archived,
+            )
             if args.stage:
                 stages = set(args.stage)
                 result = {

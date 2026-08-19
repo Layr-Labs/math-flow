@@ -82,12 +82,14 @@ def validate_tree(root: Path) -> dict[str, int]:
     from .governance import validate_projection_registry
     from .attestations import validate_contribution_verification_at, validate_verifier_tree
     from .claims import validate_claim_manifest
+    from .problem_registry import load_problem_registry
 
     validate_projection_registry(root)
     validate_verifier_tree(root)
     problems_root = root / "problems"
     if not problems_root.is_dir():
         raise MathFlowError(f"missing problems directory: {problems_root}")
+    load_problem_registry(root, "WORKTREE")
 
     problem_count = 0
     contribution_count = 0
@@ -250,6 +252,12 @@ def validate_pr(root: Path, base: str, head: str) -> dict[str, object]:
             check=False,
         ).returncode:
             raise MathFlowError(f"problem does not exist at the head commit: {problem}")
+        from .problem_registry import problem_status
+
+        if problem_status(root, problem, base_sha) == "archived":
+            raise MathFlowError(
+                f"problem is archived and cannot accept contributions: {problem}"
+            )
 
         readme_path = f"{prefix}/README.md"
         readme = _run_git(root, "show", f"{head_sha}:{readme_path}", check=False)
@@ -331,6 +339,12 @@ def validate_pr(root: Path, base: str, head: str) -> dict[str, object]:
         check=False,
     ).returncode:
         raise MathFlowError(f"problem does not exist at the head commit: {problem}")
+    from .problem_registry import problem_status
+
+    if problem_status(root, problem, base_sha) == "archived":
+        raise MathFlowError(
+            f"problem is archived and cannot accept direction events: {problem}"
+        )
     readme = read_at(root, head_sha, f"{prefix}/README.md")
     if not readme.strip():
         raise MathFlowError("research direction event README must contain text")
@@ -507,12 +521,9 @@ def affected_problems(
     """
     root = root.resolve()
     head_sha = resolve_commit(root, head)
-    problem_tree = _run_git(
-        root, "ls-tree", "-d", "--name-only", f"{head_sha}:problems"
-    )
-    problems = sorted(line for line in problem_tree.stdout.splitlines() if line)
-    for problem in problems:
-        validate_slug(problem, "problem id")
+    from .problem_registry import active_problem_ids
+
+    problems = active_problem_ids(root, head_sha)
 
     if base and set(base) == {"0"}:
         return {

@@ -12,6 +12,7 @@ from .directions import research_direction_ledger
 from .errors import MathFlowError
 from .governance import projection_registry_index
 from .knowledge import validate_state_v2, validate_state_v3
+from .problem_registry import active_problem_ids
 from .repository import ledger, read_at
 from .research_state import validate_research_program_state
 
@@ -1019,12 +1020,14 @@ def export_viewer_catalog(
     root = root.resolve()
     projection_root = projection_root.resolve()
     projection_specs = projection_registry_index(root)
+    active_problems = set(active_problem_ids(root, canonical_ref))
     published_objects = _projection_object_index(projection_root)
     published_runs = {
         digest: item
         for digest, item in published_objects.items()
         if item["manifest"].get("runKind", "legacy-projection")
         in {"knowledge-build", "legacy-projection"}
+        and item["manifest"].get("problemId") in active_problems
         and item["manifest"].get("outputProfile")
         in {
             "math-flow/hierarchical-markdown-v2",
@@ -1164,6 +1167,8 @@ def export_viewer_catalog(
             else _viewer_credit_assignment(item["path"], digest, published_objects)
         )
         problem = str(item["manifest"]["problemId"])
+        if problem not in active_problems:
+            continue
         current_ledger = ledger(root, problem, canonical_ref)
         associated = [
             projection

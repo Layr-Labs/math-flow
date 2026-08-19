@@ -3,15 +3,14 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
-from pathlib import PurePosixPath
 
 from .artifacts import verify_bundle
 from .coordination import DIGEST, MAX_AUTOMATIC_FAILURES, lane_id
 from .errors import MathFlowError
 from .governance import list_active_projections
+from .problem_registry import active_problem_ids
 from .repository import (
     ledger,
-    list_files_at,
     read_at,
     resolve_commit,
     sha256_json,
@@ -526,6 +525,7 @@ def plan_due_projection_dispatches(
         )
 
     due_by_problem: dict[str, dict[str, str]] = {}
+    active_problems = set(active_problem_ids(root, resolved_head))
     for identifier, lane in state["lanes"].items():
         pending = bool(lane["pendingJudgmentIds"] or lane["pendingConflictIds"])
         if not pending or lane["activeBuild"] is not None:
@@ -539,6 +539,8 @@ def plan_due_projection_dispatches(
                 f"due knowledge scheduler lane has no governed projection: {identifier}"
             )
         problem = lane["problemId"]
+        if problem not in active_problems:
+            continue
         due_by_problem.setdefault(problem, {})[projection_digest] = identifier
 
     problem_queues: list[dict[str, object]] = []
@@ -710,13 +712,7 @@ def filter_projection_dispatch_history(
 
 
 def _canonical_problems(root: Path, repository_head: str) -> list[str]:
-    problems: set[str] = set()
-    for path in list_files_at(root, repository_head, "problems"):
-        parts = PurePosixPath(path).parts
-        if len(parts) == 3 and parts[0] == "problems" and parts[2] == "problem.md":
-            validate_slug(parts[1], "problem id")
-            problems.add(parts[1])
-    return sorted(problems)
+    return active_problem_ids(root, repository_head)
 
 
 def _builder_spec_digest(

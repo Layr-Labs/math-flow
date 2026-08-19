@@ -142,6 +142,35 @@ class ProblemDiscoveryTests(unittest.TestCase):
         value = json.loads(output.read_text(encoding="utf-8"))
         self.assertEqual([item["problemId"] for item in value["problems"]], ["fresh"])
 
+    @patch("math_flow.discovery.list_active_projections", side_effect=_active)
+    def test_archived_problems_are_hidden_by_default_and_explicitly_discoverable(
+        self, _active_mock
+    ) -> None:
+        write(
+            self.root / "protocol/problem-registry.json",
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "archivedProblems": ["fresh"],
+                }
+            ),
+        )
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Archive fresh problem")
+        head = git(self.root, "rev-parse", "HEAD")
+
+        active = discover_problems(self.root, head)
+        self.assertEqual(
+            [item["problemId"] for item in active["problems"]], ["started"]
+        )
+        self.assertEqual(active["archivedProblemCount"], 1)
+
+        complete = discover_problems(self.root, head, include_archived=True)
+        by_id = {item["problemId"]: item for item in complete["problems"]}
+        self.assertEqual(by_id["fresh"]["status"], "archived")
+        self.assertEqual(by_id["fresh"]["stage"], "archived")
+        self.assertEqual(by_id["fresh"]["activeKnowledgeProjectionIds"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

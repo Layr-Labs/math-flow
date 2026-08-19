@@ -1435,6 +1435,28 @@ class GitProtocolTests(unittest.TestCase):
         self.assertEqual(catalog_projection["data"]["problem"]["id"], "demo")
         self.assertEqual(len(catalog_projection["data"]["judgments"]), 3)
 
+        write(
+            self.root / "protocol/problem-registry.json",
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "archivedProblems": ["demo"],
+                }
+            )
+            + "\n",
+        )
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Archive demo")
+        archived_head = git(self.root, "rev-parse", "HEAD")
+        archived_catalog = export_viewer_catalog(
+            self.root,
+            projection,
+            "example/math-flow",
+            canonical_ref=archived_head,
+        )
+        self.assertEqual(archived_catalog["projections"], [])
+        self.assertIsNone(archived_catalog["defaultProjectionId"])
+
     def test_openrouter_request_and_projection_with_fake_transport(self) -> None:
         head = self.commit_contribution("first-proof", "# Lemma\n\nA useful argument.")
         judge = Path(__file__).parents[1] / "protocol/judges/openrouter-math-review-v1.json"
