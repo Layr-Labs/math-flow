@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "problemId": "no-three-in-line-77",
+  "subjectTransactionId": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+  "subjectLedgerPosition": 5,
+  "claims": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-objective-verification",
+      "statement": "# Replayable objective verification of the 152-point record\n\nThis contribution republishes the exact `record-152-certificate` checker and\ncertificate bytes with a canonical `verification.json` request. Its purpose is\nto produce a durable, independently replayable objective attestation through\nMath Flow's trusted hosted verifier path.\n\n## Scope\n\nThe encoded configuration is byte-for-byte identical, and the checker logic is\nidentical, to the artifacts in the earlier canonical contribution\n`record-152-certificate` (transaction\n`dfc0cc40d1193b8d5ca25e7f177fa48ff9a1b38d`). The checker establishes that the\npayload decodes to 152 distinct points in the `76 x 76` grid and that every\ntriple has nonzero integer determinant. Since that grid embeds into the\n`77 x 77` grid, this re-verifies the existing lower bound\n\n\\[\nD(77) \\ge 152.\n\\]\n\nThis is independent verification infrastructure, not a new bound and not a\nclaim about optimality. A successful attestation proves only that the pinned\nchecker accepted these pinned bytes in the governed environment; judgment of\nwhether the encoding captures the stated mathematics remains separate.\n\n## Reproduction\n\nRun locally with Python 3 and the standard library:\n\n```bash\npython3 -I -B verify.py configuration.txt\n```\n\nThe expected output is:\n\n```text\nverified 152 points on a 76 x 76 grid; no collinear triple\n```\n\nAfter canonical merge, `verification.json` requests the repository-approved\n`python-stdlib-3-13-v1` verifier. The trusted workflow should execute it in the\ndigest-pinned, networkless, read-only OCI environment and publish the resulting\ncontent-addressed attestation separately on the `projections` branch.",
+      "dependencyTransactionIds": []
+    }
+  ],
+  "dependencyTransactionIds": [],
+  "knowledgeContext": null,
+  "packetDigest": "sha256:cc6cd36aca81cf4b8c73abf35e32ff499efcf3cc04e8c459df2914da534687d0"
+}

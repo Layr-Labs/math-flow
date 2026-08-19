@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 2,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+  "problemLedgerDigest": "sha256:19f6c665fde2bc17b138f06566def8a8901d35b2f952061f4ddcfdb95b04b2bc",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+      "ledgerPosition": 5
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-objective-verification",
+      "status": "indeterminate",
+      "premiseStatus": "missing",
+      "summary": "The checker logic, decoding count, distinctness, grid bounds, determinant formula, exhaustive triple enumeration, and embedding G_76 into G_77 are sound. However, the supplied record contains no successful execution result or trusted attestation, so it does not establish that all 573,800 determinants are nonzero for the pinned certificate bytes. Thus neither acceptance in the governed environment nor the resulting unconditional lower bound D(77) >= 152 is established by this packet.",
+      "scopeQualifications": [
+        "A successful exhaustive run of the supplied checker on the pinned bytes would certify 152 distinct points in G_76 with no collinear triple and hence imply D(77) >= 152.",
+        "The contribution claims independent verification infrastructure only; it does not claim a new bound or optimality.",
+        "No counterexample or defect in the checker logic was found."
+      ],
+      "evidenceIssues": [
+        "No attestation, execution transcript, exit status, or determinant table demonstrates successful completion of the exhaustive check.",
+        "The displayed expected output is an assertion rather than evidence of execution.",
+        "Static inspection alone does not prove that none of the 573,800 determinants is zero for the supplied payload.",
+        "The asserted byte-for-byte certificate identity and checker-logic identity with transaction dfc0cc40d1193b8d5ca25e7f177fa48ff9a1b38d cannot be verified because that transaction was not declared or supplied as dependency evidence.",
+        "The governed verifier environment specification and content-addressed acceptance result are absent, so actual acceptance of the pinned bytes in that environment remains unverified."
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-objective-verification",
+      "stance": "uncertain",
+      "summary": "The checker logic, decoding count, distinctness, grid bounds, determinant formula, exhaustive triple enumeration, and embedding G_76 into G_77 are sound. However, the supplied record contains no successful execution result or trusted attestation, so it does not establish that all 573,800 determinants are nonzero for the pinned certificate bytes. Thus neither acceptance in the governed environment nor the resulting unconditional lower bound D(77) >= 152 is established by this packet.",
+      "subjectTransactionIds": [
+        "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:cc6cd36aca81cf4b8c73abf35e32ff499efcf3cc04e8c459df2914da534687d0",
+  "reportDigest": "sha256:bea58347d04e626be45147bd43ac98922b4ce8ed2cd2173b39a1d93182fbe02a",
+  "judgmentId": "sha256:50be7febad74a93a04087c9fe2542b8d9131eca6433b94296bc7a7b35bff57d8"
+}

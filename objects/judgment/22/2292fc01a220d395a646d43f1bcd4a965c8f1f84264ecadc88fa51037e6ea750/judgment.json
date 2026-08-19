@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 2,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+  "problemLedgerDigest": "sha256:19f6c665fde2bc17b138f06566def8a8901d35b2f952061f4ddcfdb95b04b2bc",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+      "ledgerPosition": 2
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-local-rigidity",
+      "status": "indeterminate",
+      "premiseStatus": "missing",
+      "summary": "The exact 152-point configuration is absent from the permitted evidence, so the checker cannot be reproduced and the saturation, removal, embedding-count, and output-binding claims cannot be verified. This is an evidentiary gap, not a counterexample. Conditional on supplying the intended configuration and a successful default execution of the audited checker, its exact-integer logic appears sound, and the stated corollary follows correctly from claims 1–3.",
+      "scopeQualifications": [
+        "The checker statically validates cardinality, distinctness, bounds, absence of collinear triples, embedding counts, every outside cell, removal sets of size at most two, and agreement of independent census and pair-walk methods.",
+        "Conditional on recomputation and byte agreement with results.json, the stronger blocking-pair count, exactly 16 exceptional removal pairs, their concentration on four cells, and the two-lines-of-two pattern would be established.",
+        "The symmetric-difference corollary is logically valid conditional on the computational claims."
+      ],
+      "evidenceIssues": [
+        "The referenced ../record-152-certificate/configuration.txt is not supplied.",
+        "No dependency transaction is declared or allowed; a prose reference to another transaction cannot supply the missing premise.",
+        "Neither a SHA-256 value nor pointsDigest reconstructs the 152 coordinates.",
+        "results.json contains aggregates and exceptional pairs but is insufficient to reconstruct the configuration or independently check all 5777 outside cells.",
+        "Unverified facts include the intended decoded coordinates, their validity as a 152-point no-three-in-line subset of G_76, the two dihedral images and eight embeddings, and reproduction of the committed results.json."
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-local-rigidity",
+      "stance": "uncertain",
+      "summary": "The exact 152-point configuration is absent from the permitted evidence, so the checker cannot be reproduced and the saturation, removal, embedding-count, and output-binding claims cannot be verified. This is an evidentiary gap, not a counterexample. Conditional on supplying the intended configuration and a successful default execution of the audited checker, its exact-integer logic appears sound, and the stated corollary follows correctly from claims 1–3.",
+      "subjectTransactionIds": [
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:4f2a04a784a2c99014a9d48cfdc00436e5a44d570cbd5ffb65c58b4c5651b79b",
+  "reportDigest": "sha256:86262a63d772deb7ff03220e8b3a1817fd922bfa575b546d5b53e6822ebf8666",
+  "judgmentId": "sha256:ceda7a48b4d2ea722415d44cbaed0e13e3f92ec00b49986e9cede54b2746b024"
+}

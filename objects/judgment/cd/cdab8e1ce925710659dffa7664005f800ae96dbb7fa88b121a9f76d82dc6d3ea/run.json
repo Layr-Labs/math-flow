@@ -1,0 +1,124 @@
+{
+  "protocolVersion": 1,
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+  "problemLedgerHead": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+  "problemLedgerDigest": "sha256:19f6c665fde2bc17b138f06566def8a8901d35b2f952061f4ddcfdb95b04b2bc",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "runner": {
+    "implementation": "openrouter-validity-judgment-v2",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "claim-dependency-packet-v2",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "report-extract-validity-v2",
+    "reducer": null
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/validity-judgment-v2",
+  "requestDigests": [
+    "sha256:2be743bcca1f892b0060bacad66a7251c653bc076e5e2be4f5febc834da82cbb",
+    "sha256:8af279aabd7efb9b60738f7c74fbab019246399fbc2873ca1084b26256b34faf"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "report",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787172368-8kva49AZDdghAND1N518",
+      "usage": {
+        "prompt_tokens": 30625,
+        "completion_tokens": 9943,
+        "total_tokens": 40568,
+        "cost": 0.156808,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 30622,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.156808,
+          "upstream_inference_prompt_cost": 0.007663,
+          "upstream_inference_completions_cost": 0.149145
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 7420,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    },
+    {
+      "provider": "openrouter",
+      "stage": "extract",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787172544-GHEldb2CpYrqRLFr3ClK",
+      "usage": {
+        "prompt_tokens": 6190,
+        "completion_tokens": 914,
+        "total_tokens": 7104,
+        "cost": 0.033051875,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 6187,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.033051875,
+          "upstream_inference_prompt_cost": 0.019341875,
+          "upstream_inference_completions_cost": 0.01371
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 206,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "judgment",
+  "inputs": {
+    "subjectTransactionIds": [
+      "c98dd877ad81611a9a469b1bd790cd909b56b1ce"
+    ],
+    "dependencyTransactionIds": [
+      "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+      "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+    ],
+    "dependencyPacketDigest": "sha256:bf1cd920e54f95388c6593a3fed9de1726fabf40ba561e61fecbf716e0344e73",
+    "knowledgeContext": null
+  },
+  "artifacts": [
+    {
+      "path": "dependency-packet.json",
+      "role": "judgment-dependency-packet",
+      "mediaType": "application/json",
+      "digest": "sha256:baa89e69b3c4f2395749761248685fd64458855baff300f3e86e86df15d088ac",
+      "bytes": 11991
+    },
+    {
+      "path": "judgment.json",
+      "role": "judgment-record",
+      "mediaType": "application/json",
+      "digest": "sha256:5c44f82363a144fc6674eb59c25b875444df41d0a586a33262f680652345c194",
+      "bytes": 5881
+    },
+    {
+      "path": "report.md",
+      "role": "judgment-report",
+      "mediaType": "text/markdown",
+      "digest": "sha256:27dc1f4fe522ac46a3eff020d426ca3889da21c8feff06d59472f9cd34778972",
+      "bytes": 11604
+    }
+  ]
+}
