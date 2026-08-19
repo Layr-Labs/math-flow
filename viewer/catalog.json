@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "repository": {
     "slug": "Layr-Labs/math-flow",
-    "canonicalRef": "main",
+    "canonicalRef": "refs/remotes/origin/main",
     "projectionRef": "projections"
   },
   "projections": [
@@ -59716,17 +59716,280 @@
       "researchProjectionIds": [
         "openrouter-research-v1"
       ],
-      "latestRunDigest": null,
-      "selectionStatus": "pending",
-      "runCount": 0,
-      "runs": []
+      "latestRunDigest": "sha256:40eb7c983a611a342f4573b524a1759a75cf39121bedf4011e15b73174307eee",
+      "selectionStatus": "current",
+      "runCount": 1,
+      "runs": [
+        {
+          "id": "sha256:40eb7c983a611a342f4573b524a1759a75cf39121bedf4011e15b73174307eee",
+          "runDigest": "sha256:40eb7c983a611a342f4573b524a1759a75cf39121bedf4011e15b73174307eee",
+          "ledgerHead": "53b4e2109102ca1829acca89d3da680beba14eb2",
+          "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+          "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+          "projectionId": "openrouter-research-credit-v2",
+          "projectionSpecDigest": "sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
+          "dependencyLockDigest": "sha256:49b1eda937334e3e590d4269da0a03d3dfb3820eac49944fcd3c20fe953e973e",
+          "dependency": {
+            "name": "research",
+            "projectionId": "openrouter-research-v1",
+            "projectionSpecDigest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+            "artifactRole": "research-program-state",
+            "runKind": "knowledge-build",
+            "runDigest": "sha256:c94d5dd44e0bcc3946703c35b9253dc35de379f4c076526342281fcf851c2db4",
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+            "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+            "artifact": {
+              "bytes": 8954,
+              "digest": "sha256:84cf5ecd6e07d941fa30a0b2f0e13ef2424933fca8885282263db315a6495f57",
+              "mediaType": "application/json",
+              "path": "state/state.json",
+              "role": "research-program-state"
+            }
+          },
+          "creditInput": {
+            "schemaVersion": 1,
+            "problemId": "triangle-midpoints",
+            "projectionId": "openrouter-research-credit-v2",
+            "projectionSpecDigest": "sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
+            "dependencyLockDigest": "sha256:49b1eda937334e3e590d4269da0a03d3dfb3820eac49944fcd3c20fe953e973e",
+            "researchRunDigest": "sha256:c94d5dd44e0bcc3946703c35b9253dc35de379f4c076526342281fcf851c2db4",
+            "historyRunDigests": [
+              "sha256:c94d5dd44e0bcc3946703c35b9253dc35de379f4c076526342281fcf851c2db4"
+            ],
+            "programStateDigest": "sha256:fe7d4014c7720b07d5a793653476d7eae61a8f20f58eb36e80d9caba1147b429",
+            "horizonStateDigest": "sha256:fe7d4014c7720b07d5a793653476d7eae61a8f20f58eb36e80d9caba1147b429",
+            "acceptedTransactionIds": [
+              "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+              "64afc12868e150370e6c56e6eeceab6b7aabe158"
+            ],
+            "schedule": {
+              "schemaVersion": 1,
+              "mode": "rolling",
+              "evaluatedAt": 1787173676,
+              "minimumIntervalSeconds": 3600,
+              "allocationWindow": null,
+              "previousRunDigest": null
+            }
+          },
+          "creditState": {
+            "schemaVersion": 1,
+            "problemId": "triangle-midpoints",
+            "programStateDigest": "sha256:fe7d4014c7720b07d5a793653476d7eae61a8f20f58eb36e80d9caba1147b429",
+            "horizonStateDigest": "sha256:fe7d4014c7720b07d5a793653476d7eae61a8f20f58eb36e80d9caba1147b429",
+            "baseCreditStateDigest": null,
+            "evaluations": {
+              "root": {
+                "programId": "root",
+                "unattributedWork": "0.85",
+                "unattributedShare": {
+                  "numerator": "0.85",
+                  "denominator": "1"
+                },
+                "unattributedHorizonStateDigest": "sha256:fe7d4014c7720b07d5a793653476d7eae61a8f20f58eb36e80d9caba1147b429",
+                "rationale": "The one-unit unstructured-search exposure supplies only a local work scale, not an observed pre/post credit measure. At the common horizon the two accepted contributions substantially overlap: the affine-area proof fully resolves the objective, while the vector contribution independently supplies almost all of its geometric core. Removing the affine-area proof leaves only a short area-scaling inference; removing the vector detail leaves the complete accepted proof. The remaining shared or overdetermined value is retained as unattributed rather than duplicated across children.",
+                "children": [
+                  {
+                    "kind": "contribution",
+                    "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                    "referenceBaseStateDigest": "sha256:d7fbbe81fdad9d74372897b7fdae341e8011abb67ade8d5138d60899b5531a6d",
+                    "referencePostStateDigest": "sha256:fe7d4014c7720b07d5a793653476d7eae61a8f20f58eb36e80d9caba1147b429",
+                    "referenceBaseThreads": [
+                      {
+                        "id": "root/unstructured-search",
+                        "title": "Unstructured search and overhead",
+                        "summary": "Future work not yet assigned to a more specific research thread.",
+                        "kind": "unstructured",
+                        "status": "active",
+                        "expectedExposure": "1",
+                        "conditions": [],
+                        "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+                      }
+                    ],
+                    "referencePostThreads": [
+                      {
+                        "id": "root/unstructured-search",
+                        "title": "Unstructured search and overhead",
+                        "summary": "Future work not yet assigned to a more specific research thread.",
+                        "kind": "unstructured",
+                        "status": "active",
+                        "expectedExposure": "1",
+                        "conditions": [],
+                        "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+                      }
+                    ],
+                    "horizonStateDigest": "sha256:fe7d4014c7720b07d5a793653476d7eae61a8f20f58eb36e80d9caba1147b429",
+                    "horizonLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                    "counterfactual": "Remove the vector midpoint proof and its half-scale result while retaining the independently accepted affine-area proof and ordinary background knowledge, including the standard midpoint theorem. A competent solver can use the retained complete proof without reconstructing the removed detail.",
+                    "directEffects": [
+                      {
+                        "threadId": "root/unstructured-search",
+                        "withoutWork": "0",
+                        "withWork": "0",
+                        "rationale": "The earlier affine-area contribution already proves the objective and validly invokes the standard midpoint theorem. The later vector calculation improves exposition but, at the common horizon, does not reduce future work required to resolve the canonical problem."
+                      }
+                    ],
+                    "obviatedEffects": [],
+                    "directWork": "0",
+                    "obviatedWork": "0",
+                    "totalWork": "0",
+                    "confidence": "high",
+                    "evidenceRefs": [
+                      "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "root/vector-midpoint-proof",
+                      "root/midpoint-half-scale-result",
+                      "sha256:21c15fd5f5a2836a6ae1311796723eddd78bc116fd5bcac0d0506280a402790b",
+                      "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "root/affine-area-proof"
+                    ],
+                    "allocationShare": {
+                      "numerator": "0",
+                      "denominator": "1"
+                    }
+                  },
+                  {
+                    "kind": "contribution",
+                    "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                    "referenceBaseStateDigest": "sha256:d7fbbe81fdad9d74372897b7fdae341e8011abb67ade8d5138d60899b5531a6d",
+                    "referencePostStateDigest": "sha256:fe7d4014c7720b07d5a793653476d7eae61a8f20f58eb36e80d9caba1147b429",
+                    "referenceBaseThreads": [
+                      {
+                        "id": "root/unstructured-search",
+                        "title": "Unstructured search and overhead",
+                        "summary": "Future work not yet assigned to a more specific research thread.",
+                        "kind": "unstructured",
+                        "status": "active",
+                        "expectedExposure": "1",
+                        "conditions": [],
+                        "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+                      }
+                    ],
+                    "referencePostThreads": [
+                      {
+                        "id": "root/unstructured-search",
+                        "title": "Unstructured search and overhead",
+                        "summary": "Future work not yet assigned to a more specific research thread.",
+                        "kind": "unstructured",
+                        "status": "active",
+                        "expectedExposure": "1",
+                        "conditions": [],
+                        "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+                      }
+                    ],
+                    "horizonStateDigest": "sha256:fe7d4014c7720b07d5a793653476d7eae61a8f20f58eb36e80d9caba1147b429",
+                    "horizonLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                    "counterfactual": "Remove the affine-area proof, its equal-area conclusion, and its uniquely inherited formalization suggestion. Retain the independently accepted vector midpoint proof and half-scale result. A competent solver can then finish by applying the standard fact that area scales as the square of linear scale, obtaining one-quarter area for each triangle.",
+                    "directEffects": [
+                      {
+                        "threadId": "root/unstructured-search",
+                        "withoutWork": "0.15",
+                        "withWork": "0",
+                        "rationale": "Without this contribution, the retained midpoint-half-scale result leaves a short but necessary area-scaling and conclusion step. With the contribution, the canonical objective is already proved. The optional Lean direction creates no required follow-up work for this objective."
+                      }
+                    ],
+                    "obviatedEffects": [],
+                    "directWork": "0.15",
+                    "obviatedWork": "0",
+                    "totalWork": "0.15",
+                    "confidence": "medium",
+                    "evidenceRefs": [
+                      "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                      "root/affine-area-proof",
+                      "root/equal-area-result",
+                      "sha256:774fd00ced19ea52ab2f61a06e803b9efc8707490ce2930cb37b8946e93ef428",
+                      "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                      "root/vector-midpoint-proof",
+                      "root/midpoint-half-scale-result"
+                    ],
+                    "allocationShare": {
+                      "numerator": "0.15",
+                      "denominator": "1"
+                    }
+                  }
+                ],
+                "digest": "sha256:76fa30740c8f67b03b94d6898a5c0a6941234aa0c5035b22d801ffda1dea8e9e"
+              }
+            },
+            "allocations": {
+              "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3": {
+                "numerator": "0",
+                "denominator": "1"
+              },
+              "64afc12868e150370e6c56e6eeceab6b7aabe158": {
+                "numerator": "0.15",
+                "denominator": "1"
+              }
+            },
+            "residualAllocations": {
+              "root": {
+                "numerator": "0.85",
+                "denominator": "1"
+              }
+            },
+            "stateDigest": "sha256:9b1a4ec4360ba15d56349f9a19eed8f956e2f20c5e35f4b43d1ea3fc2b678263"
+          },
+          "dependencyLock": {
+            "schemaVersion": 1,
+            "consumer": {
+              "projectionId": "openrouter-research-credit-v2",
+              "projectionSpecDigest": "sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
+              "problemId": "triangle-midpoints",
+              "canonicalHead": "53b4e2109102ca1829acca89d3da680beba14eb2"
+            },
+            "problemLedger": {
+              "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+              "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a"
+            },
+            "dependencies": [
+              {
+                "name": "research",
+                "projectionId": "openrouter-research-v1",
+                "projectionSpecDigest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+                "artifactRole": "research-program-state",
+                "runKind": "knowledge-build",
+                "runDigest": "sha256:c94d5dd44e0bcc3946703c35b9253dc35de379f4c076526342281fcf851c2db4",
+                "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+                "problemLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+                "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+                "artifact": {
+                  "bytes": 8954,
+                  "digest": "sha256:84cf5ecd6e07d941fa30a0b2f0e13ef2424933fca8885282263db315a6495f57",
+                  "mediaType": "application/json",
+                  "path": "state/state.json",
+                  "role": "research-program-state"
+                }
+              }
+            ],
+            "dependencyLockDigest": "sha256:49b1eda937334e3e590d4269da0a03d3dfb3820eac49944fcd3c20fe953e973e"
+          },
+          "models": [
+            "openai/gpt-5.6-sol"
+          ],
+          "cost": 0.03320475,
+          "schedule": {
+            "schemaVersion": 1,
+            "mode": "rolling",
+            "evaluatedAt": 1787173676,
+            "minimumIntervalSeconds": 3600,
+            "allocationWindow": null,
+            "previousRunDigest": null
+          },
+          "knowledgeProjectionIds": [
+            "openrouter-research-v1"
+          ],
+          "currentProblemLedger": true,
+          "currentKnowledgeDependency": true,
+          "stale": false,
+          "staleReasons": []
+        }
+      ]
     }
   ],
   "researchDirections": [
     {
       "schemaVersion": 1,
       "problemId": "bssc-sum-capacity",
-      "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+      "ledgerHead": "53b4e2109102ca1829acca89d3da680beba14eb2",
       "directionLedgerHead": "a02b4a5b89cea4aa5315f0a352f9630c781b055c",
       "directionLedgerDigest": "sha256:afd4ba2c2b3e82382f9685e438e7789c1bc092de31285924b4392ac5f8551ce2",
       "events": [
@@ -59797,7 +60060,7 @@
     {
       "schemaVersion": 1,
       "problemId": "maximal-determinant-23",
-      "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+      "ledgerHead": "53b4e2109102ca1829acca89d3da680beba14eb2",
       "directionLedgerHead": "efb1cc4ce5b387eb94fc2358c3f5dd6585846092",
       "directionLedgerDigest": "sha256:51e77deb8a3a9c480eb6bf1c32a34e82b97607e48f4826adbaba9dbdec98e513",
       "events": [
@@ -59860,7 +60123,7 @@
     {
       "schemaVersion": 1,
       "problemId": "metric-universality-price",
-      "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+      "ledgerHead": "53b4e2109102ca1829acca89d3da680beba14eb2",
       "directionLedgerHead": null,
       "directionLedgerDigest": "sha256:690da3961d6eb1f013893729d25a8d5491dc493c88b33cb1f54b61f3d52cd714",
       "events": [],
@@ -59869,7 +60132,7 @@
     {
       "schemaVersion": 1,
       "problemId": "multiway-cut-ckr-gap",
-      "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+      "ledgerHead": "53b4e2109102ca1829acca89d3da680beba14eb2",
       "directionLedgerHead": null,
       "directionLedgerDigest": "sha256:a3140367a99f503970ad8760eb6864657ec8644c4c3a9f276c6022a02f56d4bc",
       "events": [],
@@ -59878,7 +60141,7 @@
     {
       "schemaVersion": 1,
       "problemId": "no-three-in-line-77",
-      "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+      "ledgerHead": "53b4e2109102ca1829acca89d3da680beba14eb2",
       "directionLedgerHead": "bbf27430c8b61446236371c57c58e3b8d6278921",
       "directionLedgerDigest": "sha256:07ee521c46e228157b5de06a87c30bbfc736710b5f1f210a75f1a1bfb8ecae95",
       "events": [
@@ -59971,7 +60234,7 @@
     {
       "schemaVersion": 1,
       "problemId": "replicable-pac-sample-complexity",
-      "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+      "ledgerHead": "53b4e2109102ca1829acca89d3da680beba14eb2",
       "directionLedgerHead": null,
       "directionLedgerDigest": "sha256:17384e06c04187e78a9b813506d9e2bbb5bb94ab1a788576545e5667420551a1",
       "events": [],
@@ -59980,7 +60243,7 @@
     {
       "schemaVersion": 1,
       "problemId": "schur-number-6",
-      "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+      "ledgerHead": "53b4e2109102ca1829acca89d3da680beba14eb2",
       "directionLedgerHead": "7f040a79d9f38ea9b4d5aed66ec91c39af00b345",
       "directionLedgerDigest": "sha256:c05f9175217c4dd6cf2aee28493f95b4059debbbfeec57ec9cafe699c210c4a5",
       "events": [
@@ -60047,7 +60310,7 @@
     {
       "schemaVersion": 1,
       "problemId": "triangle-midpoints",
-      "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+      "ledgerHead": "53b4e2109102ca1829acca89d3da680beba14eb2",
       "directionLedgerHead": null,
       "directionLedgerDigest": "sha256:ecdcbed4ec39db1bdd46bb93855ea58bb55304e05282df274a0ea2877a935a0b",
       "events": [],
