@@ -1,0 +1,249 @@
+{
+  "horizonStateDigest": "sha256:fe7d4014c7720b07d5a793653476d7eae61a8f20f58eb36e80d9caba1147b429",
+  "horizonLedgerHead": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+  "programs": [
+    {
+      "program": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "status": "active",
+        "parentThreadIds": [],
+        "sourceTransactionIds": [],
+        "digest": "sha256:4bc4e85d0ca6e4224902591c71cf9cb813718dfe5961d8be774384d474797c99"
+      },
+      "horizonLocalThreads": [
+        {
+          "id": "root/unstructured-search",
+          "programId": "root",
+          "title": "Unstructured search and overhead",
+          "summary": "Future work not yet assigned to a more specific research thread.",
+          "kind": "unstructured",
+          "status": "active",
+          "expectedExposure": "1",
+          "conditions": [],
+          "sourceTransactionIds": [],
+          "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+        }
+      ],
+      "children": [
+        {
+          "kind": "contribution",
+          "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+          "directThreadIds": [
+            "root/unstructured-search"
+          ],
+          "referenceBaseStateDigest": "sha256:d7fbbe81fdad9d74372897b7fdae341e8011abb67ade8d5138d60899b5531a6d",
+          "referencePostStateDigest": "sha256:fe7d4014c7720b07d5a793653476d7eae61a8f20f58eb36e80d9caba1147b429",
+          "referenceBaseLocalThreads": [
+            {
+              "id": "root/unstructured-search",
+              "programId": "root",
+              "title": "Unstructured search and overhead",
+              "summary": "Future work not yet assigned to a more specific research thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "sourceTransactionIds": [],
+              "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+            }
+          ],
+          "referencePostLocalThreads": [
+            {
+              "id": "root/unstructured-search",
+              "programId": "root",
+              "title": "Unstructured search and overhead",
+              "summary": "Future work not yet assigned to a more specific research thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "sourceTransactionIds": [],
+              "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+            }
+          ],
+          "currentState": {
+            "contribution": {
+              "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+              "transactionId": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+              "claimKeys": [
+                "triangle-midpoints/midpoint-lemma-detail"
+              ],
+              "directProgramId": "root",
+              "directThreadIds": [
+                "root/unstructured-search"
+              ],
+              "itemIds": [
+                "root/midpoint-half-scale-result",
+                "root/vector-midpoint-proof"
+              ],
+              "dependencyTransactionIds": [],
+              "judgmentId": "sha256:21c15fd5f5a2836a6ae1311796723eddd78bc116fd5bcac0d0506280a402790b",
+              "digest": "sha256:cbd29aae04847cda6536ef01f7e410baa30ef1c7ae008d6c4196e9d6c72c79c4"
+            },
+            "items": [
+              {
+                "id": "root/midpoint-half-scale-result",
+                "programId": "root",
+                "type": "result",
+                "title": "Midpoint-segment and half-scale assertions",
+                "summary": "For the midpoints \\(E=(A+C)/2\\) and \\(F=(A+B)/2\\), \\(E-F=(C-B)/2\\). Thus \\(EF\\) is parallel to \\(BC\\) and has half its length. Cyclically, \\(FD\\) is parallel to \\(CA\\) with half its length, and \\(DE\\) is parallel to \\(AB\\) with half its length. Consequently, the medial triangle is similar to the original triangle with linear scale factor \\(1/2\\), and the corresponding scale factor for each corner triangle is also \\(1/2\\).\n\nScope qualifications: The conclusion assumes the usual nondegenerate-triangle setting so side lengths and triangle similarity are nontrivial. No originality claim is made or required.",
+                "claimRefs": [
+                  {
+                    "transactionId": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                    "claimKey": "triangle-midpoints/midpoint-lemma-detail"
+                  }
+                ],
+                "sourceTransactionIds": [
+                  "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                ],
+                "dependencyItemIds": [
+                  "root/vector-midpoint-proof"
+                ],
+                "digest": "sha256:95b3c281d11bc9b1a85aad3c71f57640d8b10c61df487cb984c146adce77f7aa"
+              },
+              {
+                "id": "root/vector-midpoint-proof",
+                "programId": "root",
+                "type": "proof",
+                "title": "Position-vector proof of the midpoint lemma",
+                "summary": "This contribution supplements the earlier `affine-area-proof` by making its midpoint-segment step explicit.\n\nWrite the points as position vectors. For the midpoints\n\n\\[\nE = \\frac{A+C}{2}, \\qquad F = \\frac{A+B}{2},\n\\]\n\nwe have\n\n\\[\nE-F = \\frac{C-B}{2}.\n\\]\n\nThus `EF` is parallel to `BC` and has half its length. Cyclically, the same calculation shows that `FD` is parallel to `CA` with half its length and that `DE` is parallel to `AB` with half its length.\n\nConsequently the medial triangle is similar to the original triangle with linear scale factor `1/2`. The same midpoint identities give the corresponding scale factor for each corner triangle, closing the elementary lemma used by the original proof.\n\nThis supplies a missing detail in the presentation; it does not claim originality for the classical theorem.\n\nScope qualifications: The conclusion assumes the usual nondegenerate-triangle setting so side lengths and triangle similarity are nontrivial. The undeclared earlier `affine-area-proof` is unnecessary to establish the mathematical assertions audited here. No originality claim is made or required.",
+                "claimRefs": [
+                  {
+                    "transactionId": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+                    "claimKey": "triangle-midpoints/midpoint-lemma-detail"
+                  }
+                ],
+                "sourceTransactionIds": [
+                  "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3"
+                ],
+                "dependencyItemIds": [],
+                "digest": "sha256:a66034e9191102205bd8af02b64119cacaa77434aeaa3877c8142726122ac42c"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "contribution",
+          "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+          "directThreadIds": [
+            "root/unstructured-search"
+          ],
+          "referenceBaseStateDigest": "sha256:d7fbbe81fdad9d74372897b7fdae341e8011abb67ade8d5138d60899b5531a6d",
+          "referencePostStateDigest": "sha256:fe7d4014c7720b07d5a793653476d7eae61a8f20f58eb36e80d9caba1147b429",
+          "referenceBaseLocalThreads": [
+            {
+              "id": "root/unstructured-search",
+              "programId": "root",
+              "title": "Unstructured search and overhead",
+              "summary": "Future work not yet assigned to a more specific research thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "sourceTransactionIds": [],
+              "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+            }
+          ],
+          "referencePostLocalThreads": [
+            {
+              "id": "root/unstructured-search",
+              "programId": "root",
+              "title": "Unstructured search and overhead",
+              "summary": "Future work not yet assigned to a more specific research thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "sourceTransactionIds": [],
+              "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+            }
+          ],
+          "currentState": {
+            "contribution": {
+              "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+              "transactionId": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+              "claimKeys": [
+                "triangle-midpoints/affine-area-proof"
+              ],
+              "directProgramId": "root",
+              "directThreadIds": [
+                "root/unstructured-search"
+              ],
+              "itemIds": [
+                "root/equal-area-result",
+                "root/affine-area-proof",
+                "root/lean-formalization-direction"
+              ],
+              "dependencyTransactionIds": [],
+              "judgmentId": "sha256:774fd00ced19ea52ab2f61a06e803b9efc8707490ce2930cb37b8946e93ef428",
+              "digest": "sha256:ed8dd7663f4e55e2e2b7f599d3b8db4bff182d1722a62ce26c2838fe80029e10"
+            },
+            "items": [
+              {
+                "id": "root/equal-area-result",
+                "programId": "root",
+                "type": "result",
+                "title": "Equal areas of the medial and corner triangles",
+                "summary": "For a nondegenerate triangle ABC whose side midpoints are D, E, and F, the triangles AEF, BFD, CDE, and DEF all have equal area; each has one quarter of the area of ABC.\n\nScope qualification: The conclusion is stated for a nondegenerate triangle ABC, so ordinary unsigned areas are positive and the angle/area formulas apply directly.",
+                "claimRefs": [
+                  {
+                    "transactionId": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                    "claimKey": "triangle-midpoints/affine-area-proof"
+                  }
+                ],
+                "sourceTransactionIds": [
+                  "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                ],
+                "dependencyItemIds": [
+                  "root/affine-area-proof"
+                ],
+                "digest": "sha256:4d8d1210f9b0b8cc120b9fd9a175420c6635961c7b67e0a4eea3893e0eb3d92c"
+              },
+              {
+                "id": "root/affine-area-proof",
+                "programId": "root",
+                "type": "proof",
+                "title": "Midpoint similarity and area-scaling proof",
+                "summary": "Each segment joining two side midpoints is parallel to the third side, so the medial triangle \\(DEF\\) is similar to \\(ABC\\) with scale factor \\(1/2\\). Its area is therefore one quarter of the area of \\(ABC\\).\n\nThe same reasoning applies to each corner triangle: for example, \\(AE=AC/2\\) and \\(AF=AB/2\\), with the included angle unchanged, so \\(AEF\\) has one quarter of the area of \\(ABC\\). Cyclically, the other two corner triangles do as well. Hence all four areas are equal.\n\nScope qualifications: The conclusion is stated for a nondegenerate triangle ABC, so ordinary unsigned areas are positive and the angle/area formulas apply directly. The proposed future Lean formalization is not part of the proof and is not required for validity.",
+                "claimRefs": [
+                  {
+                    "transactionId": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                    "claimKey": "triangle-midpoints/affine-area-proof"
+                  }
+                ],
+                "sourceTransactionIds": [
+                  "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                ],
+                "dependencyItemIds": [],
+                "digest": "sha256:c9855d8d0045055da90679397e36e0779dd196964406118268f949523845449e"
+              },
+              {
+                "id": "root/lean-formalization-direction",
+                "programId": "root",
+                "type": "question",
+                "title": "Possible Lean formalization",
+                "summary": "An eventual Lean artifact could express this through affine invariance or the determinant formula for oriented area.\n\nScope qualification: The proposed future Lean formalization is not part of the proof and is not required for validity.",
+                "claimRefs": [
+                  {
+                    "transactionId": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+                    "claimKey": "triangle-midpoints/affine-area-proof"
+                  }
+                ],
+                "sourceTransactionIds": [
+                  "64afc12868e150370e6c56e6eeceab6b7aabe158"
+                ],
+                "dependencyItemIds": [
+                  "root/affine-area-proof"
+                ],
+                "digest": "sha256:6bb3a1868ca64d573cc98f292385e4f3275017a196bea65b9443fcce4d2dfd30"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

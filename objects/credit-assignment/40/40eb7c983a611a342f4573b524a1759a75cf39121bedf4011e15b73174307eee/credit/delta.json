@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "evaluations": [
+    {
+      "programId": "root",
+      "unattributedWork": "0.85",
+      "rationale": "The one-unit unstructured-search exposure supplies only a local work scale, not an observed pre/post credit measure. At the common horizon the two accepted contributions substantially overlap: the affine-area proof fully resolves the objective, while the vector contribution independently supplies almost all of its geometric core. Removing the affine-area proof leaves only a short area-scaling inference; removing the vector detail leaves the complete accepted proof. The remaining shared or overdetermined value is retained as unattributed rather than duplicated across children.",
+      "children": [
+        {
+          "kind": "contribution",
+          "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+          "counterfactual": "Remove the affine-area proof, its equal-area conclusion, and its uniquely inherited formalization suggestion. Retain the independently accepted vector midpoint proof and half-scale result. A competent solver can then finish by applying the standard fact that area scales as the square of linear scale, obtaining one-quarter area for each triangle.",
+          "directEffects": [
+            {
+              "threadId": "root/unstructured-search",
+              "withoutWork": "0.15",
+              "withWork": "0",
+              "rationale": "Without this contribution, the retained midpoint-half-scale result leaves a short but necessary area-scaling and conclusion step. With the contribution, the canonical objective is already proved. The optional Lean direction creates no required follow-up work for this objective."
+            }
+          ],
+          "obviatedEffects": [],
+          "confidence": "medium",
+          "evidenceRefs": [
+            "64afc12868e150370e6c56e6eeceab6b7aabe158",
+            "root/affine-area-proof",
+            "root/equal-area-result",
+            "sha256:774fd00ced19ea52ab2f61a06e803b9efc8707490ce2930cb37b8946e93ef428",
+            "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+            "root/vector-midpoint-proof",
+            "root/midpoint-half-scale-result"
+          ]
+        },
+        {
+          "kind": "contribution",
+          "id": "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+          "counterfactual": "Remove the vector midpoint proof and its half-scale result while retaining the independently accepted affine-area proof and ordinary background knowledge, including the standard midpoint theorem. A competent solver can use the retained complete proof without reconstructing the removed detail.",
+          "directEffects": [
+            {
+              "threadId": "root/unstructured-search",
+              "withoutWork": "0",
+              "withWork": "0",
+              "rationale": "The earlier affine-area contribution already proves the objective and validly invokes the standard midpoint theorem. The later vector calculation improves exposition but, at the common horizon, does not reduce future work required to resolve the canonical problem."
+            }
+          ],
+          "obviatedEffects": [],
+          "confidence": "high",
+          "evidenceRefs": [
+            "4ccbe3f18db7402d31a2ef795f6ad67962ff63e3",
+            "root/vector-midpoint-proof",
+            "root/midpoint-half-scale-result",
+            "sha256:21c15fd5f5a2836a6ae1311796723eddd78bc116fd5bcac0d0506280a402790b",
+            "64afc12868e150370e6c56e6eeceab6b7aabe158",
+            "root/affine-area-proof"
+          ]
+        }
+      ]
+    }
+  ]
+}
