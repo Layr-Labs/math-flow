@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "judgmentKind": "primary",
+  "problemId": "replicable-pac-sample-complexity",
+  "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+  "problemLedgerDigest": "sha256:59e95bedfc06795891eb39aadfa5e86f60a4a42c424fdf6f47dbcaba94f508dc",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+      "ledgerPosition": 1
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "replicable-pac-sample-complexity/one-coordinate-half-interval-matching-bound",
+      "status": "invalid",
+      "premiseStatus": "not-required",
+      "summary": "The supplied proofs establish the numbered proper upper bound and the randomized, possibly improper lower bound under fixed uniform D. However, the declared claim additionally concludes, without qualification, that throughout 0<δ,ρ≤1/20 the restricted sample complexity is Θ(1/(ερ)). This is false when δ varies: accuracy itself requires Ω((1/ε)log(1/δ)) samples. The supported matching characterization is Θ(max{(1/ε)log(1/δ),1/(ερ)}) up to constants in the stated regime, or Θ(1/(ερ)) only with an added condition such as log(1/δ)=O(1/ρ), including fixed constant δ and ρ.",
+      "scopeQualifications": [
+        "The half-interval geometry, version-space upper-bound analysis, and symmetric-coupling lower-bound proof are valid.",
+        "The upper bound is proper and fixed-uniform-distribution restricted.",
+        "The lower bound applies to randomized, computationally unbounded, possibly improper learners and proves n≥1/(120ερ) under the stated restrictions.",
+        "The worst-case corollary n_rep≥1/(120ερ) is valid for odd k in the stated regime because a worst-case learner must handle uniform D.",
+        "The restricted upper bound shows no log k factor for this fixed-uniform experiment, but does not upper-bound the class's unrestricted worst-case complexity under nonuniform distributions.",
+        "The coordinatewise tensorization discussion is explicitly heuristic and not a theorem for the original i.i.d. multidimensional construction."
+      ],
+      "evidenceIssues": [
+        "The unqualified Θ(1/(ερ)) conclusion omits necessary confidence dependence. For two targets with disagreement p>2ε, the event that no sample hits their disagreement region has probability (1-p)^n; conditioned on it, at least one target fails with probability at least 1/2. Thus accuracy requires n≥log(1/(2δ))/(-log(1-p)).",
+        "In the stated regime one can choose p between 2ε and (5/2)ε, yielding n≥(3/(20ε))log(1/(2δ)). Hence arbitrarily small allowed δ decisively contradicts a uniform Θ(1/(ερ)) characterization.",
+        "No allowed dependency evidence was supplied or needed; the decisive defect and the valid subresults are established within the bounded report."
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "replicable-pac-sample-complexity/one-coordinate-half-interval-matching-bound",
+      "stance": "refutes",
+      "summary": "The supplied proofs establish the numbered proper upper bound and the randomized, possibly improper lower bound under fixed uniform D. However, the declared claim additionally concludes, without qualification, that throughout 0<δ,ρ≤1/20 the restricted sample complexity is Θ(1/(ερ)). This is false when δ varies: accuracy itself requires Ω((1/ε)log(1/δ)) samples. The supported matching characterization is Θ(max{(1/ε)log(1/δ),1/(ερ)}) up to constants in the stated regime, or Θ(1/(ερ)) only with an added condition such as log(1/δ)=O(1/ρ), including fixed constant δ and ρ.",
+      "subjectTransactionIds": [
+        "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:5496d13dce81230486e96312d06b003e986388406622bb3a047c6e3764a279fa",
+  "reportDigest": "sha256:f65e18ae9915318231eedf96e05c75258015f3a02a3d1103d18c6b4336909223",
+  "judgmentId": "sha256:a06cea63b766d42b01a8afb4491694a389bb02ebe65928ab6be20631b46292f5"
+}
