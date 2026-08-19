@@ -1,3 +1,5 @@
+import { allCreditProjections } from "./creditPresentation.mjs";
+
 export function projectionByIdentity(catalog, problemId, projectionId) {
   if (!projectionId) return null;
   if (problemId) {
@@ -10,12 +12,13 @@ export function projectionByIdentity(catalog, problemId, projectionId) {
 
 function creditProjectionByIdentity(catalog, problemId, projectionId) {
   if (!projectionId) return null;
+  const projections = allCreditProjections(catalog);
   if (problemId) {
-    return catalog.creditProjections?.find((projection) =>
+    return projections.find((projection) =>
       projection.problemId === problemId && projection.id === projectionId
     ) ?? null;
   }
-  return catalog.creditProjections?.find((projection) => projection.id === projectionId) ?? null;
+  return projections.find((projection) => projection.id === projectionId) ?? null;
 }
 
 export function publishedHeadSelectionPatch(previousCatalog, nextCatalog, viewerState) {
