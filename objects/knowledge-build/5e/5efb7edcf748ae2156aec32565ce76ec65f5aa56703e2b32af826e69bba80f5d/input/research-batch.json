@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "problemId": "maximal-determinant-23",
+  "baseProgramStateDigest": "sha256:ec06e78ad47b3fff326ad680d92916bb9f028f08a821d11aad3e345f9d0f97bc",
+  "judgments": [
+    {
+      "judgmentId": "sha256:930cf727e2c0d558a55d2847a67b40028d598304fa2b3a294820747aef08f13c",
+      "runDigest": "sha256:537625260438f75f15c4c7dbef0c22fd2609908f600a927fe9394a79c0548c52",
+      "subjectTransactionId": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+      "acceptedClaimKeys": [
+        "maximal-determinant-23/published-record-matrix-exact-replay"
+      ],
+      "excludedAssessments": []
+    },
+    {
+      "judgmentId": "sha256:ae1b369675919f95760e0b246e8ecc051bb0f39539613cffd3cd2e23bb451356",
+      "runDigest": "sha256:1c3b72d47aea8e05f527ecf2e2ea1608d12b820d44d8f87bb4673af6b23d8099",
+      "subjectTransactionId": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+      "acceptedClaimKeys": [],
+      "excludedAssessments": [
+        {
+          "claimKey": "maximal-determinant-23/universal-divisibility-upper-rounding",
+          "status": "invalid",
+          "premiseStatus": "satisfied",
+          "summary": "The universal divisibility 2^22 | det A and the sharpened bound D_23 ≤ 2,982,295,321,444,352 are established. However, the claim's comparison assertion is false: the ordinary floor is 2,982,295,321,630,774, not 2,982,295,321,630,773, so the improvement is 186,422 rather than 186,421. Because the declared claim includes this erroneous assertion, it is invalid as stated.",
+          "scopeQualifications": [
+            "The principal divisibility-rounded upper bound remains correct.",
+            "Invalidity is confined to the off-by-one ordinary-floor comparison, but that comparison is part of the declared conjunction."
+          ],
+          "evidenceIssues": [
+            "The stated ordinary integer floor is one too small.",
+            "The stated difference from the sharpened endpoint is consequently one too small.",
+            "The referenced verification script reportedly repeats the same off-by-one constant and would fail its integer-square-root check."
+          ],
+          "evidenceTransactionIds": []
+        }
+      ]
+    },
+    {
+      "judgmentId": "sha256:05b426c42d558c944cbbeda0bc3f1165bbb239423289ee4fae2a9f893bca7720",
+      "runDigest": "sha256:7b54c275d4bd3d7ec74986015378ccf05e2ccb5e9aa8bf8b36300d01f72ff9e0",
+      "subjectTransactionId": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+      "acceptedClaimKeys": [],
+      "excludedAssessments": [
+        {
+          "claimKey": "maximal-determinant-23/three-star-ehlich-perturbation-exclusion",
+          "status": "indeterminate",
+          "premiseStatus": "missing",
+          "summary": "The argument is broadly coherent and no counterexample or decisive algebraic error was identified, but the universal exclusion is not established by the bounded record. The decisive exhaustive computation is not accompanied by a verified successful replay or static certificate, and the symmetry reduction and local quadratic-form premises are not fully justified.",
+          "scopeQualifications": [
+            "The claim concerns only the exact three-toggle star family at order 23; it does not classify all three-toggle perturbations or all candidate Gram matrices.",
+            "The determinant-lemma formulas, nonsquare obstruction, inverse-quadratic identities, and cell-moment/Farkas implications appear sound conditional on the asserted exact computations and coverage.",
+            "A candidate-specific nonsquare argument could avoid the unavailable universal divisibility dependency because the verifier reportedly checks divisibility by 2^44 directly, but that reformulation is not supplied as the submitted proof.",
+            "The conclusion could potentially be resolved by a successful independent execution together with proofs of canonical orbit coverage and the required local quadratic-form invariance facts."
+          ],
+          "evidenceIssues": [
+            "The claimed exhaustive results over 102,799 cases—including 74,896 cases above threshold, no threshold-equality case, and 104 normalized-square cases—are hardcoded expected values without an execution transcript, per-candidate list, independently checkable aggregate certificate, or verified `verification: PASS` replay.",
+            "The program's comparison `set(expanded) == set(specs)` is circular because `canonical_specs` is itself defined from `indexed_specs`; it does not independently prove complete and nonredundant orbit classification.",
+            "The asserted biconditional that canonical descriptors coincide exactly under equal-sized-block permutations and leaf permutations is not proved; idempotence is insufficient.",
+            "If partitions may initially be ordered, the simultaneous coordinate-permutation reduction to nondecreasing partitions is omitted.",
+            "The README invokes an undeclared transaction for the universal assertion 2^22 divides det(A); that dependency is unavailable.",
+            "The 74,792 nonsquare exclusions depend on the unexecuted exhaustive computation.",
+            "The congruence invariance of the computed Hasse invariant and the Hilbert-symbol formulas are not proved or supplied through allowed dependency evidence.",
+            "The 83 Hasse-invariant exclusions and their witnessing primes are generated by the verifier rather than supplied as a static certificate.",
+            "The two empty-pattern exclusions and nineteen Farkas/cell-moment exclusions require enumerated admissible pattern sets and exact sign checks that are not supplied independently of running the verifier.",
+            "The final identity 74,896 = 74,792 + 83 + 2 + 19, disjoint coverage of all 104 normalized-square candidates, and absence of threshold-equality cases therefore remain computationally unverified."
+          ],
+          "evidenceTransactionIds": []
+        }
+      ]
+    }
+  ]
+}

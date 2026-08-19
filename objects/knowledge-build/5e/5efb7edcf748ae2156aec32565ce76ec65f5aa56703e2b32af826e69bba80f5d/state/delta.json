@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "entityKind": "thread",
+      "entityId": "root/exact-witness-verification",
+      "baseDigest": null,
+      "value": {
+        "id": "root/exact-witness-verification",
+        "programId": "root",
+        "title": "Exact witness and determinant verification",
+        "summary": "Exact, independently replayable verification of supplied order-23 sign-matrix witnesses and their determinants.",
+        "kind": "verification",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "fb88b7832c0fa7e84c1583110a7df800571bca02"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/published-record-lower-endpoint",
+      "baseDigest": null,
+      "value": {
+        "id": "root/published-record-lower-endpoint",
+        "programId": "root",
+        "type": "result",
+        "title": "Exact replay of the published order-23 lower endpoint",
+        "summary": "The matrix in `matrix.txt` is a complete \\(23\\times 23\\) matrix with entries\nin \\(\\{-1,+1\\}\\), encoded as `-` and `+`. Exact fraction-free elimination\ngives\n\n\\[\n  |\\det A|=2^{22}\\,3\\,5^6\\,67\\,211\n  =2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThis independently replays the published lower endpoint already stated in the\nproblem. It does **not** claim a new record, a stronger lower bound, or\noptimality of this matrix.\n\nScope qualifications:\n- This certifies only the already stated lower endpoint D_23 ≥ 2,779,447,296,000,000.\n- It does not establish a new record, a larger lower bound, a stronger upper bound, or optimality.\n- No external provenance claim is required for the determinant certificate.",
+        "claimRefs": [
+          {
+            "transactionId": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+            "claimKey": "maximal-determinant-23/published-record-matrix-exact-replay"
+          }
+        ],
+        "sourceTransactionIds": [
+          "fb88b7832c0fa7e84c1583110a7df800571bca02"
+        ],
+        "dependencyItemIds": [
+          "root/published-record-matrix-replay"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/published-record-matrix-replay",
+      "baseDigest": null,
+      "value": {
+        "id": "root/published-record-matrix-replay",
+        "programId": "root",
+        "type": "computation",
+        "title": "Exact determinant computation for the supplied 23×23 sign matrix",
+        "summary": "For the single complete matrix supplied in `matrix.txt`, exact fraction-free Bareiss elimination yields absolute determinant \\(2^{22}3\\,5^6\\,67\\,211=2{,}779{,}447{,}296{,}000{,}000\\). This computation is a replay of the stated lower endpoint and is not an exhaustive search or an optimality certificate.",
+        "claimRefs": [
+          {
+            "transactionId": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+            "claimKey": "maximal-determinant-23/published-record-matrix-exact-replay"
+          }
+        ],
+        "sourceTransactionIds": [
+          "fb88b7832c0fa7e84c1583110a7df800571bca02"
+        ],
+        "dependencyItemIds": [
+          "root/exact-determinant-verifier"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/bareiss-exact-determinant-method",
+      "baseDigest": null,
+      "value": {
+        "id": "root/bareiss-exact-determinant-method",
+        "programId": "root",
+        "type": "method",
+        "title": "Fraction-free exact determinant replay workflow",
+        "summary": "Parse a sign matrix into integers, verify its dimensions and alphabet, evaluate its determinant using integer-only Bareiss fraction-free elimination with pivot-row swaps and exact-division checks, and compare the absolute determinant against both a stated integer and its stated factorization.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "fb88b7832c0fa7e84c1583110a7df800571bca02"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/exact-determinant-verifier",
+      "baseDigest": null,
+      "value": {
+        "id": "root/exact-determinant-verifier",
+        "programId": "root",
+        "type": "tool",
+        "title": "Standard-library exact determinant verifier",
+        "summary": "The submitted `verify.py` parses `matrix.txt`, checks that it is a 23×23 matrix encoded only by `+` and `-`, performs integer-only Bareiss elimination with exact-division checks, verifies the stated factor product and absolute determinant, and reports `verification: PASS` when all checks succeed. It uses only the Python standard library.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "fb88b7832c0fa7e84c1583110a7df800571bca02"
+        ],
+        "dependencyItemIds": [
+          "root/bareiss-exact-determinant-method"
+        ]
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+      "claimKeys": [
+        "maximal-determinant-23/published-record-matrix-exact-replay"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/exact-witness-verification"
+      ],
+      "itemIds": [
+        "root/published-record-lower-endpoint",
+        "root/published-record-matrix-replay",
+        "root/bareiss-exact-determinant-method",
+        "root/exact-determinant-verifier"
+      ]
+    }
+  ]
+}
