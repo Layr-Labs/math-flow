@@ -571,6 +571,111 @@ def _viewer_credit_assignment(
     }
 
 
+def _viewer_hierarchical_credit_assignment(
+    bundle: Path,
+    expected_digest: str,
+    published_objects: dict[str, dict[str, object]],
+) -> dict[str, object]:
+    """Load a hierarchical two-term credit overlay and bind its research state."""
+
+    from .research_credit import load_hierarchical_credit_assignment_bundle
+
+    manifest, credit_state, run_digest = load_hierarchical_credit_assignment_bundle(
+        bundle
+    )
+    if run_digest != expected_digest:
+        raise MathFlowError(
+            f"viewer hierarchical credit digest does not match its index: {bundle}"
+        )
+    credit_input = _json_artifact(bundle, manifest, "hierarchical-credit-input")
+    dependency_lock = _json_artifact(bundle, manifest, "dependency-lock")
+    dependencies = dependency_lock.get("dependencies")
+    research_dependencies = [
+        item
+        for item in dependencies
+        if isinstance(item, dict)
+        and item.get("artifactRole") == "research-program-state"
+    ] if isinstance(dependencies, list) else []
+    if len(research_dependencies) != 1:
+        raise MathFlowError(
+            "viewer hierarchical credit must lock exactly one research-program state"
+        )
+    dependency = research_dependencies[0]
+    dependency_digest = dependency.get("runDigest")
+    dependency_object = (
+        published_objects.get(dependency_digest)
+        if isinstance(dependency_digest, str)
+        else None
+    )
+    if dependency_object is None:
+        raise MathFlowError(
+            "viewer hierarchical credit references an unpublished research run"
+        )
+    dependency_manifest = dependency_object["manifest"]
+    dependency_inputs = dependency_manifest.get("inputs")
+    dependency_artifact = dependency.get("artifact")
+    artifacts = dependency_manifest.get("artifacts")
+    matching_artifacts = [
+        item
+        for item in artifacts
+        if isinstance(item, dict) and item.get("role") == "research-program-state"
+    ] if isinstance(artifacts, list) else []
+    if (
+        dependency_manifest.get("runKind") != "knowledge-build"
+        or dependency_manifest.get("problemId") != manifest.get("problemId")
+        or not isinstance(dependency_inputs, dict)
+        or dependency_inputs.get("projectionSpecDigest")
+        != dependency.get("projectionSpecDigest")
+        or dependency_manifest.get("problemLedgerDigest")
+        != dependency.get("problemLedgerDigest")
+        or len(matching_artifacts) != 1
+        or matching_artifacts[0] != dependency_artifact
+    ):
+        raise MathFlowError(
+            "viewer hierarchical credit research dependency is inconsistent"
+        )
+    cost = sum(
+        float(provider_run.get("usage", {}).get("cost", 0))
+        for provider_run in manifest.get("providerRuns", [])
+        if isinstance(provider_run, dict)
+        and provider_run.get("cacheHit") is not True
+        and isinstance(provider_run.get("usage"), dict)
+        and isinstance(provider_run["usage"].get("cost", 0), (int, float))
+    )
+    models = sorted(
+        {
+            str(provider_run.get("resolvedModel") or provider_run.get("requestedModel"))
+            for provider_run in manifest.get("providerRuns", [])
+            if isinstance(provider_run, dict)
+            and isinstance(
+                provider_run.get("resolvedModel") or provider_run.get("requestedModel"),
+                str,
+            )
+        }
+    )
+    inputs = manifest.get("inputs")
+    consumer = dependency_lock.get("consumer")
+    if not isinstance(inputs, dict) or not isinstance(consumer, dict):
+        raise MathFlowError("viewer hierarchical credit has no projection identity")
+    return {
+        "id": run_digest,
+        "runDigest": run_digest,
+        "ledgerHead": manifest["ledgerHead"],
+        "problemLedgerHead": manifest["problemLedgerHead"],
+        "problemLedgerDigest": manifest["problemLedgerDigest"],
+        "projectionId": consumer["projectionId"],
+        "projectionSpecDigest": consumer["projectionSpecDigest"],
+        "dependencyLockDigest": dependency_lock["dependencyLockDigest"],
+        "dependency": dependency,
+        "creditInput": credit_input,
+        "creditState": credit_state,
+        "dependencyLock": dependency_lock,
+        "models": models,
+        "cost": cost,
+        "schedule": inputs.get("schedule"),
+    }
+
+
 def _title(markdown: str, fallback: str) -> str:
     for line in markdown.splitlines():
         if line.startswith("# "):
@@ -1043,11 +1148,20 @@ def export_viewer_catalog(
         str(spec["id"]): spec for spec in projection_specs.values()
     }
     credit_runs: list[dict[str, object]] = []
+    hierarchical_credit_runs: list[dict[str, object]] = []
     for digest, item in sorted(published_objects.items()):
         if item["manifest"].get("runKind") != "credit-assignment":
             continue
-        credit_run = _viewer_credit_assignment(
-            item["path"], digest, published_objects
+        hierarchical_credit = (
+            item["manifest"].get("outputProfile")
+            == "math-flow/hierarchical-research-credit-v2"
+        )
+        credit_run = (
+            _viewer_hierarchical_credit_assignment(
+                item["path"], digest, published_objects
+            )
+            if hierarchical_credit
+            else _viewer_credit_assignment(item["path"], digest, published_objects)
         )
         problem = str(item["manifest"]["problemId"])
         current_ledger = ledger(root, problem, canonical_ref)
@@ -1123,7 +1237,8 @@ def export_viewer_catalog(
             stale_reasons.append("knowledge-dependency-changed")
         elif not current_knowledge:
             stale_reasons.append("knowledge-projection-advanced")
-        credit_runs.append(
+        target_runs = hierarchical_credit_runs if hierarchical_credit else credit_runs
+        target_runs.append(
             {
                 **credit_run,
                 "knowledgeProjectionIds": [
@@ -1258,6 +1373,131 @@ def export_viewer_catalog(
     credit_projections.sort(
         key=lambda item: (str(item["problemId"]), str(item["label"]), str(item["id"]))
     )
+
+    grouped_hierarchical_credit: dict[
+        tuple[str, str, str], list[dict[str, object]]
+    ] = {}
+    for credit_run in hierarchical_credit_runs:
+        key = (
+            str(credit_run["creditInput"]["problemId"]),
+            str(credit_run["projectionId"]),
+            str(credit_run["projectionSpecDigest"]),
+        )
+        grouped_hierarchical_credit.setdefault(key, []).append(credit_run)
+    for projection_digest, spec in projection_specs.items():
+        if spec.get("engine") != "overlay-repository-v1":
+            continue
+        dependencies = spec.get("dependencies")
+        research_dependencies = [
+            dependency
+            for dependency in dependencies
+            if isinstance(dependency, dict)
+            and dependency.get("artifactRole") == "research-program-state"
+        ] if isinstance(dependencies, list) else []
+        if len(research_dependencies) != 1:
+            continue
+        producer_id = research_dependencies[0].get("projectionId")
+        allowed = spec.get("allowedProblems")
+        for research_projection in projections:
+            registered_research = research_projection.get("projectionSpec")
+            if (
+                not isinstance(registered_research, dict)
+                or registered_research.get("id") != producer_id
+                or not isinstance(allowed, list)
+                or (
+                    "*" not in allowed
+                    and research_projection["problemId"] not in allowed
+                )
+            ):
+                continue
+            grouped_hierarchical_credit.setdefault(
+                (
+                    str(research_projection["problemId"]),
+                    str(spec["id"]),
+                    projection_digest,
+                ),
+                [],
+            )
+
+    hierarchical_credit_projections: list[dict[str, object]] = []
+    hierarchical_id_counts: dict[str, int] = {}
+    for _, projection_id, _ in grouped_hierarchical_credit:
+        hierarchical_id_counts[projection_id] = (
+            hierarchical_id_counts.get(projection_id, 0) + 1
+        )
+    for (problem, projection_id, projection_digest), group_runs in sorted(
+        grouped_hierarchical_credit.items()
+    ):
+        group_runs.sort(
+            key=lambda item: (
+                int(item["schedule"]["evaluatedAt"])
+                if isinstance(item.get("schedule"), dict)
+                else -1,
+                len(item["creditInput"]["acceptedTransactionIds"]),
+                str(item["problemLedgerHead"]),
+                str(item["runDigest"]),
+            )
+        )
+        try:
+            ordered_group = ordered_credit_runs(group_runs)
+        except MathFlowError:
+            ordered_group = []
+        if ordered_group:
+            latest = ordered_group[-1]
+            selection_status = "current" if latest["stale"] is False else "historical"
+        elif group_runs:
+            latest = None
+            selection_status = "ambiguous"
+        else:
+            latest = None
+            selection_status = "pending"
+        registered = projection_specs.get(projection_digest)
+        if registered is not None and registered.get("engine") != "overlay-repository-v1":
+            raise MathFlowError(
+                f"viewer hierarchical credit uses a non-overlay projection: {projection_id}"
+            )
+        catalog_id = (
+            projection_id
+            if hierarchical_id_counts[projection_id] == 1
+            else f"{projection_id}@{projection_digest}"
+        )
+        declared_dependency_ids = {
+            str(research_projection["id"])
+            for research_projection in projections
+            if research_projection["problemId"] == problem
+            and isinstance(research_projection.get("projectionSpec"), dict)
+            and registered is not None
+            and any(
+                isinstance(dependency, dict)
+                and dependency.get("artifactRole") == "research-program-state"
+                and dependency.get("projectionId")
+                == research_projection["projectionSpec"].get("id")
+                for dependency in registered.get("dependencies", [])
+            )
+        }
+        hierarchical_credit_projections.append(
+            {
+                "id": catalog_id,
+                "problemId": problem,
+                "label": projection_id,
+                "projectionSpec": registered,
+                "researchProjectionIds": sorted(
+                    {
+                        research_projection_id
+                        for item in group_runs
+                        for research_projection_id in item["knowledgeProjectionIds"]
+                    }
+                    | declared_dependency_ids
+                ),
+                "latestRunDigest": latest["runDigest"] if latest else None,
+                "selectionStatus": selection_status,
+                "runCount": len(group_runs),
+                "runs": group_runs,
+            }
+        )
+    hierarchical_credit_projections.sort(
+        key=lambda item: (str(item["problemId"]), str(item["label"]), str(item["id"]))
+    )
     direction_ledgers = [
         research_direction_ledger(root, problem, canonical_ref)
         for problem in sorted(
@@ -1279,6 +1519,7 @@ def export_viewer_catalog(
         },
         "projections": projections,
         "creditProjections": credit_projections,
+        "hierarchicalCreditProjections": hierarchical_credit_projections,
         "researchDirections": direction_ledgers,
         "objectiveAttestations": objective_attestations,
         "defaultProjectionId": projections[0]["id"] if projections else None,

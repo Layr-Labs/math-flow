@@ -11,7 +11,7 @@ from .projection_queue import validate_scheduler_state
 from .repository import ledger, read_at, sha256_json
 
 
-SUPPORTED_DEPENDENCY_ROLES = {"knowledge-state"}
+SUPPORTED_DEPENDENCY_ROLES = {"knowledge-state", "research-program-state"}
 DEPENDENCY_LOCK_FIELDS = {
     "schemaVersion",
     "consumer",

@@ -47,6 +47,7 @@ OVERLAY_SCHEDULING_OPTIONAL_FIELDS = {"utcCalendarPeriod"}
 OVERLAY_IMPLEMENTATIONS = {
     "openrouter-credit-assignment-v1",
     "openrouter-credit-assignment-v2",
+    "openrouter-hierarchical-research-credit-v2",
 }
 PROJECTION_DEPENDENCY_FIELDS = {"name", "projectionId", "artifactRole"}
 ARTIFACT_ROLE = re.compile(r"^[a-z0-9][a-z0-9-]*$")

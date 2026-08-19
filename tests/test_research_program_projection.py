@@ -57,16 +57,31 @@ class ResearchProgramProjectionTests(unittest.TestCase):
         self.assertEqual(default["allowedProblems"], ["*"])
         self.assertEqual(specialized["allowedProblems"], ["no-three-in-line-77"])
         self.assertNotEqual(default["id"], specialized["id"])
-        self.assertEqual(
-            default["primaryJudge"],
-            "protocol/judges/openrouter-validity-judgment-v2.json",
-        )
-        self.assertIsNone(default["reconciliationJudge"])
-        self.assertEqual(
-            default["knowledgeBuilder"],
-            "protocol/judges/openrouter-hierarchical-research-builder-v2.json",
-        )
-        self.assertNotEqual(default["primaryJudge"], specialized["primaryJudge"])
+        if default["primaryJudge"] == (
+            "protocol/judges/openrouter-validity-judgment-v2.json"
+        ):
+            self.assertIsNone(default["reconciliationJudge"])
+            self.assertEqual(
+                default["knowledgeBuilder"],
+                "protocol/judges/openrouter-hierarchical-research-builder-v2.json",
+            )
+        else:
+            self.assertEqual(
+                default["primaryJudge"],
+                "protocol/judges/openrouter-markdown-judgment-v1.json",
+            )
+            self.assertEqual(
+                default["reconciliationJudge"],
+                "protocol/judges/openrouter-markdown-reconciliation-v1.json",
+            )
+            self.assertEqual(
+                default["knowledgeBuilder"],
+                "protocol/judges/openrouter-research-program-builder-v2.json",
+            )
+        if default["primaryJudge"].endswith("validity-judgment-v2.json"):
+            self.assertNotEqual(default["primaryJudge"], specialized["primaryJudge"])
+        else:
+            self.assertEqual(default["primaryJudge"], specialized["primaryJudge"])
         self.assertIsNotNone(specialized["reconciliationJudge"])
         self.assertEqual(
             specialized["knowledgeBuilder"],

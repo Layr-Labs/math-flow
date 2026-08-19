@@ -78,8 +78,9 @@ has been evaluated.
 ## Credit boundary
 
 The state builder records contribution-to-program and contribution-to-item
-links but does not estimate credit. The planned downstream evaluator applies
-the two-term hierarchical policy locally at each program:
+links but does not estimate credit. The independent
+`openrouter-research-credit-v2` overlay applies the two-term hierarchical policy
+locally at each program:
 
 `credit = direct work avoided + other pre-existing local work obviated`.
 
@@ -87,6 +88,30 @@ This is a matched hindsight counterfactual given what is known at the evaluation
 horizon. It is not the historical difference between pre- and post-submission
 estimates of remaining work. A negative result may increase the latter while
 still reducing counterfactual work.
+
+The overlay locks one exact `research-program-state`, walks its immutable
+`baseRun` chain, and recovers the first build in which every contribution or
+child program appeared. Contributions accepted in one formation batch share
+the same historical base and post state; a unique post state per submission is
+not required. The credit judge receives:
+
+- the current program state as the common hindsight horizon;
+- every accepted submission's original content and exact valid claim records;
+- the complete accepted formation trace and provenance links;
+- each child's direct local thread IDs; and
+- that child's pre-existing local thread ledger at first appearance.
+
+Invalid and indeterminate claims are absent. The model returns direct and
+obviated work effects plus an unattributed local residual. Trusted reduction
+checks exact child and thread coverage, preserves the historical snapshots,
+computes local shares, and propagates them through the strict program tree.
+Every refresh recomputes all credit-bearing programs at one horizon; it does
+not retain stale sibling scores from a prior credit state.
+
+Credit scheduling is independent of primary judgment and research-state
+formation. The default overlay has a one-hour rolling minimum interval, so
+several state advances may coalesce into one broader retrospective evaluation.
+It never serializes or delays primary validity judgments.
 
 ## Production command path
 
@@ -98,9 +123,17 @@ math-flow knowledge-trigger ...
 math-flow knowledge-claim ...
 math-flow knowledge-build ...
 math-flow knowledge-complete ...
+math-flow credit --projection openrouter-research-credit-v2 ...
 ```
 
 `knowledge-build` dispatches by the governed builder implementation. Legacy
 builders retain their existing behavior; the hierarchical v2 builder produces a
 `knowledge-build` run containing `research-batch-input`,
 `research-program-delta`, and `research-program-state` artifacts.
+
+The credit command uses the existing governed overlay workflow. Its
+`credit-assignment` bundle contains the exact dependency lock, accepted history,
+original submission evidence, historical local contexts, raw credit delta, and
+the deterministic `hierarchical-credit-state`. The viewer catalog exports these
+runs separately as `hierarchicalCreditProjections`; they are not coerced into
+the legacy qualitative assignment format.

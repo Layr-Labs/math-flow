@@ -409,6 +409,60 @@ class ResearchStateTests(unittest.TestCase):
                 raw_delta=raw,
             )
 
+    def test_retrospective_reference_rejects_obviation_invented_after_child(self) -> None:
+        base = empty_research_program_state("demo")
+        delta = first_delta()
+        delta["operations"].append(
+            {
+                "entityKind": "thread",
+                "entityId": "root/new-alternative",
+                "baseDigest": None,
+                "value": {
+                    "id": "root/new-alternative",
+                    "programId": "root",
+                    "title": "New alternative",
+                    "summary": "A route first recorded with the contribution.",
+                    "kind": "research",
+                    "status": "active",
+                    "expectedExposure": "2",
+                    "conditions": [],
+                    "sourceTransactionIds": [TX1],
+                },
+            }
+        )
+        post = apply_research_program_delta(
+            base,
+            delta,
+            ledger_head=TX1,
+            subject_transaction_id=TX1,
+            accepted_claims=[claim(TX1, "main")],
+            judgment_id=JUDGMENT,
+        )
+        raw = first_credit()
+        raw["evaluations"][0]["children"][0]["obviatedEffects"] = [
+            {
+                "threadId": "root/new-alternative",
+                "withoutWork": "2",
+                "withWork": "0",
+                "rationale": "This route did not exist in the historical base.",
+            }
+        ]
+        with self.assertRaisesRegex(MathFlowError, "outside the local program"):
+            materialize_credit_evaluations(
+                prior_credit_state=None,
+                base_program_state=post,
+                post_program_state=post,
+                horizon_program_state=post,
+                subject_transaction_id=None,
+                raw_delta=raw,
+                target_children_by_program={
+                    "root": [{"kind": "contribution", "id": TX1}]
+                },
+                reference_states_by_child={
+                    ("root", "contribution", TX1): (base, post)
+                },
+            )
+
     def test_existing_program_topology_is_immutable(self) -> None:
         base = empty_research_program_state("demo")
         delta = first_delta()

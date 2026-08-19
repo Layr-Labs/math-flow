@@ -61,10 +61,11 @@ automatic squash merge to main
                     ├── content-addressed judgment/build objects
                     ├── scheduler and per-problem indexes
                     ├── viewer/catalog.json
-                    └── exact knowledge dependency lock
+                    └── exact state dependency lock
                                       │
                                       ▼
-                         qualitative credit overlay
+                  independent qualitative or hierarchical
+                            credit overlay
                                  │
                                  ▼
                     repository-backed research atlas
@@ -293,9 +294,19 @@ and paid only for knowledge formation. Their current wildcard run digests are
 has three top-level programs (certificates/occupancy, record perturbation, and
 symmetry-restricted analysis); the triangle state has one top-level area
 program. The specialized no-three research-program projection remains active
-as a separate historical/experimental chain because both credit overlays still
-declare it as their exact knowledge dependency. No wildcard default credit
-overlay has been admitted.
+as a separate historical/experimental chain because both qualitative credit
+overlays still declare it as their exact knowledge dependency.
+
+The default wildcard research projection now also has a distinct
+`openrouter-research-credit-v2` overlay. It locks the latest batched
+`research-program-state`, reconstructs first-appearance local ledgers from the
+immutable build chain, supplies original accepted submissions and validity
+records, and recomputes every immediate program edge at one common hindsight
+horizon. Its two non-negative terms are direct local work avoided and other
+pre-existing local work obviated; observed changes in estimated remaining work
+are not credit. The overlay has a one-hour rolling minimum interval and is
+scheduled independently, so it does not serialize primary judgments or require
+one research-state build per submission.
 
 The first research-program build published successfully in hosted run
 `31519191523`. It reused all three existing primary judgments, found no current

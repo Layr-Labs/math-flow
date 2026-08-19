@@ -1,16 +1,30 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 
 from math_flow.cli import main
-from math_flow.coordination import claim_due_build, record_completed_inputs
+from math_flow.artifacts import load_manifest, read_verified_artifact
+from math_flow.coordination import (
+    claim_due_build,
+    complete_build,
+    publish_batch,
+    record_completed_inputs,
+)
+from math_flow.credit import run_credit_assignment_bundle
+from math_flow.credit_context import build_credit_context
 from math_flow.judgments import load_judgment_bundle, run_primary_judgment_bundle
 from math_flow.errors import MathFlowError
 from math_flow.judges import load_judge_spec, load_source
+from math_flow.governance import resolve_projection
 from math_flow.repository import sha256_json
+from math_flow.research_credit import (
+    load_hierarchical_credit_assignment_bundle,
+)
+from math_flow.research_state import empty_research_program_state
 from math_flow.research_projection import (
     load_research_build_bundle,
     load_research_credit_refresh_bundle,
@@ -21,7 +35,7 @@ from math_flow.research_projection import (
     run_research_update_bundle,
 )
 from math_flow.validity import research_state_dependency_context
-from math_flow.viewer import export_viewer_data
+from math_flow.viewer import export_viewer_catalog, export_viewer_data
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -191,6 +205,7 @@ class ResearchProjectionTests(unittest.TestCase):
         transaction_id: str,
         *,
         status: str = "valid",
+        repository: Path = ROOT,
     ) -> Path:
         calls = 0
 
@@ -231,9 +246,9 @@ class ResearchProjectionTests(unittest.TestCase):
 
         output = directory / f"validity-{transaction_id[:12]}"
         run_primary_judgment_bundle(
-            ROOT,
+            repository,
             PROBLEM,
-            ROOT / "protocol/judges/openrouter-validity-judgment-v2.json",
+            repository / "protocol/judges/openrouter-validity-judgment-v2.json",
             transaction_id,
             [transaction_id],
             output,
@@ -443,6 +458,303 @@ class ResearchProjectionTests(unittest.TestCase):
             _, state, _ = load_research_build_bundle(output)
             self.assertEqual(state["contributions"], {})
             self.assertEqual(manifest["providerRuns"], [])
+
+    def test_hierarchical_credit_uses_common_horizon_and_batched_historical_base(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository = root / "repository"
+            subprocess.run(
+                ["git", "clone", "-q", "--no-hardlinks", str(ROOT), str(repository)],
+                check=True,
+            )
+            subprocess.run(
+                ["git", "config", "user.name", "Research Credit Test"],
+                cwd=repository,
+                check=True,
+            )
+            subprocess.run(
+                ["git", "config", "user.email", "credit-test@example.com"],
+                cwd=repository,
+                check=True,
+            )
+            research_projection_path = (
+                repository / "protocol/projections/openrouter-research-v1.json"
+            )
+            research_projection_path.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "id": "openrouter-research-v1",
+                        "description": "Fixture batched hierarchical research projection.",
+                        "status": "active",
+                        "engine": "openrouter-repository-v1",
+                        "allowedProblems": ["*"],
+                        "primaryJudge": "protocol/judges/openrouter-validity-judgment-v2.json",
+                        "reconciliationJudge": None,
+                        "knowledgeBuilder": "protocol/judges/openrouter-hierarchical-research-builder-v2.json",
+                        "scheduling": {
+                            "judgmentMaxParallel": 16,
+                            "knowledgeMinimumIntervalSeconds": 300,
+                            "maximumJudgmentsPerBuild": 500,
+                        },
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            projection_path = (
+                repository
+                / "protocol/projections/openrouter-research-credit-v2.json"
+            )
+            projection_path.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 2,
+                        "id": "openrouter-research-credit-v2",
+                        "description": "Fixture common-horizon hierarchical credit overlay.",
+                        "status": "active",
+                        "engine": "overlay-repository-v1",
+                        "allowedProblems": ["*"],
+                        "runner": {
+                            "implementation": "openrouter-hierarchical-research-credit-v2",
+                            "spec": "protocol/judges/openrouter-hierarchical-research-credit-v2.json",
+                        },
+                        "dependencies": [
+                            {
+                                "name": "research",
+                                "projectionId": "openrouter-research-v1",
+                                "artifactRole": "research-program-state",
+                            }
+                        ],
+                        "scheduling": {"minimumIntervalSeconds": 3600},
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            subprocess.run(
+                [
+                    "git",
+                    "add",
+                    "protocol/projections/openrouter-research-v1.json",
+                    "protocol/projections/openrouter-research-credit-v2.json",
+                ],
+                cwd=repository,
+                check=True,
+            )
+            subprocess.run(
+                ["git", "commit", "-qm", "Add fixture credit projection"],
+                cwd=repository,
+                check=True,
+            )
+            projection_root = root / "published"
+            validity_dirs = [
+                self._validity_bundle(
+                    root, transaction_id, repository=repository
+                )
+                for transaction_id in TRANSACTIONS[:2]
+            ]
+            invalid = self._validity_bundle(
+                root,
+                TRANSACTIONS[2],
+                status="invalid",
+                repository=repository,
+            )
+            all_judgments = [*validity_dirs, invalid]
+            builder = load_judge_spec(
+                repository
+                / "protocol/judges/openrouter-hierarchical-research-builder-v2.json"
+            )
+            builder_digest = f"sha256:{sha256_json(builder)}"
+            producer = resolve_projection(
+                repository, "openrouter-research-v1", PROBLEM, "HEAD"
+            )
+            judgment_ids = [
+                str(load_judgment_bundle(bundle)[1]["judgmentId"])
+                for bundle in all_judgments
+            ]
+            scheduler = projection_root / "coordination" / "scheduler.json"
+            lane = record_completed_inputs(
+                scheduler,
+                PROBLEM,
+                builder_digest,
+                judgment_ids,
+                [],
+                300,
+                1,
+                projection_spec_digest=str(producer["projectionSpecDigest"]),
+            )
+            claim = claim_due_build(
+                scheduler, str(lane["laneId"]), 1, 500
+            )
+            assert claim is not None
+            build = root / "research-build"
+            run_research_build_bundle(
+                repository,
+                PROBLEM,
+                repository
+                / "protocol/judges/openrouter-hierarchical-research-builder-v2.json",
+                "HEAD",
+                claim,
+                list(reversed(all_judgments)),
+                None,
+                build,
+                transport=self._batch_transport,
+            )
+            _, build_digest = load_manifest(build)
+            publish_batch(projection_root, [*all_judgments, build])
+            complete_build(
+                scheduler,
+                str(lane["laneId"]),
+                str(claim["buildToken"]),
+                build_digest,
+                2,
+            )
+
+            calls: list[dict[str, object]] = []
+
+            def credit_transport(request: dict[str, object]) -> dict[str, object]:
+                calls.append(request)
+                schema = request["response_format"]["json_schema"]["schema"]
+                program_ids = schema["properties"]["evaluations"]["items"][
+                    "properties"
+                ]["programId"]["enum"]
+                self.assertEqual(program_ids, ["root"])
+                children = []
+                for transaction_id in TRANSACTIONS[:2]:
+                    children.append(
+                        {
+                            "kind": "contribution",
+                            "id": transaction_id,
+                            "counterfactual": "Remove this accepted result while retaining independent information.",
+                            "directEffects": [
+                                {
+                                    "threadId": f"root/batch-line-{transaction_id[:12]}",
+                                    "withoutWork": "3",
+                                    "withWork": "1",
+                                    "rationale": "Two units of direct local work are avoided.",
+                                }
+                            ],
+                            "obviatedEffects": [
+                                {
+                                    "threadId": "root/unstructured-search",
+                                    "withoutWork": "2",
+                                    "withWork": "1.5",
+                                    "rationale": "The result narrows pre-existing unstructured search.",
+                                }
+                            ],
+                            "confidence": "medium",
+                            "evidenceRefs": [transaction_id],
+                        }
+                    )
+                return response(
+                    json.dumps(
+                        {
+                            "schemaVersion": 1,
+                            "evaluations": [
+                                {
+                                    "programId": "root",
+                                    "unattributedWork": "1",
+                                    "rationale": "One unit remains unattributed.",
+                                    "children": children,
+                                }
+                            ],
+                        }
+                    ),
+                    1,
+                )
+
+            output = root / "credit"
+            run_credit_assignment_bundle(
+                repository,
+                projection_root,
+                "openrouter-research-credit-v2",
+                PROBLEM,
+                "HEAD",
+                output,
+                transport=credit_transport,
+                as_of=3,
+            )
+            manifest, credit_state, _ = load_hierarchical_credit_assignment_bundle(
+                output
+            )
+            self.assertEqual(len(calls), 1)
+            self.assertEqual(manifest["runKind"], "credit-assignment")
+            self.assertEqual(
+                set(credit_state["allocations"]), set(TRANSACTIONS[:2])
+            )
+            children = credit_state["evaluations"]["root"]["children"]
+            empty_digest = empty_research_program_state(PROBLEM)["stateDigest"]
+            self.assertEqual(
+                {child["referenceBaseStateDigest"] for child in children},
+                {empty_digest},
+            )
+            self.assertEqual(
+                len({child["referencePostStateDigest"] for child in children}),
+                1,
+            )
+            self.assertTrue(all(child["totalWork"] == "2.5" for child in children))
+            history = json.loads(
+                read_verified_artifact(
+                    output, manifest, "research-history-trace"
+                )
+            )
+            accepted = history[0]["acceptedRecords"]
+            self.assertEqual(
+                {record["subjectTransactionId"] for record in accepted},
+                set(TRANSACTIONS[:2]),
+            )
+            evidence = read_verified_artifact(
+                output, manifest, "accepted-submission-evidence"
+            ).decode("utf-8")
+            self.assertNotIn(TRANSACTIONS[2], evidence)
+            prompt = calls[0]["messages"][1]["content"]
+            self.assertIn("Original accepted submissions", prompt)
+            self.assertIn("historical local reference contexts", prompt)
+            publish_batch(projection_root, [output])
+            source = load_source(repository, PROBLEM, "HEAD")
+            credit_context, report = build_credit_context(
+                repository,
+                projection_root,
+                PROBLEM,
+                "HEAD",
+                list(source["transactions"]),
+                credit_projection_id="openrouter-research-credit-v2",
+            )
+            self.assertEqual(credit_context["status"], "current")
+            self.assertEqual(
+                credit_context["semantics"]["kind"],
+                "hierarchical-two-term-causal-work",
+            )
+            self.assertEqual(
+                set(credit_context["hierarchicalCredit"]["allocations"]),
+                set(TRANSACTIONS[:2]),
+            )
+            self.assertIsNone(report)
+            catalog = export_viewer_catalog(
+                repository,
+                projection_root,
+                "Layr-Labs/math-flow",
+                canonical_ref="HEAD",
+                projection_ref="projections",
+            )
+            hierarchical = catalog["hierarchicalCreditProjections"]
+            selected = next(
+                item
+                for item in hierarchical
+                if item["problemId"] == PROBLEM
+                and item["label"] == "openrouter-research-credit-v2"
+            )
+            self.assertEqual(selected["selectionStatus"], "current")
+            self.assertEqual(selected["runCount"], 1)
+            self.assertEqual(
+                set(selected["runs"][0]["creditState"]["allocations"]),
+                set(TRANSACTIONS[:2]),
+            )
 
     def test_knowledge_trigger_derives_submission_dependencies_from_validity_packets(
         self,

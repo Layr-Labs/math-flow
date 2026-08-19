@@ -950,6 +950,10 @@ def materialize_credit_evaluations(
     subject_transaction_id: str | None,
     raw_delta: object,
     target_children_by_program: dict[str, list[dict[str, str]]] | None = None,
+    reference_states_by_child: dict[
+        tuple[str, str, str], tuple[dict[str, object], dict[str, object]]
+    ]
+    | None = None,
 ) -> dict[str, object]:
     validate_research_program_state(base_program_state)
     validate_research_program_state(post_program_state)
@@ -1078,18 +1082,45 @@ def materialize_credit_evaluations(
                 ):
                     raise MathFlowError("prior credit child lacks reference snapshots")
             else:
-                if stationary_refresh:
+                reference_states = (
+                    reference_states_by_child.get((program_id, str(kind), child_id))
+                    if reference_states_by_child is not None
+                    else None
+                )
+                if reference_states is not None:
+                    reference_base_state, reference_post_state = reference_states
+                    validate_research_program_state(reference_base_state)
+                    validate_research_program_state(reference_post_state)
+                    if (
+                        reference_base_state.get("problemId")
+                        != post_program_state.get("problemId")
+                        or reference_post_state.get("problemId")
+                        != post_program_state.get("problemId")
+                    ):
+                        raise MathFlowError(
+                            "hierarchical credit reference belongs to another problem"
+                        )
+                    reference_base_digest = reference_base_state["stateDigest"]
+                    reference_post_digest = reference_post_state["stateDigest"]
+                    reference_base_threads = _local_thread_snapshot(
+                        reference_base_state, program_id
+                    )
+                    reference_post_threads = _local_thread_snapshot(
+                        reference_post_state, program_id
+                    )
+                elif stationary_refresh:
                     raise MathFlowError(
                         "retrospective credit refresh requires a stored historical reference for every child"
                     )
-                reference_base_digest = base_program_state["stateDigest"]
-                reference_post_digest = post_program_state["stateDigest"]
-                reference_base_threads = _local_thread_snapshot(
-                    base_program_state, program_id
-                )
-                reference_post_threads = _local_thread_snapshot(
-                    post_program_state, program_id
-                )
+                else:
+                    reference_base_digest = base_program_state["stateDigest"]
+                    reference_post_digest = post_program_state["stateDigest"]
+                    reference_base_threads = _local_thread_snapshot(
+                        base_program_state, program_id
+                    )
+                    reference_post_threads = _local_thread_snapshot(
+                        post_program_state, program_id
+                    )
 
             direct_thread_ids = credit_child_thread_ids(
                 post_program_state, program_id, str(kind), child_id
