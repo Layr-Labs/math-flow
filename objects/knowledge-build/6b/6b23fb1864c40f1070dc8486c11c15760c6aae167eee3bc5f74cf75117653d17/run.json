@@ -1,0 +1,103 @@
+{
+  "protocolVersion": 1,
+  "problemId": "metric-universality-price",
+  "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+  "problemLedgerHead": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+  "problemLedgerDigest": "sha256:3e24c35c1fb305cfd0a675649f584f838bd13e21e7deea673119621ef22813f0",
+  "judgeSpec": {
+    "id": "openrouter-hierarchical-research-builder-v2",
+    "digest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb"
+  },
+  "runner": {
+    "implementation": "openrouter-hierarchical-research-builder-v2",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "accepted-validity-batch-program-state-v2",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "structured-research-batch-v2",
+    "reducer": "batched-research-state-v2"
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/hierarchical-research-v2",
+  "requestDigests": [
+    "sha256:1a8322d700031222bd86f2cb46c3ee798189f8845cd7ceda8fede4d27836cc7e"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "organize",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787170873-cGVkRY4LBlTddB4d5cIv",
+      "usage": {
+        "prompt_tokens": 6755,
+        "completion_tokens": 3534,
+        "total_tokens": 10289,
+        "cost": 0.0741175,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 6752,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.0741175,
+          "upstream_inference_prompt_cost": 0.0211075,
+          "upstream_inference_completions_cost": 0.05301
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1409,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "knowledge-build",
+  "inputs": {
+    "projectionSpecDigest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+    "laneId": "sha256:4c7afe3f3eba78aedba8f45fc7fb6a363e94076265aa3b358c08edcd2ed71d71",
+    "baseStateRun": null,
+    "problemId": "metric-universality-price",
+    "schemaVersion": 1,
+    "builderSpecDigest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb",
+    "judgmentIds": [
+      "sha256:3181d55b097ffa920f8f89a980c1939b29ef3656b1fa86900d7be6e7d09580b9"
+    ],
+    "conflictIds": [],
+    "judgmentSetDigest": "sha256:b13d1bf0fb1f2f53662a5549879a51d6f245d3ce420a7b2fe484c035e4e9ab39",
+    "buildToken": "sha256:4ee5180281ce9c712304671004c0c5134c1a7ec2a48393b06d08ed8d4fd9102c"
+  },
+  "artifacts": [
+    {
+      "path": "control/build-input.json",
+      "role": "knowledge-build-input",
+      "mediaType": "application/json",
+      "digest": "sha256:6836a78652b1fe5e5a6e4e6cefa18f84dd5140f3f99fa1d49f6bb10dbdad95d5",
+      "bytes": 691
+    },
+    {
+      "path": "input/research-batch.json",
+      "role": "research-batch-input",
+      "mediaType": "application/json",
+      "digest": "sha256:09c1e1641bb4aefab9ded0de2d974122ab79979dbdc6ceb7f5a02edbd36478db",
+      "bytes": 619
+    },
+    {
+      "path": "state/delta.json",
+      "role": "research-program-delta",
+      "mediaType": "application/json",
+      "digest": "sha256:3f7e48c7231f87dbaafd6be5f8eaf944b3c79af747f8c17e8977ca2feae73453",
+      "bytes": 7896
+    },
+    {
+      "path": "state/state.json",
+      "role": "research-program-state",
+      "mediaType": "application/json",
+      "digest": "sha256:1681169f60e6e334668ef95c585b800b6ce4cc0fd6dcbc1a3985c7d5c0bcf03d",
+      "bytes": 8260
+    }
+  ]
+}

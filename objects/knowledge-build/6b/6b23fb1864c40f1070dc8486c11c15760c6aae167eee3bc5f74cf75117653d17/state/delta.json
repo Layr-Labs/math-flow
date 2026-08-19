@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:4bc4e85d0ca6e4224902591c71cf9cb813718dfe5961d8be774384d474797c99",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "status": "active",
+        "parentThreadIds": [],
+        "sourceTransactionIds": [
+          "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "root/unstructured-search",
+      "baseDigest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e",
+      "value": {
+        "id": "root/unstructured-search",
+        "programId": "root",
+        "title": "Unstructured search and overhead",
+        "summary": "Future work not yet assigned to a more specific research thread.",
+        "kind": "unstructured",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/result-subexponential-rank-one-families-zero-price",
+      "baseDigest": null,
+      "value": {
+        "id": "root/result-subexponential-rank-one-families-zero-price",
+        "programId": "root",
+        "type": "result",
+        "title": "Subexponential rank-one metric families have zero restricted asymptotic price",
+        "summary": "Fix a dimension \\(n\\), an integer \\(M\\ge 2\\), and any finite family of unit\nvectors\n\n\\[\n\\mathcal U=\\{u_1,\\ldots,u_m\\}\\subset S^{n-1}.\n\\]\n\nAssociate to these vectors the trace-normalized rank-one metrics\n\\(\\Sigma_i=n u_i u_i^{\\mathsf T}\\). Define the minimax overhead restricted to\nthis family by\n\n\\[\n\\Pi_n(\\mathcal U,M)=\n\\inf_{\\substack{C\\subset\\mathbb R^n\\\\ |C|=M}}\n\\max_{1\\le i\\le m}\n\\left[\n\\frac{\\log_2 M}{n}\n-R_{\\mathrm{wf}}\\bigl(\\Sigma_i,D(C,\\Sigma_i)\\bigr)\n\\right].\n\\]\n\nPut\n\n\\[\n\\beta_m=4m\\sqrt{2\\ln(8m)}\n\\]\n\nand\n\n\\[\nB(M,m)=\n\\frac{4\\beta_m^2\\ln M}{(M-1)^2}\n+\\frac{2}{\\sqrt{2\\pi}\\,M^2}\n\\left(2\\sqrt{\\ln M}+\\frac{1}{2\\sqrt{\\ln M}}\\right).\n\\]\n\nThere is an explicit collinear \\(M\\)-word codebook, depending on\n\\(\\mathcal U\\), for which\n\n\\[\nD(C,\\Sigma_i)\\le B(M,m)\\qquad(1\\le i\\le m).\n\\]\n\nConsequently, whenever \\(B(M,m)<1\\),\n\n\\[\n0\\le \\Pi_n(\\mathcal U,M)\n\\le \\frac{1}{2n}\\log_2\\!\\bigl(M^2B(M,m)\\bigr).\n\\tag{1}\n\\]\n\nIn particular, let \\(R>0\\), let \\(M_n=\\lceil 2^{nR}\\rceil\\), and allow the\nrank-one family \\(\\mathcal U_n\\) to vary with \\(n\\). If its cardinality\n\\(m_n\\) satisfies\n\n\\[\n\\ln m_n=o(n),\n\\]\n\nthen\n\n\\[\n\\lim_{n\\to\\infty}\\Pi_n(\\mathcal U_n,M_n)=0.\n\\tag{2}\n\\]\n\nThus no fixed, polynomial-size, or more generally subexponential-size family\nof differently oriented rank-one metrics can by itself prove a positive\nasymptotic minimax price against arbitrary codebooks. Any rank-one\nfinite-family lower-bound route must use exponentially many orientations (at\nthe relevant exponent) or add an argument that genuinely controls metrics\noutside the displayed family.\n\nScope qualifications: The family is implicitly nonempty (\\(m\\ge1\\)), as required by \\(\\beta_m\\) and the maximum over orientations. The result concerns only the displayed finite rank-one family; it does not control metrics outside that family or establish zero price for the full uncountable metric class. “Explicit” means that the codebook has a displayed formula after selecting a probabilistically proved witness \\(v\\); no effective deterministic or efficient witness-construction algorithm is established. Repeated, dependent, or nongeneric orientations are allowed; no independence or general-position assumption is needed.",
+        "claimRefs": [
+          {
+            "transactionId": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+            "claimKey": "metric-universality-price/subexponential-rank-one-families-zero-price"
+          }
+        ],
+        "sourceTransactionIds": [
+          "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+        ],
+        "dependencyItemIds": [
+          "root/proof-subexponential-rank-one-families-zero-price",
+          "root/method-collinear-rank-one-family-codebook"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/proof-subexponential-rank-one-families-zero-price",
+      "baseDigest": null,
+      "value": {
+        "id": "root/proof-subexponential-rank-one-families-zero-price",
+        "programId": "root",
+        "type": "proof",
+        "title": "Gaussian witness, scalar-grid distortion, and water-filling proof",
+        "summary": "Draw \\(G\\sim N(0,I_n)\\) and apply marginal Gaussian lower-tail and upper-tail bounds with a union bound—without requiring independence—to select \\(v\\) satisfying \\(1/(4m)\\le |u_i^{\\mathsf T}v|\\le\\sqrt{2\\ln(8m)}\\) simultaneously. The collinear construction then projects under each rank-one metric to an equally spaced scalar grid. Its nearest-grid error is bounded by the grid-spacing term plus \\((|Z|-2\\sqrt{\\ln M})_+^2\\); Gaussian tail integration yields \\(B(M,m)\\). The rank-one water-filling identity \\(R_{\\mathrm{wf}}(\\Sigma_i,D)=(2n)^{-1}\\log_2(1/D)\\) for \\(0<D<1\\) gives (1), and the estimate on \\(M_n^2B(M_n,m_n)\\) gives (2) when \\(\\ln m_n=o(n)\\).",
+        "claimRefs": [
+          {
+            "transactionId": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+            "claimKey": "metric-universality-price/subexponential-rank-one-families-zero-price"
+          }
+        ],
+        "sourceTransactionIds": [
+          "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+        ],
+        "dependencyItemIds": [
+          "root/method-collinear-rank-one-family-codebook"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/method-collinear-rank-one-family-codebook",
+      "baseDigest": null,
+      "value": {
+        "id": "root/method-collinear-rank-one-family-codebook",
+        "programId": "root",
+        "type": "method",
+        "title": "Collinear codebook tailored to a finite rank-one metric family",
+        "summary": "After selecting a witness \\(v\\) with \\(1/(4m)\\le |u_i^{\\mathsf T}v|\\le\\sqrt{2\\ln(8m)}\\), set \\(\\alpha_*=\\min_i|u_i^{\\mathsf T}v|\\), \\(A=2\\sqrt{\\ln M}\\), \\(s_j=-A/\\alpha_*+2A(j-1)/(\\alpha_*(M-1))\\), and \\(c_j=s_jv\\) for \\(1\\le j\\le M\\). This produces the accepted simultaneous distortion bound for the prescribed finite family. The construction is tailored to that family and need not control other rank-one or higher-rank metrics. Its displayed formula is explicit after the probabilistic existence selection of \\(v\\); no effective deterministic or efficient witness-construction algorithm is established.",
+        "claimRefs": [
+          {
+            "transactionId": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+            "claimKey": "metric-universality-price/subexponential-rank-one-families-zero-price"
+          }
+        ],
+        "sourceTransactionIds": [
+          "5e12e53d70d9d24eae78099abae00df3e384d0e3"
+        ],
+        "dependencyItemIds": []
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+      "claimKeys": [
+        "metric-universality-price/subexponential-rank-one-families-zero-price"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/unstructured-search"
+      ],
+      "itemIds": [
+        "root/result-subexponential-rank-one-families-zero-price",
+        "root/proof-subexponential-rank-one-families-zero-price",
+        "root/method-collinear-rank-one-family-codebook"
+      ]
+    }
+  ]
+}

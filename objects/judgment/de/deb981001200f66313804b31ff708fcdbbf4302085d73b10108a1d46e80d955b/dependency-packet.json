@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "problemId": "metric-universality-price",
+  "subjectTransactionId": "5e12e53d70d9d24eae78099abae00df3e384d0e3",
+  "subjectLedgerPosition": 1,
+  "claims": [
+    {
+      "claimKey": "metric-universality-price/subexponential-rank-one-families-zero-price",
+      "statement": "Fix a dimension \\(n\\), an integer \\(M\\ge 2\\), and any finite family of unit\nvectors\n\n\\[\n\\mathcal U=\\{u_1,\\ldots,u_m\\}\\subset S^{n-1}.\n\\]\n\nAssociate to these vectors the trace-normalized rank-one metrics\n\\(\\Sigma_i=n u_i u_i^{\\mathsf T}\\). Define the minimax overhead restricted to\nthis family by\n\n\\[\n\\Pi_n(\\mathcal U,M)=\n\\inf_{\\substack{C\\subset\\mathbb R^n\\\\ |C|=M}}\n\\max_{1\\le i\\le m}\n\\left[\n\\frac{\\log_2 M}{n}\n-R_{\\mathrm{wf}}\\bigl(\\Sigma_i,D(C,\\Sigma_i)\\bigr)\n\\right].\n\\]\n\nPut\n\n\\[\n\\beta_m=4m\\sqrt{2\\ln(8m)}\n\\]\n\nand\n\n\\[\nB(M,m)=\n\\frac{4\\beta_m^2\\ln M}{(M-1)^2}\n+\\frac{2}{\\sqrt{2\\pi}\\,M^2}\n\\left(2\\sqrt{\\ln M}+\\frac{1}{2\\sqrt{\\ln M}}\\right).\n\\]\n\nThere is an explicit collinear \\(M\\)-word codebook, depending on\n\\(\\mathcal U\\), for which\n\n\\[\nD(C,\\Sigma_i)\\le B(M,m)\\qquad(1\\le i\\le m).\n\\]\n\nConsequently, whenever \\(B(M,m)<1\\),\n\n\\[\n0\\le \\Pi_n(\\mathcal U,M)\n\\le \\frac{1}{2n}\\log_2\\!\\bigl(M^2B(M,m)\\bigr).\n\\tag{1}\n\\]\n\nIn particular, let \\(R>0\\), let \\(M_n=\\lceil 2^{nR}\\rceil\\), and allow the\nrank-one family \\(\\mathcal U_n\\) to vary with \\(n\\). If its cardinality\n\\(m_n\\) satisfies\n\n\\[\n\\ln m_n=o(n),\n\\]\n\nthen\n\n\\[\n\\lim_{n\\to\\infty}\\Pi_n(\\mathcal U_n,M_n)=0.\n\\tag{2}\n\\]\n\nThus no fixed, polynomial-size, or more generally subexponential-size family\nof differently oriented rank-one metrics can by itself prove a positive\nasymptotic minimax price against arbitrary codebooks. Any rank-one\nfinite-family lower-bound route must use exponentially many orientations (at\nthe relevant exponent) or add an argument that genuinely controls metrics\noutside the displayed family.",
+      "dependencyTransactionIds": []
+    }
+  ],
+  "dependencyTransactionIds": [],
+  "knowledgeContext": null,
+  "packetDigest": "sha256:d8ebd9837934f257d61015151c0a505f543843c43617f68557e8cbec479c19b9"
+}
