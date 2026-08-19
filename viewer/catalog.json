@@ -11789,6 +11789,413 @@
       }
     },
     {
+      "id": "openrouter-research-v1",
+      "problemId": "multiway-cut-ckr-gap",
+      "label": "openrouter-research-v1",
+      "projectionSpec": {
+        "id": "openrouter-research-v1",
+        "description": "The default parallel validity projection with dependency-safe batched hierarchical research-state formation.",
+        "digest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+        "engine": "openrouter-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [],
+        "scheduling": {
+          "judgmentMaxParallel": 16,
+          "knowledgeMinimumIntervalSeconds": 300,
+          "maximumJudgmentsPerBuild": 500
+        },
+        "runner": null
+      },
+      "builder": {
+        "id": "openrouter-hierarchical-research-builder-v2",
+        "digest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb"
+      },
+      "latestRunDigest": "sha256:b0c15c7f1b5b145a19d3cc5db70477db30e87718139433aae74cd933d3203187",
+      "runCount": 1,
+      "data": {
+        "schemaVersion": 1,
+        "problem": {
+          "id": "multiway-cut-ckr-gap",
+          "title": "Integrality gap of the CKR relaxation for Multiway Cut",
+          "statementMarkdown": "# Integrality gap of the CKR relaxation for Multiway Cut\n\nLet \\([k]=\\{1,\\ldots,k\\}\\). Let \\(G=(V,E)\\) be a finite undirected graph\nwith nonnegative edge weights \\(w:E\\to\\mathbb R_{\\ge 0}\\), and let\n\\(T=\\{t_1,\\ldots,t_k\\}\\) be a set of distinct terminals. Write\n\\(w_{uv}=w(\\{u,v\\})\\).\nThe integral Multiway Cut optimum is\n\n\\[\n\\operatorname{OPT}(G,T,w)\n=\n\\min_{\\substack{f:V\\to[k]\\\\f(t_i)=i}}\n\\sum_{\\{u,v\\}\\in E}w_{uv}\\mathbf 1[f(u)\\ne f(v)].\n\\]\n\nWrite\n\n\\[\n\\Delta_k=\\left\\{x\\in\\mathbb R_{\\ge0}^k:\n\\sum_{i=1}^k x_i=1\\right\\}.\n\\]\n\nWriting \\(e_i\\) for the \\(i\\)-th standard unit vector, the\nCălinescu--Karloff--Rabani relaxation has value\n\n\\[\n\\operatorname{CKR}(G,T,w)\n=\n\\min_{\\substack{x_v\\in\\Delta_k\\ (v\\in V)\\\\\nx_{t_i}=e_i\\ (i\\in[k])}}\n\\frac12\\sum_{\\{u,v\\}\\in E}w_{uv}\\lVert x_u-x_v\\rVert_1.\n\\]\n\nFor \\(k\\ge3\\), define\n\n\\[\n\\Gamma_k=\n\\sup_{\\substack{(G,T,w):\\ |T|=k\\\\\n\\operatorname{CKR}(G,T,w)>0}}\n\\frac{\\operatorname{OPT}(G,T,w)}\n{\\operatorname{CKR}(G,T,w)},\n\\qquad\n\\Gamma=\\sup_{k\\ge3}\\Gamma_k.\n\\]\n\nImprove either side of the current unconditional bracket\n\n\\[\n1.20016\\le \\Gamma\\le1.2787.\n\\]\n\nConcretely, prove \\(\\Gamma\\ge L\\) for an explicit \\(L>1.20016\\), or prove\n\\(\\Gamma\\le U\\) for an explicit \\(U<1.2787\\). A lower bound may be\nasymptotic: it is enough to prove that for every \\(\\varepsilon>0\\) there is a\nfinite conventional Multiway Cut instance with ratio at least\n\\(L-\\varepsilon\\). An upper bound must compare against the CKR value for every\nfinite instance, not merely give an approximation ratio relative to\n\\(\\operatorname{OPT}\\).\n\nThe lower benchmark is obtained through an auxiliary non-opposite-cut problem\non the three-dimensional simplex \\(\\Delta_4\\) and a transfer to conventional\ninstances with a growing number of terminals. It is not a four-terminal CKR\ngap of \\(1.20016\\). The upper benchmark comes from a rigorously\ninterval-certified rounding scheme. Both facts are established background,\nnot Math Flow ledger evidence.\n\nUseful contributions include:\n\n- an explicit rationally weighted graph, terminal set, feasible CKR embedding,\n  and exact certificates for its integral and relaxed values;\n- a parameterized family with a complete proof of every limiting error and\n  quantifier;\n- a discretized-simplex non-opposite-cut certificate together with the full\n  transfer theorem to finite conventional instances;\n- a new rounding distribution and a universal expected-cost proof;\n- an analytic, formal, exact-enumeration, MILP, or outward-rounded interval\n  certificate for a stated construction or rounding family;\n- a structural theorem about ordinary or non-opposite cuts in \\(\\Delta_4\\);\n- an exact finite minimax bound plus a proved discretization-error estimate; or\n- a counterexample, restricted-family result, reproducible numerical lead, or\n  independent baseline replay whose limited scope is stated explicitly.\n\nA floating-point objective value or an auxiliary simplex grid without its\ntransfer proof is not by itself a new bound on \\(\\Gamma\\). Conditional\nconnections to optimal approximation under the Unique Games Conjecture must be\nlabeled conditional; the governed integrality-gap objective is unconditional.\n\n## Frontier sources\n\n- Gruia Călinescu, Howard Karloff, and Yuval Rabani,\n  [An Improved Approximation Algorithm for Multiway Cut](https://doi.org/10.1006/jcss.1999.1687),\n  Journal of Computer and System Sciences 60 (2000).\n- Haris Angelidakis, Yury Makarychev, and Pasin Manurangsi,\n  [An Improved Integrality Gap for the Călinescu--Karloff--Rabani Relaxation for Multiway Cut](https://arxiv.org/abs/1611.05530),\n  2017.\n- Kristóf Bérczi, Karthekeyan Chandrasekaran, Tamás Király, and\n  Vivek Madan,\n  [Improving the Integrality Gap for Multiway Cut](https://arxiv.org/abs/1807.09735),\n  Mathematical Programming 183 (2020).\n- Joshua Brakensiek, Neng Huang, Aaron Potechin, and Uri Zwick,\n  [Improved Approximation Algorithms for Multiway Cut by Large Mixtures of New and Old Rounding Schemes](https://arxiv.org/abs/2603.28700),\n  STOC 2026.\n- Brakensiek--Huang--Potechin--Zwick,\n  [pinned interval-verification code](https://github.com/jbrakensiek/multiway-cut-verification/tree/633ee8b6e1cf67280d3967469cbd2e05bbb7f6d7).\n\nThe displayed bracket was checked against these primary sources on 2026-08-12.\n"
+        },
+        "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+        "transactions": [
+          {
+            "ordinal": 1,
+            "transactionId": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+            "contributionId": "exact-freund-karloff-k4-baseline",
+            "path": "problems/multiway-cut-ckr-gap/contributions/exact-freund-karloff-k4-baseline",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Exact Freund--Karloff $k=4$ CKR baseline\n\n## Claim\n\nThe committed `instance-k4.json` is a conventional four-terminal Multiway\nCut instance with 10 vertices, 24 edges, and rational weights.  Its exact\nvalues are\n\n\\[\n  \\operatorname{CKR}=\\frac{11}{12},\\qquad\n  \\operatorname{OPT}=1,\\qquad\n  \\frac{\\operatorname{OPT}}{\\operatorname{CKR}}=\\frac{12}{11}.\n\\]\n\nIt is the $k=4$ member of the classical Freund--Karloff midpoint family.\nThis contribution is an exact, offline-replayable baseline, not a new lower\nbound.\n\nMore generally, for every integer $k\\geq 3$, define $H_k$ as follows.\nIts terminals are $t_1,\\ldots,t_k$, and it has one additional vertex\n$m_{ij}$ for every $1\\leq i<j\\leq k$.  The only edges are:\n\n- $t_i m_{ij}$ and $t_jm_{ij}$, each of weight\n  \\(a=1/(k-1)^2\\); and\n- the three edges of the triangle on\n  \\(m_{ij},m_{i\\ell},m_{j\\ell}\\) for every $i<j<\\ell$, each of\n  weight \\(b=3/(2k(k-1)^2)\\).\n\nThen\n\n\\[\n \\operatorname{CKR}(H_k)=\\frac{7k-6}{8(k-1)},\\qquad\n \\operatorname{OPT}(H_k)=1,\n\\]\n\nand hence the exact ratio is\n\n\\[\n \\frac{8(k-1)}{7k-6}\n =\\frac{8}{7+1/(k-1)}.\n\\]\n\n## Exact CKR certificate\n\nEmbed $t_i$ at $e_i$ and embed\n\n\\[\n  m_{ij}\\longmapsto \\frac{e_i+e_j}{2}.\n\\]\n\nEvery edge then has half-ℓ1 length $1/2$.  There are\n$k(k-1)$ terminal--midpoint edges and\n$3\\binom{k}{3}=k(k-1)(k-2)/2$ midpoint--midpoint edges, so the displayed\nembedding has value\n\n\\[\n \\frac12\\left(k(k-1)a+3\\binom{k}{3}b\\right)\n =\\frac{k}{2(k-1)}+\\frac{3(k-2)}{8(k-1)}\n =\\frac{7k-6}{8(k-1)}.\n\\]\n\nHere is an exact first-order certificate that this feasible value is the LP\noptimum.  For a nonzero coordinate difference on an edge, take the forced\nsubgradient $+1$ or $-1$ of the absolute value.  For a zero coordinate\ndifference:\n\n- on a terminal--midpoint edge, take the subgradient with respect to the\n  midpoint endpoint to be $+3/4$; and\n- on a midpoint--midpoint edge, take it to be $0$.\n\nAt a fixed $m_{ij}$, the resulting objective subgradient in coordinate\n$i$ or $j$ is\n\n\\[\n  \\frac{k-2}{2}b,\n\\]\n\nwhile in any coordinate outside $\\{i,j\\}$ it is\n\n\\[\n  \\frac34a-b.\n\\]\n\nThe two quantities agree exactly:\n\n\\[\n  \\frac{k-2}{2}b=\\frac34a-b\n  =\\frac{3(k-2)}{4k(k-1)^2}=:\\mu.\n\\]\n\nThus the subgradient at every nonterminal is the constant vector\n$\\mu\\mathbf 1$.  If $x$ is any other feasible embedding and $x^*$ is\nthe midpoint embedding, convexity gives\n\n\\[\n F(x)\\geq F(x^*)+\n \\sum_{i<j}\\mu\\sum_{r=1}^k(x_{m_{ij},r}-x^*_{m_{ij},r})\n =F(x^*),\n\\]\n\nbecause both simplex vectors have coordinate sum one.  This proves the exact\nCKR value without a floating-point solver.  `verify.py` constructs this\nsubgradient with `fractions.Fraction` and checks every sign, interval, and\nstationarity equation for the committed $k=4$ instance.\n\n## Integral optimum certificate\n\nThe lower bound uses a 64-case local lemma, which `verify.py` exhausts exactly.\nConsider three terminals and their three pair midpoints.  Give each of the six\nterminal--midpoint edges weight $1/6$, and each edge of the midpoint triangle\nweight $1/4$.  Allow midpoint labels in $\\{1,2,3,4\\}$, with terminal labels\nfixed.  Exact enumeration establishes:\n\n1. every labeling costs at least $2/3$; and\n2. every *non-opposite* labeling, in which $m_{ij}$ has label $i$, $j$,\n   or $4$, costs at least $1$.\n\nFor completeness, the local lemma implies the lower bound for every $H_k$\nas follows.  Average a copy of this weighted six-vertex graph over all\n\\(\\binom{k}{3}\\) terminal triples; call the resulting weighting $W$.  Given\nan integral $k$-labeling $f$, collapse labels outside a selected triple to\nlabel 4.  This can only remove cut edges.  Let $q$ be the number of pair\nvertices $m_{ij}$ for which $f(m_{ij})\\notin\\{i,j\\}$.  A selected triple\ncan fail to be non-opposite only if one of its pair vertices is labeled by the\nthird terminal of that triple.  Each of the $q$ offending pair vertices can\nmake only one triple bad, so at most $q$ triples are bad.  The two exact\nlocal minima therefore give\n\n\\[\n  C_W(f)\\geq 1-\\frac{q}{3\\binom{k}{3}}.\n\\]\n\nNext, let $W'$ put weight $1/\\binom{k}{2}$ on every\nterminal--midpoint edge and zero on the other edges.  The path\n$t_i-m_{ij}-t_j$ cuts one edge if $m_{ij}$ has an endpoint label and two\notherwise, so\n\n\\[\n  C_{W'}(f)=1+\\frac{q}{\\binom{k}{2}}.\n\\]\n\nThe convex combination\n\n\\[\n  \\frac{k-2}{k-1}W+\\frac1{k-1}W'\n\\]\n\nhas exactly the weights $a$ and $b$ defining $H_k$.  Its two\n$q$-coefficients cancel, proving $C_{H_k}(f)\\geq1$.  Equality is attained\nby labeling every $m_{ij}$ with $i$ for $i<j$: this cuts one outer edge\nper pair and two inner edges per triple, at cost\n\n\\[\n \\binom{k}{2}a+2\\binom{k}{3}b=1.\n\\]\n\nHence the integral optimum is exactly one.  Independently of this family\nproof, the verifier checks all $4^6=4096$ assignments of the six\nnonterminals in the committed $k=4$ instance.\n\n## Reproduction\n\nRun from this contribution directory using Python 3 and only the standard\nlibrary:\n\n```sh\npython3 -I -B verify.py\n```\n\nExpected output:\n\n```text\ninstance: k=4, |V|=10, |E|=24\nbase lemma: unrestricted=2/3, non-opposite=1\nCKR optimum: 11/12 (exact subgradient certificate)\nintegral optimum: 1 (4096 assignments, 28 minimizers)\nintegrality ratio: 12/11\nverification: PASS\n```\n\nThe verifier rejects a malformed graph, a changed rational weight, a changed\nembedding, a failed subgradient condition, or a different exact optimum.\n\n## Provenance and attribution\n\nThe family and the bound\n$8/(7+1/(k-1))$ are due to Ari Freund and Howard Karloff:\n\n- Ari Freund and Howard Karloff, “A lower bound of\n  $8/(7+1/(k-1))$ on the integrality ratio of the\n  Călinescu--Karloff--Rabani relaxation for multiway cut,” *Information\n  Processing Letters* 75(1--2):43--50, 2000,\n  [DOI 10.1016/S0020-0190(00)00065-X](https://doi.org/10.1016/S0020-0190(00)00065-X).\n\nAppendix A and Section 5 of the following primary paper give the six-vertex\nweighting and explain the averaging/mixing view used above:\n\n- Haris Angelidakis, Yury Makarychev, and Pasin Manurangsi, “An Improved\n  Integrality Gap for the Călinescu--Karloff--Rabani Relaxation for Multiway\n  Cut,” [arXiv:1611.05530v1](https://arxiv.org/abs/1611.05530v1), 2016.\n\nThe construction and lower-bound family are attributed entirely to Freund and\nKarloff.  The added work here is the explicit canonical JSON instance, the\ncompact exact LP subgradient certificate, the standard-library exhaustive\nchecker, and a self-contained normalization audit.  No discovery or priority\nclaim is made for the mathematical family.\n\n## Limitations and relation to the governed benchmark\n\n- For $k=4$, $12/11\\approx1.09091$, far below the governed lower\n  benchmark $1.20016$.\n- Even asymptotically, this family's ratios approach only\n  $8/7\\approx1.14286<1.20016$.  It therefore cannot improve either side of\n  the bracket in the problem statement.\n- The artifact is useful as a conventional-instance regression test and exact\n  baseline.  It is not the auxiliary four-label non-opposite-cut value\n  $8/7$, and it does not confuse that auxiliary value with a four-terminal\n  CKR gap.\n- The checker exhausts the $k=4$ integral instance and the local 64-case\n  lemma.  The displayed argument, rather than a finite loop over arbitrary\n  $k$, proves the full family.\n- No new rounding scheme, $1.20016$ transfer, or upper-bound argument is\n  supplied.\n\n## Artifact authorship\n\nThe mathematical construction and gap family are by Ari Freund and Howard\nKarloff.  Reconstruction, exact certificate design, JSON encoding, checker,\nand documentation were produced by an OpenAI Codex research agent operating\nthe Math Flow solver workflow at Robert Raynor's request.  Any transcription,\nnormalization, proof, or implementation errors in this artifact are the\nagent's.\n"
+          }
+        ],
+        "judgments": [
+          {
+            "judgmentId": "sha256:364a93e3a0aebf91cbbdbbf7f96f3b803d74b5b6a656c07c0667d8a8e5cd6b30",
+            "runDigest": "sha256:1cfb1602664a8f458694dc4f5be37d34998b90dd79ea069307a7498a9f394ba1",
+            "judgmentKind": "primary",
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v2",
+              "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.142433125,
+            "reportDigest": "sha256:3cb392b05e7d4d5177037ac87edc39e2013aebb811ffb30a6a328b9b00cc73a9",
+            "reportMarkdown": "## `multiway-cut-ckr-gap/exact-freund-karloff-k4-baseline`\n\n**Verdict: VALID**\n\nThe mathematical claims are established by the supplied exact construction and certificates.\n\n### 1. Instance structure\n\nFor \\(k=4\\), the construction has\n\n\\[\n4+\\binom42=10\n\\]\n\nvertices. It has\n\n\\[\n2\\binom42=12\n\\]\n\nterminal–midpoint edges and\n\n\\[\n3\\binom43=12\n\\]\n\nmidpoint–midpoint edges, hence \\(24\\) edges total. The JSON lists exactly these edges, with\n\n\\[\na=\\frac1{(4-1)^2}=\\frac19,\\qquad\nb=\\frac3{2\\cdot4\\cdot(4-1)^2}=\\frac1{24}.\n\\]\n\nAll weights are nonnegative rational numbers, and the four terminals are distinct. Thus it is a conventional finite four-terminal Multiway Cut instance.\n\n### 2. CKR feasible value\n\nThe proposed embedding\n\n\\[\nx_{m_{ij}}=\\frac{e_i+e_j}{2}\n\\]\n\nlies in \\(\\Delta_k\\), while terminals have the required embeddings \\(e_i\\).\n\nEvery terminal–midpoint edge and every listed midpoint–midpoint edge has half-\\(\\ell_1\\) length \\(1/2\\). Therefore the embedding cost is\n\n\\[\n\\frac12\\left(k(k-1)a+3\\binom{k}{3}b\\right).\n\\]\n\nSubstitution gives\n\n\\[\n\\frac{k}{2(k-1)}\n+\\frac{3(k-2)}{8(k-1)}\n=\\frac{7k-6}{8(k-1)}.\n\\]\n\nThis proves the corresponding CKR upper bound.\n\n### 3. CKR optimality certificate\n\nThe supplied subgradient certificate is valid.\n\nAt a fixed midpoint \\(m_{ij}\\):\n\n- In coordinate \\(i\\), the two outer-edge contributions cancel. For each \\(\\ell\\notin\\{i,j\\}\\), exactly one incident inner edge contributes \\(b/2\\), giving\n  \\[\n  g_{m_{ij},i}=\\frac{k-2}{2}b.\n  \\]\n  The same holds in coordinate \\(j\\).\n\n- For \\(r\\notin\\{i,j\\}\\), the two zero-coordinate outer-edge subgradients contribute\n  \\[\n  2\\cdot \\frac a2\\cdot\\frac34=\\frac34a.\n  \\]\n  The two inner edges associated with \\(\\ell=r\\) contribute \\(-b/2\\) each, hence\n  \\[\n  g_{m_{ij},r}=\\frac34a-b.\n  \\]\n\nWith the stated values of \\(a,b\\),\n\n\\[\n\\frac{k-2}{2}b\n=\\frac34a-b\n=\\frac{3(k-2)}{4k(k-1)^2}\n=:\\mu.\n\\]\n\nThus the selected objective subgradient at every nonterminal is \\(\\mu\\mathbf 1\\). For every other feasible embedding \\(x\\), convexity yields\n\n\\[\nF(x)\\ge F(x^*)+\n\\sum_{i<j}\\mu\\mathbf1\\cdot\n(x_{m_{ij}}-x^*_{m_{ij}}).\n\\]\n\nEach dot product vanishes because both vectors have coordinate sum one. Hence \\(F(x)\\ge F(x^*)\\), proving\n\n\\[\n\\operatorname{CKR}(H_k)=\\frac{7k-6}{8(k-1)}.\n\\]\n\nThe argument remains valid at the boundary of the simplex because the chosen values are legitimate ambient subgradients of the absolute-value terms.\n\n### 4. Local integral lemma\n\nFor the three-midpoint local graph, let \\(q_{\\mathrm{loc}}\\) be the number of midpoints whose label is not one of its two endpoint labels. The outer-edge cost is\n\n\\[\n\\frac{3+q_{\\mathrm{loc}}}{6}.\n\\]\n\nThe midpoint triangle has:\n\n- zero cut edges if all three midpoint labels agree;\n- at least two cut edges otherwise.\n\nFor an unrestricted labeling:\n\n- If all labels agree, no label is an endpoint label for all three pairs, so \\(q_{\\mathrm{loc}}\\ge1\\), giving cost at least \\(4/6=2/3\\).\n- Otherwise the outer cost is at least \\(1/2\\) and the triangle cost at least \\(2(1/4)=1/2\\), giving at least \\(1\\).\n\nThe lower bound \\(2/3\\) is attained, for example, by assigning all three midpoints label \\(1\\).\n\nFor a non-opposite labeling, if all labels agree, their only common permitted label is \\(4\\), which cuts all six outer edges and costs \\(1\\). If they do not all agree, the preceding \\(1/2+1/2\\) bound applies. Hence the non-opposite minimum is exactly \\(1\\).\n\nThus the enumerated local minima are correct.\n\n### 5. Averaging argument for the integral lower bound\n\nLet \\(N=\\binom{k}{3}\\), and let \\(W\\) be the average of the local weighted graph over all terminal triples.\n\nFor a labeling \\(f\\), let\n\n\\[\nq=\\#\\{m_{ij}: f(m_{ij})\\notin\\{i,j\\}\\}.\n\\]\n\nAfter collapsing labels outside a selected triple to label \\(4\\), cut edges can only disappear. A triple is non-opposite unless one of its pair vertices is labeled by the third terminal in that triple. Each offending \\(m_{ij}\\) can make only the unique triple\n\n\\[\n\\{i,j,f(m_{ij})\\}\n\\]\n\nbad. Hence the number \\(B\\) of bad triples satisfies \\(B\\le q\\). The local bounds give\n\n\\[\nC_W(f)\n\\ge \\frac{N-B}{N}\\cdot1+\\frac{B}{N}\\cdot\\frac23\n\\ge 1-\\frac{q}{3N}.\n\\]\n\nFor \\(W'\\), which assigns weight \\(1/\\binom{k}{2}\\) to every terminal–midpoint edge, each pair contributes one cut edge if its midpoint has an endpoint label and two otherwise. Therefore\n\n\\[\nC_{W'}(f)=1+\\frac{q}{\\binom{k}{2}}.\n\\]\n\nThe edge weights in\n\n\\[\n\\frac{k-2}{k-1}W+\\frac1{k-1}W'\n\\]\n\nare exactly those of \\(H_k\\):\n\n- each outer edge has weight\n  \\[\n  \\frac{k-2}{k-1}\\frac1{k(k-1)}\n  +\\frac1{k-1}\\frac1{\\binom{k}{2}}\n  =\\frac1{(k-1)^2}=a;\n  \\]\n- each inner edge has weight\n  \\[\n  \\frac{k-2}{k-1}\n  \\frac1{4\\binom{k}{3}}\n  =\\frac3{2k(k-1)^2}=b.\n  \\]\n\nMoreover, the \\(q\\)-coefficients cancel exactly:\n\n\\[\n\\frac{k-2}{k-1}\\frac1{3\\binom{k}{3}}\n=\n\\frac1{k-1}\\frac1{\\binom{k}{2}}\n=\n\\frac{2}{k(k-1)^2}.\n\\]\n\nConsequently every integral labeling has cost at least \\(1\\).\n\n### 6. Attainment of the integral bound\n\nLabel each \\(m_{ij}\\) by \\(i\\) for \\(i<j\\). This cuts one outer edge per pair and two inner edges per terminal triple. Its cost is\n\n\\[\n\\binom{k}{2}a+2\\binom{k}{3}b\n=\\frac{k}{2(k-1)}+\\frac{k-2}{2(k-1)}\n=1.\n\\]\n\nThus\n\n\\[\n\\operatorname{OPT}(H_k)=1.\n\\]\n\n### 7. Ratio and \\(k=4\\) specialization\n\nTherefore\n\n\\[\n\\frac{\\operatorname{OPT}(H_k)}{\\operatorname{CKR}(H_k)}\n=\\frac{8(k-1)}{7k-6}\n=\\frac8{7+1/(k-1)}.\n\\]\n\nFor \\(k=4\\),\n\n\\[\n\\operatorname{CKR}=\\frac{28-6}{8\\cdot3}\n=\\frac{11}{12},\\qquad\n\\operatorname{OPT}=1,\n\\]\n\nso the ratio is \\(12/11\\), as claimed.\n\nThe construction does not improve the governed \\(1.20016\\) lower benchmark: its ratios approach only \\(8/7\\). The submission states this limitation correctly. Historical attribution and priority are outside this correctness audit.\n",
+            "record": {
+              "schemaVersion": 2,
+              "judgmentKind": "primary",
+              "problemId": "multiway-cut-ckr-gap",
+              "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+              "problemLedgerDigest": "sha256:50dc914b74ffb26ec85d0611ad67f98b86d31792ad116d5e073e7e4464361ab2",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v2",
+                "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+                  "ledgerPosition": 1
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "multiway-cut-ckr-gap/exact-freund-karloff-k4-baseline",
+                  "status": "valid",
+                  "premiseStatus": "not-required",
+                  "summary": "The exact construction, CKR embedding and optimality certificate, integral lower-bound averaging argument, and attaining labeling establish CKR(H_k)=(7k-6)/(8(k-1)), OPT(H_k)=1, and ratio 8(k-1)/(7k-6). For k=4, the reported 10 vertices, 24 rational-weight edges, CKR=11/12, OPT=1, and ratio 12/11 follow exactly.",
+                  "scopeQualifications": [
+                    "The audit establishes the mathematical construction and exact values for every integer k>=3.",
+                    "The claim of historical attribution to the classical Freund--Karloff midpoint family, and any priority characterization, was outside the correctness audit.",
+                    "The resulting ratios approach 8/7 and do not improve the referenced 1.20016 lower benchmark, consistent with the claim that this is an exact baseline rather than a new lower bound."
+                  ],
+                  "evidenceIssues": [
+                    "Historical attribution and priority were not independently verified by the audit."
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "multiway-cut-ckr-gap/exact-freund-karloff-k4-baseline",
+                  "stance": "supports",
+                  "summary": "The exact construction, CKR embedding and optimality certificate, integral lower-bound averaging argument, and attaining labeling establish CKR(H_k)=(7k-6)/(8(k-1)), OPT(H_k)=1, and ratio 8(k-1)/(7k-6). For k=4, the reported 10 vertices, 24 rational-weight edges, CKR=11/12, OPT=1, and ratio 12/11 follow exactly.",
+                  "subjectTransactionIds": [
+                    "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:325fdce1ede7e46cfcabbba6cbc897edc2c0752a7da4031e8d5374d27889a5db",
+              "reportDigest": "sha256:3cb392b05e7d4d5177037ac87edc39e2013aebb811ffb30a6a328b9b00cc73a9",
+              "judgmentId": "sha256:364a93e3a0aebf91cbbdbbf7f96f3b803d74b5b6a656c07c0667d8a8e5cd6b30"
+            }
+          }
+        ],
+        "runs": [
+          {
+            "id": "b0c15c7f1b5b145a19d3cc5db70477db30e87718139433aae74cd933d3203187",
+            "ordinal": 1,
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+            "runDigest": "sha256:b0c15c7f1b5b145a19d3cc5db70477db30e87718139433aae74cd933d3203187",
+            "baseRun": null,
+            "runKind": "knowledge-build",
+            "inputs": {
+              "judgmentIds": [
+                "sha256:364a93e3a0aebf91cbbdbbf7f96f3b803d74b5b6a656c07c0667d8a8e5cd6b30"
+              ],
+              "baseStateRun": null,
+              "laneId": "sha256:d70f87652ef6b068d54bf5b148b0abcf90acf0a343e792d83b4b489703d6c1c1",
+              "conflictIds": [],
+              "schemaVersion": 1,
+              "builderSpecDigest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb",
+              "judgmentSetDigest": "sha256:cd8d00b8e3682026680f01f6f3874fe279f48f87bc73aa74f2a626a510d51c08",
+              "projectionSpecDigest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+              "problemId": "multiway-cut-ckr-gap",
+              "buildToken": "sha256:7a183c4d2a67309dd2e9023992541a631eba8b3e5b630e7f274bbf68ed969035"
+            },
+            "judgeSpec": {
+              "id": "openrouter-hierarchical-research-builder-v2",
+              "digest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb"
+            },
+            "runner": {
+              "implementation": "openrouter-hierarchical-research-builder-v2",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.103735625,
+            "selection": {
+              "selectedNodeIds": [
+                "item:root/exact-midpoint-family-values",
+                "item:root/k4-exact-enumeration",
+                "item:root/k4-offline-verifier",
+                "item:root/midpoint-family-optimality-proof",
+                "root",
+                "thread:root/unstructured-search"
+              ],
+              "rationale": "Nodes changed by the accepted validity batch."
+            },
+            "normalizations": [],
+            "delta": {
+              "schemaVersion": 1,
+              "operations": [
+                {
+                  "entityKind": "item",
+                  "entityId": "root/k4-offline-verifier",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/k4-offline-verifier",
+                    "programId": "root",
+                    "type": "tool",
+                    "title": "Offline exact verifier for the four-terminal baseline",
+                    "summary": "The committed `instance-k4.json` and `verify.py` provide an offline-replayable exact certificate for the conventional four-terminal instance. The verifier uses Python standard-library rational arithmetic, validates the graph, weights, midpoint embedding, and claimed values, checks the exact subgradient certificate, and performs the stated exhaustive enumerations without a floating-point LP solver.",
+                    "claimRefs": [],
+                    "sourceTransactionIds": [
+                      "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+                    ],
+                    "dependencyItemIds": []
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/k4-exact-enumeration",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/k4-exact-enumeration",
+                    "programId": "root",
+                    "type": "computation",
+                    "title": "Exact enumerations for the midpoint-family certificates",
+                    "summary": "Exact enumeration of the 64 labelings in the local three-terminal lemma establishes unrestricted minimum cost `2/3` and non-opposite minimum cost `1`. Independently, exact enumeration of all `4^6=4096` assignments to the six nonterminals of the committed four-terminal instance establishes integral optimum `1`.",
+                    "claimRefs": [],
+                    "sourceTransactionIds": [
+                      "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+                    ],
+                    "dependencyItemIds": [
+                      "root/k4-offline-verifier"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/midpoint-family-optimality-proof",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/midpoint-family-optimality-proof",
+                    "programId": "root",
+                    "type": "proof",
+                    "title": "Exact CKR and integral optimality proof for the midpoint family",
+                    "summary": "For the midpoint embedding, every edge has half-ℓ1 length `1/2`. The specified exact absolute-value subgradients make the objective subgradient at every nonterminal a constant vector, so convexity and the simplex coordinate-sum constraint prove global CKR optimality. Integral optimality follows from the exact local labeling lemma, averaging its six-vertex weighting over terminal triples, mixing it with the terminal–midpoint weighting so that the coefficients of the number of offending midpoint labels cancel, and exhibiting an attaining labeling. Together these arguments establish the stated exact CKR and integral values for every integer `k>=3`.",
+                    "claimRefs": [],
+                    "sourceTransactionIds": [
+                      "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+                    ],
+                    "dependencyItemIds": [
+                      "root/k4-exact-enumeration"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/exact-midpoint-family-values",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/exact-midpoint-family-values",
+                    "programId": "root",
+                    "type": "result",
+                    "title": "Exact values for the conventional midpoint-family instances",
+                    "summary": "The committed `instance-k4.json` is a conventional four-terminal Multiway\nCut instance with 10 vertices, 24 edges, and rational weights.  Its exact\nvalues are\n\n\\[\n  \\operatorname{CKR}=\\frac{11}{12},\\qquad\n  \\operatorname{OPT}=1,\\qquad\n  \\frac{\\operatorname{OPT}}{\\operatorname{CKR}}=\\frac{12}{11}.\n\\]\n\nIt is the $k=4$ member of the classical Freund--Karloff midpoint family.\nThis contribution is an exact, offline-replayable baseline, not a new lower\nbound.\n\nMore generally, for every integer $k\\geq 3$, define $H_k$ as follows.\nIts terminals are $t_1,\\ldots,t_k$, and it has one additional vertex\n$m_{ij}$ for every $1\\leq i<j\\leq k$.  The only edges are:\n\n- $t_i m_{ij}$ and $t_jm_{ij}$, each of weight\n  \\(a=1/(k-1)^2\\); and\n- the three edges of the triangle on\n  \\(m_{ij},m_{i\\ell},m_{j\\ell}\\) for every $i<j<\\ell$, each of\n  weight \\(b=3/(2k(k-1)^2)\\).\n\nThen\n\n\\[\n \\operatorname{CKR}(H_k)=\\frac{7k-6}{8(k-1)},\\qquad\n \\operatorname{OPT}(H_k)=1,\n\\]\n\nand hence the exact ratio is\n\n\\[\n \\frac{8(k-1)}{7k-6}\n =\\frac{8}{7+1/(k-1)}.\n\\]\n\nScope qualifications:\n- The audit establishes the mathematical construction and exact values for every integer k>=3.\n- The claim of historical attribution to the classical Freund--Karloff midpoint family, and any priority characterization, was outside the correctness audit.\n- The resulting ratios approach 8/7 and do not improve the referenced 1.20016 lower benchmark, consistent with the claim that this is an exact baseline rather than a new lower bound.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+                        "claimKey": "multiway-cut-ckr-gap/exact-freund-karloff-k4-baseline"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+                    ],
+                    "dependencyItemIds": [
+                      "root/midpoint-family-optimality-proof"
+                    ]
+                  }
+                }
+              ],
+              "contributions": [
+                {
+                  "transactionId": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+                  "claimKeys": [
+                    "multiway-cut-ckr-gap/exact-freund-karloff-k4-baseline"
+                  ],
+                  "directProgramId": "root",
+                  "directThreadIds": [
+                    "root/unstructured-search"
+                  ],
+                  "itemIds": [
+                    "root/k4-offline-verifier",
+                    "root/k4-exact-enumeration",
+                    "root/midpoint-family-optimality-proof",
+                    "root/exact-midpoint-family-values"
+                  ]
+                }
+              ]
+            },
+            "state": {
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "program",
+                  "title": "Canonical problem",
+                  "summary": "Resolve the canonical problem.",
+                  "status": "active",
+                  "contentMarkdown": "## Objective\n\nResolve the canonical problem.\n\n## Local credit context\n\nRoot program.",
+                  "subjects": [],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:4bc4e85d0ca6e4224902591c71cf9cb813718dfe5961d8be774384d474797c99"
+                },
+                "thread:root/unstructured-search": {
+                  "id": "thread:root/unstructured-search",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Unstructured search and overhead",
+                  "summary": "Future work not yet assigned to a more specific research thread.",
+                  "status": "active",
+                  "contentMarkdown": "Future work not yet assigned to a more specific research thread.\n\n**Thread kind:** unstructured\n\n**Expected local exposure:** 1\n\n**Conditions:** none",
+                  "subjects": [],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+                },
+                "item:root/k4-offline-verifier": {
+                  "id": "item:root/k4-offline-verifier",
+                  "parentId": "root",
+                  "type": "tool",
+                  "title": "Offline exact verifier for the four-terminal baseline",
+                  "summary": "The committed `instance-k4.json` and `verify.py` provide an offline-replayable exact certificate for the conventional four-terminal instance. The verifier uses Python standard-library rational arithmetic, validates the graph, weights, midpoint embedding, and claimed values, checks the exact subgradient certificate, and performs the stated exhaustive enumerations without a floating-point LP solver.",
+                  "status": "active",
+                  "contentMarkdown": "The committed `instance-k4.json` and `verify.py` provide an offline-replayable exact certificate for the conventional four-terminal instance. The verifier uses Python standard-library rational arithmetic, validates the graph, weights, midpoint embedding, and claimed values, checks the exact subgradient certificate, and performs the stated exhaustive enumerations without a floating-point LP solver.",
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+                      "ledgerPosition": 1,
+                      "relation": "source"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:82caacf7fcb9ceea9b0148a1ee8ce024f6ce3e1ab83379146cc404067458aeb8"
+                },
+                "item:root/k4-exact-enumeration": {
+                  "id": "item:root/k4-exact-enumeration",
+                  "parentId": "root",
+                  "type": "computation",
+                  "title": "Exact enumerations for the midpoint-family certificates",
+                  "summary": "Exact enumeration of the 64 labelings in the local three-terminal lemma establishes unrestricted minimum cost `2/3` and non-opposite minimum cost `1`. Independently, exact enumeration of all `4^6=4096` assignments to the six nonterminals of the committed four-terminal instance establishes integral optimum `1`.",
+                  "status": "active",
+                  "contentMarkdown": "Exact enumeration of the 64 labelings in the local three-terminal lemma establishes unrestricted minimum cost `2/3` and non-opposite minimum cost `1`. Independently, exact enumeration of all `4^6=4096` assignments to the six nonterminals of the committed four-terminal instance establishes integral optimum `1`.",
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+                      "ledgerPosition": 1,
+                      "relation": "source"
+                    },
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/k4-offline-verifier",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:de66fd3015f797015cfe2801de77be0c5bb6fe6641911437d9dd559078112220"
+                },
+                "item:root/midpoint-family-optimality-proof": {
+                  "id": "item:root/midpoint-family-optimality-proof",
+                  "parentId": "root",
+                  "type": "proof",
+                  "title": "Exact CKR and integral optimality proof for the midpoint family",
+                  "summary": "For the midpoint embedding, every edge has half-ℓ1 length `1/2`. The specified exact absolute-value subgradients make the objective subgradient at every nonterminal a constant vector, so convexity and the simplex coordinate-sum constraint prove global CKR optimality. Integral optimality follows from the exact local labeling lemma, averaging its six-vertex weighting over terminal triples, mixing it with the terminal–midpoint weighting so that the coefficients of the number of offending midpoint labels cancel, and exhibiting an attaining labeling. Together these arguments establish the stated exact CKR and integral values for every integer `k>=3`.",
+                  "status": "active",
+                  "contentMarkdown": "For the midpoint embedding, every edge has half-ℓ1 length `1/2`. The specified exact absolute-value subgradients make the objective subgradient at every nonterminal a constant vector, so convexity and the simplex coordinate-sum constraint prove global CKR optimality. Integral optimality follows from the exact local labeling lemma, averaging its six-vertex weighting over terminal triples, mixing it with the terminal–midpoint weighting so that the coefficients of the number of offending midpoint labels cancel, and exhibiting an attaining labeling. Together these arguments establish the stated exact CKR and integral values for every integer `k>=3`.",
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+                      "ledgerPosition": 1,
+                      "relation": "source"
+                    },
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/k4-exact-enumeration",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:30941a09a1c5e0131e4ce438d1d8eefde2374b6f6cb124187e76db97ee98e473"
+                },
+                "item:root/exact-midpoint-family-values": {
+                  "id": "item:root/exact-midpoint-family-values",
+                  "parentId": "root",
+                  "type": "result",
+                  "title": "Exact values for the conventional midpoint-family instances",
+                  "summary": "The committed `instance-k4.json` is a conventional four-terminal Multiway\nCut instance with 10 vertices, 24 edges, and rational weights.  Its exact\nvalues are\n\n\\[\n  \\operatorname{CKR}=\\frac{11}{12},\\qquad\n  \\operatorname{OPT}=1,\\qquad\n  \\frac{\\operatorname{OPT}}{\\operatorname{CKR}}=\\frac{12}{11}.\n\\]\n\nIt is the $k=4$ member of the classical Freund--Karloff midpoint family.\nThis contribution is an exact, offline-replayable baseline, not a new lower\nbound.\n\nMore generally, for every integer $k\\geq 3$, define $H_k$ as follows.\nIts terminals are $t_1,\\ldots,t_k$, and it has one additional vertex\n$m_{ij}$ for every $1\\leq i<j\\leq k$.  The only edges are:\n\n- $t_i m_{ij}$ and $t_jm_{ij}$, each of weight\n  \\(a=1/(k-1)^2\\); and\n- the three edges of the triangle on\n  \\(m_{ij},m_{i\\ell},m_{j\\ell}\\) for every $i<j<\\ell$, each of\n  weight \\(b=3/(2k(k-1)^2)\\).\n\nThen\n\n\\[\n \\operatorname{CKR}(H_k)=\\frac{7k-6}{8(k-1)},\\qquad\n \\operatorname{OPT}(H_k)=1,\n\\]\n\nand hence the exact ratio is\n\n\\[\n \\frac{8(k-1)}{7k-6}\n =\\frac{8}{7+1/(k-1)}.\n\\]\n\nScope qualifications:\n- The audit establishes the mathematical construction and exact values for every integer k>=3.\n- The claim of historical attribution to the classical Freund--Karloff midpoint family, and any priority characterization, was outside the correctness audit.\n- The resulting ratios approach 8/7 and do not improve the referenced 1.20016 lower benchmark, consistent with the claim that this is an exact baseline rather than a new lower bound.",
+                  "status": "active",
+                  "contentMarkdown": "The committed `instance-k4.json` is a conventional four-terminal Multiway\nCut instance with 10 vertices, 24 edges, and rational weights.  Its exact\nvalues are\n\n\\[\n  \\operatorname{CKR}=\\frac{11}{12},\\qquad\n  \\operatorname{OPT}=1,\\qquad\n  \\frac{\\operatorname{OPT}}{\\operatorname{CKR}}=\\frac{12}{11}.\n\\]\n\nIt is the $k=4$ member of the classical Freund--Karloff midpoint family.\nThis contribution is an exact, offline-replayable baseline, not a new lower\nbound.\n\nMore generally, for every integer $k\\geq 3$, define $H_k$ as follows.\nIts terminals are $t_1,\\ldots,t_k$, and it has one additional vertex\n$m_{ij}$ for every $1\\leq i<j\\leq k$.  The only edges are:\n\n- $t_i m_{ij}$ and $t_jm_{ij}$, each of weight\n  \\(a=1/(k-1)^2\\); and\n- the three edges of the triangle on\n  \\(m_{ij},m_{i\\ell},m_{j\\ell}\\) for every $i<j<\\ell$, each of\n  weight \\(b=3/(2k(k-1)^2)\\).\n\nThen\n\n\\[\n \\operatorname{CKR}(H_k)=\\frac{7k-6}{8(k-1)},\\qquad\n \\operatorname{OPT}(H_k)=1,\n\\]\n\nand hence the exact ratio is\n\n\\[\n \\frac{8(k-1)}{7k-6}\n =\\frac{8}{7+1/(k-1)}.\n\\]\n\nScope qualifications:\n- The audit establishes the mathematical construction and exact values for every integer k>=3.\n- The claim of historical attribution to the classical Freund--Karloff midpoint family, and any priority characterization, was outside the correctness audit.\n- The resulting ratios approach 8/7 and do not improve the referenced 1.20016 lower benchmark, consistent with the claim that this is an exact baseline rather than a new lower bound.\n\n## Accepted claims\n\n- `multiway-cut-ckr-gap/exact-freund-karloff-k4-baseline` from `ab06d88e87e635c3bbb8967fedafe51b26238ec9`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+                      "ledgerPosition": 1,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/midpoint-family-optimality-proof",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:02a54738442af98a4209496d617908c9c8194e8a12fcec375ad5171798743518"
+                }
+              },
+              "stateDigest": "sha256:1ca93961a5505808b9324da418c32d3085550e88e7d9cc3d2133ae5e8c1a3423"
+            },
+            "revisionIds": [],
+            "addedRevisionIds": [],
+            "changedNodeIds": [
+              "item:root/exact-midpoint-family-values",
+              "item:root/k4-exact-enumeration",
+              "item:root/k4-offline-verifier",
+              "item:root/midpoint-family-optimality-proof",
+              "root",
+              "thread:root/unstructured-search"
+            ],
+            "reportDigest": "sha256:1ca93961a5505808b9324da418c32d3085550e88e7d9cc3d2133ae5e8c1a3423",
+            "revisionSemantics": "neutral-knowledge"
+          }
+        ],
+        "revisions": [],
+        "reports": [],
+        "latestRunId": "b0c15c7f1b5b145a19d3cc5db70477db30e87718139433aae74cd933d3203187"
+      }
+    },
+    {
       "id": "sha256:dfc5edf3aee2bf8979cf0595753669b48ece7389e6425da12b0a1242a7a4ac74",
       "problemId": "multiway-cut-ckr-gap",
       "label": "openrouter-research-program-builder-v2",
@@ -55724,7 +56131,42 @@
   ],
   "hierarchicalCreditProjections": [
     {
-      "id": "openrouter-research-credit-v2",
+      "id": "openrouter-research-credit-v2@sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
+      "problemId": "multiway-cut-ckr-gap",
+      "label": "openrouter-research-credit-v2",
+      "projectionSpec": {
+        "id": "openrouter-research-credit-v2",
+        "description": "A common-horizon two-term hierarchical credit overlay over the default batched research-program projection.",
+        "digest": "sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
+        "engine": "overlay-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [
+          {
+            "name": "research",
+            "projectionId": "openrouter-research-v1",
+            "artifactRole": "research-program-state"
+          }
+        ],
+        "scheduling": {
+          "minimumIntervalSeconds": 3600
+        },
+        "runner": {
+          "implementation": "openrouter-hierarchical-research-credit-v2",
+          "spec": "protocol/judges/openrouter-hierarchical-research-credit-v2.json"
+        }
+      },
+      "researchProjectionIds": [
+        "openrouter-research-v1"
+      ],
+      "latestRunDigest": null,
+      "selectionStatus": "pending",
+      "runCount": 0,
+      "runs": []
+    },
+    {
+      "id": "openrouter-research-credit-v2@sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
       "problemId": "schur-number-6",
       "label": "openrouter-research-credit-v2",
       "projectionSpec": {
