@@ -217,6 +217,34 @@ class GovernanceRepositoryTests(unittest.TestCase):
         with self.assertRaisesRegex(MathFlowError, "separate one-file PRs"):
             validate_admission_pr(self.root, self.base, head, ["Trusted-Admin"])
 
+    def test_problem_registry_is_a_governed_one_file_admission(self) -> None:
+        write_json(
+            self.root / "protocol/problem-registry.json",
+            {"schemaVersion": 1, "archivedProblems": ["demo"]},
+        )
+        head = self.commit("Archive demo")
+        admission = validate_admission_pr(
+            self.root, self.base, head, ["Trusted-Admin"]
+        )
+        self.assertEqual(admission["admissionType"], "problem-registry")
+        self.assertEqual(admission["subjectId"], "problem-registry")
+
+    def test_archived_problem_has_no_active_projection(self) -> None:
+        write_json(
+            self.root / "protocol/projections/research-v1.json",
+            projection_spec(),
+        )
+        write_json(
+            self.root / "protocol/problem-registry.json",
+            {"schemaVersion": 1, "archivedProblems": ["demo"]},
+        )
+        head = self.commit("Archive projected problem")
+        active = list_active_projections(self.root, "demo", head)
+        self.assertEqual(active["problemStatus"], "archived")
+        self.assertEqual(active["projections"], [])
+        with self.assertRaisesRegex(MathFlowError, "problem is archived"):
+            resolve_projection(self.root, "research-v1", "demo", head)
+
     def test_governed_definition_cannot_be_renamed_out_of_policy_scope(self) -> None:
         git(
             self.root,

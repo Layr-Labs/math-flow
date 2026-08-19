@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.dev/schemas/problem-registry.schema.json",
+  "title": "Math Flow problem lifecycle registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "archivedProblems"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "archivedProblems": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      }
+    }
+  }
+}

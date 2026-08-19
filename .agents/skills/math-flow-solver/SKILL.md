@@ -1,6 +1,6 @@
 ---
 name: math-flow-solver
-description: Discover every canonical Math Flow problem, including admitted problems with no contributions or projections; inspect verified knowledge, research-direction registrations, and qualitative credit; then register intent or contribute mathematics through the atomic repository protocol using isolated Git worktrees. Use when an agent needs to recommend problems, understand current state or scoring, find or register a research direction, inspect provenance, prepare a proof/counterexample/computation/formal artifact, validate a participant PR, or follow merged work through judgment, knowledge formation, and credit assignment. Do not use for protocol, repository, workflow, schema, projection-infrastructure, viewer, or governance changes; use math-flow-builder for those tasks.
+description: Discover active Math Flow problems and, when explicitly auditing history, every archived canonical problem; inspect verified knowledge, research-direction registrations, and qualitative credit; then register intent or contribute mathematics through the atomic repository protocol using isolated Git worktrees. Use when an agent needs to recommend problems, understand current state or scoring, find or register a research direction, inspect provenance, prepare a proof/counterexample/computation/formal artifact, validate a participant PR, or follow merged work through judgment, knowledge formation, and credit assignment. Do not use for protocol, repository, workflow, schema, projection-infrastructure, viewer, or governance changes; use math-flow-builder for those tasks.
 ---
 
 # Math Flow Solver
@@ -17,13 +17,17 @@ python3 -m math_flow list-problems \
   --projection-dir "$projection_worktree"
 ```
 
+Ordinary discovery returns active problems only. Use `--include-archived` only
+for an explicit historical audit; archived problems cannot accept participant
+events or active projections until a governed registry change restores them.
 Use `stage: ready-for-first-contribution` to find admitted, unstarted problems.
 Read each candidate's exact `statementPath` from `origin/main` before
 recommending work. `knowledge-pending` and `knowledge-stale` are operational
 states; `knowledge-current` means a verified context can be materialized. Omit
 `--projection-dir` only when no trusted projection ref is available; every
 canonical problem is still listed, but initialized problems report
-`projection-unchecked`.
+`projection-unchecked`. With `--include-archived`, archived entries use
+`stage: archived`.
 
 After selecting an initialized problem, use the deterministic `math_flow
 context` command before reasoning from a projection. It verifies published
@@ -50,8 +54,9 @@ Web research is allowed when the mathematical task needs external sources; it is
 
 1. Treat the checkout you were given as a shared control checkout. Inspect it, but do not switch its branch, edit files, commit, reset, clean, or remove anything there.
 2. Fetch the canonical and projection refs, then create two uniquely named worktrees for this agent: a writable solver worktree branched from `origin/main`, and, when the trusted ref exists, a detached read-only projection worktree at `origin/projections`. If it does not exist, continue canonical discovery without `--projection-dir`; only verified context is unavailable. Never reuse another agent's branch, directory, or projection worktree. Never treat the checked-in `projections/` staging directory as authoritative.
-3. Run `list-problems` from the writable worktree and use canonical admissions
-   as the complete problem set. Run every edit, artifact command, validation,
+3. Run `list-problems` from the writable worktree and use its active admissions
+   as the available problem set. Add `--include-archived` only when explicitly
+   auditing retained history. Run every edit, artifact command, validation,
    commit, and push from that worktree. Materialize context for initialized
    problems using the detached projection worktree. Do not call `context` for a
    problem whose stage is `ready-for-first-contribution`; no knowledge run exists
@@ -73,8 +78,9 @@ Web research is allowed when the mathematical task needs external sources; it is
 Use `python3 -m math_flow <command> --help` for exact flags. The solver-facing
 commands are:
 
-- `list-problems`: enumerate every canonical admission and annotate its
-  contribution/projection lifecycle; use this before selecting work;
+- `list-problems`: enumerate active admissions and annotate their
+  contribution/projection lifecycle; `--include-archived` adds retained
+  historical admissions; use this before selecting work;
 - `list-active-projections`: inspect governed projections approved for one
   problem, including projections with no published run;
 - `context`: materialize verified knowledge, provenance, directions,

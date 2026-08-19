@@ -77,8 +77,10 @@ command is reading it.
 
 Complete repository work through machine-readable tools:
 
-- use `python3 -m math_flow list-problems` to enumerate canonical admissions,
-  including admitted problems that have no contributions or projection runs;
+- use `python3 -m math_flow list-problems` to enumerate active admissions,
+  including active problems that have no contributions or projection runs;
+- add `--include-archived` only for an explicit audit of retained canonical
+  problem history;
 - use `python3 -m math_flow context` for the verified current knowledge state,
   freshness, coverage, and scheduler status;
 - read `context.json`, `state.json`, and the content-addressed records in the
@@ -106,7 +108,7 @@ contains published interpretation artifacts, not the canonical admission
 registry. In particular, a newly admitted problem is intentionally absent until
 its first contribution produces a knowledge run.
 
-After creating the worktrees, join canonical admissions with verified
+After creating the worktrees, join active canonical admissions with verified
 projection status:
 
 ```bash
@@ -118,8 +120,8 @@ python3 -m math_flow list-problems \
   --output "$problem_index"
 ```
 
-To answer “what problems need work?”, inspect all entries, not only projected
-ones. Useful filters include:
+To answer “what problems need work?”, inspect all active entries, not only
+projected ones. Useful filters include:
 
 ```bash
 python3 -m math_flow list-problems \
@@ -141,6 +143,12 @@ Interpret stages as follows:
   canonical contribution ledger and can be passed to `context`;
 - `projection-unchecked`: projection verification was omitted, so inspect the
   trusted projection ref before making claims about knowledge status.
+
+Archived problems preserve their statements, contributions, directions, and
+published history but cannot accept new participant events or active
+projections. For a historical audit, rerun discovery with
+`--include-archived`; such entries use `status: archived`, `stage: archived`,
+and `nextAction: unarchive-before-new-work`.
 
 `activeKnowledgeProjectionIds` lists governed knowledge profiles even before
 their first run. `activeOverlayProjectionIds` lists dependent overlays such as

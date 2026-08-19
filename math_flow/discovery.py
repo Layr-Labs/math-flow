@@ -1,27 +1,15 @@
 from __future__ import annotations
 
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 
 from .governance import list_active_projections
+from .problem_registry import canonical_problem_ids, load_problem_registry
 from .repository import (
     ledger,
-    list_files_at,
     read_at,
     resolve_commit,
-    validate_slug,
 )
 from .viewer import export_viewer_catalog
-
-
-def _problem_ids(root: Path, head: str) -> list[str]:
-    problems: set[str] = set()
-    for path in list_files_at(root, head, "problems"):
-        parts = PurePosixPath(path).parts
-        if len(parts) != 3 or parts[0] != "problems" or parts[2] != "problem.md":
-            continue
-        validate_slug(parts[1], "problem id")
-        problems.add(parts[1])
-    return sorted(problems)
 
 
 def _title(markdown: str, fallback: str) -> str:
@@ -36,8 +24,9 @@ def discover_problems(
     root: Path,
     head: str = "HEAD",
     projection_root: Path | None = None,
+    include_archived: bool = False,
 ) -> dict[str, object]:
-    """List every canonical problem, including problems with no projection run yet."""
+    """List active problems, optionally including archived canonical history."""
 
     root = root.resolve()
     canonical_head = resolve_commit(root, head)
@@ -59,17 +48,26 @@ def discover_problems(
                 projection
             )
 
+    registry = load_problem_registry(root, canonical_head)
+    archived = set(registry["archivedProblems"])
     problems: list[dict[str, object]] = []
-    for problem_id in _problem_ids(root, canonical_head):
+    for problem_id in canonical_problem_ids(root, canonical_head):
+        status = "archived" if problem_id in archived else "active"
+        if status == "archived" and not include_archived:
+            continue
         statement = read_at(
             root, canonical_head, f"problems/{problem_id}/problem.md"
         )
         source = ledger(root, problem_id, canonical_head)
         transactions = list(source["transactions"])
         transaction_ids = [str(item["transactionId"]) for item in transactions]
-        active = list_active_projections(root, problem_id, canonical_head)[
-            "projections"
-        ]
+        active = (
+            []
+            if status == "archived"
+            else list_active_projections(root, problem_id, canonical_head)[
+                "projections"
+            ]
+        )
         knowledge_ids = sorted(
             str(item["projectionId"])
             for item in active
@@ -117,7 +115,10 @@ def discover_problems(
             key=lambda item: (str(item["projectionId"]), str(item["latestRunDigest"]))
         )
 
-        if not transactions:
+        if status == "archived":
+            stage = "archived"
+            next_action = "unarchive-before-new-work"
+        elif not transactions:
             stage = "ready-for-first-contribution"
             next_action = "inspect-problem-and-submit-first-contribution"
         elif catalog is None:
@@ -136,6 +137,7 @@ def discover_problems(
         problems.append(
             {
                 "problemId": problem_id,
+                "status": status,
                 "title": _title(statement, problem_id),
                 "statementPath": f"problems/{problem_id}/problem.md",
                 "contributionCount": len(transactions),
@@ -154,5 +156,6 @@ def discover_problems(
         "schemaVersion": 1,
         "canonicalHead": canonical_head,
         "projectionInspection": "verified" if catalog is not None else "not-requested",
+        "archivedProblemCount": len(archived),
         "problems": problems,
     }

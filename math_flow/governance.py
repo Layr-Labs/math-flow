@@ -6,6 +6,12 @@ from pathlib import Path, PurePosixPath
 from typing import Callable
 
 from .errors import MathFlowError
+from .problem_registry import (
+    PROBLEM_REGISTRY_PATH,
+    canonical_problem_ids,
+    problem_status,
+    validate_problem_registry,
+)
 from .repository import (
     _parse_name_status,
     _run_git,
@@ -482,6 +488,8 @@ def resolve_projection(
         raise MathFlowError(f"unknown projection: {projection}")
     if spec["status"] != "active":
         raise MathFlowError(f"projection is not active: {projection}")
+    if problem_status(root, problem, resolved_head) == "archived":
+        raise MathFlowError(f"problem is archived: {problem}")
     allowed = spec["allowedProblems"]
     if "*" not in allowed and problem not in allowed:
         raise MathFlowError(
@@ -556,6 +564,15 @@ def list_active_projections(
     validate_slug(problem, "problem id")
     resolved_head = "WORKTREE" if head == "WORKTREE" else resolve_commit(root, head)
     read_at(root, resolved_head, f"problems/{problem}/problem.md")
+    status = problem_status(root, problem, resolved_head)
+    if status == "archived":
+        return {
+            "schemaVersion": 1,
+            "problemId": problem,
+            "problemStatus": status,
+            "canonicalHead": resolved_head,
+            "projections": [],
+        }
     specs = (
         _worktree_projection_specs(root)
         if resolved_head == "WORKTREE"
@@ -577,6 +594,7 @@ def list_active_projections(
     return {
         "schemaVersion": 1,
         "problemId": problem,
+        "problemStatus": status,
         "canonicalHead": resolved_head,
         "projections": projections,
     }
@@ -679,6 +697,7 @@ def validate_admission_pr(
 
     problem_changes = []
     projection_changes = []
+    problem_registry_changes = []
     policy_changes = []
     def governed_kind(path: str) -> str | None:
         parts = PurePosixPath(path).parts
@@ -690,6 +709,8 @@ def validate_admission_pr(
             and parts[2].endswith(".json")
         ):
             return "projection"
+        if path == PROBLEM_REGISTRY_PATH:
+            return "problem-registry"
         if path in {
             ".github/math-flow-governance.json",
             ".github/CODEOWNERS",
@@ -701,6 +722,7 @@ def validate_admission_pr(
     change_indexes = {
         "problem": problem_changes,
         "projection": projection_changes,
+        "problem-registry": problem_registry_changes,
         "policy": policy_changes,
     }
     for change in changes:
@@ -716,6 +738,7 @@ def validate_admission_pr(
     categories = [
         ("problem", problem_changes),
         ("projection", projection_changes),
+        ("problem-registry", problem_registry_changes),
         ("policy", policy_changes),
     ]
     active = [(kind, items) for kind, items in categories if items]
@@ -728,7 +751,7 @@ def validate_admission_pr(
         }
     if len(active) != 1 or len(changes) != 1 or len(active[0][1]) != 1:
         raise MathFlowError(
-            "problem, projection, and governance-policy admissions must use separate one-file PRs"
+            "problem, problem-registry, projection, and governance-policy admissions must use separate one-file PRs"
         )
 
     kind, items = active[0]
@@ -758,6 +781,13 @@ def validate_admission_pr(
             subject_id,
             lambda relative: read_at(root, head_sha, relative),
         )
+    elif kind == "problem-registry":
+        subject_id = "problem-registry"
+        value = _json_object(
+            read_at(root, head_sha, change.path),
+            "candidate problem registry",
+        )
+        validate_problem_registry(value, canonical_problem_ids(root, head_sha))
     else:
         subject_id = PurePosixPath(change.path).name
         if change.path == ".github/math-flow-governance.json":

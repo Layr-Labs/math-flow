@@ -8,6 +8,7 @@ from pathlib import Path, PurePosixPath
 from .artifacts import read_verified_artifact, verify_bundle
 from .errors import MathFlowError
 from .governance import resolve_projection
+from .problem_registry import active_problem_ids
 from .projection_dependencies import (
     projection_dependency_state_digest,
     resolve_projection_dependencies,
@@ -16,7 +17,6 @@ from .projection_dependencies import (
 from .repository import (
     commit_timestamp,
     ledger,
-    list_files_at,
     read_at,
     resolve_commit,
     sha256_json,
@@ -539,15 +539,7 @@ def plan_due_credit_dispatches(
     now = int(time.time()) if as_of is None else as_of
     _nonnegative_integer(now, "credit planning time")
     repository_head = resolve_commit(root, head)
-    problems = sorted(
-        {
-            parts[1]
-            for path in list_files_at(root, repository_head, "problems")
-            if len(parts := PurePosixPath(path).parts) == 3
-            and parts[0] == "problems"
-            and parts[2] == "problem.md"
-        }
-    )
+    problems = active_problem_ids(root, repository_head)
     dispatches: list[dict[str, object]] = []
     waiting: list[dict[str, str]] = []
     planning_errors: list[dict[str, str]] = []
