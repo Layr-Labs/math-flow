@@ -52,6 +52,21 @@ def accepted_replay_response(
             "# Rigorous audit\n\nEvery declared obligation is established in this fixture.",
             index,
         )
+    schema_stack = [schema]
+    while schema_stack:
+        node = schema_stack.pop()
+        if isinstance(node, dict):
+            if "oneOf" in node:
+                raise AssertionError("strict output schemas must not use oneOf")
+            if "uniqueItems" in node:
+                raise AssertionError(
+                    "strict output schemas must leave uniqueness to the reducer"
+                )
+            if "const" in node and "type" not in node:
+                raise AssertionError("strict-schema constants must declare their JSON type")
+            schema_stack.extend(node.values())
+        elif isinstance(node, list):
+            schema_stack.extend(node)
     properties = schema["properties"]
     if "assessments" in properties:
         claim_keys = properties["assessments"]["items"]["properties"]["claimKey"][
@@ -72,6 +87,11 @@ def accepted_replay_response(
             ]
         }
     elif "contribution" in properties:
+        operation_schema = properties["operations"]["items"]
+        if "anyOf" not in operation_schema or "oneOf" in operation_schema:
+            raise AssertionError(
+                "organizer operations must use OpenAI-supported nested anyOf"
+            )
         claim_keys = properties["contribution"]["properties"]["claimKeys"]["items"][
             "enum"
         ]

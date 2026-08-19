@@ -154,7 +154,6 @@ def _string_array(item: dict[str, object], *, min_items: int = 0) -> dict[str, o
     return {
         "type": "array",
         "minItems": min_items,
-        "uniqueItems": True,
         "items": item,
     }
 
@@ -171,24 +170,23 @@ def _organization_schema(
 ) -> dict[str, object]:
     source_transaction = _source_transaction_schema(transaction_ids)
     digest_or_null = {
-        "oneOf": [
-            {"type": "null"},
-            {"type": "string", "pattern": DIGEST_PATTERN},
-        ]
+        "type": ["string", "null"],
+        "pattern": DIGEST_PATTERN,
     }
     program_value = {
         "type": "object",
         "properties": {
             "id": {"type": "string", "pattern": IDENTIFIER_PATTERN},
             "parentId": {
-                "oneOf": [
-                    {"type": "null"},
-                    {"type": "string", "pattern": IDENTIFIER_PATTERN},
-                ]
+                "type": ["string", "null"],
+                "pattern": IDENTIFIER_PATTERN,
             },
             "title": {"type": "string", "minLength": 1},
             "objective": {"type": "string", "minLength": 1},
-            "status": {"enum": ["active", "completed", "retired"]},
+            "status": {
+                "type": "string",
+                "enum": ["active", "completed", "retired"],
+            },
             "parentThreadIds": _string_array(
                 {"type": "string", "pattern": IDENTIFIER_PATTERN}
             ),
@@ -213,9 +211,11 @@ def _organization_schema(
             "title": {"type": "string", "minLength": 1},
             "summary": {"type": "string", "minLength": 1},
             "kind": {
+                "type": "string",
                 "enum": ["research", "verification", "exploration", "unstructured"]
             },
             "status": {
+                "type": "string",
                 "enum": [
                     "active",
                     "queued",
@@ -258,6 +258,7 @@ def _organization_schema(
             "id": {"type": "string", "pattern": IDENTIFIER_PATTERN},
             "programId": {"type": "string", "pattern": IDENTIFIER_PATTERN},
             "type": {
+                "type": "string",
                 "enum": ["result", "proof", "method", "computation", "tool", "question"]
             },
             "title": {"type": "string", "minLength": 1},
@@ -285,7 +286,7 @@ def _organization_schema(
         return {
             "type": "object",
             "properties": {
-                "entityKind": {"const": kind},
+                "entityKind": {"type": "string", "const": kind},
                 "entityId": {"type": "string", "pattern": IDENTIFIER_PATTERN},
                 "baseDigest": digest_or_null,
                 "value": value_schema,
@@ -297,11 +298,11 @@ def _organization_schema(
     return {
         "type": "object",
         "properties": {
-            "schemaVersion": {"const": 1},
+            "schemaVersion": {"type": "integer", "const": 1},
             "operations": {
                 "type": "array",
                 "items": {
-                    "oneOf": [
+                    "anyOf": [
                         operation("program", program_value),
                         operation("thread", thread_value),
                         operation("item", item_value),
@@ -315,7 +316,6 @@ def _organization_schema(
                         "type": "array",
                         "minItems": len(accepted_claim_keys),
                         "maxItems": len(accepted_claim_keys),
-                        "uniqueItems": True,
                         "items": {
                             "type": "string",
                             "enum": accepted_claim_keys,
@@ -366,12 +366,18 @@ def _credit_schema(
     child = {
         "type": "object",
         "properties": {
-            "kind": {"enum": ["program", "contribution"]},
+            "kind": {
+                "type": "string",
+                "enum": ["program", "contribution"],
+            },
             "id": {"type": "string"},
             "counterfactual": {"type": "string", "minLength": 1},
             "directEffects": {"type": "array", "items": effect},
             "obviatedEffects": {"type": "array", "items": effect},
-            "confidence": {"enum": ["low", "medium", "high"]},
+            "confidence": {
+                "type": "string",
+                "enum": ["low", "medium", "high"],
+            },
             "evidenceRefs": _string_array({"type": "string", "minLength": 1}),
         },
         "required": [
@@ -399,7 +405,7 @@ def _credit_schema(
     return {
         "type": "object",
         "properties": {
-            "schemaVersion": {"const": 1},
+            "schemaVersion": {"type": "integer", "const": 1},
             "evaluations": {
                 "type": "array",
                 "minItems": len(targets),
