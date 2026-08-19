@@ -13,6 +13,7 @@ from .errors import MathFlowError
 from .governance import projection_registry_index
 from .knowledge import validate_state_v2, validate_state_v3
 from .repository import ledger, read_at
+from .research_state import validate_research_program_state
 
 
 def _projection_catalog_sort_key(item: dict[str, object]) -> tuple[object, ...]:
@@ -179,6 +180,243 @@ def _validate_new_revision_report_links(
             )
 
 
+def _research_viewer_nodes(
+    state: dict[str, object], transaction_positions: dict[str, int]
+) -> dict[str, dict[str, object]]:
+    def references(transaction_ids: list[object], relation: str) -> list[dict[str, object]]:
+        return [
+            {
+                "kind": "transaction",
+                "id": str(transaction_id),
+                "ledgerPosition": transaction_positions.get(str(transaction_id)),
+                "relation": relation,
+            }
+            for transaction_id in transaction_ids
+        ]
+
+    nodes: dict[str, dict[str, object]] = {}
+    for program_id, program in state["programs"].items():
+        source_ids = list(program.get("sourceTransactionIds", []))
+        nodes[str(program_id)] = {
+            "id": str(program_id),
+            "parentId": program.get("parentId"),
+            "type": "program",
+            "title": program["title"],
+            "summary": program["objective"],
+            "status": program["status"],
+            "contentMarkdown": "\n\n".join(
+                [
+                    f"## Objective\n\n{program['objective']}",
+                    "## Local credit context\n\n"
+                    + (
+                        "Root program."
+                        if program_id == "root"
+                        else "Occupies parent threads: "
+                        + ", ".join(program["parentThreadIds"])
+                    ),
+                ]
+            ),
+            "subjects": references(source_ids, "source"),
+            "evidence": [],
+            "reportRef": None,
+            "digest": program["digest"],
+        }
+    for thread_id, thread in state["threads"].items():
+        node_id = f"thread:{thread_id}"
+        source_ids = list(thread.get("sourceTransactionIds", []))
+        nodes[node_id] = {
+            "id": node_id,
+            "parentId": thread["programId"],
+            "type": "question",
+            "title": thread["title"],
+            "summary": thread["summary"],
+            "status": thread["status"],
+            "contentMarkdown": "\n\n".join(
+                [
+                    thread["summary"],
+                    f"**Thread kind:** {thread['kind']}",
+                    f"**Expected local exposure:** {thread['expectedExposure']}",
+                    (
+                        "**Conditions:** " + "; ".join(thread["conditions"])
+                        if thread["conditions"]
+                        else "**Conditions:** none"
+                    ),
+                ]
+            ),
+            "subjects": references(source_ids, "source"),
+            "evidence": [],
+            "reportRef": None,
+            "digest": thread["digest"],
+        }
+    for item_id, item in state["items"].items():
+        node_id = f"item:{item_id}"
+        subject_ids = list(
+            dict.fromkeys(str(reference["transactionId"]) for reference in item["claimRefs"])
+        )
+        source_ids = [
+            str(transaction_id)
+            for transaction_id in item.get("sourceTransactionIds", [])
+            if str(transaction_id) not in subject_ids
+        ]
+        evidence = references(source_ids, "source")
+        evidence.extend(
+            {
+                "kind": "knowledge-node",
+                "id": f"item:{dependency_id}",
+                "relation": "depends-on",
+            }
+            for dependency_id in item.get("dependencyItemIds", [])
+        )
+        claim_lines = [
+            f"- `{reference['claimKey']}` from `{reference['transactionId']}`"
+            for reference in item["claimRefs"]
+        ]
+        nodes[node_id] = {
+            "id": node_id,
+            "parentId": item["programId"],
+            "type": item["type"],
+            "title": item["title"],
+            "summary": item["summary"],
+            "status": "active",
+            "contentMarkdown": item["summary"]
+            + (
+                "\n\n## Accepted claims\n\n" + "\n".join(claim_lines)
+                if claim_lines
+                else ""
+            ),
+            "subjects": references(subject_ids, "accepted-claim"),
+            "evidence": evidence,
+            "reportRef": None,
+            "digest": item["digest"],
+        }
+    return nodes
+
+
+def _export_research_viewer_data(
+    root: Path,
+    problem: str,
+    head: str,
+    run_dirs: list[Path],
+    judgment_dirs: list[Path] | None,
+) -> dict[str, object]:
+    source = ledger(root, problem, head)
+    resolved_head = str(source["ledgerHead"])
+    problem_markdown = read_at(root, resolved_head, f"problems/{problem}/problem.md")
+    transactions = []
+    transaction_positions: dict[str, int] = {}
+    for transaction in source["transactions"]:
+        transaction_id = str(transaction["transactionId"])
+        transaction_positions[transaction_id] = int(transaction["ordinal"])
+        path = str(transaction["path"])
+        transactions.append(
+            {
+                **transaction,
+                "contentMarkdown": read_at(
+                    root, transaction_id, f"{path}/README.md"
+                ),
+            }
+        )
+
+    runs: list[dict[str, object]] = []
+    previous_digest: str | None = None
+    previous_nodes: dict[str, dict[str, object]] = {}
+    for ordinal, raw_bundle in enumerate(run_dirs, start=1):
+        bundle = raw_bundle.resolve()
+        manifest, manifest_digest = load_manifest(bundle)
+        if (
+            manifest.get("problemId") != problem
+            or manifest.get("outputProfile") != "math-flow/hierarchical-research-v2"
+        ):
+            raise MathFlowError(
+                f"viewer run is not a hierarchical research v2 build: {bundle}"
+            )
+        if previous_digest is not None and manifest.get("baseRun") != previous_digest:
+            raise MathFlowError(f"viewer research runs do not form a base-run chain: {bundle}")
+        state = _json_artifact(bundle, manifest, "research-program-state")
+        validate_research_program_state(state, problem)
+        delta = _json_artifact(bundle, manifest, "research-program-delta")
+        nodes = _research_viewer_nodes(state, transaction_positions)
+        changed_node_ids = [
+            node_id
+            for node_id, node in nodes.items()
+            if previous_nodes.get(node_id, {}).get("digest") != node.get("digest")
+        ]
+        cost = sum(
+            float(provider_run.get("usage", {}).get("cost", 0))
+            for provider_run in manifest.get("providerRuns", [])
+            if isinstance(provider_run, dict)
+            and isinstance(provider_run.get("usage"), dict)
+            and isinstance(provider_run["usage"].get("cost", 0), (int, float))
+        )
+        runs.append(
+            {
+                "id": bundle.name,
+                "ordinal": ordinal,
+                "ledgerHead": manifest["ledgerHead"],
+                "problemLedgerHead": manifest.get(
+                    "problemLedgerHead", manifest["ledgerHead"]
+                ),
+                "runDigest": manifest_digest,
+                "baseRun": manifest.get("baseRun"),
+                "runKind": manifest.get("runKind"),
+                "inputs": manifest.get("inputs"),
+                "judgeSpec": manifest["judgeSpec"],
+                "runner": manifest["runner"],
+                "cost": cost,
+                "selection": {
+                    "selectedNodeIds": sorted(changed_node_ids),
+                    "rationale": "Nodes changed by the accepted validity batch.",
+                },
+                "normalizations": [],
+                "delta": delta,
+                "state": {"nodes": nodes, "stateDigest": state["stateDigest"]},
+                "revisionIds": [],
+                "addedRevisionIds": [],
+                "changedNodeIds": sorted(changed_node_ids),
+                "reportDigest": state["stateDigest"],
+                "revisionSemantics": "neutral-knowledge",
+            }
+        )
+        previous_digest = manifest_digest
+        previous_nodes = nodes
+
+    judgments_by_id: dict[str, dict[str, object]] = {}
+    for judgment_dir in judgment_dirs or []:
+        judgment = _viewer_judgment(judgment_dir.resolve(), problem)
+        judgment_id = str(judgment["judgmentId"])
+        prior = judgments_by_id.get(judgment_id)
+        if prior is not None and prior["runDigest"] != judgment["runDigest"]:
+            raise MathFlowError(f"viewer judgment ID has multiple run bundles: {judgment_id}")
+        judgments_by_id[judgment_id] = judgment
+    judgments = sorted(
+        judgments_by_id.values(),
+        key=lambda item: (
+            min(
+                (
+                    int(subject.get("ledgerPosition", 0))
+                    for subject in item["record"].get("subjects", [])
+                    if isinstance(subject, dict)
+                ),
+                default=0,
+            ),
+            str(item["judgmentId"]),
+        ),
+    )
+    return {
+        "schemaVersion": 1,
+        "problem": {
+            "id": problem,
+            "title": _title(problem_markdown, problem),
+            "statementMarkdown": problem_markdown,
+        },
+        "ledgerHead": source["ledgerHead"],
+        "transactions": transactions,
+        "judgments": judgments,
+        "runs": runs,
+        "revisions": [],
+        "reports": [],
+        "latestRunId": runs[-1]["id"],
+    }
 def _viewer_judgment(bundle: Path, problem: str) -> dict[str, object]:
     manifest, run_digest = load_manifest(bundle)
     if manifest.get("runKind") != "judgment" or manifest.get("problemId") != problem:
@@ -333,6 +571,111 @@ def _viewer_credit_assignment(
     }
 
 
+def _viewer_hierarchical_credit_assignment(
+    bundle: Path,
+    expected_digest: str,
+    published_objects: dict[str, dict[str, object]],
+) -> dict[str, object]:
+    """Load a hierarchical two-term credit overlay and bind its research state."""
+
+    from .research_credit import load_hierarchical_credit_assignment_bundle
+
+    manifest, credit_state, run_digest = load_hierarchical_credit_assignment_bundle(
+        bundle
+    )
+    if run_digest != expected_digest:
+        raise MathFlowError(
+            f"viewer hierarchical credit digest does not match its index: {bundle}"
+        )
+    credit_input = _json_artifact(bundle, manifest, "hierarchical-credit-input")
+    dependency_lock = _json_artifact(bundle, manifest, "dependency-lock")
+    dependencies = dependency_lock.get("dependencies")
+    research_dependencies = [
+        item
+        for item in dependencies
+        if isinstance(item, dict)
+        and item.get("artifactRole") == "research-program-state"
+    ] if isinstance(dependencies, list) else []
+    if len(research_dependencies) != 1:
+        raise MathFlowError(
+            "viewer hierarchical credit must lock exactly one research-program state"
+        )
+    dependency = research_dependencies[0]
+    dependency_digest = dependency.get("runDigest")
+    dependency_object = (
+        published_objects.get(dependency_digest)
+        if isinstance(dependency_digest, str)
+        else None
+    )
+    if dependency_object is None:
+        raise MathFlowError(
+            "viewer hierarchical credit references an unpublished research run"
+        )
+    dependency_manifest = dependency_object["manifest"]
+    dependency_inputs = dependency_manifest.get("inputs")
+    dependency_artifact = dependency.get("artifact")
+    artifacts = dependency_manifest.get("artifacts")
+    matching_artifacts = [
+        item
+        for item in artifacts
+        if isinstance(item, dict) and item.get("role") == "research-program-state"
+    ] if isinstance(artifacts, list) else []
+    if (
+        dependency_manifest.get("runKind") != "knowledge-build"
+        or dependency_manifest.get("problemId") != manifest.get("problemId")
+        or not isinstance(dependency_inputs, dict)
+        or dependency_inputs.get("projectionSpecDigest")
+        != dependency.get("projectionSpecDigest")
+        or dependency_manifest.get("problemLedgerDigest")
+        != dependency.get("problemLedgerDigest")
+        or len(matching_artifacts) != 1
+        or matching_artifacts[0] != dependency_artifact
+    ):
+        raise MathFlowError(
+            "viewer hierarchical credit research dependency is inconsistent"
+        )
+    cost = sum(
+        float(provider_run.get("usage", {}).get("cost", 0))
+        for provider_run in manifest.get("providerRuns", [])
+        if isinstance(provider_run, dict)
+        and provider_run.get("cacheHit") is not True
+        and isinstance(provider_run.get("usage"), dict)
+        and isinstance(provider_run["usage"].get("cost", 0), (int, float))
+    )
+    models = sorted(
+        {
+            str(provider_run.get("resolvedModel") or provider_run.get("requestedModel"))
+            for provider_run in manifest.get("providerRuns", [])
+            if isinstance(provider_run, dict)
+            and isinstance(
+                provider_run.get("resolvedModel") or provider_run.get("requestedModel"),
+                str,
+            )
+        }
+    )
+    inputs = manifest.get("inputs")
+    consumer = dependency_lock.get("consumer")
+    if not isinstance(inputs, dict) or not isinstance(consumer, dict):
+        raise MathFlowError("viewer hierarchical credit has no projection identity")
+    return {
+        "id": run_digest,
+        "runDigest": run_digest,
+        "ledgerHead": manifest["ledgerHead"],
+        "problemLedgerHead": manifest["problemLedgerHead"],
+        "problemLedgerDigest": manifest["problemLedgerDigest"],
+        "projectionId": consumer["projectionId"],
+        "projectionSpecDigest": consumer["projectionSpecDigest"],
+        "dependencyLockDigest": dependency_lock["dependencyLockDigest"],
+        "dependency": dependency,
+        "creditInput": credit_input,
+        "creditState": credit_state,
+        "dependencyLock": dependency_lock,
+        "models": models,
+        "cost": cost,
+        "schedule": inputs.get("schedule"),
+    }
+
+
 def _title(markdown: str, fallback: str) -> str:
     for line in markdown.splitlines():
         if line.startswith("# "):
@@ -350,6 +693,11 @@ def export_viewer_data(
     if not run_dirs:
         raise MathFlowError("viewer export requires at least one judge run")
     root = root.resolve()
+    first_manifest, first_manifest_digest = load_manifest(run_dirs[0].resolve())
+    if first_manifest.get("outputProfile") == "math-flow/hierarchical-research-v2":
+        return _export_research_viewer_data(
+            root, problem, head, run_dirs, judgment_dirs
+        )
     source = ledger(root, problem, head)
     resolved_head = str(source["ledgerHead"])
     problem_markdown = read_at(root, resolved_head, f"problems/{problem}/problem.md")
@@ -373,7 +721,11 @@ def export_viewer_data(
     latest_revisions: list[dict[str, object]] = []
     for ordinal, raw_bundle in enumerate(run_dirs, start=1):
         bundle = raw_bundle.resolve()
-        manifest, manifest_digest = load_manifest(bundle)
+        manifest, manifest_digest = (
+            (first_manifest, first_manifest_digest)
+            if ordinal == 1
+            else load_manifest(bundle)
+        )
         if manifest.get("problemId") != problem:
             raise MathFlowError(f"viewer run belongs to a different problem: {bundle}")
         if manifest.get("outputProfile") not in {
@@ -678,6 +1030,7 @@ def export_viewer_catalog(
             "math-flow/hierarchical-markdown-v2",
             "math-flow/knowledge-build-markdown-v1",
             "math-flow/knowledge-build-markdown-v2",
+            "math-flow/hierarchical-research-v2",
         }
     }
     published_judgments = _projection_judgment_index(published_objects)
@@ -795,11 +1148,20 @@ def export_viewer_catalog(
         str(spec["id"]): spec for spec in projection_specs.values()
     }
     credit_runs: list[dict[str, object]] = []
+    hierarchical_credit_runs: list[dict[str, object]] = []
     for digest, item in sorted(published_objects.items()):
         if item["manifest"].get("runKind") != "credit-assignment":
             continue
-        credit_run = _viewer_credit_assignment(
-            item["path"], digest, published_objects
+        hierarchical_credit = (
+            item["manifest"].get("outputProfile")
+            == "math-flow/hierarchical-research-credit-v2"
+        )
+        credit_run = (
+            _viewer_hierarchical_credit_assignment(
+                item["path"], digest, published_objects
+            )
+            if hierarchical_credit
+            else _viewer_credit_assignment(item["path"], digest, published_objects)
         )
         problem = str(item["manifest"]["problemId"])
         current_ledger = ledger(root, problem, canonical_ref)
@@ -875,7 +1237,8 @@ def export_viewer_catalog(
             stale_reasons.append("knowledge-dependency-changed")
         elif not current_knowledge:
             stale_reasons.append("knowledge-projection-advanced")
-        credit_runs.append(
+        target_runs = hierarchical_credit_runs if hierarchical_credit else credit_runs
+        target_runs.append(
             {
                 **credit_run,
                 "knowledgeProjectionIds": [
@@ -1010,6 +1373,131 @@ def export_viewer_catalog(
     credit_projections.sort(
         key=lambda item: (str(item["problemId"]), str(item["label"]), str(item["id"]))
     )
+
+    grouped_hierarchical_credit: dict[
+        tuple[str, str, str], list[dict[str, object]]
+    ] = {}
+    for credit_run in hierarchical_credit_runs:
+        key = (
+            str(credit_run["creditInput"]["problemId"]),
+            str(credit_run["projectionId"]),
+            str(credit_run["projectionSpecDigest"]),
+        )
+        grouped_hierarchical_credit.setdefault(key, []).append(credit_run)
+    for projection_digest, spec in projection_specs.items():
+        if spec.get("engine") != "overlay-repository-v1":
+            continue
+        dependencies = spec.get("dependencies")
+        research_dependencies = [
+            dependency
+            for dependency in dependencies
+            if isinstance(dependency, dict)
+            and dependency.get("artifactRole") == "research-program-state"
+        ] if isinstance(dependencies, list) else []
+        if len(research_dependencies) != 1:
+            continue
+        producer_id = research_dependencies[0].get("projectionId")
+        allowed = spec.get("allowedProblems")
+        for research_projection in projections:
+            registered_research = research_projection.get("projectionSpec")
+            if (
+                not isinstance(registered_research, dict)
+                or registered_research.get("id") != producer_id
+                or not isinstance(allowed, list)
+                or (
+                    "*" not in allowed
+                    and research_projection["problemId"] not in allowed
+                )
+            ):
+                continue
+            grouped_hierarchical_credit.setdefault(
+                (
+                    str(research_projection["problemId"]),
+                    str(spec["id"]),
+                    projection_digest,
+                ),
+                [],
+            )
+
+    hierarchical_credit_projections: list[dict[str, object]] = []
+    hierarchical_id_counts: dict[str, int] = {}
+    for _, projection_id, _ in grouped_hierarchical_credit:
+        hierarchical_id_counts[projection_id] = (
+            hierarchical_id_counts.get(projection_id, 0) + 1
+        )
+    for (problem, projection_id, projection_digest), group_runs in sorted(
+        grouped_hierarchical_credit.items()
+    ):
+        group_runs.sort(
+            key=lambda item: (
+                int(item["schedule"]["evaluatedAt"])
+                if isinstance(item.get("schedule"), dict)
+                else -1,
+                len(item["creditInput"]["acceptedTransactionIds"]),
+                str(item["problemLedgerHead"]),
+                str(item["runDigest"]),
+            )
+        )
+        try:
+            ordered_group = ordered_credit_runs(group_runs)
+        except MathFlowError:
+            ordered_group = []
+        if ordered_group:
+            latest = ordered_group[-1]
+            selection_status = "current" if latest["stale"] is False else "historical"
+        elif group_runs:
+            latest = None
+            selection_status = "ambiguous"
+        else:
+            latest = None
+            selection_status = "pending"
+        registered = projection_specs.get(projection_digest)
+        if registered is not None and registered.get("engine") != "overlay-repository-v1":
+            raise MathFlowError(
+                f"viewer hierarchical credit uses a non-overlay projection: {projection_id}"
+            )
+        catalog_id = (
+            projection_id
+            if hierarchical_id_counts[projection_id] == 1
+            else f"{projection_id}@{projection_digest}"
+        )
+        declared_dependency_ids = {
+            str(research_projection["id"])
+            for research_projection in projections
+            if research_projection["problemId"] == problem
+            and isinstance(research_projection.get("projectionSpec"), dict)
+            and registered is not None
+            and any(
+                isinstance(dependency, dict)
+                and dependency.get("artifactRole") == "research-program-state"
+                and dependency.get("projectionId")
+                == research_projection["projectionSpec"].get("id")
+                for dependency in registered.get("dependencies", [])
+            )
+        }
+        hierarchical_credit_projections.append(
+            {
+                "id": catalog_id,
+                "problemId": problem,
+                "label": projection_id,
+                "projectionSpec": registered,
+                "researchProjectionIds": sorted(
+                    {
+                        research_projection_id
+                        for item in group_runs
+                        for research_projection_id in item["knowledgeProjectionIds"]
+                    }
+                    | declared_dependency_ids
+                ),
+                "latestRunDigest": latest["runDigest"] if latest else None,
+                "selectionStatus": selection_status,
+                "runCount": len(group_runs),
+                "runs": group_runs,
+            }
+        )
+    hierarchical_credit_projections.sort(
+        key=lambda item: (str(item["problemId"]), str(item["label"]), str(item["id"]))
+    )
     direction_ledgers = [
         research_direction_ledger(root, problem, canonical_ref)
         for problem in sorted(
@@ -1031,6 +1519,7 @@ def export_viewer_catalog(
         },
         "projections": projections,
         "creditProjections": credit_projections,
+        "hierarchicalCreditProjections": hierarchical_credit_projections,
         "researchDirections": direction_ledgers,
         "objectiveAttestations": objective_attestations,
         "defaultProjectionId": projections[0]["id"] if projections else None,

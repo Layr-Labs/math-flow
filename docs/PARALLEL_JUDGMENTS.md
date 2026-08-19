@@ -5,20 +5,20 @@ from intentionally serialized knowledge formation.
 
 ```text
 contributions
-    ├── primary judgment ─┐
-    ├── primary judgment ─┼─ conflict detection ─ reconciliation judgments
-    └── primary judgment ─┘                              │
-                                                        ▼
-                                          coalescing knowledge-build lane
-                                                        │
-                                                        ▼
-                                      serialized hierarchical formation
+    ├── validity judgment ─┐
+    ├── validity judgment ─┼─ dependency-safe coalescing lane
+    └── validity judgment ─┘                 │
+                                             ▼
+                              batched hierarchical formation
 ```
+
+This is the default validity-v2 path. Legacy judgment projections may still
+insert conflict detection and reconciliation before formation.
 
 ## Run a primary judgment
 
-Use one command per independently adjudicated subject. Additional transactions
-may be supplied as evidence without becoming subjects:
+Use one command per independently adjudicated subject. The legacy v1 judge may
+receive additional transactions as evidence without making them subjects:
 
 ```bash
 python -m math_flow judgment \
@@ -35,6 +35,46 @@ The resulting bundle contains `report.md`, `judgment.json`, and `run.json` with
 The manifest records both the repository-wide ledger head and a
 `problemLedgerDigest`, so unrelated problem commits do not invalidate scheduling
 or caches for this problem.
+
+The v2 validity judge has a narrower contract:
+
+```bash
+python -m math_flow judgment \
+  --problem bssc-sum-capacity \
+  --judge protocol/judges/openrouter-validity-judgment-v2.json \
+  --head HEAD \
+  --subject <transaction-sha> \
+  --projection-dir /path/to/projections-worktree \
+  --output-dir projections/staging/judgment-1
+```
+
+It accepts exactly one subject and rejects `--evidence`. A contribution may
+declare claims in an optional `claims.json`; each claim supplies a stable
+`claimKey`, its exact statement, and prior canonical transaction IDs on which it
+depends. Existing contributions remain compatible: the runner derives one claim
+from the first `## Claim`, `## Claims`, `## Claim and scope`, or
+`## Claims and exact scope` section, falling back to the full README, and treats
+full prior transaction IDs cited there as explicit dependencies.
+
+The runner writes a content-addressed `dependency-packet.json`. It contains the
+declared claims, only their declared prior transactions, and—when available—only
+nodes from a historical knowledge state that cite those dependencies. The state
+must precede the subject; the current state and the rest of the contribution
+ledger are never sent.
+
+The judge's overriding objective is to prevent false acceptance. It audits every
+material inference, hypothesis, quantifier, domain restriction, edge case,
+calculation, and dependency application, and it may decompose the proof into as
+many intermediate obligations as rigorous verification requires. A claim is
+valid only after affirmative verification; decisive defects produce `invalid`,
+and unresolved material obligations produce `indeterminate`.
+
+The output still has one assessment and one derived routing finding per declared
+claim, but this is only an identity and indexing invariant. It does not limit the
+depth or breadth of the mathematical audit. Missing premises, proof defects, and
+scope qualifications remain attached to that assessment rather than becoming
+new top-level claim identities. Novelty, global placement, program organization,
+and cumulative state remain the knowledge builder's responsibility.
 
 Before dispatching work, automation can compare the canonical problem ledger
 with the published projection index:
@@ -54,7 +94,7 @@ judge's queue. The output contains a GitHub-compatible matrix with one entry for
 every uncovered transaction. Those judgments may execute in parallel because
 they do not read or mutate a base knowledge state.
 
-## Detect and reconcile conflicts
+## Detect and reconcile conflicts (legacy projections)
 
 ```bash
 python -m math_flow detect-conflicts \
@@ -205,15 +245,13 @@ python -m math_flow export-viewer-catalog \
 The catalog follows `baseRun` content digests and uses each scheduler lane's
 `latestStateRun` as its authoritative terminal. Git publication order therefore
 does not become knowledge-state order. The included OpenRouter repository
-projection workflow fans out every missing primary judgment, derives conflicts
-from the complete verified set, reuses or fans out reconciliations, and
-coalesces the dependency-complete artifacts into one formation claim. Hosted
-workflow concurrency is keyed by the verified `(problem, primary-judge)`
-stream. Different problems and different primary judges run concurrently.
-Knowledge projections sharing a primary judge stay in one short queue so the
-later projection replans against, and reuses, the first projection's published
-judgments instead of making duplicate paid calls. Formation leases remain
-serialized only within each projection-specific knowledge lane.
+projection workflow fans out every missing primary judgment and coalesces
+dependency-complete artifacts into one formation claim. Workflow runs are not
+globally serialized by problem or judge stream, so independent submissions may
+be judged concurrently even when they arrive in separate runs. Legacy
+projections still derive conflicts and reuse or fan out reconciliations.
+Formation leases and base-run checks remain serialized only within each
+projection-specific knowledge lane.
 Publication snapshots its lane update, three-way merges that
 disjoint lane onto the newest orphan-branch scheduler, and retries optimistic
 GitHub-signed publication when another problem wins the expected-head race.

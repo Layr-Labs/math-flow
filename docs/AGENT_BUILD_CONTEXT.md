@@ -61,10 +61,11 @@ automatic squash merge to main
                     ├── content-addressed judgment/build objects
                     ├── scheduler and per-problem indexes
                     ├── viewer/catalog.json
-                    └── exact knowledge dependency lock
+                    └── exact state dependency lock
                                       │
                                       ▼
-                         qualitative credit overlay
+                  independent qualitative or hierarchical
+                            credit overlay
                                  │
                                  ▼
                     repository-backed research atlas
@@ -106,8 +107,27 @@ automatic squash merge to main
 
 ### Judgment and reconciliation
 
-- A primary judgment is immutable, content-addressed, and has no base knowledge
-  state. Independent judgments must remain parallelizable.
+- A primary judgment is immutable, content-addressed, and has no mutable base
+  knowledge state. Independent judgments must remain parallelizable. A bounded
+  validity judge may receive a content-addressed pre-subject dependency packet:
+  declared claims, explicitly cited prior transactions, and only historical
+  knowledge nodes grounded in those dependencies. It must never receive the
+  current post-subject state or an automatically embedded preceding ledger.
+- Primary-judgment completion order must not determine knowledge-state order or
+  credit context. A later transaction may finish judgment before an earlier
+  independent transaction without being discarded or forcing either judgment to
+  rerun. Only an explicit mathematical dependency may create a validity-ordering
+  constraint; single-writer knowledge formation is a downstream concern.
+- A validity-only primary judge devotes its mathematical work to rigorous,
+  conservative correctness verification, with prevention of false acceptance
+  as its overriding priority. It may decompose a proof into any number of
+  intermediate obligations and must audit every material inference, assumption,
+  quantifier, domain restriction, edge case, calculation, and dependency use.
+  One structured assessment per declared claim is an identity/indexing rule,
+  not a restriction on the analysis. Missing premises, evidence issues, and
+  scope qualifications remain properties of that assessment rather than new
+  top-level claim identities. Novelty, frontier placement, research-program
+  organization, and cumulative state belong to the knowledge builder.
 - The current OpenRouter judges have no shell, code interpreter, or tool calls.
   They receive supported repository artifacts as quoted text and return model
   output. Executable evidence must use a separately governed objective verifier;
@@ -129,6 +149,13 @@ automatic squash merge to main
   available, missing reconciliation judgments for independent conflicts also
   run concurrently. Construction of a given `(problem, projection)` knowledge
   chain is single-writer and serialized.
+- Single-writer formation does not imply one provider call or one authored
+  post-state per submission. A formation claim may freeze and consume a
+  deterministic batch of dependency-ready judgments, producing one atomic
+  post-state plus per-submission provenance and historical credit-reference
+  ledgers. The experimental hierarchical replay is currently a serial reference
+  implementation; do not treat its per-transaction loop as an architectural
+  requirement for hosted execution.
 - Formation may be triggered by completed judgments but should coalesce work and
   obey a configurable minimum interval. The wildcard default projection uses a
   five-minute minimum interval; a newly created lane can run immediately, while
@@ -173,6 +200,15 @@ projection references them until the separate shadow-projection admission used
 for hosted evaluation. Existing v2 projections retain their original prompt and
 control schema.
 
+The hierarchical research v1 experiment temporarily keeps program topology and
+item ownership stable so that its new local counterfactual-credit semantics can
+be evaluated independently. This is a scoped implementation deferral, not an
+architectural decision to freeze the first program taxonomy permanently. Future
+versions should restore audited move, reparent, split, and merge operations using
+append-only topology revisions, successor/retirement lineage, and deterministic
+credit invalidation or refresh for every affected local program edge. Preserve
+this evolution path when simplifying or replacing the experimental builder.
+
 Cross-program claims belong at root or another genuinely shared active scope.
 Do not duplicate a mathematical node merely because multiple programs depend on
 it. A dispute follows the claim it disputes. Taxonomy changes must never be based
@@ -202,8 +238,9 @@ preference.
 | Approved projection registry | Implemented | `math_flow/governance.py`, `protocol/projections/` |
 | Permissioned governed admission | Implemented; native reviews or exact `/approve-admission <full-head-SHA>` comments | `math_flow/governance.py`, `.github/workflows/admission-control.yml` |
 | Parallel primary judgments | Implemented | `math_flow/judgments.py` |
-| Conflict detection and reconciliation | Implemented locally and in the hosted projection workflow | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
-| Coalescing, leased formation lanes | Implemented | `math_flow/coordination.py` |
+| Conflict detection and reconciliation | Implemented for legacy projections; the default validity-v2 path omits this stage | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
+| Coalescing, leased formation lanes | Implemented, including atomic submission-dependency components | `math_flow/coordination.py` |
+| Batched hierarchical research state | Implemented for the default validity-v2 projection; invalid and indeterminate claims are excluded | `math_flow/research_projection.py`, `math_flow/research_state.py` |
 | Holistic hierarchical state and revisions | Implemented | `math_flow/formation.py`, `math_flow/knowledge.py` |
 | Content-addressed projection publisher | Implemented, including optimistic cross-problem merge/retry and bounded GitHub commits | `math_flow/coordination.py`, `math_flow/projection_queue.py`, `math_flow/github_projection.py` |
 | Provider-free congestion probe | Implemented; models concurrent problems, solvers, judge streams, projection lanes, atomic reconciliations, throttling, failure recovery, optimistic publication, chunking, catalog export, and agent context with zero provider calls | `math_flow/scale_probe.py`, `tests/test_scale_probe.py` |
@@ -220,7 +257,8 @@ preference.
 The approved hosted projections are:
 
 - `openrouter-research-v1`, the wildcard default knowledge projection. It uses
-  the neutral research-program v2 builder and a five-minute formation interval
+  parallel validity-v2 judgments, no reconciliation stage, the batched
+  hierarchical research-state v2 builder, and a five-minute formation interval
   for every admitted problem with a nonempty canonical ledger;
 - `openrouter-no-three-in-line-research-programs-v2`, a knowledge-only profile
   for `no-three-in-line-77` that reuses the same immutable primary and
@@ -256,9 +294,19 @@ and paid only for knowledge formation. Their current wildcard run digests are
 has three top-level programs (certificates/occupancy, record perturbation, and
 symmetry-restricted analysis); the triangle state has one top-level area
 program. The specialized no-three research-program projection remains active
-as a separate historical/experimental chain because both credit overlays still
-declare it as their exact knowledge dependency. No wildcard default credit
-overlay has been admitted.
+as a separate historical/experimental chain because both qualitative credit
+overlays still declare it as their exact knowledge dependency.
+
+The default wildcard research projection now also has a distinct
+`openrouter-research-credit-v2` overlay. It locks the latest batched
+`research-program-state`, reconstructs first-appearance local ledgers from the
+immutable build chain, supplies original accepted submissions and validity
+records, and recomputes every immediate program edge at one common hindsight
+horizon. Its two non-negative terms are direct local work avoided and other
+pre-existing local work obviated; observed changes in estimated remaining work
+are not credit. The overlay has a one-hour rolling minimum interval and is
+scheduled independently, so it does not serialize primary judgments or require
+one research-state build per submission.
 
 The first research-program build published successfully in hosted run
 `31519191523`. It reused all three existing primary judgments, found no current
@@ -434,13 +482,14 @@ The ordinary solver path is fully automatic:
    no mathematical judgment effect.
 5. OpenRouter coverage planning fans out one primary judgment for each
    transaction not covered by the active judge-spec digest.
-6. The workflow reconstructs the complete verified primary set, derives the
-   exact current conflicts, reuses matching published reconciliations, and fans
-   out one OpenRouter call for each missing conflict reconciliation.
-7. Completed primary and reconciliation judgments are claimed dependency-
-   atomically into one serialized knowledge build, then published with the
-   updated scheduler, indexes, and viewer catalog. Later knowledge projections
-   using the same judge identities reuse those published judgments.
+6. The default validity-v2 path reconstructs the complete verified primary set
+   and derives the submission dependency graph directly from immutable validity
+   packets. Legacy projections additionally derive current conflicts, reuse
+   matching published reconciliations, and fan out missing reconciliation calls.
+7. Completed judgments are claimed dependency-atomically into one batched
+   knowledge build, then published with the updated scheduler, indexes, and
+   viewer catalog. Later knowledge projections using the same judge identities
+   reuse those published judgments.
 8. Cross-problem publications three-way merge disjoint scheduler lanes against
    the latest orphan-branch head and retry expected-head races. A scheduled
    wake-up pass redispatches due coalesced lanes every five minutes. Formation
@@ -470,12 +519,12 @@ Formation caches successful provider stages by exact request digest. Empty
 assistant messages are retried up to three times and are never checkpointed;
 length-truncated responses are also non-cacheable.
 
-Hosted reconciliation is implemented and fail-closed. Deterministic and
-fake-provider tests cover opposed primaries, conflict derivation, reconciliation
-reuse, dependency-atomic formation, and rejection of missing conflict inputs.
-The hosted research-program run exercised the no-conflict branch successfully;
-a real repository event containing opposed current primary judgments is still
-needed to exercise a paid reconciliation call end to end.
+Hosted reconciliation remains implemented and fail-closed for legacy
+projections. Deterministic and fake-provider tests cover opposed primaries,
+conflict derivation, reconciliation reuse, dependency-atomic formation, and
+rejection of missing conflict inputs. The default validity-v2 projection does
+not create a second adjudication layer: its builder consumes validity outcomes
+directly and refuses dependencies excluded from accepted research state.
 
 ## Agent roles and working conventions
 
@@ -663,6 +712,10 @@ upgrade path.
 
 - `README.md` — repository overview and common commands.
 - `docs/MVP.md` — architecture, phased roadmap, and deferred decisions.
+- `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V2.md` — current default validity-only,
+  dependency-safe batched research-state formation architecture.
+- `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V1.md` — serialized replay and
+  hierarchical-credit reference path.
 - `docs/PROJECTION_PROTOCOL.md` — run envelopes, profiles, revisions, and
   builder flexibility.
 - `docs/PARALLEL_JUDGMENTS.md` — judgment/reconciliation/formation command flow.

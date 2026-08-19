@@ -175,6 +175,58 @@ def _validated_input_dependencies(
     return validated_conflicts, validated_reconciliations
 
 
+def _validated_judgment_dependencies(
+    judgment_ids: list[str],
+    judgment_dependencies: dict[str, list[str]] | None,
+) -> dict[str, set[str]]:
+    if judgment_dependencies is None:
+        return {}
+    judgments = set(judgment_ids)
+    validated: dict[str, set[str]] = {}
+    for judgment_id, raw_dependencies in judgment_dependencies.items():
+        _digest(judgment_id, "dependent judgment ID")
+        if judgment_id not in judgments:
+            raise MathFlowError(
+                "judgment dependency belongs to an unobserved judgment: "
+                f"{judgment_id}"
+            )
+        if not isinstance(raw_dependencies, list):
+            raise MathFlowError("judgment dependency inputs must be a list")
+        dependencies = {
+            _digest(item, "judgment dependency input ID")
+            for item in raw_dependencies
+        }
+        if len(dependencies) != len(raw_dependencies):
+            raise MathFlowError("judgment dependency inputs contain duplicates")
+        if judgment_id in dependencies:
+            raise MathFlowError("a judgment cannot depend on itself")
+        if not dependencies <= judgments:
+            raise MathFlowError(
+                "judgment dependency references an unobserved judgment"
+            )
+        validated[judgment_id] = dependencies
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(judgment_id: str) -> None:
+        if judgment_id in visiting:
+            raise MathFlowError(
+                f"judgment dependency graph contains a cycle at {judgment_id}"
+            )
+        if judgment_id in visited:
+            return
+        visiting.add(judgment_id)
+        for dependency_id in validated.get(judgment_id, set()):
+            visit(dependency_id)
+        visiting.remove(judgment_id)
+        visited.add(judgment_id)
+
+    for judgment_id in sorted(validated):
+        visit(judgment_id)
+    return validated
+
+
 def _lane_input_dependencies(
     lane: dict[str, object],
 ) -> tuple[dict[str, set[str]], dict[str, tuple[str, set[str]]]]:
@@ -200,6 +252,20 @@ def _lane_input_dependencies(
         raw_conflicts,
         raw_reconciliations,
     )
+
+
+def _lane_judgment_dependencies(
+    lane: dict[str, object],
+) -> dict[str, set[str]]:
+    raw = lane.get("judgmentDependencies")
+    if raw is None:
+        return {}
+    if not isinstance(raw, dict):
+        raise MathFlowError("knowledge-build lane has invalid judgment dependencies")
+    judgments = lane.get("observedJudgmentIds")
+    if not isinstance(judgments, list):
+        raise MathFlowError("knowledge-build lane has invalid observed judgments")
+    return _validated_judgment_dependencies(judgments, raw)
 
 
 def _persist_input_dependencies(
@@ -246,6 +312,28 @@ def _persist_input_dependencies(
     }
 
 
+def _persist_judgment_dependencies(
+    lane: dict[str, object],
+    dependencies: dict[str, set[str]],
+    received: bool,
+) -> None:
+    if not received:
+        return
+    stored = _lane_judgment_dependencies(lane)
+    for judgment_id, input_ids in dependencies.items():
+        existing = stored.get(judgment_id)
+        if existing is not None and existing != input_ids:
+            raise MathFlowError(
+                "judgment dependency changed for content-addressed ID: "
+                f"{judgment_id}"
+            )
+        stored[judgment_id] = set(input_ids)
+    lane["judgmentDependencies"] = {
+        judgment_id: sorted(input_ids)
+        for judgment_id, input_ids in sorted(stored.items())
+    }
+
+
 def _pending_dependency_components(
     lane: dict[str, object],
     pending_judgments: list[str],
@@ -254,6 +342,7 @@ def _pending_dependency_components(
     conflict_dependencies, reconciliation_dependencies = (
         _lane_input_dependencies(lane)
     )
+    judgment_dependencies = _lane_judgment_dependencies(lane)
     missing_conflicts = set(pending_conflicts) - set(conflict_dependencies)
     if missing_conflicts:
         raise MathFlowError(
@@ -308,6 +397,10 @@ def _pending_dependency_components(
         connect(reconciliation_node, conflict_node)
         for judgment_id in input_ids:
             connect(reconciliation_node, ("judgment", judgment_id))
+    for judgment_id, input_ids in judgment_dependencies.items():
+        dependent_node = ("judgment", judgment_id)
+        for input_id in input_ids:
+            connect(dependent_node, ("judgment", input_id))
 
     remaining = set(pending_nodes)
     components: list[tuple[set[tuple[str, str]], bool]] = []
@@ -344,6 +437,7 @@ def record_completed_inputs(
     conflict_dependencies: dict[str, list[str]] | None = None,
     reconciliation_dependencies: dict[str, dict[str, object]] | None = None,
     problem_ledger_digest: str | None = None,
+    judgment_dependencies: dict[str, list[str]] | None = None,
 ) -> dict[str, object]:
     if minimum_interval_seconds < 0:
         raise MathFlowError("minimum knowledge-build interval cannot be negative")
@@ -360,6 +454,9 @@ def record_completed_inputs(
         conflict_ids,
         conflict_dependencies,
         reconciliation_dependencies,
+    )
+    validated_judgment_dependencies = _validated_judgment_dependencies(
+        judgment_ids, judgment_dependencies
     )
     state = load_scheduler(path)
     lanes = state["lanes"]
@@ -396,6 +493,11 @@ def record_completed_inputs(
         validated_conflicts,
         validated_reconciliations,
         conflict_dependencies is not None or reconciliation_dependencies is not None,
+    )
+    _persist_judgment_dependencies(
+        lane,
+        validated_judgment_dependencies,
+        judgment_dependencies is not None,
     )
     observed_judgments = set(lane.setdefault("observedJudgmentIds", []))
     observed_conflicts = set(lane.setdefault("observedConflictIds", []))

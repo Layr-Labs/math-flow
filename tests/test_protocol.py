@@ -290,6 +290,64 @@ class GitProtocolTests(unittest.TestCase):
         self.assertEqual(state["transactions"][0]["transactionId"], head)
         self.assertEqual(state["transactions"][0]["ordinal"], 1)
 
+    def test_claim_manifest_may_reference_only_prior_canonical_transactions(self) -> None:
+        prior = self.commit_contribution("prior")
+        base = prior
+        contribution = self.root / "problems/demo/contributions/declared"
+        write(contribution / "README.md", "## Claim\n\nA declared claim.\n")
+        write(
+            contribution / "claims.json",
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "claims": [
+                        {
+                            "claimKey": "demo/declared-claim",
+                            "statement": "A declared claim.",
+                            "dependencyTransactionIds": [prior],
+                        }
+                    ],
+                }
+            ),
+        )
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Add declared claim")
+        head = git(self.root, "rev-parse", "HEAD")
+        self.assertEqual(validate_pr(self.root, base, head)["contributionId"], "declared")
+
+        invalid_temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(invalid_temporary.cleanup)
+        invalid_root = Path(invalid_temporary.name)
+        git(invalid_root, "init", "-q")
+        git(invalid_root, "config", "user.name", "Test Author")
+        git(invalid_root, "config", "user.email", "test@example.com")
+        write(invalid_root / "problems/demo/problem.md", "# Demo\n")
+        git(invalid_root, "add", ".")
+        git(invalid_root, "commit", "-qm", "Create problem")
+        invalid_base = git(invalid_root, "rev-parse", "HEAD")
+        invalid = invalid_root / "problems/demo/contributions/invalid"
+        write(invalid / "README.md", "## Claim\n\nInvalid dependency.\n")
+        write(
+            invalid / "claims.json",
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "claims": [
+                        {
+                            "claimKey": "demo/invalid",
+                            "statement": "Invalid dependency.",
+                            "dependencyTransactionIds": ["f" * 40],
+                        }
+                    ],
+                }
+            ),
+        )
+        git(invalid_root, "add", ".")
+        git(invalid_root, "commit", "-qm", "Add invalid claim")
+        invalid_head = git(invalid_root, "rev-parse", "HEAD")
+        with self.assertRaisesRegex(MathFlowError, "not a prior canonical transaction"):
+            validate_pr(invalid_root, invalid_base, invalid_head)
+
     def test_affected_problems_are_scoped_unless_shared_inputs_change(self) -> None:
         write(self.root / "problems/other/problem.md", "# Other\n")
         git(self.root, "add", ".")
@@ -438,6 +496,151 @@ class GitProtocolTests(unittest.TestCase):
                 judge,
                 "HEAD",
                 [subject],
+            )
+
+    def test_validity_judgment_is_one_per_claim_and_uses_only_declared_dependencies(self) -> None:
+        dependency = self.commit_contribution(
+            "premise", "# Premise\n\nA previously established lemma."
+        )
+        unrelated = self.commit_contribution(
+            "unrelated", "# Unrelated\n\nThis material is outside the dependency boundary."
+        )
+        subject = self.commit_contribution(
+            "subject",
+            "\n".join(
+                [
+                    "# Subject",
+                    "",
+                    "## Claim",
+                    "",
+                    f"The declared result follows from transaction {dependency}.",
+                ]
+            ),
+        )
+        repository_root = Path(__file__).parents[1]
+        spec = json.loads(
+            (
+                repository_root
+                / "protocol/judges/openrouter-validity-judgment-v2.json"
+            ).read_text(encoding="utf-8")
+        )
+        spec.pop("contextProjection")
+        judge = self.root / "validity-judge.json"
+        write(judge, json.dumps(spec))
+        requests: list[dict[str, object]] = []
+        responses = iter(
+            [
+                {
+                    "id": "validity-report",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "finish_reason": "stop",
+                            "message": {
+                                "content": "## demo/subject\n\nThe argument is valid under its cited premise."
+                            },
+                        }
+                    ],
+                },
+                {
+                    "id": "validity-extract",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "finish_reason": "stop",
+                            "message": {
+                                "content": json.dumps(
+                                    {
+                                        "assessments": [
+                                            {
+                                                "claimKey": "demo/subject",
+                                                "status": "valid",
+                                                "premiseStatus": "satisfied",
+                                                "summary": "The cited premise establishes the claim.",
+                                                "scopeQualifications": [],
+                                                "evidenceIssues": [],
+                                                "evidenceTransactionIds": [dependency],
+                                            }
+                                        ]
+                                    }
+                                )
+                            },
+                        }
+                    ],
+                },
+            ]
+        )
+
+        def transport(request: dict[str, object]) -> dict[str, object]:
+            requests.append(request)
+            return next(responses)
+
+        bundle = self.root / "validity-bundle"
+        run_primary_judgment_bundle(
+            self.root,
+            "demo",
+            judge,
+            subject,
+            [subject],
+            bundle,
+            transport=transport,
+        )
+        manifest, judgment, _ = load_judgment_bundle(bundle)
+        self.assertEqual(manifest["outputProfile"], "math-flow/validity-judgment-v2")
+        self.assertEqual(len(judgment["assessments"]), 1)
+        self.assertEqual(len(judgment["findings"]), 1)
+        self.assertEqual(judgment["findings"][0]["stance"], "supports")
+        packet = json.loads(
+            (bundle / "dependency-packet.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(packet["dependencyTransactionIds"], [dependency])
+        report_prompt = str(requests[0]["messages"][1]["content"])
+        self.assertIn(dependency, report_prompt)
+        self.assertNotIn(unrelated, report_prompt)
+        self.assertIn("prevent false acceptance", report_prompt)
+        self.assertIn("every material proof obligation", report_prompt)
+        self.assertIn("do not constrain the analysis", report_prompt)
+        self.assertIn(
+            "overriding priority is to prevent an incorrect or unsupported result",
+            str(requests[0]["messages"][0]["content"]),
+        )
+
+        projection = self.root / "projection"
+        publish_batch(projection, [bundle])
+        coverage = plan_primary_judgment_coverage(
+            self.root, projection, "demo", judge, subject
+        )
+        self.assertIn(subject, coverage["coveredTransactionIds"])
+
+    def test_validity_judgment_rejects_truncated_report(self) -> None:
+        subject = self.commit_contribution("subject", "## Claim\n\nA claim.")
+        repository_root = Path(__file__).parents[1]
+        spec = json.loads(
+            (
+                repository_root
+                / "protocol/judges/openrouter-validity-judgment-v2.json"
+            ).read_text(encoding="utf-8")
+        )
+        spec.pop("contextProjection")
+        judge = self.root / "validity-judge.json"
+        write(judge, json.dumps(spec))
+        response = {
+            "choices": [
+                {
+                    "finish_reason": "length",
+                    "message": {"content": "## demo/subject\n\nPartial"},
+                }
+            ]
+        }
+        with self.assertRaisesRegex(MathFlowError, "report response was truncated"):
+            run_primary_judgment_bundle(
+                self.root,
+                "demo",
+                judge,
+                subject,
+                [subject],
+                self.root / "truncated-validity-bundle",
+                transport=lambda _: response,
             )
 
     def test_parallel_judgments_trigger_conflict_and_coalesced_knowledge_build(self) -> None:

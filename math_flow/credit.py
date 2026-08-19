@@ -415,6 +415,10 @@ def load_credit_assignment_bundle(
 
     manifest, run_digest = verify_bundle(bundle_dir)
     output_profile = manifest.get("outputProfile")
+    if output_profile == "math-flow/hierarchical-research-credit-v2":
+        from .research_credit import load_hierarchical_credit_assignment_bundle
+
+        return load_hierarchical_credit_assignment_bundle(bundle_dir)
     registration_aware = output_profile == "math-flow/credit-assignment-markdown-v2"
     if (
         manifest.get("runKind") != "credit-assignment"
@@ -667,6 +671,23 @@ def run_credit_assignment_bundle(
     if resolved.get("engine") != "overlay-repository-v1":
         raise MathFlowError("credit command requires an overlay projection")
     runner = resolved.get("runner")
+    if (
+        isinstance(runner, dict)
+        and runner.get("implementation")
+        == "openrouter-hierarchical-research-credit-v2"
+    ):
+        from .research_credit import run_hierarchical_credit_assignment_bundle
+
+        return run_hierarchical_credit_assignment_bundle(
+            root,
+            projection_root,
+            projection,
+            problem,
+            head,
+            output_dir,
+            transport=transport,
+            as_of=as_of,
+        )
     if (
         not isinstance(runner, dict)
         or runner.get("implementation")

@@ -36,6 +36,7 @@ _LANE_FIELDS = {
 }
 _OPTIONAL_LANE_FIELDS = {
     "conflictDependencies",
+    "judgmentDependencies",
     "lastFailure",
     "reconciliationDependencies",
 }
@@ -252,6 +253,56 @@ def _validate_lane(identifier: str, value: object) -> dict[str, object]:
         raise MathFlowError(
             f"knowledge scheduler lane {identifier} has unobserved pending conflicts"
         )
+
+    raw_judgment_dependencies = value.get("judgmentDependencies")
+    if raw_judgment_dependencies is not None:
+        if not isinstance(raw_judgment_dependencies, dict):
+            raise MathFlowError(
+                f"knowledge scheduler lane {identifier} judgmentDependencies must be an object"
+            )
+        adjacency: dict[str, list[str]] = {}
+        for judgment_id, inputs in raw_judgment_dependencies.items():
+            if not isinstance(judgment_id, str):
+                raise MathFlowError(
+                    f"knowledge scheduler lane {identifier} judgment dependency keys must be strings"
+                )
+            _digest(judgment_id, "knowledge scheduler dependent judgment ID")
+            input_ids = _digest_list(
+                inputs,
+                f"knowledge scheduler lane {identifier} judgment dependency inputs",
+            )
+            if judgment_id not in observed_judgments:
+                raise MathFlowError(
+                    f"knowledge scheduler lane {identifier} has an unobserved judgment dependency"
+                )
+            if judgment_id in input_ids:
+                raise MathFlowError(
+                    f"knowledge scheduler lane {identifier} has a self-dependent judgment"
+                )
+            if not set(input_ids).issubset(observed_judgments):
+                raise MathFlowError(
+                    f"knowledge scheduler lane {identifier} judgment dependency has unobserved inputs"
+                )
+            adjacency[judgment_id] = input_ids
+
+        visiting: set[str] = set()
+        visited: set[str] = set()
+
+        def visit(judgment_id: str) -> None:
+            if judgment_id in visiting:
+                raise MathFlowError(
+                    f"knowledge scheduler lane {identifier} judgment dependency graph has a cycle"
+                )
+            if judgment_id in visited:
+                return
+            visiting.add(judgment_id)
+            for dependency_id in adjacency.get(judgment_id, []):
+                visit(dependency_id)
+            visiting.remove(judgment_id)
+            visited.add(judgment_id)
+
+        for judgment_id in sorted(adjacency):
+            visit(judgment_id)
 
     conflict_dependencies: dict[str, list[str]] = {}
     raw_conflict_dependencies = value.get("conflictDependencies")

@@ -57,16 +57,58 @@ class ResearchProgramProjectionTests(unittest.TestCase):
         self.assertEqual(default["allowedProblems"], ["*"])
         self.assertEqual(specialized["allowedProblems"], ["no-three-in-line-77"])
         self.assertNotEqual(default["id"], specialized["id"])
-        self.assertEqual(
-            default["primaryJudge"], specialized["primaryJudge"]
-        )
-        self.assertEqual(
-            default["reconciliationJudge"], specialized["reconciliationJudge"]
-        )
+        if default["primaryJudge"] == (
+            "protocol/judges/openrouter-validity-judgment-v2.json"
+        ):
+            self.assertIsNone(default["reconciliationJudge"])
+            self.assertEqual(
+                default["knowledgeBuilder"],
+                "protocol/judges/openrouter-hierarchical-research-builder-v2.json",
+            )
+        else:
+            self.assertEqual(
+                default["primaryJudge"],
+                "protocol/judges/openrouter-markdown-judgment-v1.json",
+            )
+            self.assertEqual(
+                default["reconciliationJudge"],
+                "protocol/judges/openrouter-markdown-reconciliation-v1.json",
+            )
+            self.assertEqual(
+                default["knowledgeBuilder"],
+                "protocol/judges/openrouter-research-program-builder-v2.json",
+            )
+        if default["primaryJudge"].endswith("validity-judgment-v2.json"):
+            self.assertNotEqual(default["primaryJudge"], specialized["primaryJudge"])
+        else:
+            self.assertEqual(default["primaryJudge"], specialized["primaryJudge"])
+        self.assertIsNotNone(specialized["reconciliationJudge"])
         self.assertEqual(
             specialized["knowledgeBuilder"],
             "protocol/judges/openrouter-research-program-builder-v2.json",
         )
+
+    def test_hierarchical_research_builder_separates_state_from_credit(self) -> None:
+        builder = load_judge_spec(
+            self.root
+            / "protocol/judges/openrouter-hierarchical-research-builder-v2.json"
+        )
+        self.assertEqual(
+            builder["implementation"],
+            "openrouter-hierarchical-research-builder-v2",
+        )
+        self.assertEqual(builder["outputProfile"], "math-flow/hierarchical-research-v2")
+        self.assertEqual(builder["reducer"], "batched-research-state-v2")
+        self.assertNotIn("credit", builder["stages"])
+        self.assertIn("exclude invalid and indeterminate claims", builder["systemPrompt"])
+
+    def test_hosted_primary_judgments_are_not_globally_serialized(self) -> None:
+        workflow = (
+            self.root / ".github/workflows/project-openrouter.yml"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn("\nconcurrency:\n", workflow)
+        self.assertIn("reconciliation_enabled", workflow)
+        self.assertIn("This projection has no reconciliation stage.", workflow)
 
 
 if __name__ == "__main__":

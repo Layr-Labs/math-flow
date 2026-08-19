@@ -17,6 +17,7 @@ from .projection_dependencies import (
 CREDIT_RUNNERS = {
     "openrouter-credit-assignment-v1",
     "openrouter-credit-assignment-v2",
+    "openrouter-hierarchical-research-credit-v2",
 }
 
 
@@ -117,7 +118,7 @@ def _indexed_bundle(
 def _load_credit_candidate(
     target: Path, expected_digest: str
 ) -> dict[str, object]:
-    manifest, credit_index, run_digest = load_credit_assignment_bundle(target)
+    manifest, credit_output, run_digest = load_credit_assignment_bundle(target)
     if run_digest != expected_digest:
         raise MathFlowError(
             "projection credit digest does not match its problem index"
@@ -125,15 +126,26 @@ def _load_credit_candidate(
     dependency_lock = json.loads(
         read_verified_artifact(target, manifest, "dependency-lock")
     )
-    credit_input = json.loads(read_verified_artifact(target, manifest, "credit-input"))
-    report = read_verified_artifact(target, manifest, "credit-report").decode("utf-8")
+    hierarchical = (
+        manifest.get("outputProfile")
+        == "math-flow/hierarchical-research-credit-v2"
+    )
+    input_role = "hierarchical-credit-input" if hierarchical else "credit-input"
+    credit_input = json.loads(read_verified_artifact(target, manifest, input_role))
+    report = None
+    if not hierarchical:
+        report = read_verified_artifact(
+            target, manifest, "credit-report"
+        ).decode("utf-8")
     return {
         "manifest": manifest,
-        "creditIndex": credit_index,
+        "creditIndex": None if hierarchical else credit_output,
+        "creditState": credit_output if hierarchical else None,
         "dependencyLock": dependency_lock,
         "creditInput": credit_input,
         "report": report,
         "runDigest": run_digest,
+        "kind": "hierarchical-two-term" if hierarchical else "qualitative",
     }
 
 
@@ -227,6 +239,20 @@ def _assignment_context(candidate: dict[str, object]) -> list[dict[str, object]]
 def _validate_candidate_history(
     candidate: dict[str, object], canonical_transactions: list[dict[str, object]]
 ) -> None:
+    if candidate.get("kind") == "hierarchical-two-term":
+        transaction_ids = candidate["creditInput"].get("acceptedTransactionIds")
+        canonical_ids = {
+            str(item["transactionId"]) for item in canonical_transactions
+        }
+        if (
+            not isinstance(transaction_ids, list)
+            or any(not isinstance(item, str) for item in transaction_ids)
+            or not set(transaction_ids) <= canonical_ids
+        ):
+            raise MathFlowError(
+                "published hierarchical credit input does not match canonical history"
+            )
+        return
     transactions = candidate["creditInput"].get("transactions")
     normalized = (
         [
@@ -256,10 +282,16 @@ def _select_stale_candidate(
     }
 
     def progress(candidate: dict[str, object]) -> int:
-        transaction_ids = [
-            str(item["transactionId"])
-            for item in candidate["creditInput"]["transactions"]
-        ]
+        if candidate.get("kind") == "hierarchical-two-term":
+            transaction_ids = [
+                str(item)
+                for item in candidate["creditInput"]["acceptedTransactionIds"]
+            ]
+        else:
+            transaction_ids = [
+                str(item["transactionId"])
+                for item in candidate["creditInput"]["transactions"]
+            ]
         if not transaction_ids:
             return 0
         if any(value not in positions for value in transaction_ids):
@@ -315,8 +347,20 @@ def build_credit_context(
     selected, selection_status = _select_credit_projection(
         projections, credit_projection_id
     )
+    selected_runner = (
+        selected.get("runner") if isinstance(selected, dict) else None
+    )
+    hierarchical = (
+        isinstance(selected_runner, dict)
+        and selected_runner.get("implementation")
+        == "openrouter-hierarchical-research-credit-v2"
+    )
     semantics = {
-        "kind": "qualitative-non-zero-sum",
+        "kind": (
+            "hierarchical-two-term-causal-work"
+            if hierarchical
+            else "qualitative-non-zero-sum"
+        ),
         "affectsMathematicalValidity": False,
     }
     if selection_status is not None:
@@ -516,8 +560,18 @@ def build_credit_context(
             if result["status"] == "current"
             else "unique latest verified historical ledger coverage"
         ),
-        "reportFile": "credit-report.md",
+        **({"reportFile": "credit-report.md"} if not hierarchical else {}),
     }
+    if hierarchical:
+        result["hierarchicalCredit"] = {
+            "programStateDigest": chosen["creditState"]["programStateDigest"],
+            "horizonStateDigest": chosen["creditState"]["horizonStateDigest"],
+            "evaluations": chosen["creditState"]["evaluations"],
+            "allocations": chosen["creditState"]["allocations"],
+            "residualAllocations": chosen["creditState"]["residualAllocations"],
+        }
+        result["files"] = {"credit": "credit.json"}
+        return result, None
     result["assignments"] = _assignment_context(chosen)
     result["files"] = {
         "credit": "credit.json",

@@ -11,6 +11,7 @@ from .judges import artifact_evidence, load_judge_spec, load_source
 from .openrouter import OpenRouterTransport, send_chat_completion
 from .repository import is_ancestor, read_at, sha256_json
 from .runs import run_envelope
+from .validity import build_dependency_packet, validate_dependency_packet
 
 
 CLAIM_KEY = re.compile(r"^[a-z0-9][a-z0-9/_-]*$")
@@ -23,6 +24,21 @@ RECONCILIATION_OUTCOMES = {
     "unresolved",
     "needs-evidence",
 }
+PRIMARY_JUDGMENT_IMPLEMENTATIONS = {
+    "openrouter-markdown-judgment-v1",
+    "openrouter-validity-judgment-v2",
+}
+VALIDITY_STATUSES = {"valid", "invalid", "indeterminate"}
+PREMISE_STATUSES = {"satisfied", "missing", "disputed", "not-required"}
+
+
+def _reject_truncated_response(response: dict[str, object], stage: str) -> None:
+    try:
+        finish_reason = response["choices"][0].get("finish_reason")
+    except (KeyError, IndexError, TypeError, AttributeError):
+        finish_reason = None
+    if finish_reason == "length":
+        raise MathFlowError(f"OpenRouter {stage} response was truncated")
 
 
 def _finding_schema(transaction_ids: list[str]) -> dict[str, object]:
@@ -122,7 +138,7 @@ def _reconciliation_schema(transaction_ids: list[str]) -> dict[str, object]:
     return schema
 
 
-def run_primary_judgment_bundle(
+def _run_markdown_primary_judgment_bundle(
     root: Path,
     problem: str,
     judge_path: Path,
@@ -135,7 +151,7 @@ def run_primary_judgment_bundle(
     root = root.resolve()
     spec = load_judge_spec(judge_path)
     if spec["implementation"] != "openrouter-markdown-judgment-v1":
-        raise MathFlowError("judgment command requires a parallel Markdown judgment spec")
+        raise MathFlowError("judgment command requires a v1 Markdown judgment spec")
     source = load_source(root, problem, head)
     transactions = source["transactions"]
     by_id = {str(item["transactionId"]): item for item in transactions}
@@ -185,6 +201,7 @@ def run_primary_judgment_bundle(
         ],
     )
     report_response = send(report_request)
+    _reject_truncated_response(report_response, "report")
     report = _assistant_content(report_response).rstrip() + "\n"
 
     extract_prompt = "\n\n".join(
@@ -211,6 +228,7 @@ def run_primary_judgment_bundle(
         _finding_schema(ledger_ids),
     )
     extract_response = send(extract_request)
+    _reject_truncated_response(extract_response, "extract")
     findings = _validate_findings(
         _structured_content(extract_response, "extract"), set(subject_ids), set(ledger_ids)
     )
@@ -266,6 +284,350 @@ def run_primary_judgment_bundle(
         },
     )
     return bundle.finalize(envelope)
+
+
+def _validity_schema(
+    claim_keys: list[str], dependency_ids: list[str]
+) -> dict[str, object]:
+    evidence_item: dict[str, object] = {"type": "string"}
+    if dependency_ids:
+        evidence_item["enum"] = dependency_ids
+    assessment = {
+        "type": "object",
+        "properties": {
+            "claimKey": {"type": "string", "enum": claim_keys},
+            "status": {"type": "string", "enum": sorted(VALIDITY_STATUSES)},
+            "premiseStatus": {"type": "string", "enum": sorted(PREMISE_STATUSES)},
+            "summary": {"type": "string"},
+            "scopeQualifications": {"type": "array", "items": {"type": "string"}},
+            "evidenceIssues": {"type": "array", "items": {"type": "string"}},
+            "evidenceTransactionIds": {
+                "type": "array",
+                "items": evidence_item,
+            },
+        },
+        "required": [
+            "claimKey",
+            "status",
+            "premiseStatus",
+            "summary",
+            "scopeQualifications",
+            "evidenceIssues",
+            "evidenceTransactionIds",
+        ],
+        "additionalProperties": False,
+    }
+    return {
+        "type": "object",
+        "properties": {
+            "assessments": {
+                "type": "array",
+                "items": assessment,
+                "minItems": len(claim_keys),
+                "maxItems": len(claim_keys),
+            }
+        },
+        "required": ["assessments"],
+        "additionalProperties": False,
+    }
+
+
+def _validate_assessments(
+    value: object,
+    claims: list[dict[str, object]],
+    dependency_ids: set[str],
+) -> list[dict[str, object]]:
+    if not isinstance(value, dict) or set(value) != {"assessments"}:
+        raise MathFlowError("validity extractor returned an invalid assessments envelope")
+    assessments = value["assessments"]
+    if not isinstance(assessments, list):
+        raise MathFlowError("validity assessments must be an array")
+    claim_keys = [str(claim["claimKey"]) for claim in claims]
+    expected_fields = {
+        "claimKey",
+        "status",
+        "premiseStatus",
+        "summary",
+        "scopeQualifications",
+        "evidenceIssues",
+        "evidenceTransactionIds",
+    }
+    validated: list[dict[str, object]] = []
+    observed: list[str] = []
+    for assessment in assessments:
+        if not isinstance(assessment, dict) or set(assessment) != expected_fields:
+            raise MathFlowError("validity extractor returned an invalid assessment")
+        claim_key = assessment["claimKey"]
+        status = assessment["status"]
+        premise_status = assessment["premiseStatus"]
+        summary = assessment["summary"]
+        qualifications = assessment["scopeQualifications"]
+        issues = assessment["evidenceIssues"]
+        evidence = assessment["evidenceTransactionIds"]
+        if not isinstance(claim_key, str) or claim_key not in claim_keys:
+            raise MathFlowError("validity assessment references an undeclared claim")
+        if status not in VALIDITY_STATUSES or premise_status not in PREMISE_STATUSES:
+            raise MathFlowError("validity assessment has an unsupported status")
+        if not isinstance(summary, str) or not summary.strip():
+            raise MathFlowError("validity assessment summary must be non-empty")
+        if not isinstance(qualifications, list) or any(
+            not isinstance(item, str) or not item.strip() for item in qualifications
+        ):
+            raise MathFlowError("validity scope qualifications must be non-empty strings")
+        if not isinstance(issues, list) or any(
+            not isinstance(item, str) or not item.strip() for item in issues
+        ):
+            raise MathFlowError("validity evidence issues must be non-empty strings")
+        if (
+            not isinstance(evidence, list)
+            or any(not isinstance(item, str) for item in evidence)
+            or len(evidence) != len(set(evidence))
+            or not set(evidence) <= dependency_ids
+        ):
+            raise MathFlowError("validity assessment cites undeclared dependency evidence")
+        observed.append(claim_key)
+        validated.append(
+            {
+                "claimKey": claim_key,
+                "status": status,
+                "premiseStatus": premise_status,
+                "summary": summary.strip(),
+                "scopeQualifications": [item.strip() for item in qualifications],
+                "evidenceIssues": [item.strip() for item in issues],
+                "evidenceTransactionIds": evidence,
+            }
+        )
+    if len(observed) != len(set(observed)) or set(observed) != set(claim_keys):
+        raise MathFlowError("validity judgment must assess every declared claim exactly once")
+    by_key = {str(item["claimKey"]): item for item in validated}
+    return [by_key[key] for key in claim_keys]
+
+
+def _run_validity_primary_judgment_bundle(
+    root: Path,
+    problem: str,
+    judge_path: Path,
+    head: str,
+    subject_transaction_ids: list[str],
+    output_dir: Path,
+    projection_root: Path | None,
+    context_transaction_ids: list[str] | None,
+    research_state_run: Path | None,
+    transport: OpenRouterTransport | None,
+) -> dict[str, object]:
+    root = root.resolve()
+    spec = load_judge_spec(judge_path)
+    if spec["implementation"] != "openrouter-validity-judgment-v2":
+        raise MathFlowError("judgment command requires a v2 validity judgment spec")
+    requested = list(dict.fromkeys(subject_transaction_ids))
+    if len(requested) != 1:
+        raise MathFlowError("a validity judgment assesses exactly one subject transaction")
+    if context_transaction_ids:
+        raise MathFlowError(
+            "v2 validity judgments derive dependencies from the contribution; --evidence is not allowed"
+        )
+    source = load_source(root, problem, head)
+    by_id = {
+        str(item["transactionId"]): item for item in source["transactions"]
+    }
+    subject_id = requested[0]
+    subject = by_id.get(subject_id)
+    if subject is None:
+        raise MathFlowError(f"judgment subject is outside the problem ledger: {subject_id}")
+    context_projection = spec.get("contextProjection")
+    if context_projection is not None and not isinstance(context_projection, str):
+        raise MathFlowError("validity judge contextProjection must be a projection ID")
+    packet = build_dependency_packet(
+        root,
+        projection_root,
+        problem,
+        source,
+        head,
+        subject_id,
+        context_projection,
+        research_state_run,
+    )
+    validate_dependency_packet(packet)
+    claims = list(packet["claims"])
+    dependency_ids = list(packet["dependencyTransactionIds"])
+    dependency_transactions = [by_id[item] for item in dependency_ids]
+    subject_source = {**source, "transactions": [subject]}
+    dependency_source = {**source, "transactions": dependency_transactions}
+    resolved_head = "WORKTREE" if head == "WORKTREE" else str(source["ledgerHead"])
+    problem_statement = read_at(root, resolved_head, f"problems/{problem}/problem.md")
+    subject_evidence = artifact_evidence(root, subject_source, head)
+    dependency_evidence = (
+        artifact_evidence(root, dependency_source, head)
+        if dependency_transactions
+        else "(none declared)"
+    )
+    send = transport or send_chat_completion
+    report_prompt = "\n\n".join(
+        [
+            "Perform a rigorous, adversarial mathematical correctness audit of each declared claim using the supplied subject and its explicitly declared premises. The dominant objective is to prevent false acceptance: mark a claim valid only after affirmatively verifying its exact statement and every material proof obligation.",
+            "Check all logical inferences, lemma applications, assumptions, quantifiers, domains, edge and degenerate cases, calculations, and dependency hypotheses. Actively look for counterexamples and hidden gaps. Never repair an omitted step or give the submission the benefit of the doubt. Use invalid for a decisive defect and indeterminate whenever any material obligation remains unresolved.",
+            "The declared claim keys organize the final verdicts; they do not constrain the analysis. Within each claim's Markdown section, decompose the proof into as many intermediate obligations and discuss as many defects as rigorous verification requires. Keep those obligations, missing premises, evidence defects, and scope qualifications attached to the corresponding declared claim rather than promoting them to new top-level claim identities.",
+            "Do not build global knowledge state, assess novelty or priority, organize research programs, or assign credit.",
+            f"Rubric:\n{json.dumps(spec['rubric'], indent=2, ensure_ascii=False)}",
+            f"Problem:\n{problem_statement}",
+            f"Dependency packet:\n{json.dumps(packet, indent=2, ensure_ascii=False)}",
+            f"Subject evidence:\n{subject_evidence}",
+            f"Explicit dependency evidence:\n{dependency_evidence}",
+        ]
+    )
+    report_request = _request(
+        spec,
+        "report",
+        [
+            {"role": "system", "content": str(spec["systemPrompt"])},
+            {"role": "user", "content": report_prompt},
+        ],
+    )
+    report_response = send(report_request)
+    _reject_truncated_response(report_response, "report")
+    report = _assistant_content(report_response).rstrip() + "\n"
+    claim_keys = [str(claim["claimKey"]) for claim in claims]
+    extract_prompt = "\n\n".join(
+        [
+            "Create one structured validity record for each declared claim key. This is an indexing rule for the already-completed rigorous audit, not a limit on the report's mathematical decomposition. Do not create, split, merge, or rename the declared claim identities. Preserve every material proof defect, unresolved obligation, and qualification within its claim record.",
+            "valid means the supplied argument establishes the claim under satisfied premises; invalid means a decisive error or counterexample defeats it; indeterminate means the bounded record does not decide it.",
+            f"Declared claims:\n{json.dumps(claims, indent=2, ensure_ascii=False)}",
+            f"Allowed dependency evidence IDs:\n{json.dumps(dependency_ids, indent=2)}",
+            f"Report:\n<report>\n{report}</report>",
+        ]
+    )
+    extract_request = _request(
+        spec,
+        "extract",
+        [
+            {
+                "role": "system",
+                "content": "You are a faithful validity-record extractor. Emit only assessments for the declared claims.",
+            },
+            {"role": "user", "content": extract_prompt},
+        ],
+        _validity_schema(claim_keys, dependency_ids),
+    )
+    extract_response = send(extract_request)
+    _reject_truncated_response(extract_response, "extract")
+    assessments = _validate_assessments(
+        _structured_content(extract_response, "extract"), claims, set(dependency_ids)
+    )
+    stance = {"valid": "supports", "invalid": "refutes", "indeterminate": "uncertain"}
+    findings = [
+        {
+            "claimKey": assessment["claimKey"],
+            "stance": stance[str(assessment["status"])],
+            "summary": assessment["summary"],
+            "subjectTransactionIds": [subject_id],
+            "evidenceTransactionIds": assessment["evidenceTransactionIds"],
+        }
+        for assessment in assessments
+    ]
+    report_digest = sha256_bytes(report.encode("utf-8"))
+    judgment_core: dict[str, object] = {
+        "schemaVersion": 2,
+        "judgmentKind": "primary",
+        "problemId": problem,
+        "ledgerHead": source["ledgerHead"],
+        "problemLedgerDigest": source["problemLedgerDigest"],
+        "judgeSpec": {"id": spec["id"], "digest": f"sha256:{sha256_json(spec)}"},
+        "subjects": [
+            {
+                "kind": "transaction",
+                "id": subject_id,
+                "ledgerPosition": subject["ordinal"],
+            }
+        ],
+        "assessments": assessments,
+        "findings": findings,
+        "dependencyPacketDigest": packet["packetDigest"],
+        "reportDigest": report_digest,
+    }
+    judgment = {**judgment_core, "judgmentId": f"sha256:{sha256_json(judgment_core)}"}
+    bundle = ArtifactBundle(output_dir)
+    bundle.add_text("report.md", report, "judgment-report", "text/markdown")
+    bundle.add_json(
+        "dependency-packet.json", packet, "judgment-dependency-packet"
+    )
+    bundle.add_json("judgment.json", judgment, "judgment-record")
+    requests = [report_request, extract_request]
+    responses = [report_response, extract_response]
+    envelope = run_envelope(
+        problem,
+        source,
+        spec,
+        None,
+        [f"sha256:{sha256_json(request)}" for request in requests],
+        [
+            _provider_run(response, str(request["model"]), stage)
+            for response, request, stage in zip(
+                responses, requests, ["report", "extract"], strict=True
+            )
+        ],
+        run_kind="judgment",
+        inputs={
+            "subjectTransactionIds": [subject_id],
+            "dependencyTransactionIds": dependency_ids,
+            "dependencyPacketDigest": packet["packetDigest"],
+            "knowledgeContext": (
+                None
+                if packet["knowledgeContext"] is None
+                else {
+                    key: value
+                    for key, value in packet["knowledgeContext"].items()
+                    if key
+                    not in {
+                        "selectedNodes",
+                        "selectedPrograms",
+                        "selectedThreads",
+                        "selectedItems",
+                    }
+                }
+            ),
+        },
+    )
+    return bundle.finalize(envelope)
+
+
+def run_primary_judgment_bundle(
+    root: Path,
+    problem: str,
+    judge_path: Path,
+    head: str,
+    subject_transaction_ids: list[str],
+    output_dir: Path,
+    context_transaction_ids: list[str] | None = None,
+    transport: OpenRouterTransport | None = None,
+    projection_root: Path | None = None,
+    research_state_run: Path | None = None,
+) -> dict[str, object]:
+    spec = load_judge_spec(judge_path)
+    if spec["implementation"] == "openrouter-validity-judgment-v2":
+        return _run_validity_primary_judgment_bundle(
+            root,
+            problem,
+            judge_path,
+            head,
+            subject_transaction_ids,
+            output_dir,
+            projection_root,
+            context_transaction_ids,
+            research_state_run,
+            transport,
+        )
+    if spec["implementation"] == "openrouter-markdown-judgment-v1":
+        return _run_markdown_primary_judgment_bundle(
+            root,
+            problem,
+            judge_path,
+            head,
+            subject_transaction_ids,
+            output_dir,
+            context_transaction_ids,
+            transport,
+        )
+    raise MathFlowError("judgment command requires a supported primary judgment spec")
 
 
 def run_reconciliation_judgment_bundle(
@@ -384,6 +746,7 @@ def run_reconciliation_judgment_bundle(
         ],
     )
     report_response = send(report_request)
+    _reject_truncated_response(report_response, "reconciliation report")
     report = _assistant_content(report_response).rstrip() + "\n"
     extract_prompt = "\n\n".join(
         [
@@ -407,6 +770,7 @@ def run_reconciliation_judgment_bundle(
         _reconciliation_schema(transaction_ids),
     )
     extract_response = send(extract_request)
+    _reject_truncated_response(extract_response, "reconciliation extract")
     extracted = _structured_content(extract_response, "extract")
     if not isinstance(extracted, dict) or set(extracted) != {"outcome", "summary", "findings"}:
         raise MathFlowError("reconciliation extractor returned an invalid envelope")
@@ -482,9 +846,11 @@ def run_reconciliation_judgment_bundle(
 
 def load_judgment_bundle(bundle_dir: Path) -> tuple[dict[str, object], dict[str, object], str]:
     manifest, manifest_digest = load_manifest(bundle_dir)
+    output_profile = manifest.get("outputProfile")
     if (
         manifest.get("runKind") != "judgment"
-        or manifest.get("outputProfile") != "math-flow/judgment-markdown-v1"
+        or output_profile
+        not in {"math-flow/judgment-markdown-v1", "math-flow/validity-judgment-v2"}
     ):
         raise MathFlowError(f"bundle is not an immutable judgment: {bundle_dir}")
     try:
@@ -493,7 +859,7 @@ def load_judgment_bundle(bundle_dir: Path) -> tuple[dict[str, object], dict[str,
         raise MathFlowError("judgment record is not valid JSON") from exc
     if not isinstance(judgment, dict):
         raise MathFlowError("judgment record must be an object")
-    required = {
+    required: set[str] = {
         "schemaVersion",
         "judgmentId",
         "judgmentKind",
@@ -506,10 +872,15 @@ def load_judgment_bundle(bundle_dir: Path) -> tuple[dict[str, object], dict[str,
         "reportDigest",
     }
     kind = judgment.get("judgmentKind")
-    allowed = required | ({"reconciliation"} if kind == "reconciliation" else set())
+    is_validity = output_profile == "math-flow/validity-judgment-v2"
+    allowed = required | (
+        {"assessments", "dependencyPacketDigest"}
+        if is_validity
+        else ({"reconciliation"} if kind == "reconciliation" else set())
+    )
     if (
-        judgment.get("schemaVersion") != 1
-        or kind not in {"primary", "reconciliation"}
+        judgment.get("schemaVersion") != (2 if is_validity else 1)
+        or kind not in ({"primary"} if is_validity else {"primary", "reconciliation"})
         or set(judgment) != allowed
         or judgment.get("problemId") != manifest.get("problemId")
         or judgment.get("ledgerHead") != manifest.get("ledgerHead")
@@ -544,6 +915,48 @@ def load_judgment_bundle(bundle_dir: Path) -> tuple[dict[str, object], dict[str,
     _validate_findings(
         {"findings": findings}, subject_ids, subject_ids | finding_evidence
     )
+    if is_validity:
+        try:
+            packet = json.loads(
+                read_verified_artifact(
+                    bundle_dir, manifest, "judgment-dependency-packet"
+                )
+            )
+        except json.JSONDecodeError as exc:
+            raise MathFlowError("judgment dependency packet is not valid JSON") from exc
+        packet = validate_dependency_packet(packet)
+        if (
+            packet.get("problemId") != judgment.get("problemId")
+            or packet.get("subjectTransactionId") not in subject_ids
+            or packet.get("packetDigest") != judgment.get("dependencyPacketDigest")
+        ):
+            raise MathFlowError("validity judgment does not match its dependency packet")
+        claims = packet.get("claims")
+        dependency_ids = packet.get("dependencyTransactionIds")
+        if not isinstance(claims, list) or not isinstance(dependency_ids, list):
+            raise MathFlowError("validity dependency packet has invalid claim data")
+        assessments = _validate_assessments(
+            {"assessments": judgment.get("assessments")},
+            claims,
+            {str(item) for item in dependency_ids},
+        )
+        stance = {
+            "valid": "supports",
+            "invalid": "refutes",
+            "indeterminate": "uncertain",
+        }
+        expected_findings = [
+            {
+                "claimKey": assessment["claimKey"],
+                "stance": stance[str(assessment["status"])],
+                "summary": assessment["summary"],
+                "subjectTransactionIds": [str(packet["subjectTransactionId"])],
+                "evidenceTransactionIds": assessment["evidenceTransactionIds"],
+            }
+            for assessment in assessments
+        ]
+        if findings != expected_findings:
+            raise MathFlowError("validity finding index does not match its assessments")
     if kind == "reconciliation":
         reconciliation = judgment.get("reconciliation")
         if (
@@ -642,8 +1055,8 @@ def _published_primary_judgment_bundles(
     root = root.resolve()
     projection_root = projection_root.resolve()
     spec = load_judge_spec(judge_path)
-    if spec["implementation"] != "openrouter-markdown-judgment-v1":
-        raise MathFlowError("judgment planning requires a primary Markdown judge spec")
+    if spec["implementation"] not in PRIMARY_JUDGMENT_IMPLEMENTATIONS:
+        raise MathFlowError("judgment planning requires a primary judge spec")
     judge_identity = {"id": spec["id"], "digest": f"sha256:{sha256_json(spec)}"}
     source = load_source(root, problem, head)
     index_path = projection_root / "indexes" / "problems" / problem / "runs.json"
@@ -889,7 +1302,7 @@ def verify_primary_judgment_artifacts(
     if not search_root.is_dir():
         raise MathFlowError(f"judgment artifact directory does not exist: {search_root}")
     spec = load_judge_spec(judge_path)
-    if spec.get("implementation") != "openrouter-markdown-judgment-v1":
+    if spec.get("implementation") not in PRIMARY_JUDGMENT_IMPLEMENTATIONS:
         raise MathFlowError("judgment artifact verification requires a primary judge spec")
     judge_digest = f"sha256:{sha256_json(spec)}"
     source = load_source(root, problem, head)
@@ -1260,7 +1673,7 @@ def plan_reconciliation_inputs(
     projection_root = projection_root.resolve()
     source = load_source(root, problem, head)
     primary_spec = load_judge_spec(primary_judge_path)
-    if primary_spec.get("implementation") != "openrouter-markdown-judgment-v1":
+    if primary_spec.get("implementation") not in PRIMARY_JUDGMENT_IMPLEMENTATIONS:
         raise MathFlowError("reconciliation planning requires a primary judge spec")
     primary_identity = {
         "id": str(primary_spec["id"]),

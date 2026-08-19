@@ -104,6 +104,24 @@ python -m math_flow render-request \
 The older `project` command remains a compatibility interface for flat profiles;
 new integrations should use `run` and consume `run.json`.
 
+The serialized hierarchical research v1 path separates rigorous validity,
+accepted research-program state, and two-term hindsight credit. It stores one
+post-state per accepted submission, uses the previous post-state as the next
+pre-state, and supports a final full-history credit refresh. See
+[the hierarchical research protocol](docs/HIERARCHICAL_RESEARCH_PROTOCOL_V1.md).
+
+```bash
+python -m math_flow research-replay \
+  --problem bssc-sum-capacity \
+  --validity-judge protocol/judges/openrouter-validity-judgment-v2.json \
+  --research-judge protocol/judges/openrouter-hierarchical-research-v1.json \
+  --output-dir /tmp/bssc-hierarchical-replay
+```
+
+If a provider response or downstream reducer fails, rerun the same command with
+`--resume`. The runner reverifies completed bundles and reuses exact
+request-digest checkpoints, so it does not repay successful earlier stages.
+
 The recommended revision-aware hierarchical judge uses three calls: node
 selection, an unconstrained Markdown assessment, and structured delta extraction.
 The three-stage builder is an example, not a core protocol requirement. Export an
@@ -140,10 +158,19 @@ to an endpoint that supports all requested parameters.
 ### Parallel judgments and serialized knowledge formation
 
 The v0.5 execution path separates immutable primary and reconciliation judgments
-from rate-limited knowledge formation. Judgments have no base run and can execute
+from rate-limited knowledge formation. Judgments have no mutable base run and can execute
 concurrently; opposed findings create explicit conflict records for targeted
 reconciliation. Completed judgments coalesce in a single-writer knowledge-builder
 lane instead of immediately rebuilding state.
+
+The additive v2 primary-judge path narrows that first stage to rigorous
+mathematical correctness verification against an immutable packet of explicit
+prior dependencies and dependency-linked, pre-subject knowledge. Preventing
+false acceptance is its overriding priority: it may decompose and audit the
+proof as deeply as needed, while one structured record per declared claim keeps
+output identity stable. It does not decide novelty or global placement; the
+serialized knowledge builder retains responsibility for the holistic knowledge
+state. Existing v1 projections and contributions remain valid.
 
 The included knowledge builder consumes one exact scheduler claim. It is
 deliberately non-adjudicative: it may organize primary findings and supplied

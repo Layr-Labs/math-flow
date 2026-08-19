@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/hierarchical-credit-state.schema.json",
+  "title": "Hierarchical Two-Term Credit State",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "programStateDigest",
+    "horizonStateDigest",
+    "baseCreditStateDigest",
+    "evaluations",
+    "allocations",
+    "residualAllocations",
+    "stateDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "programStateDigest": { "$ref": "#/$defs/digest" },
+    "horizonStateDigest": { "$ref": "#/$defs/digest" },
+    "baseCreditStateDigest": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/digest" }
+      ]
+    },
+    "evaluations": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/evaluation" }
+    },
+    "allocations": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/fraction" }
+    },
+    "residualAllocations": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/fraction" }
+    },
+    "stateDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "work": { "type": "string", "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$" },
+    "fraction": {
+      "type": "object",
+      "required": ["numerator", "denominator"],
+      "properties": {
+        "numerator": { "type": "string", "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$" },
+        "denominator": { "type": "string", "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$" }
+      },
+      "additionalProperties": false
+    },
+    "threadSnapshot": {
+      "type": "object",
+      "required": ["id", "title", "summary", "kind", "status", "expectedExposure", "conditions", "digest"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "summary": { "type": "string" },
+        "kind": { "type": "string" },
+        "status": { "type": "string" },
+        "expectedExposure": { "type": "string" },
+        "conditions": { "type": "array", "items": { "type": "string" } },
+        "digest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "effect": {
+      "type": "object",
+      "required": ["threadId", "withoutWork", "withWork", "rationale"],
+      "properties": {
+        "threadId": { "type": "string" },
+        "withoutWork": { "type": "string" },
+        "withWork": { "type": "string" },
+        "rationale": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "child": {
+      "type": "object",
+      "required": [
+        "kind",
+        "id",
+        "referenceBaseStateDigest",
+        "referencePostStateDigest",
+        "referenceBaseThreads",
+        "referencePostThreads",
+        "horizonStateDigest",
+        "horizonLedgerHead",
+        "counterfactual",
+        "directEffects",
+        "obviatedEffects",
+        "directWork",
+        "obviatedWork",
+        "totalWork",
+        "confidence",
+        "evidenceRefs",
+        "allocationShare"
+      ],
+      "properties": {
+        "kind": { "enum": ["program", "contribution"] },
+        "id": { "type": "string" },
+        "referenceBaseStateDigest": { "$ref": "#/$defs/digest" },
+        "referencePostStateDigest": { "$ref": "#/$defs/digest" },
+        "referenceBaseThreads": { "type": "array", "items": { "$ref": "#/$defs/threadSnapshot" } },
+        "referencePostThreads": { "type": "array", "items": { "$ref": "#/$defs/threadSnapshot" } },
+        "horizonStateDigest": { "$ref": "#/$defs/digest" },
+        "horizonLedgerHead": { "$ref": "#/$defs/transaction" },
+        "counterfactual": { "type": "string" },
+        "directEffects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+        "obviatedEffects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+        "directWork": { "$ref": "#/$defs/work" },
+        "obviatedWork": { "$ref": "#/$defs/work" },
+        "totalWork": { "type": "string" },
+        "confidence": { "enum": ["low", "medium", "high"] },
+        "evidenceRefs": { "type": "array", "items": { "type": "string" } },
+        "allocationShare": { "$ref": "#/$defs/fraction" }
+      },
+      "additionalProperties": false
+    },
+    "evaluation": {
+      "type": "object",
+      "required": [
+        "programId",
+        "unattributedWork",
+        "unattributedShare",
+        "unattributedHorizonStateDigest",
+        "rationale",
+        "children",
+        "digest"
+      ],
+      "properties": {
+        "programId": { "type": "string" },
+        "unattributedWork": { "type": "string" },
+        "unattributedShare": { "$ref": "#/$defs/fraction" },
+        "unattributedHorizonStateDigest": { "$ref": "#/$defs/digest" },
+        "rationale": { "type": "string" },
+        "children": { "type": "array", "items": { "$ref": "#/$defs/child" } },
+        "digest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
