@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 2,
+  "id": "openrouter-research-credit-v2",
+  "description": "A common-horizon two-term hierarchical credit overlay over the default batched research-program projection.",
+  "status": "active",
+  "engine": "overlay-repository-v1",
+  "allowedProblems": ["*"],
+  "runner": {
+    "implementation": "openrouter-hierarchical-research-credit-v2",
+    "spec": "protocol/judges/openrouter-hierarchical-research-credit-v2.json"
+  },
+  "dependencies": [
+    {
+      "name": "research",
+      "projectionId": "openrouter-research-v1",
+      "artifactRole": "research-program-state"
+    }
+  ],
+  "scheduling": {
+    "minimumIntervalSeconds": 3600
+  }
+}
