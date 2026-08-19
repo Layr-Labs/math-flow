@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 2,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+  "problemLedgerDigest": "sha256:c09072335d25b15b56d9c6d7db078168c5a0bf40eb84ccfd5b6655221c19b4bc",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+      "ledgerPosition": 4
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity",
+      "status": "indeterminate",
+      "premiseStatus": "missing",
+      "summary": "The supplied audit verifies the UV-functional theorem chain: arbitrary-product additivity of B_avg, receiver-skew equality B_br=B_avg with invariant-prior restriction, preservation and additivity on finite symmetric products, and the half-skew BSSC value B_br(P^n)=B_avg(P^n)=n(2h_2(1/4)-5/4), numerically 0.3725562489182657… bits/use. It also verifies that this is a separately relaxed UV converse and cannot improve the stated governed benchmark endpoint. However, the compound claim additionally characterizes 0.369296945969202842443 as a certified full-Theorem-9 capacity upper bound, and no certificate, proof, or allowed dependency establishing that characterization is supplied. The complete declared claim is therefore indeterminate.",
+      "scopeQualifications": [
+        "The product-additivity proof permits correlated product-channel priors and joint envelope auxiliaries.",
+        "The symmetry result applies when an involutive input relabeling exchanges the receivers up to bijective output relabelings.",
+        "Finite products use the coordinatewise receiver-skew involution and introduce no product-input or coordinatewise-auxiliary restriction.",
+        "For the half-skew BSSC, the invariant-prior restriction reduces to the unique fair binary prior.",
+        "The exact BSSC envelope evaluation relies on the declared canonical dependency.",
+        "The UV value is non-frontier because 0.3725562489182657… exceeds the independently stated governed benchmark 0.369316568803963; this does not itself certify the stronger 0.369296945969202842443 figure.",
+        "The contribution is ordinary and does not claim progress within the registered yukon-auxiliary-converse-port scope."
+      ],
+      "evidenceIssues": [
+        "No supplied proof or allowed dependency certifies that 0.369296945969202842443 is the current full-Theorem-9 capacity upper bound.",
+        "Mention of the corresponding local artifact is expressly insufficient to pre-accept that certification.",
+        "The missing certification affects the exact compound claim even though all four substantive UV-functional assertions and the BSSC specialization check out."
+      ],
+      "evidenceTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity",
+      "stance": "uncertain",
+      "summary": "The supplied audit verifies the UV-functional theorem chain: arbitrary-product additivity of B_avg, receiver-skew equality B_br=B_avg with invariant-prior restriction, preservation and additivity on finite symmetric products, and the half-skew BSSC value B_br(P^n)=B_avg(P^n)=n(2h_2(1/4)-5/4), numerically 0.3725562489182657… bits/use. It also verifies that this is a separately relaxed UV converse and cannot improve the stated governed benchmark endpoint. However, the compound claim additionally characterizes 0.369296945969202842443 as a certified full-Theorem-9 capacity upper bound, and no certificate, proof, or allowed dependency establishing that characterization is supplied. The complete declared claim is therefore indeterminate.",
+      "subjectTransactionIds": [
+        "f236017c62c67ce4218c1f81ea34134f0954b556"
+      ],
+      "evidenceTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ]
+    }
+  ],
+  "dependencyPacketDigest": "sha256:905088d82b86ad908da4147667ec8b906512fa7b5dd2becd37981458929fb28b",
+  "reportDigest": "sha256:b6c01f1327bf699cd950112206970bf904beb57a4407650589c96eeb4bf25031",
+  "judgmentId": "sha256:1595af784c24808a636141bb2cc530a97cacc201280a8f41625f2c1a8b8390d9"
+}

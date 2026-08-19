@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 2,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+  "problemLedgerDigest": "sha256:c09072335d25b15b56d9c6d7db078168c5a0bf40eb84ccfd5b6655221c19b4bc",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+      "ledgerPosition": 3
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go",
+      "status": "valid",
+      "premiseStatus": "satisfied",
+      "summary": "The audit establishes both components of the claim. For every deterministic finite-block private-message code, the conditional-mutual-information sum telescopes exactly, Fano bounds its endpoints, time sharing yields the stated approximate dependence balance, memorylessness and deterministic encoding give the fixed-coordinate induced-law factorization, and chain-rule/Csiszar identities prove all four rate rows. For the specified entropy-only BSSC relaxation, the sharp scalar support inequalities are verified and an actual finite entropic witness satisfies the complete listed constraints while attaining both sum branches at 2h_2(1/4)-5/4. Because the witness is genuinely entropic, universally valid finite-variable information inequalities cannot remove it; conditional resampling preserves it through every finite sequence of standard copy-lemma extensions.",
+      "scopeQualifications": [
+        "The code result assumes a finite-alphabet memoryless broadcast channel, deterministic encoding, independent uniform private messages, and message sizes N_j>=2 with R_j=(1/n)log_2 N_j.",
+        "The induced auxiliaries and W may have alphabets growing with blocklength, so the result is not by itself a fixed-cardinality single-letter outer region.",
+        "The no-go conclusion applies only to the stated coarse entropy/copy relaxation and finite sequences of standard copy-lemma extensions.",
+        "The finite witness is deliberately not a binary-input BSSC law: X is tuple-valued. Exact binary-posterior or other channel-specific consistency constraints can exclude it and remain viable.",
+        "The theorem does not establish a new capacity upper bound."
+      ],
+      "evidenceIssues": [],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go",
+      "stance": "supports",
+      "summary": "The audit establishes both components of the claim. For every deterministic finite-block private-message code, the conditional-mutual-information sum telescopes exactly, Fano bounds its endpoints, time sharing yields the stated approximate dependence balance, memorylessness and deterministic encoding give the fixed-coordinate induced-law factorization, and chain-rule/Csiszar identities prove all four rate rows. For the specified entropy-only BSSC relaxation, the sharp scalar support inequalities are verified and an actual finite entropic witness satisfies the complete listed constraints while attaining both sum branches at 2h_2(1/4)-5/4. Because the witness is genuinely entropic, universally valid finite-variable information inequalities cannot remove it; conditional resampling preserves it through every finite sequence of standard copy-lemma extensions.",
+      "subjectTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:e19d6c61624c3045c1373d3a5b5f5f197bc1f3e81e03b179344acc786bd3bb80",
+  "reportDigest": "sha256:087a984e62348fb4d1037f1af97b608ef105db87cbf47f7a38fb5a81cc8b8648",
+  "judgmentId": "sha256:ad3dca0e36b3634da7b47596d9985548ab59e07b5f24885d2c75e6a1c014d8ea"
+}
