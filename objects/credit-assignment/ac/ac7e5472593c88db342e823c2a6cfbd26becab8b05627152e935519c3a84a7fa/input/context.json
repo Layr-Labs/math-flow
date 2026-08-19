@@ -1,0 +1,195 @@
+{
+  "horizonStateDigest": "sha256:d589f665cc4a0a2658e98c973beec49afe5acf22b1472dd68b5edc33f9376c72",
+  "horizonLedgerHead": "6a72758caaeb34a56d8d55653c8a3184ffbbe65e",
+  "programs": [
+    {
+      "program": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "status": "active",
+        "parentThreadIds": [],
+        "sourceTransactionIds": [],
+        "digest": "sha256:4bc4e85d0ca6e4224902591c71cf9cb813718dfe5961d8be774384d474797c99"
+      },
+      "horizonLocalThreads": [
+        {
+          "id": "root/unstructured-search",
+          "programId": "root",
+          "title": "Unstructured search and overhead",
+          "summary": "Future work not yet assigned to a more specific research thread.",
+          "kind": "unstructured",
+          "status": "active",
+          "expectedExposure": "1",
+          "conditions": [],
+          "sourceTransactionIds": [],
+          "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+        }
+      ],
+      "children": [
+        {
+          "kind": "contribution",
+          "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+          "directThreadIds": [
+            "root/unstructured-search"
+          ],
+          "referenceBaseStateDigest": "sha256:08ef3fd7eab160a4b11040c307aa39bdd2d76f7134e19070324bc22ba440e3e0",
+          "referencePostStateDigest": "sha256:d589f665cc4a0a2658e98c973beec49afe5acf22b1472dd68b5edc33f9376c72",
+          "referenceBaseLocalThreads": [
+            {
+              "id": "root/unstructured-search",
+              "programId": "root",
+              "title": "Unstructured search and overhead",
+              "summary": "Future work not yet assigned to a more specific research thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "sourceTransactionIds": [],
+              "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+            }
+          ],
+          "referencePostLocalThreads": [
+            {
+              "id": "root/unstructured-search",
+              "programId": "root",
+              "title": "Unstructured search and overhead",
+              "summary": "Future work not yet assigned to a more specific research thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "sourceTransactionIds": [],
+              "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+            }
+          ],
+          "currentState": {
+            "contribution": {
+              "id": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+              "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+              "claimKeys": [
+                "schur-number-6/fredricksen-sweet-536-certificate"
+              ],
+              "directProgramId": "root",
+              "directThreadIds": [
+                "root/unstructured-search"
+              ],
+              "itemIds": [
+                "root/items/fredricksen-sweet-536-witness-encoding",
+                "root/items/fredricksen-sweet-536-coloring",
+                "root/items/fredricksen-sweet-536-verifier",
+                "root/items/fredricksen-sweet-536-certificate-proof",
+                "root/items/s6-lower-bound-536"
+              ],
+              "dependencyTransactionIds": [],
+              "judgmentId": "sha256:132652e4d659b018427ef6f147da4243eccc59922867aba9d1a65aa993090295",
+              "digest": "sha256:ab79b730fb52e938dc2ccfb479cc134f2e81dd6861a7a716d545b8a8a9c302a4"
+            },
+            "items": [
+              {
+                "id": "root/items/fredricksen-sweet-536-witness-encoding",
+                "programId": "root",
+                "type": "method",
+                "title": "Canonical encodings of the Fredricksen–Sweet 536-coloring witness",
+                "summary": "`coloring.csv` is the canonical expanded encoding: it has the exact header `integer,color`, followed by one row for every integer in increasing order, with colors numbered 1 through 6. `published-symmetric.json` preserves the compact form printed by the source paper. Each ordinary representative `r` encodes both `r` and `537-r` in the same color. The exceptional pair is recorded explicitly as `[179, 4]` and `[358, 1]`.",
+                "claimRefs": [
+                  {
+                    "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                    "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+                  }
+                ],
+                "sourceTransactionIds": [
+                  "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                ],
+                "dependencyItemIds": [],
+                "digest": "sha256:80fb3e75f6425ce5115bd3356e526d3d6df2e99a5a6d6896f699012ae6977d6c"
+              },
+              {
+                "id": "root/items/fredricksen-sweet-536-coloring",
+                "programId": "root",
+                "type": "computation",
+                "title": "Explicit six-coloring of {1,...,536}",
+                "summary": "The committed `coloring.csv` is a complete six-coloring of\n`{1, 2, ..., 536}` with no monochromatic solution to `x + y = z`, including\nthe case `x = y`.",
+                "claimRefs": [
+                  {
+                    "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                    "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+                  }
+                ],
+                "sourceTransactionIds": [
+                  "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                ],
+                "dependencyItemIds": [
+                  "root/items/fredricksen-sweet-536-witness-encoding"
+                ],
+                "digest": "sha256:cf221e85925331c109f213154b67e1ea8b304ca32fab508ea53f31f4ead74c38"
+              },
+              {
+                "id": "root/items/fredricksen-sweet-536-verifier",
+                "programId": "root",
+                "type": "tool",
+                "title": "Exact checker for the Fredricksen–Sweet 536-coloring",
+                "summary": "The pinned Python-standard-library checker validates the compact witness schema, expands it with exact coverage of `1..536`, validates the canonical CSV and its exact agreement with the compact witness, and enumerates all 71,824 in-range triples with `1 <= x <= y` and `x + y <= 536`, including `x = y`. It is replayed with `python3 -I -B verify.py published-symmetric.json coloring.csv`.",
+                "claimRefs": [
+                  {
+                    "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                    "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+                  }
+                ],
+                "sourceTransactionIds": [
+                  "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                ],
+                "dependencyItemIds": [
+                  "root/items/fredricksen-sweet-536-witness-encoding"
+                ],
+                "digest": "sha256:2056e39a91de85279ac87ba8e4b251518a71f468af563d16f416332fb4d62101"
+              },
+              {
+                "id": "root/items/fredricksen-sweet-536-certificate-proof",
+                "programId": "root",
+                "type": "proof",
+                "title": "Exhaustive certificate proof for the 536-coloring",
+                "summary": "The audited artifacts establish that `coloring.csv` assigns exactly one of six colors to every integer from 1 through 536 and contains no monochromatic solution to `x+y=z`, including `x=y`. The verifier exhaustively checks all 71,824 relevant ordered representatives with `1≤x≤y` and `x+y≤536`.",
+                "claimRefs": [
+                  {
+                    "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                    "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+                  }
+                ],
+                "sourceTransactionIds": [
+                  "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                ],
+                "dependencyItemIds": [
+                  "root/items/fredricksen-sweet-536-coloring",
+                  "root/items/fredricksen-sweet-536-verifier"
+                ],
+                "digest": "sha256:8a44bef170739c01e7f90b6ce75fe83aa331f412751fe5e796152c3d2012ce7e"
+              },
+              {
+                "id": "root/items/s6-lower-bound-536",
+                "programId": "root",
+                "type": "result",
+                "title": "Published baseline lower bound S(6) ≥ 536",
+                "summary": "It therefore independently replays the published baseline lower bound\n\n```text\nS(6) >= 536.\n```\n\nThis certificate does not improve the bound. The problem's published interval\nremains `536 <= S(6) <= 1836`.",
+                "claimRefs": [
+                  {
+                    "transactionId": "b28dd977ae39eb77989de8e60b63f7eacd8982d2",
+                    "claimKey": "schur-number-6/fredricksen-sweet-536-certificate"
+                  }
+                ],
+                "sourceTransactionIds": [
+                  "b28dd977ae39eb77989de8e60b63f7eacd8982d2"
+                ],
+                "dependencyItemIds": [
+                  "root/items/fredricksen-sweet-536-certificate-proof"
+                ],
+                "digest": "sha256:3183a797bce379b0ecc48f45d87cce120f324b51ac601a7bd23804e107829344"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
