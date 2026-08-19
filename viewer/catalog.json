@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "repository": {
     "slug": "Layr-Labs/math-flow",
-    "canonicalRef": "refs/remotes/origin/main",
+    "canonicalRef": "main",
     "projectionRef": "projections"
   },
   "projections": [
@@ -37113,6 +37113,217 @@
       }
     },
     {
+      "id": "openrouter-research-v1",
+      "problemId": "replicable-pac-sample-complexity",
+      "label": "openrouter-research-v1",
+      "projectionSpec": {
+        "id": "openrouter-research-v1",
+        "description": "The default parallel validity projection with dependency-safe batched hierarchical research-state formation.",
+        "digest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+        "engine": "openrouter-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [],
+        "scheduling": {
+          "judgmentMaxParallel": 16,
+          "knowledgeMinimumIntervalSeconds": 300,
+          "maximumJudgmentsPerBuild": 500
+        },
+        "runner": null
+      },
+      "builder": {
+        "id": "openrouter-hierarchical-research-builder-v2",
+        "digest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb"
+      },
+      "latestRunDigest": "sha256:4177533d38b43fbdc77787fac286b4cdc12066af62ed66e9fb635b2f3e06f036",
+      "runCount": 1,
+      "data": {
+        "schemaVersion": 1,
+        "problem": {
+          "id": "replicable-pac-sample-complexity",
+          "title": "Sample complexity of replicable realizable PAC learning",
+          "statementMarkdown": "# Sample complexity of replicable realizable PAC learning\n\nLet \\(H\\subseteq\\{0,1\\}^X\\) be a finite hypothesis class. A realizable labeled\ndistribution is obtained by choosing a distribution \\(D\\) on \\(X\\) and a\ntarget \\(h^\\star\\in H\\), then labeling \\(x\\sim D\\) by \\(h^\\star(x)\\). For an\narbitrary classifier \\(g\\in\\{0,1\\}^X\\), write\n\n\\[\n\\operatorname{err}_{D,h^\\star}(g)\n=\\Pr_{x\\sim D}[g(x)\\ne h^\\star(x)].\n\\]\n\nA randomized, possibly improper learner \\(A\\), given \\(n\\) independent labeled\nexamples, returns a classifier \\(A(S;r)\\in\\{0,1\\}^X\\). It is\n\\((\\varepsilon,\\delta)\\)-accurate if for every \\(D\\) and \\(h^\\star\\in H\\),\n\n\\[\n\\Pr_{S,r}\\!\\left[\n\\operatorname{err}_{D,h^\\star}(A(S;r))>\\varepsilon\n\\right]\\le\\delta.\n\\]\n\nIt is \\(\\rho\\)-replicable if, for every \\(D\\) and \\(h^\\star\\in H\\), two\nindependent samples \\(S_1,S_2\\) from that realizable distribution, processed\nwith the same internal random seed \\(r\\), satisfy\n\n\\[\n\\Pr_{S_1,S_2,r}[A(S_1;r)=A(S_2;r)]\\ge1-\\rho.\n\\]\n\nLet \\(n_{\\mathrm{rep}}(N,\\varepsilon,\\delta,\\rho)\\) be the supremum, over all\ndomains \\(X\\) and finite classes \\(H\\subseteq\\{0,1\\}^X\\) with \\(|H|\\le N\\),\nof the least sample size of an unrestricted, computationally unbounded,\npossibly improper randomized learner satisfying both conditions above.\nAll logarithms below are natural. Determine this worst-case sample complexity.\nIn particular, for fixed sufficiently small positive \\(\\rho\\) and \\(\\delta\\),\nclose the current gap in the exponent of \\(\\log N\\):\n\n\\[\n\\widetilde\\Omega\\!\\left(\n\\frac{(\\log N)^{3/2}}{\\varepsilon}\n\\right)\n\\ \\le\\ n_{\\mathrm{rep}}(N,\\varepsilon,\\delta,\\rho)\n\\ \\le\\ O\\!\\left(\\frac{(\\log N)^2}{\\varepsilon}\\right).\n\\]\n\nHere the tilde on the established lower bound suppresses factors logarithmic\nin \\(\\log N\\) and \\(1/\\varepsilon\\); \\(\\rho\\) and \\(\\delta\\) are fixed in\nthis exponent comparison.\n\nThus a headline result may take either form:\n\n- construct an explicit parameterized family \\((X_m,H_m)\\) and prove\n  \\(n_{\\mathrm{rep}}(|H_m|,\\varepsilon,\\delta,\\rho)\n  =\\widetilde\\Omega((\\log|H_m|)^c/\\varepsilon)\\) for some \\(c>3/2\\), ideally\n  \\(c=2\\), by showing that every learner which is both\n  \\((\\varepsilon,\\delta)\\)-accurate and \\(\\rho\\)-replicable has an adversarial\n  realizable choice of \\(D\\) and \\(h^\\star\\) requiring that many samples; or\n- give a universal learner with an upper bound\n  \\[\n  O\\!\\left(\\frac{(\\log|H|)^c}{\\varepsilon}\n  \\operatorname{polylog}\\!\\left(\n  \\log|H|,\\frac1\\varepsilon,\\frac1\\rho,\\frac1\\delta\n  \\right)\\right)\n  \\]\n  for some \\(c<2\\), ideally \\(c=3/2\\), with every suppressed factor and its\n  dependence on \\(\\rho\\) and \\(\\delta\\) explicit.\n\nThe universal finite-class upper bound of Bun et al. is\n\n\\[\nO\\!\\left(\n\\frac{\\log^2|H|+\\log(1/(\\rho\\delta))}\n{\\varepsilon\\rho^2}\\log^3\\frac1\\rho\n\\right).\n\\]\n\nLarsen--Mathiasen--Pabbaraju--Svendsen prove that for every\n\\(d\\ge10^{11}\\) and \\(0<\\varepsilon,\\delta,\\rho\\le10^{-4}\\), there is a\nfinite class of VC dimension \\(d\\) for which every learner has an adversarial\nrealizable distribution requiring at least\n\n\\[\n\\frac{10^{-9}(\\log|H|)^{3/2}}\n{\\varepsilon(\\log\\log|H|)^2\\log(\\log|H|/\\varepsilon)}.\n\\]\n\nTheir hard family uses \\(X=[d]\\times\\mathbb Z_k\\) for prime \\(k\\),\n\\(|H|=k^d\\), cyclic half-interval hypotheses, and a uniform distribution.\nThey also report a family-specific\n\\(\\widetilde O((\\log|H|)^{3/2}/(\\rho\\varepsilon))\\) learner. This is the\nsource's notation and its summary leaves the suppressed polylogarithmic\ndependence implicit. It nevertheless rules out a stronger \\(\\log|H|\\)\nexponent for essentially the same family, so such a lower bound requires a\ngenuinely different hard family or technique.\nThese are established external baselines, not Math Flow ledger evidence.\n\nUseful contributions include:\n\n- a new explicit hard family and a proof quantified over every learner that is\n  both accurate and replicable, with the order of all asymptotic parameters\n  stated and any dependence of the family on\n  \\(\\varepsilon,\\delta,\\rho\\) disclosed;\n- a universal replicable-learning algorithm improving the logarithmic\n  exponent or the current \\(\\rho^{-2}\\) dependence toward \\(\\rho^{-1}\\);\n- a combinatorial, expansion, isoperimetric, spectral, or information-theoretic\n  hardness criterion and an explicit family satisfying it;\n- a matching learner or counterexample that rules out a proposed hard family;\n- a sharp theorem for a substantial restricted class, with the restriction\n  stated in the claim;\n- removal of polylogarithmic losses or extension of the known parameter regime;\n  or\n- finite computation or numerical evidence used as a clearly labeled lead for\n  an asymptotic theorem.\n\nA single finite instance, empirical instability, or a construction without a\nuniversal lower-bound proof against randomized learners does not establish the\nheadline lower bound. Proper-only, efficient-only, or distribution-restricted\nclaims must be labeled if they do not cover the general definition above.\n\n## Frontier sources\n\n- Mark Bun, Marco Gaboardi, Max Hopkins, Russell Impagliazzo, Rex Lei, Toniann\n  Pitassi, Satchit Sivakumar, and Jessica Sorrell,\n  [Stability is Stable: Connections between Replicability, Privacy, and Adaptive Generalization](https://arxiv.org/abs/2303.12921),\n  STOC 2023.\n- Kasper Green Larsen, Markus Engelund Mathiasen, Chirag Pabbaraju, and\n  Clement Svendsen,\n  [The Sample Complexity of Replicable Realizable PAC Learning](https://arxiv.org/abs/2602.19552),\n  STOC 2026.\n\nThe open exponent gap was checked against these primary sources on 2026-08-12.\n"
+        },
+        "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+        "transactions": [
+          {
+            "ordinal": 1,
+            "transactionId": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "contributionId": "one-coordinate-half-interval-matching-bound",
+            "path": "problems/replicable-pac-sample-complexity/contributions/one-coordinate-half-interval-matching-bound",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# One-coordinate cyclic half-intervals have matching uniform-distribution bounds\n\n## Exact restricted theorem and quantifiers\n\nLet \\(k\\geq 3\\) be odd, let \\(X=\\mathbb Z_k\\), and put\n\n\\[\n\\ell=\\frac{k-1}{2},\\qquad\nI_i=\\{i,i+1,\\ldots,i+\\ell-1\\}\\pmod k,\n\\qquad h_i=\\mathbf 1_{I_i}.\n\\]\n\nWrite \\(H_k=\\{h_i:i\\in\\mathbb Z_k\\}\\), and fix \\(D\\) to be the uniform\ndistribution on \\(\\mathbb Z_k\\).  This is one coordinate of the cyclic\nhalf-interval construction of Larsen--Mathiasen--Pabbaraju--Svendsen.\n\nThe following result is **distribution-restricted**: \\(D\\) is fixed to be\nuniform.  The upper bound is proper, while the lower bound allows every\nrandomized, computationally unbounded, possibly improper learner.\n\n**Theorem.**\n\n1. For every odd \\(k\\geq3\\) and every\n   \\(\\varepsilon,\\delta,\\rho\\in(0,1)\\), define\n   \\[\n   L=\\left\\lfloor\\frac{\\varepsilon k}{2}\\right\\rfloor+1,\n   \\qquad q=\\left\\lceil\\frac{k}{L}\\right\\rceil.\n   \\]\n   There is a proper randomized learner \\(A_{k,\\varepsilon}\\) such that, for\n   every target \\(h_i\\in H_k\\), \\(A_{k,\\varepsilon}\\) is simultaneously\n   \\((\\varepsilon,\\delta)\\)-accurate and \\(\\rho\\)-replicable under \\(D\\) whenever\n   \\[\n   n\\geq\n   \\max\\left\\{\n      \\frac{1}{\\varepsilon}\\log\\frac{2}{\\delta},\n      \\frac{4q}{\\rho}\n   \\right\\}.\n   \\]\n   Since \\(q<2/\\varepsilon+1\\leq3/\\varepsilon\\), it suffices that\n   \\[\n   n\\geq\n   \\max\\left\\{\n      \\frac{1}{\\varepsilon}\\log\\frac{2}{\\delta},\n      \\frac{12}{\\varepsilon\\rho}\n   \\right\\}.\n   \\]\n\n2. Conversely, suppose\n   \\[\n   0<\\varepsilon\\leq\\frac14,qquad\n   0<\\delta,\\rho\\leq\\frac1{20},qquad\n   k\\geq\\frac{1}{5\\varepsilon\\rho}.\n   \\]\n   If a randomized, possibly improper learner \\(A\\), using \\(n\\) samples, is\n   \\((\\varepsilon,\\delta)\\)-accurate and \\(\\rho\\)-replicable under the fixed\n   uniform \\(D\\) for **every** target \\(h_i\\in H_k\\), then\n   \\[\n   n\\geq\\frac{1}{120\\varepsilon\\rho}.\n   \\]\n\nThe order of quantifiers in the lower bound is therefore\n\n\\[\n\\forall A\\;\\forall n\\;\n\\left[\n  \\left(\\forall i\\;\\Pr_{S,r}[\\operatorname{err}_i(A(S;r))>\n  \\varepsilon]\\leq\\delta\\right)\n  \\land\n  \\left(\\forall i\\;\\Pr_{S_1,S_2,r}[A(S_1;r)=A(S_2;r)]\n  \\geq1-\\rho\\right)\n\\right]\n\\Longrightarrow n\\geq\\frac{1}{120\\varepsilon\\rho}.\n\\]\n\nHere each \\(S,S_1,S_2\\) is independently drawn from the realizable labeled\ndistribution determined by the already quantified target \\(h_i\\), and the two\nruns in the replicability probability share the seed \\(r\\).  The distribution\n\\(D\\) is not chosen after the learner: it is the fixed uniform distribution.\n\nThus, in the lower-bound regime\n\\(0<\\varepsilon\\leq1/4\\), \\(0<\\delta,\\rho\\leq1/20\\), and sufficiently large\n\\(k\\), the restricted sample complexity is\n\\(\\Theta(1/(\\varepsilon\\rho))\\), with no dependence on\n\\(\\log |H_k|=\\log k\\).\n\n## Half-interval geometry\n\nFor \\(0\\leq t\\leq\\ell\\), direct inspection of the two shifted half-intervals\ngives\n\n\\[\n\\Pr_{x\\sim D}[h_i(x)\\ne h_{i+t}(x)]=\\frac{2t}{k}.\n\\tag{1}\n\\]\n\nThe same formula holds for \\(i-t\\).  Moreover, along either orientation the\ndisagreement sets are nested: if \\(0\\leq t\\leq s\\leq\\ell\\), then\n\n\\[\n\\{x:h_i(x)\\ne h_{i+t}(x)\\}\n\\subseteq\n\\{x:h_i(x)\\ne h_{i+s}(x)\\},\n\\tag{2}\n\\]\n\nand likewise with \\(+t,+s\\) replaced by \\(-t,-s\\).  These two elementary facts\ndrive both bounds.\n\n## Upper bound\n\n### The learner\n\nFix a partition of the cycle \\(\\mathbb Z_k\\) into \\(q\\) nonempty consecutive\nblocks, each of length at most \\(L\\), and distinguish one representative in\neach block.  The shared random seed is a uniform shift \\(U\\in\\mathbb Z_k\\) of\nthis entire partition, including its representatives.\n\nFor a labeled sample \\(S\\) generated by target \\(h_i\\), let\n\n\\[\nV(S)=\\{j\\in\\mathbb Z_k:h_j\\text{ is consistent with }S\\}\n\\]\n\nbe the version space.  It is nonempty because \\(i\\in V(S)\\).  The learner does\nthe following.\n\n- If \\(V(S)\\) is contained in one shifted block, output that block's fixed\n  representative hypothesis.\n- Otherwise, output the least-indexed member of \\(V(S)\\) in the fixed numeric\n  representation \\(\\{0,\\ldots,k-1\\}\\).\n\nBoth outputs belong to \\(H_k\\), so the learner is proper.\n\n### Accuracy\n\nIf \\(V(S)\\) is contained in one block, that block contains the target \\(i\\), and\nits representative is at circular distance at most \\(L-1\\) from \\(i\\).  By\n(1), its error is at most\n\n\\[\n\\frac{2(L-1)}{k}\n=\\frac{2\\lfloor\\varepsilon k/2\\rfloor}{k}\n\\leq\\varepsilon.\n\\]\n\nIn the fallback case the learner outputs a consistent hypothesis.  A\nconsistent hypothesis with error greater than \\(\\varepsilon\\) has circular\ndistance at least\n\n\\[\nL=\\left\\lfloor\\frac{\\varepsilon k}{2}\\right\\rfloor+1\n\\]\n\nfrom \\(i\\).  If \\(L>\\ell\\), no such hypothesis exists.  Otherwise, nesting (2)\nshows that the existence of any such consistent hypothesis implies that at\nleast one of \\(h_{i+L}\\) and \\(h_{i-L}\\) is consistent.  Each of these events\nhas probability \\((1-2L/k)^n\\).  Hence\n\n\\[\n\\Pr_{S,U}[\\operatorname{err}_i(A(S;U))>\\varepsilon]\n\\leq 2\\left(1-\\frac{2L}{k}\\right)^n\n\\leq 2e^{-2Ln/k}\n\\leq2e^{-\\varepsilon n}.\n\\tag{3}\n\\]\n\nThis is at most \\(\\delta\\) under the first displayed sample-size condition.\n\n### Replicability\n\nLet\n\n\\[\nR(S)=\\max_{j\\in V(S)}d_{\\mathrm{cyc}}(i,j).\n\\]\n\nFor every \\(1\\leq t\\leq\\ell\\), nesting (2) and a union bound over the two\norientations give\n\n\\[\n\\Pr[R(S)\\geq t]\n\\leq2\\left(1-\\frac{2t}{k}\\right)^n\n\\leq2e^{-2nt/k}.\n\\]\n\nConsequently,\n\n\\[\n\\mathbb E R(S)\n\\leq2\\sum_{t\\geq1}e^{-2nt/k}\n=\\frac{2}{e^{2n/k}-1}\n\\leq\\frac{k}{n}.\n\\tag{4}\n\\]\n\nView a block boundary as a cut edge of the cycle.  The base partition has\nexactly \\(q\\) cut edges.  After a uniform shift, each fixed cycle edge is a cut\nwith probability \\(q/k\\).  The union of the shortest paths from \\(i\\) to all\nmembers of \\(V(S)\\) contains at most \\(2R(S)\\) edges.  If none is cut, the whole\nversion space lies in the shifted block containing \\(i\\).  Thus, by a union\nbound and (4),\n\n\\[\n\\Pr_{S,U}[V(S)\\text{ is not contained in the block containing }i]\n\\leq\\frac{2q}{k}\\mathbb E R(S)\n\\leq\\frac{2q}{n}.\n\\tag{5}\n\\]\n\nFor two independent samples with the same \\(U\\), if neither bad event in (5)\noccurs, both version spaces lie in the same block containing \\(i\\), and both\nruns output the same representative.  Therefore\n\n\\[\n\\Pr_{S_1,S_2,U}[A(S_1;U)\\ne A(S_2;U)]\n\\leq\\frac{4q}{n}\n\\leq\\rho.\n\\]\n\nThis proves the upper bound.\n\n## Lower bound\n\nThe proof keeps the learner, seed, samples, target, and distribution quantifiers\nseparate.  Its key device is a symmetric, sample-dependent coupling that makes\ntwo differently targeted labeled data sets exactly equal while preserving both\ntarget/sample marginals.\n\n### Modes from accuracy and replicability\n\nFor target \\(i\\) and fixed internal seed \\(r\\), let \\(\\mu_{i,r}\\) be the output\ndistribution of \\(A\\) over a fresh sample, let\n\n\\[\np_{i,r}=\\max_f\\mu_{i,r}(f),\n\\]\n\nand choose a canonical maximizer \\(m_r(i)\\).  This mode exists even for an\nimproper learner because \\(X\\) is finite, so the classifier range\n\\(\\{0,1\\}^{X}\\) is finite.  If\n\n\\[\nc_{i,r}=\\sum_f\\mu_{i,r}(f)^2\n\\]\n\nis the fixed-seed collision probability, then \\(c_{i,r}\\leq p_{i,r}\\).\nReplicability therefore implies, for every \\(i\\),\n\n\\[\n\\mathbb E_r[1-p_{i,r}]\\leq\n\\mathbb E_r[1-c_{i,r}]\\leq\\rho.\n\\tag{6}\n\\]\n\nLet \\(a_{i,r}\\) be the fixed-seed probability that the learner's output has\nerror greater than \\(\\varepsilon\\).  If the mode \\(m_r(i)\\) itself has error\ngreater than \\(\\varepsilon\\), then \\(a_{i,r}\\geq p_{i,r}\\), and hence\n\n\\[\n\\mathbf1\\{\\operatorname{err}_i(m_r(i))>\\varepsilon\\}\n\\leq a_{i,r}+1-p_{i,r}.\n\\]\n\nAveraging over a uniform \\(i\\in\\mathbb Z_k\\) and the seed gives\n\n\\[\n\\Pr_{i,r}[\\operatorname{err}_i(m_r(i))>\\varepsilon]\n\\leq\\delta+\\rho.\n\\tag{7}\n\\]\n\nNo seed has been selected or moved across a target quantifier here.\n\n### An exact symmetric coupling at scale \\(M\\)\n\nIf \\(n\\geq k/24\\), the assumed lower bound on \\(k\\) immediately yields\n\n\\[\nn\\geq\\frac{k}{24}\\geq\\frac{1}{120\\varepsilon\\rho}.\n\\]\n\nIt remains to consider \\(1\\leq n<k/24\\).  (The case \\(n=0\\) is already\nimpossible: two targets at mutual error greater than \\(2\\varepsilon\\) have\ndisjoint \\(\\varepsilon\\)-accuracy events, while a zero-sample learner has the\nsame output law for both and \\(\\delta<1/2\\).)\n\nSet\n\n\\[\nM=\\left\\lfloor\\frac{k}{12n}\\right\\rfloor.\n\\]\n\nThen\n\n\\[\n\\frac{k}{24n}\\leq M\\leq\\frac{k}{12n}\\leq\\frac{k}{12}.\n\\tag{8}\n\\]\n\nLet \\(S=(x_1,\\ldots,x_n)\\sim D^n\\) be an unlabeled sample and write\n\\(T_i(S)=((x_j,h_i(x_j)))_{j=1}^n\\).  For a fixed target \\(i\\), the probability\nthat \\(T_i(S)=T_{i+M}(S)\\) is\n\n\\[\n\\alpha=\\left(1-\\frac{2M}{k}\\right)^n\n\\geq1-\\frac{2nM}{k}\n\\geq\\frac56.\n\\tag{9}\n\\]\n\nPut \\(\\gamma=1/(3\\alpha)\\leq2/5\\).  Conditional on \\(S\\), define a Markov\nkernel on target indices by\n\n\\[\n\\begin{aligned}\nK_S(i,i+M)&=\\gamma\\,\n \\mathbf1\\{T_i(S)=T_{i+M}(S)\\},\\\\\nK_S(i,i-M)&=\\gamma\\,\n \\mathbf1\\{T_i(S)=T_{i-M}(S)\\},\\\\\nK_S(i,i)&=1-K_S(i,i+M)-K_S(i,i-M).\n\\end{aligned}\n\\tag{10}\n\\]\n\nThe diagonal entry is nonnegative because \\(2\\gamma\\leq4/5\\).  The kernel is\nsymmetric: availability of the move \\(i\\to i+M\\) is exactly availability of\nthe reverse move.  It is therefore doubly stochastic.\n\nNow draw \\(i\\) uniformly, independently draw \\(S\\sim D^n\\), and draw \\(v\\)\nfrom \\(K_S(i,\\cdot)\\).  Symmetry gives the following exact properties.\n\n1. Conditional on every fixed \\(S\\), \\(v\\) is uniform.  Hence \\(v\\) and \\(S\\)\n   are independent with the correct target/sample marginal.\n2. Whenever \\(K_S(i,v)>0\\), the labeled data sets are identical:\n   \\(T_i(S)=T_v(S)\\).\n3. By (9)--(10), conditional on every \\(i\\), after averaging over \\(S\\),\n   \\[\n   v-i\\ \\text{is uniform on }\\{-M,0,M\\}.\n   \\tag{11}\n   \\]\n\nFixing the learner seed \\(r\\), identical labeled inputs produce identical\noutputs.  If \\(m_r(i)\\ne m_r(v)\\), at least one of those two identical outputs\nis not its corresponding mode.  Using both correct marginals and (6) therefore\ngives\n\n\\[\n\\Pr_{i,v,r}[m_r(i)\\ne m_r(v)]\\leq2\\rho.\n\\tag{12}\n\\]\n\nLet\n\n\\[\nb=\\Pr_{i,r}[m_r(i)\\ne m_r(i+M)].\n\\]\n\nTranslation invariance makes the analogous probability for \\(-M\\) equal to\n\\(b\\).  Combining (11) and (12) yields\n\n\\[\n\\frac{2b}{3}\\leq2\\rho,\n\\qquad\\text{so}\\qquad b\\leq3\\rho.\n\\tag{13}\n\\]\n\n### A long mode-constant path is impossible\n\nTake\n\n\\[\nt=\\left\\lfloor\\frac{\\varepsilon k}{M}\\right\\rfloor+1.\n\\]\n\nThen\n\n\\[\n\\varepsilon k<tM\\leq\\varepsilon k+M\n\\leq\\frac{k}{4}+\\frac{k}{12}<\\frac{k}{2}.\n\\tag{14}\n\\]\n\nBy (1), the targets \\(h_i\\) and \\(h_{i+tM}\\) have mutual error\n\\(2tM/k>2\\varepsilon\\).  Thus their modes cannot be equal if both modes have\nerror at most \\(\\varepsilon\\): the triangle inequality for disagreement would\ngive mutual error at most \\(2\\varepsilon\\).\n\nIf none of the \\(t\\) consecutive mode edges\n\n\\[\ni\\to i+M\\to\\cdots\\to i+tM\n\\]\n\nchanges value, the endpoint modes are equal.  A union bound, (7), and the fact\nthat every translated edge start remains uniform therefore give\n\n\\[\n1\\leq2(\\delta+\\rho)+tb.\n\\tag{15}\n\\]\n\nFrom (8),\n\n\\[\nt\\leq\\frac{\\varepsilon k}{M}+1\\leq24\\varepsilon n+1.\n\\tag{16}\n\\]\n\nCombining (13)--(16),\n\n\\[\n1-2\\delta-2\\rho\n\\leq3\\rho(24\\varepsilon n+1),\n\\]\n\nand hence\n\n\\[\nn\\geq\\frac{1-2\\delta-5\\rho}{72\\varepsilon\\rho}.\n\\tag{17}\n\\]\n\nFor \\(\\delta,\\rho\\leq1/20\\), the numerator in (17) is at least \\(13/20\\),\nwhich is larger than \\(72/120\\).  Therefore\n\\(n\\geq1/(120\\varepsilon\\rho)\\), completing the lower bound.\n\n## What this says about the open exponent\n\nThis theorem isolates the one-coordinate statistical mechanism and shows that\nit costs \\(\\Theta(1/(\\varepsilon\\rho))\\), not a power of \\(\\log k\\).  Merely\nincreasing the alphabet size \\(k=|H_k|\\) therefore cannot produce the open\n\\((\\log|H|)^c\\) lower-bound exponent.\n\nBecause a learner for the canonical worst-case problem must in particular work\nfor this uniform distribution, the restricted lower bound does imply the valid\nworst-case corollary\n\n\\[\nn_{\\mathrm{rep}}(k,\\varepsilon,\\delta,\\rho)\n\\geq \\frac{1}{120\\varepsilon\\rho}\n\\]\n\nin the stated parameter range.  Its point is negative with respect to the open\nexponent: this corollary has no growing factor in \\(\\log k\\).\n\nIt also explains why direct coordinatewise tensorization is lossy.  In a\nstratified \\(d\\)-coordinate version with \\(n/d\\) samples per coordinate, (5)\nis of order \\(d/(n\\varepsilon)\\) per coordinate.  Requiring exact equality of\nthe full \\(d\\)-coordinate output and applying a union bound incurs another\nfactor \\(d\\), suggesting \\(n=O(d^2/(\\varepsilon\\rho))\\) for this naive method.\nThis scaling observation is **not** claimed as a theorem for the original\ni.i.d. \\(d\\)-coordinate instance.  The known family-specific\n\\(\\widetilde O((\\log|H|)^{3/2}/(\\varepsilon\\rho))\\) learner uses more global\nstructure; recovering that improvement is precisely where a one-coordinate\nargument stops scaling.\n\n## Provenance, authorship, and limitations\n\n- The half-interval family and the motivation to inspect one coordinate are\n  attributed to Kasper Green Larsen, Markus Engelund Mathiasen, Chirag\n  Pabbaraju, and Clement Svendsen, *The Sample Complexity of Replicable\n  Realizable PAC Learning*, arXiv:2602.19552 (2026),\n  <https://arxiv.org/abs/2602.19552>.\n- The new theorem, proof, and exposition were produced by an OpenAI Codex Math\n  Flow solver agent in this session; no human authorship is inferred.  The\n  proof uses only the displayed elementary half-interval geometry, collision\n  probabilities, and a symmetric coupling; no external theorem is imported.\n- The canonical Math Flow ledger had no prior contribution or research\n  direction for this problem when this artifact was prepared.\n- The fixed-uniform-\\(D\\) restriction is essential to the claim.  The theorem\n  does **not** supply a learner for arbitrary \\(D\\).  Its lower bound transfers\n  to the worst-case definition as just noted, but only at order\n  \\(1/(\\varepsilon\\rho)\\), with no \\(\\log k\\) gain.\n- The result is only for one coordinate.  It neither improves the headline\n  exponent beyond \\(3/2\\) nor improves the known universal upper bound.\n- The lower-bound family size is allowed to depend on\n  \\(\\varepsilon,\\rho\\) through \\(k\\geq1/(5\\varepsilon\\rho)\\); this dependence is\n  explicit.\n- This is a proof-only artifact with no computational evidence and no\n  objective-verification request.\n- No research direction was registered, updated, or completed.\n\n## Reproduction\n\nThere is no executable artifact.  The result is reproduced by checking the\nfinite identities (1)--(2), the version-space tail calculation (3)--(5), and\nthe symmetric-kernel calculation (6)--(17).  Repository-level validation is:\n\n```bash\npython3 -m math_flow validate-tree\npython3 -m unittest discover -s tests -v\ngit diff --check\n```\n"
+          }
+        ],
+        "judgments": [
+          {
+            "judgmentId": "sha256:a06cea63b766d42b01a8afb4491694a389bb02ebe65928ab6be20631b46292f5",
+            "runDigest": "sha256:19faed3c94777ca7bb5e11074b120dcb017aa7fef8186e598f7fe65345a238ef",
+            "judgmentKind": "primary",
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v2",
+              "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.18534799999999998,
+            "reportDigest": "sha256:f65e18ae9915318231eedf96e05c75258015f3a02a3d1103d18c6b4336909223",
+            "reportMarkdown": "## `replicable-pac-sample-complexity/one-coordinate-half-interval-matching-bound`\n\n**Verdict: invalid**\n\nThe two numbered upper- and lower-bound theorems are supported by the supplied argument. However, the declared claim also asserts an unqualified restricted sample complexity of  \n\\(\\Theta(1/(\\varepsilon\\rho))\\) throughout \\(0<\\delta,\\rho\\le 1/20\\). That assertion is false when \\(\\delta\\) is allowed to vary: accuracy alone forces additional growth of order \\(\\varepsilon^{-1}\\log(1/\\delta)\\). Because the exact declared claim includes this materially stronger conclusion, it cannot be accepted as stated.\n\n### 1. Half-interval geometry\n\nFor \\(0\\le t\\le\\ell=(k-1)/2\\), shifting an interval of length \\(\\ell\\) by \\(t\\) removes \\(t\\) points and adds \\(t\\) points. Thus\n\n\\[\n\\Pr_D[h_i\\ne h_{i+t}]=\\frac{2t}{k}.\n\\]\n\nFor a fixed orientation, the removed and added segments both grow monotonically with \\(t\\), establishing the asserted nesting. Oddness of \\(k\\) ensures every hypothesis index has a unique orientation and distance \\(d_{\\rm cyc}\\le\\ell\\). Equations (1)–(2) are therefore correct.\n\n### 2. Upper bound\n\nThe upper-bound construction and analysis are valid.\n\n- A partition into \\(q=\\lceil k/L\\rceil\\) nonempty consecutive blocks of size at most \\(L\\) exists.\n- Since \\(\\varepsilon<1\\), \\(L\\le\\ell+1<k\\), so \\(q\\ge2\\) and the partition has exactly \\(q\\) boundary edges.\n- If a version space lies in one block, its representative is at circular distance at most \\(L-1\\) from the target, hence has error at most\n  \\[\n  \\frac{2(L-1)}k\\le\\varepsilon.\n  \\]\n- If a consistent hypothesis has error \\(>\\varepsilon\\), its circular distance is at least \\(L\\). When \\(L\\le\\ell\\), nesting implies that either \\(h_{i+L}\\) or \\(h_{i-L}\\) is consistent. This gives\n  \\[\n  \\Pr[\\operatorname{err}_i(A(S;U))>\\varepsilon]\n  \\le 2(1-2L/k)^n\n  \\le 2e^{-\\varepsilon n}.\n  \\]\n  When \\(L>\\ell\\), no bad hypothesis exists, as claimed.\n- For the version-space radius,\n  \\[\n  \\Pr[R(S)\\ge t]\\le2e^{-2nt/k},\n  \\]\n  and summing the integer tail gives\n  \\[\n  \\mathbb E R(S)\n  \\le\\frac{2}{e^{2n/k}-1}\\le\\frac{k}{n}.\n  \\]\n- The union of shortest paths from the target to the version space uses at most \\(2R(S)\\) edges. Under a uniform shift, each edge is a boundary with probability \\(q/k\\). Hence\n  \\[\n  \\Pr[V(S)\\text{ crosses the target block}]\n  \\le\\frac{2q}{n}.\n  \\]\n  A union bound over two independent samples sharing the same shift gives disagreement probability at most \\(4q/n\\).\n\nFinally,\n\n\\[\nq<\\frac{2}{\\varepsilon}+1\\le\\frac{3}{\\varepsilon}\n\\]\n\nis correct for \\(0<\\varepsilon<1\\). Thus the proved upper bound is\n\n\\[\nn=O\\!\\left(\n\\max\\left\\{\n\\frac1\\varepsilon\\log\\frac1\\delta,\\,\n\\frac1{\\varepsilon\\rho}\n\\right\\}\\right).\n\\]\n\n### 3. Lower bound\n\nThe supplied lower-bound proof is also valid.\n\n#### Modes\n\nFor fixed target and seed, the output distribution has finite support because \\(X=\\mathbb Z_k\\) is finite. If \\(p_{i,r}\\) is its maximum mass and \\(c_{i,r}\\) its collision probability, then\n\n\\[\nc_{i,r}=\\sum_f\\mu_{i,r}(f)^2\\le p_{i,r}.\n\\]\n\nReplicability consequently gives\n\n\\[\n\\mathbb E_r(1-p_{i,r})\\le\\rho.\n\\]\n\nIf the mode is inaccurate, the fixed-seed failure probability is at least its mass. Therefore\n\n\\[\n\\Pr_{i,r}[\\operatorname{err}_i(m_r(i))>\\varepsilon]\n\\le\\delta+\\rho.\n\\]\n\nNo improperness or seed-quantifier issue is overlooked here.\n\n#### Symmetric coupling\n\nFor \\(1\\le n<k/24\\),\n\n\\[\nM=\\left\\lfloor\\frac{k}{12n}\\right\\rfloor\n\\]\n\nsatisfies \\(k/(24n)\\le M\\le k/(12n)\\le k/12\\). The probability that targets \\(i\\) and \\(i+M\\) produce identical labeled samples is\n\n\\[\n\\alpha=(1-2M/k)^n\\ge1-\\frac{2nM}{k}\\ge\\frac56.\n\\]\n\nThe kernel \\(K_S\\) is well-defined:\n\n- \\(i+M\\), \\(i-M\\), and \\(i\\) are distinct because \\(1\\le M<k/2\\) and \\(k\\) is odd;\n- its diagonal is nonnegative since \\(2\\gamma\\le4/5\\);\n- it is symmetric and hence doubly stochastic.\n\nThus the second target has the correct independent uniform target/sample marginal, while the coupled labeled inputs agree exactly. For a shared fixed seed, if the two modes differ, the common output misses at least one mode. Applying the mode-miss bounds to both correct marginals yields\n\n\\[\n\\Pr[m_r(i)\\ne m_r(v)]\\le2\\rho.\n\\]\n\nThe averaged transition law is uniform on \\(\\{-M,0,M\\}\\), so\n\n\\[\nb=\\Pr[m_r(i)\\ne m_r(i+M)]\\le3\\rho.\n\\]\n\n#### Long path\n\nWith\n\n\\[\nt=\\left\\lfloor\\frac{\\varepsilon k}{M}\\right\\rfloor+1,\n\\]\n\none has\n\n\\[\n\\varepsilon k<tM\\le\\varepsilon k+M\n\\le\\frac{k}{4}+\\frac{k}{12}<\\frac{k}{2}.\n\\]\n\nThus the endpoint hypotheses have disagreement \\(2tM/k>2\\varepsilon\\). Their modes cannot be equal while both modes are \\(\\varepsilon\\)-accurate. A union bound over endpoint inaccuracies and the \\(t\\) mode edges gives\n\n\\[\n1\\le2(\\delta+\\rho)+tb.\n\\]\n\nSince \\(t\\le24\\varepsilon n+1\\) and \\(b\\le3\\rho\\),\n\n\\[\nn\\ge\\frac{1-2\\delta-5\\rho}{72\\varepsilon\\rho}.\n\\]\n\nFor \\(\\delta,\\rho\\le1/20\\), the numerator is at least \\(13/20>72/120\\), yielding\n\n\\[\nn\\ge\\frac1{120\\varepsilon\\rho}.\n\\]\n\nThe separately treated \\(n=0\\) case is also excluded: \\(h_i\\) and \\(h_{i+\\ell}\\) disagree on \\((k-1)/k>2\\varepsilon\\), so their \\(\\varepsilon\\)-accuracy output sets are disjoint, while a zero-sample learner has the same output law for both targets.\n\n### 4. Decisive defect: omitted confidence dependence\n\nThe conclusion\n\n\\[\n\\text{“the restricted sample complexity is }\n\\Theta(1/(\\varepsilon\\rho))\\text{”}\n\\]\n\nis not valid uniformly over the stated range \\(0<\\delta\\le1/20\\).\n\nIndeed, choose two targets whose disagreement probability is \\(p>2\\varepsilon\\), with \\(p<1\\). Let \\(E\\) be the event that none of the \\(n\\) sample points falls in their disagreement set. Then\n\n\\[\n\\Pr(E)=(1-p)^n.\n\\]\n\nConditional on \\(E\\), the labeled-sample distributions under the two targets are identical. Since no classifier can have error at most \\(\\varepsilon\\) against both targets when their mutual disagreement is \\(>2\\varepsilon\\), the two conditional failure probabilities sum to at least one. Consequently, for at least one target,\n\n\\[\n\\Pr[\\text{failure}]\\ge\\frac12(1-p)^n.\n\\]\n\nThus \\((\\varepsilon,\\delta)\\)-accuracy requires\n\n\\[\nn\\ge\n\\frac{\\log(1/(2\\delta))}{-\\log(1-p)}.\n\\]\n\nIn the claim’s parameter regime, one may take  \n\\(d=\\lfloor\\varepsilon k\\rfloor+1\\) and \\(p=2d/k\\). The condition\n\\(k\\ge1/(5\\varepsilon\\rho)\\), with \\(\\rho\\le1/20\\), gives\n\\(\\varepsilon k\\ge4\\), so \\(d\\le\\ell\\) and\n\n\\[\n2\\varepsilon<p\\le\\frac52\\varepsilon.\n\\]\n\nSince \\(\\varepsilon\\le1/4\\), this implies\n\n\\[\n-\\log(1-p)\\le\\frac{p}{1-p}\\le\\frac{20}{3}\\varepsilon,\n\\]\n\nand hence\n\n\\[\nn\\ge\n\\frac{3}{20\\varepsilon}\\log\\frac1{2\\delta}.\n\\]\n\nTherefore the fixed-uniform-distribution sample complexity necessarily has confidence dependence. What the supplied evidence supports is, up to constants in the stated lower-bound regime,\n\n\\[\n\\Theta\\!\\left(\n\\max\\left\\{\n\\frac1{\\varepsilon\\rho},\n\\frac1\\varepsilon\\log\\frac1\\delta\n\\right\\}\n\\right),\n\\]\n\nalthough the confidence lower bound above was not included in the submitted proof.\n\nAccordingly, the claimed \\(\\Theta(1/(\\varepsilon\\rho))\\) conclusion is correct only under an additional condition such as\n\n\\[\n\\log(1/\\delta)=O(1/\\rho),\n\\]\n\nin particular when \\(\\delta\\) and \\(\\rho\\) are treated as fixed constants. No such qualification appears in the exact declared conclusion.\n\n### 5. Scope of the logarithmic-\\(k\\) discussion\n\nThe fixed-uniform-\\(D\\) upper bound does establish that increasing \\(k\\) alone does not create a \\(\\log k\\) factor for this particular restricted experiment. It does **not**, by itself, rule out greater hardness for the same class under a nonuniform adversarial distribution. The stated worst-case corollary\n\n\\[\nn_{\\mathrm{rep}}(k,\\varepsilon,\\delta,\\rho)\n\\ge\\frac1{120\\varepsilon\\rho}\n\\]\n\nis valid for odd \\(k\\) in the stated regime, but it is only a lower bound and does not upper-bound the unrestricted worst-case complexity of \\(H_k\\).\n",
+            "record": {
+              "schemaVersion": 2,
+              "judgmentKind": "primary",
+              "problemId": "replicable-pac-sample-complexity",
+              "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+              "problemLedgerDigest": "sha256:59e95bedfc06795891eb39aadfa5e86f60a4a42c424fdf6f47dbcaba94f508dc",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v2",
+                "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+                  "ledgerPosition": 1
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "replicable-pac-sample-complexity/one-coordinate-half-interval-matching-bound",
+                  "status": "invalid",
+                  "premiseStatus": "not-required",
+                  "summary": "The supplied proofs establish the numbered proper upper bound and the randomized, possibly improper lower bound under fixed uniform D. However, the declared claim additionally concludes, without qualification, that throughout 0<δ,ρ≤1/20 the restricted sample complexity is Θ(1/(ερ)). This is false when δ varies: accuracy itself requires Ω((1/ε)log(1/δ)) samples. The supported matching characterization is Θ(max{(1/ε)log(1/δ),1/(ερ)}) up to constants in the stated regime, or Θ(1/(ερ)) only with an added condition such as log(1/δ)=O(1/ρ), including fixed constant δ and ρ.",
+                  "scopeQualifications": [
+                    "The half-interval geometry, version-space upper-bound analysis, and symmetric-coupling lower-bound proof are valid.",
+                    "The upper bound is proper and fixed-uniform-distribution restricted.",
+                    "The lower bound applies to randomized, computationally unbounded, possibly improper learners and proves n≥1/(120ερ) under the stated restrictions.",
+                    "The worst-case corollary n_rep≥1/(120ερ) is valid for odd k in the stated regime because a worst-case learner must handle uniform D.",
+                    "The restricted upper bound shows no log k factor for this fixed-uniform experiment, but does not upper-bound the class's unrestricted worst-case complexity under nonuniform distributions.",
+                    "The coordinatewise tensorization discussion is explicitly heuristic and not a theorem for the original i.i.d. multidimensional construction."
+                  ],
+                  "evidenceIssues": [
+                    "The unqualified Θ(1/(ερ)) conclusion omits necessary confidence dependence. For two targets with disagreement p>2ε, the event that no sample hits their disagreement region has probability (1-p)^n; conditioned on it, at least one target fails with probability at least 1/2. Thus accuracy requires n≥log(1/(2δ))/(-log(1-p)).",
+                    "In the stated regime one can choose p between 2ε and (5/2)ε, yielding n≥(3/(20ε))log(1/(2δ)). Hence arbitrarily small allowed δ decisively contradicts a uniform Θ(1/(ερ)) characterization.",
+                    "No allowed dependency evidence was supplied or needed; the decisive defect and the valid subresults are established within the bounded report."
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "replicable-pac-sample-complexity/one-coordinate-half-interval-matching-bound",
+                  "stance": "refutes",
+                  "summary": "The supplied proofs establish the numbered proper upper bound and the randomized, possibly improper lower bound under fixed uniform D. However, the declared claim additionally concludes, without qualification, that throughout 0<δ,ρ≤1/20 the restricted sample complexity is Θ(1/(ερ)). This is false when δ varies: accuracy itself requires Ω((1/ε)log(1/δ)) samples. The supported matching characterization is Θ(max{(1/ε)log(1/δ),1/(ερ)}) up to constants in the stated regime, or Θ(1/(ερ)) only with an added condition such as log(1/δ)=O(1/ρ), including fixed constant δ and ρ.",
+                  "subjectTransactionIds": [
+                    "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:5496d13dce81230486e96312d06b003e986388406622bb3a047c6e3764a279fa",
+              "reportDigest": "sha256:f65e18ae9915318231eedf96e05c75258015f3a02a3d1103d18c6b4336909223",
+              "judgmentId": "sha256:a06cea63b766d42b01a8afb4491694a389bb02ebe65928ab6be20631b46292f5"
+            }
+          }
+        ],
+        "runs": [
+          {
+            "id": "4177533d38b43fbdc77787fac286b4cdc12066af62ed66e9fb635b2f3e06f036",
+            "ordinal": 1,
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "2694677df8e3c2de3a3e8deffe712f3dcb9f3bb6",
+            "runDigest": "sha256:4177533d38b43fbdc77787fac286b4cdc12066af62ed66e9fb635b2f3e06f036",
+            "baseRun": null,
+            "runKind": "knowledge-build",
+            "inputs": {
+              "schemaVersion": 1,
+              "projectionSpecDigest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+              "judgmentIds": [
+                "sha256:a06cea63b766d42b01a8afb4491694a389bb02ebe65928ab6be20631b46292f5"
+              ],
+              "judgmentSetDigest": "sha256:4220ae50f72d537cc6a3d76cc272338c4749a3c8e4d94db8aaa7a86f8196b626",
+              "baseStateRun": null,
+              "laneId": "sha256:ec3d1b34b6d2725786fb54f0d3fa1f3ddd06306b0b791d2958ea39710c0b43c7",
+              "problemId": "replicable-pac-sample-complexity",
+              "conflictIds": [],
+              "builderSpecDigest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb",
+              "buildToken": "sha256:24f4fca61ab61b93ace0c57bde9ab018a4a8261b780342b32eccab3cc35a9290"
+            },
+            "judgeSpec": {
+              "id": "openrouter-hierarchical-research-builder-v2",
+              "digest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb"
+            },
+            "runner": {
+              "implementation": "openrouter-hierarchical-research-builder-v2",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0,
+            "selection": {
+              "selectedNodeIds": [
+                "root",
+                "thread:root/unstructured-search"
+              ],
+              "rationale": "Nodes changed by the accepted validity batch."
+            },
+            "normalizations": [],
+            "delta": {
+              "schemaVersion": 1,
+              "operations": [],
+              "contributions": []
+            },
+            "state": {
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "program",
+                  "title": "Canonical problem",
+                  "summary": "Resolve the canonical problem.",
+                  "status": "active",
+                  "contentMarkdown": "## Objective\n\nResolve the canonical problem.\n\n## Local credit context\n\nRoot program.",
+                  "subjects": [],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:4bc4e85d0ca6e4224902591c71cf9cb813718dfe5961d8be774384d474797c99"
+                },
+                "thread:root/unstructured-search": {
+                  "id": "thread:root/unstructured-search",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Unstructured search and overhead",
+                  "summary": "Future work not yet assigned to a more specific research thread.",
+                  "status": "active",
+                  "contentMarkdown": "Future work not yet assigned to a more specific research thread.\n\n**Thread kind:** unstructured\n\n**Expected local exposure:** 1\n\n**Conditions:** none",
+                  "subjects": [],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+                }
+              },
+              "stateDigest": "sha256:3a21da533b3a146d6b920a43378899c259cbd5bb207d838ab7eb436ead6c79bd"
+            },
+            "revisionIds": [],
+            "addedRevisionIds": [],
+            "changedNodeIds": [
+              "root",
+              "thread:root/unstructured-search"
+            ],
+            "reportDigest": "sha256:3a21da533b3a146d6b920a43378899c259cbd5bb207d838ab7eb436ead6c79bd",
+            "revisionSemantics": "neutral-knowledge"
+          }
+        ],
+        "revisions": [],
+        "reports": [],
+        "latestRunId": "4177533d38b43fbdc77787fac286b4cdc12066af62ed66e9fb635b2f3e06f036"
+      }
+    },
+    {
       "id": "sha256:f37d8825b854e9baea997768f82799d523ae407bb74e0ce65780cea015eac1ca",
       "problemId": "replicable-pac-sample-complexity",
       "label": "openrouter-research-program-builder-v2",
@@ -58837,6 +59048,41 @@
     {
       "id": "openrouter-research-credit-v2@sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
       "problemId": "multiway-cut-ckr-gap",
+      "label": "openrouter-research-credit-v2",
+      "projectionSpec": {
+        "id": "openrouter-research-credit-v2",
+        "description": "A common-horizon two-term hierarchical credit overlay over the default batched research-program projection.",
+        "digest": "sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
+        "engine": "overlay-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [
+          {
+            "name": "research",
+            "projectionId": "openrouter-research-v1",
+            "artifactRole": "research-program-state"
+          }
+        ],
+        "scheduling": {
+          "minimumIntervalSeconds": 3600
+        },
+        "runner": {
+          "implementation": "openrouter-hierarchical-research-credit-v2",
+          "spec": "protocol/judges/openrouter-hierarchical-research-credit-v2.json"
+        }
+      },
+      "researchProjectionIds": [
+        "openrouter-research-v1"
+      ],
+      "latestRunDigest": null,
+      "selectionStatus": "pending",
+      "runCount": 0,
+      "runs": []
+    },
+    {
+      "id": "openrouter-research-credit-v2@sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
+      "problemId": "replicable-pac-sample-complexity",
       "label": "openrouter-research-credit-v2",
       "projectionSpec": {
         "id": "openrouter-research-credit-v2",
