@@ -11,6 +11,7 @@ from math_flow.judges import load_source
 from math_flow.research_projection import (
     load_research_credit_refresh_bundle,
     load_research_update_bundle,
+    replay_research_protocol,
     run_research_credit_refresh_bundle,
     run_research_update_bundle,
 )
@@ -20,6 +21,12 @@ from math_flow.validity import research_state_dependency_context
 ROOT = Path(__file__).resolve().parents[1]
 PROBLEM = "bssc-sum-capacity"
 TX = "d638c346212db3e75f6a53dcebcfd09f55125852"
+TRANSACTIONS = [
+    TX,
+    "7e7626cbff7270572d51a8fda719154ab602907f",
+    "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+    "f236017c62c67ce4218c1f81ea34134f0954b556",
+]
 
 
 def response(content: str, index: int) -> dict[str, object]:
@@ -33,7 +40,231 @@ def response(content: str, index: int) -> dict[str, object]:
     }
 
 
+def accepted_replay_response(
+    request: dict[str, object],
+    index: int,
+    transaction_id: str = TX,
+    credit_transaction_ids: list[str] | None = None,
+) -> dict[str, object]:
+    schema = request.get("response_format", {}).get("json_schema", {}).get("schema")
+    if schema is None:
+        return response(
+            "# Rigorous audit\n\nEvery declared obligation is established in this fixture.",
+            index,
+        )
+    properties = schema["properties"]
+    if "assessments" in properties:
+        claim_keys = properties["assessments"]["items"]["properties"]["claimKey"][
+            "enum"
+        ]
+        value = {
+            "assessments": [
+                {
+                    "claimKey": claim_key,
+                    "status": "valid",
+                    "premiseStatus": "not-required",
+                    "summary": "The fixture accepts the exact declared claim.",
+                    "scopeQualifications": [],
+                    "evidenceIssues": [],
+                    "evidenceTransactionIds": [],
+                }
+                for claim_key in claim_keys
+            ]
+        }
+    elif "contribution" in properties:
+        claim_keys = properties["contribution"]["properties"]["claimKeys"]["items"][
+            "enum"
+        ]
+        suffix = transaction_id[:12]
+        value = {
+            "schemaVersion": 1,
+            "operations": [
+                {
+                    "entityKind": "thread",
+                    "entityId": f"root/fixture-line-{suffix}",
+                    "baseDigest": None,
+                    "value": {
+                        "id": f"root/fixture-line-{suffix}",
+                        "programId": "root",
+                        "title": "Fixture research line",
+                        "summary": "Track the accepted fixture result.",
+                        "kind": "research",
+                        "status": "active",
+                        "expectedExposure": "2",
+                        "conditions": [],
+                        "sourceTransactionIds": [transaction_id],
+                    },
+                },
+                {
+                    "entityKind": "item",
+                    "entityId": f"root/fixture-result-{suffix}",
+                    "baseDigest": None,
+                    "value": {
+                        "id": f"root/fixture-result-{suffix}",
+                        "programId": "root",
+                        "type": "result",
+                        "title": "Accepted fixture result",
+                        "summary": "Represent every accepted claim in one durable result.",
+                        "claimRefs": [
+                            {
+                                "transactionId": transaction_id,
+                                "claimKey": claim_key,
+                            }
+                            for claim_key in claim_keys
+                        ],
+                        "sourceTransactionIds": [transaction_id],
+                        "dependencyItemIds": [],
+                    },
+                },
+            ],
+            "contribution": {
+                "claimKeys": claim_keys,
+                "directProgramId": "root",
+                "directThreadIds": [f"root/fixture-line-{suffix}"],
+                "itemIds": [f"root/fixture-result-{suffix}"],
+            },
+        }
+    else:
+        credit_ids = credit_transaction_ids or [transaction_id]
+        value = {
+            "schemaVersion": 1,
+            "evaluations": [
+                {
+                    "programId": "root",
+                    "unattributedWork": "0",
+                    "rationale": "The fixture assigns all local causal work.",
+                    "children": [
+                        {
+                            "kind": "contribution",
+                            "id": credit_id,
+                            "counterfactual": "Remove the accepted fixture result.",
+                            "directEffects": [
+                                {
+                                    "threadId": f"root/fixture-line-{credit_id[:12]}",
+                                    "withoutWork": "3",
+                                    "withWork": "1",
+                                    "rationale": "The result saves two units on its line.",
+                                }
+                            ],
+                            "obviatedEffects": [],
+                            "confidence": "medium",
+                            "evidenceRefs": [credit_id],
+                        }
+                        for credit_id in credit_ids
+                    ],
+                }
+            ],
+        }
+    return response(json.dumps(value), index)
+
+
 class ResearchProjectionTests(unittest.TestCase):
+    def test_full_bssc_fixture_replay_uses_seventeen_calls(self) -> None:
+        calls = 0
+
+        def fake_transport(request: dict[str, object]) -> dict[str, object]:
+            nonlocal calls
+            calls += 1
+            if calls == 17:
+                return accepted_replay_response(
+                    request,
+                    calls,
+                    TRANSACTIONS[-1],
+                    credit_transaction_ids=TRANSACTIONS,
+                )
+            transaction_id = TRANSACTIONS[(calls - 1) // 4]
+            return accepted_replay_response(request, calls, transaction_id)
+
+        with tempfile.TemporaryDirectory() as directory:
+            summary = replay_research_protocol(
+                ROOT,
+                PROBLEM,
+                ROOT / "protocol/judges/openrouter-validity-judgment-v2.json",
+                ROOT / "protocol/judges/openrouter-hierarchical-research-v1.json",
+                Path(directory) / "replay",
+                transport=fake_transport,
+            )
+
+        self.assertEqual(calls, 17)
+        self.assertEqual(summary["contributionCount"], 4)
+        self.assertEqual(summary["acceptedContributionCount"], 4)
+        self.assertEqual(summary["providerCallCount"], 17)
+        self.assertEqual(summary["providerCallsPerformed"], 17)
+        self.assertEqual(summary["providerCallsReusedFromCheckpoint"], 0)
+        self.assertEqual(summary["providerCallsCoveredByReusedBundles"], 0)
+
+    def test_replay_resumes_bundles_and_request_checkpoints(self) -> None:
+        first_calls = 0
+
+        def failing_transport(request: dict[str, object]) -> dict[str, object]:
+            nonlocal first_calls
+            first_calls += 1
+            if first_calls == 4:
+                return response(
+                    json.dumps({"schemaVersion": 1, "evaluations": []}),
+                    first_calls,
+                )
+            return accepted_replay_response(request, first_calls)
+
+        resumed_calls = 0
+
+        def resumed_transport(request: dict[str, object]) -> dict[str, object]:
+            nonlocal resumed_calls
+            resumed_calls += 1
+            return accepted_replay_response(request, resumed_calls + 10)
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "replay"
+            with self.assertRaises(MathFlowError):
+                replay_research_protocol(
+                    ROOT,
+                    PROBLEM,
+                    ROOT / "protocol/judges/openrouter-validity-judgment-v2.json",
+                    ROOT
+                    / "protocol/judges/openrouter-hierarchical-research-v1.json",
+                    output_dir,
+                    head=TX,
+                    transport=failing_transport,
+                )
+            self.assertEqual(first_calls, 4)
+            self.assertEqual(len(list((output_dir / "checkpoints").glob("*.json"))), 3)
+
+            summary = replay_research_protocol(
+                ROOT,
+                PROBLEM,
+                ROOT / "protocol/judges/openrouter-validity-judgment-v2.json",
+                ROOT / "protocol/judges/openrouter-hierarchical-research-v1.json",
+                output_dir,
+                head=TX,
+                transport=resumed_transport,
+                resume=True,
+            )
+            self.assertEqual(resumed_calls, 2)
+            self.assertEqual(summary["providerCallCount"], 5)
+            self.assertEqual(summary["logicalProviderCallCount"], 5)
+            self.assertEqual(summary["providerCallsPerformed"], 2)
+            self.assertEqual(summary["providerCallsReusedFromCheckpoint"], 1)
+            self.assertEqual(summary["providerCallsCoveredByReusedBundles"], 2)
+            self.assertEqual(summary["reusedBundleCount"], 1)
+
+            def unexpected_transport(_: dict[str, object]) -> dict[str, object]:
+                raise AssertionError("a complete replay should not call the provider")
+
+            fully_reused = replay_research_protocol(
+                ROOT,
+                PROBLEM,
+                ROOT / "protocol/judges/openrouter-validity-judgment-v2.json",
+                ROOT / "protocol/judges/openrouter-hierarchical-research-v1.json",
+                output_dir,
+                head=TX,
+                transport=unexpected_transport,
+                resume=True,
+            )
+            self.assertEqual(fully_reused["providerCallsPerformed"], 0)
+            self.assertEqual(fully_reused["providerCallsReusedFromCheckpoint"], 0)
+            self.assertEqual(fully_reused["providerCallsCoveredByReusedBundles"], 5)
+            self.assertEqual(fully_reused["reusedBundleCount"], 3)
+
     def test_validity_to_program_state_and_credit_bundle(self) -> None:
         calls: list[dict[str, object]] = []
 

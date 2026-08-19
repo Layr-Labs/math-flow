@@ -146,6 +146,15 @@ claim.
 The total for a full replay is `2N + 2A + 1` calls. If all four canonical BSSC
 submissions are accepted, the replay uses 17 provider calls.
 
+The replay runner checkpoints each structurally usable provider response by the
+exact request digest. A failed extractor, organizer reducer, or credit reducer
+invalidates only the response that caused the failure; earlier stage responses
+remain reusable. Completed validity, research-update, and retrospective-credit
+bundles may also be reused after their manifests, artifacts, judge identities,
+ledger positions, and serialized state dependencies are reverified. Therefore
+`--resume` pays only for missing or invalidated calls while preserving the same
+logical `2N + 2A + 1` protocol workload.
+
 ## Deliberate simplifications
 
 The v1 path does not carry forward the legacy knowledge/credit machinery merely
@@ -188,4 +197,10 @@ Replay a complete canonical ledger and perform the final refresh:
 
 ```text
 math-flow research-replay --problem PROBLEM --validity-judge protocol/judges/openrouter-validity-judgment-v2.json --research-judge protocol/judges/openrouter-hierarchical-research-v1.json --output-dir OUTPUT
+```
+
+Resume the same replay after a provider, extraction, or reduction failure:
+
+```text
+math-flow research-replay --problem PROBLEM --validity-judge protocol/judges/openrouter-validity-judgment-v2.json --research-judge protocol/judges/openrouter-hierarchical-research-v1.json --output-dir OUTPUT --resume
 ```

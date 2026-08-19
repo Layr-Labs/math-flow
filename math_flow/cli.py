@@ -409,6 +409,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     research_replay_parser.add_argument("--head", default="HEAD")
     research_replay_parser.add_argument("--output-dir", required=True, type=Path)
+    research_replay_parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="reuse verified completed bundles and request-digest provider checkpoints",
+    )
 
     judgment_plan_parser = commands.add_parser(
         "judgment-plan",
@@ -935,6 +940,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.research_judge,
                 args.output_dir,
                 head=args.head,
+                resume=args.resume,
             )
         elif args.command == "judgment-plan":
             result = plan_primary_judgment_coverage(

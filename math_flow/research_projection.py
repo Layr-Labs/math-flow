@@ -10,7 +10,12 @@ from .artifacts import (
     verify_bundle,
 )
 from .errors import MathFlowError
-from .hierarchical import _provider_run, _request, _structured_content
+from .hierarchical import (
+    _assistant_content,
+    _provider_run,
+    _request,
+    _structured_content,
+)
 from .judges import artifact_evidence, load_judge_spec, load_source
 from .judgments import load_judgment_bundle, run_primary_judgment_bundle
 from .openrouter import OpenRouterTransport, send_chat_completion
@@ -32,6 +37,84 @@ WORK_PATTERN = r"^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$"
 DIGEST_PATTERN = r"^sha256:[0-9a-f]{64}$"
 GIT_SHA_PATTERN = r"^[0-9a-f]{40}$"
 IDENTIFIER_PATTERN = r"^[a-z0-9][a-z0-9/_-]*$"
+
+
+class _ReplayCheckpointTransport:
+    """Persist validated provider responses so an interrupted replay can resume."""
+
+    def __init__(self, checkpoint_dir: Path, transport: OpenRouterTransport):
+        self.checkpoint_dir = checkpoint_dir.resolve()
+        self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        self.transport = transport
+        self.performed_calls = 0
+        self.reused_calls = 0
+        self._last_checkpoint: Path | None = None
+
+    def begin_stage(self) -> None:
+        self._last_checkpoint = None
+
+    def invalidate_last(self) -> None:
+        if self._last_checkpoint is not None:
+            self._last_checkpoint.unlink(missing_ok=True)
+            self._last_checkpoint = None
+
+    @staticmethod
+    def _validate_response(
+        request: dict[str, object], response: object
+    ) -> dict[str, object]:
+        if not isinstance(response, dict):
+            raise MathFlowError("OpenRouter replay response must be a JSON object")
+        try:
+            finish_reason = response["choices"][0].get("finish_reason")
+        except (KeyError, IndexError, TypeError, AttributeError):
+            finish_reason = None
+        if finish_reason == "length":
+            raise MathFlowError("OpenRouter replay response was truncated")
+        _assistant_content(response)
+        response_format = request.get("response_format")
+        if (
+            isinstance(response_format, dict)
+            and response_format.get("type") == "json_schema"
+        ):
+            _structured_content(response, "replay checkpoint")
+        return response
+
+    def __call__(self, request: dict[str, object]) -> dict[str, object]:
+        request_digest = f"sha256:{sha256_json(request)}"
+        checkpoint = self.checkpoint_dir / f"{request_digest.removeprefix('sha256:')}.json"
+        if checkpoint.is_file():
+            try:
+                cached = json.loads(checkpoint.read_text(encoding="utf-8"))
+                if (
+                    not isinstance(cached, dict)
+                    or set(cached) != {"schemaVersion", "requestDigest", "response"}
+                    or cached.get("schemaVersion") != 1
+                    or cached.get("requestDigest") != request_digest
+                ):
+                    raise MathFlowError("provider checkpoint envelope is invalid")
+                response = self._validate_response(request, cached.get("response"))
+            except (OSError, json.JSONDecodeError, MathFlowError):
+                checkpoint.unlink(missing_ok=True)
+            else:
+                self.reused_calls += 1
+                self._last_checkpoint = checkpoint
+                return response
+
+        response = self._validate_response(request, self.transport(request))
+        payload = {
+            "schemaVersion": 1,
+            "requestDigest": request_digest,
+            "response": response,
+        }
+        temporary = checkpoint.with_suffix(".tmp")
+        temporary.write_text(
+            json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        temporary.replace(checkpoint)
+        self.performed_calls += 1
+        self._last_checkpoint = checkpoint
+        return response
 
 
 def _credit_policy(root: Path, spec: dict[str, object]) -> str:
@@ -960,6 +1043,168 @@ def run_research_credit_refresh_bundle(
     return bundle.finalize(envelope)
 
 
+def _judge_reference(spec: dict[str, object]) -> dict[str, object]:
+    return {"id": spec["id"], "digest": f"sha256:{sha256_json(spec)}"}
+
+
+def _resume_bundle_exists(bundle_dir: Path, label: str) -> bool:
+    if not bundle_dir.exists():
+        return False
+    if not bundle_dir.is_dir():
+        raise MathFlowError(f"research replay {label} path is not a directory: {bundle_dir}")
+    if not any(bundle_dir.iterdir()):
+        return False
+    if not (bundle_dir / "run.json").is_file():
+        raise MathFlowError(
+            f"research replay {label} bundle is incomplete and cannot be resumed: {bundle_dir}"
+        )
+    return True
+
+
+def _load_replay_validity_bundle(
+    bundle_dir: Path,
+    *,
+    problem: str,
+    transaction_id: str,
+    ordinal: int,
+    judge_reference: dict[str, object],
+    expected_context_run_digest: str | None,
+) -> tuple[dict[str, object], dict[str, object], str]:
+    _, verified_digest = verify_bundle(bundle_dir)
+    manifest, judgment, run_digest = load_judgment_bundle(bundle_dir)
+    inputs = manifest.get("inputs")
+    knowledge_context = (
+        inputs.get("knowledgeContext") if isinstance(inputs, dict) else None
+    )
+    dependency_transaction_ids = (
+        inputs.get("dependencyTransactionIds") if isinstance(inputs, dict) else None
+    )
+    expected_subject = {
+        "kind": "transaction",
+        "id": transaction_id,
+        "ledgerPosition": ordinal,
+    }
+    if (
+        run_digest != verified_digest
+        or manifest.get("problemId") != problem
+        or manifest.get("ledgerHead") != transaction_id
+        or manifest.get("judgeSpec") != judge_reference
+        or judgment.get("subjects") != [expected_subject]
+        or not isinstance(inputs, dict)
+        or inputs.get("subjectTransactionIds") != [transaction_id]
+        or not isinstance(dependency_transaction_ids, list)
+        or any(not isinstance(item, str) for item in dependency_transaction_ids)
+    ):
+        raise MathFlowError(
+            f"research replay validity bundle does not match transaction: {transaction_id}"
+        )
+    if expected_context_run_digest is None or not dependency_transaction_ids:
+        if knowledge_context is not None:
+            raise MathFlowError(
+                "research replay validity bundle has unexpected prior-state context"
+            )
+    elif (
+        not isinstance(knowledge_context, dict)
+        or knowledge_context.get("sourceKind") != "research-program-state"
+        or knowledge_context.get("runDigest") != expected_context_run_digest
+    ):
+        raise MathFlowError(
+            "research replay validity bundle does not use the current serialized state"
+        )
+    return manifest, judgment, run_digest
+
+
+def _load_replay_research_bundle(
+    bundle_dir: Path,
+    *,
+    problem: str,
+    transaction_id: str,
+    accepted_claim_keys: list[str],
+    validity_run_digest: str,
+    judge_reference: dict[str, object],
+    expected_base_run_digest: str | None,
+    expected_base_state_digest: str,
+) -> tuple[dict[str, object], dict[str, object], dict[str, object], str]:
+    manifest, state, credit, run_digest = load_research_update_bundle(bundle_dir)
+    try:
+        update_input = json.loads(
+            read_verified_artifact(bundle_dir, manifest, "research-update-input")
+        )
+    except json.JSONDecodeError as exc:
+        raise MathFlowError("research replay update input is invalid JSON") from exc
+    contribution = state.get("contributions", {}).get(transaction_id)
+    inputs = manifest.get("inputs")
+    update_claim_keys = update_input.get("acceptedClaimKeys")
+    contribution_claim_keys = (
+        contribution.get("claimKeys") if isinstance(contribution, dict) else None
+    )
+    if (
+        manifest.get("problemId") != problem
+        or manifest.get("ledgerHead") != transaction_id
+        or manifest.get("judgeSpec") != judge_reference
+        or manifest.get("baseRun") != expected_base_run_digest
+        or not isinstance(inputs, dict)
+        or inputs.get("subjectTransactionId") != transaction_id
+        or inputs.get("validityRunDigest") != validity_run_digest
+        or state.get("baseStateDigest") != expected_base_state_digest
+        or not isinstance(update_input, dict)
+        or update_input.get("subjectTransactionId") != transaction_id
+        or update_input.get("validityRunDigest") != validity_run_digest
+        or update_input.get("baseProgramStateDigest") != expected_base_state_digest
+        or not isinstance(update_claim_keys, list)
+        or any(not isinstance(item, str) for item in update_claim_keys)
+        or set(update_claim_keys) != set(accepted_claim_keys)
+        or not isinstance(contribution, dict)
+        or not isinstance(contribution_claim_keys, list)
+        or any(not isinstance(item, str) for item in contribution_claim_keys)
+        or set(contribution_claim_keys) != set(accepted_claim_keys)
+    ):
+        raise MathFlowError(
+            f"research replay update bundle does not match transaction: {transaction_id}"
+        )
+    return manifest, state, credit, run_digest
+
+
+def _load_replay_refresh_bundle(
+    bundle_dir: Path,
+    *,
+    problem: str,
+    judge_reference: dict[str, object],
+    latest_run_digest: str,
+    history_run_digests: list[str],
+    latest_state_digest: str,
+) -> tuple[dict[str, object], dict[str, object], dict[str, object], str]:
+    manifest, state, credit, run_digest = load_research_credit_refresh_bundle(
+        bundle_dir
+    )
+    try:
+        refresh_input = json.loads(
+            read_verified_artifact(
+                bundle_dir, manifest, "research-credit-refresh-input"
+            )
+        )
+    except json.JSONDecodeError as exc:
+        raise MathFlowError("research replay refresh input is invalid JSON") from exc
+    inputs = manifest.get("inputs")
+    if (
+        manifest.get("problemId") != problem
+        or manifest.get("judgeSpec") != judge_reference
+        or manifest.get("baseRun") != latest_run_digest
+        or not isinstance(inputs, dict)
+        or inputs.get("latestRunDigest") != latest_run_digest
+        or inputs.get("historyRunDigests") != history_run_digests
+        or not isinstance(refresh_input, dict)
+        or refresh_input.get("latestRunDigest") != latest_run_digest
+        or refresh_input.get("historyRunDigests") != history_run_digests
+        or refresh_input.get("programStateDigest") != latest_state_digest
+        or state.get("stateDigest") != latest_state_digest
+    ):
+        raise MathFlowError(
+            "research replay retrospective credit bundle does not match current history"
+        )
+    return manifest, state, credit, run_digest
+
+
 def replay_research_protocol(
     root: Path,
     problem: str,
@@ -968,35 +1213,74 @@ def replay_research_protocol(
     output_dir: Path,
     head: str = "HEAD",
     transport: OpenRouterTransport | None = None,
+    resume: bool = False,
 ) -> dict[str, object]:
     root = root.resolve()
     source = load_source(root, problem, head)
+    validity_spec = load_judge_spec(validity_judge_path)
+    if validity_spec.get("implementation") != "openrouter-validity-judgment-v2":
+        raise MathFlowError("research replay requires the validity judgment v2 spec")
+    research_spec = load_judge_spec(research_judge_path)
+    if research_spec.get("implementation") != "openrouter-hierarchical-research-v1":
+        raise MathFlowError("research replay requires the hierarchical research v1 spec")
+    validity_judge_reference = _judge_reference(validity_spec)
+    research_judge_reference = _judge_reference(research_spec)
     output_dir = output_dir.resolve()
-    if output_dir.exists() and any(output_dir.iterdir()):
+    if output_dir.exists() and any(output_dir.iterdir()) and not resume:
         raise MathFlowError(f"research replay output directory is not empty: {output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
+    checkpoint_transport = _ReplayCheckpointTransport(
+        output_dir / "checkpoints", transport or send_chat_completion
+    )
     history_runs: list[Path] = []
+    history_run_digests: list[str] = []
     base_run: Path | None = None
+    base_run_digest: str | None = None
+    base_state = empty_research_program_state(problem)
     entries: list[dict[str, object]] = []
-    provider_call_count = 0
+    reused_bundle_count = 0
+    provider_calls_covered_by_reused_bundles = 0
     for transaction in source["transactions"]:
         ordinal = int(transaction["ordinal"])
         transaction_id = str(transaction["transactionId"])
         entry_dir = output_dir / f"{ordinal:04d}-{transaction_id[:12]}"
         validity_dir = entry_dir / "validity"
         research_dir = entry_dir / "research"
-        run_primary_judgment_bundle(
-            root,
-            problem,
-            validity_judge_path,
-            transaction_id,
-            [transaction_id],
-            validity_dir,
-            transport=transport,
-            research_state_run=base_run,
-        )
-        provider_call_count += 2
-        _, judgment, validity_run_digest = load_judgment_bundle(validity_dir)
+        if resume and _resume_bundle_exists(validity_dir, "validity"):
+            _, judgment, validity_run_digest = _load_replay_validity_bundle(
+                validity_dir,
+                problem=problem,
+                transaction_id=transaction_id,
+                ordinal=ordinal,
+                judge_reference=validity_judge_reference,
+                expected_context_run_digest=base_run_digest,
+            )
+            reused_bundle_count += 1
+            provider_calls_covered_by_reused_bundles += 2
+        else:
+            checkpoint_transport.begin_stage()
+            try:
+                run_primary_judgment_bundle(
+                    root,
+                    problem,
+                    validity_judge_path,
+                    transaction_id,
+                    [transaction_id],
+                    validity_dir,
+                    transport=checkpoint_transport,
+                    research_state_run=base_run,
+                )
+                _, judgment, validity_run_digest = _load_replay_validity_bundle(
+                    validity_dir,
+                    problem=problem,
+                    transaction_id=transaction_id,
+                    ordinal=ordinal,
+                    judge_reference=validity_judge_reference,
+                    expected_context_run_digest=base_run_digest,
+                )
+            except Exception:
+                checkpoint_transport.invalidate_last()
+                raise
         accepted_claim_keys = [
             str(assessment["claimKey"])
             for assessment in judgment["assessments"]
@@ -1011,24 +1295,58 @@ def replay_research_protocol(
             "acceptedClaimKeys": accepted_claim_keys,
         }
         if not accepted_claim_keys:
+            if _resume_bundle_exists(research_dir, "research update"):
+                raise MathFlowError(
+                    "research replay contains a state transition for a submission with no valid claims"
+                )
             entry["researchRun"] = None
             entry["status"] = "excluded-no-valid-claims"
             entries.append(entry)
             continue
-        run_research_update_bundle(
-            root,
-            problem,
-            research_judge_path,
-            transaction_id,
-            validity_dir,
-            research_dir,
-            base_run=base_run,
-            transport=transport,
-        )
-        provider_call_count += 2
-        _, state, _, research_run_digest = load_research_update_bundle(research_dir)
+        if resume and _resume_bundle_exists(research_dir, "research update"):
+            _, state, _, research_run_digest = _load_replay_research_bundle(
+                research_dir,
+                problem=problem,
+                transaction_id=transaction_id,
+                accepted_claim_keys=accepted_claim_keys,
+                validity_run_digest=validity_run_digest,
+                judge_reference=research_judge_reference,
+                expected_base_run_digest=base_run_digest,
+                expected_base_state_digest=str(base_state["stateDigest"]),
+            )
+            reused_bundle_count += 1
+            provider_calls_covered_by_reused_bundles += 2
+        else:
+            checkpoint_transport.begin_stage()
+            try:
+                run_research_update_bundle(
+                    root,
+                    problem,
+                    research_judge_path,
+                    transaction_id,
+                    validity_dir,
+                    research_dir,
+                    base_run=base_run,
+                    transport=checkpoint_transport,
+                )
+                _, state, _, research_run_digest = _load_replay_research_bundle(
+                    research_dir,
+                    problem=problem,
+                    transaction_id=transaction_id,
+                    accepted_claim_keys=accepted_claim_keys,
+                    validity_run_digest=validity_run_digest,
+                    judge_reference=research_judge_reference,
+                    expected_base_run_digest=base_run_digest,
+                    expected_base_state_digest=str(base_state["stateDigest"]),
+                )
+            except Exception:
+                checkpoint_transport.invalidate_last()
+                raise
         base_run = research_dir
+        base_run_digest = research_run_digest
+        base_state = state
         history_runs.append(research_dir)
+        history_run_digests.append(research_run_digest)
         entry.update(
             {
                 "researchRun": str(research_dir),
@@ -1043,17 +1361,52 @@ def replay_research_protocol(
     refresh_digest: str | None = None
     if base_run is not None:
         refresh_dir = output_dir / "retrospective-credit"
-        run_research_credit_refresh_bundle(
-            root,
-            problem,
-            research_judge_path,
-            base_run,
-            history_runs,
-            refresh_dir,
-            transport=transport,
-        )
-        provider_call_count += 1
-        _, _, _, refresh_digest = load_research_credit_refresh_bundle(refresh_dir)
+        assert base_run_digest is not None
+        if resume and _resume_bundle_exists(refresh_dir, "retrospective credit"):
+            _, _, _, refresh_digest = _load_replay_refresh_bundle(
+                refresh_dir,
+                problem=problem,
+                judge_reference=research_judge_reference,
+                latest_run_digest=base_run_digest,
+                history_run_digests=history_run_digests,
+                latest_state_digest=str(base_state["stateDigest"]),
+            )
+            reused_bundle_count += 1
+            provider_calls_covered_by_reused_bundles += 1
+        else:
+            checkpoint_transport.begin_stage()
+            try:
+                run_research_credit_refresh_bundle(
+                    root,
+                    problem,
+                    research_judge_path,
+                    base_run,
+                    history_runs,
+                    refresh_dir,
+                    transport=checkpoint_transport,
+                )
+                _, _, _, refresh_digest = _load_replay_refresh_bundle(
+                    refresh_dir,
+                    problem=problem,
+                    judge_reference=research_judge_reference,
+                    latest_run_digest=base_run_digest,
+                    history_run_digests=history_run_digests,
+                    latest_state_digest=str(base_state["stateDigest"]),
+                )
+            except Exception:
+                checkpoint_transport.invalidate_last()
+                raise
+
+    provider_call_count = (
+        2 * len(source["transactions"]) + 2 * len(history_runs) + (1 if base_run else 0)
+    )
+    accounted_provider_calls = (
+        checkpoint_transport.performed_calls
+        + checkpoint_transport.reused_calls
+        + provider_calls_covered_by_reused_bundles
+    )
+    if accounted_provider_calls != provider_call_count:
+        raise MathFlowError("research replay provider-call accounting is inconsistent")
 
     summary = {
         "schemaVersion": 1,
@@ -1063,6 +1416,11 @@ def replay_research_protocol(
         "acceptedContributionCount": len(history_runs),
         "excludedContributionCount": len(source["transactions"]) - len(history_runs),
         "providerCallCount": provider_call_count,
+        "logicalProviderCallCount": provider_call_count,
+        "providerCallsPerformed": checkpoint_transport.performed_calls,
+        "providerCallsReusedFromCheckpoint": checkpoint_transport.reused_calls,
+        "providerCallsCoveredByReusedBundles": provider_calls_covered_by_reused_bundles,
+        "reusedBundleCount": reused_bundle_count,
         "callsPerContribution": {
             "validity": 2,
             "acceptedProgramAndImmediateCredit": 2,

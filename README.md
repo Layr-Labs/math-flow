@@ -118,6 +118,10 @@ python -m math_flow research-replay \
   --output-dir /tmp/bssc-hierarchical-replay
 ```
 
+If a provider response or downstream reducer fails, rerun the same command with
+`--resume`. The runner reverifies completed bundles and reuses exact
+request-digest checkpoints, so it does not repay successful earlier stages.
+
 The recommended revision-aware hierarchical judge uses three calls: node
 selection, an unconstrained Markdown assessment, and structured delta extraction.
 The three-stage builder is an example, not a core protocol requirement. Export an
