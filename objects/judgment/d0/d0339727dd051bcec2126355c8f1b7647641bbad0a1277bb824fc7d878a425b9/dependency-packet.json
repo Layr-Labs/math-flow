@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "problemId": "triangle-midpoints",
+  "subjectTransactionId": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+  "subjectLedgerPosition": 1,
+  "claims": [
+    {
+      "claimKey": "triangle-midpoints/affine-area-proof",
+      "statement": "# Affine area proof\n\nEach segment joining two side midpoints is parallel to the third side, so the\nmedial triangle \\(DEF\\) is similar to \\(ABC\\) with scale factor \\(1/2\\). Its area\nis therefore one quarter of the area of \\(ABC\\).\n\nThe same reasoning applies to each corner triangle: for example, \\(AE=AC/2\\) and\n\\(AF=AB/2\\), with the included angle unchanged, so \\(AEF\\) has one quarter of the\narea of \\(ABC\\). Cyclically, the other two corner triangles do as well. Hence all\nfour areas are equal.\n\n## Possible formalization\n\nAn eventual Lean artifact could express this through affine invariance or the\ndeterminant formula for oriented area.",
+      "dependencyTransactionIds": []
+    }
+  ],
+  "dependencyTransactionIds": [],
+  "knowledgeContext": null,
+  "packetDigest": "sha256:c35e5d2fc193293836184141ed9c121d8379bcb4311d9dab56d6366d22187817"
+}

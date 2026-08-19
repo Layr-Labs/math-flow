@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 2,
+  "judgmentKind": "primary",
+  "problemId": "triangle-midpoints",
+  "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+  "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "64afc12868e150370e6c56e6eeceab6b7aabe158",
+      "ledgerPosition": 1
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "triangle-midpoints/affine-area-proof",
+      "status": "valid",
+      "premiseStatus": "satisfied",
+      "summary": "The proof correctly uses the midpoint theorem to show that the medial triangle has linear scale factor 1/2 relative to ABC and hence area 1/4 of ABC. Each corner triangle likewise has two adjacent side lengths halved with the included angle unchanged, so each has area 1/4 of ABC. Therefore all four triangles have equal area.",
+      "scopeQualifications": [
+        "The conclusion is stated for a nondegenerate triangle ABC, so ordinary unsigned areas are positive and the angle/area formulas apply directly.",
+        "The proposed future Lean formalization is not part of the proof and is not required for validity."
+      ],
+      "evidenceIssues": [],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "triangle-midpoints/affine-area-proof",
+      "stance": "supports",
+      "summary": "The proof correctly uses the midpoint theorem to show that the medial triangle has linear scale factor 1/2 relative to ABC and hence area 1/4 of ABC. Each corner triangle likewise has two adjacent side lengths halved with the included angle unchanged, so each has area 1/4 of ABC. Therefore all four triangles have equal area.",
+      "subjectTransactionIds": [
+        "64afc12868e150370e6c56e6eeceab6b7aabe158"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:c35e5d2fc193293836184141ed9c121d8379bcb4311d9dab56d6366d22187817",
+  "reportDigest": "sha256:174c241a328382eb4629b7bf86ee721f9857cb4e90154bbce49c7a4f423e19f6",
+  "judgmentId": "sha256:774fd00ced19ea52ab2f61a06e803b9efc8707490ce2930cb37b8946e93ef428"
+}

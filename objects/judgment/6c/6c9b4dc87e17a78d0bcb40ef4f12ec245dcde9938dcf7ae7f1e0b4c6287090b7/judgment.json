@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 2,
+  "judgmentKind": "primary",
+  "problemId": "triangle-midpoints",
+  "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+  "problemLedgerDigest": "sha256:75c7db40f790da1105f77c5edbd76fa59e6bb335b053947ba1e8ac9dabb3b65a",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "8bcf66bbd7777ee31f637a0a1a144535feb82ba4",
+      "ledgerPosition": 3
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "triangle-midpoints/base-height-correction",
+      "status": "indeterminate",
+      "premiseStatus": "missing",
+      "summary": "The base-height correction is mathematically sound: the homothety centered at A with factor 1/2 maps BC to EF, so both the base length and the distance from A to the corresponding line scale by 1/2, yielding area(AEF)/area(ABC)=1/4. However, the broader declared claim also makes unauditable assertions about the contents of an external judge report and the continuing correctness of an original proof, midpoint lemma, and full equal-area theorem.",
+      "scopeQualifications": [
+        "The supplied argument verifies only the corrected scaling and area calculation for triangle AEF.",
+        "It does not itself establish the analogous area statements for BFD and CDE or the area of DEF.",
+        "The correction does not mathematically undermine the referenced results, but their correctness cannot be confirmed from the bounded record."
+      ],
+      "evidenceIssues": [
+        "The cited judge report with the specified SHA-256 digest was not supplied, so the alleged erroneous paragraph and its location cannot be verified.",
+        "No dependency transaction was declared or allowed.",
+        "The original affine/homothety proof, midpoint lemma, and full equal-area theorem were not supplied for audit.",
+        "Establishing the omitted cyclic and central-triangle conclusions would require adding arguments not present in the supplied contribution."
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "triangle-midpoints/base-height-correction",
+      "stance": "uncertain",
+      "summary": "The base-height correction is mathematically sound: the homothety centered at A with factor 1/2 maps BC to EF, so both the base length and the distance from A to the corresponding line scale by 1/2, yielding area(AEF)/area(ABC)=1/4. However, the broader declared claim also makes unauditable assertions about the contents of an external judge report and the continuing correctness of an original proof, midpoint lemma, and full equal-area theorem.",
+      "subjectTransactionIds": [
+        "8bcf66bbd7777ee31f637a0a1a144535feb82ba4"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:630f755df9bde32fd332f10c5dd751ffa7a190e2c321acd304ed988e8a41529f",
+  "reportDigest": "sha256:9b1e40471061c47b68e143dc796d40b028814e4cd7a9d115691d74210e6306e1",
+  "judgmentId": "sha256:75da2a8cbb5246724f7067506f6799946ccc9987192a8d13f3fe01a12b503844"
+}
