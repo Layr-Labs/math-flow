@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "problemId": "multiway-cut-ckr-gap",
+  "ledgerHead": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+  "baseStateDigest": "sha256:04f06ed793c5e2ea079bd264f832104a5bbf01991b27a87d93776a0f70fef420",
+  "rootProgramId": "root",
+  "programs": {
+    "root": {
+      "id": "root",
+      "parentId": null,
+      "title": "Canonical problem",
+      "objective": "Resolve the canonical problem.",
+      "status": "active",
+      "parentThreadIds": [],
+      "sourceTransactionIds": [],
+      "digest": "sha256:4bc4e85d0ca6e4224902591c71cf9cb813718dfe5961d8be774384d474797c99"
+    }
+  },
+  "threads": {
+    "root/unstructured-search": {
+      "id": "root/unstructured-search",
+      "programId": "root",
+      "title": "Unstructured search and overhead",
+      "summary": "Future work not yet assigned to a more specific research thread.",
+      "kind": "unstructured",
+      "status": "active",
+      "expectedExposure": "1",
+      "conditions": [],
+      "sourceTransactionIds": [],
+      "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+    }
+  },
+  "items": {
+    "root/k4-offline-verifier": {
+      "id": "root/k4-offline-verifier",
+      "programId": "root",
+      "type": "tool",
+      "title": "Offline exact verifier for the four-terminal baseline",
+      "summary": "The committed `instance-k4.json` and `verify.py` provide an offline-replayable exact certificate for the conventional four-terminal instance. The verifier uses Python standard-library rational arithmetic, validates the graph, weights, midpoint embedding, and claimed values, checks the exact subgradient certificate, and performs the stated exhaustive enumerations without a floating-point LP solver.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+      ],
+      "dependencyItemIds": [],
+      "digest": "sha256:82caacf7fcb9ceea9b0148a1ee8ce024f6ce3e1ab83379146cc404067458aeb8"
+    },
+    "root/k4-exact-enumeration": {
+      "id": "root/k4-exact-enumeration",
+      "programId": "root",
+      "type": "computation",
+      "title": "Exact enumerations for the midpoint-family certificates",
+      "summary": "Exact enumeration of the 64 labelings in the local three-terminal lemma establishes unrestricted minimum cost `2/3` and non-opposite minimum cost `1`. Independently, exact enumeration of all `4^6=4096` assignments to the six nonterminals of the committed four-terminal instance establishes integral optimum `1`.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+      ],
+      "dependencyItemIds": [
+        "root/k4-offline-verifier"
+      ],
+      "digest": "sha256:de66fd3015f797015cfe2801de77be0c5bb6fe6641911437d9dd559078112220"
+    },
+    "root/midpoint-family-optimality-proof": {
+      "id": "root/midpoint-family-optimality-proof",
+      "programId": "root",
+      "type": "proof",
+      "title": "Exact CKR and integral optimality proof for the midpoint family",
+      "summary": "For the midpoint embedding, every edge has half-ℓ1 length `1/2`. The specified exact absolute-value subgradients make the objective subgradient at every nonterminal a constant vector, so convexity and the simplex coordinate-sum constraint prove global CKR optimality. Integral optimality follows from the exact local labeling lemma, averaging its six-vertex weighting over terminal triples, mixing it with the terminal–midpoint weighting so that the coefficients of the number of offending midpoint labels cancel, and exhibiting an attaining labeling. Together these arguments establish the stated exact CKR and integral values for every integer `k>=3`.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+      ],
+      "dependencyItemIds": [
+        "root/k4-exact-enumeration"
+      ],
+      "digest": "sha256:30941a09a1c5e0131e4ce438d1d8eefde2374b6f6cb124187e76db97ee98e473"
+    },
+    "root/exact-midpoint-family-values": {
+      "id": "root/exact-midpoint-family-values",
+      "programId": "root",
+      "type": "result",
+      "title": "Exact values for the conventional midpoint-family instances",
+      "summary": "The committed `instance-k4.json` is a conventional four-terminal Multiway\nCut instance with 10 vertices, 24 edges, and rational weights.  Its exact\nvalues are\n\n\\[\n  \\operatorname{CKR}=\\frac{11}{12},\\qquad\n  \\operatorname{OPT}=1,\\qquad\n  \\frac{\\operatorname{OPT}}{\\operatorname{CKR}}=\\frac{12}{11}.\n\\]\n\nIt is the $k=4$ member of the classical Freund--Karloff midpoint family.\nThis contribution is an exact, offline-replayable baseline, not a new lower\nbound.\n\nMore generally, for every integer $k\\geq 3$, define $H_k$ as follows.\nIts terminals are $t_1,\\ldots,t_k$, and it has one additional vertex\n$m_{ij}$ for every $1\\leq i<j\\leq k$.  The only edges are:\n\n- $t_i m_{ij}$ and $t_jm_{ij}$, each of weight\n  \\(a=1/(k-1)^2\\); and\n- the three edges of the triangle on\n  \\(m_{ij},m_{i\\ell},m_{j\\ell}\\) for every $i<j<\\ell$, each of\n  weight \\(b=3/(2k(k-1)^2)\\).\n\nThen\n\n\\[\n \\operatorname{CKR}(H_k)=\\frac{7k-6}{8(k-1)},\\qquad\n \\operatorname{OPT}(H_k)=1,\n\\]\n\nand hence the exact ratio is\n\n\\[\n \\frac{8(k-1)}{7k-6}\n =\\frac{8}{7+1/(k-1)}.\n\\]\n\nScope qualifications:\n- The audit establishes the mathematical construction and exact values for every integer k>=3.\n- The claim of historical attribution to the classical Freund--Karloff midpoint family, and any priority characterization, was outside the correctness audit.\n- The resulting ratios approach 8/7 and do not improve the referenced 1.20016 lower benchmark, consistent with the claim that this is an exact baseline rather than a new lower bound.",
+      "claimRefs": [
+        {
+          "transactionId": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+          "claimKey": "multiway-cut-ckr-gap/exact-freund-karloff-k4-baseline"
+        }
+      ],
+      "sourceTransactionIds": [
+        "ab06d88e87e635c3bbb8967fedafe51b26238ec9"
+      ],
+      "dependencyItemIds": [
+        "root/midpoint-family-optimality-proof"
+      ],
+      "digest": "sha256:02a54738442af98a4209496d617908c9c8194e8a12fcec375ad5171798743518"
+    }
+  },
+  "contributions": {
+    "ab06d88e87e635c3bbb8967fedafe51b26238ec9": {
+      "id": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+      "transactionId": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+      "claimKeys": [
+        "multiway-cut-ckr-gap/exact-freund-karloff-k4-baseline"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/unstructured-search"
+      ],
+      "itemIds": [
+        "root/k4-offline-verifier",
+        "root/k4-exact-enumeration",
+        "root/midpoint-family-optimality-proof",
+        "root/exact-midpoint-family-values"
+      ],
+      "dependencyTransactionIds": [],
+      "judgmentId": "sha256:364a93e3a0aebf91cbbdbbf7f96f3b803d74b5b6a656c07c0667d8a8e5cd6b30",
+      "digest": "sha256:27941a4e4cdceb25e8d9623c82abb15f379a2c6ef7a489a3507cbab07d43a94b"
+    }
+  },
+  "stateDigest": "sha256:1ca93961a5505808b9324da418c32d3085550e88e7d9cc3d2133ae5e8c1a3423"
+}

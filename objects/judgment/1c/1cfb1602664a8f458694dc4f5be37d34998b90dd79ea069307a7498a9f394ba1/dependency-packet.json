@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "problemId": "multiway-cut-ckr-gap",
+  "subjectTransactionId": "ab06d88e87e635c3bbb8967fedafe51b26238ec9",
+  "subjectLedgerPosition": 1,
+  "claims": [
+    {
+      "claimKey": "multiway-cut-ckr-gap/exact-freund-karloff-k4-baseline",
+      "statement": "The committed `instance-k4.json` is a conventional four-terminal Multiway\nCut instance with 10 vertices, 24 edges, and rational weights.  Its exact\nvalues are\n\n\\[\n  \\operatorname{CKR}=\\frac{11}{12},\\qquad\n  \\operatorname{OPT}=1,\\qquad\n  \\frac{\\operatorname{OPT}}{\\operatorname{CKR}}=\\frac{12}{11}.\n\\]\n\nIt is the $k=4$ member of the classical Freund--Karloff midpoint family.\nThis contribution is an exact, offline-replayable baseline, not a new lower\nbound.\n\nMore generally, for every integer $k\\geq 3$, define $H_k$ as follows.\nIts terminals are $t_1,\\ldots,t_k$, and it has one additional vertex\n$m_{ij}$ for every $1\\leq i<j\\leq k$.  The only edges are:\n\n- $t_i m_{ij}$ and $t_jm_{ij}$, each of weight\n  \\(a=1/(k-1)^2\\); and\n- the three edges of the triangle on\n  \\(m_{ij},m_{i\\ell},m_{j\\ell}\\) for every $i<j<\\ell$, each of\n  weight \\(b=3/(2k(k-1)^2)\\).\n\nThen\n\n\\[\n \\operatorname{CKR}(H_k)=\\frac{7k-6}{8(k-1)},\\qquad\n \\operatorname{OPT}(H_k)=1,\n\\]\n\nand hence the exact ratio is\n\n\\[\n \\frac{8(k-1)}{7k-6}\n =\\frac{8}{7+1/(k-1)}.\n\\]",
+      "dependencyTransactionIds": []
+    }
+  ],
+  "dependencyTransactionIds": [],
+  "knowledgeContext": null,
+  "packetDigest": "sha256:325fdce1ede7e46cfcabbba6cbc897edc2c0752a7da4031e8d5374d27889a5db"
+}
