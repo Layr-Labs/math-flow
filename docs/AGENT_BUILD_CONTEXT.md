@@ -112,6 +112,11 @@ automatic squash merge to main
   declared claims, explicitly cited prior transactions, and only historical
   knowledge nodes grounded in those dependencies. It must never receive the
   current post-subject state or an automatically embedded preceding ledger.
+- Primary-judgment completion order must not determine knowledge-state order or
+  credit context. A later transaction may finish judgment before an earlier
+  independent transaction without being discarded or forcing either judgment to
+  rerun. Only an explicit mathematical dependency may create a validity-ordering
+  constraint; single-writer knowledge formation is a downstream concern.
 - A validity-only primary judge devotes its mathematical work to rigorous,
   conservative correctness verification, with prevention of false acceptance
   as its overriding priority. It may decompose a proof into any number of
@@ -143,6 +148,13 @@ automatic squash merge to main
   available, missing reconciliation judgments for independent conflicts also
   run concurrently. Construction of a given `(problem, projection)` knowledge
   chain is single-writer and serialized.
+- Single-writer formation does not imply one provider call or one authored
+  post-state per submission. A formation claim may freeze and consume a
+  deterministic batch of dependency-ready judgments, producing one atomic
+  post-state plus per-submission provenance and historical credit-reference
+  ledgers. The experimental hierarchical replay is currently a serial reference
+  implementation; do not treat its per-transaction loop as an architectural
+  requirement for hosted execution.
 - Formation may be triggered by completed judgments but should coalesce work and
   obey a configurable minimum interval. The wildcard default projection uses a
   five-minute minimum interval; a newly created lane can run immediately, while
@@ -186,6 +198,15 @@ The v3 runtime and builder are implemented as an additive candidate; no active
 projection references them until the separate shadow-projection admission used
 for hosted evaluation. Existing v2 projections retain their original prompt and
 control schema.
+
+The hierarchical research v1 experiment temporarily keeps program topology and
+item ownership stable so that its new local counterfactual-credit semantics can
+be evaluated independently. This is a scoped implementation deferral, not an
+architectural decision to freeze the first program taxonomy permanently. Future
+versions should restore audited move, reparent, split, and merge operations using
+append-only topology revisions, successor/retirement lineage, and deterministic
+credit invalidation or refresh for every affected local program edge. Preserve
+this evolution path when simplifying or replacing the experimental builder.
 
 Cross-program claims belong at root or another genuinely shared active scope.
 Do not duplicate a mathematical node merely because multiple programs depend on
