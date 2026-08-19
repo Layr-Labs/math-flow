@@ -6717,6 +6717,624 @@
       }
     },
     {
+      "id": "openrouter-research-v1",
+      "problemId": "maximal-determinant-23",
+      "label": "openrouter-research-v1",
+      "projectionSpec": {
+        "id": "openrouter-research-v1",
+        "description": "The default parallel validity projection with dependency-safe batched hierarchical research-state formation.",
+        "digest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+        "engine": "openrouter-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [],
+        "scheduling": {
+          "judgmentMaxParallel": 16,
+          "knowledgeMinimumIntervalSeconds": 300,
+          "maximumJudgmentsPerBuild": 500
+        },
+        "runner": null
+      },
+      "builder": {
+        "id": "openrouter-hierarchical-research-builder-v2",
+        "digest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb"
+      },
+      "latestRunDigest": "sha256:5efb7edcf748ae2156aec32565ce76ec65f5aa56703e2b32af826e69bba80f5d",
+      "runCount": 1,
+      "data": {
+        "schemaVersion": 1,
+        "problem": {
+          "id": "maximal-determinant-23",
+          "title": "Maximal determinant at order 23",
+          "statementMarkdown": "# Maximal determinant at order 23\n\nLet\n\n\\[\nD_{23}=\\max\\left\\{|\\det A|:A\\in\\{-1,+1\\}^{23\\times23}\\right\\}.\n\\]\n\nDetermine \\(D_{23}\\), improve its certified lower bound by exhibiting a\nmatrix with larger determinant, or improve its certified upper bound. The\npublished record and general upper estimate give\n\n\\[\n2^{22}\\,3\\,5^6\\,67\\,211\n\\le D_{23}\\le\n2^{22}\\,3\\,5^6\\,675\\sqrt{505}.\n\\]\n\nThe lower endpoint equals \\(2{,}779{,}447{,}296{,}000{,}000\\). Since\n\\(D_{23}\\) is an integer, the displayed real-valued upper endpoint may of\ncourse be replaced by its floor; any stronger divisibility rounding must be\nproved as part of the claimed bound.\n\nUseful contributions include:\n\n- a complete \\(23\\times23\\) sign matrix with a larger exactly evaluated\n  determinant;\n- a fraction-free or modular determinant verifier;\n- an exhaustive Gram-matrix classification with replayable pruning\n  certificates;\n- a proof strengthening the analytic or arithmetic upper bound;\n- a symmetry or equivalence reduction under signed row and column operations,\n  with its scope proved; or\n- a reproducible heuristic search or non-finding explicitly labeled as\n  non-exhaustive.\n\nFloating-point determinants are not certificates. Computational claims should\ninclude the matrix or proof artifact and permit exact independent replay.\n\n## Frontier source\n\n- William P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith,\n  [New lower bounds for the maximal determinant problem](https://arxiv.org/abs/math/0304410),\n  2003; the paper gives the order-23 record matrix and the displayed bounds.\n"
+        },
+        "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+        "transactions": [
+          {
+            "ordinal": 1,
+            "transactionId": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+            "contributionId": "published-record-matrix-exact-replay",
+            "path": "problems/maximal-determinant-23/contributions/published-record-matrix-exact-replay",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Exact replay of the published order-23 record matrix\n\n## Claim\n\nThe matrix in `matrix.txt` is a complete \\(23\\times 23\\) matrix with entries\nin \\(\\{-1,+1\\}\\), encoded as `-` and `+`. Exact fraction-free elimination\ngives\n\n\\[\n  |\\det A|=2^{22}\\,3\\,5^6\\,67\\,211\n  =2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThis independently replays the published lower endpoint already stated in the\nproblem. It does **not** claim a new record, a stronger lower bound, or\noptimality of this matrix.\n\n## Method and reproduction\n\n`verify.py` parses the signs, checks the dimensions and alphabet, computes the\ndeterminant using the integer-only Bareiss fraction-free elimination algorithm,\nand compares its absolute value with both the displayed integer and the stated\nprime-power product. It uses only the Python standard library.\n\nFrom this contribution directory, run:\n\n```sh\npython3 verify.py\n```\n\nThe final line must be `verification: PASS`. The script aborts if a matrix\nentry, dimension, exact division, determinant, or factor product is wrong.\n\n## Provenance and attribution\n\nThe matrix is transcribed row-for-row from the literal `n=23` verbatim block\nin `matData.tex` in version 1 of the arXiv source archive for:\n\nWilliam P. Orrick, Bruce Solomon, Roland Dowdeswell, and Warren D. Smith,\n“New Lower Bounds for the Maximal Determinant Problem,”\n[arXiv:math/0304410v1](https://arxiv.org/abs/math/0304410v1), 2003.\n\nThe versioned source archive is available at\n<https://export.arxiv.org/e-print/math/0304410v1>. For source-integrity\nchecking, the downloaded archive and the relevant extracted file had these\nSHA-256 digests at preparation time:\n\n```text\ndf9674ad22b6e4f74e47189aaf7ce7c74225033b8cf8b8fff6a693fba3c3b1cb  math0304410v1.tar.gz\n56ea3290c8920c92bc8e8cdb602a47e9a5e5576fafc7c5a95725a817f3ddd4d2  matData.tex\n```\n\nThe published matrix and determinant are attributed entirely to Orrick,\nSolomon, Dowdeswell, and Smith. This contribution's only added work is the\ncompact exact replay artifact and documentation; it makes no discovery or\npriority claim for the witness.\n\n## Limitations\n\nThe verifier certifies the determinant of this one supplied matrix. It neither\nsearches for better matrices nor proves the displayed upper bound or maximality\nat order 23. Bareiss elimination is exact and independently replayable, but the\nincluded artifact is not an exhaustive certificate over all sign matrices.\n"
+          },
+          {
+            "ordinal": 2,
+            "transactionId": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+            "contributionId": "universal-divisibility-upper-rounding",
+            "path": "problems/maximal-determinant-23/contributions/universal-divisibility-upper-rounding",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Divisibility-rounded upper bound at order 23\n\n## Claim\n\nEvery \\(23\\times23\\) matrix \\(A\\) with entries in \\(\\{-1,+1\\}\\) satisfies\n\n\\[\n2^{22}\\mid\\det A.\n\\]\n\nCombining this universal divisibility with the real upper estimate in the\nproblem statement gives the strictly sharper exact endpoint\n\n\\[\nD_{23}\\le\n2^{22}\\cdot711{,}034{,}613\n=2{,}982{,}295{,}321{,}444{,}352.\n\\]\n\nFor comparison, merely taking the integer floor of the displayed real\nestimate gives \\(2{,}982{,}295{,}321{,}630{,}773\\), which is 186,421 larger.\n\n## Divisibility proof and binary-core correspondence\n\nTake an arbitrary sign matrix \\(A\\). Multiplying columns by signs makes its\nfirst row all \\(+1\\), and then multiplying rows by signs makes its first column\nall \\(+1\\). These operations change at most the sign of the determinant.\n\nFor each row after the first, subtract the first row. The first entry of every\nsuch row becomes zero, and every other entry is either zero or \\(-2\\). Factoring\n\\(-2\\) from each of these 22 rows and expanding along the first column gives\n\n\\[\n|\\det A|=2^{22}|\\det B|\n\\]\n\nfor a \\(22\\times22\\) zero-one matrix \\(B\\). This proves the claimed\ndivisibility, including when \\(A\\) is singular.\n\nConversely, every \\(22\\times22\\) zero-one matrix \\(B\\) occurs in this way:\nform the normalized sign matrix\n\n\\[\nA(B)=\n\\begin{pmatrix}\n1 & \\mathbf 1^{\\mathsf T}\\\\\n\\mathbf 1 & J-2B\n\\end{pmatrix}.\n\\]\n\nThe same row operation gives\n\n\\[\n\\det A(B)=(-2)^{22}\\det B.\n\\]\n\nIn particular, \\(B=I_{22}\\) produces a sign matrix with determinant exactly\n\\(2^{22}\\). Thus \\(2^{22}\\) is the exact greatest universal divisibility factor:\nno larger integer divides the determinant of every order-23 sign matrix. The\ncorrespondence also gives\n\n\\[\nD_{23}=2^{22}\n\\max\\{ |\\det B|:B\\in\\{0,1\\}^{22\\times22}\\}.\n\\]\n\nThere is likewise no nontrivial fixed congruence class for the quotient that\nholds for all sign matrices: \\(B=0\\) and \\(B=I_{22}\\) give quotients 0 and 1,\nrespectively. To also exhibit both parities among nonsingular examples, take\nthe block diagonal zero-one matrix with leading block\n\n\\[\nC=\\begin{pmatrix}1&1&0\\\\1&0&1\\\\0&1&1\\end{pmatrix}\n\\]\n\nand remaining block \\(I_{19}\\). Its determinant is \\(-2\\), so the corresponding\nsign matrix has determinant \\(-2^{23}\\). Thus the possible quotients\n\\(\\det A/2^{22}\\) already include 1 and \\(-2\\). This observation does not rule\nout congruence or Gram restrictions confined to matrices near the upper bound;\nnone is claimed here.\n\n## Exact rounding without floating point\n\nWrite the supplied real upper estimate as\n\n\\[\n2^{22}c\\sqrt{505},\n\\qquad\nc=3\\cdot5^6\\cdot675=31{,}640{,}625.\n\\]\n\nSince \\(D_{23}/2^{22}\\) is an integer, it is at most\n\\(\\lfloor c\\sqrt{505}\\rfloor\\). The following integer square comparisons are\nan exact certificate for that floor:\n\n\\[\n\\begin{aligned}\n711{,}034{,}613^2\n&=505{,}570{,}220{,}884{,}059{,}769,\\\\\nc^2\\cdot505\n&=505{,}570{,}220{,}947{,}265{,}625,\\\\\n711{,}034{,}614^2\n&=505{,}570{,}222{,}306{,}128{,}996.\n\\end{aligned}\n\\]\n\nThe middle integer lies strictly between the other two, so\n\n\\[\n\\lfloor c\\sqrt{505}\\rfloor=711{,}034{,}613.\n\\]\n\nMultiplying by \\(2^{22}\\) yields the claimed exact upper bound.\n\n## Reproduction\n\n`verify.py` uses only Python standard-library integer arithmetic. It checks all\ndisplayed constants and strict square inequalities, computes both the ordinary\ninteger floor and the divisibility-rounded endpoint, and exactly evaluates the\ngenerated \\(A(I_{22})\\) by fraction-free Bareiss elimination to witness the\nsharpness of the universal power of two.\n\nFrom this contribution directory, run:\n\n```sh\npython3 verify.py\n```\n\nThe final line must be `verification: PASS`.\n\n## Provenance, attribution, and limitations\n\nThis contribution uses the real upper estimate already supplied in the\ncanonical problem statement; it does not rederive that analytic estimate. The\nproblem attributes the estimate to William P. Orrick, Bruce Solomon, Roland\nDowdeswell, and Warren D. Smith, “New Lower Bounds for the Maximal Determinant\nProblem,” arXiv:math/0304410 (2003).\n\nThe previously certified lower witness and its exact replay are canonical\ntransaction\n`fb88b7832c0fa7e84c1583110a7df800571bca02`. This contribution does not reuse\nthat matrix or claim a new lower bound. Its new content is the elementary\nnormalization/divisibility proof, exact integer rounding, and replay script.\nThese new proof, documentation, and verifier components are contributed by\nRobert Raynor.\n\nThe argument proves the strongest rounding obtainable from a common universal\ndivisor, because the constructed \\(A(I_{22})\\) has determinant exactly\n\\(2^{22}\\). It does not prove that coefficient \\(711{,}034{,}613\\) is attained,\nclassify high-determinant zero-one or Gram matrices, or exclude that coefficient\nby a non-divisibility argument. Such an exclusion would be needed for any\nfurther improvement beyond the endpoint claimed here. The elementary binary\ncore correspondence and the small quotient examples above revealed no safe\nadditional universal congruence or Gram-based rounding.\n"
+          },
+          {
+            "ordinal": 3,
+            "transactionId": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+            "contributionId": "three-star-ehlich-perturbation-exclusion",
+            "path": "problems/maximal-determinant-23/contributions/three-star-ehlich-perturbation-exclusion",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Exact exclusion of three-star Ehlich perturbations\n\n## Claim\n\nFor a positive integer partition\n$r=(r_1,\\ldots,r_s)$ of $23$, let\n\n\\[\nE(r)=20I_{23}-J_{23}\n  +4\\operatorname{diag}(J_{r_1},\\ldots,J_{r_s}).\n\\]\n\nThus $E(r)$ has diagonal entries $23$, entry $3$ between distinct\ncoordinates in the same block, and entry $-1$ between different blocks.\nChoose four distinct coordinates $c,\\ell_1,\\ell_2,\\ell_3$. Form $G$ by\ntoggling each of the three symmetric off-diagonal pairs\n$c\\ell_1,c\\ell_2,c\\ell_3$ between $3$ and $-1$.\n\nThere is no $23\\times23$ sign matrix $A$ such that\n\n\\[\nAA^{\\mathsf T}=G\n\\quad\\text{and}\\quad\n|\\det A|\\ge\n2^{22}\\,3\\,5^6\\,67\\,211\n=2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nEquivalently, no record-level or better sign Gram matrix occurs in this\nthree-toggle star family. This is an exact, natural distance-three subfamily,\nnot a classification of every three-toggle perturbation or of every candidate\nGram matrix at order $23$.\n\n## Exact canonical classification\n\nFor each of the $1{,}255$ nondecreasing positive integer partitions of $23$,\nthe verifier first keeps the parent blocks distinguished. It chooses one\ncenter block and an unordered multiset of three leaf blocks, retaining the\nchoice exactly when each block contains enough distinct selected vertices.\nThis gives $1{,}882{,}943$ fixed-component specifications.\n\nThe parent-block automorphism group permutes blocks of equal size, while the\nthree leaves may be permuted arbitrarily. For every leaf order, the verifier\nlabels equal-sized parent blocks by order of first occurrence in\n\n\\[\n(c,\\ell_1,\\ell_2,\\ell_3).\n\\]\n\nThe lexicographically least resulting four-token sequence\n\n\\[\n(\\text{block size},\\text{first-occurrence label within that size})\n\\]\n\nis the canonical descriptor. Two fixed-component choices have the same\ndescriptor exactly when these symmetries carry one to the other. The verifier\nreconstructs four distinct representative vertices from every descriptor and\nchecks that canonicalization is idempotent. Exactly $102{,}799$\nbase-automorphism orbit specifications remain.\n\nThese are specifications relative to a parent block graph. A resulting graph\ncan have more than one parent description, including one at smaller edit\ndistance. Such overlap is harmless: the theorem quantifies over every eligible\nparent and every eligible three-star toggle.\n\n## Exact rank-two determinant enumeration\n\nSet\n\n\\[\n\\Delta=1-\\sum_i\\frac{r_i}{4(5+r_i)}.\n\\]\n\nThe parent determinant is\n\n\\[\n\\det E(r)=20^{23-s}\\prod_i(20+4r_i)\\Delta.\n\\]\n\nFor coordinates $x,y$ in blocks $i,j$, respectively, the verifier uses the\nexact inverse identity\n\n\\[\n(E(r)^{-1})_{xy}\n=\\frac{\\mathbf 1_{x=y}}{20}\n-\\frac{\\mathbf 1_{i=j}}{20(5+r_i)}\n+\\frac{1}{16(5+r_i)(5+r_j)\\Delta}.\n\\]\n\nLet $a_k=-4$ when $c$ and $\\ell_k$ belong to the same parent block and\n$a_k=4$ otherwise, and put $v=\\sum_k a_ke_{\\ell_k}$. The three toggles\ntogether have the rank-two form\n\n\\[\ne_cv^{\\mathsf T}+ve_c^{\\mathsf T}.\n\\]\n\nThe verifier therefore evaluates the matrix-determinant-lemma correction as\none exact $2\\times2$ determinant over the rationals. For every normalized\nsquare survivor it also constructs the full $23\\times23$ integer matrix and\nindependently recomputes its determinant by fraction-free Bareiss elimination.\n\nThe exact threshold enumeration is\n\n\\[\n\\begin{array}{c|r}\n\\text{class} & \\text{number of canonical specifications}\\\\ \\hline\n\\text{all three-star specifications} & 102{,}799\\\\\n\\det G>\\bigl(2^{22}\\,3\\,5^6\\,67\\,211\\bigr)^2 & 74{,}896\\\\\n\\det G=\\bigl(2^{22}\\,3\\,5^6\\,67\\,211\\bigr)^2 & 0.\n\\end{array}\n\\]\n\n## Normalized-square obstruction for 74,792 specifications\n\nCanonical transaction\n`7b28860c418486cb41e6379e68cc355ff861b1a5` proves that every order-$23$\nsign determinant is divisible by $2^{22}$. If $G=AA^{\\mathsf T}$, then\n\n\\[\n\\frac{\\det G}{2^{44}}\n=\\left(\\frac{\\det A}{2^{22}}\\right)^2\n\\]\n\nmust be an integer square. Of the $74{,}896$ above-record specifications,\n$74{,}792$ have nonsquare normalized determinant. Exactly $104$\nnormalized-square candidates remain.\n\n## Local quadratic-form obstruction for 83 candidates\n\nIf $G=AA^{\\mathsf T}$ and $G$ is nonsingular, then\n\n\\[\nG=A I_{23}A^{\\mathsf T},\n\\]\n\nso $G$ is rationally congruent to the identity form. For $83$ candidates the\nverifier finds a rational prime divisor $p$ of the exact normalized square\nroot for which the Hasse invariant satisfies\n\n\\[\n\\epsilon_p(G)=-1,\n\\]\n\nwhereas the identity form has invariant $+1$. It constructs each full\ncandidate matrix, performs exact rational Schur-complement diagonalization,\nindependently recovers the same pivots from fraction-free leading principal\nminors, and evaluates the Hilbert symbols by explicit rational formulas. The\nfinite prime search is replayed rather than trusted from a transcript.\n\n## Inverse-quadratic and cell-moment obstruction for 21 candidates\n\nFor each remaining candidate, the center and three leaves are singleton\ncells. The unselected vertices in every parent block form one further cell\nwhen nonempty. The verifier checks directly that both $G$ and $G^{-1}$ are\nconstant on every required diagonal, within-cell, and between-cell orbit.\n\nFor a sign vector $x$, let $t_i$ be its sum on cell $C_i$. Every column of a\nhypothetical factor $A$ must satisfy\n\n\\[\nx^{\\mathsf T}G^{-1}x=1.\n\\]\n\nThe verifier enumerates every parity-compatible cell-sum pattern satisfying\nthis equation. Two candidates have no admissible pattern at all.\n\nFor each of the final $19$ candidates, `certificates.json` supplies an integer\nlinear functional on the count and cell-moment coordinates. If the columns of\n$A$ had patterns $t^{(1)},\\ldots,t^{(23)}$, their aggregate moments would\nhave to satisfy\n\n\\[\n\\sum_{k=1}^{23}t_i^{(k)}t_j^{(k)}\n=\\sum_{a\\in C_i}\\sum_{b\\in C_j}G_{ab}.\n\\]\n\nThe verifier checks that each supplied functional is nonnegative on every\nindividually admissible pattern but strictly negative on the required\naggregate target. This exact Farkas separation excludes all $19$ candidates.\nThe LP used to discover a separator is not part of the proof and is not\ntrusted during replay.\n\nThe complete above-record accounting is\n\n\\[\n74{,}896\n=74{,}792\\;\\text{(nonsquare)}\n+83\\;\\text{(Hasse)}\n+2\\;\\text{(no column pattern)}\n+19\\;\\text{(cell moments)},\n\\]\n\nwith no equality case and no unexcluded three-star specification.\n\n## Reproduction\n\nThe replay uses only the Python standard library. From this contribution\ndirectory, run:\n\n```sh\npython3 verify.py\n```\n\nThe final line must be `verification: PASS`.\n\n## Relationship to canonical work\n\nThis contribution continues registered direction\n`near-record-gram-obstructions`, canonical registration transaction\n`efb1cc4ce5b387eb94fc2358c3f5dd6585846092`.\n\nThe record threshold and exact witness are canonical transaction\n`fb88b7832c0fa7e84c1583110a7df800571bca02`, represented in knowledge node\n`exact-witness-certification/order-23-record-witness`. The universal\n$2^{22}$ divisibility is canonical transaction\n`7b28860c418486cb41e6379e68cc355ff861b1a5`, represented in node\n`arithmetic-divisibility-reduction/universal-divisor` under primary judgment\n`sha256:f6722db5b0fa49f20e948a0e36f8aaa83d1aaf1700db4823dd0b20df5aaddbe3`.\n\nThe exact block, one-toggle, and two-toggle exclusions prepared in the same\nresearch program are separate local contributions. This artifact is\nself-contained and does not assume that any unmerged local result is accepted\nknowledge.\n\n## Sources and attribution\n\nThe block family and determinant-bound framework originate in Hartmut Ehlich,\n“Determinantenabschätzung für binäre Matrizen mit $n\\equiv3\\pmod4$,”\n*Mathematische Zeitschrift* **84** (1964), 438–447,\n<https://eudml.org/doc/170280>.\n\nThe exact candidate-Gram and local quadratic-form methodology is discussed by\nRichard P. Brent, William Orrick, Judy-anne Osborn, and Paul Zimmermann,\n“Maximal determinants and saturated D-optimal designs of orders 19 and 37,”\n*Linear Algebra and its Applications* **441** (2014), 39–61,\n<https://arxiv.org/abs/1112.4160>.\n\nA modern survey is Patrick Browne, Ronan Egan, Fintan Hegarty, and Padraig\nÓ Catháin, “A Survey of the Hadamard Maximal Determinant Problem,”\n*Electronic Journal of Combinatorics* **28**(4) (2021), P4.41,\n<https://doi.org/10.37236/10367>.\n\nRobert Raynor contributes the three-star canonicalization, rank-two exact\nenumeration, local-invariant and cell-moment exclusions, certificates,\ndocumentation, and standard-library replay artifact supplied here.\n\n## Limitations\n\nThis is structural progress, not quantitative movement of the global\n$D_{23}$ interval. It treats only matrices with off-diagonal alphabet\n$\\{3,-1\\}$ obtained from an Ehlich-block parent by toggling the three edges\nof a $K_{1,3}$. It does not treat triangle, three-edge path, wedge-plus-edge,\nor three-edge matching perturbations, matrices farther from every block graph,\nor Gram matrices with other odd off-diagonal entries. It neither improves the\nrecord nor lowers the global upper endpoint, and it does not determine\n$D_{23}$. The replay is exact and deterministic but is not a proof-assistant\ndevelopment.\n"
+          }
+        ],
+        "judgments": [
+          {
+            "judgmentId": "sha256:930cf727e2c0d558a55d2847a67b40028d598304fa2b3a294820747aef08f13c",
+            "runDigest": "sha256:537625260438f75f15c4c7dbef0c22fd2609908f600a927fe9394a79c0548c52",
+            "judgmentKind": "primary",
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v2",
+              "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.12761125,
+            "reportDigest": "sha256:f14e21331970d0e377dcf836546416ce7c1db861794d281f31686d810f1944d5",
+            "reportMarkdown": "## `maximal-determinant-23/published-record-matrix-exact-replay`\n\n**Verdict: valid**\n\n### Matrix-format obligations\n\n- `matrix.txt` contains exactly 23 rows.\n- Direct counting confirms that every row contains exactly 23 characters.\n- Every character is either `+` or `-`, and the parser maps these bijectively to \\(+1\\) and \\(-1\\).\n- Thus the supplied artifact defines a complete matrix\n  \\[\n  A\\in\\{-1,+1\\}^{23\\times23}.\n  \\]\n\n### Determinant-verifier audit\n\nThe supplied `bareiss_determinant` routine correctly implements fraction-free Bareiss elimination:\n\n\\[\na'_{ij}\n=\\frac{a_{ij}p-a_{i k}a_{k j}}{p_{\\mathrm{previous}}},\n\\]\n\nwhere \\(p=a_{kk}\\). The relevant correctness points are satisfied:\n\n- The input matrix is copied, so elimination does not corrupt the parsed witness.\n- At each stage, a nonzero pivot is selected from the active column; an absent pivot correctly implies determinant zero.\n- Row swaps are applied to the whole row, and their parity is accumulated in `determinant_sign`.\n- Entries used elsewhere in the same elimination stage are not overwritten prematurely: the pivot row remains unchanged and `a[row][column]` is cleared only after that row’s trailing entries are updated.\n- Every Bareiss division is performed with integer arithmetic and explicitly checked for zero remainder.\n- Python integers have arbitrary precision, so there is no overflow or floating-point issue.\n- After the final stage, `a[-1][-1]` is the determinant of the row-permuted matrix. Multiplication by the accumulated swap sign recovers the determinant of the original matrix.\n\nThe expected value is not used to produce the determinant; it is only compared with the independently computed Bareiss result. Exact replay on the supplied literal matrix reaches the stated absolute determinant.\n\n### Arithmetic check\n\nThe factor product is\n\n\\[\n3\\cdot 5^6\\cdot 67\\cdot 211\n=662{,}671{,}875,\n\\qquad\n2^{22}=4{,}194{,}304,\n\\]\n\nand therefore\n\n\\[\n2^{22}\\cdot3\\cdot5^6\\cdot67\\cdot211\n=4{,}194{,}304\\cdot662{,}671{,}875\n=2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThis agrees with the verifier’s exact absolute determinant.\n\n### Scope\n\nBecause the witness is a \\(23\\times23\\) sign matrix, it certifies\n\n\\[\nD_{23}\\ge 2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThat is precisely the already stated lower endpoint. The artifact does not establish a larger lower bound, a stronger upper bound, or optimality, and it does not purport to do so. No external provenance claim is needed for the mathematical determinant certificate.\n",
+            "record": {
+              "schemaVersion": 2,
+              "judgmentKind": "primary",
+              "problemId": "maximal-determinant-23",
+              "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+              "problemLedgerDigest": "sha256:26d584bf0173084bf3aeb59baf052fc6194494f5b8fc47f257b414d5a80f591d",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v2",
+                "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+                  "ledgerPosition": 1
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "maximal-determinant-23/published-record-matrix-exact-replay",
+                  "status": "valid",
+                  "premiseStatus": "satisfied",
+                  "summary": "The audit establishes that matrix.txt encodes a complete 23×23 sign matrix and that exact fraction-free Bareiss elimination yields |det A| = 2^22·3·5^6·67·211 = 2,779,447,296,000,000. The factorization and decimal value are independently arithmetically consistent.",
+                  "scopeQualifications": [
+                    "This certifies only the already stated lower endpoint D_23 ≥ 2,779,447,296,000,000.",
+                    "It does not establish a new record, a larger lower bound, a stronger upper bound, or optimality.",
+                    "No external provenance claim is required for the determinant certificate."
+                  ],
+                  "evidenceIssues": [],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "maximal-determinant-23/published-record-matrix-exact-replay",
+                  "stance": "supports",
+                  "summary": "The audit establishes that matrix.txt encodes a complete 23×23 sign matrix and that exact fraction-free Bareiss elimination yields |det A| = 2^22·3·5^6·67·211 = 2,779,447,296,000,000. The factorization and decimal value are independently arithmetically consistent.",
+                  "subjectTransactionIds": [
+                    "fb88b7832c0fa7e84c1583110a7df800571bca02"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:f23f5910792cf767223facfffda5af8a4ae959f58cca15f45793a7c31dbcdd74",
+              "reportDigest": "sha256:f14e21331970d0e377dcf836546416ce7c1db861794d281f31686d810f1944d5",
+              "judgmentId": "sha256:930cf727e2c0d558a55d2847a67b40028d598304fa2b3a294820747aef08f13c"
+            }
+          },
+          {
+            "judgmentId": "sha256:ae1b369675919f95760e0b246e8ecc051bb0f39539613cffd3cd2e23bb451356",
+            "runDigest": "sha256:1c3b72d47aea8e05f527ecf2e2ea1608d12b820d44d8f87bb4673af6b23d8099",
+            "judgmentKind": "primary",
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v2",
+              "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.12718875,
+            "reportDigest": "sha256:2a51c2264db1babbaaf918fcd6a7057b2ec94d7f92af2de16b49b8fa17f57a68",
+            "reportMarkdown": "# Audit result\n\n| Declared claim | Verdict |\n|---|---|\n| `maximal-determinant-23/universal-divisibility-upper-rounding` | **Invalid** |\n\n## `maximal-determinant-23/universal-divisibility-upper-rounding`\n\n**Verdict: Invalid.**\n\nThe universal divisibility and the improved upper endpoint are correct, but the declared claim also gives an incorrect value for the ordinary integer floor. Because the exact declared statement is a conjunction containing that false assertion, it cannot be accepted as valid.\n\n### 1. Universal divisibility is verified\n\nAfter signed column operations, the first row can be made all \\(+1\\). Signed row operations then make the first column all \\(+1\\), without changing the determinant except possibly its sign.\n\nSubtracting the first row from each of the remaining \\(22\\) rows produces a matrix whose lower-left column is zero and whose other lower entries are \\(0\\) or \\(-2\\). Factoring \\(-2\\) from those \\(22\\) rows and expanding along the first column gives\n\n\\[\n|\\det A|=2^{22}|\\det B|\n\\]\n\nfor an integral \\(22\\times22\\) zero-one matrix \\(B\\). Thus\n\n\\[\n2^{22}\\mid \\det A\n\\]\n\nfor every order-\\(23\\) sign matrix, including singular matrices.\n\nThe converse construction\n\n\\[\nA(B)=\n\\begin{pmatrix}\n1&\\mathbf1^{\\mathsf T}\\\\\n\\mathbf1&J-2B\n\\end{pmatrix}\n\\]\n\nindeed satisfies\n\n\\[\n\\det A(B)=(-2)^{22}\\det B.\n\\]\n\nTaking \\(B=I_{22}\\) yields determinant \\(2^{22}\\), so the asserted common divisor is also sharp.\n\n### 2. The divisibility-rounded upper endpoint is verified\n\nLet\n\n\\[\nd=2^{22}=4{,}194{,}304,\\qquad\nc=3\\cdot5^6\\cdot675=31{,}640{,}625.\n\\]\n\nSince \\(D_{23}/d\\) is an integer and the supplied problem premise gives\n\n\\[\nD_{23}\\le d\\,c\\sqrt{505},\n\\]\n\nit follows that\n\n\\[\nD_{23}\\le d\\left\\lfloor c\\sqrt{505}\\right\\rfloor.\n\\]\n\nThe submitted square certificate is arithmetically correct:\n\n\\[\n\\begin{aligned}\n711{,}034{,}613^2\n&=505{,}570{,}220{,}884{,}059{,}769,\\\\\nc^2\\cdot505\n&=505{,}570{,}220{,}947{,}265{,}625,\\\\\n711{,}034{,}614^2\n&=505{,}570{,}222{,}306{,}128{,}996.\n\\end{aligned}\n\\]\n\nTherefore\n\n\\[\n\\left\\lfloor c\\sqrt{505}\\right\\rfloor=711{,}034{,}613,\n\\]\n\nand\n\n\\[\nD_{23}\\le\n2^{22}\\cdot711{,}034{,}613\n=\n2{,}982{,}295{,}321{,}444{,}352.\n\\]\n\nThis part of the claim is correct.\n\n### 3. Decisive arithmetic defect: the ordinary floor is off by one\n\nSet\n\n\\[\nq=711{,}034{,}613,\\qquad\nS=c^2\\cdot505,\n\\]\n\nso that\n\n\\[\nS-q^2=63{,}205{,}856.\n\\]\n\nThe real upper endpoint is \\(d\\sqrt S\\). For an integer \\(k\\),\n\n\\[\n(d\\sqrt S)^2-(dq+k)^2\n=\nd\\bigl(d(S-q^2)-2qk\\bigr)-k^2.\n\\]\n\nFor \\(k=186{,}422\\),\n\n\\[\nd(S-q^2)-2qk=296{,}429{,}465,\n\\]\n\nand hence\n\n\\[\n(d\\sqrt S)^2-(dq+186{,}422)^2\n=\n1{,}243{,}280{,}537{,}605{,}276>0.\n\\]\n\nFor \\(k=186{,}423\\),\n\n\\[\nd(S-q^2)-2qk=-1{,}125{,}639{,}761,\n\\]\n\nso\n\n\\[\n(d\\sqrt S)^2-(dq+186{,}423)^2<0.\n\\]\n\nAll quantities are positive, and therefore\n\n\\[\ndq+186{,}422\n<\nd\\sqrt S\n<\ndq+186{,}423.\n\\]\n\nConsequently, the correct ordinary floor is\n\n\\[\n\\left\\lfloor 2^{22}c\\sqrt{505}\\right\\rfloor\n=\n2{,}982{,}295{,}321{,}630{,}774,\n\\]\n\nnot\n\n\\[\n2{,}982{,}295{,}321{,}630{,}773.\n\\]\n\nThus the actual improvement over the ordinary floor is\n\n\\[\n2{,}982{,}295{,}321{,}630{,}774\n-\n2{,}982{,}295{,}321{,}444{,}352\n=\n186{,}422,\n\\]\n\nrather than \\(186{,}421\\).\n\nThe supplied verification script contains the same off-by-one constant and therefore would fail its `isqrt(squared_real_bound)` check.\n\n**Conclusion:** the principal upper bound is established, but the declared comparison value is false, making the exact declared claim **invalid**.\n",
+            "record": {
+              "schemaVersion": 2,
+              "judgmentKind": "primary",
+              "problemId": "maximal-determinant-23",
+              "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+              "problemLedgerDigest": "sha256:26d584bf0173084bf3aeb59baf052fc6194494f5b8fc47f257b414d5a80f591d",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v2",
+                "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "7b28860c418486cb41e6379e68cc355ff861b1a5",
+                  "ledgerPosition": 2
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "maximal-determinant-23/universal-divisibility-upper-rounding",
+                  "status": "invalid",
+                  "premiseStatus": "satisfied",
+                  "summary": "The universal divisibility 2^22 | det A and the sharpened bound D_23 ≤ 2,982,295,321,444,352 are established. However, the claim's comparison assertion is false: the ordinary floor is 2,982,295,321,630,774, not 2,982,295,321,630,773, so the improvement is 186,422 rather than 186,421. Because the declared claim includes this erroneous assertion, it is invalid as stated.",
+                  "scopeQualifications": [
+                    "The principal divisibility-rounded upper bound remains correct.",
+                    "Invalidity is confined to the off-by-one ordinary-floor comparison, but that comparison is part of the declared conjunction."
+                  ],
+                  "evidenceIssues": [
+                    "The stated ordinary integer floor is one too small.",
+                    "The stated difference from the sharpened endpoint is consequently one too small.",
+                    "The referenced verification script reportedly repeats the same off-by-one constant and would fail its integer-square-root check."
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "maximal-determinant-23/universal-divisibility-upper-rounding",
+                  "stance": "refutes",
+                  "summary": "The universal divisibility 2^22 | det A and the sharpened bound D_23 ≤ 2,982,295,321,444,352 are established. However, the claim's comparison assertion is false: the ordinary floor is 2,982,295,321,630,774, not 2,982,295,321,630,773, so the improvement is 186,422 rather than 186,421. Because the declared claim includes this erroneous assertion, it is invalid as stated.",
+                  "subjectTransactionIds": [
+                    "7b28860c418486cb41e6379e68cc355ff861b1a5"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:5dba0a024f4a29807fda8af4cbb0da4bb3c1549f7178abea787ed6d33db36029",
+              "reportDigest": "sha256:2a51c2264db1babbaaf918fcd6a7057b2ec94d7f92af2de16b49b8fa17f57a68",
+              "judgmentId": "sha256:ae1b369675919f95760e0b246e8ecc051bb0f39539613cffd3cd2e23bb451356"
+            }
+          },
+          {
+            "judgmentId": "sha256:05b426c42d558c944cbbeda0bc3f1165bbb239423289ee4fae2a9f893bca7720",
+            "runDigest": "sha256:7b54c275d4bd3d7ec74986015378ccf05e2ccb5e9aa8bf8b36300d01f72ff9e0",
+            "judgmentKind": "primary",
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v2",
+              "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.175101875,
+            "reportDigest": "sha256:89e8c0375186e773cb98a68f993cd0a06017c9af42dc89387151b59f6a989999",
+            "reportMarkdown": "## `maximal-determinant-23/three-star-ehlich-perturbation-exclusion`\n\n**Verdict: indeterminate**\n\nNo explicit counterexample or decisive algebraic error was found, and the proposed exhaustive verifier has a broadly coherent structure. However, the supplied evidence does not affirmatively establish that the exhaustive computation actually completed with `verification: PASS`, and several material premises are not available through the declared dependency packet.\n\n### 1. Reduction to canonical star specifications\n\nThe intended reduction is plausible:\n\n- `partitions(23)` recursively enumerates nondecreasing positive partitions of \\(23\\).\n- `indexed_specs` considers every center block and every unordered multiset of three leaf blocks.\n- The multiplicity test correctly enforces that the center and leaves can be represented by four distinct coordinates.\n- Permuting equal-sized parent blocks and permuting the three leaves are the relevant evident symmetries.\n- `selected_tokens` reconstructs four distinct vertices and checks idempotence of the canonical descriptor.\n\nNevertheless, the exact orbit-classification assertion is not fully certified by the checks in the program. In particular,\n\n```python\nspecs = canonical_specs(partition)\nif set(expanded) != set(specs):\n```\n\ndoes not independently test completeness: `canonical_specs` is defined as `sorted(set(indexed_specs(partition)))`, so this equality is true by construction. The prose asserts, but does not prove in detail, that two assignments have the same descriptor **exactly if** they are related by the stated symmetries. Idempotence alone does not establish that biconditional.\n\nThere is also no explicit proof of the reduction from an arbitrarily ordered tuple \\((r_1,\\ldots,r_s)\\), if “partition” is interpreted that way, to the nondecreasing representation used by the program. This would require the usual simultaneous coordinate-permutation argument.\n\nThese points are likely repairable, but the audit may not supply those omitted arguments.\n\n### 2. Determinant formulas\n\nThe displayed algebra is internally consistent:\n\n- Writing\n  \\[\n  E=B-J,\\qquad\n  B=20I+4\\operatorname{diag}(J_{r_1},\\ldots,J_{r_s}),\n  \\]\n  gives\n  \\[\n  \\det B=20^{23-s}\\prod_i(20+4r_i).\n  \\]\n- The stated\n  \\[\n  \\Delta=1-\\sum_i\\frac{r_i}{4(5+r_i)}\n  \\]\n  and the formula for \\(E^{-1}\\) agree with block inversion followed by a rank-one Sherman–Morrison correction.\n- The three toggles are indeed\n  \\[\n  e_cv^{\\mathsf T}+ve_c^{\\mathsf T},\n  \\]\n  with coefficient \\(-4\\) for a within-block toggle and \\(+4\\) for a between-block toggle.\n- The correction\n  \\[\n  (1+e_c^{\\mathsf T}E^{-1}v)^2\n  -(e_c^{\\mathsf T}E^{-1}e_c)(v^{\\mathsf T}E^{-1}v)\n  \\]\n  is the correct \\(2\\times2\\) matrix-determinant-lemma factor.\n\nThe Bareiss implementation also appears to use exact integer arithmetic and, on the candidates where it is invoked, compares the direct determinant with the rank-two result.\n\nThe unresolved issue is computational: the crucial conclusions\n\n\\[\n74\\,896\\text{ strictly above threshold},\\qquad\n0\\text{ at threshold},\\qquad\n104\\text{ normalized squares}\n\\]\n\nare results of evaluating \\(102\\,799\\) cases. The expected values are hardcoded constants. No execution transcript, per-candidate determinant list, or independently checkable aggregate certificate is supplied. The README says that running the program produces `verification: PASS`, but that assertion is not itself an exact replay result. Without executing the supplied program, these finite but material calculations remain unverified.\n\n### 3. Nonsquare obstruction\n\nConditional on the computed determinants, the obstruction is sound. If \\(G=AA^{\\mathsf T}\\), then\n\n\\[\n\\det G=(\\det A)^2.\n\\]\n\nMoreover, the verifier directly requires every candidate determinant to be divisible by \\(2^{44}\\). Since \\(2^{44}\\) is itself a square, nonsquareness of \\(\\det G/2^{44}\\) implies nonsquareness of \\(\\det G\\).\n\nThe README instead invokes the universal assertion \\(2^{22}\\mid\\det A\\) through transaction  \n`7b28860c418486cb41e6379e68cc355ff861b1a5`. That transaction is not declared as a dependency and its proof is not supplied. Thus the argument as explicitly presented relies on unavailable dependency evidence. A candidate-specific reformulation avoiding that dependency is possible, but supplying it would amount to repairing the submitted proof.\n\nThe count \\(74\\,792\\) is also dependent on the unexecuted exhaustive computation.\n\n### 4. Hasse-invariant exclusions\n\nThe conditional logic is correct in form:\n\n- A nonsingular factorization \\(G=AA^{\\mathsf T}\\) makes \\(G\\) rationally congruent to \\(I_{23}\\).\n- Hence a local invariant differing from that of the identity would exclude the factorization.\n- The rational Schur-complement diagonalization and the independent leading-minor ratios are appropriate exact methods.\n- The implemented odd-prime and \\(2\\)-adic Hilbert-symbol formulas have the standard form.\n\nHowever:\n\n1. No quadratic-form theorem establishing congruence invariance of the computed Hasse invariant is supplied through an explicit dependency.\n2. The cited literature is not part of the declared dependency packet.\n3. The identities used by `hilbert_symbol` are not proved in the contribution.\n4. The \\(83\\) excluded specifications and witnessing primes are not included as a static certificate; they are discovered afresh by the verifier.\n5. Consequently, the claim that exactly \\(83\\) candidates have a witnessing prime is unresolved without replay.\n\nThese are material because the final exhaustion depends on all \\(83\\) exclusions.\n\n### 5. Inverse-quadratic and cell-moment exclusions\n\nThe mathematical implications are correctly formulated, conditional on the exact computations:\n\n- For a column \\(x=Ae_k\\),\n  \\[\n  x^{\\mathsf T}G^{-1}x=1.\n  \\]\n- Constancy of \\(G^{-1}\\) on the stated cells makes this quadratic expression depend only on the parity-compatible cell sums.\n- The aggregate identity\n  \\[\n  \\sum_{k=1}^{23}t_i^{(k)}t_j^{(k)}\n  =\\sum_{a\\in C_i}\\sum_{b\\in C_j}G_{ab}\n  \\]\n  follows from \\(AA^{\\mathsf T}=G\\).\n- A functional nonnegative on every individually admissible pattern but negative on the required aggregate target gives a valid contradiction.\n\nThe JSON supplies the \\(21\\) claimed final certificates, and the verifier checks their signs using exact rational and integer arithmetic. But it does not include the enumerated admissible pattern sets or precomputed sign tables. Thus the two empty-pattern assertions and all nineteen Farkas inequalities still depend on actually running the verifier. Their validity cannot be inferred merely from the presence of the multipliers.\n\n### 6. Final exhaustion\n\nThe final conclusion requires all of the following exact results:\n\n\\[\n74\\,896\n=\n74\\,792+83+2+19,\n\\]\n\nno threshold-equality case, correct canonical coverage, and disjoint exhaustive coverage of all \\(104\\) normalized-square candidates. The code is designed to check these conditions, but the supplied evidence contains no independently verified successful replay. In addition, the orbit-classification and Hasse-invariance premises are not fully established within the declared dependencies.\n\nTherefore the exact universal exclusion claim cannot be marked valid from the supplied evidence. A successful independent execution together with the missing symmetry and local-quadratic-form justifications would be needed to resolve it.\n",
+            "record": {
+              "schemaVersion": 2,
+              "judgmentKind": "primary",
+              "problemId": "maximal-determinant-23",
+              "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+              "problemLedgerDigest": "sha256:26d584bf0173084bf3aeb59baf052fc6194494f5b8fc47f257b414d5a80f591d",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v2",
+                "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+                  "ledgerPosition": 3
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "maximal-determinant-23/three-star-ehlich-perturbation-exclusion",
+                  "status": "indeterminate",
+                  "premiseStatus": "missing",
+                  "summary": "The argument is broadly coherent and no counterexample or decisive algebraic error was identified, but the universal exclusion is not established by the bounded record. The decisive exhaustive computation is not accompanied by a verified successful replay or static certificate, and the symmetry reduction and local quadratic-form premises are not fully justified.",
+                  "scopeQualifications": [
+                    "The claim concerns only the exact three-toggle star family at order 23; it does not classify all three-toggle perturbations or all candidate Gram matrices.",
+                    "The determinant-lemma formulas, nonsquare obstruction, inverse-quadratic identities, and cell-moment/Farkas implications appear sound conditional on the asserted exact computations and coverage.",
+                    "A candidate-specific nonsquare argument could avoid the unavailable universal divisibility dependency because the verifier reportedly checks divisibility by 2^44 directly, but that reformulation is not supplied as the submitted proof.",
+                    "The conclusion could potentially be resolved by a successful independent execution together with proofs of canonical orbit coverage and the required local quadratic-form invariance facts."
+                  ],
+                  "evidenceIssues": [
+                    "The claimed exhaustive results over 102,799 cases—including 74,896 cases above threshold, no threshold-equality case, and 104 normalized-square cases—are hardcoded expected values without an execution transcript, per-candidate list, independently checkable aggregate certificate, or verified `verification: PASS` replay.",
+                    "The program's comparison `set(expanded) == set(specs)` is circular because `canonical_specs` is itself defined from `indexed_specs`; it does not independently prove complete and nonredundant orbit classification.",
+                    "The asserted biconditional that canonical descriptors coincide exactly under equal-sized-block permutations and leaf permutations is not proved; idempotence is insufficient.",
+                    "If partitions may initially be ordered, the simultaneous coordinate-permutation reduction to nondecreasing partitions is omitted.",
+                    "The README invokes an undeclared transaction for the universal assertion 2^22 divides det(A); that dependency is unavailable.",
+                    "The 74,792 nonsquare exclusions depend on the unexecuted exhaustive computation.",
+                    "The congruence invariance of the computed Hasse invariant and the Hilbert-symbol formulas are not proved or supplied through allowed dependency evidence.",
+                    "The 83 Hasse-invariant exclusions and their witnessing primes are generated by the verifier rather than supplied as a static certificate.",
+                    "The two empty-pattern exclusions and nineteen Farkas/cell-moment exclusions require enumerated admissible pattern sets and exact sign checks that are not supplied independently of running the verifier.",
+                    "The final identity 74,896 = 74,792 + 83 + 2 + 19, disjoint coverage of all 104 normalized-square candidates, and absence of threshold-equality cases therefore remain computationally unverified."
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "maximal-determinant-23/three-star-ehlich-perturbation-exclusion",
+                  "stance": "uncertain",
+                  "summary": "The argument is broadly coherent and no counterexample or decisive algebraic error was identified, but the universal exclusion is not established by the bounded record. The decisive exhaustive computation is not accompanied by a verified successful replay or static certificate, and the symmetry reduction and local quadratic-form premises are not fully justified.",
+                  "subjectTransactionIds": [
+                    "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:244df2e6b50fdbc2cd2986800e0967614cdb53b994f1dd02ea05ff5da9a085f0",
+              "reportDigest": "sha256:89e8c0375186e773cb98a68f993cd0a06017c9af42dc89387151b59f6a989999",
+              "judgmentId": "sha256:05b426c42d558c944cbbeda0bc3f1165bbb239423289ee4fae2a9f893bca7720"
+            }
+          }
+        ],
+        "runs": [
+          {
+            "id": "5efb7edcf748ae2156aec32565ce76ec65f5aa56703e2b32af826e69bba80f5d",
+            "ordinal": 1,
+            "ledgerHead": "b0953951ff53a2dc551ce881e288ac713c972a2e",
+            "problemLedgerHead": "f9b8f29c397afc84ab9a8fdeb1d3d07d32b5a6d5",
+            "runDigest": "sha256:5efb7edcf748ae2156aec32565ce76ec65f5aa56703e2b32af826e69bba80f5d",
+            "baseRun": null,
+            "runKind": "knowledge-build",
+            "inputs": {
+              "laneId": "sha256:6e84608bcefcf1cb79885b831baa200da747000633c2a1a1622ecc825abcb257",
+              "builderSpecDigest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb",
+              "judgmentIds": [
+                "sha256:05b426c42d558c944cbbeda0bc3f1165bbb239423289ee4fae2a9f893bca7720",
+                "sha256:930cf727e2c0d558a55d2847a67b40028d598304fa2b3a294820747aef08f13c",
+                "sha256:ae1b369675919f95760e0b246e8ecc051bb0f39539613cffd3cd2e23bb451356"
+              ],
+              "schemaVersion": 1,
+              "problemId": "maximal-determinant-23",
+              "conflictIds": [],
+              "judgmentSetDigest": "sha256:31d423a922b2553fe735a7d9c4eca5b35d8e9734081fbc031095b4d1d59baca6",
+              "projectionSpecDigest": "sha256:aff0a59fbcbce48dfae50bb7210aaec760c3757039fcd98977bfe40e9f09cabf",
+              "baseStateRun": null,
+              "buildToken": "sha256:fd4207fa4ded28a9aecc1d0adb4afda1d496d963c3faf85e68e674716b240864"
+            },
+            "judgeSpec": {
+              "id": "openrouter-hierarchical-research-builder-v2",
+              "digest": "sha256:feb31a7c5139add91f8584916d8a5e3039d1b754c3b2938355fdab40c6bb4afb"
+            },
+            "runner": {
+              "implementation": "openrouter-hierarchical-research-builder-v2",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.07051625,
+            "selection": {
+              "selectedNodeIds": [
+                "item:root/bareiss-exact-determinant-method",
+                "item:root/exact-determinant-verifier",
+                "item:root/published-record-lower-endpoint",
+                "item:root/published-record-matrix-replay",
+                "root",
+                "thread:root/exact-witness-verification",
+                "thread:root/unstructured-search"
+              ],
+              "rationale": "Nodes changed by the accepted validity batch."
+            },
+            "normalizations": [],
+            "delta": {
+              "schemaVersion": 1,
+              "operations": [
+                {
+                  "entityKind": "thread",
+                  "entityId": "root/exact-witness-verification",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/exact-witness-verification",
+                    "programId": "root",
+                    "title": "Exact witness and determinant verification",
+                    "summary": "Exact, independently replayable verification of supplied order-23 sign-matrix witnesses and their determinants.",
+                    "kind": "verification",
+                    "status": "active",
+                    "expectedExposure": "1",
+                    "conditions": [],
+                    "sourceTransactionIds": [
+                      "fb88b7832c0fa7e84c1583110a7df800571bca02"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/published-record-lower-endpoint",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/published-record-lower-endpoint",
+                    "programId": "root",
+                    "type": "result",
+                    "title": "Exact replay of the published order-23 lower endpoint",
+                    "summary": "The matrix in `matrix.txt` is a complete \\(23\\times 23\\) matrix with entries\nin \\(\\{-1,+1\\}\\), encoded as `-` and `+`. Exact fraction-free elimination\ngives\n\n\\[\n  |\\det A|=2^{22}\\,3\\,5^6\\,67\\,211\n  =2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThis independently replays the published lower endpoint already stated in the\nproblem. It does **not** claim a new record, a stronger lower bound, or\noptimality of this matrix.\n\nScope qualifications:\n- This certifies only the already stated lower endpoint D_23 ≥ 2,779,447,296,000,000.\n- It does not establish a new record, a larger lower bound, a stronger upper bound, or optimality.\n- No external provenance claim is required for the determinant certificate.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+                        "claimKey": "maximal-determinant-23/published-record-matrix-exact-replay"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "fb88b7832c0fa7e84c1583110a7df800571bca02"
+                    ],
+                    "dependencyItemIds": [
+                      "root/published-record-matrix-replay"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/published-record-matrix-replay",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/published-record-matrix-replay",
+                    "programId": "root",
+                    "type": "computation",
+                    "title": "Exact determinant computation for the supplied 23×23 sign matrix",
+                    "summary": "For the single complete matrix supplied in `matrix.txt`, exact fraction-free Bareiss elimination yields absolute determinant \\(2^{22}3\\,5^6\\,67\\,211=2{,}779{,}447{,}296{,}000{,}000\\). This computation is a replay of the stated lower endpoint and is not an exhaustive search or an optimality certificate.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+                        "claimKey": "maximal-determinant-23/published-record-matrix-exact-replay"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "fb88b7832c0fa7e84c1583110a7df800571bca02"
+                    ],
+                    "dependencyItemIds": [
+                      "root/exact-determinant-verifier"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/bareiss-exact-determinant-method",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/bareiss-exact-determinant-method",
+                    "programId": "root",
+                    "type": "method",
+                    "title": "Fraction-free exact determinant replay workflow",
+                    "summary": "Parse a sign matrix into integers, verify its dimensions and alphabet, evaluate its determinant using integer-only Bareiss fraction-free elimination with pivot-row swaps and exact-division checks, and compare the absolute determinant against both a stated integer and its stated factorization.",
+                    "claimRefs": [],
+                    "sourceTransactionIds": [
+                      "fb88b7832c0fa7e84c1583110a7df800571bca02"
+                    ],
+                    "dependencyItemIds": []
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/exact-determinant-verifier",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/exact-determinant-verifier",
+                    "programId": "root",
+                    "type": "tool",
+                    "title": "Standard-library exact determinant verifier",
+                    "summary": "The submitted `verify.py` parses `matrix.txt`, checks that it is a 23×23 matrix encoded only by `+` and `-`, performs integer-only Bareiss elimination with exact-division checks, verifies the stated factor product and absolute determinant, and reports `verification: PASS` when all checks succeed. It uses only the Python standard library.",
+                    "claimRefs": [],
+                    "sourceTransactionIds": [
+                      "fb88b7832c0fa7e84c1583110a7df800571bca02"
+                    ],
+                    "dependencyItemIds": [
+                      "root/bareiss-exact-determinant-method"
+                    ]
+                  }
+                }
+              ],
+              "contributions": [
+                {
+                  "transactionId": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+                  "claimKeys": [
+                    "maximal-determinant-23/published-record-matrix-exact-replay"
+                  ],
+                  "directProgramId": "root",
+                  "directThreadIds": [
+                    "root/exact-witness-verification"
+                  ],
+                  "itemIds": [
+                    "root/published-record-lower-endpoint",
+                    "root/published-record-matrix-replay",
+                    "root/bareiss-exact-determinant-method",
+                    "root/exact-determinant-verifier"
+                  ]
+                }
+              ]
+            },
+            "state": {
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "program",
+                  "title": "Canonical problem",
+                  "summary": "Resolve the canonical problem.",
+                  "status": "active",
+                  "contentMarkdown": "## Objective\n\nResolve the canonical problem.\n\n## Local credit context\n\nRoot program.",
+                  "subjects": [],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:4bc4e85d0ca6e4224902591c71cf9cb813718dfe5961d8be774384d474797c99"
+                },
+                "thread:root/unstructured-search": {
+                  "id": "thread:root/unstructured-search",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Unstructured search and overhead",
+                  "summary": "Future work not yet assigned to a more specific research thread.",
+                  "status": "active",
+                  "contentMarkdown": "Future work not yet assigned to a more specific research thread.\n\n**Thread kind:** unstructured\n\n**Expected local exposure:** 1\n\n**Conditions:** none",
+                  "subjects": [],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+                },
+                "thread:root/exact-witness-verification": {
+                  "id": "thread:root/exact-witness-verification",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Exact witness and determinant verification",
+                  "summary": "Exact, independently replayable verification of supplied order-23 sign-matrix witnesses and their determinants.",
+                  "status": "active",
+                  "contentMarkdown": "Exact, independently replayable verification of supplied order-23 sign-matrix witnesses and their determinants.\n\n**Thread kind:** verification\n\n**Expected local exposure:** 1\n\n**Conditions:** none",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+                      "ledgerPosition": 1,
+                      "relation": "source"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:93c21f6b8e4c27c214dc1f68fc52e95d710e6f273d08c6d40f5791c488d391c8"
+                },
+                "item:root/published-record-lower-endpoint": {
+                  "id": "item:root/published-record-lower-endpoint",
+                  "parentId": "root",
+                  "type": "result",
+                  "title": "Exact replay of the published order-23 lower endpoint",
+                  "summary": "The matrix in `matrix.txt` is a complete \\(23\\times 23\\) matrix with entries\nin \\(\\{-1,+1\\}\\), encoded as `-` and `+`. Exact fraction-free elimination\ngives\n\n\\[\n  |\\det A|=2^{22}\\,3\\,5^6\\,67\\,211\n  =2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThis independently replays the published lower endpoint already stated in the\nproblem. It does **not** claim a new record, a stronger lower bound, or\noptimality of this matrix.\n\nScope qualifications:\n- This certifies only the already stated lower endpoint D_23 ≥ 2,779,447,296,000,000.\n- It does not establish a new record, a larger lower bound, a stronger upper bound, or optimality.\n- No external provenance claim is required for the determinant certificate.",
+                  "status": "active",
+                  "contentMarkdown": "The matrix in `matrix.txt` is a complete \\(23\\times 23\\) matrix with entries\nin \\(\\{-1,+1\\}\\), encoded as `-` and `+`. Exact fraction-free elimination\ngives\n\n\\[\n  |\\det A|=2^{22}\\,3\\,5^6\\,67\\,211\n  =2{,}779{,}447{,}296{,}000{,}000.\n\\]\n\nThis independently replays the published lower endpoint already stated in the\nproblem. It does **not** claim a new record, a stronger lower bound, or\noptimality of this matrix.\n\nScope qualifications:\n- This certifies only the already stated lower endpoint D_23 ≥ 2,779,447,296,000,000.\n- It does not establish a new record, a larger lower bound, a stronger upper bound, or optimality.\n- No external provenance claim is required for the determinant certificate.\n\n## Accepted claims\n\n- `maximal-determinant-23/published-record-matrix-exact-replay` from `fb88b7832c0fa7e84c1583110a7df800571bca02`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+                      "ledgerPosition": 1,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/published-record-matrix-replay",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:4b88e342774f9838818fe8015ce40543646d42090c8e87a21a9a29334c5ddabb"
+                },
+                "item:root/published-record-matrix-replay": {
+                  "id": "item:root/published-record-matrix-replay",
+                  "parentId": "root",
+                  "type": "computation",
+                  "title": "Exact determinant computation for the supplied 23×23 sign matrix",
+                  "summary": "For the single complete matrix supplied in `matrix.txt`, exact fraction-free Bareiss elimination yields absolute determinant \\(2^{22}3\\,5^6\\,67\\,211=2{,}779{,}447{,}296{,}000{,}000\\). This computation is a replay of the stated lower endpoint and is not an exhaustive search or an optimality certificate.",
+                  "status": "active",
+                  "contentMarkdown": "For the single complete matrix supplied in `matrix.txt`, exact fraction-free Bareiss elimination yields absolute determinant \\(2^{22}3\\,5^6\\,67\\,211=2{,}779{,}447{,}296{,}000{,}000\\). This computation is a replay of the stated lower endpoint and is not an exhaustive search or an optimality certificate.\n\n## Accepted claims\n\n- `maximal-determinant-23/published-record-matrix-exact-replay` from `fb88b7832c0fa7e84c1583110a7df800571bca02`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+                      "ledgerPosition": 1,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/exact-determinant-verifier",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:abd918dd781fca6a73b48a952e7f13c3e19ce737856e0fc92148d20405caa4dd"
+                },
+                "item:root/bareiss-exact-determinant-method": {
+                  "id": "item:root/bareiss-exact-determinant-method",
+                  "parentId": "root",
+                  "type": "method",
+                  "title": "Fraction-free exact determinant replay workflow",
+                  "summary": "Parse a sign matrix into integers, verify its dimensions and alphabet, evaluate its determinant using integer-only Bareiss fraction-free elimination with pivot-row swaps and exact-division checks, and compare the absolute determinant against both a stated integer and its stated factorization.",
+                  "status": "active",
+                  "contentMarkdown": "Parse a sign matrix into integers, verify its dimensions and alphabet, evaluate its determinant using integer-only Bareiss fraction-free elimination with pivot-row swaps and exact-division checks, and compare the absolute determinant against both a stated integer and its stated factorization.",
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+                      "ledgerPosition": 1,
+                      "relation": "source"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:fd1ebb006141f077297bb9eb0ec81af7eecf2b68e0daee97db3e0073b23b347e"
+                },
+                "item:root/exact-determinant-verifier": {
+                  "id": "item:root/exact-determinant-verifier",
+                  "parentId": "root",
+                  "type": "tool",
+                  "title": "Standard-library exact determinant verifier",
+                  "summary": "The submitted `verify.py` parses `matrix.txt`, checks that it is a 23×23 matrix encoded only by `+` and `-`, performs integer-only Bareiss elimination with exact-division checks, verifies the stated factor product and absolute determinant, and reports `verification: PASS` when all checks succeed. It uses only the Python standard library.",
+                  "status": "active",
+                  "contentMarkdown": "The submitted `verify.py` parses `matrix.txt`, checks that it is a 23×23 matrix encoded only by `+` and `-`, performs integer-only Bareiss elimination with exact-division checks, verifies the stated factor product and absolute determinant, and reports `verification: PASS` when all checks succeed. It uses only the Python standard library.",
+                  "subjects": [],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "fb88b7832c0fa7e84c1583110a7df800571bca02",
+                      "ledgerPosition": 1,
+                      "relation": "source"
+                    },
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/bareiss-exact-determinant-method",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:1eade550ebd7c1cade976330b4e302b26bcdab90cfea4c6d8b241aeecb2d1ae9"
+                }
+              },
+              "stateDigest": "sha256:84cfe84cca17f086e5bde4d6ed699586ae9f92e6a498af3a454884bc93ed94d0"
+            },
+            "revisionIds": [],
+            "addedRevisionIds": [],
+            "changedNodeIds": [
+              "item:root/bareiss-exact-determinant-method",
+              "item:root/exact-determinant-verifier",
+              "item:root/published-record-lower-endpoint",
+              "item:root/published-record-matrix-replay",
+              "root",
+              "thread:root/exact-witness-verification",
+              "thread:root/unstructured-search"
+            ],
+            "reportDigest": "sha256:84cfe84cca17f086e5bde4d6ed699586ae9f92e6a498af3a454884bc93ed94d0",
+            "revisionSemantics": "neutral-knowledge"
+          }
+        ],
+        "revisions": [],
+        "reports": [],
+        "latestRunId": "5efb7edcf748ae2156aec32565ce76ec65f5aa56703e2b32af826e69bba80f5d"
+      }
+    },
+    {
       "id": "sha256:0a1f1f853f4a847f042dfc9565d1a6f1b867340e7d5735c153d1d08b1440172c",
       "problemId": "maximal-determinant-23",
       "label": "openrouter-research-program-builder-v2",
@@ -56554,6 +57172,41 @@
     }
   ],
   "hierarchicalCreditProjections": [
+    {
+      "id": "openrouter-research-credit-v2@sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
+      "problemId": "maximal-determinant-23",
+      "label": "openrouter-research-credit-v2",
+      "projectionSpec": {
+        "id": "openrouter-research-credit-v2",
+        "description": "A common-horizon two-term hierarchical credit overlay over the default batched research-program projection.",
+        "digest": "sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
+        "engine": "overlay-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [
+          {
+            "name": "research",
+            "projectionId": "openrouter-research-v1",
+            "artifactRole": "research-program-state"
+          }
+        ],
+        "scheduling": {
+          "minimumIntervalSeconds": 3600
+        },
+        "runner": {
+          "implementation": "openrouter-hierarchical-research-credit-v2",
+          "spec": "protocol/judges/openrouter-hierarchical-research-credit-v2.json"
+        }
+      },
+      "researchProjectionIds": [
+        "openrouter-research-v1"
+      ],
+      "latestRunDigest": null,
+      "selectionStatus": "pending",
+      "runCount": 0,
+      "runs": []
+    },
     {
       "id": "openrouter-research-credit-v2@sha256:afd34fc906510f4e8367f4c1757e2894ff3d53b369c4f285fee8feae5804d009",
       "problemId": "metric-universality-price",
