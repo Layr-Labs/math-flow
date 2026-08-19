@@ -7,7 +7,7 @@ import sys
 import time
 from pathlib import Path
 
-from .artifacts import verify_bundle
+from .artifacts import read_verified_artifact, verify_bundle
 from .attestations import (
     load_verifier_spec,
     plan_verifier_attestation,
@@ -59,6 +59,7 @@ from .projection_queue import (
 )
 from .repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
 from .research_projection import (
+    run_research_build_bundle,
     replay_research_protocol,
     run_research_credit_refresh_bundle,
     run_research_update_bundle,
@@ -1021,13 +1022,30 @@ def main(argv: list[str] | None = None) -> int:
                 else args.builder_digest
             )
             judgment_ids = []
+            loaded_judgments: list[
+                tuple[Path, dict[str, object], dict[str, object], str]
+            ] = []
+            validity_by_subject: dict[str, str] = {}
             reconciliation_dependencies: dict[str, dict[str, object]] = {}
             for bundle_dir in args.judgment_dirs:
-                _, judgment, _ = load_judgment_bundle(bundle_dir)
+                manifest, judgment, _ = load_judgment_bundle(bundle_dir)
                 if judgment.get("problemId") != args.problem:
                     raise MathFlowError("knowledge trigger judgment belongs to another problem")
                 judgment_id = str(judgment["judgmentId"])
                 judgment_ids.append(judgment_id)
+                loaded_judgments.append((bundle_dir, manifest, judgment, judgment_id))
+                if manifest.get("outputProfile") == "math-flow/validity-judgment-v2":
+                    subjects = judgment.get("subjects")
+                    if not isinstance(subjects, list) or len(subjects) != 1:
+                        raise MathFlowError(
+                            "knowledge trigger validity judgment must have one subject"
+                        )
+                    subject_id = str(subjects[0]["id"])
+                    if subject_id in validity_by_subject:
+                        raise MathFlowError(
+                            "knowledge trigger has multiple validity judgments for one subject"
+                        )
+                    validity_by_subject[subject_id] = judgment_id
                 reconciliation = judgment.get("reconciliation")
                 if isinstance(reconciliation, dict):
                     reconciliation_dependencies[judgment_id] = {
@@ -1036,6 +1054,39 @@ def main(argv: list[str] | None = None) -> int:
                             reconciliation["inputJudgmentIds"]
                         ),
                     }
+            judgment_dependencies: dict[str, list[str]] = {}
+            for bundle_dir, manifest, _, judgment_id in loaded_judgments:
+                if manifest.get("outputProfile") != "math-flow/validity-judgment-v2":
+                    continue
+                try:
+                    packet = json.loads(
+                        read_verified_artifact(
+                            bundle_dir, manifest, "judgment-dependency-packet"
+                        )
+                    )
+                except json.JSONDecodeError as exc:
+                    raise MathFlowError(
+                        "knowledge trigger validity dependency packet is invalid JSON"
+                    ) from exc
+                dependency_transactions = packet.get("dependencyTransactionIds")
+                if not isinstance(dependency_transactions, list) or any(
+                    not isinstance(item, str) for item in dependency_transactions
+                ):
+                    raise MathFlowError(
+                        "knowledge trigger validity dependency packet is invalid"
+                    )
+                dependency_judgments: list[str] = []
+                for transaction_id in dependency_transactions:
+                    dependency_judgment = validity_by_subject.get(transaction_id)
+                    if dependency_judgment is None:
+                        raise MathFlowError(
+                            "knowledge trigger validity dependency has no supplied judgment: "
+                            f"{transaction_id}"
+                        )
+                    dependency_judgments.append(dependency_judgment)
+                judgment_dependencies[judgment_id] = sorted(
+                    set(dependency_judgments)
+                )
             conflict_ids = []
             conflict_dependencies: dict[str, list[str]] = {}
             if args.conflicts:
@@ -1076,6 +1127,7 @@ def main(argv: list[str] | None = None) -> int:
                 conflict_dependencies,
                 reconciliation_dependencies,
                 str(ledger(root, args.problem, args.head)["problemLedgerDigest"]),
+                judgment_dependencies or None,
             )
             _write_json(result, str(args.output) if args.output else None)
             return 0
@@ -1090,18 +1142,36 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         elif args.command == "knowledge-build":
             claim = json.loads(args.claim.read_text(encoding="utf-8"))
-            result = run_knowledge_build_bundle(
-                root,
-                args.problem,
-                args.builder,
-                args.head,
-                claim,
-                args.judgment_dirs,
-                args.conflicts,
-                args.output_dir,
-                base_run=args.base_run,
-                checkpoint_dir=args.checkpoint_dir,
-            )
+            builder = load_judge_spec(args.builder)
+            if (
+                builder["implementation"]
+                == "openrouter-hierarchical-research-builder-v2"
+            ):
+                result = run_research_build_bundle(
+                    root,
+                    args.problem,
+                    args.builder,
+                    args.head,
+                    claim,
+                    args.judgment_dirs,
+                    args.conflicts,
+                    args.output_dir,
+                    base_run=args.base_run,
+                    checkpoint_dir=args.checkpoint_dir,
+                )
+            else:
+                result = run_knowledge_build_bundle(
+                    root,
+                    args.problem,
+                    args.builder,
+                    args.head,
+                    claim,
+                    args.judgment_dirs,
+                    args.conflicts,
+                    args.output_dir,
+                    base_run=args.base_run,
+                    checkpoint_dir=args.checkpoint_dir,
+                )
         elif args.command == "knowledge-complete":
             if args.state_run_dir:
                 manifest, state_run_digest = verify_bundle(args.state_run_dir)

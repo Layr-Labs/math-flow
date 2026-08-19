@@ -495,21 +495,68 @@ def apply_research_program_delta(
     accepted_claims: list[dict[str, object]],
     judgment_id: str,
 ) -> dict[str, object]:
-    validate_research_program_state(base_state)
-    if ledger_head != subject_transaction_id or not GIT_SHA.fullmatch(ledger_head):
-        raise MathFlowError("research program transition must be bound to its subject transaction")
+    batch_delta = {
+        "schemaVersion": 1,
+        "operations": delta.get("operations") if isinstance(delta, dict) else None,
+        "contributions": [
+            {
+                "transactionId": subject_transaction_id,
+                **(
+                    delta.get("contribution", {})
+                    if isinstance(delta, dict)
+                    and isinstance(delta.get("contribution"), dict)
+                    else {}
+                ),
+            }
+        ],
+    }
     if not isinstance(delta, dict) or set(delta) != {
         "schemaVersion",
         "operations",
         "contribution",
     }:
         raise MathFlowError("research program delta has an invalid envelope")
+    return apply_research_program_batch_delta(
+        base_state,
+        batch_delta,
+        ledger_head=ledger_head,
+        accepted_claims_by_transaction={subject_transaction_id: accepted_claims},
+        judgment_ids={subject_transaction_id: judgment_id},
+    )
+
+
+def apply_research_program_batch_delta(
+    base_state: dict[str, object],
+    delta: object,
+    *,
+    ledger_head: str,
+    accepted_claims_by_transaction: dict[str, list[dict[str, object]]],
+    judgment_ids: dict[str, str],
+) -> dict[str, object]:
+    validate_research_program_state(base_state)
+    if not GIT_SHA.fullmatch(ledger_head):
+        raise MathFlowError("research program transition needs a canonical ledger head")
+    subject_transaction_ids = list(accepted_claims_by_transaction)
+    subject_set = set(subject_transaction_ids)
+    if (
+        not subject_transaction_ids
+        or len(subject_set) != len(subject_transaction_ids)
+        or any(not GIT_SHA.fullmatch(item) for item in subject_transaction_ids)
+        or set(judgment_ids) != subject_set
+    ):
+        raise MathFlowError("research program batch has invalid accepted subjects")
+    if not isinstance(delta, dict) or set(delta) != {
+        "schemaVersion",
+        "operations",
+        "contributions",
+    }:
+        raise MathFlowError("research program batch delta has an invalid envelope")
     if delta.get("schemaVersion") != 1:
         raise MathFlowError("research program delta has an unsupported version")
     operations = delta.get("operations")
-    contribution_value = delta.get("contribution")
-    if not isinstance(operations, list) or not isinstance(contribution_value, dict):
-        raise MathFlowError("research program delta content is invalid")
+    contribution_values = delta.get("contributions")
+    if not isinstance(operations, list) or not isinstance(contribution_values, list):
+        raise MathFlowError("research program batch delta content is invalid")
 
     result = copy.deepcopy(base_state)
     result.pop("stateDigest", None)
@@ -551,12 +598,13 @@ def apply_research_program_delta(
         normalized = _normalize_entity_value(
             str(kind), entity_id, operation.get("value")
         )
-        allowed_sources = set(existing_contributions) | {subject_transaction_id}
-        if subject_transaction_id not in normalized.get("sourceTransactionIds", []):
+        normalized_sources = set(normalized.get("sourceTransactionIds", []))
+        allowed_sources = set(existing_contributions) | subject_set
+        if not normalized_sources & subject_set:
             raise MathFlowError(
-                "every research program update must cite its subject transaction"
+                "every research program batch update must cite a claimed subject"
             )
-        if not set(normalized.get("sourceTransactionIds", [])) <= allowed_sources:
+        if not normalized_sources <= allowed_sources:
             raise MathFlowError(
                 "research program update cites a transaction outside accepted state"
             )
@@ -593,79 +641,118 @@ def apply_research_program_delta(
                     )
         collection[entity_id] = normalized
 
-    claim_by_key = {str(claim["claimKey"]): claim for claim in accepted_claims}
-    if len(claim_by_key) != len(accepted_claims):
-        raise MathFlowError("accepted claims contain duplicate claim keys")
     contributions = result["contributions"]
     assert isinstance(contributions, dict)
-    if set(contribution_value) != {
-        "claimKeys",
-        "directProgramId",
-        "directThreadIds",
-        "itemIds",
-    }:
-        raise MathFlowError("research program contribution mapping has invalid fields")
-    claim_keys = _require_strings(
-        contribution_value.get("claimKeys"), "research program contribution claimKeys"
-    )
-    if set(claim_keys) != set(claim_by_key):
+    contribution_by_transaction: dict[str, dict[str, object]] = {}
+    for contribution_value in contribution_values:
+        if not isinstance(contribution_value, dict) or set(contribution_value) != {
+            "transactionId",
+            "claimKeys",
+            "directProgramId",
+            "directThreadIds",
+            "itemIds",
+        }:
+            raise MathFlowError(
+                "research program batch contribution mapping has invalid fields"
+            )
+        transaction_id = contribution_value.get("transactionId")
+        if (
+            not isinstance(transaction_id, str)
+            or transaction_id not in subject_set
+            or transaction_id in contribution_by_transaction
+        ):
+            raise MathFlowError(
+                "research program batch contribution has an invalid transaction"
+            )
+        contribution_by_transaction[transaction_id] = contribution_value
+    if set(contribution_by_transaction) != subject_set:
         raise MathFlowError(
-            "research program contribution must include every accepted claim exactly once"
+            "research program batch must map every accepted submission exactly once"
         )
-    direct_program_id = _require_identifier(
-        contribution_value.get("directProgramId"), "contribution direct program ID"
-    )
-    direct_thread_ids = _require_strings(
-        contribution_value.get("directThreadIds"), "contribution directThreadIds"
-    )
-    item_ids = _require_strings(
-        contribution_value.get("itemIds"), "contribution itemIds"
-    )
-    contribution_id = subject_transaction_id
-    if contribution_id in contributions:
-        raise MathFlowError("research program state already contains this contribution")
-    dependency_ids: list[str] = []
-    for claim_key in claim_keys:
-        raw_dependencies = claim_by_key[claim_key].get("dependencyTransactionIds")
-        if not isinstance(raw_dependencies, list):
-            raise MathFlowError("accepted claim dependencies are invalid")
-        dependency_ids.extend(str(item) for item in raw_dependencies)
-    contribution = _with_record_digest(
-        {
-            "id": contribution_id,
-            "transactionId": subject_transaction_id,
-            "claimKeys": claim_keys,
-            "directProgramId": direct_program_id,
-            "directThreadIds": direct_thread_ids,
-            "itemIds": item_ids,
-            "dependencyTransactionIds": list(dict.fromkeys(dependency_ids)),
-            "judgmentId": judgment_id,
-        }
-    )
-    contributions[contribution_id] = contribution
+
+    contribution_item_ids: dict[str, list[str]] = {}
+    for contribution_id in subject_transaction_ids:
+        accepted_claims = accepted_claims_by_transaction[contribution_id]
+        claim_by_key = {str(claim["claimKey"]): claim for claim in accepted_claims}
+        if not accepted_claims or len(claim_by_key) != len(accepted_claims):
+            raise MathFlowError("accepted claims contain duplicate or empty claim keys")
+        contribution_value = contribution_by_transaction[contribution_id]
+        claim_keys = _require_strings(
+            contribution_value.get("claimKeys"),
+            "research program contribution claimKeys",
+        )
+        if set(claim_keys) != set(claim_by_key):
+            raise MathFlowError(
+                "research program contribution must include every accepted claim exactly once"
+            )
+        direct_program_id = _require_identifier(
+            contribution_value.get("directProgramId"),
+            "contribution direct program ID",
+        )
+        direct_thread_ids = _require_strings(
+            contribution_value.get("directThreadIds"),
+            "contribution directThreadIds",
+        )
+        item_ids = _require_strings(
+            contribution_value.get("itemIds"), "contribution itemIds"
+        )
+        if contribution_id in contributions:
+            raise MathFlowError(
+                "research program state already contains this contribution"
+            )
+        dependency_ids: list[str] = []
+        for claim_key in claim_keys:
+            raw_dependencies = claim_by_key[claim_key].get(
+                "dependencyTransactionIds"
+            )
+            if not isinstance(raw_dependencies, list):
+                raise MathFlowError("accepted claim dependencies are invalid")
+            dependency_ids.extend(str(item) for item in raw_dependencies)
+        dependency_ids = list(dict.fromkeys(dependency_ids))
+        if not set(dependency_ids) <= (set(contributions) | subject_set):
+            raise MathFlowError(
+                "accepted contribution depends on a submission absent from research state"
+            )
+        contribution = _with_record_digest(
+            {
+                "id": contribution_id,
+                "transactionId": contribution_id,
+                "claimKeys": claim_keys,
+                "directProgramId": direct_program_id,
+                "directThreadIds": direct_thread_ids,
+                "itemIds": item_ids,
+                "dependencyTransactionIds": dependency_ids,
+                "judgmentId": judgment_ids[contribution_id],
+            }
+        )
+        contributions[contribution_id] = contribution
+        contribution_item_ids[contribution_id] = item_ids
 
     result["ledgerHead"] = ledger_head
     result["baseStateDigest"] = base_state["stateDigest"]
     next_state = _with_state_digest(result)
     validate_research_program_state(next_state, str(base_state["problemId"]))
 
-    new_claim_refs = {
-        (subject_transaction_id, str(claim["claimKey"])) for claim in accepted_claims
-    }
-    contribution_items = {
-        item_id: next_state["items"][item_id]
-        for item_id in item_ids
-    }
-    represented = {
-        (str(ref["transactionId"]), str(ref["claimKey"]))
-        for item in contribution_items.values()
-        for ref in item.get("claimRefs", [])
-    }
-    missing = new_claim_refs - represented
-    if missing:
-        raise MathFlowError(
-            f"accepted claim is not represented by a research item: {sorted(missing)[0][1]}"
-        )
+    for contribution_id in subject_transaction_ids:
+        accepted_claims = accepted_claims_by_transaction[contribution_id]
+        new_claim_refs = {
+            (contribution_id, str(claim["claimKey"])) for claim in accepted_claims
+        }
+        contribution_items = {
+            item_id: next_state["items"][item_id]
+            for item_id in contribution_item_ids[contribution_id]
+        }
+        represented = {
+            (str(ref["transactionId"]), str(ref["claimKey"]))
+            for item in contribution_items.values()
+            for ref in item.get("claimRefs", [])
+        }
+        missing = new_claim_refs - represented
+        if missing:
+            raise MathFlowError(
+                "accepted claim is not represented by a research item: "
+                f"{sorted(missing)[0][1]}"
+            )
     return next_state
 
 

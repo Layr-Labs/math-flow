@@ -68,7 +68,7 @@ class ProviderFreeScaleProbeTests(unittest.TestCase):
                 maximum_judgments_per_build=2,
             )
 
-    def test_hosted_workflows_group_by_verified_judgment_stream(self) -> None:
+    def test_hosted_workflows_parallelize_runs_but_reuse_projection_streams(self) -> None:
         root = Path(__file__).resolve().parents[1]
         projection = (root / ".github/workflows/project-openrouter.yml").read_text(
             encoding="utf-8"
@@ -80,11 +80,12 @@ class ProviderFreeScaleProbeTests(unittest.TestCase):
             encoding="utf-8"
         )
 
-        self.assertIn("inputs.judgment_stream_id || inputs.problem", projection)
+        self.assertNotIn("\nconcurrency:\n", projection)
         self.assertIn(
             'judgment_stream_id does not match the governed primary judge.',
             projection,
         )
+        self.assertIn("reconciliation_enabled", projection)
         self.assertIn('--repo "$GITHUB_REPOSITORY"', projection)
         for caller in (auto_merge, wakeup):
             self.assertIn("group_by(.judgmentStreamId)", caller)

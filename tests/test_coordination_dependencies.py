@@ -35,6 +35,7 @@ class CoordinationDependencyTests(unittest.TestCase):
         now: int,
         conflict_dependencies: dict[str, list[str]] | None = None,
         reconciliation_dependencies: dict[str, dict[str, object]] | None = None,
+        judgment_dependencies: dict[str, list[str]] | None = None,
     ) -> dict[str, object]:
         return record_completed_inputs(
             self.scheduler,
@@ -46,6 +47,7 @@ class CoordinationDependencyTests(unittest.TestCase):
             now=now,
             conflict_dependencies=conflict_dependencies,
             reconciliation_dependencies=reconciliation_dependencies,
+            judgment_dependencies=judgment_dependencies,
         )
 
     def complete(self, lane: dict[str, object], claim: dict[str, object], now: int) -> None:
@@ -318,6 +320,64 @@ class CoordinationDependencyTests(unittest.TestCase):
             stored["pendingJudgmentIds"], [primary_one, primary_two]
         )
         self.assertEqual(stored["pendingConflictIds"], [conflict])
+
+    def test_submission_dependencies_are_claimed_atomically(self) -> None:
+        premise = digest(1)
+        dependent = digest(2)
+        independent = digest(3)
+        lane = self.record(
+            [premise, dependent, independent],
+            [],
+            now=10,
+            judgment_dependencies={dependent: [premise], independent: []},
+        )
+
+        first = claim_due_build(self.scheduler, str(lane["laneId"]), 10, 2)
+        self.assertEqual(first["judgmentIds"], [premise, dependent])
+        self.complete(lane, first, 11)
+
+        second = claim_due_build(self.scheduler, str(lane["laneId"]), 11, 2)
+        self.assertEqual(second["judgmentIds"], [independent])
+
+    def test_submission_dependency_larger_than_policy_is_not_split(self) -> None:
+        premise = digest(1)
+        dependent = digest(2)
+        lane = self.record(
+            [premise, dependent],
+            [],
+            now=10,
+            judgment_dependencies={dependent: [premise]},
+        )
+
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "dependency component exceeds maximum judgments per build \\(2 > 1\\)",
+        ):
+            claim_due_build(self.scheduler, str(lane["laneId"]), 10, 1)
+
+    def test_content_addressed_submission_dependencies_cannot_drift(self) -> None:
+        premise = digest(1)
+        replacement = digest(3)
+        dependent = digest(2)
+        lane = self.record(
+            [premise, replacement, dependent],
+            [],
+            now=10,
+            judgment_dependencies={dependent: [premise]},
+        )
+
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "judgment dependency changed for content-addressed ID",
+        ):
+            self.record(
+                [premise, replacement, dependent],
+                [],
+                now=20,
+                judgment_dependencies={dependent: [replacement]},
+            )
+        stored = load_scheduler(self.scheduler)["lanes"][str(lane["laneId"])]
+        self.assertEqual(stored["judgmentDependencies"], {dependent: [premise]})
 
     def test_content_addressed_dependency_records_cannot_drift(self) -> None:
         primary_one = digest(1)

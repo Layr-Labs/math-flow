@@ -65,6 +65,7 @@ EXPECTED_IMPLEMENTATIONS = {
         "openrouter-knowledge-builder-v1",
         "openrouter-knowledge-builder-v2",
         "openrouter-knowledge-builder-v3",
+        "openrouter-hierarchical-research-builder-v2",
     },
 }
 LOGIN = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$")
@@ -271,14 +272,40 @@ def validate_projection_spec(
             )
         return value
 
+    resolved_implementations: dict[str, str | None] = {}
     for field, implementations in EXPECTED_IMPLEMENTATIONS.items():
-        reference = _projection_reference(value.get(field), field)
+        raw_reference = value.get(field)
+        if field == "reconciliationJudge" and raw_reference is None:
+            resolved_implementations[field] = None
+            continue
+        reference = _projection_reference(raw_reference, field)
         judge = _json_object(read_text(reference), f"judge specification {reference}")
-        if judge.get("implementation") not in implementations:
+        implementation = judge.get("implementation")
+        if implementation not in implementations:
             raise MathFlowError(
                 f"projection {projection_id!r} {field} must use one of "
                 f"{', '.join(sorted(implementations))}"
             )
+        resolved_implementations[field] = str(implementation)
+
+    reconciliation = resolved_implementations["reconciliationJudge"]
+    primary = resolved_implementations["primaryJudge"]
+    builder = resolved_implementations["knowledgeBuilder"]
+    if reconciliation is None and not (
+        primary == "openrouter-validity-judgment-v2"
+        and builder == "openrouter-hierarchical-research-builder-v2"
+    ):
+        raise MathFlowError(
+            f"projection {projection_id!r} may omit reconciliation only for the "
+            "validity-v2 hierarchical research pipeline"
+        )
+    if builder == "openrouter-hierarchical-research-builder-v2" and (
+        primary != "openrouter-validity-judgment-v2" or reconciliation is not None
+    ):
+        raise MathFlowError(
+            f"projection {projection_id!r} hierarchical research builder requires "
+            "validity-v2 primary judgments and no reconciliation stage"
+        )
 
     scheduling = value.get("scheduling")
     if not isinstance(scheduling, dict) or set(scheduling) != SCHEDULING_FIELDS:

@@ -6,6 +6,7 @@ import unittest
 from math_flow.errors import MathFlowError
 from math_flow.research_state import (
     apply_research_program_delta,
+    apply_research_program_batch_delta,
     empty_research_program_state,
     materialize_credit_evaluations,
     validate_hierarchical_credit_state,
@@ -125,6 +126,120 @@ def first_credit() -> dict[str, object]:
 
 
 class ResearchStateTests(unittest.TestCase):
+    def test_dependency_connected_submissions_apply_in_one_batch(self) -> None:
+        base = empty_research_program_state("demo")
+        operations = list(first_delta()["operations"])
+        operations.extend(
+            [
+                {
+                    "entityKind": "thread",
+                    "entityId": "root/follow-up-line",
+                    "baseDigest": None,
+                    "value": {
+                        "id": "root/follow-up-line",
+                        "programId": "root",
+                        "title": "Follow-up line",
+                        "summary": "Use the first accepted result.",
+                        "kind": "research",
+                        "status": "active",
+                        "expectedExposure": "2",
+                        "conditions": [],
+                        "sourceTransactionIds": [TX2],
+                    },
+                },
+                {
+                    "entityKind": "item",
+                    "entityId": "root/result-two",
+                    "baseDigest": None,
+                    "value": {
+                        "id": "root/result-two",
+                        "programId": "root",
+                        "type": "result",
+                        "title": "Second result",
+                        "summary": "A dependent accepted conclusion.",
+                        "claimRefs": [
+                            {"transactionId": TX2, "claimKey": "follow-up"}
+                        ],
+                        "sourceTransactionIds": [TX2],
+                        "dependencyItemIds": ["root/result-one"],
+                    },
+                },
+            ]
+        )
+        post = apply_research_program_batch_delta(
+            base,
+            {
+                "schemaVersion": 1,
+                "operations": operations,
+                "contributions": [
+                    {"transactionId": TX1, **first_delta()["contribution"]},
+                    {
+                        "transactionId": TX2,
+                        "claimKeys": ["follow-up"],
+                        "directProgramId": "root",
+                        "directThreadIds": ["root/follow-up-line"],
+                        "itemIds": ["root/result-two"],
+                    },
+                ],
+            },
+            ledger_head=TX2,
+            accepted_claims_by_transaction={
+                TX1: [claim(TX1, "main")],
+                TX2: [claim(TX2, "follow-up", [TX1])],
+            },
+            judgment_ids={TX1: JUDGMENT, TX2: "sha256:" + "d" * 64},
+        )
+        self.assertEqual(set(post["contributions"]), {TX1, TX2})
+        self.assertEqual(
+            post["contributions"][TX2]["dependencyTransactionIds"], [TX1]
+        )
+
+    def test_batch_rejects_dependency_absent_from_state_and_batch(self) -> None:
+        base = empty_research_program_state("demo")
+        delta = first_delta()
+        with self.assertRaisesRegex(MathFlowError, "absent from research state"):
+            apply_research_program_batch_delta(
+                base,
+                {
+                    "schemaVersion": 1,
+                    "operations": [
+                        {
+                            **operation,
+                            "value": {
+                                **operation["value"],
+                                "sourceTransactionIds": [TX2],
+                                **(
+                                    {
+                                        "claimRefs": [
+                                            {
+                                                "transactionId": TX2,
+                                                "claimKey": "follow-up",
+                                            }
+                                        ]
+                                    }
+                                    if operation["entityKind"] == "item"
+                                    and operation["value"]["type"] == "result"
+                                    else {}
+                                ),
+                            },
+                        }
+                        for operation in delta["operations"]
+                    ],
+                    "contributions": [
+                        {
+                            "transactionId": TX2,
+                            **delta["contribution"],
+                            "claimKeys": ["follow-up"],
+                        }
+                    ],
+                },
+                ledger_head=TX2,
+                accepted_claims_by_transaction={
+                    TX2: [claim(TX2, "follow-up", [TX1])]
+                },
+                judgment_ids={TX2: JUDGMENT},
+            )
+
     def test_atomic_program_update_and_hierarchical_credit(self) -> None:
         base = empty_research_program_state("demo")
         post = apply_research_program_delta(

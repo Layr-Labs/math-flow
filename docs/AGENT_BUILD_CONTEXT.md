@@ -237,8 +237,9 @@ preference.
 | Approved projection registry | Implemented | `math_flow/governance.py`, `protocol/projections/` |
 | Permissioned governed admission | Implemented; native reviews or exact `/approve-admission <full-head-SHA>` comments | `math_flow/governance.py`, `.github/workflows/admission-control.yml` |
 | Parallel primary judgments | Implemented | `math_flow/judgments.py` |
-| Conflict detection and reconciliation | Implemented locally and in the hosted projection workflow | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
-| Coalescing, leased formation lanes | Implemented | `math_flow/coordination.py` |
+| Conflict detection and reconciliation | Implemented for legacy projections; the default validity-v2 path omits this stage | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
+| Coalescing, leased formation lanes | Implemented, including atomic submission-dependency components | `math_flow/coordination.py` |
+| Batched hierarchical research state | Implemented for the default validity-v2 projection; invalid and indeterminate claims are excluded | `math_flow/research_projection.py`, `math_flow/research_state.py` |
 | Holistic hierarchical state and revisions | Implemented | `math_flow/formation.py`, `math_flow/knowledge.py` |
 | Content-addressed projection publisher | Implemented, including optimistic cross-problem merge/retry and bounded GitHub commits | `math_flow/coordination.py`, `math_flow/projection_queue.py`, `math_flow/github_projection.py` |
 | Provider-free congestion probe | Implemented; models concurrent problems, solvers, judge streams, projection lanes, atomic reconciliations, throttling, failure recovery, optimistic publication, chunking, catalog export, and agent context with zero provider calls | `math_flow/scale_probe.py`, `tests/test_scale_probe.py` |
@@ -255,7 +256,8 @@ preference.
 The approved hosted projections are:
 
 - `openrouter-research-v1`, the wildcard default knowledge projection. It uses
-  the neutral research-program v2 builder and a five-minute formation interval
+  parallel validity-v2 judgments, no reconciliation stage, the batched
+  hierarchical research-state v2 builder, and a five-minute formation interval
   for every admitted problem with a nonempty canonical ledger;
 - `openrouter-no-three-in-line-research-programs-v2`, a knowledge-only profile
   for `no-three-in-line-77` that reuses the same immutable primary and
@@ -469,13 +471,14 @@ The ordinary solver path is fully automatic:
    no mathematical judgment effect.
 5. OpenRouter coverage planning fans out one primary judgment for each
    transaction not covered by the active judge-spec digest.
-6. The workflow reconstructs the complete verified primary set, derives the
-   exact current conflicts, reuses matching published reconciliations, and fans
-   out one OpenRouter call for each missing conflict reconciliation.
-7. Completed primary and reconciliation judgments are claimed dependency-
-   atomically into one serialized knowledge build, then published with the
-   updated scheduler, indexes, and viewer catalog. Later knowledge projections
-   using the same judge identities reuse those published judgments.
+6. The default validity-v2 path reconstructs the complete verified primary set
+   and derives the submission dependency graph directly from immutable validity
+   packets. Legacy projections additionally derive current conflicts, reuse
+   matching published reconciliations, and fan out missing reconciliation calls.
+7. Completed judgments are claimed dependency-atomically into one batched
+   knowledge build, then published with the updated scheduler, indexes, and
+   viewer catalog. Later knowledge projections using the same judge identities
+   reuse those published judgments.
 8. Cross-problem publications three-way merge disjoint scheduler lanes against
    the latest orphan-branch head and retry expected-head races. A scheduled
    wake-up pass redispatches due coalesced lanes every five minutes. Formation
@@ -505,12 +508,12 @@ Formation caches successful provider stages by exact request digest. Empty
 assistant messages are retried up to three times and are never checkpointed;
 length-truncated responses are also non-cacheable.
 
-Hosted reconciliation is implemented and fail-closed. Deterministic and
-fake-provider tests cover opposed primaries, conflict derivation, reconciliation
-reuse, dependency-atomic formation, and rejection of missing conflict inputs.
-The hosted research-program run exercised the no-conflict branch successfully;
-a real repository event containing opposed current primary judgments is still
-needed to exercise a paid reconciliation call end to end.
+Hosted reconciliation remains implemented and fail-closed for legacy
+projections. Deterministic and fake-provider tests cover opposed primaries,
+conflict derivation, reconciliation reuse, dependency-atomic formation, and
+rejection of missing conflict inputs. The default validity-v2 projection does
+not create a second adjudication layer: its builder consumes validity outcomes
+directly and refuses dependencies excluded from accepted research state.
 
 ## Agent roles and working conventions
 
@@ -698,6 +701,10 @@ upgrade path.
 
 - `README.md` — repository overview and common commands.
 - `docs/MVP.md` — architecture, phased roadmap, and deferred decisions.
+- `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V2.md` — current default validity-only,
+  dependency-safe batched research-state formation architecture.
+- `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V1.md` — serialized replay and
+  hierarchical-credit reference path.
 - `docs/PROJECTION_PROTOCOL.md` — run envelopes, profiles, revisions, and
   builder flexibility.
 - `docs/PARALLEL_JUDGMENTS.md` — judgment/reconciliation/formation command flow.

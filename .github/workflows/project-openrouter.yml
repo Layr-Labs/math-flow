@@ -25,17 +25,6 @@ on:
         required: false
         default: ""
 
-concurrency:
-  # Profiles with independent primary judges must not block each other's paid
-  # judgment matrices. Profiles sharing one judge stream remain serialized so
-  # the later profile reuses the first profile's published judgments instead of
-  # duplicating provider calls. Formation itself is still leased per projection
-  # lane, and publication optimistically merges disjoint lanes.
-  # Automatic callers supply the governed stream digest. Manual or legacy
-  # callers omit it and conservatively serialize at the problem boundary.
-  group: "openrouter-judgment-${{ inputs.problem }}-${{ inputs.judgment_stream_id || inputs.problem }}"
-  cancel-in-progress: false
-
 env:
   MATH_FLOW_PROJECTION_ID: "${{ inputs.projection }}"
   MATH_FLOW_PROBLEM_ID: "${{ inputs.problem }}"
@@ -56,6 +45,7 @@ jobs:
       primary_judge_implementation: ${{ steps.registry.outputs.primary_judge_implementation }}
       judgment_stream_id: ${{ steps.registry.outputs.judgment_stream_id }}
       reconciliation_judge: ${{ steps.registry.outputs.reconciliation_judge }}
+      reconciliation_enabled: ${{ steps.registry.outputs.reconciliation_enabled }}
       knowledge_builder: ${{ steps.registry.outputs.knowledge_builder }}
       projection_digest: ${{ steps.registry.outputs.projection_digest }}
       judgment_max_parallel: ${{ steps.registry.outputs.judgment_max_parallel }}
@@ -118,7 +108,13 @@ jobs:
             exit 1
           fi
           echo "judgment_stream_id=$expected_stream_id" >> "$GITHUB_OUTPUT"
-          echo "reconciliation_judge=$(jq -r '.reconciliationJudge' "$resolved")" >> "$GITHUB_OUTPUT"
+          reconciliation_judge="$(jq -r '.reconciliationJudge // empty' "$resolved")"
+          echo "reconciliation_judge=$reconciliation_judge" >> "$GITHUB_OUTPUT"
+          if [[ -n "$reconciliation_judge" ]]; then
+            echo "reconciliation_enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "reconciliation_enabled=false" >> "$GITHUB_OUTPUT"
+          fi
           echo "knowledge_builder=$(jq -r '.knowledgeBuilder' "$resolved")" >> "$GITHUB_OUTPUT"
           echo "projection_digest=$(jq -r '.projectionSpecDigest' "$resolved")" >> "$GITHUB_OUTPUT"
           echo "judgment_max_parallel=$(jq -r '.scheduling.judgmentMaxParallel' "$resolved")" >> "$GITHUB_OUTPUT"
@@ -271,6 +267,13 @@ jobs:
           MATH_FLOW_EXPECTED_SUBJECTS: "${{ needs.plan.outputs.expected_subjects }}"
         run: |
           set -euo pipefail
+          if [[ "${{ needs.plan.outputs.reconciliation_enabled }}" != "true" ]]; then
+            echo 'matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+            echo 'count=0' >> "$GITHUB_OUTPUT"
+            echo 'expected_conflicts=[]' >> "$GITHUB_OUTPUT"
+            echo "This projection has no reconciliation stage."
+            exit 0
+          fi
           staging_dir="${RUNNER_TEMP}/math-flow-reconciliation-plan"
           primary_plan="$staging_dir/primary-inputs.json"
           command=(
@@ -316,6 +319,7 @@ jobs:
     if: >-
       always() &&
       needs.reconciliation_plan.result == 'success' &&
+      needs.plan.outputs.reconciliation_enabled == 'true' &&
       needs.reconciliation_plan.outputs.count != '0'
     strategy:
       fail-fast: false
@@ -501,27 +505,43 @@ jobs:
 
           mapfile -t primary_dirs < <(jq -r '.bundles[].path' "$input_plan")
           reconciliation_plan="$staging_dir/reconciliation-plan.json"
-          reconcile=(
-            python -m math_flow reconciliation-plan
-            --problem "$MATH_FLOW_PROBLEM_ID"
-            --primary-judge "${{ needs.plan.outputs.primary_judge }}"
-            --reconciliation-judge "${{ needs.plan.outputs.reconciliation_judge }}"
-            --head HEAD
-            --projection-dir "${RUNNER_TEMP}/projection-branch"
-            --output "$reconciliation_plan"
-          )
-          for primary_dir in "${primary_dirs[@]}"; do
-            reconcile+=(--primary-judgment-dir "$primary_dir")
-          done
-          if [[ "${{ needs.reconciliation_plan.outputs.count }}" != "0" ]]; then
-            reconcile+=(--additional-root "$staging_dir/reconciliations")
-            while IFS= read -r conflict_id; do
-              reconcile+=(--expected-new-conflict "$conflict_id")
-            done < <(
-              printf '%s\n' "$MATH_FLOW_EXPECTED_CONFLICTS" | jq -r '.[]'
+          if [[ "${{ needs.plan.outputs.reconciliation_enabled }}" == "true" ]]; then
+            reconcile=(
+              python -m math_flow reconciliation-plan
+              --problem "$MATH_FLOW_PROBLEM_ID"
+              --primary-judge "${{ needs.plan.outputs.primary_judge }}"
+              --reconciliation-judge "${{ needs.plan.outputs.reconciliation_judge }}"
+              --head HEAD
+              --projection-dir "${RUNNER_TEMP}/projection-branch"
+              --output "$reconciliation_plan"
             )
+            for primary_dir in "${primary_dirs[@]}"; do
+              reconcile+=(--primary-judgment-dir "$primary_dir")
+            done
+            if [[ "${{ needs.reconciliation_plan.outputs.count }}" != "0" ]]; then
+              reconcile+=(--additional-root "$staging_dir/reconciliations")
+              while IFS= read -r conflict_id; do
+                reconcile+=(--expected-new-conflict "$conflict_id")
+              done < <(
+                printf '%s\n' "$MATH_FLOW_EXPECTED_CONFLICTS" | jq -r '.[]'
+              )
+            fi
+            "${reconcile[@]}"
+          else
+            jq -n \
+              --arg problem "$MATH_FLOW_PROBLEM_ID" \
+              '{
+                schemaVersion: 1,
+                problemId: $problem,
+                primaryJudgmentIds: [],
+                conflicts: [],
+                publishedBundles: [],
+                newBundles: [],
+                missingConflicts: [],
+                matrix: {include: []},
+                bundles: []
+              }' > "$reconciliation_plan"
           fi
-          "${reconcile[@]}"
 
           jq -r '.bundles[].path' "$input_plan" > "$staging_dir/judgment-dirs.txt"
           jq -r '.bundles[].path' "$reconciliation_plan" >> "$staging_dir/judgment-dirs.txt"

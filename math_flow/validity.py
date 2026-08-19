@@ -158,22 +158,30 @@ def _historical_context(
                 root, str(manifest["ledgerHead"]), str(source["ledgerHead"])
             ):
                 raise MathFlowError("knowledge context is outside canonical history")
-            try:
-                state = json.loads(
-                    read_verified_artifact(bundle, manifest, "knowledge-state")
-                )
-            except json.JSONDecodeError as exc:
-                raise MathFlowError("knowledge context state is not valid JSON") from exc
-            if not isinstance(state, dict) or not isinstance(state.get("nodes"), dict):
-                raise MathFlowError("knowledge context state has an invalid node map")
             state_artifacts = [
                 item
                 for item in manifest["artifacts"]
-                if isinstance(item, dict) and item.get("role") == "knowledge-state"
+                if isinstance(item, dict)
+                and item.get("role")
+                in {"knowledge-state", "research-program-state"}
             ]
             if len(state_artifacts) != 1:
                 raise MathFlowError("knowledge context bundle has no unique state artifact")
             state_artifact = state_artifacts[0]
+            role = state_artifact["role"]
+            try:
+                state = json.loads(read_verified_artifact(bundle, manifest, str(role)))
+            except json.JSONDecodeError as exc:
+                raise MathFlowError("knowledge context state is not valid JSON") from exc
+            if role == "research-program-state":
+                validate_research_program_state(state, problem)
+                source_kind = "research-program-state"
+            else:
+                if not isinstance(state, dict) or not isinstance(
+                    state.get("nodes"), dict
+                ):
+                    raise MathFlowError("knowledge context state has an invalid node map")
+                source_kind = "knowledge-state"
             return {
                 "projectionId": projection_id,
                 "projectionSpecDigest": projection_digest,
@@ -181,6 +189,7 @@ def _historical_context(
                 "stateDigest": state.get("stateDigest"),
                 "stateArtifactDigest": state_artifact["digest"],
                 "problemLedgerHead": problem_ledger_head,
+                "sourceKind": source_kind,
                 "state": state,
             }
         base_run = manifest.get("baseRun")
@@ -188,44 +197,14 @@ def _historical_context(
     return None
 
 
-def research_state_dependency_context(
-    bundle_dir: Path,
-    problem: str,
-    source: dict[str, object],
-    subject_ordinal: int,
+def _selected_research_state_context(
+    state: dict[str, object],
     dependencies: list[str],
+    *,
+    run_digest: str,
+    state_artifact_digest: str,
+    problem_ledger_head: str,
 ) -> dict[str, object]:
-    manifest, run_digest = verify_bundle(bundle_dir)
-    if (
-        manifest.get("runKind") != "research-update"
-        or manifest.get("problemId") != problem
-    ):
-        raise MathFlowError("validity research-state context is not a research update")
-    try:
-        state = json.loads(
-            read_verified_artifact(bundle_dir, manifest, "research-program-state")
-        )
-    except json.JSONDecodeError as exc:
-        raise MathFlowError("validity research-state context is invalid JSON") from exc
-    validate_research_program_state(state, problem)
-    transaction_ordinals = {
-        str(item["transactionId"]): int(item["ordinal"])
-        for item in source["transactions"]
-    }
-    state_head = state.get("ledgerHead")
-    if (
-        not isinstance(state_head, str)
-        or transaction_ordinals.get(state_head, subject_ordinal) >= subject_ordinal
-    ):
-        raise MathFlowError("validity research-state context is not pre-subject")
-    state_artifacts = [
-        item
-        for item in manifest.get("artifacts", [])
-        if isinstance(item, dict) and item.get("role") == "research-program-state"
-    ]
-    if len(state_artifacts) != 1:
-        raise MathFlowError("validity research-state context has no unique state artifact")
-
     selected_contributions = {
         transaction_id: state["contributions"][transaction_id]
         for transaction_id in dependencies
@@ -272,8 +251,8 @@ def research_state_dependency_context(
         "sourceKind": "research-program-state",
         "runDigest": run_digest,
         "stateDigest": state["stateDigest"],
-        "stateArtifactDigest": state_artifacts[0]["digest"],
-        "problemLedgerHead": state_head,
+        "stateArtifactDigest": state_artifact_digest,
+        "problemLedgerHead": problem_ledger_head,
         "selectedPrograms": {
             program_id: state["programs"][program_id]
             for program_id in sorted(selected_program_ids)
@@ -285,6 +264,52 @@ def research_state_dependency_context(
             set(dependencies) - set(selected_contributions)
         ),
     }
+
+
+def research_state_dependency_context(
+    bundle_dir: Path,
+    problem: str,
+    source: dict[str, object],
+    subject_ordinal: int,
+    dependencies: list[str],
+) -> dict[str, object]:
+    manifest, run_digest = verify_bundle(bundle_dir)
+    if (
+        manifest.get("runKind") not in {"research-update", "knowledge-build"}
+        or manifest.get("problemId") != problem
+    ):
+        raise MathFlowError("validity research-state context is not a research state run")
+    try:
+        state = json.loads(
+            read_verified_artifact(bundle_dir, manifest, "research-program-state")
+        )
+    except json.JSONDecodeError as exc:
+        raise MathFlowError("validity research-state context is invalid JSON") from exc
+    validate_research_program_state(state, problem)
+    transaction_ordinals = {
+        str(item["transactionId"]): int(item["ordinal"])
+        for item in source["transactions"]
+    }
+    context_head = manifest.get("problemLedgerHead")
+    if (
+        not isinstance(context_head, str)
+        or transaction_ordinals.get(context_head, subject_ordinal) >= subject_ordinal
+    ):
+        raise MathFlowError("validity research-state context is not pre-subject")
+    state_artifacts = [
+        item
+        for item in manifest.get("artifacts", [])
+        if isinstance(item, dict) and item.get("role") == "research-program-state"
+    ]
+    if len(state_artifacts) != 1:
+        raise MathFlowError("validity research-state context has no unique state artifact")
+    return _selected_research_state_context(
+        state,
+        dependencies,
+        run_digest=run_digest,
+        state_artifact_digest=str(state_artifacts[0]["digest"]),
+        problem_ledger_head=context_head,
+    )
 
 
 def build_dependency_packet(
@@ -332,39 +357,50 @@ def build_dependency_packet(
             int(subject["ordinal"]),
         )
         if historical is not None:
-            nodes = historical.pop("state")["nodes"]
-            selected: dict[str, object] = {}
-            for node_id, node in nodes.items():
-                if node_id == "root" or not isinstance(node, dict):
-                    continue
-                references = [
-                    reference
+            historical_state = historical.pop("state")
+            source_kind = historical.pop("sourceKind")
+            if source_kind == "research-program-state":
+                context = _selected_research_state_context(
+                    historical_state,
+                    dependencies,
+                    run_digest=str(historical["runDigest"]),
+                    state_artifact_digest=str(historical["stateArtifactDigest"]),
+                    problem_ledger_head=str(historical["problemLedgerHead"]),
+                )
+            else:
+                nodes = historical_state["nodes"]
+                selected: dict[str, object] = {}
+                for node_id, node in nodes.items():
+                    if node_id == "root" or not isinstance(node, dict):
+                        continue
+                    references = [
+                        reference
+                        for field in ("subjects", "evidence")
+                        for reference in (
+                            node.get(field) if isinstance(node.get(field), list) else []
+                        )
+                        if isinstance(reference, dict)
+                    ]
+                    if any(reference.get("id") in dependencies for reference in references):
+                        selected[str(node_id)] = node
+                represented = {
+                    str(reference["id"])
+                    for node in selected.values()
+                    if isinstance(node, dict)
                     for field in ("subjects", "evidence")
                     for reference in (
                         node.get(field) if isinstance(node.get(field), list) else []
                     )
                     if isinstance(reference, dict)
-                ]
-                if any(reference.get("id") in dependencies for reference in references):
-                    selected[str(node_id)] = node
-            represented = {
-                str(reference["id"])
-                for node in selected.values()
-                if isinstance(node, dict)
-                for field in ("subjects", "evidence")
-                for reference in (
-                    node.get(field) if isinstance(node.get(field), list) else []
-                )
-                if isinstance(reference, dict)
-                and reference.get("id") in dependencies
-            }
-            context = {
-                **historical,
-                "selectedNodes": selected,
-                "unresolvedDependencyTransactionIds": sorted(
-                    set(dependencies) - represented
-                ),
-            }
+                    and reference.get("id") in dependencies
+                }
+                context = {
+                    **historical,
+                    "selectedNodes": selected,
+                    "unresolvedDependencyTransactionIds": sorted(
+                        set(dependencies) - represented
+                    ),
+                }
     core = {
         "schemaVersion": 1,
         "problemId": problem,

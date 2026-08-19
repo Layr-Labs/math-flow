@@ -29,6 +29,7 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-credit-assignment-v1",
     "openrouter-credit-assignment-v2",
     "openrouter-hierarchical-research-v1",
+    "openrouter-hierarchical-research-builder-v2",
 }
 SUPPORTED_INPUT_BUILDERS = {
     "ledger-index-v1",
@@ -38,6 +39,7 @@ SUPPORTED_INPUT_BUILDERS = {
     "locked-knowledge-ledger-v1",
     "locked-knowledge-ledger-directions-v2",
     "accepted-validity-program-state-v1",
+    "accepted-validity-batch-program-state-v2",
 }
 SUPPORTED_INVOCATION_ADAPTERS = {"local-v1", "openrouter-chat-completions-v1"}
 SUPPORTED_OUTPUT_PROFILES = {
@@ -51,6 +53,7 @@ SUPPORTED_OUTPUT_PROFILES = {
     "math-flow/credit-assignment-markdown-v1",
     "math-flow/credit-assignment-markdown-v2",
     "math-flow/hierarchical-research-v1",
+    "math-flow/hierarchical-research-v2",
 }
 SUPPORTED_OUTPUT_ADAPTERS = {
     "flat-json-v1",
@@ -65,6 +68,7 @@ SUPPORTED_OUTPUT_ADAPTERS = {
     "report-extract-credit-v1",
     "report-extract-credit-v2",
     "structured-research-update-v1",
+    "structured-research-batch-v2",
 }
 SUPPORTED_REDUCERS = {
     None,
@@ -72,6 +76,7 @@ SUPPORTED_REDUCERS = {
     "hierarchical-revisions-v2",
     "hierarchical-knowledge-revisions-v3",
     "serialized-research-credit-v1",
+    "batched-research-state-v2",
 }
 TEXT_ARTIFACT_SUFFIXES = {
     ".c",
@@ -193,6 +198,12 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputAdapter": "structured-research-update-v1",
             "reducer": "serialized-research-credit-v1",
         },
+        "openrouter-hierarchical-research-builder-v2": {
+            "inputBuilder": "accepted-validity-batch-program-state-v2",
+            "outputProfile": "math-flow/hierarchical-research-v2",
+            "outputAdapter": "structured-research-batch-v2",
+            "reducer": "batched-research-state-v2",
+        },
     }
     expected_components = hierarchical_components.get(str(spec["implementation"]))
     if expected_components is not None:
@@ -236,6 +247,7 @@ def load_judge_spec(path: Path) -> dict[str, object]:
         "openrouter-credit-assignment-v1",
         "openrouter-credit-assignment-v2",
         "openrouter-hierarchical-research-v1",
+        "openrouter-hierarchical-research-builder-v2",
     }:
         for field in ("model", "systemPrompt", "rubric", "parameters", "provider"):
             if field not in spec:
