@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 import katex from "katex";
+import { allCreditProjections, compatibleCreditProjections, creditRunAssignmentCount, formatCreditFraction, hierarchicalCreditForTransaction, isHierarchicalCreditProjection } from "../app/creditPresentation.mjs";
 import { collectProgramContributionIds } from "../app/programContributions.mjs";
 import { splitDisplayMath, splitInlineMath } from "../app/markdownMath.mjs";
 import { createViewerReferenceResolver } from "../app/referenceLinks.mjs";
@@ -75,6 +76,14 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /detailMode: preferredTransactionDetailMode\(viewerState\.detailMode\)/);
   assert.match(viewer, /No published credit yet/);
   assert.match(viewer, /Qualitative credit · separate overlay/);
+  assert.match(viewer, /Two-term hierarchical credit · separate overlay/);
+  assert.match(viewer, /Validity assessments/);
+  assert.match(viewer, /Knowledge-routing findings/);
+  assert.match(viewer, /Research program state/);
+  assert.match(viewer, /Local program credit/);
+  assert.match(viewer, /Ex-post counterfactual/);
+  assert.match(viewer, /Direct work avoided/);
+  assert.match(viewer, /Obviated work/);
   assert.match(viewer, /Knowledge references/);
   assert.match(viewer, /Prior reservations/);
   assert.match(viewer, /Full raw credit report/);
@@ -106,6 +115,9 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(styles, /\.selector-bubble/);
   assert.match(styles, /\.credit-selector-bubble/);
   assert.match(styles, /\.latest-state-button/);
+  assert.match(styles, /\.validity-assessment/);
+  assert.match(styles, /\.hierarchical-credit-summary/);
+  assert.match(styles, /\.program-credit-context/);
   assert.doesNotMatch(styles, /\.run-strip/);
   assert.match(packageJson, /"katex"/);
   assert.match(layout, /katex\/dist\/katex\.min\.css/);
@@ -226,6 +238,90 @@ test("follows newly published overlay heads without moving historical selections
     { runId: "knowledge-3", creditRunId: "credit-3" },
     "an implicitly defaulted projection follows after its head is explicitly re-selected",
   );
+});
+
+test("presents hierarchical two-term credit alongside legacy qualitative overlays", () => {
+  const transactionId = "a".repeat(40);
+  const hierarchicalRun = {
+    runDigest: "hierarchical-1",
+    creditState: {
+      allocations: { [transactionId]: { numerator: "3", denominator: "5" } },
+      evaluations: {
+        root: {
+          programId: "root",
+          children: [{
+            kind: "contribution",
+            id: transactionId,
+            directWork: "2",
+            obviatedWork: "1",
+            totalWork: "3",
+            allocationShare: { numerator: "3", denominator: "4" },
+          }],
+        },
+      },
+    },
+  };
+  const catalog = {
+    creditProjections: [{
+      id: "qualitative",
+      problemId: "problem",
+      knowledgeProjectionIds: ["legacy-research"],
+      runs: [],
+    }],
+    hierarchicalCreditProjections: [{
+      id: "two-term",
+      problemId: "problem",
+      researchProjectionIds: ["research-v2"],
+      latestRunDigest: "hierarchical-1",
+      runs: [hierarchicalRun],
+    }],
+  };
+
+  assert.equal(allCreditProjections(catalog).length, 2);
+  assert.deepEqual(
+    compatibleCreditProjections(catalog, "problem", "research-v2").map((item) => item.id),
+    ["two-term"],
+  );
+  assert.equal(isHierarchicalCreditProjection(catalog.hierarchicalCreditProjections[0]), true);
+  assert.equal(creditRunAssignmentCount(hierarchicalRun), 1);
+  assert.equal(formatCreditFraction({ numerator: "3", denominator: "5" }), "60%");
+  assert.deepEqual(hierarchicalCreditForTransaction(hierarchicalRun, transactionId), {
+    allocation: { numerator: "3", denominator: "5" },
+    child: hierarchicalRun.creditState.evaluations.root.children[0],
+    evaluation: hierarchicalRun.creditState.evaluations.root,
+  });
+});
+
+test("follows a newly published hierarchical credit head", () => {
+  const knowledge = {
+    id: "research-v2",
+    problemId: "problem",
+    data: { latestRunId: "research-2" },
+  };
+  const hierarchical = (latestRunDigest, runs) => ({
+    id: "two-term",
+    problemId: "problem",
+    researchProjectionIds: ["research-v2"],
+    latestRunDigest,
+    runs: runs.map((runDigest) => ({ runDigest })),
+  });
+  const previous = {
+    projections: [knowledge],
+    creditProjections: [],
+    hierarchicalCreditProjections: [hierarchical("credit-1", ["credit-1"])],
+  };
+  const next = {
+    ...previous,
+    hierarchicalCreditProjections: [hierarchical("credit-2", ["credit-1", "credit-2"])],
+  };
+
+  assert.deepEqual(publishedHeadSelectionPatch(previous, next, {
+    problemId: "problem",
+    projectionId: "research-v2",
+    runId: "research-2",
+    creditProjectionId: "two-term",
+    creditRunId: "credit-1",
+  }), { creditRunId: "credit-2" });
 });
 
 test("resolves a shared projection id within the selected problem", () => {

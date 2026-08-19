@@ -24,7 +24,13 @@ The viewer supports repository projection selection, run-by-run time travel,
 full submission inspection, raw and structured primary/reconciliation judgment
 review, transaction evidence filtering, knowledge-tree search, adjudication
 revision history, KaTeX rendering for inline and display LaTeX, and
-knowledge-build report review. The complete active view is
+knowledge-build report review. Validity-v2 judgments foreground claim status,
+premise sufficiency, scope qualifications, and evidence issues. Serialized
+research-program states distinguish programs, local work threads, and accepted
+results or methods, while the hierarchical two-term credit overlay exposes both
+direct and obviated work, local and overall allocation shares, counterfactuals,
+and unattributed program residuals. Legacy judgment and qualitative-credit
+artifacts remain readable. The complete active view is
 mirrored in the query string, so its URL can be refreshed or shared without
 losing the selected projection, state, artifact, detail tab, or search filter.
 
