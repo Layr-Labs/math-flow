@@ -27,6 +27,7 @@ from math_flow.judges import load_judge_spec, load_source
 from math_flow.governance import resolve_projection
 from math_flow.repository import sha256_json
 from math_flow.research_credit import (
+    _accepted_history,
     load_hierarchical_credit_assignment_bundle,
 )
 from math_flow.research_state import empty_research_program_state
@@ -42,6 +43,7 @@ from math_flow.research_projection import (
 from math_flow.validity import (
     research_state_dependency_context,
     validate_evidence_packet_v3,
+    validate_evidence_packet_v4,
 )
 from math_flow.viewer import export_viewer_catalog, export_viewer_data
 
@@ -331,6 +333,84 @@ class ResearchProjectionTests(unittest.TestCase):
             )
 
         output = directory / f"validity-v3-{transaction_id[:12]}"
+        run_primary_judgment_bundle(
+            repository,
+            problem,
+            judge,
+            transaction_id,
+            [transaction_id],
+            output,
+            projection_root=None,
+            transport=fake_transport,
+        )
+        return output
+
+    def _validity_v4_bundle(
+        self,
+        directory: Path,
+        problem: str,
+        transaction_id: str,
+        *,
+        status: str,
+        required_dependencies: list[str],
+        evidence_transaction_ids: list[str],
+        repository: Path = ROOT,
+    ) -> Path:
+        directory.mkdir(parents=True, exist_ok=True)
+        spec = json.loads(
+            (
+                repository
+                / "protocol/judges/openrouter-validity-judgment-v4.json"
+            ).read_text(encoding="utf-8")
+        )
+        spec.pop("contextProjection")
+        judge = directory / "validity-v4-spec.json"
+        judge.write_text(json.dumps(spec), encoding="utf-8")
+        calls = 0
+
+        def fake_transport(request: dict[str, object]) -> dict[str, object]:
+            nonlocal calls
+            calls += 1
+            schema = (
+                request.get("response_format", {})
+                .get("json_schema", {})
+                .get("schema")
+            )
+            if schema is None:
+                return response("# Audit\n\nFixture validity-v4 audit.", calls)
+            assessment_items = schema["properties"]["assessments"]["items"]
+            claim_keys = [
+                variant["properties"]["claimKey"]["enum"][0]
+                for variant in assessment_items["anyOf"]
+            ]
+            return response(
+                json.dumps(
+                    {
+                        "assessments": [
+                            {
+                                "claimKey": key,
+                                "status": status,
+                                "premiseStatus": (
+                                    "not-required"
+                                    if not required_dependencies
+                                    else "satisfied"
+                                ),
+                                "summary": f"Fixture validity-v4 assessment: {status}.",
+                                "scopeQualifications": [],
+                                "evidenceIssues": (
+                                    [] if status == "valid" else ["Fixture defect."]
+                                ),
+                                "evidenceTransactionIds": evidence_transaction_ids,
+                                "requiredDependencyTransactionIds": required_dependencies,
+                            }
+                            for key in claim_keys
+                        ]
+                    }
+                ),
+                calls,
+            )
+
+        output = directory / f"validity-v4-{transaction_id[:12]}"
         run_primary_judgment_bundle(
             repository,
             problem,
@@ -655,6 +735,48 @@ class ResearchProjectionTests(unittest.TestCase):
         with self.assertRaisesRegex(MathFlowError, "invalid claim"):
             validate_evidence_packet_v3(packet)
 
+    def test_validity_v4_packet_rejects_unscoped_attestation(self) -> None:
+        reference = "a" * 40
+        unrelated = "b" * 40
+        attestation = {
+            "schemaVersion": 1,
+            "requestDigest": "sha256:" + "1" * 64,
+            "runDigest": "sha256:" + "2" * 64,
+            "attestationId": "sha256:" + "3" * 64,
+            "status": "passed",
+            "verifier": {},
+            "environmentDigest": "sha256:" + "4" * 64,
+            "result": {},
+            "artifacts": {},
+            "stdout": {},
+            "stderr": {},
+        }
+        core = {
+            "schemaVersion": 3,
+            "problemId": "demo",
+            "subjectTransactionId": "c" * 40,
+            "subjectLedgerPosition": 2,
+            "claims": [
+                {
+                    "claimKey": "claim/scoped",
+                    "statement": "A scoped claim.",
+                    "declaredReferenceTransactionIds": [reference],
+                }
+            ],
+            "declaredReferenceTransactionIds": [reference],
+            "knowledgeContext": None,
+            "objectiveAttestations": [
+                {
+                    "transactionId": unrelated,
+                    "relation": "declared-reference",
+                    "attestation": attestation,
+                }
+            ],
+        }
+        packet = {**core, "packetDigest": f"sha256:{sha256_json(core)}"}
+        with self.assertRaisesRegex(MathFlowError, "invalid attestations"):
+            validate_evidence_packet_v4(packet)
+
     def test_validity_v3_reference_to_invalid_no_three_submission_is_not_a_dependency(
         self,
     ) -> None:
@@ -865,6 +987,303 @@ class ResearchProjectionTests(unittest.TestCase):
                     [invalid, dependent],
                     None,
                     root / "required-build",
+                    transport=self._batch_transport,
+                )
+
+    def test_validity_v4_no_three_reference_boundary_replays_for_credit_and_viewer(
+        self,
+    ) -> None:
+        problem = "no-three-in-line-77"
+        invalid_transaction = "c98dd877ad81611a9a469b1bd790cd909b56b1ce"
+        self_contained_transaction = "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            invalid = self._validity_v4_bundle(
+                root,
+                problem,
+                invalid_transaction,
+                status="invalid",
+                required_dependencies=[],
+                evidence_transaction_ids=[],
+            )
+            self_contained = self._validity_v4_bundle(
+                root,
+                problem,
+                self_contained_transaction,
+                status="valid",
+                required_dependencies=[],
+                evidence_transaction_ids=[invalid_transaction],
+            )
+            judgment_manifest, judgment, _ = load_judgment_bundle(self_contained)
+            packet = json.loads(
+                read_verified_artifact(
+                    self_contained,
+                    judgment_manifest,
+                    "judgment-dependency-packet",
+                )
+            )
+            self.assertEqual(packet["schemaVersion"], 3)
+            self.assertEqual(packet["objectiveAttestations"], [])
+            self.assertEqual(
+                packet["declaredReferenceTransactionIds"], [invalid_transaction]
+            )
+            self.assertEqual(
+                judgment["assessments"][0]["requiredDependencyTransactionIds"],
+                [],
+            )
+
+            projection_root = root / "published"
+            scheduler = projection_root / "coordination" / "scheduler.json"
+            lane_output = root / "lane-v4.json"
+            status = main(
+                [
+                    "--root",
+                    str(ROOT),
+                    "knowledge-trigger",
+                    "--scheduler-file",
+                    str(scheduler),
+                    "--problem",
+                    problem,
+                    "--head",
+                    self_contained_transaction,
+                    "--builder",
+                    str(
+                        ROOT
+                        / "protocol/judges/openrouter-hierarchical-research-builder-v4.json"
+                    ),
+                    "--minimum-interval",
+                    "0",
+                    "--judgment-dir",
+                    str(self_contained),
+                    "--judgment-dir",
+                    str(invalid),
+                    "--now",
+                    "1",
+                    "--output",
+                    str(lane_output),
+                ]
+            )
+            self.assertEqual(status, 0)
+            lane = json.loads(lane_output.read_text(encoding="utf-8"))
+            claim = claim_due_build(scheduler, str(lane["laneId"]), 1, 500)
+            self.assertIsNotNone(claim)
+            output = root / "research-build-v4"
+            run_research_build_bundle(
+                ROOT,
+                problem,
+                ROOT
+                / "protocol/judges/openrouter-hierarchical-research-builder-v4.json",
+                self_contained_transaction,
+                claim,
+                [invalid, self_contained],
+                None,
+                output,
+                transport=self._batch_transport,
+            )
+            manifest, state, build_digest = load_research_build_bundle(output)
+            self.assertEqual(
+                manifest["outputProfile"], "math-flow/hierarchical-research-v4"
+            )
+            self.assertNotIn(invalid_transaction, state["contributions"])
+            self.assertEqual(
+                state["contributions"][self_contained_transaction][
+                    "dependencyTransactionIds"
+                ],
+                [],
+            )
+            viewer = export_viewer_data(
+                ROOT,
+                problem,
+                self_contained_transaction,
+                [output],
+                judgment_dirs=[invalid, self_contained],
+            )
+            self.assertEqual(
+                viewer["runs"][0]["judgeSpec"]["id"],
+                "openrouter-hierarchical-research-builder-v4",
+            )
+            publish_batch(projection_root, [invalid, self_contained, output])
+            trace, history_digests, _ = _accepted_history(
+                projection_root=projection_root,
+                latest_run_digest=build_digest,
+                latest_state=state,
+            )
+            self.assertEqual(history_digests, [build_digest])
+            self.assertEqual(
+                [
+                    record["subjectTransactionId"]
+                    for record in trace[0]["acceptedRecords"]
+                ],
+                [self_contained_transaction],
+            )
+            catalog = export_viewer_catalog(
+                ROOT,
+                projection_root,
+                "Layr-Labs/math-flow",
+                canonical_ref=self_contained_transaction,
+                projection_ref="projections",
+            )
+            selected = next(
+                item
+                for item in catalog["projections"]
+                if item["problemId"] == problem
+                and item["builder"]["id"]
+                == "openrouter-hierarchical-research-builder-v4"
+            )
+            self.assertEqual(
+                selected["data"]["runs"][0]["judgeSpec"]["id"],
+                "openrouter-hierarchical-research-builder-v4",
+            )
+
+    def test_validity_v4_required_premise_orders_formation(self) -> None:
+        dependency_transaction = TRANSACTIONS[2]
+        dependent_transaction = TRANSACTIONS[3]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            dependency = self._validity_v4_bundle(
+                root,
+                PROBLEM,
+                dependency_transaction,
+                status="valid",
+                required_dependencies=[],
+                evidence_transaction_ids=[],
+            )
+            dependent = self._validity_v4_bundle(
+                root,
+                PROBLEM,
+                dependent_transaction,
+                status="valid",
+                required_dependencies=[dependency_transaction],
+                evidence_transaction_ids=[dependency_transaction],
+            )
+            scheduler = root / "scheduler-v4.json"
+            lane_output = root / "lane-v4.json"
+            status = main(
+                [
+                    "--root",
+                    str(ROOT),
+                    "knowledge-trigger",
+                    "--scheduler-file",
+                    str(scheduler),
+                    "--problem",
+                    PROBLEM,
+                    "--head",
+                    dependent_transaction,
+                    "--builder",
+                    str(
+                        ROOT
+                        / "protocol/judges/openrouter-hierarchical-research-builder-v4.json"
+                    ),
+                    "--minimum-interval",
+                    "0",
+                    "--judgment-dir",
+                    str(dependent),
+                    "--judgment-dir",
+                    str(dependency),
+                    "--now",
+                    "1",
+                    "--output",
+                    str(lane_output),
+                ]
+            )
+            self.assertEqual(status, 0)
+            _, dependency_judgment, _ = load_judgment_bundle(dependency)
+            _, dependent_judgment, _ = load_judgment_bundle(dependent)
+            lane = json.loads(lane_output.read_text(encoding="utf-8"))
+            self.assertEqual(
+                lane["judgmentDependencies"][dependent_judgment["judgmentId"]],
+                [dependency_judgment["judgmentId"]],
+            )
+            claim = claim_due_build(scheduler, str(lane["laneId"]), 1, 500)
+            self.assertIsNotNone(claim)
+            output = root / "ordered-build-v4"
+            run_research_build_bundle(
+                ROOT,
+                PROBLEM,
+                ROOT
+                / "protocol/judges/openrouter-hierarchical-research-builder-v4.json",
+                dependent_transaction,
+                claim,
+                [dependent, dependency],
+                None,
+                output,
+                transport=self._batch_transport,
+            )
+            manifest, state, _ = load_research_build_bundle(output)
+            self.assertEqual(manifest["outputProfile"], "math-flow/hierarchical-research-v4")
+            self.assertEqual(
+                set(state["contributions"]),
+                {dependency_transaction, dependent_transaction},
+            )
+            self.assertEqual(
+                state["contributions"][dependent_transaction][
+                    "dependencyTransactionIds"
+                ],
+                [dependency_transaction],
+            )
+            batch = json.loads(
+                read_verified_artifact(output, manifest, "research-batch-input")
+            )
+            self.assertEqual(batch["schemaVersion"], 3)
+
+    def test_validity_v4_required_invalid_premise_stays_excluded(self) -> None:
+        dependency_transaction = TRANSACTIONS[2]
+        dependent_transaction = TRANSACTIONS[3]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            dependency = self._validity_v4_bundle(
+                root,
+                PROBLEM,
+                dependency_transaction,
+                status="invalid",
+                required_dependencies=[],
+                evidence_transaction_ids=[],
+            )
+            dependent = self._validity_v4_bundle(
+                root,
+                PROBLEM,
+                dependent_transaction,
+                status="valid",
+                required_dependencies=[dependency_transaction],
+                evidence_transaction_ids=[dependency_transaction],
+            )
+            builder = load_judge_spec(
+                ROOT
+                / "protocol/judges/openrouter-hierarchical-research-builder-v4.json"
+            )
+            judgment_ids = [
+                load_judgment_bundle(bundle)[1]["judgmentId"]
+                for bundle in (dependency, dependent)
+            ]
+            scheduler = root / "scheduler-invalid-v4.json"
+            lane = record_completed_inputs(
+                scheduler,
+                PROBLEM,
+                f"sha256:{sha256_json(builder)}",
+                judgment_ids,
+                [],
+                0,
+                1,
+                judgment_dependencies={
+                    judgment_ids[0]: [],
+                    judgment_ids[1]: [judgment_ids[0]],
+                },
+            )
+            claim = claim_due_build(scheduler, str(lane["laneId"]), 1, 500)
+            self.assertIsNotNone(claim)
+            with self.assertRaisesRegex(
+                MathFlowError, "submission excluded from research state"
+            ):
+                run_research_build_bundle(
+                    ROOT,
+                    PROBLEM,
+                    ROOT
+                    / "protocol/judges/openrouter-hierarchical-research-builder-v4.json",
+                    dependent_transaction,
+                    claim,
+                    [dependent, dependency],
+                    None,
+                    root / "invalid-required-build-v4",
                     transport=self._batch_transport,
                 )
 

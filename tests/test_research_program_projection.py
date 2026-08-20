@@ -125,7 +125,35 @@ class ResearchProgramProjectionTests(unittest.TestCase):
         )
         self.assertIn("unclaimed content has not passed", builder["systemPrompt"])
 
-    def test_attestation_publication_redispatches_only_v3_validity_streams(self) -> None:
+    def test_validity_v4_components_bind_reference_attestations_additively(self) -> None:
+        judge = load_judge_spec(
+            self.root
+            / "protocol/judges/openrouter-validity-judgment-v4.json"
+        )
+        builder = load_judge_spec(
+            self.root
+            / "protocol/judges/openrouter-hierarchical-research-builder-v4.json"
+        )
+        self.assertEqual(judge["contextProjection"], "openrouter-research-v3")
+        self.assertEqual(judge["inputBuilder"], "claim-evidence-packet-v4")
+        self.assertEqual(judge["outputProfile"], "math-flow/validity-judgment-v4")
+        self.assertIn("subject and declared references", judge["description"])
+        self.assertIn("supplied attestations", judge["systemPrompt"])
+        self.assertEqual(
+            builder["inputBuilder"],
+            "accepted-validity-batch-program-state-v4",
+        )
+        self.assertEqual(
+            builder["outputProfile"], "math-flow/hierarchical-research-v4"
+        )
+        self.assertIn(
+            "independent unjudged assertion",
+            builder["rubric"]["atomicClaimBoundary"],
+        )
+        self.assertIn("unclaimed content has not passed", builder["systemPrompt"])
+        self.assertIn("do not reinterpret", builder["systemPrompt"])
+
+    def test_attestation_publication_redispatches_v3_and_v4_validity_streams(self) -> None:
         attestation = (
             self.root / ".github/workflows/project-attestation.yml"
         ).read_text(encoding="utf-8")
@@ -134,9 +162,11 @@ class ResearchProgramProjectionTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn("actions: write", attestation)
         self.assertIn("validity-judgment-v3.json", attestation)
+        self.assertIn("validity-judgment-v4.json", attestation)
         self.assertIn("group_by(.judgmentStreamId)", attestation)
         self.assertIn("project-openrouter.yml", attestation)
         self.assertIn("openrouter-validity-judgment-v3", projection)
+        self.assertIn("openrouter-validity-judgment-v4", projection)
         self.assertIn("deferredTransactions", projection)
 
     def test_hosted_primary_judgments_are_not_globally_serialized(self) -> None:

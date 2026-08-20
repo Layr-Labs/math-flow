@@ -108,6 +108,29 @@ subject is reconsidered automatically.
 See `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V3.md` for the complete frozen contract
 and rollout boundary.
 
+### Additive validity-v4 reference-attestation boundary
+
+Validity v4 keeps v3's declared-reference versus required-premise distinction
+and parallel topology, but closes an objective-evidence gap. The bounded packet
+resolves terminal attestations for the subject and for exactly the union of
+transactions declared by its claims. It never imports attestations or raw
+artifacts from unrelated ledger entries.
+
+A reference with no verification request does not delay judgment. If a subject
+or one of its declared references has a canonical request without a terminal
+attestation, only that dependent subject is reported in
+`deferredTransactions`; unrelated ready subjects stay in the matrix. Terminal
+`passed`, `failed`, and `error` outcomes all unblock the judge and are supplied
+as evidence rather than verdicts. The manifest records attestation run digests
+by transaction ID, while packet and judgment digests bind the complete input.
+
+The primary stage still does not wait for referenced primary judgments or for a
+post-submission knowledge state. Formation later orders the exact required
+premises selected by the judge and excludes invalid or indeterminate work.
+Terminal publication redispatches active v3 and v4 streams. See
+`docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md` for the frozen component and rollout
+contract.
+
 Before dispatching work, automation can compare the canonical problem ledger
 with the published projection index:
 

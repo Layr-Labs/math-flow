@@ -492,6 +492,104 @@ def build_evidence_packet_v3(
     return {**core, "packetDigest": f"sha256:{sha256_json(core)}"}
 
 
+def build_evidence_packet_v4(
+    root: Path,
+    projection_root: Path | None,
+    problem: str,
+    source: dict[str, object],
+    head: str,
+    subject_transaction_id: str,
+    context_projection: str | None,
+    research_state_run: Path | None = None,
+) -> dict[str, object]:
+    """Build bounded validity evidence with terminal attestations for references.
+
+    V4 preserves v3's declared-reference versus required-premise boundary.  It
+    additionally resolves objective evidence for the subject and for exactly
+    the transactions declared by its claims.  It never scans unrelated ledger
+    entries for judgment evidence.
+    """
+
+    v2_packet = build_dependency_packet(
+        root,
+        projection_root,
+        problem,
+        source,
+        head,
+        subject_transaction_id,
+        context_projection,
+        research_state_run,
+    )
+    references = list(v2_packet["dependencyTransactionIds"])
+    claims = [
+        {
+            "claimKey": claim["claimKey"],
+            "statement": claim["statement"],
+            "declaredReferenceTransactionIds": list(
+                claim["dependencyTransactionIds"]
+            ),
+        }
+        for claim in v2_packet["claims"]
+    ]
+    scoped_transactions = [
+        (subject_transaction_id, "subject"),
+        *((transaction_id, "declared-reference") for transaction_id in references),
+    ]
+    attestations: list[dict[str, object]] = []
+    if projection_root is None:
+        transactions = {
+            str(item["transactionId"]): item for item in source["transactions"]
+        }
+        for transaction_id, relation in scoped_transactions:
+            transaction = transactions[transaction_id]
+            prefix = str(transaction["path"])
+            content_head = (
+                "WORKTREE"
+                if head == "WORKTREE" and transaction_id == subject_transaction_id
+                else transaction_id
+            )
+            files = set(list_files_at(root, content_head, prefix))
+            if f"{prefix}/verification.json" in files:
+                raise MathFlowError(
+                    "validity-v4 judgment requires projection state for objective "
+                    f"attestation evidence: {relation} {transaction_id}"
+                )
+    else:
+        for transaction_id, relation in scoped_transactions:
+            status = objective_attestation_status(
+                root,
+                projection_root,
+                problem,
+                transaction_id,
+                head,
+            )
+            if status["requested"] and not status["terminal"]:
+                raise MathFlowError(
+                    "validity-v4 judgment is deferred until objective attestation "
+                    f"is terminal: {relation} {transaction_id}"
+                )
+            evidence = status["evidence"]
+            if evidence is not None:
+                attestations.append(
+                    {
+                        "transactionId": transaction_id,
+                        "relation": relation,
+                        "attestation": evidence,
+                    }
+                )
+    core = {
+        "schemaVersion": 3,
+        "problemId": problem,
+        "subjectTransactionId": subject_transaction_id,
+        "subjectLedgerPosition": v2_packet["subjectLedgerPosition"],
+        "claims": claims,
+        "declaredReferenceTransactionIds": references,
+        "knowledgeContext": v2_packet["knowledgeContext"],
+        "objectiveAttestations": attestations,
+    }
+    return {**core, "packetDigest": f"sha256:{sha256_json(core)}"}
+
+
 def validate_dependency_packet(value: object) -> dict[str, object]:
     required = {
         "schemaVersion",
@@ -719,6 +817,119 @@ def validate_evidence_packet_v3(value: object) -> dict[str, object]:
     return value
 
 
+def validate_evidence_packet_v4(value: object) -> dict[str, object]:
+    required = {
+        "schemaVersion",
+        "problemId",
+        "subjectTransactionId",
+        "subjectLedgerPosition",
+        "claims",
+        "declaredReferenceTransactionIds",
+        "knowledgeContext",
+        "objectiveAttestations",
+        "packetDigest",
+    }
+    if not isinstance(value, dict) or set(value) != required:
+        raise MathFlowError("validity-v4 evidence packet has an invalid envelope")
+    core = {key: value[key] for key in required if key != "packetDigest"}
+    if (
+        value.get("schemaVersion") != 3
+        or value.get("packetDigest") != f"sha256:{sha256_json(core)}"
+    ):
+        raise MathFlowError("validity-v4 evidence packet digest is invalid")
+
+    # Reuse the frozen v3 validation for the unchanged claim, reference, and
+    # bounded historical-context contract.
+    v3_core = {
+        "schemaVersion": 2,
+        "problemId": value["problemId"],
+        "subjectTransactionId": value["subjectTransactionId"],
+        "subjectLedgerPosition": value["subjectLedgerPosition"],
+        "claims": value["claims"],
+        "declaredReferenceTransactionIds": value[
+            "declaredReferenceTransactionIds"
+        ],
+        "knowledgeContext": value["knowledgeContext"],
+        "objectiveAttestation": None,
+    }
+    validate_evidence_packet_v3(
+        {**v3_core, "packetDigest": f"sha256:{sha256_json(v3_core)}"}
+    )
+
+    attestations = value.get("objectiveAttestations")
+    if not isinstance(attestations, list):
+        raise MathFlowError("validity-v4 evidence packet has invalid attestations")
+    subject_id = str(value["subjectTransactionId"])
+    references = list(value["declaredReferenceTransactionIds"])
+    scoped_order = [subject_id, *references]
+    seen: set[str] = set()
+    actual_order: list[str] = []
+    for entry in attestations:
+        if (
+            not isinstance(entry, dict)
+            or set(entry) != {"transactionId", "relation", "attestation"}
+            or not isinstance(entry.get("transactionId"), str)
+        ):
+            raise MathFlowError("validity-v4 evidence packet has invalid attestations")
+        transaction_id = str(entry["transactionId"])
+        expected_relation = (
+            "subject"
+            if transaction_id == subject_id
+            else "declared-reference"
+            if transaction_id in references
+            else None
+        )
+        if (
+            expected_relation is None
+            or entry.get("relation") != expected_relation
+            or transaction_id in seen
+        ):
+            raise MathFlowError("validity-v4 evidence packet has invalid attestations")
+        attestation = entry.get("attestation")
+        expected_fields = {
+            "schemaVersion",
+            "requestDigest",
+            "runDigest",
+            "attestationId",
+            "status",
+            "verifier",
+            "environmentDigest",
+            "result",
+            "artifacts",
+            "stdout",
+            "stderr",
+        }
+        if (
+            not isinstance(attestation, dict)
+            or set(attestation) != expected_fields
+            or attestation.get("schemaVersion") != 1
+            or attestation.get("status") not in {"passed", "failed", "error"}
+            or any(
+                not isinstance(attestation.get(field), str)
+                or not re.fullmatch(
+                    r"sha256:[0-9a-f]{64}", str(attestation[field])
+                )
+                for field in (
+                    "requestDigest",
+                    "runDigest",
+                    "attestationId",
+                    "environmentDigest",
+                )
+            )
+            or not isinstance(attestation.get("verifier"), dict)
+            or not isinstance(attestation.get("result"), dict)
+            or not isinstance(attestation.get("artifacts"), dict)
+            or not isinstance(attestation.get("stdout"), dict)
+            or not isinstance(attestation.get("stderr"), dict)
+        ):
+            raise MathFlowError("validity-v4 evidence packet has invalid attestations")
+        seen.add(transaction_id)
+        actual_order.append(transaction_id)
+    if actual_order != [item for item in scoped_order if item in seen]:
+        raise MathFlowError("validity-v4 evidence packet attestations are out of order")
+    return value
+
+
 def formation_dependency_transaction_ids(
     judgment: dict[str, object], packet: dict[str, object]
 ) -> list[str]:
@@ -731,7 +942,13 @@ def formation_dependency_transaction_ids(
         ):
             raise MathFlowError("validity dependency packet is invalid")
         return list(dict.fromkeys(dependencies))
-    validate_evidence_packet_v3(packet)
+    packet_version = packet.get("schemaVersion")
+    if packet_version == 2:
+        validate_evidence_packet_v3(packet)
+    elif packet_version == 3:
+        validate_evidence_packet_v4(packet)
+    else:
+        raise MathFlowError("validity evidence packet version is unsupported")
     assessments = judgment.get("assessments")
     if not isinstance(assessments, list):
         raise MathFlowError("validity-v3 judgment has invalid assessments")

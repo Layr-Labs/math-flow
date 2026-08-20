@@ -56,10 +56,27 @@ def v3_packet() -> dict[str, object]:
     }
 
 
+def v4_record() -> dict[str, object]:
+    return {**v3_record(), "schemaVersion": 4}
+
+
+def v4_packet() -> dict[str, object]:
+    return {**v3_packet(), "schemaVersion": 3, "objectiveAttestations": []}
+
+
 class ViewerValidityReferenceTests(unittest.TestCase):
     def test_extracts_per_claim_declared_references_for_validity_v3(self) -> None:
         self.assertEqual(
             _viewer_declared_references_by_claim(v3_record(), v3_packet()),
+            {
+                "fixture-problem/claim-a": [REFERENCE_A, REFERENCE_B],
+                "fixture-problem/claim-b": [],
+            },
+        )
+
+    def test_extracts_per_claim_declared_references_for_validity_v4(self) -> None:
+        self.assertEqual(
+            _viewer_declared_references_by_claim(v4_record(), v4_packet()),
             {
                 "fixture-problem/claim-a": [REFERENCE_A, REFERENCE_B],
                 "fixture-problem/claim-b": [],
@@ -122,6 +139,34 @@ class ViewerValidityReferenceTests(unittest.TestCase):
         ):
             exported_v2 = _viewer_judgment(Path("fixture-v2"), PROBLEM)
         self.assertNotIn("declaredReferenceTransactionIdsByClaim", exported_v2)
+
+    def test_viewer_adds_v4_reference_index(self) -> None:
+        manifest = {
+            "runKind": "judgment",
+            "problemId": PROBLEM,
+            "ledgerHead": "f" * 40,
+            "judgeSpec": {"id": "fixture-v4", "digest": f"sha256:{'0' * 64}"},
+            "providerRuns": [],
+        }
+        with (
+            patch("math_flow.viewer.load_manifest", return_value=(manifest, RUN_DIGEST)),
+            patch(
+                "math_flow.viewer._json_artifact",
+                side_effect=[v4_record(), v4_packet()],
+            ),
+            patch(
+                "math_flow.viewer.read_verified_artifact",
+                return_value=b"# Validity report\n",
+            ),
+        ):
+            exported = _viewer_judgment(Path("fixture-v4"), PROBLEM)
+        self.assertEqual(
+            exported["declaredReferenceTransactionIdsByClaim"],
+            {
+                "fixture-problem/claim-a": [REFERENCE_A, REFERENCE_B],
+                "fixture-problem/claim-b": [],
+            },
+        )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/validity-evidence-packet-v4.schema.json",
+  "title": "Math Flow Validity v4 Evidence Packet",
+  "type": "object",
+  "required": ["schemaVersion", "problemId", "subjectTransactionId", "subjectLedgerPosition", "claims", "declaredReferenceTransactionIds", "knowledgeContext", "objectiveAttestations", "packetDigest"],
+  "properties": {
+    "schemaVersion": { "const": 3 },
+    "problemId": { "type": "string" },
+    "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+    "subjectLedgerPosition": { "type": "integer", "minimum": 1 },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["claimKey", "statement", "declaredReferenceTransactionIds"],
+        "properties": {
+          "claimKey": { "$ref": "#/$defs/id" },
+          "statement": { "type": "string", "minLength": 1 },
+          "declaredReferenceTransactionIds": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "$ref": "#/$defs/transaction" }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "declaredReferenceTransactionIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/transaction" }
+    },
+    "knowledgeContext": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["projectionId", "projectionSpecDigest", "runDigest", "stateDigest", "stateArtifactDigest", "problemLedgerHead", "selectedNodes", "unresolvedDependencyTransactionIds"],
+          "properties": {
+            "projectionId": { "type": "string" },
+            "projectionSpecDigest": { "$ref": "#/$defs/digest" },
+            "runDigest": { "$ref": "#/$defs/digest" },
+            "stateDigest": { "oneOf": [{"type": "null"}, {"$ref": "#/$defs/digest"}] },
+            "stateArtifactDigest": { "$ref": "#/$defs/digest" },
+            "problemLedgerHead": { "$ref": "#/$defs/transaction" },
+            "selectedNodes": { "type": "object" },
+            "unresolvedDependencyTransactionIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/transaction" } }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["sourceKind", "runDigest", "stateDigest", "stateArtifactDigest", "problemLedgerHead", "selectedPrograms", "selectedThreads", "selectedItems", "unresolvedDependencyTransactionIds"],
+          "properties": {
+            "sourceKind": { "const": "research-program-state" },
+            "runDigest": { "$ref": "#/$defs/digest" },
+            "stateDigest": { "$ref": "#/$defs/digest" },
+            "stateArtifactDigest": { "$ref": "#/$defs/digest" },
+            "problemLedgerHead": { "$ref": "#/$defs/transaction" },
+            "selectedPrograms": { "type": "object" },
+            "selectedThreads": { "type": "object" },
+            "selectedItems": { "type": "object" },
+            "unresolvedDependencyTransactionIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/transaction" } }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "objectiveAttestations": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["transactionId", "relation", "attestation"],
+        "properties": {
+          "transactionId": { "$ref": "#/$defs/transaction" },
+          "relation": { "enum": ["subject", "declared-reference"] },
+          "attestation": { "$ref": "#/$defs/attestation" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "packetDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "attestation": {
+      "type": "object",
+      "required": ["schemaVersion", "requestDigest", "runDigest", "attestationId", "status", "verifier", "environmentDigest", "result", "artifacts", "stdout", "stderr"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "requestDigest": { "$ref": "#/$defs/digest" },
+        "runDigest": { "$ref": "#/$defs/digest" },
+        "attestationId": { "$ref": "#/$defs/digest" },
+        "status": { "enum": ["passed", "failed", "error"] },
+        "verifier": { "type": "object" },
+        "environmentDigest": { "$ref": "#/$defs/digest" },
+        "result": { "type": "object" },
+        "artifacts": { "type": "object" },
+        "stdout": { "type": "object" },
+        "stderr": { "type": "object" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

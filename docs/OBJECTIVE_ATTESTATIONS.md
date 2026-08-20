@@ -166,6 +166,14 @@ terminal bundle is published, the trusted workflow redispatches the active v3
 projection streams for that problem. The next coverage plan includes the
 formerly deferred subject and reuses all independently completed judgments.
 
+Validity v4 extends this bounded gate to objective requests on exactly the
+transactions declared by the subject's claims. A pending declared-reference
+request defers only subjects that cite it; references with no request and
+unrelated subjects continue immediately. The v4 packet includes terminal
+passed, failed, or error evidence keyed by transaction ID and never scans the
+rest of the ledger for attestations. Publication redispatches active v3 and v4
+streams.
+
 ## Use by judges and knowledge builders
 
 An objective attestation is evidence, not an automatic adjudication. Judgment
@@ -181,3 +189,9 @@ run digest, attestation ID, environment and artifact identities, result, and
 bounded output. Its packet digest and resulting judgment identity therefore bind
 the exact evidence. A request without a terminal published bundle cannot produce
 a v3 primary judgment.
+
+The validity-v4 packet embeds the same verified evidence for the subject and
+its declared-reference union. The packet digest binds the full collection, the
+judgment binds that packet digest, and the run manifest records the attestation
+run digest for each transaction ID. A scoped request without a terminal bundle
+cannot produce a v4 primary judgment.

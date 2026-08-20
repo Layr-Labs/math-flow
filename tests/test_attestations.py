@@ -27,7 +27,9 @@ from math_flow.judgments import (
     plan_primary_judgment_coverage,
     run_primary_judgment_bundle,
 )
+from math_flow.judges import load_source
 from math_flow.repository import validate_pr, validate_tree
+from math_flow.validity import build_evidence_packet_v4
 from math_flow.viewer import _viewer_objective_attestations
 
 
@@ -95,6 +97,76 @@ class ObjectiveAttestationTests(unittest.TestCase):
         git(self.root, "add", ".")
         git(self.root, "commit", "-qm", "Add exact certificate")
         return git(self.root, "rev-parse", "HEAD")
+
+    def add_claim_contribution(
+        self,
+        name: str,
+        *,
+        dependencies: list[str] | None = None,
+        verification: bool = False,
+        statement: str | None = None,
+    ) -> str:
+        prefix = self.root / f"problems/demo/contributions/{name}"
+        write(
+            prefix / "README.md",
+            f"# {name}\n\n## Claims\n\n{statement or f'Claim for {name}.'}\n",
+        )
+        write(
+            prefix / "claims.json",
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "claims": [
+                        {
+                            "claimKey": f"demo/{name}",
+                            "statement": statement or f"Claim for {name}.",
+                            "dependencyTransactionIds": dependencies or [],
+                        }
+                    ],
+                },
+                indent=2,
+            )
+            + "\n",
+        )
+        if verification:
+            write(
+                prefix / "verify.py",
+                "from pathlib import Path\n"
+                "assert Path('certificate.bin').read_bytes() == b'\\x00proof\\xff'\n"
+                "print('certificate: valid')\n",
+            )
+            write(prefix / "certificate.bin", b"\x00proof\xff")
+            write(
+                prefix / "verification.json",
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "verifier": {
+                            "id": "python-stdlib-3-13-v1",
+                            "specDigest": verifier_spec_digest(self.spec),
+                        },
+                        "entrypoint": "verify.py",
+                        "arguments": [],
+                    },
+                    indent=2,
+                )
+                + "\n",
+            )
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", f"Add {name}")
+        return git(self.root, "rev-parse", "HEAD")
+
+    def validity_v4_judge(self) -> Path:
+        judge_value = json.loads(
+            (
+                Path(__file__).parents[1]
+                / "protocol/judges/openrouter-validity-judgment-v4.json"
+            ).read_text(encoding="utf-8")
+        )
+        judge_value.pop("contextProjection")
+        judge = self.root / "validity-v4.json"
+        write(judge, json.dumps(judge_value, indent=2) + "\n")
+        return judge
 
     @staticmethod
     def passing_executor(
@@ -440,6 +512,334 @@ class ObjectiveAttestationTests(unittest.TestCase):
         self.assertEqual(
             [item["transactionId"] for item in coverage["deferredTransactions"]],
             [attestation_subject],
+        )
+
+    def test_validity_v4_binds_subject_and_declared_reference_attestations_only(
+        self,
+    ) -> None:
+        reference = self.add_claim_contribution(
+            "verified-reference",
+            verification=True,
+            statement="The declared computational premise is certified.",
+        )
+        unrelated = self.add_claim_contribution(
+            "unrelated-verified-work",
+            verification=True,
+            statement="UNRELATED_ATTESTED_ASSERTION must stay outside the packet.",
+        )
+        subject = self.add_claim_contribution(
+            "dependent-attested",
+            dependencies=[reference],
+            verification=True,
+            statement="The subject follows from the declared computational premise.",
+        )
+        projections = self.root / "projection-state-v4"
+        attestation_dirs = []
+        published_by_transaction: dict[str, str] = {}
+        for transaction in (reference, unrelated, subject):
+            output = self.root / f"attestation-{transaction[:8]}"
+            run_verifier_attestation_bundle(
+                self.root,
+                "demo",
+                transaction,
+                "HEAD",
+                output,
+                executor=self.passing_executor,
+            )
+            attestation_dirs.append(output)
+        published = publish_batch(projections, attestation_dirs)["objects"]
+        for item in published:
+            manifest = json.loads(
+                (projections / item["path"] / "run.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            published_by_transaction[manifest["inputs"]["transactionId"]] = item[
+                "runDigest"
+            ]
+
+        responses = iter(
+            [
+                {
+                    "id": "report-v4",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "finish_reason": "stop",
+                            "message": {
+                                "content": "The bounded subject and reference evidence establish the claim."
+                            },
+                        }
+                    ],
+                },
+                {
+                    "id": "extract-v4",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "finish_reason": "stop",
+                            "message": {
+                                "content": json.dumps(
+                                    {
+                                        "assessments": [
+                                            {
+                                                "claimKey": "demo/dependent-attested",
+                                                "status": "valid",
+                                                "premiseStatus": "satisfied",
+                                                "summary": "The exact bounded evidence establishes the claim.",
+                                                "scopeQualifications": [],
+                                                "evidenceIssues": [],
+                                                "evidenceTransactionIds": [reference],
+                                                "requiredDependencyTransactionIds": [
+                                                    reference
+                                                ],
+                                            }
+                                        ]
+                                    }
+                                )
+                            },
+                        }
+                    ],
+                },
+            ]
+        )
+        requests: list[dict[str, object]] = []
+
+        def transport(request: dict[str, object]) -> dict[str, object]:
+            requests.append(request)
+            return next(responses)
+
+        output = self.root / "validity-v4-run"
+        manifest = run_primary_judgment_bundle(
+            self.root,
+            "demo",
+            self.validity_v4_judge(),
+            "HEAD",
+            [subject],
+            output,
+            projection_root=projections,
+            transport=transport,
+        )
+        packet = json.loads(
+            read_verified_artifact(output, manifest, "judgment-dependency-packet")
+        )
+        self.assertEqual(packet["schemaVersion"], 3)
+        self.assertIsNone(packet["knowledgeContext"])
+        self.assertEqual(packet["declaredReferenceTransactionIds"], [reference])
+        self.assertEqual(
+            [
+                (entry["transactionId"], entry["relation"])
+                for entry in packet["objectiveAttestations"]
+            ],
+            [(subject, "subject"), (reference, "declared-reference")],
+        )
+        expected_runs = {
+            subject: published_by_transaction[subject],
+            reference: published_by_transaction[reference],
+        }
+        self.assertEqual(
+            manifest["inputs"][
+                "objectiveAttestationRunDigestsByTransactionId"
+            ],
+            expected_runs,
+        )
+        self.assertNotIn(unrelated, expected_runs)
+        report_prompt = requests[0]["messages"][1]["content"]
+        self.assertIn("declared computational premise", report_prompt)
+        self.assertNotIn("UNRELATED_ATTESTED_ASSERTION", report_prompt)
+        self.assertNotIn("unrelated-verified-work", report_prompt)
+        loaded_manifest, judgment, _ = load_judgment_bundle(output)
+        self.assertEqual(loaded_manifest["outputProfile"], "math-flow/validity-judgment-v4")
+        self.assertEqual(judgment["schemaVersion"], 4)
+        self.assertEqual(judgment["dependencyPacketDigest"], packet["packetDigest"])
+        manifest_path = output / "run.json"
+        forged_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        forged_manifest["inputs"][
+            "objectiveAttestationRunDigestsByTransactionId"
+        ][unrelated] = published_by_transaction[unrelated]
+        manifest_path.write_text(
+            json.dumps(forged_manifest, indent=2) + "\n", encoding="utf-8"
+        )
+        with self.assertRaisesRegex(MathFlowError, "does not bind"):
+            load_judgment_bundle(output)
+
+    def test_validity_v4_pending_reference_defers_only_dependent_subject(self) -> None:
+        reference = self.add_claim_contribution(
+            "pending-reference", verification=True
+        )
+        dependent = self.add_claim_contribution(
+            "dependent-proof", dependencies=[reference]
+        )
+        independent = self.add_claim_contribution("independent-proof")
+        projections = self.root / "projection-state-v4"
+        judge = self.validity_v4_judge()
+
+        coverage = plan_primary_judgment_coverage(
+            self.root, projections, "demo", judge, "HEAD"
+        )
+        self.assertEqual(
+            [item["transactionId"] for item in coverage["missingTransactions"]],
+            [independent],
+        )
+        self.assertEqual(
+            [item["transactionId"] for item in coverage["deferredTransactions"]],
+            [reference, dependent],
+        )
+        dependent_gate = next(
+            item
+            for item in coverage["deferredTransactions"]
+            if item["transactionId"] == dependent
+        )
+        self.assertEqual(
+            dependent_gate["pendingObjectiveAttestations"],
+            [
+                {
+                    "transactionId": reference,
+                    "relation": "declared-reference",
+                    "requestDigest": dependent_gate[
+                        "pendingObjectiveAttestations"
+                    ][0]["requestDigest"],
+                }
+            ],
+        )
+        with self.assertRaisesRegex(
+            MathFlowError, f"declared-reference {reference}"
+        ):
+            run_primary_judgment_bundle(
+                self.root,
+                "demo",
+                judge,
+                "HEAD",
+                [dependent],
+                self.root / "premature-v4-judgment",
+                projection_root=projections,
+                transport=lambda _: {},
+            )
+
+        attestation = self.root / "pending-reference-attestation"
+        run_verifier_attestation_bundle(
+            self.root,
+            "demo",
+            reference,
+            "HEAD",
+            attestation,
+            executor=self.passing_executor,
+        )
+        publish_batch(projections, [attestation])
+        ready = plan_primary_judgment_coverage(
+            self.root, projections, "demo", judge, "HEAD"
+        )
+        self.assertEqual(ready["deferredTransactions"], [])
+        self.assertEqual(
+            [item["transactionId"] for item in ready["missingTransactions"]],
+            [reference, dependent, independent],
+        )
+
+    def test_validity_v4_reference_without_request_neither_blocks_nor_expands(
+        self,
+    ) -> None:
+        reference = self.add_claim_contribution("ordinary-reference")
+        subject = self.add_claim_contribution(
+            "ordinary-dependent", dependencies=[reference]
+        )
+        projections = self.root / "projection-state-v4"
+        coverage = plan_primary_judgment_coverage(
+            self.root,
+            projections,
+            "demo",
+            self.validity_v4_judge(),
+            "HEAD",
+        )
+        self.assertEqual(coverage["deferredTransactions"], [])
+        self.assertEqual(
+            [item["transactionId"] for item in coverage["missingTransactions"]],
+            [reference, subject],
+        )
+        source = load_source(self.root, "demo", "HEAD")
+        packet = build_evidence_packet_v4(
+            self.root,
+            projections,
+            "demo",
+            source,
+            "HEAD",
+            subject,
+            None,
+        )
+        self.assertEqual(packet["objectiveAttestations"], [])
+
+    def test_validity_v4_failed_and_error_reference_attestations_are_terminal(
+        self,
+    ) -> None:
+        failed_reference = self.add_claim_contribution(
+            "failed-reference", verification=True
+        )
+        error_reference = self.add_claim_contribution(
+            "error-reference", verification=True
+        )
+        subject = self.add_claim_contribution(
+            "terminal-outcome-dependent",
+            dependencies=[failed_reference, error_reference],
+        )
+
+        def failed_executor(
+            _materialized: Path,
+            _spec: dict[str, object],
+            _request: dict[str, object],
+        ) -> ExecutionResult:
+            return ExecutionResult(1, b"predicate failed\n", b"")
+
+        def error_executor(
+            _materialized: Path,
+            _spec: dict[str, object],
+            _request: dict[str, object],
+        ) -> ExecutionResult:
+            return ExecutionResult(125, b"", b"executor error\n")
+
+        failed = self.root / "failed-attestation"
+        error = self.root / "error-attestation"
+        run_verifier_attestation_bundle(
+            self.root,
+            "demo",
+            failed_reference,
+            "HEAD",
+            failed,
+            executor=failed_executor,
+        )
+        run_verifier_attestation_bundle(
+            self.root,
+            "demo",
+            error_reference,
+            "HEAD",
+            error,
+            executor=error_executor,
+        )
+        projections = self.root / "projection-state-v4"
+        publish_batch(projections, [failed, error])
+        source = load_source(self.root, "demo", "HEAD")
+        packet = build_evidence_packet_v4(
+            self.root,
+            projections,
+            "demo",
+            source,
+            "HEAD",
+            subject,
+            None,
+        )
+        self.assertEqual(
+            [entry["attestation"]["status"] for entry in packet["objectiveAttestations"]],
+            ["failed", "error"],
+        )
+        coverage = plan_primary_judgment_coverage(
+            self.root,
+            projections,
+            "demo",
+            self.validity_v4_judge(),
+            "HEAD",
+        )
+        self.assertEqual(coverage["deferredTransactions"], [])
+        self.assertIn(
+            subject,
+            [item["transactionId"] for item in coverage["missingTransactions"]],
         )
 
     def test_forged_environment_is_rejected_even_when_digests_are_rewritten(self) -> None:

@@ -20,6 +20,7 @@ from .research_state import validate_research_program_state
 HIERARCHICAL_RESEARCH_OUTPUT_PROFILES = {
     "math-flow/hierarchical-research-v2",
     "math-flow/hierarchical-research-v3",
+    "math-flow/hierarchical-research-v4",
 }
 
 
@@ -431,7 +432,7 @@ def _viewer_judgment(bundle: Path, problem: str) -> dict[str, object]:
         raise MathFlowError(f"viewer judgment belongs to another problem or run kind: {bundle}")
     record = _json_artifact(bundle, manifest, "judgment-record")
     declared_references_by_claim = None
-    if record.get("schemaVersion") == 3:
+    if record.get("schemaVersion") in {3, 4}:
         packet = _json_artifact(bundle, manifest, "judgment-dependency-packet")
         declared_references_by_claim = _viewer_declared_references_by_claim(
             record, packet
@@ -484,14 +485,15 @@ def _viewer_judgment(bundle: Path, problem: str) -> dict[str, object]:
 def _viewer_declared_references_by_claim(
     record: dict[str, object], packet: dict[str, object]
 ) -> dict[str, list[str]]:
-    """Extract the compact validity-v3 provenance view from a verified packet."""
+    """Extract compact reference provenance from a verified validity packet."""
 
+    expected_packet_version = {3: 2, 4: 3}.get(record.get("schemaVersion"))
     if (
-        packet.get("schemaVersion") != 2
+        packet.get("schemaVersion") != expected_packet_version
         or packet.get("packetDigest") != record.get("dependencyPacketDigest")
     ):
         raise MathFlowError(
-            "viewer validity-v3 dependency packet does not match its judgment"
+            "viewer reference-aware dependency packet does not match its judgment"
         )
     claims = packet.get("claims")
     assessments = record.get("assessments")
