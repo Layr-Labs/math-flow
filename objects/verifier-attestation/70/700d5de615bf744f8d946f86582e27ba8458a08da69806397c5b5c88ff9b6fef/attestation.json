@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "subject": {
+    "transactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+    "contributionId": "uv-relaxed-converse-tensorization",
+    "path": "problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization"
+  },
+  "verifier": {
+    "id": "python-stdlib-3-13-v1",
+    "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "implementation": "oci-command-v1"
+  },
+  "environment": {
+    "kind": "oci",
+    "image": "python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689",
+    "platform": "linux/amd64",
+    "network": "none",
+    "readOnlyRoot": true,
+    "user": "65534:65534",
+    "capabilities": [],
+    "noNewPrivileges": true,
+    "memoryBytes": 536870912,
+    "cpuCount": 1,
+    "pidsLimit": 128,
+    "tmpfsBytes": 67108864
+  },
+  "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+  "requestDigest": "sha256:acacb5fe70f1b998f12f0743a0c3d374817e404961b1c4a67fcdb96b0423c1ff",
+  "inputs": [
+    {
+      "path": "README.md",
+      "digest": "sha256:c4df63434cb0c5f76918bd0ba578629f7373d4f2b24d6d6b5e21d3c253f2e852",
+      "bytes": 7416
+    },
+    {
+      "path": "claims.json",
+      "digest": "sha256:0d46c2dbd1a62f0385fc4d8878d8cfef3749f85cca019e1284c5e54c12016874",
+      "bytes": 938
+    },
+    {
+      "path": "verification.json",
+      "digest": "sha256:d0dce591c90e6b529890b34e4bd515167ea3c447daef11e95f28e1c5f3c328d2",
+      "bytes": 236
+    },
+    {
+      "path": "verify_specialization.py",
+      "digest": "sha256:96375d4961d1ed5f5f5b3da368e59c60c4bd0fc6779b741a484b40f2114db4a2",
+      "bytes": 1427
+    }
+  ],
+  "invocation": {
+    "executable": "python3",
+    "fixedArguments": [
+      "-I",
+      "-B"
+    ],
+    "entrypoint": "verify_specialization.py",
+    "arguments": [],
+    "timeoutSeconds": 300,
+    "maximumOutputBytes": 262144,
+    "successExitCodes": [
+      0
+    ]
+  },
+  "result": {
+    "status": "passed",
+    "exitCode": 0,
+    "timedOut": false
+  },
+  "outputs": {
+    "stdout": {
+      "digest": "sha256:f45017fe78e32e55970371dc9b2f3f634b69b07364741ffe2478ccc6d48aa9e9",
+      "bytes": 177
+    },
+    "stderr": {
+      "digest": "sha256:3791645c869c075e3bb4a2fe531bfca27d34fefc58689df7ca16f150c3ec3616",
+      "bytes": 926
+    }
+  },
+  "producer": {
+    "implementation": "math-flow-oci-attestation-producer-v1",
+    "mathFlowVersion": "0.6.0"
+  },
+  "attestationId": "sha256:6511f4569cc82f844df137e63b65af70de6813ad7e7ffdbd51978984538b4e92"
+}
