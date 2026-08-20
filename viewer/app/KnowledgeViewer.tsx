@@ -8,6 +8,7 @@ import { collectProgramContributionIds } from "./programContributions.mjs";
 import { creditRunSelectionPatch, historicalOverlaySelection, knowledgeRunSelectionPatch, latestOverlaySelectionPatch, projectionByIdentity, publishedHeadSelectionPatch } from "./projectionHeadState.mjs";
 import { createViewerReferenceResolver } from "./referenceLinks.mjs";
 import { preferredTransactionDetailMode, resolveTransactionDetailMode } from "./transactionDetailMode.mjs";
+import { validityReferenceGroups } from "./validityPresentation.mjs";
 import { applyViewerStateToSearch, parseViewerState } from "./viewerState.mjs";
 
 type Ref = {
@@ -146,6 +147,7 @@ type ValidityAssessment = {
   scopeQualifications: string[];
   evidenceIssues: string[];
   evidenceTransactionIds: string[];
+  requiredDependencyTransactionIds?: string[];
 };
 
 type JudgmentRecord = {
@@ -178,6 +180,7 @@ type PublishedJudgment = {
   cost: number;
   reportDigest: string;
   reportMarkdown: string;
+  declaredReferenceTransactionIdsByClaim?: Record<string, string[]>;
   record: JudgmentRecord;
 };
 
@@ -1692,35 +1695,68 @@ export function KnowledgeViewer({
               {!!selectedJudgment.record.assessments?.length && (
                 <section className="validity-assessment-list">
                   <div className="section-label"><h3>Validity assessments</h3><span>{selectedJudgment.record.assessments.length}</span></div>
-                  {selectedJudgment.record.assessments.map((assessment) => (
-                    <article className={`validity-assessment validity-${assessment.status}`} key={assessment.claimKey}>
-                      <div className="validity-heading">
-                        <span className={`validity-status validity-${assessment.status}`}>{assessment.status}</span>
-                        <code>{assessment.claimKey}</code>
-                        <span className={`premise-status premise-${assessment.premiseStatus}`}>premises · {label(assessment.premiseStatus)}</span>
-                      </div>
-                      <p>{assessment.summary}</p>
-                      {!!assessment.scopeQualifications.length && (
-                        <div className="validity-notes">
-                          <strong>Scope qualifications</strong>
-                          {assessment.scopeQualifications.map((qualification) => <span key={qualification}>{qualification}</span>)}
+                  {selectedJudgment.record.assessments.map((assessment) => {
+                    const referenceGroups = validityReferenceGroups(selectedJudgment, assessment);
+                    return (
+                      <article className={`validity-assessment validity-${assessment.status}`} key={assessment.claimKey}>
+                        <div className="validity-heading">
+                          <span className={`validity-status validity-${assessment.status}`}>{assessment.status}</span>
+                          <code>{assessment.claimKey}</code>
+                          <span className={`premise-status premise-${assessment.premiseStatus}`}>premises · {label(assessment.premiseStatus)}</span>
                         </div>
-                      )}
-                      {!!assessment.evidenceIssues.length && (
-                        <div className="validity-notes evidence-issues">
-                          <strong>Evidence issues</strong>
-                          {assessment.evidenceIssues.map((issue) => <span key={issue}>{issue}</span>)}
-                        </div>
-                      )}
-                      {!!assessment.evidenceTransactionIds.length && (
-                        <div className="chip-row validity-evidence">
-                          {assessment.evidenceTransactionIds.map((evidenceId) => (
-                            <button key={evidenceId} onClick={() => openTransaction(evidenceId)}>evidence · {short(evidenceId)}</button>
-                          ))}
-                        </div>
-                      )}
-                    </article>
-                  ))}
+                        <p>{assessment.summary}</p>
+                        {!!assessment.scopeQualifications.length && (
+                          <div className="validity-notes">
+                            <strong>Scope qualifications</strong>
+                            {assessment.scopeQualifications.map((qualification) => <span key={qualification}>{qualification}</span>)}
+                          </div>
+                        )}
+                        {!!assessment.evidenceIssues.length && (
+                          <div className="validity-notes evidence-issues">
+                            <strong>Evidence issues</strong>
+                            {assessment.evidenceIssues.map((issue) => <span key={issue}>{issue}</span>)}
+                          </div>
+                        )}
+                        {referenceGroups && (
+                          <div className="validity-reference-groups">
+                            <div className="validity-reference-group declared-references">
+                              <div className="validity-reference-label">
+                                <strong>Declared references / provenance</strong>
+                                <span>Submission-declared citations; declaration alone does not make them required premises.</span>
+                              </div>
+                              <div className="chip-row">
+                                {referenceGroups.declaredReferenceTransactionIds.length
+                                  ? referenceGroups.declaredReferenceTransactionIds.map((referenceId) => (
+                                    <button key={referenceId} onClick={() => openTransaction(referenceId)}>declared · {short(referenceId)}</button>
+                                  ))
+                                  : <span className="muted">None declared</span>}
+                              </div>
+                            </div>
+                            <div className="validity-reference-group required-premises">
+                              <div className="validity-reference-label">
+                                <strong>Required premises</strong>
+                                <span>References whose mathematical content the judge found logically necessary for this claim.</span>
+                              </div>
+                              <div className="chip-row">
+                                {referenceGroups.requiredDependencyTransactionIds.length
+                                  ? referenceGroups.requiredDependencyTransactionIds.map((referenceId) => (
+                                    <button key={referenceId} onClick={() => openTransaction(referenceId)}>required · {short(referenceId)}</button>
+                                  ))
+                                  : <span className="muted">No prior reference required</span>}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {!!assessment.evidenceTransactionIds.length && (
+                          <div className="chip-row validity-evidence">
+                            {assessment.evidenceTransactionIds.map((evidenceId) => (
+                              <button key={evidenceId} onClick={() => openTransaction(evidenceId)}>evidence · {short(evidenceId)}</button>
+                            ))}
+                          </div>
+                        )}
+                      </article>
+                    );
+                  })}
                 </section>
               )}
               <section className="finding-list">

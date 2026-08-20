@@ -25,7 +25,10 @@ full submission inspection, raw and structured primary/reconciliation judgment
 review, transaction evidence filtering, knowledge-tree search, adjudication
 revision history, KaTeX rendering for inline and display LaTeX, and
 knowledge-build report review. Validity-v2 judgments foreground claim status,
-premise sufficiency, scope qualifications, and evidence issues. Serialized
+premise sufficiency, scope qualifications, and evidence issues.
+Validity-v3 assessments additionally separate submission-declared references
+and provenance from the narrower set of premises the judge found logically
+required; validity-v2 presentation remains unchanged. Serialized
 research-program states distinguish programs, local work threads, and accepted
 results or methods, while the hierarchical two-term credit overlay exposes both
 direct and obviated work, local and overall allocation shares, counterfactuals,
