@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 2,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+  "problemLedgerDigest": "sha256:64c2f6f0acdedf371111078cee128a03b30f5782a07025da4ff4e9c908ab4220",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+      "ledgerPosition": 11
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/finite-grid-q0-foundations",
+      "status": "valid",
+      "premiseStatus": "satisfied",
+      "summary": "Relative to the accepted 30-row definitions and optimization order, the report establishes exact at-most-N-output reduction on finite posterior grids, the reflection-closed reduction for reflected receiver pairs, both Q0 infima equal to c, the coercive floor B(G,K) >= V_0(g,k) >= max{F(g),F(k)}, and the resulting midpoint window when c <= U < 2c.",
+      "scopeQualifications": [
+        "Validity is conditional on the accepted private-message 30-row outer-bound premise and definitions in the cited transaction.",
+        "The receiver reductions apply to finite-output, binary-input, input-only receivers and finite grids Q containing {0,1/2,1}.",
+        "The reflected reduction applies only when Q is reflection closed and only within the class (m,m^circ); it does not establish arbitrary-pair symmetrization or full-functional reflected optimality.",
+        "The Q0 conclusions are sampled finite-grid statements and do not establish continuum cardinality bounds, limit interchange, or an unconditional capacity converse.",
+        "The coercivity bounds are necessary conditions derived from B(G,K) <= U, not sufficient conditions or a benchmark improvement."
+      ],
+      "evidenceIssues": [
+        "The underlying 30-row outer-bound premise is imported from the cited transaction rather than independently established in this record; no further proof defect is reported."
+      ],
+      "evidenceTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/finite-grid-q0-foundations",
+      "stance": "supports",
+      "summary": "Relative to the accepted 30-row definitions and optimization order, the report establishes exact at-most-N-output reduction on finite posterior grids, the reflection-closed reduction for reflected receiver pairs, both Q0 infima equal to c, the coercive floor B(G,K) >= V_0(g,k) >= max{F(g),F(k)}, and the resulting midpoint window when c <= U < 2c.",
+      "subjectTransactionIds": [
+        "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+      ],
+      "evidenceTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ]
+    }
+  ],
+  "dependencyPacketDigest": "sha256:1b923f284e2f46ebad5ed841783f7d100bbda3c6a0df5b021cd9cb29e3cb0747",
+  "reportDigest": "sha256:5a138b8c7fbe568b8f9613c05076ad1cdb7a53a68a62c8de3f3feb6fa4a1376f",
+  "judgmentId": "sha256:3f84350558339ca62bb09bc0c4d7e6e40dbab6e2e6c5f0451b1a1697f4532966"
+}
