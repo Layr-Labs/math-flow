@@ -28,10 +28,15 @@ from math_flow.governance import resolve_projection
 from math_flow.repository import sha256_json
 from math_flow.research_credit import (
     _accepted_history,
+    _allowed_credit_evidence_refs,
+    _normalized_credit_decimal_matches,
+    _normalized_credit_text_matches,
+    _validate_credit_evidence_refs,
     load_hierarchical_credit_assignment_bundle,
 )
 from math_flow.research_state import empty_research_program_state
 from math_flow.research_projection import (
+    _credit_schema,
     load_research_build_bundle,
     load_research_credit_refresh_bundle,
     load_research_update_bundle,
@@ -1404,6 +1409,72 @@ class ResearchProjectionTests(unittest.TestCase):
             self.assertEqual(state["contributions"], {})
             self.assertEqual(manifest["providerRuns"], [])
 
+    def test_hierarchical_credit_normalizes_representation_not_meaning(self) -> None:
+        self.assertTrue(_normalized_credit_decimal_matches("1.00", "1"))
+        self.assertTrue(_normalized_credit_decimal_matches("0.500", "0.5"))
+        self.assertFalse(_normalized_credit_decimal_matches("1.01", "1"))
+        self.assertFalse(_normalized_credit_decimal_matches("1e0", "1"))
+        self.assertFalse(_normalized_credit_decimal_matches(1, "1"))
+        self.assertTrue(
+            _normalized_credit_text_matches("  exact rationale  ", "exact rationale")
+        )
+        self.assertFalse(
+            _normalized_credit_text_matches("different rationale", "exact rationale")
+        )
+        self.assertFalse(_normalized_credit_text_matches("  ", "exact rationale"))
+
+    def test_hierarchical_credit_enumerates_locked_evidence_refs(self) -> None:
+        program_state = empty_research_program_state("no-three-in-line-77")
+        transaction_id = "a" * 40
+        history = [
+            {
+                "runDigest": "sha256:" + "b" * 64,
+                "baseRunDigest": None,
+                "baseProgramStateDigest": "sha256:" + "c" * 64,
+                "postProgramStateDigest": program_state["stateDigest"],
+                "acceptedRecords": [
+                    {
+                        "subjectTransactionId": transaction_id,
+                        "judgmentId": "sha256:" + "d" * 64,
+                        "judgmentRunDigest": "sha256:" + "e" * 64,
+                    }
+                ],
+            }
+        ]
+        allowed = _allowed_credit_evidence_refs(program_state, history)
+        invalid_alias = (
+            "no-three-in-line-77/record-152-objective-verification"
+        )
+        self.assertIn(transaction_id, allowed)
+        self.assertNotIn(invalid_alias, allowed)
+
+        schema = _credit_schema(
+            {"root": [{"kind": "contribution", "id": transaction_id}]},
+            [],
+            evidence_refs=allowed,
+        )
+        evidence_schema = schema["properties"]["evaluations"]["items"][
+            "properties"
+        ]["children"]["items"]["properties"]["evidenceRefs"]["items"]
+        self.assertEqual(evidence_schema["enum"], allowed)
+
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "hierarchical credit cites evidence outside its locked context: "
+            + invalid_alias,
+        ):
+            _validate_credit_evidence_refs(
+                {
+                    "evaluations": {
+                        "root": {
+                            "children": [{"evidenceRefs": [invalid_alias]}]
+                        }
+                    }
+                },
+                program_state,
+                history,
+            )
+
     def test_hierarchical_credit_uses_common_horizon_and_batched_historical_base(
         self,
     ) -> None:
@@ -1561,6 +1632,7 @@ class ResearchProjectionTests(unittest.TestCase):
             )
 
             calls: list[dict[str, object]] = []
+            schema_evidence_refs: list[str] = []
 
             def credit_transport(request: dict[str, object]) -> dict[str, object]:
                 calls.append(request)
@@ -1569,27 +1641,38 @@ class ResearchProjectionTests(unittest.TestCase):
                     "properties"
                 ]["programId"]["enum"]
                 self.assertEqual(program_ids, ["root"])
+                allowed_evidence = schema["properties"]["evaluations"]["items"][
+                    "properties"
+                ]["children"]["items"]["properties"]["evidenceRefs"]["items"][
+                    "enum"
+                ]
+                schema_evidence_refs.extend(allowed_evidence)
+                self.assertNotIn(
+                    "no-three-in-line-77/record-152-objective-verification",
+                    allowed_evidence,
+                )
                 children = []
                 for transaction_id in TRANSACTIONS[:2]:
+                    self.assertIn(transaction_id, allowed_evidence)
                     children.append(
                         {
                             "kind": "contribution",
                             "id": transaction_id,
-                            "counterfactual": "Remove this accepted result while retaining independent information.",
+                            "counterfactual": "  Remove this accepted result while retaining independent information.  ",
                             "directEffects": [
                                 {
                                     "threadId": f"root/batch-line-{transaction_id[:12]}",
-                                    "withoutWork": "3",
-                                    "withWork": "1",
-                                    "rationale": "Two units of direct local work are avoided.",
+                                    "withoutWork": "3.0",
+                                    "withWork": "1.00",
+                                    "rationale": "  Two units of direct local work are avoided.  ",
                                 }
                             ],
                             "obviatedEffects": [
                                 {
                                     "threadId": "root/unstructured-search",
-                                    "withoutWork": "2",
-                                    "withWork": "1.5",
-                                    "rationale": "The result narrows pre-existing unstructured search.",
+                                    "withoutWork": "2.00",
+                                    "withWork": "1.500",
+                                    "rationale": "  The result narrows pre-existing unstructured search.  ",
                                 }
                             ],
                             "confidence": "medium",
@@ -1603,8 +1686,8 @@ class ResearchProjectionTests(unittest.TestCase):
                             "evaluations": [
                                 {
                                     "programId": "root",
-                                    "unattributedWork": "1",
-                                    "rationale": "One unit remains unattributed.",
+                                    "unattributedWork": "1.0",
+                                    "rationale": "  One unit remains unattributed.  ",
                                     "children": children,
                                 }
                             ],
@@ -1643,6 +1726,17 @@ class ResearchProjectionTests(unittest.TestCase):
                 1,
             )
             self.assertTrue(all(child["totalWork"] == "2.5" for child in children))
+            self.assertTrue(
+                all(
+                    child["counterfactual"]
+                    == "Remove this accepted result while retaining independent information."
+                    for child in children
+                )
+            )
+            self.assertEqual(
+                credit_state["evaluations"]["root"]["unattributedWork"],
+                "1",
+            )
             history = json.loads(
                 read_verified_artifact(
                     output, manifest, "research-history-trace"
@@ -1660,6 +1754,11 @@ class ResearchProjectionTests(unittest.TestCase):
             prompt = calls[0]["messages"][1]["content"]
             self.assertIn("Original accepted submissions", prompt)
             self.assertIn("historical local reference contexts", prompt)
+            self.assertIn("Allowed evidenceRefs values", prompt)
+            self.assertIn(
+                json.dumps(schema_evidence_refs, indent=2, ensure_ascii=False),
+                prompt,
+            )
             publish_batch(projection_root, [output])
             source = load_source(repository, PROBLEM, "HEAD")
             credit_context, report = build_credit_context(

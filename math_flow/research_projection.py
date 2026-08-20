@@ -422,6 +422,7 @@ def _batch_organization_schema(
 def _credit_schema(
     targets: dict[str, list[dict[str, str]]],
     thread_ids: list[str],
+    evidence_refs: list[str] | None = None,
 ) -> dict[str, object]:
     effect = {
         "type": "object",
@@ -434,6 +435,9 @@ def _credit_schema(
         "required": ["threadId", "withoutWork", "withWork", "rationale"],
         "additionalProperties": False,
     }
+    evidence_ref: dict[str, object] = {"type": "string", "minLength": 1}
+    if evidence_refs is not None:
+        evidence_ref["enum"] = evidence_refs
     child = {
         "type": "object",
         "properties": {
@@ -449,7 +453,7 @@ def _credit_schema(
                 "type": "string",
                 "enum": ["low", "medium", "high"],
             },
-            "evidenceRefs": _string_array({"type": "string", "minLength": 1}),
+            "evidenceRefs": _string_array(evidence_ref),
         },
         "required": [
             "kind",
