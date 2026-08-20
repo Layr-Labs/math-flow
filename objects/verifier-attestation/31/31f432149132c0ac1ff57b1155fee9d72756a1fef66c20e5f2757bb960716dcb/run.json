@@ -1,0 +1,52 @@
+{
+  "protocolVersion": 1,
+  "runKind": "verifier-attestation",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "f093396fe03f8920f9905c385ef34b1335792d5e",
+  "problemLedgerHead": "f093396fe03f8920f9905c385ef34b1335792d5e",
+  "problemLedgerDigest": "sha256:fb1def69cc555436a5bccda8d8d9a1899123ea52def6f298e992ea948e86c554",
+  "runner": {
+    "implementation": "math-flow-oci-attestation-producer-v1",
+    "mathFlowVersion": "0.6.0"
+  },
+  "verifier": {
+    "id": "python-stdlib-3-13-v1",
+    "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "implementation": "oci-command-v1"
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/verifier-attestation-v1",
+  "requestDigests": [
+    "sha256:c7b681d1ad514122ec8caf3475567d7ac5d83726de4f11b46840de15d4a0e973"
+  ],
+  "providerRuns": [],
+  "inputs": {
+    "transactionId": "f093396fe03f8920f9905c385ef34b1335792d5e",
+    "contributionId": "theorem9-private-row-audit",
+    "verifierSpecDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94"
+  },
+  "artifacts": [
+    {
+      "path": "attestation.json",
+      "role": "verifier-attestation",
+      "mediaType": "application/json",
+      "digest": "sha256:c705f4700323878212f9c892169db09139e017f750e8a5bbd7005d0c6b05728c",
+      "bytes": 2845
+    },
+    {
+      "path": "stderr.log",
+      "role": "verifier-stderr",
+      "mediaType": "application/octet-stream",
+      "digest": "sha256:a5afdd02855dd64005bc2df2ab78b76ffc38283fa7805cadd67d84c646cca830",
+      "bytes": 948
+    },
+    {
+      "path": "stdout.log",
+      "role": "verifier-stdout",
+      "mediaType": "application/octet-stream",
+      "digest": "sha256:144e24710c1e78ba87adc63cc0b43131af8833b3fc827f41ccfc1ae8251fd8e9",
+      "bytes": 1216
+    }
+  ]
+}
