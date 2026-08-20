@@ -8247,6 +8247,1406 @@
       }
     },
     {
+      "id": "openrouter-research-v2",
+      "problemId": "no-three-in-line-77",
+      "label": "openrouter-research-v2",
+      "projectionSpec": {
+        "id": "openrouter-research-v2",
+        "description": "The parallel validity-v3 projection with attestation-aware judgment and dependency-safe batched hierarchical research-state formation.",
+        "digest": "sha256:df3a8d053a3734d1027930d2188dcd9a4caeb8a57f0317ca46b6c72bfc8bae5e",
+        "engine": "openrouter-repository-v1",
+        "allowedProblems": [
+          "*"
+        ],
+        "dependencies": [],
+        "scheduling": {
+          "judgmentMaxParallel": 16,
+          "knowledgeMinimumIntervalSeconds": 300,
+          "maximumJudgmentsPerBuild": 500
+        },
+        "runner": null
+      },
+      "builder": {
+        "id": "openrouter-hierarchical-research-builder-v3",
+        "digest": "sha256:7a860e24060549b877c06136df7e8b66e558be29363c873983debaa8381c9d96"
+      },
+      "latestRunDigest": "sha256:22fc355587cda3ddd986172321c17755ed74e7b0c73b0662bd3a3324e6eafc8b",
+      "runCount": 1,
+      "data": {
+        "schemaVersion": 1,
+        "problem": {
+          "id": "no-three-in-line-77",
+          "title": "No-three-in-line at grid size 77",
+          "statementMarkdown": "# No-three-in-line at grid size 77\n\nFor a positive integer `n`, let\n\n\\[\nG_n = \\{0,1,\\ldots,n-1\\}^2,\n\\]\n\nand let `D(n)` be the largest cardinality of a subset of `G_n` containing no\nthree distinct collinear points.\n\nDetermine `D(77)`, or improve either side of the current certified interval\n\n\\[\n152 \\le D(77) \\le 154.\n\\]\n\nThe upper bound is elementary: each of the 77 horizontal grid lines contains at\nmost two selected points. For the lower bound, a 152-point configuration on the\n`76 x 76` grid can be embedded unchanged in `G_77`. The initial contribution\nrecords and independently checks such a configuration.\n\nUseful contributions include:\n\n- an exact coordinate certificate with 153 or 154 points;\n- a small, reproducible verifier or SAT/CP-SAT encoding;\n- a symmetry-restricted result with its precise scope stated;\n- a structural lemma constraining hypothetical 153- or 154-point sets;\n- a reproducible search improvement or negative search result, clearly\n  distinguished from a global impossibility proof; or\n- a proof improving the upper bound.\n\nAll computational claims should include enough data and code to verify the\nclaimed implication with exact integer arithmetic. The frontier is active, so a\nlater contribution may update these baseline bounds without rewriting this\nhistorical statement.\n\n## Frontier sources\n\n- Achim Flammenkamp's maintained\n  [No-Three-in-Line database](https://wwwhomes.uni-bielefeld.de/achim/no3in/readme.html),\n  updated 2026-08-10, records the first `n = 76` configuration.\n- Thomas Prellberg,\n  [Constraint Satisfaction Programming for the No-three-in-line Problem](https://arxiv.org/abs/2602.07751),\n  describes the recent constraint-programming approach and its earlier advance\n  through `n = 60`.\n\n"
+        },
+        "ledgerHead": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+        "transactions": [
+          {
+            "ordinal": 1,
+            "transactionId": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+            "contributionId": "record-152-certificate",
+            "path": "problems/no-three-in-line-77/contributions/record-152-certificate",
+            "author": {
+              "displayName": "Robert",
+              "email": "robert.raynor@gmail.com"
+            },
+            "contentMarkdown": "# Checkable 152-point baseline\n\nThis contribution supplies an exact lower-bound certificate and a minimal\nverifier for the baseline claim `D(77) >= 152`.\n\n## Certificate provenance and encoding\n\nThe encoded configuration in `configuration.txt` is the `n = 76` record posted\non 2026-08-10 in Achim Flammenkamp's maintained\n[No-Three-in-Line database](https://wwwhomes.uni-bielefeld.de/achim/no3in/readme.html)\nand its downloadable\n[certificate list](https://wwwhomes.uni-bielefeld.de/~achim/no3in/download/all_known_solutions).\nIt is reproduced here so the mathematical claim does not depend on a mutable\nweb page.\n\nThe first character, `o`, is the database's quarter-turn symmetry marker. Drop\nthat marker and read the remaining 152 characters in consecutive pairs, one\npair for each row `y = 0, 1, ..., 75`. Each character denotes an `x` coordinate\nby its zero-based position in this alphabet:\n\n```text\n0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%&@?!()[]<>{}=*+|-/~^_:;,.\n```\n\nThus the payload describes exactly two selected points in each row of the\n`76 x 76` grid.\n\n## Exact verification\n\nRun:\n\n```bash\npython verify.py configuration.txt\n```\n\nThe verifier checks that:\n\n1. the payload decodes to 152 distinct integer points;\n2. every coordinate lies in `{0, ..., 75}`; and\n3. every triple has nonzero determinant\n\n\\[\n(x_2-x_1)(y_3-y_1)-(x_3-x_1)(y_2-y_1).\n\\]\n\nIt reports:\n\n```text\nverified 152 points on a 76 x 76 grid; no collinear triple\n```\n\nBecause `{0, ..., 75}^2` is a subset of `{0, ..., 76}^2`, the same 152 points\nform a valid configuration on the `77 x 77` grid. Therefore `D(77) >= 152`.\n\nConversely, each of the 77 horizontal rows contains at most two points in any\nvalid configuration, so `D(77) <= 154`. This establishes the current working\ninterval\n\n\\[\n152 \\le D(77) \\le 154.\n\\]\n\n## Suggested independent programs\n\n- Try to extend or perturb this certificate to 153 points on the larger grid.\n- Search directly for a 154-point configuration, which must have exactly two\n  points in every row and every column.\n- Analyze rotational and reflection symmetry classes separately, without\n  treating failure in one class as a global upper bound.\n- Develop structural constraints on the two exceptional rows or columns of a\n  hypothetical 153-point configuration.\n"
+          },
+          {
+            "ordinal": 2,
+            "transactionId": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+            "contributionId": "record-152-local-rigidity",
+            "path": "problems/no-three-in-line-77/contributions/record-152-local-rigidity",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Local rigidity of the 152-point record inside G_77\n\nThis contribution certifies, by exhaustive exact-integer computation, that the\ncertified 152-point no-three-in-line record on the `76 x 76` grid is an\nisolated local optimum inside `G_77 = {0,...,76}^2`. It is a negative search\nresult with a precise scope, not a global impossibility proof: it prunes the\nentire \"perturb the known record\" strategy for reaching 153 or 154 points and\nquantifies how different any larger configuration must be.\n\n## Claim\n\nLet `C` be the 152-point configuration decoded from\n[`../record-152-certificate/configuration.txt`](../record-152-certificate/configuration.txt),\nand let `E` range over the embeddings of `C` into `G_77`, meaning every image\nof `C` under the dihedral symmetries of `G_76` followed by a translation by\n`(tx, ty)` with `tx, ty` in `{0, 1}`. There are exactly 8 distinct such\nembeddings (see \"By-product\" below). For every embedding `E`:\n\n1. **Saturation (maximality).** Every one of the `77^2 - 152 = 5777` cells of\n   `G_77 \\ E` is collinear with at least two points of `E` (in fact with at\n   least two distinct blocking pairs). Hence no proper superset of `E` in\n   `G_77` is a no-three-in-line set; in particular `E` extends to neither 153\n   nor 154 points.\n2. **One-robust saturation.** For every single point `r` of `E`, the 151-point\n   set `E \\ {r}` still blocks every cell of `G_77 \\ E`. No cell is freed by\n   any single removal.\n3. **Two-removal accounting.** Removing any unordered pair of points of `E`\n   frees at most one cell of `G_77 \\ E`. Exactly 16 removal pairs free a cell;\n   they are listed exhaustively in [`results.json`](results.json). The 16\n   pairs concentrate on 4 freed cells (4 pairs each), and every instance is of\n   the \"two lines of two\" pattern: the freed cell lies on exactly two heavy\n   lines, each carrying exactly two configuration points.\n\n**Corollary (certified).** For every embedding `E` and every no-three-in-line\nset `S` in `G_77` with `|E \\ S| <= 2`, it holds that `|S \\ E| <= 1`, hence\n`|S| <= 152`. Therefore any hypothetical 153- or 154-point no-three-in-line\nset in `G_77` must omit at least 3 points of every embedding of the record and\ncontain at least 4 points outside it — symmetric difference at least 7 with\nevery embedding. (Proof of the corollary from claims 1-3: write\n`S = (E \\ R) ∪ A` with `R = E \\ S`, `A = S \\ E`. Every cell of `A` must be\nfree with respect to `E \\ R`; for `|R| = 0, 1` there are no free cells, and\nfor `|R| = 2` there is at most one, so `|A| <= 1` and\n`|S| = 152 - |R| + |A| <= 152` whenever `|R| <= 2`.)\n\nA weaker immediate consequence of claim 1 alone: adding two points at once is\nalso impossible, since each added point would in particular have to be\nindividually addable.\n\n## By-product: quarter-turn symmetry of the record\n\nThe decoded configuration `C` is invariant under the quarter-turn rotation\n`(x, y) -> (75 - y, x)` of `G_76`. The checker verifies this exactly. The\nexisting primary judgment recorded the database's symmetry marker as\nrecognized but deliberately unverified; this computation supplies the missing\nindependent verification (relevant to knowledge node\n`no-three-in-line/g76-152-point-set`). Consequently the dihedral orbit of `C`\nhas exactly 2 distinct images, and with the 4 translations this yields the 8\ndistinct embeddings analyzed here; the checker enumerates all 8 transforms and\n4 offsets and deduplicates programmatically, so completeness of the embedding\nlist does not depend on the symmetry claim.\n\n## Method and assumptions\n\nAll computation uses exact integer arithmetic (collinearity via the 2x2\ndeterminant `(x2-x1)(y3-y1) - (x3-x1)(y2-y1)`); there is no floating point and\nno randomness. The base configuration and each embedding are re-verified from\nscratch (all `C(152,3) = 573,800` triples), so this contribution does not\nassume the prior contribution's verifier ran correctly.\n\nTwo structurally independent enumerations must agree cell by cell:\n\n- **Line census (primary).** For each outside cell `c`, group the 152\n  configuration points by the sign-normalized primitive direction of `p - c`.\n  Points are collinear with `c` exactly when they share a direction, so the\n  groups of size at least 2 (\"heavy lines\") determine every blocking pair.\n  Because two distinct lines through `c` intersect only at `c`, one removed\n  point can lower the census of at most one heavy line, and a heavy line with\n  `n` points needs `n - 1` removals. Freeing `c` with at most 2 removals is\n  therefore possible only for: one heavy line of 2 (one removal), one heavy\n  line of 3 (two removals on it), or two heavy lines of 2 (one removal on\n  each). This case analysis is exhaustive, which makes the freeing enumeration\n  complete.\n- **Line walk (cross-check).** For every pair of configuration points, walk\n  the full lattice line through the pair in primitive steps in both\n  directions, recording every visited cell of `G_77`. This yields, for each\n  cell, the explicit list of blocking pairs; minimal freeing sets are\n  re-derived from these lists as minimum hitting sets. Per-cell pair counts\n  and freeing sets must match the census exactly.\n\nFinally, every reported freeing is re-verified by direct simulation (remove\nthe pair, test the freed cell against all `C(150,2)` remaining pairs),\nand the assembled results must byte-match the committed `results.json`.\n\n## Reproduction\n\nFrom this directory:\n\n```bash\npython3 rigidity.py            # verifies every claim against results.json; exit 0 on success\npython3 rigidity.py --write    # regenerates results.json\n```\n\nRequires only the Python 3 standard library (developed on CPython 3.11).\nDeterministic; runs in about 4 seconds on a laptop. Expected final line:\n\n```text\nverified: all 8 embeddings of the 152-point record are maximal in G_77, ...\n```\n\n## Provenance and reused work\n\n- Input configuration: `configuration.txt` from the prior contribution\n  `record-152-certificate`, added in transaction\n  `dfc0cc40d41105292a119840dcdbe6f22860cf43`. The file is read in place and\n  not copied; its SHA-256\n  (`a23f1f55d9a914cff49fb6ba369b9f392f7af4c5ce08085267b3af1e7d7742c4`) is\n  pinned in `results.json`. The decoding convention (marker character, then\n  two alphabet-encoded x coordinates per row) follows that contribution's\n  README; the decoder here is an independent re-implementation.\n- The underlying configuration is attributed to Achim Flammenkamp's\n  maintained [No-Three-in-Line database](https://wwwhomes.uni-bielefeld.de/achim/no3in/readme.html)\n  (n = 76 record), as recorded by the prior contribution and by primary\n  judgment `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`.\n- Knowledge nodes addressed (projection `openrouter-research-v1`, state digest\n  `sha256:10fd28a31acaebbff5c94ba87f89af7392b62507a91486db930258884410833e`):\n  primarily the open question `no-three-in-line/d77-exact-value` (constrains\n  where a 153- or 154-point set can be found); secondarily\n  `no-three-in-line/g76-152-point-set` (verifies the flagged quarter-turn\n  symmetry) and `no-three-in-line/d77-near-capacity-occupancy` (independent,\n  complementary constraints).\n\nThis contribution is presented as evidence for future adjudication; it does\nnot modify the certified interval `152 <= D(77) <= 154` or any prior record.\n\n## Known gaps and limitations\n\n- The result is local: it says nothing about no-three-in-line sets far from\n  the record embeddings, and it does not decide `D(77)`, which remains open\n  among 152, 153, and 154.\n- The scope is exactly the 8 embeddings of this particular record\n  configuration. Other 152-point configurations in `G_77` (if any exist) are\n  not covered.\n- Neighborhoods of removal depth 3 or more are not explored; the symmetric\n  difference bound of 7 is what depth 2 supports and is not claimed to be\n  sharp.\n- No failed checks: both enumeration methods, the direct simulations, and the\n  byte-comparison against `results.json` all pass.\n\n## Authorship\n\nAnalysis, code, and text were produced by an AI research agent (Cursor agent,\nmodel Fable 5) operating the repository's math-flow-solver workflow at\nRobert's request, building fresh verified context from the\n`openrouter-research-v1` projection. The base configuration is Achim\nFlammenkamp's (see provenance); the prior packaging and verification of that\nconfiguration are credited to the `record-152-certificate` contribution.\n"
+          },
+          {
+            "ordinal": 3,
+            "transactionId": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+            "contributionId": "rct4-154-search-instance",
+            "path": "problems/no-three-in-line-77/contributions/rct4-154-search-instance",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Validated rct4 search instance for a 154-point set in G_77\n\nThis contribution packages the one viable *rotational* route to resolving\n`D(77) = 154` as an exact, validated, reusable search instance, together with\na small symmetry lemma that proves it is the only such route, and an\nhonestly-scoped report of bounded search attempts that did not find a\nsolution. It changes no bounds: `152 <= D(77) <= 154` and the open question\n`no-three-in-line/d77-exact-value` remain exactly as certified.\n\n## Context: an unverified breakthrough report\n\nThis work was prompted by a private-channel report (received 2026-08-11,\nwithout any artifact) of a breakthrough on `D(77)`. Public sources were\nchecked immediately before packaging:\n\n- Achim Flammenkamp's No-Three-in-Line database\n  ([readme](https://wwwhomes.uni-bielefeld.de/achim/no3in/readme.html), page\n  dated 2026-08-10 19:57 UTC+2) records `n = 76` (Marijn Heule, rot4 class)\n  as the largest solved size; odd sizes 71, 73, 75, 77 have no recorded\n  2n-point solution and the largest solved odd size is 69.\n- The database's\n  [`all_known_solutions`](https://wwwhomes.uni-bielefeld.de/~achim/no3in/download/all_known_solutions)\n  download (retrieved 2026-08-11T01:13Z, 23,830,822 bytes) contains no line of\n  length 155, i.e. no `n = 77` configuration; the longest entries have length\n  153 (`n = 76`).\n- No preprint or other public trace of a 77 result was found.\n\nThe report is therefore treated as an unverified claim: this contribution\nneither confirms nor refutes it. What it does is reproduce, validate, and\npackage the exact search pipeline that produced every known odd-size record,\ninstantiated at `n = 77`, so that adequately provisioned solvers can attack\nor audit the claim.\n\n## Lemma: available rotational symmetry at sizes 153 and 154\n\nLet `S` be a no-three-in-line subset of `G_77` (all statements below hold for\nany grid). Write a *half-turn* for a 180-degree rotation about any center\npoint `z` of the plane and a *quarter-turn* for a 90-degree rotation about any\ncenter.\n\n1. **Half-turn-invariant sets of odd size do not exist (beyond one point).**\n   If `S` is invariant under the half-turn about `z` and `|S|` is odd, some\n   point is fixed (the map pairs `p` with its reflection `2z - p`, whose only\n   fixed point is `z`), so `z` is a grid point of `S`. But then for any other\n   `p` in `S`, the three points `p`, `z`, `2z - p` are distinct and collinear\n   (`z` is the midpoint of the segment). Hence `|S| <= 1`. In particular **no\n   153-point set has a half-turn symmetry about any center.**\n2. **Quarter-turn invariance forces size 0 or 1 modulo 4.** An order-4\n   rotation has orbits of size 4 except for its single fixed point (an orbit\n   of size 2 would consist of a point fixed by the half-turn square of the\n   rotation, and only `z` is). A quarter-turn-invariant `S` is also invariant\n   under the half-turn about the same center, so by (1) it either equals\n   `{z}` or excludes `z` and has `|S| = 0 (mod 4)`. Since `153 = 1 (mod 4)`\n   requires `z` in `S` (impossible for `|S| > 1`) and `154 = 2 (mod 4)`, **no\n   153- or 154-point set has a quarter-turn symmetry about any center.**\n3. **A 154-point half-turn symmetry can only be about the grid center.** A\n   154-point set has exactly two points in every row and every column (the\n   canonical occupancy constraint), so its bounding box is all of `G_77`; a\n   half-turn preserving the set preserves the bounding box, forcing the\n   center `z = (38, 38)`, which by (1) is not in `S`.\n\nConsequently the only rotational symmetry available above 152 points is:\n`|S| = 154`, half-turn about `(38, 38)`, center unoccupied. The **rct4\npattern** used for every known odd-size record (`n = 47` through `69`;\ndatabase marker `c`) is exactly such a structure with additional partial\nquarter-turn regularity, and it is what this instance encodes. A 153-point\nset, if one exists, has no rotational symmetry at all; only reflection\nsymmetry or none.\n\n## The rct4 pattern and the exact model\n\nFollowing Prellberg, [Constraint Satisfaction Programming for the\nNo-three-in-line Problem](https://arxiv.org/abs/2602.07751) (whose Table 1\nconstructions and database markers define the class), with\n`rho(i, j) = (j, 76 - i)` the quarter-turn about `(38, 38)`:\n\n- the anti-diagonal `{(i, 76 - i)}` is empty;\n- off-diagonal occupied cells form full `rho`-orbits of size 4;\n- exactly one main-diagonal pair `{(i, i), (76 - i, 76 - i)}`, `i != 38`, is\n  occupied (a `rho^2`-orbit; note such a set is `rho^2`-invariant but not\n  `rho`-invariant, consistent with the lemma).\n\nChoosing 38 off-diagonal orbits plus one diagonal pair gives\n`4 * 38 + 2 = 154` points. The model has one Boolean per off-diagonal orbit\n(1444) and one per diagonal pair (38). Every maximal grid line carrying at\nleast 3 lattice points contributes `sum(coeff * y) <= 2` after mapping cells\nto orbit variables (388,148 distinct constraints at `n = 77` after\ndeduplication, which realizes the `rho^2` line-orbit reduction); cardinality\nconstraints fix 38 chosen orbits and 1 chosen pair. Any three collinear grid\npoints lie on an enumerated line, and cells of the anti-diagonal are fixed\nempty, so feasible assignments correspond exactly to rct4-pattern 154-point\nno-three-in-line sets (soundness and completeness within the class). Every\nsolver output is additionally re-verified point-by-point by the exhaustive\nexact-integer triple test before being reported.\n\n## Validation against known certificates\n\n`known_certificates.txt` reproduces five `c`-class lines from the database\ndownload (sizes 41, 47, 57, 65, 69; SHA-256 of the file and of each line are\npinned in `results.json`). For each one, `check-known`:\n\n1. decodes it (marker character, then two alphabet-encoded x-coordinates per\n   row, the convention documented in `record-152-certificate`);\n2. verifies the no-three-in-line property exhaustively in exact integers;\n3. decomposes it into the class structure (38-type orbit counts, one diagonal\n   pair, empty anti-diagonal); and\n4. checks it satisfies every constraint of this model at its size.\n\nAll five pass. This establishes that the encoding does not exclude real\nsolutions of the class it targets, and that the class is *satisfiable* at the\ncalibration sizes used below.\n\n## Reproduction\n\nFrom this directory (validation is Python-stdlib-only):\n\n```bash\npython3 rct4_search.py check-known     # decode + verify + model-check the 5 certificates\npython3 rct4_search.py results         # recompute everything deterministic vs results.json\n```\n\nSearch and export (tested with Python 3.12.3, `ortools` 9.15.6755,\n`python-sat` 1.9.dev12):\n\n```bash\npython3 rct4_search.py solve 77 --seed 7 --time 3600 --workers 4 --out sol77.json\npython3 rct4_search.py export-cnf 77 --out n77.cnf     # DIMACS for any SAT solver\npython3 rct4_search.py verify sol77.json 77            # exact check of any claimed list\n```\n\n`results --write` regenerates `results.json`. The `results` run takes about\none minute; building the `n = 77` model takes about 10 seconds.\n\n## Bounded search report (negative, hardware-scoped)\n\nAll runs below on a 4-core cloud VM (15 GB RAM), OR-Tools CP-SAT and CaDiCaL\n1.9.5 via the commands above. **These are budget statements, not evidence of\nnonexistence**: the class is provably satisfiable at `n = 41` and `n = 47`\n(committed witnesses), yet the same pipeline also failed to find those within\nsimilar budgets, demonstrating that this hardware scale is far below what the\ninstance family needs. For comparison, the literature's `n <= 60` results\nused 384 parallel runs with multi-day horizons, and sizes 65-76 required\nspecialized new SAT solvers.\n\n| target | engine | budget and seed | outcome |\n| --- | --- | --- | --- |\n| n=41 (satisfiable) | CP-SAT, 4 workers | 300 s, seed 1 | no solution (UNKNOWN) |\n| n=47 (satisfiable) | CP-SAT, 4 workers | 600 s, seed 1 | no solution (UNKNOWN) |\n| n=41 (satisfiable) | CaDiCaL 1.9.5 via python-sat, same clause encoding | 420 s | no result (timeout) |\n| n=77 (this instance) | CP-SAT, 2 workers | seed 7, >= 45 min | no solution |\n| n=77 (this instance) | CaDiCaL 1.9.5 via python-sat, same clause encoding | >= 45 min | no result |\n\nAn exploratory stochastic local search over orbit space (not part of this\nartifact) plateaued at 17 violated lines at `n = 41` and was not competitive.\nNo run returned INFEASIBLE at any size; nothing here bounds `D(77)`.\n\n## Provenance and reused work\n\n- Knowledge state: projection `openrouter-research-v1`, verified `current` at\n  canonical problem head `c5e8096d942d57228bb4fed00f7617fb6b43af9f`, state\n  digest `sha256:a3ace33ff5d4fea1127568d4e20c771a5e90b5b25c730ac7be610b4d1cb2a708`.\n  Primary nodes addressed: the open question `no-three-in-line/d77-exact-value`\n  and the occupancy lemma `no-three-in-line/d77-near-capacity-occupancy`\n  (judgment `sha256:a470e4a9c0903097d9c860badaa8976cf32ed5336c154f11d8fad980d401f74e`);\n  the local-rigidity nodes, e.g.\n  `no-three-in-line/d77-distance-from-embedded-g76-152-record`\n  (judgment `sha256:71fbde8d269728a92be52f6401e857230043ee6938c45f810c32308d88fb9927`),\n  motivate a global symmetric search by closing the perturbative route to 153.\n- Certificate encoding convention: contribution `record-152-certificate`\n  (transaction `dfc0cc40d41105292a119840dcdbe6f22860cf43`).\n- `known_certificates.txt` lines are reproduced verbatim from Achim\n  Flammenkamp's database download (retrieved 2026-08-11T01:13Z) so the\n  validation does not depend on a mutable web page. Per the database history,\n  the record discoveries at these sizes are credited to the database's\n  contributors, including Thomas Prellberg (first odd-size records through\n  `n = 63`) and Marijn Heule (`n = 65` through `n = 76`); this contribution\n  claims no originality for them.\n- Class definition and symmetry-reduction methodology: Prellberg,\n  arXiv:2602.07751. The model here is an independent implementation of that\n  specification.\n\n## Known gaps and limitations\n\n- No change to the certified interval; no existence or nonexistence evidence\n  for 153 or 154 points. The private-channel breakthrough report remains\n  unverified in both directions.\n- The instance covers the rct4 pattern only. General half-turn (rot2)\n  configurations satisfy a weaker symmetry (the lemma shows rot2 about the\n  center is the full rotational envelope at 154); a rot2-general model has\n  roughly twice the variables and is not included. Reflection-symmetric and\n  asymmetric searches (the only options at 153) are likewise out of scope.\n- The negative search table reflects small budgets on small hardware and\n  carries no weight about satisfiability of the `n = 77` instance.\n- The lemma constrains rotations only; it says nothing about reflection or\n  glide symmetries.\n\n## Authorship\n\nAnalysis, lemma, code, and text by an AI research agent (Cursor cloud agent,\nmodel Fable 5) operating the repository's math-flow-solver workflow at\nRobert's request, as a replication attempt for a privately reported\nbreakthrough. Reproduced certificates and the class definition are credited\nabove; errors are the agent's.\n"
+          },
+          {
+            "ordinal": 4,
+            "transactionId": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+            "contributionId": "finite-rotation-classification-proof",
+            "path": "problems/no-three-in-line-77/contributions/finite-rotation-classification-proof",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Arbitrary-center rotational symmetry at cardinalities 153 and 154\n\n## Result\n\nThis contribution closes the specific arbitrary-center gap recorded in\n`d77/rotational-classification-scope`.\n\n**Finite-rotation lemma.** Let \\(S\\subset\\mathbb Z^2\\) be finite and\nnoncollinear. If a nonidentity Euclidean rotation \\(T\\) satisfies \\(T(S)=S\\),\nthen \\(T\\) is a half-turn or a quarter-turn (in either orientation). This\nallows an arbitrary center; no assumption is made that the rotation preserves\nthe whole ambient square or the whole integer lattice.\n\nConsequently, for a no-three-in-line set \\(S\\subset G_{77}\\):\n\n1. if \\(|S|=153\\), then \\(S\\) has no nontrivial rotational symmetry;\n2. if \\(|S|=154\\) and \\(S\\) has nontrivial rotational symmetry, it is invariant\n   under the half-turn about \\((38,38)\\), and \\((38,38)\\notin S\\).\n\nThis classifies rotations only. It says nothing about reflection symmetry and\ndoes not identify the strict rct4 subclass with the full centered half-turn\nclass. In particular, it does **not** improve the certified interval\n\n\\[\n152\\le D(77)\\le154.\n\\]\n\n## Proof of the finite-rotation lemma\n\nWrite the rotation as\n\n\\[\nT(x)=z+Q(x-z),\\qquad\nQ=\\begin{pmatrix}c&-s\\\\s&c\\end{pmatrix},\n\\qquad c^2+s^2=1.\n\\]\n\nHere \\(z\\in\\mathbb R^2\\) is arbitrary. We prove first that both \\(c\\) and\n\\(s\\) are rational.\n\nChoose noncollinear \\(p_0,p_1,p_2\\in S\\), and form the matrices whose columns\nare two differences and their rotated images:\n\n\\[\nB=\\begin{pmatrix}|&|\\\\p_1-p_0&p_2-p_0\\\\|&|\\end{pmatrix},\n\\qquad\nC=\\begin{pmatrix}|&|\\\\T(p_1)-T(p_0)&T(p_2)-T(p_0)\\\\|&|\\end{pmatrix}.\n\\]\n\nThe columns of \\(B\\) and \\(C\\) are integer vectors because all six relevant\npoints lie in \\(S\\subset\\mathbb Z^2\\). Noncollinearity gives\n\\(\\det(B)\\ne0\\). The translational part of \\(T\\) cancels in differences, so\n\n\\[\nC=QB,\n\\qquad Q=CB^{-1}.\n\\]\n\nThe inverse of the nonsingular integer matrix \\(B\\) has rational entries.\nThus \\(Q\\) has rational entries, and in particular \\(c,s\\in\\mathbb Q\\).\nThis step does not require the center \\(z\\) to be a lattice point.\n\nNext, \\(T\\) acts as a permutation of the finite set \\(S\\). Some positive\npower of that permutation is the identity, so for some \\(m\\ge1\\), \\(T^m\\)\nfixes every point of \\(S\\). Since \\(S\\) contains three noncollinear points,\nthe Euclidean isometry \\(T^m\\) is the identity. Hence \\(Q\\) has finite order.\n\nLet \\(\\lambda,\\lambda^{-1}\\) be the complex eigenvalues of \\(Q\\). They are\nroots of unity, so\n\n\\[\nt=\\operatorname{tr}(Q)=\\lambda+\\lambda^{-1}=2c\n\\]\n\nis an algebraic integer. But \\(Q\\) is rational, hence \\(t\\in\\mathbb Q\\); a\nrational algebraic integer is an integer. Since \\(|t|\\le2\\),\n\n\\[\nt\\in\\{-2,-1,0,1,2\\}.\n\\]\n\nThe cases \\(t=\\pm1\\) would give \\(c=\\pm\\tfrac12\\), and then\n\\(s^2=1-c^2=\\tfrac34\\). This is impossible because \\(s\\) was proved rational\nwhereas \\(\\sqrt3/2\\) is irrational. The case \\(t=2\\) is the identity rotation,\nwhich was excluded. If \\(t=-2\\), then \\((c,s)=(-1,0)\\), a half-turn. If\n\\(t=0\\), then \\((c,s)=(0,\\pm1)\\), a quarter-turn. These are all cases, proving\nthe lemma.\n\n## Application to \\(G_{77}\\)\n\nA 153- or 154-point no-three-in-line set is noncollinear, so the lemma applies.\nIt remains only to combine it with the orbit arguments already represented in\n`rotational-symmetry/cardinality-obstructions`; they are repeated here to make\nthe corollary self-contained.\n\nUnder a half-turn, noncentral points occur in opposite pairs. If an invariant\nset has odd size, it contains the center. Any other opposite pair together with\nthat center would be three collinear points. Therefore a half-turn-invariant\nno-three-in-line set of odd size has at most one point, excluding size 153.\n\nUnder a quarter-turn, every noncentral orbit has size four. If the center is\nselected, the same half-turn argument excludes every other orbit; otherwise the\ncardinality is divisible by four. Thus neither 153 nor 154 is compatible with\na quarter-turn.\n\nThe only remaining nontrivial rotation at size 154 is a half-turn. A\n154-point no-three-in-line subset of \\(G_{77}\\) has exactly two selected points\nin every row and, independently, exactly two in every column: each of the 77\nrows or columns contains at most two points, and equality holds in the total\nbound \\(154=2\\cdot77\\). Its coordinatewise bounding box is therefore all of\n\\([0,76]^2\\). A half-turn maps the bounding box of an invariant set to itself,\nso its center is the center of that box, \\((38,38)\\). The rotation has no\nselected fixed point: otherwise every opposite pair and the center would be a\ncollinear triple (and, equivalently here, 154 is even while all noncentral\norbits have size two). Hence \\((38,38)\\notin S\\).\n\nThis proves both stated consequences.\n\n## Provenance and relationship to prior work\n\n- Research-direction registration:\n  `a9552d14dcd11d394a0ae9672b6d81dae033f127`.\n- The qualified knowledge node addressed is\n  `d77/rotational-classification-scope`, revision\n  `sha256:49933934edbd64cdd3484e6a987ffcb1a4bde2c1beb63aaddad89d78736e22db`.\n- The accepted half-turn and quarter-turn orbit facts are represented by\n  `rotational-symmetry/cardinality-obstructions`, revision\n  `sha256:586ea4ca1f07e8217cbd39b0496d0330f895b088623f0429c214c93a88b1aa83`.\n- Both nodes arose from transaction\n  `c98dd877ad81611a9a469b1bd790cd909b56b1ce` and its primary judgment\n  `sha256:d24a70c16a08ff85401e969cfe12d8f8253056bb8d75e469ec226eba7a3b44c5`.\n  That judgment explicitly identified the finite-order classification step as\n  plausible but omitted. This contribution supplies that step and reuses the\n  already established orbit and occupancy arguments; it claims no priority for\n  those prior results or for the rct4 model.\n\nNo external mathematical source or computational result is used.\n\n## Verification and limitations\n\nThe evidence is the exact proof above, not a bounded computation. Repository\nvalidation can be reproduced from the repository root with:\n\n```bash\npython3 -m math_flow validate-tree\npython3 -m unittest discover -s tests -v\ngit diff --check\n```\n\nKnown limitations are deliberate:\n\n- the theorem classifies Euclidean rotations preserving a finite noncollinear\n  lattice set, not reflections, general affine maps, or approximate symmetry;\n- the 154-point conclusion is conditional and constructs no configuration;\n- no 153- or 154-point existence or global nonexistence result is obtained;\n- the rct4 model remains a strict subclass of centered half-turn symmetry; and\n- the certified bounds remain unchanged.\n\n## Authorship\n\nProof and exposition by an OpenAI Codex research agent working through the\nMath Flow solver protocol at Robert Raynor's request. Prior results and their\nimmutable provenance are credited above.\n"
+          },
+          {
+            "ordinal": 5,
+            "transactionId": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "contributionId": "record-152-objective-verification",
+            "path": "problems/no-three-in-line-77/contributions/record-152-objective-verification",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Replayable objective verification of the 152-point record\n\nThis contribution republishes the exact `record-152-certificate` checker and\ncertificate bytes with a canonical `verification.json` request. Its purpose is\nto produce a durable, independently replayable objective attestation through\nMath Flow's trusted hosted verifier path.\n\n## Scope\n\nThe encoded configuration is byte-for-byte identical, and the checker logic is\nidentical, to the artifacts in the earlier canonical contribution\n`record-152-certificate` (transaction\n`dfc0cc40d1193b8d5ca25e7f177fa48ff9a1b38d`). The checker establishes that the\npayload decodes to 152 distinct points in the `76 x 76` grid and that every\ntriple has nonzero integer determinant. Since that grid embeds into the\n`77 x 77` grid, this re-verifies the existing lower bound\n\n\\[\nD(77) \\ge 152.\n\\]\n\nThis is independent verification infrastructure, not a new bound and not a\nclaim about optimality. A successful attestation proves only that the pinned\nchecker accepted these pinned bytes in the governed environment; judgment of\nwhether the encoding captures the stated mathematics remains separate.\n\n## Reproduction\n\nRun locally with Python 3 and the standard library:\n\n```bash\npython3 -I -B verify.py configuration.txt\n```\n\nThe expected output is:\n\n```text\nverified 152 points on a 76 x 76 grid; no collinear triple\n```\n\nAfter canonical merge, `verification.json` requests the repository-approved\n`python-stdlib-3-13-v1` verifier. The trusted workflow should execute it in the\ndigest-pinned, networkless, read-only OCI environment and publish the resulting\ncontent-addressed attestation separately on the `projections` branch.\n"
+          },
+          {
+            "ordinal": 6,
+            "transactionId": "3baf1c8586af31bbd6509d0fd3e552658c03673b",
+            "contributionId": "record-152-eight-embedding-local-rigidity",
+            "path": "problems/no-three-in-line-77/contributions/record-152-eight-embedding-local-rigidity",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Exact local rigidity for eight embeddings of the 152-point record\n\n## Claim and exact scope\n\nLet\n\n\\[\nG_n=\\{0,\\ldots,n-1\\}^2\n\\]\n\nand let \\(C\\subset G_{76}\\) be the 152-point configuration encoded by\n`configuration.txt` in canonical transaction\n`dfc0cc40d41105292a119840dcdbe6f22860cf43`.  Take every distinct image of\n\\(C\\) under the eight dihedral symmetries of \\(G_{76}\\), then translate it by\neach vector in \\(\\{0,1\\}^2\\).  There are exactly eight resulting subsets\n\\(E\\subset G_{77}\\).  For each of these eight specified embeddings:\n\n1. Every cell of \\(G_{77}\\setminus E\\) is collinear with at least two\n   distinct unordered pairs of points of \\(E\\).  Thus \\(E\\) is inclusion\n   maximal in \\(G_{77}\\).\n2. Removing any one point of \\(E\\) frees no cell that was originally in\n   \\(G_{77}\\setminus E\\).  The removed point itself is not an outside cell in\n   this assertion and may of course be restored.\n3. Removing any unordered pair of points of \\(E\\) frees at most one originally\n   outside cell.  Exactly 16 removal pairs per embedding free a cell.  They\n   are the exhaustive records in [`results.json`](results.json): four freed\n   cells, with four removal pairs per cell, all in the two-lines-of-two case.\n\nConsequently, if \\(S\\subseteq G_{77}\\) is no-three-in-line and\n\\(|E\\setminus S|\\le 2\\), then \\(|S\\setminus E|\\le 1\\) and \\(|S|\\le 152\\).\nIn particular, if \\(|S|\\ge153\\), then\n\\(|E\\setminus S|\\ge3\\), \\(|S\\setminus E|\\ge4\\), and\n\\(|E\\mathbin{\\triangle}S|\\ge7\\), for each of these eight embeddings.\n\nThis is one local finite-computation claim.  It says nothing about other\n152-point configurations, configurations farther from these embeddings, or\nthe unresolved global value of \\(D(77)\\).\n\nThe same claim is declared machine-readably in [`claims.json`](claims.json).\nIts sole logical dependency is the canonical certificate transaction above,\nso the primary judge receives the exact 152-point configuration rather than a\nprose citation or an unrestricted prior ledger.\n\n## Exact verification\n\n[`rigidity.py`](rigidity.py) uses only exact Python integers and the standard\nlibrary.  It reads the dependency's file at\n`../record-152-certificate/configuration.txt` and checks, from the encoded\ncoordinates:\n\n- 152 distinct in-bounds points and all \\(\\binom{152}{3}=573800\\) determinants;\n- quarter-turn invariance, two distinct dihedral images, and eight distinct\n  translated embeddings;\n- all 5,777 outside cells of each embedding;\n- all removals of size zero, one, or two relevant to freeing an outside cell;\n- agreement between a primitive-direction line census and an independent\n  walk of every pair's full lattice line;\n- direct simulation of every reported freeing; and\n- byte-for-byte equality of the generated complete report with\n  [`results.json`](results.json).\n\nRun from this directory:\n\n```bash\npython3 rigidity.py\n```\n\nTo regenerate the report and then check that it is unchanged:\n\n```bash\npython3 rigidity.py --write\ngit diff --exit-code -- results.json\npython3 rigidity.py\n```\n\nThe pinned SHA-256 digests are:\n\n```text\nconfiguration.txt  a23f1f55d9a914cff49fb6ba369b9f392f7af4c5ce08085267b3af1e7d7742c4\nrigidity.py         6b65e2f32a6d74be1a664f587afb284d6c362fb6fdd12f731f7c6ad6ec8f2e69\nresults.json        fa888f67bbe1956c3f19161ce0895193651c0b3e9e52b41ae47e04942dd1e39b\n```\n\nThe expected last line begins:\n\n```text\nverified: all 8 embeddings of the 152-point record are maximal in G_77\n```\n\n## Why this is a new contribution\n\nTransaction `c5e8096d942d57228bb4fed00f7617fb6b43af9f` first contributed the local\nrigidity argument, checker, and result artifact.  Its validity-v2 judgment was\nindeterminate solely because the legacy contribution did not explicitly\ndeclare the certificate transaction as a dependency, so the exact\nconfiguration was absent from the permitted evidence packet.  This\ncontribution preserves its checker and results byte-for-byte, narrows the\nstatement to the audited eight-embedding scope, and makes the essential\ndependency explicit.\n\nThe earlier local-rigidity transaction is cited here for authorship and\nprovenance, not declared as a mathematical premise: all code and output needed\nto audit this claim are included in this directory.  The only external input\nneeded by the checker is the exact configuration supplied by the declared\ncertificate dependency.\n\n## Limitations\n\n- The eight embeddings are exactly the two distinct dihedral images of this\n  particular \\(G_{76}\\) record at the four offsets in \\(\\{0,1\\}^2\\).\n- Removal depth three and greater is not analyzed.\n- No upper bound below 154 and no 153- or 154-point construction is claimed.\n- A successful run verifies the encoded finite predicate; mathematical\n  acceptance remains the responsibility of the independent primary judge.\n\n## Attribution\n\nThe encoded configuration and its original provenance are supplied and\ncredited by transaction `dfc0cc40d41105292a119840dcdbe6f22860cf43`, which\nattributes the record to Achim Flammenkamp's no-three-in-line database.  The\nlocal-rigidity method, checker, and committed result artifact were produced by\nthe AI research agent identified in transaction\n`c5e8096d942d57228bb4fed00f7617fb6b43af9f`.  This repair was prepared by an\nOpenAI Codex solver agent at Robert Raynor's request by rerunning, auditing,\nand repackaging that work under the explicit validity-v2 dependency contract.\n"
+          },
+          {
+            "ordinal": 7,
+            "transactionId": "046e8f269922a6d2ce37ce17d4878ccdb0aa7721",
+            "contributionId": "rct4-154-exact-subclass-encoding",
+            "path": "problems/no-three-in-line-77/contributions/rct4-154-exact-subclass-encoding",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Exact rct4-subclass encoding at n = 77\n\n## Claim and exact scope\n\nPut \\(G_{77}=\\{0,\\ldots,76\\}^2\\) and define\n\n\\[\n\\rho(x,y)=(y,76-x).\n\\]\n\nThis contribution defines the **rct4 subclass** to contain exactly those\nsubsets \\(S\\subseteq G_{77}\\) satisfying all three conditions below:\n\n1. the anti-diagonal \\(\\{(i,76-i):0\\le i\\le76\\}\\) is empty;\n2. occupied cells off both diagonals are unions of complete four-cell\n   \\(\\rho\\)-orbits; and\n3. the main diagonal contains exactly one antipodal pair\n   \\(\\{(i,i),(76-i,76-i)\\}\\), with \\(i\\ne38\\).\n\n[`verify_rct4_instance.py`](verify_rct4_instance.py) deterministically\nconstructs a Boolean constraint system that is sound and complete for the\n154-point no-three-in-line members of this explicitly defined subclass.  It\nhas:\n\n```text\n1,444  off-diagonal four-orbit variables, of which exactly 38 are selected\n   38  main-diagonal antipodal-pair variables, of which exactly 1 is selected\n388,148 canonical deduplicated weighted maximal-line constraints\n```\n\nThe canonical constraint serialization has SHA-256 digest\n`sha256:5c0051739717f52f8eddd00cd01e8a83030849b3fd7b4516b0d308882c9aaf62`.\nThe exact machine-readable statement is in\n[`claims.json`](claims.json).\n\nThis claim is deliberately only an encoding theorem.  It does **not** claim:\n\n- that the n=77 rct4 instance is satisfiable or infeasible;\n- that rct4 includes every centered-half-turn configuration;\n- that rct4 is the unique viable rotational route;\n- any classification of all rotations preserving a grid subset;\n- anything about reflection-symmetric or asymmetric configurations; or\n- any improvement to the unresolved bounds \\(152\\le D(77)\\le154\\).\n\nNo prior transaction is a logical premise of this self-contained encoding.\n\n## Why the encoding is exact within the subclass\n\nThe anti-diagonal is fixed empty.  The remaining main-diagonal cells form 38\ndisjoint antipodal pairs.  The 5,776 cells off both diagonals form 1,444\ndisjoint four-cell \\(\\rho\\)-orbits.  Therefore choosing 38 four-orbits and one\ndiagonal pair produces exactly\n\n\\[\n38\\cdot4+2=154\n\\]\n\ndistinct cells, and every 154-point rct4-subclass set has one unique such\nBoolean assignment.\n\nFor each sign-normalized primitive lattice direction, the verifier enumerates\na line only from the first grid cell whose predecessor is outside the grid.\nIt therefore enumerates every maximal grid line with at least three cells\nexactly once.  A line containing three grid cells contains at least two\nprimitive steps, so both step components have absolute value at most 38; the\nenumerated direction range is complete.\n\nOn an enumerated line, a model variable has coefficient equal to the number\nof its expanded cells lying on that line.  Anti-diagonal cells contribute\nnothing because they are fixed empty.  The inequality\n\n\\[\n\\sum_v c_v y_v\\le2\n\\]\n\nis therefore exactly the statement that the expanded set occupies at most\ntwo cells of that line.  Every collinear triple lies on one of the enumerated\nmaximal lines, so all these inequalities hold if and only if the expansion is\nno-three-in-line.  Deduplicating equal weighted inequalities does not change\ntheir feasible set.  This proves soundness and completeness for the stated\nsubclass without extending the result to any larger symmetry class.\n\n## Deterministic verification\n\nThe verifier uses only Python 3 standard-library code and exact integer\narithmetic.  Run from this directory:\n\n```bash\npython3 verify_rct4_instance.py results\n```\n\nTo regenerate the complete bounded result and confirm byte equality:\n\n```bash\npython3 verify_rct4_instance.py results --write\npython3 verify_rct4_instance.py results\n```\n\n[`results.json`](results.json) pins the exact variable counts, constraint\ncount, and digest.  The constraint digest covers the complete sorted list of\nweighted terms; each term is serialized as its variable kind, variable index,\nand integer coefficient.\n\n[`calibration-certificates.txt`](calibration-certificates.txt) contains five\nsmaller exact configurations copied from the earlier artifact.  They are\nused only as regression fixtures.  For each, the verifier checks all triples\nwith exact determinants, checks exact equality with an expanded rct4\nassignment, and checks every weighted line inequality.  No assertion is made\nthat these are exhaustive, historically representative, or evidence about\nsatisfiability at n=77.\n\nThere is intentionally no CNF exporter or solver wrapper in this contribution:\nexternal cardinality-library semantics and historical bounded solver runs are\nnot part of the claim.\n\n## Provenance and attribution\n\nTransaction `c98dd877ad81611a9a469b1bd790cd909b56b1ce` first contributed the\nrct4 model implementation, the five calibration strings, and the underlying\nline-constraint construction.  Its validity-v2 judgment found the restricted\nsource-level encoding substantially sound, but rejected its compound claim\nbecause it described rct4 as the unique viable rotational route and included\nunsupported computational and historical assertions.\n\nThis contribution credits that work but does not declare the invalid legacy\ntransaction as a logical dependency.  The finite model constructor, verifier,\ncalibration inputs, and canonical output needed for this narrower claim are\nall copied or reimplemented here.  The refactoring, tightened proof, new\ncanonical constraint digest, and rerun were prepared by an OpenAI Codex solver\nagent at Robert Raynor's request.\n\n## Limitations\n\nThe rct4 definition is a strict structural restriction.  In particular, a\ngeneral set invariant under the centered half-turn may contain arbitrary\nantipodal pairs without containing their full quarter-turn orbits, and need\nnot have an empty anti-diagonal or exactly one main-diagonal pair.  Such sets\nare outside this contribution.  A future solver may use the verified finite\nconstraint system as a search target, but any solver outcome requires its own\ndurable certificate and independent adjudication.\n"
+          },
+          {
+            "ordinal": 8,
+            "transactionId": "bf1301b6b472841276f79852c2e7fe0499309684",
+            "contributionId": "record-152-governed-replay",
+            "path": "problems/no-three-in-line-77/contributions/record-152-governed-replay",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Governed replay of the 152-point certificate\n\n## Claim and exact scope\n\nThe [`configuration.txt`](configuration.txt) file in this contribution is a\nbyte-for-byte copy of the certificate in canonical transaction\n`dfc0cc40d41105292a119840dcdbe6f22860cf43`.  The [`verify.py`](verify.py)\nfile is a byte-for-byte copy of the previously hosted replay checker in\ntransaction `0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0`.  Its Python statements are\nidentical to the dependency's checker; the source files differ only because\nthe dependency has one additional empty line at end of file.  The exact\ndigests used in this replay are:\n\n```text\nconfiguration.txt  a23f1f55d9a914cff49fb6ba369b9f392f7af4c5ce08085267b3af1e7d7742c4\nverify.py           43463d0207199ef42ae0dc9c88c67f855fd92b070fb8d007f477a6b2de1998ec\n```\n\nRunning the copied checker on the copied configuration decodes exactly 152\ndistinct points in \\(G_{76}=\\{0,\\ldots,75\\}^2\\), exhaustively evaluates the\nexact integer determinant for all\n\n\\[\n\\binom{152}{3}=573800\n\\]\n\nunordered triples, finds no zero determinant, and exits successfully.\nTherefore the copied bytes certify a 152-point no-three-in-line subset of\n\\(G_{76}\\), which embeds unchanged in \\(G_{77}\\) and re-establishes the\nexisting lower bound \\(D(77)\\ge152\\).\n\n[`verification.json`](verification.json) requests a governed replay of this\nsame checker and certificate.  The request itself does not assert that the\nhosted run has already passed: its post-merge attestation is a separate,\ncontent-addressed projection artifact.  A successful attestation establishes\nthat the pinned governed environment accepted the exact copied bytes; the\nprimary judge remains responsible for relating that encoded predicate to the\nmathematical claim.\n\nThis is exactly one replay-and-identity claim, declared in\n[`claims.json`](claims.json).  It re-verifies an established lower bound and\ndoes not claim a new bound, optimality, or the exact value of \\(D(77)\\).\n\n## Reproduction\n\nRun from this directory with only the Python 3 standard library:\n\n```bash\npython3 -I -B verify.py configuration.txt\n```\n\nExpected output:\n\n```text\nverified 152 points on a 76 x 76 grid; no collinear triple\n```\n\nTo compare the certificate with the declared dependency and the checker with\nthe prior replay in a canonical checkout:\n\n```bash\ncmp configuration.txt ../record-152-certificate/configuration.txt\ncmp verify.py ../record-152-objective-verification/verify.py\nshasum -a 256 configuration.txt verify.py\n```\n\nThe checker:\n\n1. recognizes and removes the leading certificate symmetry marker;\n2. decodes two alphabet-indexed x-coordinates for each row;\n3. checks distinctness and grid bounds; and\n4. enumerates every unordered triple and rejects a zero determinant.\n\nAll arithmetic is exact Python integer arithmetic.  The run is deterministic,\nhas no network access or external package dependency, and writes no output\nfile.\n\n## Governed verification request\n\nThe request pins verifier `python-stdlib-3-13-v1` at canonical spec digest\n\n```text\nsha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884\n```\n\nand invokes `verify.py configuration.txt`.  The governed spec fixes Python\n3.13 in a digest-pinned, networkless, read-only OCI environment with bounded\nCPU, memory, process count, temporary storage, output, and runtime.  The\nparticipant-authored request contains no result field; after merge, the\ntrusted attestation workflow publishes the exit status, stdout and stderr\ndigests, input-file manifest, verifier and environment digests, and invocation\non the projections branch.\n\n## Provenance and correction\n\nCanonical transaction `dfc0cc40d41105292a119840dcdbe6f22860cf43`\noriginally supplied the exact certificate and checker and attributes the\nconfiguration to Achim Flammenkamp's maintained no-three-in-line database.\nThat transaction is the sole logical dependency of this claim and is declared\nexplicitly in `claims.json`, so its bounded artifacts are supplied to the\nprimary judge and retain provenance and credit.\n\nTransaction `0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0` attempted the first governed\nreplay but cited nonexistent transaction\n`dfc0cc40d1193b8d5ca25e7f177fa48ff9a1b38d` and did not declare a dependency\nmanifest.  Its validity-v2 judgment was therefore unable to compare the\nclaimed artifact identity.  This new contribution corrects the transaction\nID, supplies `claims.json`, copies the dependency certificate exactly, retains\nthe already audited checker source without semantic change, and includes a\nfresh governed verification request.  The older replay transaction is\nhistorical provenance only and is not a logical dependency.\n\nThis repair was prepared and locally replayed by an OpenAI Codex solver agent\nat Robert Raynor's request.  Mathematical and artifact authorship remains\ncredited to the canonical certificate contribution above.\n\n## Limitations\n\n- The attestation checks only the pinned program and input bytes; it is not an\n  algorithmically independent proof.\n- The certificate gives a lower bound of 152 only.  It says nothing about the\n  existence or nonexistence of a 153- or 154-point set.\n- Hosted acceptance is not stored in this contribution and must be read from\n  the separately published trusted attestation.\n"
+          },
+          {
+            "ordinal": 9,
+            "transactionId": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "contributionId": "rct4-154-subclass-encoding-theorem",
+            "path": "problems/no-three-in-line-77/contributions/rct4-154-subclass-encoding-theorem",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Sound and complete Boolean encoding of the rct4 subclass\n\n## Claim and exact scope\n\nLet\n\n\\[\nG_{77}=\\{0,\\ldots,76\\}^2,\n\\qquad\n\\rho(x,y)=(y,76-x).\n\\]\n\nDefine the **rct4 subclass** to consist exactly of subsets\n\\(S\\subseteq G_{77}\\) for which:\n\n1. the anti-diagonal \\(A=\\{(i,76-i):0\\le i\\le76\\}\\) is empty;\n2. the occupied cells off both diagonals are unions of complete four-element\n   \\(\\rho\\)-orbits; and\n3. the main-diagonal intersection is exactly one antipodal pair\n   \\(\\{(i,i),(76-i,76-i)\\}\\), with \\(0\\le i<38\\).\n\nThere is a sound and complete Boolean encoding of the 154-point\nno-three-in-line members of this explicitly defined subclass:\n\n- assign one Boolean variable to each four-element \\(\\rho\\)-orbit off both\n  diagonals and require exactly 38 of these variables to be one;\n- assign one Boolean variable to each main-diagonal antipodal pair and require\n  exactly one of these variables to be one; and\n- for every maximal lattice line \\(L\\) in \\(G_{77}\\) containing at least\n  three grid cells, impose\n  \\[\n  \\sum_v |L\\cap O_v|\\,y_v\\le2,\n  \\]\n  where \\(O_v\\) is the cell set represented by variable \\(v\\).  Cells of the\n  fixed-empty anti-diagonal contribute no variable.\n\nExpanding a satisfying assignment produces a 154-point no-three-in-line\nrct4-subclass set, and every 154-point no-three-in-line rct4-subclass set\nproduces exactly one satisfying assignment.  This is the complete claim in\n[`claims.json`](claims.json).\n\nThe claim makes no assertion about the number or digest of constraints\nproduced by any implementation, whether a satisfying assignment exists,\nsolver behavior, general half-turn configurations, reflection-symmetric or\nasymmetric configurations, classification of rotations, or the value of\n\\(D(77)\\).\n\n## Proof\n\n### The cells form the required variable partition\n\nThe center \\((38,38)\\) lies on the fixed-empty anti-diagonal.  The other 76\nmain-diagonal cells form the 38 disjoint antipodal pairs\n\n\\[\nD_i=\\{(i,i),(76-i,76-i)\\},\\qquad 0\\le i<38.\n\\]\n\nEvery cell off both diagonals has a four-element orbit under \\(\\rho\\).  Such\nan orbit cannot meet either diagonal: applying \\(\\rho\\) sends the main\ndiagonal to the anti-diagonal and conversely, so an orbit meeting a diagonal\nwould not be an off-diagonal orbit.  Distinct group-action orbits are\ndisjoint.  Thus the four-element off-diagonal orbits and the 38 pairs\n\\(D_i\\) partition \\(G_{77}\\setminus A\\) into exactly the variable cell sets\nused in the encoding.\n\nIt follows directly from the definition of the subclass that each rct4 set\nhas a unique Boolean assignment: a variable is one precisely when its entire\ncell set is occupied.  Conversely every Boolean assignment expands uniquely\nto an rct4-subclass set.\n\nSelecting 38 off-diagonal variables and one diagonal-pair variable gives\n\n\\[\n38\\cdot4+1\\cdot2=154\n\\]\n\ndistinct occupied cells.  Hence the two cardinality equations are equivalent\nto the required size inside this subclass.\n\n### The line inequalities are exactly no-three-in-line\n\nFor a fixed assignment, the number of expanded occupied cells on a maximal\nlattice line \\(L\\) is exactly\n\n\\[\n|S\\cap L|=\\sum_v |L\\cap O_v|\\,y_v.\n\\]\n\nThis equality is literal counting: the variable cell sets are disjoint and\nthe only omitted cells belong to the anti-diagonal, which is fixed empty.\nTherefore the inequality attached to \\(L\\) holds if and only if \\(L\\)\ncontains at most two selected cells.\n\nIf an expanded set contains three collinear points, their common Euclidean\nline intersects \\(G_{77}\\) in a unique maximal lattice line containing at\nleast those three grid cells, so the corresponding inequality is violated.\nConversely, a violated inequality exhibits at least three selected cells on\none line and hence a collinear triple.  Thus all line inequalities hold if\nand only if the expanded set is no-three-in-line.\n\nCombining this equivalence with the unique variable partition and cardinality\ncalculation proves both directions of the claim.\n\n## Relationship to earlier work\n\nTransaction `c98dd877ad81611a9a469b1bd790cd909b56b1ce` introduced the rct4\nmodel but coupled the restricted encoding with an incorrect assertion that it\nwas the unique viable rotational route.  Transaction\n`046e8f269922a6d2ce37ce17d4878ccdb0aa7721` removed that scope error and\nsupplied a deterministic implementation, but its compound claim also made an\nexact generated constraint count and serialization digest material.  Its\nvalidity-v2 report affirmatively verified the subclass partition, cardinality\nencoding, maximal-line argument, and soundness and completeness proved above,\nwhile withholding validity only for those generated statistics.\n\nThis contribution isolates the already checkable mathematical encoding\ntheorem.  Neither earlier transaction is a logical premise: the definitions\nand proof needed for this claim are complete here.  They are cited only for\nprovenance and attribution, and no invalid or indeterminate submission is\ndeclared as a dependency.\n\n## Limitations\n\nThe rct4 subclass is strictly smaller than the class of centered-half-turn\nconfigurations.  A general half-turn-invariant set may choose arbitrary\nantipodal pairs without selecting complete quarter-turn orbits, and it need\nnot have the diagonal restrictions imposed above.  Even an infeasibility\nproof for this Boolean system would therefore exclude only this subclass and\nwould not improve the global upper bound on \\(D(77)\\).\n\n## Authorship\n\nThe rct4 definition and encoding construction are attributed to the earlier\ntransactions above and their cited mathematical sources.  This atomic\nseparation and proof were prepared by an OpenAI Codex solver agent at Robert\nRaynor's request in response to the hardened validity-v2 assessment.\n"
+          }
+        ],
+        "judgments": [
+          {
+            "judgmentId": "sha256:64c488469559052df47c9648c615275ab6689972ab9553eb228799a46f726517",
+            "runDigest": "sha256:a018f152eaf695d8daf59cb10cad3598605bc35157d15e9eb3bd4f2c1cdee36e",
+            "judgmentKind": "primary",
+            "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+            "problemLedgerHead": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v3",
+              "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.09411125000000001,
+            "reportDigest": "sha256:833debc634b9f7564b11a3fd0460d13984ac084a5dfa9c5cdf61bfbde3c308cd",
+            "reportMarkdown": "## `no-three-in-line-77/record-152-certificate`\n\n**Verdict: indeterminate**\n\n**Required dependencies:** none.  \nThe database links are provenance only. The coordinate payload and verifier are reproduced in the subject, so the mathematical conclusion does not logically require those external sources.\n\n### Verified obligations\n\n1. **Encoding and cardinality**\n   - Removing the initial `o` leaves 152 characters, which split into 76 consecutive pairs.\n   - The alphabet is injective, with indices \\(0,\\ldots,89\\).\n   - Every payload character has index at most \\(75\\); thus every decoded \\(x\\)-coordinate lies in \\(\\{0,\\ldots,75\\}\\).\n   - The row index ranges from \\(0\\) through \\(75\\).\n   - The two characters in each row-pair are distinct. Since different pairs have different row coordinates, the decoded list contains 152 distinct points in \\(G_{76}\\).\n\n2. **Verifier logic**\n   - `itertools.combinations(points, 3)` enumerates every unordered triple of distinct list entries.\n   - The duplicate-point check occurs before this enumeration.\n   - For three distinct planar points, the implemented determinant\n     \\[\n     (x_2-x_1)(y_3-y_1)-(x_3-x_1)(y_2-y_1)\n     \\]\n     vanishes exactly when the points are collinear.\n   - Python integer arithmetic is exact here, so there is no overflow or rounding issue.\n   - Therefore, if the supplied program terminates successfully on the supplied file, it establishes that all\n     \\[\n     \\binom{152}{3}=573{,}800\n     \\]\n     triples are noncollinear.\n\n3. **Embedding implication**\n   - Since \\(G_{76}=\\{0,\\ldots,75\\}^2\\subseteq G_{77}\\), a verified 152-point configuration in \\(G_{76}\\) would indeed prove \\(D(77)\\ge 152\\).\n\n4. **Upper bound**\n   - Each of the 77 horizontal rows is a line and can contain at most two selected points.\n   - Summing over the rows gives\n     \\[\n     D(77)\\le 2\\cdot77=154.\n     \\]\n   - The analogous column argument also shows that a 154-point configuration would necessarily contain exactly two points in every row and every column.\n\n### Material unresolved obligation\n\nThe decisive certificate predicate—nonvanishing of the determinant for every triple—has not been affirmatively established by the supplied record:\n\n- There is no terminal objective attestation.\n- The quoted line\n  ```text\n  verified 152 points on a 76 x 76 grid; no collinear triple\n  ```\n  is an untrusted assertion in the contribution, not trusted execution evidence.\n- The verifier is conditionally sound, but neither a pinned successful execution nor an independently supplied exhaustive determinant trace is present.\n\nAccordingly, the upper bound \\(D(77)\\le154\\) is established, but the lower bound \\(D(77)\\ge152\\), and hence the full claimed interval \\(152\\le D(77)\\le154\\), remains unverified from the supplied evidence.\n",
+            "record": {
+              "schemaVersion": 3,
+              "judgmentKind": "primary",
+              "problemId": "no-three-in-line-77",
+              "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+              "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v3",
+                "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+                  "ledgerPosition": 1
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "no-three-in-line-77/record-152-certificate",
+                  "status": "indeterminate",
+                  "premiseStatus": "not-required",
+                  "summary": "The row-counting argument establishes D(77) <= 154, and the reproduced verifier is conditionally sound: a successful run on the supplied payload would establish a 152-point no-three-in-line configuration in the 76 x 76 grid and hence D(77) >= 152 by inclusion into the 77 x 77 grid. However, the bounded record contains neither trusted successful-execution evidence nor an independently checked exhaustive determinant trace. Thus the decisive noncollinearity predicate, the lower bound D(77) >= 152, and consequently the full interval 152 <= D(77) <= 154 remain unverified.",
+                  "scopeQualifications": [
+                    "No external dependency is required; the database links are provenance-only because the payload and verifier are reproduced in the subject.",
+                    "The encoding/cardinality checks establish 152 distinct in-range grid points.",
+                    "The verifier's determinant test correctly characterizes collinearity and uses exact integer arithmetic.",
+                    "The upper bound D(77) <= 154 is established because each of the 77 horizontal rows contains at most two points.",
+                    "A 154-point configuration would have exactly two points in every row and, by the analogous column argument, every column."
+                  ],
+                  "evidenceIssues": [
+                    "The quoted successful-verification output is an untrusted assertion rather than objective execution evidence.",
+                    "No pinned successful execution of the verifier on the supplied configuration is present.",
+                    "No independently supplied exhaustive trace verifies nonzero determinants for all 573,800 triples."
+                  ],
+                  "evidenceTransactionIds": [],
+                  "requiredDependencyTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "no-three-in-line-77/record-152-certificate",
+                  "stance": "uncertain",
+                  "summary": "The row-counting argument establishes D(77) <= 154, and the reproduced verifier is conditionally sound: a successful run on the supplied payload would establish a 152-point no-three-in-line configuration in the 76 x 76 grid and hence D(77) >= 152 by inclusion into the 77 x 77 grid. However, the bounded record contains neither trusted successful-execution evidence nor an independently checked exhaustive determinant trace. Thus the decisive noncollinearity predicate, the lower bound D(77) >= 152, and consequently the full interval 152 <= D(77) <= 154 remain unverified.",
+                  "subjectTransactionIds": [
+                    "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:859c280be64ae14f38c9d8ac4e8b2d9988d909c8faefed0e39854f2a7497801e",
+              "reportDigest": "sha256:833debc634b9f7564b11a3fd0460d13984ac084a5dfa9c5cdf61bfbde3c308cd",
+              "judgmentId": "sha256:64c488469559052df47c9648c615275ab6689972ab9553eb228799a46f726517"
+            },
+            "declaredReferenceTransactionIdsByClaim": {
+              "no-three-in-line-77/record-152-certificate": []
+            }
+          },
+          {
+            "judgmentId": "sha256:eebf85b907acaea6c9a083540fcd2ae291a9de9e9a4fbdae6c53722341bb63d4",
+            "runDigest": "sha256:41789849b695b3f8e162f05f55adae7969cfa33085170539f3c99469c35c46b2",
+            "judgmentKind": "primary",
+            "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+            "problemLedgerHead": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v3",
+              "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.14437125,
+            "reportDigest": "sha256:a91861750ad80cca3f08284e302b54bbf1a415434a430c2f1e0030d9f941ea7b",
+            "reportMarkdown": "## `no-three-in-line-77/record-152-local-rigidity`\n\n**Verdict: INDETERMINATE**\n\n**Declared references:** none.  \n**Required dependencies from declared references:** none.\n\n### Evidence sufficiency\n\nThe claim is fundamentally computational, but two necessary pieces of evidence are absent:\n\n1. The bytes of `../record-152-certificate/configuration.txt` are not supplied. Consequently, the 152-point set \\(C\\) cannot be decoded or independently inspected from this packet. The SHA-256 value in `results.json` does not reveal or mathematically certify those missing bytes.\n2. `objectiveAttestation` is null. Thus there is no trusted evidence that\n   ```bash\n   python3 rigidity.py\n   ```\n   was executed against the claimed configuration and committed `results.json`, or that it exited successfully.\n\nThe prior transaction mentioned in the README is not a declared reference and its evidence is not supplied. It therefore cannot fill this gap. In any event, the prior mathematical verification would not be logically necessary if the raw configuration were supplied, because `rigidity.py` rechecks it; the missing raw file is an input-evidence defect rather than a required mathematical dependency on that transaction.\n\n### Static audit of the checker\n\nConditional on execution against the intended bytes, the checker substantially matches the declared predicates:\n\n- `decode` requires exactly 152 encoded points, two in each row.\n- `assert_no_three_in_line` checks distinctness, grid membership, and all\n  \\(\\binom{152}{3}=573{,}800\\) triples using the exact determinant.\n- All eight dihedral maps of \\(G_{76}\\) and all four allowed translations are enumerated and deduplicated. The program requires exactly two distinct dihedral images and eight distinct translated embeddings.\n- For each outside cell, sign-normalized primitive directions correctly group configuration points lying on the same undirected line through that cell.\n- Distinct heavy lines through an outside cell have disjoint configuration-point sets. Hence freeing a cell with at most two removals is exhaustively covered by:\n  - one heavy line of size 2;\n  - one heavy line of size 3;\n  - two heavy lines of size 2.\n- The pair-walk/hitting-set implementation correctly enumerates hitting sets of size at most two and cross-checks the census.\n- Because the checker also requires that there are no singleton freeings, every two-point removal that frees a cell is represented among the enumerated minimal pair freeings.\n- It rejects any removal pair freeing more than one cell and requires 16 freeing pairs per embedding.\n- Successful byte comparison with the supplied `results.json` would additionally bind the reported minimum of two blocking pairs per outside cell and the explicit four-cells/four-pairs-per-cell lists.\n- The corollary is logically correct: for \\(R=E\\setminus S\\) and \\(A=S\\setminus E\\), every \\(a\\in A\\) must be unblocked by \\(E\\setminus R\\). The computed bounds would imply \\(|A|\\le1\\) for \\(|R|\\le2\\), and therefore \\(|S|\\le152\\). If \\(|S|\\ge153\\), then \\(|R|\\ge3\\), \\(|A|=|S|-152+|R|\\ge4\\), and \\(|R|+|A|\\ge7\\).\n\nThe arithmetic \\(77^2-152=5777\\) is also correct.\n\n### Unresolved obligations\n\nDespite the sound conditional encoding, the supplied record does not affirmatively establish:\n\n- the actual coordinates or no-three-in-line property of \\(C\\);\n- quarter-turn symmetry and exactly two dihedral images;\n- exactly eight distinct embeddings;\n- saturation of all 5777 outside cells for every embedding;\n- the one- and two-removal enumeration;\n- agreement between computed output and `results.json`.\n\n`results.json` is an asserted output, not a self-verifying certificate containing enough information to check all 5777-cell computations without the missing configuration and execution evidence.\n\nAccordingly, there is no decisive mathematical counterexample in the supplied material, but the exact claim cannot be accepted from the available evidence.\n",
+            "record": {
+              "schemaVersion": 3,
+              "judgmentKind": "primary",
+              "problemId": "no-three-in-line-77",
+              "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+              "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v3",
+                "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                  "ledgerPosition": 2
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "no-three-in-line-77/record-152-local-rigidity",
+                  "status": "indeterminate",
+                  "premiseStatus": "missing",
+                  "summary": "The checker appears to encode the stated no-three-in-line, embedding-count, saturation, one-removal, two-removal, and corollary predicates correctly, but the bounded evidence does not establish that it was successfully run on the intended 152-point configuration. The configuration bytes are absent, objectiveAttestation is null, and results.json is only asserted output rather than a self-verifying certificate. Thus the claim is not disproved, but its coordinates, exactly eight embeddings, all 5777-cell saturation checks, removal census, and output agreement remain unverified.",
+                  "scopeQualifications": [
+                    "Conditional on successful execution against the intended configuration bytes, the static audit found the checker substantially aligned with all declared predicates.",
+                    "The arithmetic 77^2 - 152 = 5777 and the stated corollary from the removal bounds are correct.",
+                    "No declared reference transactions exist, so no external mathematical dependency may be used."
+                  ],
+                  "evidenceIssues": [
+                    "The bytes of ../record-152-certificate/configuration.txt are not supplied, so the claimed 152-point set cannot be decoded or independently checked.",
+                    "objectiveAttestation is null; there is no trusted evidence that rigidity.py ran successfully against the intended configuration and committed results.json.",
+                    "The SHA-256 value in results.json cannot recover or certify the missing configuration bytes.",
+                    "results.json does not itself contain enough independently checkable information to verify all 5777-cell computations.",
+                    "The actual no-three-in-line property, symmetry and embedding count, saturation, one-removal robustness, two-removal enumeration, and computed-output agreement remain unresolved."
+                  ],
+                  "evidenceTransactionIds": [],
+                  "requiredDependencyTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "no-three-in-line-77/record-152-local-rigidity",
+                  "stance": "uncertain",
+                  "summary": "The checker appears to encode the stated no-three-in-line, embedding-count, saturation, one-removal, two-removal, and corollary predicates correctly, but the bounded evidence does not establish that it was successfully run on the intended 152-point configuration. The configuration bytes are absent, objectiveAttestation is null, and results.json is only asserted output rather than a self-verifying certificate. Thus the claim is not disproved, but its coordinates, exactly eight embeddings, all 5777-cell saturation checks, removal census, and output agreement remain unverified.",
+                  "subjectTransactionIds": [
+                    "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:041d0480a75cdde1bc859eb27eb3bbcc43041cefde1b3dffaa456550ac590a92",
+              "reportDigest": "sha256:a91861750ad80cca3f08284e302b54bbf1a415434a430c2f1e0030d9f941ea7b",
+              "judgmentId": "sha256:eebf85b907acaea6c9a083540fcd2ae291a9de9e9a4fbdae6c53722341bb63d4"
+            },
+            "declaredReferenceTransactionIdsByClaim": {
+              "no-three-in-line-77/record-152-local-rigidity": []
+            }
+          },
+          {
+            "judgmentId": "sha256:fe7608de5c679a70afa7ddd87e32592ca1ddba40c49a85d9e389f425d5fb8481",
+            "runDigest": "sha256:31243d242424f7db0a7e7aa4a0c2441a90a3bc538f9048379bfd217393dbd6ed",
+            "judgmentKind": "primary",
+            "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+            "problemLedgerHead": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v3",
+              "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.26933250000000003,
+            "reportDigest": "sha256:f78fc0ab7649e60073beaede9f7b660c1dfbbde6bfc33947fb309e0013e40ed0",
+            "reportMarkdown": "## `no-three-in-line-77/rct4-154-search-instance`\n\n**Verdict: INDETERMINATE**\n\nThe handwritten encoding is substantially plausible and its central soundness/completeness argument within the stated `rct4` subclass can be verified statically. However, the exact declared statement contains material scope and execution claims that are not established by the supplied evidence. No terminal objective attestation is present.\n\n### 1. Rotational-symmetry lemma\n\nThe following parts are correct:\n\n- For a finite set invariant under a half-turn about \\(z\\), all nonfixed points occur in pairs \\(\\{p,2z-p\\}\\), with \\(z\\) the only possible fixed point.\n- If such a no-three-in-line set has odd cardinality, it contains \\(z\\); then any other \\(p\\) produces the forbidden collinear triple\n  \\[\n  p,\\ z,\\ 2z-p.\n  \\]\n  Thus an odd half-turn-invariant no-three-in-line set has at most one point. This excludes half-turn symmetry for a 153-point set.\n- Under a quarter-turn, every noncentral orbit has size four. If the center belongs to a no-three-in-line invariant set, no other orbit can occur because \\(p,z,\\rho^2(p)\\) would be collinear. Hence a nontrivial quarter-turn-invariant no-three-in-line set has cardinality divisible by four. This excludes cardinalities 153 and 154.\n- A 154-point set has exactly two points in every row and every column. If it is half-turn-invariant, preservation of the coordinate extrema forces the half-turn center to be \\((38,38)\\). Its center cannot be occupied, since all other points are paired and an occupied center would make the cardinality odd—or directly create a forbidden midpoint triple.\n\nThere are nevertheless two scope defects:\n\n1. The conclusion that a 153-point set has **no rotational symmetry at all** does not follow solely from the supplied half-turn and quarter-turn arguments. A rotation preserving a finite lattice set must indeed ultimately be shown to have order \\(2\\) or \\(4\\), but that requires an omitted argument. For example, one can use three noncollinear lattice points to show that the rotation matrix is rational and then classify rational finite-order planar rotation matrices. The submission neither supplies this argument nor explicitly restricts “rotational symmetry” to square-grid automorphisms.\n\n2. The opening assertion that the packaged `rct4` instance is “the only” rotational route is not established by the lemma. The lemma restricts a rotationally symmetric 154-point solution to central half-turn symmetry, but `rct4` is a strict subclass of such half-turn-invariant configurations. It additionally requires:\n   - an empty anti-diagonal;\n   - full quarter-turn orbits off the diagonals; and\n   - exactly one main-diagonal antipodal pair.\n\n   None of these extra conditions follows from half-turn symmetry. The contribution itself acknowledges that the general `rot2` model is omitted. Thus the lemma establishes, at most, the central half-turn **symmetry envelope**, not the exhaustiveness of the packaged `rct4` search route.\n\nThese are proof/scope gaps rather than a supplied counterexample to the existence claim, so they support an indeterminate rather than valid verdict.\n\n### 2. Static audit of the `rct4` model\n\nWithin the expressly defined `rct4` subclass, the handwritten model is logically well formed:\n\n- Removing the two diagonals leaves\n  \\[\n  77^2-(2\\cdot77-1)=76^2=5776\n  \\]\n  cells, partitioned into quarter-turn orbits of size four. Hence there are\n  \\[\n  5776/4=1444\n  \\]\n  off-diagonal orbit variables.\n- The main diagonal excluding the center consists of 76 cells paired by the half-turn, giving 38 diagonal-pair variables.\n- Selecting 38 off-diagonal orbits and one diagonal pair gives\n  \\[\n  38\\cdot4+2=154\n  \\]\n  points.\n- `enumerate_lines` uses primitive direction vectors. Any line containing at least three lattice points in \\(G_{77}\\) has primitive coordinate steps of absolute value at most 38, so the direction bounds are sufficient. The predecessor test selects the first grid point on each maximal line.\n- For each enumerated line, the coefficient of a variable is exactly the number of cells from its orbit or pair lying on that line. Thus\n  \\[\n  \\sum_v c_vy_v\\le2\n  \\]\n  is precisely the no-three-on-that-line condition.\n- Every collinear triple of lattice points lies on one of these primitive maximal lines. Consequently, assuming the enumeration executes as written, the line constraints are sound and complete for the no-three-in-line condition in the represented class.\n- The CP-SAT solution expansion correctly reconstructs every selected orbit and diagonal pair and then applies an exact determinant-based triple check.\n- The handwritten weighted-at-most-two translation in `cmd_export_cnf` is logically correct: coefficients at least three force a variable false; two coefficient-two variables are incompatible; a coefficient-two and coefficient-one variable are incompatible; and every triple of coefficient-one variables is forbidden.\n\nA minor literal discrepancy is that not every maximal grid line produces a stored constraint: lines having fewer than three non-fixed eligible cells are omitted as tautologies, and equivalent expressions are deduplicated. This does not damage the model but makes the prose “every maximal grid line contributes” imprecise.\n\nThe asserted numerical count of **388,148** distinct constraints is not derivable from the supplied prose alone and depends on executing the enumeration.\n\n### 3. Certificate-validation claims\n\nThe validation path has an appropriate structure:\n\n- certificate decoding yields exactly two entries per row;\n- `full_verify` checks distinctness, range, and every triple by exact determinant;\n- orbit completeness is checked for occupied off-diagonal points;\n- anti-diagonal occupancy is rejected;\n- cardinalities and every reduced line constraint are checked.\n\nFor these particular certificate inputs, the otherwise incomplete diagonal check in `assignment_from_points` is rescued by the fixed total of \\(2n\\) decoded points: \\(m\\) complete four-point off-diagonal orbits account for \\(4m\\) points, so the remaining two points with one diagonal-pair index must be both members of that pair.\n\nHowever, the assertions that all five certificates pass, have the listed hashes, and check the listed numbers of constraints are execution claims. The raw files and verifier make them reproducible, but:\n\n- no trusted execution transcript is supplied;\n- `results.json` is itself untrusted claimed output; and\n- there is no terminal objective attestation pinning an execution of `python3 rct4_search.py results`.\n\nTherefore those finite but substantial determinant and model checks are not affirmatively established by the supplied record.\n\n### 4. Bounded-search report\n\nThe negative runs are correctly described as having no implication for satisfiability or for \\(D(77)\\). Nevertheless, the occurrence of the runs is not reproducibly certified:\n\n- no logs, solver outputs, or content-addressed run artifacts are supplied;\n- the table does not give exact commands for all runs;\n- the script has no CaDiCaL solve subcommand, so “via the commands above” requires additional unspecified external invocation; and\n- the displayed reproduction command for \\(n=77\\) uses four workers and 3600 seconds, whereas the reported table describes two workers and only “\\(\\ge45\\) min.”\n\nThus the bounded-search history remains unsupported empirical reporting. It cannot be used for any mathematical conclusion, which the contribution appropriately avoids doing.\n\n### 5. Bounds\n\nThe contribution supplies neither a 154-point solution nor an infeasibility proof, so it does not improve the interval. The statement that the bounds remain\n\n\\[\n152\\le D(77)\\le154\n\\]\n\nis consistent with the problem’s supplied baseline.\n\n### Required dependencies\n\n**None.**\n\n- `c5e8096d942d57228bb4fed00f7617fb6b43af9f` is motivational/local-rigidity context and is not needed for the symmetry lemma or the `rct4` encoding.\n- `dfc0cc40d41105292a119840dcdbe6f22860cf43` is cited for provenance and an encoding convention, but the alphabet, decoder, model, and calibration certificate data are independently included in the subject. The baseline interval is also supplied directly by the problem.\n\nThe references should therefore be preserved as declared references but not treated as accepted-state prerequisites.\n",
+            "record": {
+              "schemaVersion": 3,
+              "judgmentKind": "primary",
+              "problemId": "no-three-in-line-77",
+              "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+              "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v3",
+                "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+                  "ledgerPosition": 3
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "no-three-in-line-77/rct4-154-search-instance",
+                  "status": "indeterminate",
+                  "premiseStatus": "not-required",
+                  "summary": "The central rct4 encoding is statically plausible and appears sound and complete within its expressly defined subclass, and the half-turn/quarter-turn arguments are largely correct. However, the full declared contribution is not established: the claim that rct4 is the only rotational route overreaches because general central half-turn (rot2) configurations are not shown to satisfy the stricter rct4 conditions; the assertion that 153-point sets have no rotational symmetry omits the classification needed to exclude rotations other than half- and quarter-turns; and the numerical model count, certificate-validation results, and bounded solver runs are unsupported execution claims without trusted transcripts or objective attestation. These gaps do not supply a counterexample or refute the model, so the bounded record remains indeterminate.",
+                  "scopeQualifications": [
+                    "Static reasoning supports soundness and completeness only for the defined rct4 subclass, not all half-turn-invariant 154-point configurations.",
+                    "The symmetry lemma establishes the central half-turn envelope at size 154 only after restricting to the considered square-grid rotations; exclusion of all other planar rotational symmetries requires an omitted finite-order rational-rotation argument.",
+                    "The bounded searches have no bearing on satisfiability, nonexistence, or the value of D(77).",
+                    "The contribution does not alter the baseline interval 152 <= D(77) <= 154."
+                  ],
+                  "evidenceIssues": [
+                    "The statement that rct4 is the only rotational route is unsupported: rct4 imposes an empty anti-diagonal, full off-diagonal quarter-turn orbits, and one main-diagonal antipodal pair, none of which follows from central half-turn symmetry.",
+                    "The conclusion that a 153-point set has no rotational symmetry at all omits an argument excluding rotational orders other than 2 and 4 or an explicit restriction to square-grid automorphisms.",
+                    "The asserted count of 388,148 distinct constraints depends on execution and is not established by the prose alone.",
+                    "Claims that all five calibration certificates pass, have the listed hashes, and satisfy the reported constraint counts lack a trusted execution transcript or terminal objective attestation; results.json is only claimed output.",
+                    "The reported CP-SAT and CaDiCaL runs lack logs or content-addressed artifacts; the CaDiCaL invocation is unspecified, and the displayed n=77 command differs from the tabulated worker count and duration.",
+                    "The prose that every maximal grid line contributes a constraint is literally imprecise because tautological lines are omitted and equivalent expressions are deduplicated, though this does not appear to impair model correctness."
+                  ],
+                  "evidenceTransactionIds": [],
+                  "requiredDependencyTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "no-three-in-line-77/rct4-154-search-instance",
+                  "stance": "uncertain",
+                  "summary": "The central rct4 encoding is statically plausible and appears sound and complete within its expressly defined subclass, and the half-turn/quarter-turn arguments are largely correct. However, the full declared contribution is not established: the claim that rct4 is the only rotational route overreaches because general central half-turn (rot2) configurations are not shown to satisfy the stricter rct4 conditions; the assertion that 153-point sets have no rotational symmetry omits the classification needed to exclude rotations other than half- and quarter-turns; and the numerical model count, certificate-validation results, and bounded solver runs are unsupported execution claims without trusted transcripts or objective attestation. These gaps do not supply a counterexample or refute the model, so the bounded record remains indeterminate.",
+                  "subjectTransactionIds": [
+                    "c98dd877ad81611a9a469b1bd790cd909b56b1ce"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:8cada24661ed5bc8f6a20915952dda4debafa89da875a8aabe6c8c034a8d4c1a",
+              "reportDigest": "sha256:f78fc0ab7649e60073beaede9f7b660c1dfbbde6bfc33947fb309e0013e40ed0",
+              "judgmentId": "sha256:fe7608de5c679a70afa7ddd87e32592ca1ddba40c49a85d9e389f425d5fb8481"
+            },
+            "declaredReferenceTransactionIdsByClaim": {
+              "no-three-in-line-77/rct4-154-search-instance": [
+                "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+                "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+              ]
+            }
+          },
+          {
+            "judgmentId": "sha256:2e63f97e4a920542608ce246e8152c0c15b160475293a04ef2694a1cbf2d6e12",
+            "runDigest": "sha256:33e1edcdc5ae8a9bc739ee2726834ab68910c5e66146ba2245d2fa2c3407be14",
+            "judgmentKind": "primary",
+            "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+            "problemLedgerHead": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v3",
+              "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.10216875,
+            "reportDigest": "sha256:1e9d9605065d293667d10501950d2a5c6bbb44ae9ed307520a66257e21f3c69b",
+            "reportMarkdown": "## `no-three-in-line-77/finite-rotation-classification-proof`\n\n**Verdict: VALID**\n\n### Required dependencies\n\n**None.** The declared reference transaction  \n`c98dd877ad81611a9a469b1bd790cd909b56b1ce` is retained as provenance and prior context, but its mathematical content is not required: the finite-rotation classification, orbit arguments, and occupancy argument are all independently supplied in the subject.\n\nNo objective attestation is present or needed; this is a purely deductive claim.\n\n### Audit of the finite-rotation lemma\n\nLet \\(S\\subset\\mathbb Z^2\\) be finite and noncollinear, and let the nonidentity rotation \\(T\\) preserve \\(S\\).\n\n1. **Rationality of the linear part is established correctly.**\n   - Noncollinearity supplies \\(p_0,p_1,p_2\\in S\\) for which\n     \\[\n     B=(p_1-p_0\\;\\;p_2-p_0)\n     \\]\n     is a nonsingular integer matrix.\n   - Since \\(T(S)=S\\), the corresponding image differences are integer vectors, so \\(C\\) is integer.\n   - Translation cancels in differences, giving \\(C=QB\\), hence \\(Q=CB^{-1}\\).\n   - Because \\(B^{-1}\\) has rational entries, \\(Q\\), and therefore \\(c,s\\), are rational. No assumption on the center is used.\n\n2. **Finite order is justified.**\n   - The bijection \\(T:S\\to S\\) is a permutation of a finite set, so some \\(T^m\\) fixes every point of \\(S\\).\n   - A Euclidean isometry fixing three noncollinear points is the identity. Thus \\(T^m\\) is globally the identity and \\(Q^m=I\\).\n\n3. **The trace classification is complete.**\n   - The eigenvalues of \\(Q\\) are roots of unity, so their sum \\(t=\\operatorname{tr}(Q)=2c\\) is an algebraic integer.\n   - Since \\(Q\\) is rational, \\(t\\in\\mathbb Q\\); hence \\(t\\in\\mathbb Z\\).\n   - The bound \\(|t|\\le2\\) gives \\(t\\in\\{-2,-1,0,1,2\\}\\).\n   - For \\(t=\\pm1\\), \\(c=\\pm\\frac12\\) and \\(s^2=\\frac34\\), contradicting the already established rationality of \\(s\\).\n   - \\(t=2\\) gives \\(Q=I\\), hence the identity map, which is excluded.\n   - \\(t=-2\\) gives a half-turn, while \\(t=0\\) gives a quarter-turn in one of the two orientations.\n\nThese cases exhaust all possibilities. The arbitrary-center finite-rotation lemma is therefore proved.\n\n### Audit of the \\(153\\)-point consequence\n\nA no-three-in-line set with at least three points cannot be collinear, so the lemma applies.\n\n- Under a half-turn, all noncentral points lie in two-element orbits.\n- An invariant set of odd cardinality must therefore contain the unique fixed point, namely the center.\n- If any other point \\(p\\) is selected, then its opposite point is also selected, and those two points together with the center form three distinct collinear points.\n- Thus an odd-cardinality half-turn-invariant no-three-in-line set has at most one point.\n\nA quarter-turn has one possible fixed point and otherwise four-element orbits. If the center is selected, invariance under the square of the quarter-turn gives the same forbidden half-turn triple for every other point; otherwise the size is divisible by four. Hence a quarter-turn-invariant no-three-in-line set has size \\(1\\) or \\(0\\bmod 4\\), with the size-\\(1\\bmod4\\) case exceeding one impossible.\n\nTherefore neither a half-turn nor a quarter-turn can preserve a \\(153\\)-point set. By the finite-rotation lemma, no other nonidentity rotation can do so.\n\n### Audit of the \\(154\\)-point consequence\n\nQuarter-turn symmetry is impossible because \\(154\\not\\equiv0\\pmod4\\), and a selected center would force the set to have size one. Thus any nontrivial rotational symmetry must be a half-turn.\n\nFor a \\(154\\)-point no-three-in-line subset of \\(G_{77}\\):\n\n- Every row contains at most two points.\n- Since there are 77 rows and \\(154=2\\cdot77\\), every row contains exactly two points.\n- The identical argument for columns shows every column contains exactly two points.\n- Consequently, points occur in both extreme rows and both extreme columns, so the coordinatewise bounding box is exactly \\([0,76]^2\\).\n\nIf a half-turn about \\(z=(z_x,z_y)\\) preserves a set whose coordinate extrema are \\(0\\) and \\(76\\), invariance of those extrema gives\n\\[\n2z_x-76=0,\\qquad 2z_y-76=0,\n\\]\nso \\(z=(38,38)\\).\n\nFinally, a half-turn-invariant finite set has cardinality equal to twice the number of noncentral orbits, plus one if the center is selected. Since \\(154\\) is even, the center is not selected. Equivalently, selection of the center together with any noncentral orbit would produce a forbidden collinear triple.\n\nThus the conditional \\(154\\)-point conclusion is established exactly as stated.\n\n### Scope\n\nThe proof classifies rotations only. It establishes neither existence nor global nonexistence of \\(153\\)- or \\(154\\)-point configurations and does not improve the interval\n\\[\n152\\le D(77)\\le154.\n\\]\n",
+            "record": {
+              "schemaVersion": 3,
+              "judgmentKind": "primary",
+              "problemId": "no-three-in-line-77",
+              "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+              "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v3",
+                "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                  "ledgerPosition": 4
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "no-three-in-line-77/finite-rotation-classification-proof",
+                  "status": "valid",
+                  "premiseStatus": "not-required",
+                  "summary": "The argument correctly proves that any nonidentity Euclidean rotation preserving a finite noncollinear subset of Z^2 must be a half-turn or quarter-turn. It then correctly uses orbit cardinalities and the no-three-in-line condition to exclude all nontrivial rotations for size 153, and to show that any rotationally symmetric size-154 set must be invariant under the half-turn centered at (38,38), with that center unselected. The declared reference is provenance-only because all necessary orbit and occupancy arguments are reproduced in the subject.",
+                  "scopeQualifications": [
+                    "The result classifies rotations only, not reflections, affine maps, or approximate symmetries.",
+                    "The size-154 conclusion is conditional and does not construct such a configuration.",
+                    "The proof establishes neither existence nor global nonexistence of 153- or 154-point no-three-in-line sets.",
+                    "It does not identify the rct4 subclass with the full centered half-turn class.",
+                    "It does not improve the certified bound 152 <= D(77) <= 154."
+                  ],
+                  "evidenceIssues": [],
+                  "evidenceTransactionIds": [],
+                  "requiredDependencyTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "no-three-in-line-77/finite-rotation-classification-proof",
+                  "stance": "supports",
+                  "summary": "The argument correctly proves that any nonidentity Euclidean rotation preserving a finite noncollinear subset of Z^2 must be a half-turn or quarter-turn. It then correctly uses orbit cardinalities and the no-three-in-line condition to exclude all nontrivial rotations for size 153, and to show that any rotationally symmetric size-154 set must be invariant under the half-turn centered at (38,38), with that center unselected. The declared reference is provenance-only because all necessary orbit and occupancy arguments are reproduced in the subject.",
+                  "subjectTransactionIds": [
+                    "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:7736e5c7014ab3079523c8adb613a1a80319b305765f08373ce807983fd99ce0",
+              "reportDigest": "sha256:1e9d9605065d293667d10501950d2a5c6bbb44ae9ed307520a66257e21f3c69b",
+              "judgmentId": "sha256:2e63f97e4a920542608ce246e8152c0c15b160475293a04ef2694a1cbf2d6e12"
+            },
+            "declaredReferenceTransactionIdsByClaim": {
+              "no-three-in-line-77/finite-rotation-classification-proof": [
+                "c98dd877ad81611a9a469b1bd790cd909b56b1ce"
+              ]
+            }
+          },
+          {
+            "judgmentId": "sha256:febff57c74149d57e4744cccc900300edba4c8071aef6c382549f4f546e568c0",
+            "runDigest": "sha256:05c1a7d86dd39910a0ed1ee3392f6d4d45d7181ebce3e546a3b37675cefd9cc3",
+            "judgmentKind": "primary",
+            "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+            "problemLedgerHead": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v3",
+              "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.069145,
+            "reportDigest": "sha256:7c6090cd343c1119e8602ada581865258790393f1ee3642b9eadc7029c144a5d",
+            "reportMarkdown": "## `no-three-in-line-77/record-152-objective-verification`\n\n**Verdict: Valid**\n\n### Objective-attestation audit\n\nThe supplied terminal attestation is associated with the pinned request using:\n\n- entrypoint: `verify.py`;\n- argument: `configuration.txt`;\n- verifier: `python-stdlib-3-13-v1`;\n- result: exit code \\(0\\), no timeout;\n- stdout:\n  ```text\n  verified 152 points on a 76 x 76 grid; no collinear triple\n  ```\n\nThis establishes only that the pinned program accepted the pinned input in that execution. The mathematical adequacy of the program must therefore be checked separately.\n\n### Checker audit\n\nThe checker correctly verifies the needed predicate:\n\n1. `decode` removes surrounding whitespace, recognizes the initial marker, and divides the remaining payload into pairs of characters.\n2. For payload length \\(152\\), it constructs exactly two points in each of \\(76\\) rows, hence \\(152\\) points total.\n3. Each character is converted to an integer \\(x\\)-coordinate through `ALPHABET.index`.\n4. The explicit range test verifies\n   \\[\n   0\\le x<76,\\qquad 0\\le y<76\n   \\]\n   for every point.\n5. `len(set(points)) == len(points)` verifies that all 152 points are distinct.\n6. `itertools.combinations(points, 3)` exhaustively visits all\n   \\[\n   \\binom{152}{3}=573{,}800\n   \\]\n   unordered triples of distinct points.\n7. For each triple \\(p_1,p_2,p_3\\), the program computes\n   \\[\n   (x_2-x_1)(y_3-y_1)-(x_3-x_1)(y_2-y_1).\n   \\]\n   For distinct planar points, this determinant is zero exactly when the three points are collinear. Python integers are unbounded, so overflow cannot invalidate the calculation.\n8. The program returns and prints success only after every triple has been checked and found to have nonzero determinant.\n\nThus the passed execution certifies a 152-point no-three-in-line subset of \\(G_{76}\\).\n\nSince\n\\[\nG_{76}=\\{0,\\ldots,75\\}^2\\subseteq\\{0,\\ldots,76\\}^2=G_{77},\n\\]\nthe same configuration is admissible in \\(G_{77}\\). Therefore\n\\[\nD(77)\\ge 152.\n\\]\n\n### Scope and dependencies\n\n- **Required declared-reference dependencies:** none.\n- The mentioned earlier transaction is not declared as reference evidence, so the assertion that the bytes are “byte-for-byte identical” to that earlier contribution cannot be independently checked from this packet. That is a provenance assertion and is not needed for the independently established lower bound.\n- The attestation does not establish optimality, \\(D(77)=152\\), or any improvement beyond the existing lower bound. It establishes exactly the successful certificate verification described above.\n",
+            "record": {
+              "schemaVersion": 3,
+              "judgmentKind": "primary",
+              "problemId": "no-three-in-line-77",
+              "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+              "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v3",
+                "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                  "ledgerPosition": 5
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "no-three-in-line-77/record-152-objective-verification",
+                  "status": "valid",
+                  "premiseStatus": "not-required",
+                  "summary": "The pinned checker’s successful execution certifies 152 distinct points in the 76×76 grid and exhaustively verifies that every triple has nonzero determinant. Since this grid embeds in the 77×77 grid, the argument establishes D(77) ≥ 152.",
+                  "scopeQualifications": [
+                    "The attestation establishes acceptance of the pinned bytes by the pinned checker in the governed execution; the checker audit separately establishes the mathematical adequacy of that verification.",
+                    "The claim does not establish optimality, D(77)=152, or a new lower bound beyond the existing 152-point record.",
+                    "The assertion that the artifacts are byte-for-byte identical to an earlier contribution is unverified here, but is provenance-only and unnecessary for the lower bound."
+                  ],
+                  "evidenceIssues": [],
+                  "evidenceTransactionIds": [],
+                  "requiredDependencyTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "no-three-in-line-77/record-152-objective-verification",
+                  "stance": "supports",
+                  "summary": "The pinned checker’s successful execution certifies 152 distinct points in the 76×76 grid and exhaustively verifies that every triple has nonzero determinant. Since this grid embeds in the 77×77 grid, the argument establishes D(77) ≥ 152.",
+                  "subjectTransactionIds": [
+                    "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:d1783d2214e621562b735dd746d7e59c15c6060a8cbbaf37a67bad4529bd682b",
+              "reportDigest": "sha256:7c6090cd343c1119e8602ada581865258790393f1ee3642b9eadc7029c144a5d",
+              "judgmentId": "sha256:febff57c74149d57e4744cccc900300edba4c8071aef6c382549f4f546e568c0"
+            },
+            "declaredReferenceTransactionIdsByClaim": {
+              "no-three-in-line-77/record-152-objective-verification": []
+            }
+          },
+          {
+            "judgmentId": "sha256:b3009111acaf420b7ed2de592318b47a7c31b53988ff00d37f41db6f94dc3104",
+            "runDigest": "sha256:b1185b7c56cbf3d592f7debe2547a557374eab02a017d18fb4c7d3d20d407942",
+            "judgmentKind": "primary",
+            "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+            "problemLedgerHead": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v3",
+              "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.166956875,
+            "reportDigest": "sha256:b26ea099b29e7df9a014ff5e7f0d5a2f7bb86452483cda50a24c7ae15b8b5eac",
+            "reportMarkdown": "## `no-three-in-line-77/record-152-eight-embedding-local-rigidity`\n\n**Verdict: INDETERMINATE**\n\n### Required dependency\n\n- `dfc0cc40d41105292a119840dcdbe6f22860cf43` — **required**, because it supplies the exact bytes encoding \\(C\\). The subject does not independently include those coordinates; its checker reads them from this dependency.\n- The dependency’s provenance and separate `verify.py` are not additional logical premises. The subject checker independently rechecks bounds, distinctness, and all triples once supplied the configuration bytes.\n\n### Audit of the mathematical reduction and checker\n\nThe checker’s encoding of the claimed finite predicate is, on static inspection, mathematically appropriate:\n\n1. **Configuration decoding and no-three-in-line check**\n   - It decodes exactly \\(2\\cdot76=152\\) payload characters after the marker.\n   - It checks 152 distinct points, coordinate bounds, and all\n     \\[\n     \\binom{152}{3}=573800\n     \\]\n     determinants.\n   - Thus a successful execution would establish that the decoded \\(C\\) is a 152-point no-three-in-line subset of \\(G_{76}\\).\n\n2. **Eight embeddings**\n   - The eight listed transformations are the complete dihedral group of the \\(76\\times76\\) square.\n   - The checker computes the distinct dihedral images rather than assuming the marker’s asserted symmetry.\n   - It forms all four translations by \\((0,0),(0,1),(1,0),(1,1)\\), deduplicates the resulting sets, and requires exactly eight distinct embeddings.\n   - It also requires exactly two distinct dihedral images and quarter-turn invariance. These checks correctly imply the claimed \\(2\\cdot4=8\\) embeddings.\n\n3. **Blocking census**\n   - For an outside cell \\(c\\), sign-normalized primitive directions correctly partition configuration points according to the unoriented lines through \\(c\\).\n   - A group of size at least two corresponds exactly to blocking pairs collinear with \\(c\\).\n   - Since \\(c\\notin E\\), distinct lines through \\(c\\) have disjoint sets of points of \\(E\\). Consequently, unblocking \\(c\\) requires reducing every such group to at most one remaining point.\n   - The enumerated possibilities for a removal set of size at most two are complete: one line of two, one line of three, or two lines of two. In a successful execution the initial no-three-in-line test would in fact rule out a line of three.\n\n4. **One- and two-removal accounting**\n   - The checker rejects any singleton freeing.\n   - It records all minimal two-point removal sets found by the census. Because singleton freeings are separately forbidden, this also covers all exact two-point removals that can free a cell; there is no omitted nonminimal pair containing a freeing singleton.\n   - It rejects a removal pair that frees more than one outside cell and requires exactly 16 recorded removal pairs for every embedding.\n   - Byte-for-byte comparison with the supplied `results.json`, if executed successfully, would additionally establish that those 16 records involve four cells, four pairs per cell, and that every record has the `two-lines-of-two` label.\n\n5. **Cross-check**\n   - Walking each pair’s full lattice line in primitive steps covers exactly all integer grid cells collinear with that pair.\n   - The checker compares these explicit pair lists against the direction census and independently recomputes hitting sets of size at most two.\n   - The hitting-set routine is complete: any two-element hitting set must contain an endpoint of the first blocking pair, after which the second element must lie in the intersection of all remaining pairs.\n   - The two methods share the `primitive` routine, so the cross-check is not wholly implementation-independent, but the primitive-direction logic itself is correct. This is not a mathematical defect.\n   - Every reported freeing is finally tested against all remaining pairs using the exact determinant.\n\n6. **Consequences for a no-three-in-line set \\(S\\)**\n   \n   Let\n   \\[\n   R=E\\setminus S,\\qquad A=S\\setminus E.\n   \\]\n   Every \\(a\\in A\\) must be freed by deleting \\(R\\): otherwise two points of \\(E\\setminus R\\subseteq S\\) together with \\(a\\) would form a collinear triple in \\(S\\).\n\n   Therefore, conditional on the computed removal facts:\n   - if \\(|R|=0\\) or \\(1\\), then \\(A=\\varnothing\\);\n   - if \\(|R|=2\\), then \\(|A|\\le1\\).\n\n   Hence \\(|R|\\le2\\) implies\n   \\[\n   |S|=152-|R|+|A|\\le152.\n   \\]\n   If \\(|S|\\ge153\\), contraposition gives \\(|R|\\ge3\\), and then\n   \\[\n   |A|=|S|-152+|R|\\ge1+|R|\\ge4,\n   \\]\n   so\n   \\[\n   |E\\triangle S|=|R|+|A|\\ge7.\n   \\]\n   This logical deduction is valid and has the claimed local scope.\n\n### Material unresolved obligation\n\nNo terminal objective attestation or other trusted execution transcript is supplied. The committed `results.json` is an asserted output, not an exhaustive certificate of the 5,777 per-embedding blocking computations: it omits the per-cell line censuses and therefore cannot by itself establish saturation or exhaustiveness. Likewise, neither the dependency verifier nor `rigidity.py` is attested as having run successfully on the supplied bytes.\n\nThus the source code appears to encode the correct finite verification, but the record does not affirmatively establish that its exhaustive computation actually produces the committed report for this exact configuration. That unresolved computational obligation prevents a **valid** verdict. No decisive mathematical error was found, so **invalid** is not warranted.\n",
+            "record": {
+              "schemaVersion": 3,
+              "judgmentKind": "primary",
+              "problemId": "no-three-in-line-77",
+              "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+              "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v3",
+                "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "3baf1c8586af31bbd6509d0fd3e552658c03673b",
+                  "ledgerPosition": 6
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "no-three-in-line-77/record-152-eight-embedding-local-rigidity",
+                  "status": "indeterminate",
+                  "premiseStatus": "missing",
+                  "summary": "The mathematical reduction and checker logic appear appropriate, and the stated consequences for nearby no-three-in-line sets follow conditionally from the claimed blocking census. However, the record supplies no trusted execution attestation or exhaustive certificate establishing that the checker successfully ran on the exact referenced configuration bytes and produced the asserted results. The committed results file alone does not certify all per-cell blocking computations. Thus the claim is not affirmatively established, although no decisive mathematical error was found.",
+                  "scopeQualifications": [
+                    "The claim is limited to the eight embeddings derived from the referenced 152-point configuration, not other 152-point configurations or the global value of D(77).",
+                    "The local-rigidity conclusions are valid only conditional on successful exhaustive verification of the asserted blocking and deletion census."
+                  ],
+                  "evidenceIssues": [
+                    "The exact configuration coordinates are not included in the subject and must be obtained from the declared reference.",
+                    "No terminal objective attestation or trusted execution transcript confirms successful verification on the supplied bytes.",
+                    "The asserted results file omits the exhaustive per-cell line censuses and cannot independently establish saturation or exhaustiveness.",
+                    "Neither the dependency verifier nor the rigidity checker is attested as having run successfully."
+                  ],
+                  "evidenceTransactionIds": [
+                    "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+                  ],
+                  "requiredDependencyTransactionIds": [
+                    "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+                  ]
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "no-three-in-line-77/record-152-eight-embedding-local-rigidity",
+                  "stance": "uncertain",
+                  "summary": "The mathematical reduction and checker logic appear appropriate, and the stated consequences for nearby no-three-in-line sets follow conditionally from the claimed blocking census. However, the record supplies no trusted execution attestation or exhaustive certificate establishing that the checker successfully ran on the exact referenced configuration bytes and produced the asserted results. The committed results file alone does not certify all per-cell blocking computations. Thus the claim is not affirmatively established, although no decisive mathematical error was found.",
+                  "subjectTransactionIds": [
+                    "3baf1c8586af31bbd6509d0fd3e552658c03673b"
+                  ],
+                  "evidenceTransactionIds": [
+                    "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+                  ]
+                }
+              ],
+              "dependencyPacketDigest": "sha256:ca09a5644e10ebd161e9b8247d5e489e897ca426dc79fdfcc6691a857822e55f",
+              "reportDigest": "sha256:b26ea099b29e7df9a014ff5e7f0d5a2f7bb86452483cda50a24c7ae15b8b5eac",
+              "judgmentId": "sha256:b3009111acaf420b7ed2de592318b47a7c31b53988ff00d37f41db6f94dc3104"
+            },
+            "declaredReferenceTransactionIdsByClaim": {
+              "no-three-in-line-77/record-152-eight-embedding-local-rigidity": [
+                "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+              ]
+            }
+          },
+          {
+            "judgmentId": "sha256:fe29fe9552e27acb35b8596c4cd638f18a41a38961dee746bbeb123fff032cac",
+            "runDigest": "sha256:c35d384fc598d26031cee5b62efa357fa3f6a9cd29b77394df50f6b1a7dcc30b",
+            "judgmentKind": "primary",
+            "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+            "problemLedgerHead": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v3",
+              "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.094095,
+            "reportDigest": "sha256:94836b551652853b4e1140af19c0e62528c68f7ef923b7afd6a1262b0a5bb7c3",
+            "reportMarkdown": "## `no-three-in-line-77/rct4-154-exact-subclass-encoding`\n\n**Verdict: Indeterminate**\n\n**Required dependencies:** None. No reference transaction is mathematically required; the historical transaction mentioned in the README is provenance only and was not declared as a reference.\n\n### Verified source-level obligations\n\nThe mathematical structure implemented by the supplied code is consistent with the stated subclass:\n\n- \\(G_{77}\\) has \\(77^2=5929\\) cells.\n- The two diagonals have \\(77+77-1=153\\) cells in their union, so there are\n  \\[\n  5929-153=5776\n  \\]\n  cells off both diagonals.\n- On those cells the action of\n  \\[\n  \\rho(x,y)=(y,76-x)\n  \\]\n  has no orbit of size less than four: a fixed point of \\(\\rho\\) or \\(\\rho^2\\) would be the center \\((38,38)\\), which lies on both diagonals and is excluded. Thus the off-diagonal cells form\n  \\[\n  5776/4=1444\n  \\]\n  four-cell orbits.\n- Removing the center, the main diagonal has 76 cells, partitioned by \\(\\rho^2\\) into 38 antipodal pairs.\n- Selecting 38 off-diagonal orbits and one diagonal pair therefore gives\n  \\[\n  38\\cdot4+2=154\n  \\]\n  distinct points, and every 154-point member of the defined subclass yields such a unique selection.\n\nThe line-constraint construction is also semantically sound:\n\n- Primitive directions are sign-normalized correctly.\n- Any grid line containing at least three lattice cells has primitive step components of absolute value at most \\(38\\), because two primitive steps must fit within coordinate span \\(76\\).\n- Requiring the predecessor to lie outside the grid selects the unique first cell of each maximal line.\n- The coefficient of a Boolean variable is exactly the number of cells from its orbit or diagonal pair lying on that line.\n- Omitting lines with fewer than three non-anti-diagonal cells is harmless because the anti-diagonal is fixed empty.\n- Consequently, for binary variables,\n  \\[\n  \\sum_v c_vy_v\\le2\n  \\]\n  is exactly the condition that the expanded set occupies at most two cells on that line.\n- Every collinear triple is contained in one of these maximal primitive lattice lines, and deduplicating identical weighted inequalities preserves the feasible set.\n\nNo source-level counterexample to the claimed soundness and completeness within the explicitly restricted subclass was found.\n\n### Unresolved material computational obligations\n\nThe exact claim also asserts that the generated system contains precisely **388,148** deduplicated constraints and that its canonical serialization has digest\n\n`sha256:5c0051739717f52f8eddd00cd01e8a83030849b3fd7b4516b0d308882c9aaf62`.\n\nThose facts are not affirmatively established by the supplied record:\n\n- `results.json` merely states the claimed output.\n- The complete generated serialization is not supplied for direct counting and hashing.\n- No terminal objective attestation or other trusted execution of `verify_rct4_instance.py` is present.\n- The calibration certificates concern smaller instances and do not establish the \\(n=77\\) constraint count or digest.\n- Static inspection verifies how the program would calculate the count and digest, but does not verify the asserted numerical output of that computation.\n\nBecause the exact count and digest are material parts of the declared claim, the whole claim cannot be marked valid without trusted recomputation or equivalent complete evidence. There is no decisive contradiction establishing falsity, so the appropriate verdict is **indeterminate**, rather than invalid.\n",
+            "record": {
+              "schemaVersion": 3,
+              "judgmentKind": "primary",
+              "problemId": "no-three-in-line-77",
+              "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+              "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v3",
+                "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "046e8f269922a6d2ce37ce17d4878ccdb0aa7721",
+                  "ledgerPosition": 7
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "no-three-in-line-77/rct4-154-exact-subclass-encoding",
+                  "status": "indeterminate",
+                  "premiseStatus": "not-required",
+                  "summary": "Static source-level analysis supports the subclass encoding and line-constraint semantics: there are 1,444 four-cell off-diagonal rotation orbits and 38 main-diagonal antipodal pairs; selecting 38 orbit variables and one pair variable gives 154 points; and the weighted maximal-line inequalities are sound and complete for the no-three-in-line condition within the explicitly defined subclass. However, the material assertions that canonical deduplication yields exactly 388,148 constraints and that the serialization has SHA-256 digest 5c0051739717f52f8eddd00cd01e8a83030849b3fd7b4516b0d308882c9aaf62 are not established by trusted execution, a supplied complete serialization, or equivalent evidence. No contradiction or counterexample was found, so the claim remains indeterminate rather than invalid.",
+                  "scopeQualifications": [
+                    "Assessment is limited to the explicitly defined rct4 subclass for n=77.",
+                    "The claim does not establish satisfiability or infeasibility of the Boolean system.",
+                    "It does not cover general half-turn, reflection-symmetric, asymmetric, or all rotational configurations.",
+                    "It does not alter bounds on D(77)."
+                  ],
+                  "evidenceIssues": [
+                    "results.json only reports the asserted count and digest; it does not independently establish them.",
+                    "The complete canonical constraint serialization was not supplied for direct counting and hashing.",
+                    "No trusted execution or terminal attestation for verify_rct4_instance.py was provided.",
+                    "Smaller-instance calibration certificates do not establish the n=77 count or digest.",
+                    "Static inspection establishes the computation's intended semantics but not its asserted numerical output."
+                  ],
+                  "evidenceTransactionIds": [],
+                  "requiredDependencyTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "no-three-in-line-77/rct4-154-exact-subclass-encoding",
+                  "stance": "uncertain",
+                  "summary": "Static source-level analysis supports the subclass encoding and line-constraint semantics: there are 1,444 four-cell off-diagonal rotation orbits and 38 main-diagonal antipodal pairs; selecting 38 orbit variables and one pair variable gives 154 points; and the weighted maximal-line inequalities are sound and complete for the no-three-in-line condition within the explicitly defined subclass. However, the material assertions that canonical deduplication yields exactly 388,148 constraints and that the serialization has SHA-256 digest 5c0051739717f52f8eddd00cd01e8a83030849b3fd7b4516b0d308882c9aaf62 are not established by trusted execution, a supplied complete serialization, or equivalent evidence. No contradiction or counterexample was found, so the claim remains indeterminate rather than invalid.",
+                  "subjectTransactionIds": [
+                    "046e8f269922a6d2ce37ce17d4878ccdb0aa7721"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:35ddeb5edb7c4bd88c4ef009bacf5772f6e6774a988923eb2edc1f38dfb17bca",
+              "reportDigest": "sha256:94836b551652853b4e1140af19c0e62528c68f7ef923b7afd6a1262b0a5bb7c3",
+              "judgmentId": "sha256:fe29fe9552e27acb35b8596c4cd638f18a41a38961dee746bbeb123fff032cac"
+            },
+            "declaredReferenceTransactionIdsByClaim": {
+              "no-three-in-line-77/rct4-154-exact-subclass-encoding": []
+            }
+          },
+          {
+            "judgmentId": "sha256:0414d9e0650172a4ee68f1276f22a75e23463a15c4c19ffa448ea90b81580c65",
+            "runDigest": "sha256:0e4f24326cf6bba83636a60ffaa71170c9d22a549e3672da7167b3214592c5af",
+            "judgmentKind": "primary",
+            "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+            "problemLedgerHead": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v3",
+              "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.1158325,
+            "reportDigest": "sha256:95c2ea45d2b5f8c09244fcd2ee39e44e718fb3acd74fe0dbf621f1e222ba3276",
+            "reportMarkdown": "## Claim: `no-three-in-line-77/record-152-governed-replay`\n\n**Verdict: VALID**\n\n### Artifact and identity checks\n\n- The supplied `configuration.txt` matches the corresponding artifact in transaction `dfc0cc40d41105292a119840dcdbe6f22860cf43` byte-for-byte.\n- Its stated SHA-256 digest is  \n  `a23f1f55d9a914cff49fb6ba369b9f392f7af4c5ce08085267b3af1e7d7742c4`.\n- The supplied `verify.py` has the stated SHA-256 digest  \n  `43463d0207199ef42ae0dc9c88c67f855fd92b070fb8d007f477a6b2de1998ec`.\n- The formal claim does **not** assert that this checker is byte-for-byte identical to the checker in the canonical reference. This is important because the displayed reference checker has an additional trailing blank line. That discrepancy therefore does not contradict the declared claim.\n\n### Verifier audit\n\nThe verifier’s successful path establishes all necessary certificate properties:\n\n1. It removes one recognized symmetry marker and interprets the remaining payload in pairs.\n2. The attested output reports a grid size of \\(76\\). Since the decoder creates two points per row, this yields exactly \\(2\\cdot76=152\\) points.\n3. Before examining triples, it rejects:\n   - duplicate points, and\n   - any coordinate outside \\(\\{0,\\ldots,75\\}^2\\).\n4. It then iterates over `itertools.combinations(points, 3)`. With 152 distinct points, this covers every unordered triple exactly once. The count is\n   \\[\n   \\binom{152}{3}\n   =\\frac{152\\cdot151\\cdot150}{6}\n   =573{,}800.\n   \\]\n5. For every triple it evaluates\n   \\[\n   (x_2-x_1)(y_3-y_1)-(x_3-x_1)(y_2-y_1),\n   \\]\n   using unbounded Python integer arithmetic. For three distinct planar points, this determinant is zero exactly when they are collinear.\n6. Any zero determinant raises an exception before the success message. Thus the attested successful exit and success output, together with the audited source, imply that no checked triple was collinear.\n\n### Objective attestation\n\nThe terminal attestation reports:\n\n- status `passed`;\n- exit code \\(0\\);\n- no timeout; and\n- exact stdout:\n  `verified 152 points on a 76 x 76 grid; no collinear triple`.\n\nThe supplied `verification.json` selects the pinned Python verifier, names `verify.py` as the entrypoint, and supplies `configuration.txt` as its sole argument. It contains no participant-authored result field. Thus the request itself does not pre-assert success; success is supplied separately by the terminal attestation.\n\nThe attestation establishes successful execution of the pinned checker on the pinned subject inputs. It does not by itself prove the transaction-to-transaction byte-identity assertion or the displayed SHA-256 values; those are separate artifact checks above.\n\n### Mathematical implication\n\nThe verified points lie in\n\n\\[\nG_{76}=\\{0,\\ldots,75\\}^2\\subseteq \\{0,\\ldots,76\\}^2=G_{77}.\n\\]\n\nEmbedding them unchanged therefore gives a 152-point no-three-in-line subset of \\(G_{77}\\), so\n\n\\[\nD(77)\\ge 152.\n\\]\n\nThis establishes only the existing lower bound. It does not establish a 153- or 154-point configuration, optimality, or the exact value of \\(D(77)\\).\n\n### Dependency classification\n\n- **Required mathematical dependencies:** none. The certificate, verifier, and successful replay independently establish \\(D(77)\\ge152\\).\n- Transaction `dfc0cc40d41105292a119840dcdbe6f22860cf43` is needed as comparison evidence for the literal byte-identity/provenance clause, but its mathematical claims are not needed as premises for the lower-bound proof.\n",
+            "record": {
+              "schemaVersion": 3,
+              "judgmentKind": "primary",
+              "problemId": "no-three-in-line-77",
+              "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+              "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v3",
+                "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "bf1301b6b472841276f79852c2e7fe0499309684",
+                  "ledgerPosition": 8
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "no-three-in-line-77/record-152-governed-replay",
+                  "status": "valid",
+                  "premiseStatus": "not-required",
+                  "summary": "The audited artifacts have the claimed digests; configuration.txt matches the canonical certificate byte-for-byte. The pinned replay successfully decodes 152 distinct points in G_76, checks all 573,800 unordered triples using exact integer determinants, and finds none collinear. Embedding G_76 into G_77 establishes D(77) >= 152. The replay request does not itself pre-assert a hosted result.",
+                  "scopeQualifications": [
+                    "The claim does not assert that verify.py is byte-for-byte identical to the canonical checker; the canonical checker’s additional trailing blank line is therefore immaterial.",
+                    "Successful execution is established by the separate terminal attestation, not by verification.json itself.",
+                    "The result establishes only D(77) >= 152; it claims no improvement, optimality, or exact value of D(77).",
+                    "The canonical transaction is relevant only to the artifact-identity clause; its mathematical content is not a necessary premise because the supplied certificate, verifier, and replay establish the lower bound directly."
+                  ],
+                  "evidenceIssues": [],
+                  "evidenceTransactionIds": [],
+                  "requiredDependencyTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "no-three-in-line-77/record-152-governed-replay",
+                  "stance": "supports",
+                  "summary": "The audited artifacts have the claimed digests; configuration.txt matches the canonical certificate byte-for-byte. The pinned replay successfully decodes 152 distinct points in G_76, checks all 573,800 unordered triples using exact integer determinants, and finds none collinear. Embedding G_76 into G_77 establishes D(77) >= 152. The replay request does not itself pre-assert a hosted result.",
+                  "subjectTransactionIds": [
+                    "bf1301b6b472841276f79852c2e7fe0499309684"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:8ef1ff4cbbdf4cfa8101f8d153e21cbbb11030c60cb6563433f6f9fb7d0d1b50",
+              "reportDigest": "sha256:95c2ea45d2b5f8c09244fcd2ee39e44e718fb3acd74fe0dbf621f1e222ba3276",
+              "judgmentId": "sha256:0414d9e0650172a4ee68f1276f22a75e23463a15c4c19ffa448ea90b81580c65"
+            },
+            "declaredReferenceTransactionIdsByClaim": {
+              "no-three-in-line-77/record-152-governed-replay": [
+                "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+              ]
+            }
+          },
+          {
+            "judgmentId": "sha256:ea12a2a911c15117d96cb36ac39d96c11ce962f232d8d0926dc0c8593bff5633",
+            "runDigest": "sha256:f67ea4a95b429fc0cf75a0e724a6dfc695d3c22a7cb94217affba684ef5dbb85",
+            "judgmentKind": "primary",
+            "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+            "problemLedgerHead": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v3",
+              "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.0518425,
+            "reportDigest": "sha256:6d50da9ace33f09cdf631bdfaa195c9fefa7a9b68c13defec54ce01b8baa4d29",
+            "reportMarkdown": "## `no-three-in-line-77/rct4-154-subclass-encoding-theorem`\n\n**Verdict: Valid**\n\n### Audit\n\n1. **Orbit structure**\n   - \\(\\rho^2(x,y)=(76-x,76-y)\\) and \\(\\rho^4=\\mathrm{id}\\).\n   - The only point fixed by \\(\\rho^2\\), and hence the only possible orbit of size less than four, is \\((38,38)\\). This point lies on both diagonals.\n   - The union of the main and anti-diagonals is invariant under \\(\\rho\\), since \\(\\rho\\) interchanges those diagonals. Therefore its complement is invariant, and every point off both diagonals belongs to a complete four-element \\(\\rho\\)-orbit.\n\n2. **Partition of available cells**\n   - The center is excluded because the anti-diagonal is fixed empty.\n   - The remaining 76 main-diagonal cells are partitioned into the 38 disjoint pairs\n     \\[\n     D_i=\\{(i,i),(76-i,76-i)\\},\\qquad 0\\le i<38.\n     \\]\n   - Together with the disjoint four-element orbits off both diagonals, these pairs partition \\(G_{77}\\setminus A\\).\n   - Consequently, each subclass set determines a unique Boolean assignment, and each assignment expands uniquely to a set in the defined subclass.\n\n3. **Cardinality**\n   - Selecting exactly 38 four-orbit variables and one diagonal-pair variable produces\n     \\[\n     38\\cdot4+1\\cdot2=154\n     \\]\n     distinct cells.\n   - Conversely, a 154-point set in the subclass already contains exactly two diagonal cells; its remaining 152 cells are a disjoint union of four-cell orbits, so it selects exactly \\(152/4=38\\) such orbits.\n\n4. **Line constraints**\n   - Because the variable cell sets are disjoint and all omitted anti-diagonal cells are fixed empty,\n     \\[\n     |S\\cap L|=\\sum_v |L\\cap O_v|\\,y_v\n     \\]\n     holds exactly for every maximal lattice line \\(L\\).\n   - Lines containing fewer than three grid cells cannot contain a collinear triple and need no constraint.\n   - Any three collinear grid points lie on a unique Euclidean line whose full intersection with \\(G_{77}\\) is a maximal lattice line containing at least three grid cells. Thus a collinear triple violates the corresponding inequality.\n   - Conversely, a violated inequality directly exhibits at least three selected cells on one line.\n\nHence the pseudo-Boolean system is sound and complete for exactly the 154-point no-three-in-line sets in the explicitly defined rct4 subclass. It does not establish existence, infeasibility, or any bound on \\(D(77)\\), consistently with the claim’s stated limitations.\n\n### Dependencies\n\n- **Declared references:** None.\n- **Required dependencies:** None. The supplied subject independently establishes all needed facts.\n- **Objective attestation:** None supplied or needed for this purely mathematical encoding theorem.\n",
+            "record": {
+              "schemaVersion": 3,
+              "judgmentKind": "primary",
+              "problemId": "no-three-in-line-77",
+              "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+              "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v3",
+                "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+                  "ledgerPosition": 9
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "no-three-in-line-77/rct4-154-subclass-encoding-theorem",
+                  "status": "valid",
+                  "premiseStatus": "not-required",
+                  "summary": "The argument establishes a bijective, sound, and complete pseudo-Boolean encoding of 154-point no-three-in-line sets in the defined rct4 subclass. Off-diagonal eligible cells decompose into disjoint four-cell rho-orbits, the eligible main-diagonal cells into 38 antipodal pairs, and the exact-selection constraints yield 38·4+2=154 cells. For each maximal lattice line, the weighted sum equals the number of selected cells on that line, so the inequalities are equivalent to the no-three-in-line condition. No external dependency is required.",
+                  "scopeQualifications": [
+                    "The result applies only to the explicitly defined rct4 subclass of G_77.",
+                    "It makes no assertion about implementation-specific constraint counts or digests, satisfiability or infeasibility, larger symmetry classes, classification of rotations, or the value of D(77)."
+                  ],
+                  "evidenceIssues": [],
+                  "evidenceTransactionIds": [],
+                  "requiredDependencyTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "no-three-in-line-77/rct4-154-subclass-encoding-theorem",
+                  "stance": "supports",
+                  "summary": "The argument establishes a bijective, sound, and complete pseudo-Boolean encoding of 154-point no-three-in-line sets in the defined rct4 subclass. Off-diagonal eligible cells decompose into disjoint four-cell rho-orbits, the eligible main-diagonal cells into 38 antipodal pairs, and the exact-selection constraints yield 38·4+2=154 cells. For each maximal lattice line, the weighted sum equals the number of selected cells on that line, so the inequalities are equivalent to the no-three-in-line condition. No external dependency is required.",
+                  "subjectTransactionIds": [
+                    "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:8591ae6e89aa9654ac89d7a59f0eafdc30da0fac11755670faa96d14248925f1",
+              "reportDigest": "sha256:6d50da9ace33f09cdf631bdfaa195c9fefa7a9b68c13defec54ce01b8baa4d29",
+              "judgmentId": "sha256:ea12a2a911c15117d96cb36ac39d96c11ce962f232d8d0926dc0c8593bff5633"
+            },
+            "declaredReferenceTransactionIdsByClaim": {
+              "no-three-in-line-77/rct4-154-subclass-encoding-theorem": []
+            }
+          }
+        ],
+        "runs": [
+          {
+            "id": "22fc355587cda3ddd986172321c17755ed74e7b0c73b0662bd3a3324e6eafc8b",
+            "ordinal": 1,
+            "ledgerHead": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+            "problemLedgerHead": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "runDigest": "sha256:22fc355587cda3ddd986172321c17755ed74e7b0c73b0662bd3a3324e6eafc8b",
+            "baseRun": null,
+            "runKind": "knowledge-build",
+            "inputs": {
+              "schemaVersion": 1,
+              "baseStateRun": null,
+              "problemId": "no-three-in-line-77",
+              "builderSpecDigest": "sha256:7a860e24060549b877c06136df7e8b66e558be29363c873983debaa8381c9d96",
+              "conflictIds": [],
+              "laneId": "sha256:612c18e947136d4db68bebd4706ea225727d3ec8d65670a6ac83df3a84f6e07c",
+              "projectionSpecDigest": "sha256:df3a8d053a3734d1027930d2188dcd9a4caeb8a57f0317ca46b6c72bfc8bae5e",
+              "judgmentIds": [
+                "sha256:0414d9e0650172a4ee68f1276f22a75e23463a15c4c19ffa448ea90b81580c65",
+                "sha256:2e63f97e4a920542608ce246e8152c0c15b160475293a04ef2694a1cbf2d6e12",
+                "sha256:64c488469559052df47c9648c615275ab6689972ab9553eb228799a46f726517",
+                "sha256:b3009111acaf420b7ed2de592318b47a7c31b53988ff00d37f41db6f94dc3104",
+                "sha256:ea12a2a911c15117d96cb36ac39d96c11ce962f232d8d0926dc0c8593bff5633",
+                "sha256:eebf85b907acaea6c9a083540fcd2ae291a9de9e9a4fbdae6c53722341bb63d4",
+                "sha256:fe29fe9552e27acb35b8596c4cd638f18a41a38961dee746bbeb123fff032cac",
+                "sha256:fe7608de5c679a70afa7ddd87e32592ca1ddba40c49a85d9e389f425d5fb8481",
+                "sha256:febff57c74149d57e4744cccc900300edba4c8071aef6c382549f4f546e568c0"
+              ],
+              "judgmentSetDigest": "sha256:9c4da676e5d2e3705e6f7b89b0eb5d18f8188532fa2d429a7d64bba2f2a13f0d",
+              "buildToken": "sha256:4a73a5124c90157fe9577fdd17dc45a39b183ac5cfad6ea15410729f311a9aae"
+            },
+            "judgeSpec": {
+              "id": "openrouter-hierarchical-research-builder-v3",
+              "digest": "sha256:7a860e24060549b877c06136df7e8b66e558be29363c873983debaa8381c9d96"
+            },
+            "runner": {
+              "implementation": "openrouter-hierarchical-research-builder-v3",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0.1710625,
+            "selection": {
+              "selectedNodeIds": [
+                "item:root/finite-rotation-classification/proof",
+                "item:root/finite-rotation-classification/result",
+                "item:root/rct4-154-encoding/method",
+                "item:root/rct4-154-encoding/result",
+                "item:root/record-152-verification/governed-replay",
+                "item:root/record-152-verification/lower-bound",
+                "item:root/record-152-verification/objective-verifier",
+                "root",
+                "thread:root/finite-rotation-classification",
+                "thread:root/rct4-154-encoding",
+                "thread:root/record-152-verification",
+                "thread:root/unstructured-search"
+              ],
+              "rationale": "Nodes changed by the accepted validity batch."
+            },
+            "normalizations": [],
+            "delta": {
+              "schemaVersion": 1,
+              "operations": [
+                {
+                  "entityKind": "thread",
+                  "entityId": "root/finite-rotation-classification",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/finite-rotation-classification",
+                    "programId": "root",
+                    "title": "Arbitrary-center rotational classification at cardinalities 153 and 154",
+                    "summary": "Classify the possible nonidentity Euclidean rotations of finite noncollinear lattice sets and record the resulting rotational-symmetry restrictions for 153- and 154-point no-three-in-line subsets of G_77, without addressing reflections, existence, global nonexistence, or the certified interval.",
+                    "kind": "research",
+                    "status": "completed",
+                    "expectedExposure": "0",
+                    "conditions": [],
+                    "sourceTransactionIds": [
+                      "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "thread",
+                  "entityId": "root/record-152-verification",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/record-152-verification",
+                    "programId": "root",
+                    "title": "Replay and audit of the 152-point lower-bound certificate",
+                    "summary": "Maintain replayable exact-integer verification of the 152-point configuration in G_76 and its embedding in G_77, while distinguishing local or governed executions from any claim of optimality or an improved bound.",
+                    "kind": "verification",
+                    "status": "completed",
+                    "expectedExposure": "0",
+                    "conditions": [],
+                    "sourceTransactionIds": [
+                      "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                      "bf1301b6b472841276f79852c2e7fe0499309684"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "thread",
+                  "entityId": "root/rct4-154-encoding",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/rct4-154-encoding",
+                    "programId": "root",
+                    "title": "Exact encoding of the rct4 154-point subclass",
+                    "summary": "Formulate and establish the soundness and completeness of the pseudo-Boolean encoding for the explicitly defined rct4 subclass, without asserting satisfiability, infeasibility, implementation-specific statistics, larger symmetry coverage, or a value of D(77).",
+                    "kind": "research",
+                    "status": "completed",
+                    "expectedExposure": "0",
+                    "conditions": [],
+                    "sourceTransactionIds": [
+                      "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d"
+                    ]
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/finite-rotation-classification/result",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/finite-rotation-classification/result",
+                    "programId": "root",
+                    "type": "result",
+                    "title": "Finite-rotation classification and its consequences at sizes 153 and 154",
+                    "summary": "Finite-rotation lemma. Let S⊂Z^2 be finite and noncollinear. If a nonidentity Euclidean rotation T satisfies T(S)=S, then T is a half-turn or a quarter-turn (in either orientation). This allows an arbitrary center; no assumption is made that the rotation preserves the whole ambient square or the whole integer lattice. Consequently, for a no-three-in-line set S⊂G_77: (1) if |S|=153, then S has no nontrivial rotational symmetry; (2) if |S|=154 and S has nontrivial rotational symmetry, it is invariant under the half-turn about (38,38), and (38,38)∉S. The result classifies rotations only, not reflections, affine maps, or approximate symmetries. The size-154 conclusion is conditional and constructs no configuration. It proves neither existence nor global nonexistence at sizes 153 or 154, does not identify the rct4 subclass with the full centered half-turn class, and does not improve 152≤D(77)≤154.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                        "claimKey": "no-three-in-line-77/finite-rotation-classification-proof"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                    ],
+                    "dependencyItemIds": []
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/finite-rotation-classification/proof",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/finite-rotation-classification/proof",
+                    "programId": "root",
+                    "type": "proof",
+                    "title": "Proof of the arbitrary-center finite-rotation classification",
+                    "summary": "Proof participating in the accepted classification: differences between three noncollinear lattice points and their rotated images show that the rotation matrix is rational; the permutation action on the finite set shows that it has finite order; the rational algebraic-integer trace restriction leaves only half-turns and quarter-turns among nonidentity rotations. Orbit-cardinality and row-and-column occupancy arguments then give the stated consequences for 153- and 154-point no-three-in-line subsets of G_77. This proof is represented only for the exact accepted classification and its stated qualifications.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                        "claimKey": "no-three-in-line-77/finite-rotation-classification-proof"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+                    ],
+                    "dependencyItemIds": []
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/record-152-verification/lower-bound",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/record-152-verification/lower-bound",
+                    "programId": "root",
+                    "type": "result",
+                    "title": "Replay-certified lower bound D(77) ≥ 152",
+                    "summary": "The accepted exact-integer replays certify 152 distinct points in G_76 with no collinear triple; embedding G_76 into G_77 establishes D(77)≥152. This re-verifies the existing lower bound and establishes no improved bound, optimality, or exact value of D(77). Acceptance of pinned bytes by a governed execution is distinct from the mathematical audit of the encoded predicate, and a verification request does not itself pre-assert a hosted outcome.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                        "claimKey": "no-three-in-line-77/record-152-objective-verification"
+                      },
+                      {
+                        "transactionId": "bf1301b6b472841276f79852c2e7fe0499309684",
+                        "claimKey": "no-three-in-line-77/record-152-governed-replay"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                      "bf1301b6b472841276f79852c2e7fe0499309684"
+                    ],
+                    "dependencyItemIds": []
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/record-152-verification/objective-verifier",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/record-152-verification/objective-verifier",
+                    "programId": "root",
+                    "type": "tool",
+                    "title": "Replayable objective verifier for the 152-point certificate",
+                    "summary": "Pinned certificate bytes, a Python-standard-library checker, and a canonical verification request participating in the accepted objective verification. Running `python3 -I -B verify.py configuration.txt` decodes 152 distinct points in the 76×76 grid and exhaustively checks every triple with exact integer determinants. The accepted scope is that the pinned checker successfully accepts the pinned bytes and thereby re-verifies D(77)≥152. The assertion that these artifacts are byte-for-byte identical to an earlier contribution was unverified in this claim, is provenance-only, and is unnecessary for the lower bound. The tool establishes neither optimality nor a new lower bound beyond 152.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                        "claimKey": "no-three-in-line-77/record-152-objective-verification"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+                    ],
+                    "dependencyItemIds": []
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/record-152-verification/governed-replay",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/record-152-verification/governed-replay",
+                    "programId": "root",
+                    "type": "computation",
+                    "title": "Governed replay and artifact audit of the 152-point certificate",
+                    "summary": "The included configuration.txt has SHA-256 digest a23f1f55d9a914cff49fb6ba369b9f392f7af4c5ce08085267b3af1e7d7742c4 and is byte-for-byte identical to the certificate in canonical transaction dfc0cc40d41105292a119840dcdbe6f22860cf43. The included verify.py has SHA-256 digest 43463d0207199ef42ae0dc9c88c67f855fd92b070fb8d007f477a6b2de1998ec. Executing python3 -I -B verify.py configuration.txt on these bytes decodes exactly 152 distinct points in G_76, exhaustively checks all 573,800 unordered triples with exact integer determinants, finds no collinear triple, and exits successfully; hence the bytes re-certify D(77) at least 152. The included verification.json requests a governed replay of that exact predicate but does not assert a hosted outcome before its separate attestation is published. No improved bound, optimality, or exact value of D(77) is claimed. Successful execution is established by the separate terminal attestation, not by verification.json itself.",
+                    "claimRefs": [
+                      {
+                        "transactionId": "bf1301b6b472841276f79852c2e7fe0499309684",
+                        "claimKey": "no-three-in-line-77/record-152-governed-replay"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "bf1301b6b472841276f79852c2e7fe0499309684"
+                    ],
+                    "dependencyItemIds": []
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/rct4-154-encoding/result",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/rct4-154-encoding/result",
+                    "programId": "root",
+                    "type": "result",
+                    "title": "Sound and complete encoding theorem for the rct4 subclass",
+                    "summary": "Let rho(x,y)=(y,76-x), and define the rct4 subclass of G_77 to consist exactly of sets with empty anti-diagonal, occupied off-diagonal cells equal to unions of complete four-cell rho-orbits, and main-diagonal intersection equal to exactly one antipodal pair. Give each such four-cell orbit and diagonal pair a Boolean variable, require exactly 38 four-orbit variables and one diagonal-pair variable, and for every maximal lattice line L with at least three grid cells require the weighted inequality sum_v |L intersect O_v| y_v at most 2. Expanding a satisfying assignment gives a 154-point no-three-in-line member of the rct4 subclass, and every 154-point no-three-in-line member of that subclass gives exactly one satisfying assignment. This claim makes no assertion about an implementation-specific constraint count or digest, satisfiability or infeasibility, any larger symmetry class, classification of rotations, or the value of D(77).",
+                    "claimRefs": [
+                      {
+                        "transactionId": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+                        "claimKey": "no-three-in-line-77/rct4-154-subclass-encoding-theorem"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d"
+                    ],
+                    "dependencyItemIds": []
+                  }
+                },
+                {
+                  "entityKind": "item",
+                  "entityId": "root/rct4-154-encoding/method",
+                  "baseDigest": null,
+                  "value": {
+                    "id": "root/rct4-154-encoding/method",
+                    "programId": "root",
+                    "type": "method",
+                    "title": "Pseudo-Boolean orbit-and-line encoding for the rct4 subclass",
+                    "summary": "Reusable method participating in the accepted theorem: represent eligible off-diagonal cells by complete four-cell rho-orbit variables and eligible main-diagonal cells by antipodal-pair variables; select exactly 38 four-orbits and one pair; and impose, for every maximal lattice line with at least three grid cells, the weighted occupancy inequality sum_v |L∩O_v|y_v≤2. Within the explicitly defined rct4 subclass, the variable partition gives a unique expansion of size 154 and the line inequalities are equivalent to the no-three-in-line condition. The method carries no claim of satisfiability, infeasibility, implementation-specific counts or digests, applicability to a larger symmetry class, rotational classification, or a value of D(77).",
+                    "claimRefs": [
+                      {
+                        "transactionId": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+                        "claimKey": "no-three-in-line-77/rct4-154-subclass-encoding-theorem"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d"
+                    ],
+                    "dependencyItemIds": []
+                  }
+                }
+              ],
+              "contributions": [
+                {
+                  "transactionId": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                  "claimKeys": [
+                    "no-three-in-line-77/finite-rotation-classification-proof"
+                  ],
+                  "directProgramId": "root",
+                  "directThreadIds": [
+                    "root/finite-rotation-classification"
+                  ],
+                  "itemIds": [
+                    "root/finite-rotation-classification/result",
+                    "root/finite-rotation-classification/proof"
+                  ]
+                },
+                {
+                  "transactionId": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                  "claimKeys": [
+                    "no-three-in-line-77/record-152-objective-verification"
+                  ],
+                  "directProgramId": "root",
+                  "directThreadIds": [
+                    "root/record-152-verification"
+                  ],
+                  "itemIds": [
+                    "root/record-152-verification/lower-bound",
+                    "root/record-152-verification/objective-verifier"
+                  ]
+                },
+                {
+                  "transactionId": "bf1301b6b472841276f79852c2e7fe0499309684",
+                  "claimKeys": [
+                    "no-three-in-line-77/record-152-governed-replay"
+                  ],
+                  "directProgramId": "root",
+                  "directThreadIds": [
+                    "root/record-152-verification"
+                  ],
+                  "itemIds": [
+                    "root/record-152-verification/lower-bound",
+                    "root/record-152-verification/governed-replay"
+                  ]
+                },
+                {
+                  "transactionId": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+                  "claimKeys": [
+                    "no-three-in-line-77/rct4-154-subclass-encoding-theorem"
+                  ],
+                  "directProgramId": "root",
+                  "directThreadIds": [
+                    "root/rct4-154-encoding"
+                  ],
+                  "itemIds": [
+                    "root/rct4-154-encoding/result",
+                    "root/rct4-154-encoding/method"
+                  ]
+                }
+              ]
+            },
+            "state": {
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "program",
+                  "title": "Canonical problem",
+                  "summary": "Resolve the canonical problem.",
+                  "status": "active",
+                  "contentMarkdown": "## Objective\n\nResolve the canonical problem.\n\n## Local credit context\n\nRoot program.",
+                  "subjects": [],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:4bc4e85d0ca6e4224902591c71cf9cb813718dfe5961d8be774384d474797c99"
+                },
+                "thread:root/unstructured-search": {
+                  "id": "thread:root/unstructured-search",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Unstructured search and overhead",
+                  "summary": "Future work not yet assigned to a more specific research thread.",
+                  "status": "active",
+                  "contentMarkdown": "Future work not yet assigned to a more specific research thread.\n\n**Thread kind:** unstructured\n\n**Expected local exposure:** 1\n\n**Conditions:** none",
+                  "subjects": [],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+                },
+                "thread:root/finite-rotation-classification": {
+                  "id": "thread:root/finite-rotation-classification",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Arbitrary-center rotational classification at cardinalities 153 and 154",
+                  "summary": "Classify the possible nonidentity Euclidean rotations of finite noncollinear lattice sets and record the resulting rotational-symmetry restrictions for 153- and 154-point no-three-in-line subsets of G_77, without addressing reflections, existence, global nonexistence, or the certified interval.",
+                  "status": "completed",
+                  "contentMarkdown": "Classify the possible nonidentity Euclidean rotations of finite noncollinear lattice sets and record the resulting rotational-symmetry restrictions for 153- and 154-point no-three-in-line subsets of G_77, without addressing reflections, existence, global nonexistence, or the certified interval.\n\n**Thread kind:** research\n\n**Expected local exposure:** 0\n\n**Conditions:** none",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4,
+                      "relation": "source"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:61416ba05ae44477755b61cada55b06a90eb7ed9d9229a0d834ff8a2469e7d25"
+                },
+                "thread:root/record-152-verification": {
+                  "id": "thread:root/record-152-verification",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Replay and audit of the 152-point lower-bound certificate",
+                  "summary": "Maintain replayable exact-integer verification of the 152-point configuration in G_76 and its embedding in G_77, while distinguishing local or governed executions from any claim of optimality or an improved bound.",
+                  "status": "completed",
+                  "contentMarkdown": "Maintain replayable exact-integer verification of the 152-point configuration in G_76 and its embedding in G_77, while distinguishing local or governed executions from any claim of optimality or an improved bound.\n\n**Thread kind:** verification\n\n**Expected local exposure:** 0\n\n**Conditions:** none",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                      "ledgerPosition": 5,
+                      "relation": "source"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "bf1301b6b472841276f79852c2e7fe0499309684",
+                      "ledgerPosition": 8,
+                      "relation": "source"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:e760e25a0e50d0d167a5976564fd48f87ea06fa9fe12a11adcfb92fd52535f9e"
+                },
+                "thread:root/rct4-154-encoding": {
+                  "id": "thread:root/rct4-154-encoding",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Exact encoding of the rct4 154-point subclass",
+                  "summary": "Formulate and establish the soundness and completeness of the pseudo-Boolean encoding for the explicitly defined rct4 subclass, without asserting satisfiability, infeasibility, implementation-specific statistics, larger symmetry coverage, or a value of D(77).",
+                  "status": "completed",
+                  "contentMarkdown": "Formulate and establish the soundness and completeness of the pseudo-Boolean encoding for the explicitly defined rct4 subclass, without asserting satisfiability, infeasibility, implementation-specific statistics, larger symmetry coverage, or a value of D(77).\n\n**Thread kind:** research\n\n**Expected local exposure:** 0\n\n**Conditions:** none",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+                      "ledgerPosition": 9,
+                      "relation": "source"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:ec59c59b9d4c41b79ed9b3fb9dfb038177010cd1eebc4566c7371f8504b1cf8a"
+                },
+                "item:root/finite-rotation-classification/result": {
+                  "id": "item:root/finite-rotation-classification/result",
+                  "parentId": "root",
+                  "type": "result",
+                  "title": "Finite-rotation classification and its consequences at sizes 153 and 154",
+                  "summary": "Finite-rotation lemma. Let S⊂Z^2 be finite and noncollinear. If a nonidentity Euclidean rotation T satisfies T(S)=S, then T is a half-turn or a quarter-turn (in either orientation). This allows an arbitrary center; no assumption is made that the rotation preserves the whole ambient square or the whole integer lattice. Consequently, for a no-three-in-line set S⊂G_77: (1) if |S|=153, then S has no nontrivial rotational symmetry; (2) if |S|=154 and S has nontrivial rotational symmetry, it is invariant under the half-turn about (38,38), and (38,38)∉S. The result classifies rotations only, not reflections, affine maps, or approximate symmetries. The size-154 conclusion is conditional and constructs no configuration. It proves neither existence nor global nonexistence at sizes 153 or 154, does not identify the rct4 subclass with the full centered half-turn class, and does not improve 152≤D(77)≤154.",
+                  "status": "active",
+                  "contentMarkdown": "Finite-rotation lemma. Let S⊂Z^2 be finite and noncollinear. If a nonidentity Euclidean rotation T satisfies T(S)=S, then T is a half-turn or a quarter-turn (in either orientation). This allows an arbitrary center; no assumption is made that the rotation preserves the whole ambient square or the whole integer lattice. Consequently, for a no-three-in-line set S⊂G_77: (1) if |S|=153, then S has no nontrivial rotational symmetry; (2) if |S|=154 and S has nontrivial rotational symmetry, it is invariant under the half-turn about (38,38), and (38,38)∉S. The result classifies rotations only, not reflections, affine maps, or approximate symmetries. The size-154 conclusion is conditional and constructs no configuration. It proves neither existence nor global nonexistence at sizes 153 or 154, does not identify the rct4 subclass with the full centered half-turn class, and does not improve 152≤D(77)≤154.\n\n## Accepted claims\n\n- `no-three-in-line-77/finite-rotation-classification-proof` from `29ccbd396781fd36d436ed2e6d0952a4730361b9`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:5d690550b94e29f442ec868e7fc1dbec342609cdaf2e02191314ec8101b078ef"
+                },
+                "item:root/finite-rotation-classification/proof": {
+                  "id": "item:root/finite-rotation-classification/proof",
+                  "parentId": "root",
+                  "type": "proof",
+                  "title": "Proof of the arbitrary-center finite-rotation classification",
+                  "summary": "Proof participating in the accepted classification: differences between three noncollinear lattice points and their rotated images show that the rotation matrix is rational; the permutation action on the finite set shows that it has finite order; the rational algebraic-integer trace restriction leaves only half-turns and quarter-turns among nonidentity rotations. Orbit-cardinality and row-and-column occupancy arguments then give the stated consequences for 153- and 154-point no-three-in-line subsets of G_77. This proof is represented only for the exact accepted classification and its stated qualifications.",
+                  "status": "active",
+                  "contentMarkdown": "Proof participating in the accepted classification: differences between three noncollinear lattice points and their rotated images show that the rotation matrix is rational; the permutation action on the finite set shows that it has finite order; the rational algebraic-integer trace restriction leaves only half-turns and quarter-turns among nonidentity rotations. Orbit-cardinality and row-and-column occupancy arguments then give the stated consequences for 153- and 154-point no-three-in-line subsets of G_77. This proof is represented only for the exact accepted classification and its stated qualifications.\n\n## Accepted claims\n\n- `no-three-in-line-77/finite-rotation-classification-proof` from `29ccbd396781fd36d436ed2e6d0952a4730361b9`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                      "ledgerPosition": 4,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:debfba2ef4c53c86f1a20e6bb75b31bd42e708a220ec8fdaa10ec66b0959a88e"
+                },
+                "item:root/record-152-verification/lower-bound": {
+                  "id": "item:root/record-152-verification/lower-bound",
+                  "parentId": "root",
+                  "type": "result",
+                  "title": "Replay-certified lower bound D(77) ≥ 152",
+                  "summary": "The accepted exact-integer replays certify 152 distinct points in G_76 with no collinear triple; embedding G_76 into G_77 establishes D(77)≥152. This re-verifies the existing lower bound and establishes no improved bound, optimality, or exact value of D(77). Acceptance of pinned bytes by a governed execution is distinct from the mathematical audit of the encoded predicate, and a verification request does not itself pre-assert a hosted outcome.",
+                  "status": "active",
+                  "contentMarkdown": "The accepted exact-integer replays certify 152 distinct points in G_76 with no collinear triple; embedding G_76 into G_77 establishes D(77)≥152. This re-verifies the existing lower bound and establishes no improved bound, optimality, or exact value of D(77). Acceptance of pinned bytes by a governed execution is distinct from the mathematical audit of the encoded predicate, and a verification request does not itself pre-assert a hosted outcome.\n\n## Accepted claims\n\n- `no-three-in-line-77/record-152-objective-verification` from `0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0`\n- `no-three-in-line-77/record-152-governed-replay` from `bf1301b6b472841276f79852c2e7fe0499309684`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                      "ledgerPosition": 5,
+                      "relation": "accepted-claim"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "bf1301b6b472841276f79852c2e7fe0499309684",
+                      "ledgerPosition": 8,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:ad4e717c0bac80ea1e5856f9b195db7e73e0af6e6e370f3c3015ff1a83f46209"
+                },
+                "item:root/record-152-verification/objective-verifier": {
+                  "id": "item:root/record-152-verification/objective-verifier",
+                  "parentId": "root",
+                  "type": "tool",
+                  "title": "Replayable objective verifier for the 152-point certificate",
+                  "summary": "Pinned certificate bytes, a Python-standard-library checker, and a canonical verification request participating in the accepted objective verification. Running `python3 -I -B verify.py configuration.txt` decodes 152 distinct points in the 76×76 grid and exhaustively checks every triple with exact integer determinants. The accepted scope is that the pinned checker successfully accepts the pinned bytes and thereby re-verifies D(77)≥152. The assertion that these artifacts are byte-for-byte identical to an earlier contribution was unverified in this claim, is provenance-only, and is unnecessary for the lower bound. The tool establishes neither optimality nor a new lower bound beyond 152.",
+                  "status": "active",
+                  "contentMarkdown": "Pinned certificate bytes, a Python-standard-library checker, and a canonical verification request participating in the accepted objective verification. Running `python3 -I -B verify.py configuration.txt` decodes 152 distinct points in the 76×76 grid and exhaustively checks every triple with exact integer determinants. The accepted scope is that the pinned checker successfully accepts the pinned bytes and thereby re-verifies D(77)≥152. The assertion that these artifacts are byte-for-byte identical to an earlier contribution was unverified in this claim, is provenance-only, and is unnecessary for the lower bound. The tool establishes neither optimality nor a new lower bound beyond 152.\n\n## Accepted claims\n\n- `no-three-in-line-77/record-152-objective-verification` from `0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                      "ledgerPosition": 5,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:3e35737750a7c82053584ed39100467600e036e472af7800d7654176b67c4572"
+                },
+                "item:root/record-152-verification/governed-replay": {
+                  "id": "item:root/record-152-verification/governed-replay",
+                  "parentId": "root",
+                  "type": "computation",
+                  "title": "Governed replay and artifact audit of the 152-point certificate",
+                  "summary": "The included configuration.txt has SHA-256 digest a23f1f55d9a914cff49fb6ba369b9f392f7af4c5ce08085267b3af1e7d7742c4 and is byte-for-byte identical to the certificate in canonical transaction dfc0cc40d41105292a119840dcdbe6f22860cf43. The included verify.py has SHA-256 digest 43463d0207199ef42ae0dc9c88c67f855fd92b070fb8d007f477a6b2de1998ec. Executing python3 -I -B verify.py configuration.txt on these bytes decodes exactly 152 distinct points in G_76, exhaustively checks all 573,800 unordered triples with exact integer determinants, finds no collinear triple, and exits successfully; hence the bytes re-certify D(77) at least 152. The included verification.json requests a governed replay of that exact predicate but does not assert a hosted outcome before its separate attestation is published. No improved bound, optimality, or exact value of D(77) is claimed. Successful execution is established by the separate terminal attestation, not by verification.json itself.",
+                  "status": "active",
+                  "contentMarkdown": "The included configuration.txt has SHA-256 digest a23f1f55d9a914cff49fb6ba369b9f392f7af4c5ce08085267b3af1e7d7742c4 and is byte-for-byte identical to the certificate in canonical transaction dfc0cc40d41105292a119840dcdbe6f22860cf43. The included verify.py has SHA-256 digest 43463d0207199ef42ae0dc9c88c67f855fd92b070fb8d007f477a6b2de1998ec. Executing python3 -I -B verify.py configuration.txt on these bytes decodes exactly 152 distinct points in G_76, exhaustively checks all 573,800 unordered triples with exact integer determinants, finds no collinear triple, and exits successfully; hence the bytes re-certify D(77) at least 152. The included verification.json requests a governed replay of that exact predicate but does not assert a hosted outcome before its separate attestation is published. No improved bound, optimality, or exact value of D(77) is claimed. Successful execution is established by the separate terminal attestation, not by verification.json itself.\n\n## Accepted claims\n\n- `no-three-in-line-77/record-152-governed-replay` from `bf1301b6b472841276f79852c2e7fe0499309684`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "bf1301b6b472841276f79852c2e7fe0499309684",
+                      "ledgerPosition": 8,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:207a9916542790918cb23627c1cb1e576e1e7af55e3686d93263cc4743646272"
+                },
+                "item:root/rct4-154-encoding/result": {
+                  "id": "item:root/rct4-154-encoding/result",
+                  "parentId": "root",
+                  "type": "result",
+                  "title": "Sound and complete encoding theorem for the rct4 subclass",
+                  "summary": "Let rho(x,y)=(y,76-x), and define the rct4 subclass of G_77 to consist exactly of sets with empty anti-diagonal, occupied off-diagonal cells equal to unions of complete four-cell rho-orbits, and main-diagonal intersection equal to exactly one antipodal pair. Give each such four-cell orbit and diagonal pair a Boolean variable, require exactly 38 four-orbit variables and one diagonal-pair variable, and for every maximal lattice line L with at least three grid cells require the weighted inequality sum_v |L intersect O_v| y_v at most 2. Expanding a satisfying assignment gives a 154-point no-three-in-line member of the rct4 subclass, and every 154-point no-three-in-line member of that subclass gives exactly one satisfying assignment. This claim makes no assertion about an implementation-specific constraint count or digest, satisfiability or infeasibility, any larger symmetry class, classification of rotations, or the value of D(77).",
+                  "status": "active",
+                  "contentMarkdown": "Let rho(x,y)=(y,76-x), and define the rct4 subclass of G_77 to consist exactly of sets with empty anti-diagonal, occupied off-diagonal cells equal to unions of complete four-cell rho-orbits, and main-diagonal intersection equal to exactly one antipodal pair. Give each such four-cell orbit and diagonal pair a Boolean variable, require exactly 38 four-orbit variables and one diagonal-pair variable, and for every maximal lattice line L with at least three grid cells require the weighted inequality sum_v |L intersect O_v| y_v at most 2. Expanding a satisfying assignment gives a 154-point no-three-in-line member of the rct4 subclass, and every 154-point no-three-in-line member of that subclass gives exactly one satisfying assignment. This claim makes no assertion about an implementation-specific constraint count or digest, satisfiability or infeasibility, any larger symmetry class, classification of rotations, or the value of D(77).\n\n## Accepted claims\n\n- `no-three-in-line-77/rct4-154-subclass-encoding-theorem` from `87f78eb20d47a1db7d4ef35702bf00b4af94ad8d`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+                      "ledgerPosition": 9,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:3466da4e44b21aefde5efe9b9b35e677dfc8593063af818efcd60155a3d5fb96"
+                },
+                "item:root/rct4-154-encoding/method": {
+                  "id": "item:root/rct4-154-encoding/method",
+                  "parentId": "root",
+                  "type": "method",
+                  "title": "Pseudo-Boolean orbit-and-line encoding for the rct4 subclass",
+                  "summary": "Reusable method participating in the accepted theorem: represent eligible off-diagonal cells by complete four-cell rho-orbit variables and eligible main-diagonal cells by antipodal-pair variables; select exactly 38 four-orbits and one pair; and impose, for every maximal lattice line with at least three grid cells, the weighted occupancy inequality sum_v |L∩O_v|y_v≤2. Within the explicitly defined rct4 subclass, the variable partition gives a unique expansion of size 154 and the line inequalities are equivalent to the no-three-in-line condition. The method carries no claim of satisfiability, infeasibility, implementation-specific counts or digests, applicability to a larger symmetry class, rotational classification, or a value of D(77).",
+                  "status": "active",
+                  "contentMarkdown": "Reusable method participating in the accepted theorem: represent eligible off-diagonal cells by complete four-cell rho-orbit variables and eligible main-diagonal cells by antipodal-pair variables; select exactly 38 four-orbits and one pair; and impose, for every maximal lattice line with at least three grid cells, the weighted occupancy inequality sum_v |L∩O_v|y_v≤2. Within the explicitly defined rct4 subclass, the variable partition gives a unique expansion of size 154 and the line inequalities are equivalent to the no-three-in-line condition. The method carries no claim of satisfiability, infeasibility, implementation-specific counts or digests, applicability to a larger symmetry class, rotational classification, or a value of D(77).\n\n## Accepted claims\n\n- `no-three-in-line-77/rct4-154-subclass-encoding-theorem` from `87f78eb20d47a1db7d4ef35702bf00b4af94ad8d`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+                      "ledgerPosition": 9,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:dde50c224442c49c26c434ef03c6c6b969ac7ad2d7100935c6f6626d33e06971"
+                }
+              },
+              "stateDigest": "sha256:377d0dda602bb02c1a3fc4fed1a9db09aad41cfa59fb8827ae39448167379aca"
+            },
+            "revisionIds": [],
+            "addedRevisionIds": [],
+            "changedNodeIds": [
+              "item:root/finite-rotation-classification/proof",
+              "item:root/finite-rotation-classification/result",
+              "item:root/rct4-154-encoding/method",
+              "item:root/rct4-154-encoding/result",
+              "item:root/record-152-verification/governed-replay",
+              "item:root/record-152-verification/lower-bound",
+              "item:root/record-152-verification/objective-verifier",
+              "root",
+              "thread:root/finite-rotation-classification",
+              "thread:root/rct4-154-encoding",
+              "thread:root/record-152-verification",
+              "thread:root/unstructured-search"
+            ],
+            "reportDigest": "sha256:377d0dda602bb02c1a3fc4fed1a9db09aad41cfa59fb8827ae39448167379aca",
+            "revisionSemantics": "neutral-knowledge"
+          }
+        ],
+        "revisions": [],
+        "reports": [],
+        "latestRunId": "22fc355587cda3ddd986172321c17755ed74e7b0c73b0662bd3a3324e6eafc8b"
+      }
+    },
+    {
       "id": "sha256:bc8e1bea18c5d81414f189f8d0e5653e374e0524e37850bf448d315e22c23a97",
       "problemId": "no-three-in-line-77",
       "label": "openrouter-knowledge-builder-v1",
