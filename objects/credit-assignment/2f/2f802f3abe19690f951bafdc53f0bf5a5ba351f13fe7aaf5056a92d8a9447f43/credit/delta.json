@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "evaluations": [
+    {
+      "programId": "certified-configurations",
+      "unattributedWork": "0.20",
+      "rationale": "Work is measured in the ledger's normalized exposure units, with each horizon thread's with-child exposure anchored at 1.00. Both contribution-level historical base ledgers are empty, so no obviated effect is assigned. The residual preserves uncertainty about shared certificate setup and how cheaply a competent solver could reconstruct the scoped computations.",
+      "children": [
+        {
+          "kind": "contribution",
+          "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+          "counterfactual": "Remove the pinned checker, certificate copy, governed replay request, and resulting objective attestation. Retain the independently known 152-point lower bound, earlier certificate provenance, and the later rigidity contribution's self-contained recheck. A competent solver can therefore reconstruct only the missing durable verification infrastructure rather than rediscover the configuration.",
+          "directEffects": [
+            {
+              "threadId": "certified-configurations/record-verification",
+              "withoutWork": "1.40",
+              "withWork": "1.00",
+              "rationale": "The contribution avoids a modest but concrete amount of checker reconstruction, exact determinant replay, packaging, and attestation work. Its value is limited because the 152-point configuration and lower bound were independently available; the causal reduction is 0.40 work units."
+            }
+          ],
+          "obviatedEffects": [],
+          "confidence": "medium",
+          "evidenceRefs": [
+            "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "certified-configurations/record-152-verification-result",
+            "certified-configurations/record-152-verifier",
+            "certified-configurations/record-verification",
+            "sha256:2c30e85cbe4588ba3cb4ee952e0b895347cfcd48c59a3731d92257c11978d386",
+            "sha256:e30ec607c35bad20ceb46a23bb736e1d372fe6ccdd4ff7033bead30f23f0544a"
+          ]
+        },
+        {
+          "kind": "contribution",
+          "id": "17928a941d7503ff0dc32740b707f475728300a3",
+          "counterfactual": "Remove the eight-embedding blocking census, depth-two deletion result, verifier, and information uniquely inherited from them. Retain the independently available 152-point certificate and lower-bound verification. A competent solver may rebuild an exact line-census or pair-line computation rather than repeat the historical implementation literally.",
+          "directEffects": [
+            {
+              "threadId": "certified-configurations/local-rigidity",
+              "withoutWork": "1.90",
+              "withWork": "1.00",
+              "rationale": "Without the contribution, the scoped local-rigidity question remains to be formulated, exhaustively computed, cross-checked, and verified for eight embeddings. The reusable exact verifier and complete census avoid about 0.90 work units even though the result is negative and strictly local."
+            }
+          ],
+          "obviatedEffects": [],
+          "confidence": "medium",
+          "evidenceRefs": [
+            "17928a941d7503ff0dc32740b707f475728300a3",
+            "certified-configurations/eight-embedding-rigidity-result",
+            "certified-configurations/eight-embedding-rigidity-computation",
+            "certified-configurations/eight-embedding-rigidity-verifier",
+            "certified-configurations/local-rigidity",
+            "sha256:491b9b543314f9ab034e6eb52d7ad8f927d47ccc6ef5908b9be74149187f42ea",
+            "sha256:07ca42e610421fd1fc8157444b9cf85de8a8a39114072a67cbe80169b434faf8"
+          ]
+        }
+      ]
+    },
+    {
+      "programId": "root",
+      "unattributedWork": "0.60",
+      "rationale": "The two program children are evaluated only for their marginal effect on the canonical problem at the common horizon, not by summing descendant scores. Their historical parent ledgers permit obviation only on root/unstructured-search. The relatively large residual reflects uncertain global relevance, interactions between routes, and problem-solving value not confidently attributable to either supplied program.",
+      "children": [
+        {
+          "kind": "program",
+          "id": "certified-configurations",
+          "counterfactual": "Remove the certified-configurations program and information uniquely inherited from its accepted verification and local-rigidity work. Retain the independently stated 152 lower bound and the entire rotational-symmetry program. Allow reconstruction of verification or neighborhood analysis only when an adaptive solver finds it worthwhile.",
+          "directEffects": [
+            {
+              "threadId": "root/certified-configurations-agenda",
+              "withoutWork": "1.65",
+              "withWork": "1.00",
+              "rationale": "The program supplies durable verification infrastructure and a reproducible depth-two exclusion around eight embeddings. Because the baseline lower bound is independently known and the rigidity result is narrow, its parent-lane causal reduction is estimated at 0.65 rather than the sum of its internal child scores."
+            }
+          ],
+          "obviatedEffects": [
+            {
+              "threadId": "root/unstructured-search",
+              "withoutWork": "1.08",
+              "withWork": "1.00",
+              "rationale": "The local-rigidity certificate modestly reduces exposure to unguided shallow modifications of the known record embeddings. Most global search remains unaffected, so only 0.08 work units are assigned here."
+            }
+          ],
+          "confidence": "low",
+          "evidenceRefs": [
+            "certified-configurations",
+            "root/certified-configurations-agenda",
+            "root/unstructured-search",
+            "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "17928a941d7503ff0dc32740b707f475728300a3",
+            "certified-configurations/record-152-verification-result",
+            "certified-configurations/eight-embedding-rigidity-result",
+            "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd"
+          ]
+        },
+        {
+          "kind": "program",
+          "id": "rotational-symmetry",
+          "counterfactual": "Remove the rotational-symmetry program, including its arbitrary-center classification and rct4 modeling information. Retain all certified-configuration work. A competent solver may rederive symmetry facts, choose a different restricted model, or abandon rotational routes if their expected value is too low.",
+          "directEffects": [
+            {
+              "threadId": "root/rotational-symmetry-agenda",
+              "withoutWork": "1.75",
+              "withWork": "1.00",
+              "rationale": "The program closes the arbitrary-center rotation classification and supplies one exact restricted model. These are useful structural organization but neither resolves feasibility nor changes the certified interval, yielding a parent-lane reduction of 0.75 work units."
+            }
+          ],
+          "obviatedEffects": [
+            {
+              "threadId": "root/unstructured-search",
+              "withoutWork": "1.12",
+              "withWork": "1.00",
+              "rationale": "The classification prevents unguided investigation of impossible rotational orders and centers, while the rct4 formulation replaces some ad hoc restricted-model design. Their narrow scope leaves most unstructured global work intact; assigned reduction is 0.12."
+            }
+          ],
+          "confidence": "low",
+          "evidenceRefs": [
+            "rotational-symmetry",
+            "root/rotational-symmetry-agenda",
+            "root/unstructured-search",
+            "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+            "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "rotational-symmetry/finite-rotation-result",
+            "rotational-symmetry/rct4/encoding-result",
+            "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd"
+          ]
+        }
+      ]
+    },
+    {
+      "programId": "rotational-symmetry",
+      "unattributedWork": "0.25",
+      "rationale": "The finite-classification contribution and rct4 child program are scored on separate direct parent threads. Their historical base ledgers contain no other local threads, so no obviation is assigned. The residual covers uncertain shared symmetry setup and the uncertain replacement cost of these relatively elementary but carefully scoped formulations.",
+      "children": [
+        {
+          "kind": "contribution",
+          "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+          "counterfactual": "Remove the arbitrary-center finite-rotation lemma, its proof, and the derived cardinality-153 and cardinality-154 consequences. Retain the independently available orbit-parity facts and the rct4 subclass model, which does not classify arbitrary-center rotations. Permit a competent solver to seek a shorter equivalent classification proof.",
+          "directEffects": [
+            {
+              "threadId": "rotational-symmetry/finite-rotation-classification",
+              "withoutWork": "1.80",
+              "withWork": "1.00",
+              "rationale": "The contribution completes the specified classification line by proving rationality and finite order of the rotation matrix and applying the resulting half-turn/quarter-turn restriction. The proof is compact enough to be independently rediscovered, but it still avoids about 0.80 work units of derivation and scope checking."
+            }
+          ],
+          "obviatedEffects": [],
+          "confidence": "medium",
+          "evidenceRefs": [
+            "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+            "rotational-symmetry/finite-rotation-classification",
+            "rotational-symmetry/finite-rotation-result",
+            "rotational-symmetry/finite-rotation-proof",
+            "sha256:471c7800e63ce6bb749608b6f9c6c668822275c6e4796b8e64bbd7f63f37833a",
+            "sha256:515d9727f59936cb26ba0ac7b1e68a844cc30e3662d747fb214064cd466d75c1"
+          ]
+        },
+        {
+          "kind": "program",
+          "id": "rotational-symmetry/rct4",
+          "counterfactual": "Remove the rct4 child program and its uniquely inherited exact encoding information. Retain the finite-rotation classification, which identifies possible half-turn symmetry but neither defines nor solves the stricter rct4 subclass. Allow substitution of another restricted model or abandonment of this subclass.",
+          "directEffects": [
+            {
+              "threadId": "rotational-symmetry/rct4-subclass-models",
+              "withoutWork": "1.60",
+              "withWork": "1.00",
+              "rationale": "At the immediate parent edge, the program contributes a precise, searchable formulation for one strict subclass. Its effect is discounted because it supplies no feasibility result and covers neither all centered half-turn sets nor asymmetric sets. The estimated parent-thread reduction is 0.60, independent of the child's internal allocation score."
+            }
+          ],
+          "obviatedEffects": [],
+          "confidence": "medium",
+          "evidenceRefs": [
+            "rotational-symmetry/rct4",
+            "rotational-symmetry/rct4-subclass-models",
+            "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "rotational-symmetry/rct4/encoding-result",
+            "rotational-symmetry/rct4/orbit-line-encoding-method",
+            "sha256:c4463a9cacd5427f287bdb7239066657965cbb97abd1056b2869f35ef884de8c"
+          ]
+        }
+      ]
+    },
+    {
+      "programId": "rotational-symmetry/rct4",
+      "unattributedWork": "0.15",
+      "rationale": "The sole accepted child receives credit for completing the exact Boolean-encoding line. Its historical base ledger contains no other threads, precluding obviated-work claims. A small residual preserves uncertainty about prior subclass design and setup not uniquely attributable to the accepted atomic theorem.",
+      "children": [
+        {
+          "kind": "contribution",
+          "id": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+          "counterfactual": "Remove the sound-and-complete Boolean encoding theorem and orbit-line method. Retain the independently available broader rotational classification and the bare objective of investigating rct4. A competent solver may reconstruct an equivalent SAT, ILP, or CP formulation rather than reproduce this encoding verbatim.",
+          "directEffects": [
+            {
+              "threadId": "rotational-symmetry/rct4/boolean-encoding",
+              "withoutWork": "1.75",
+              "withWork": "1.00",
+              "rationale": "The contribution establishes the exact variable partition, cardinality equations, and maximal-line inequalities with a completeness proof. It avoids about 0.75 work units of formulation and correctness checking, net of the substantial feasibility search still required after the encoding."
+            }
+          ],
+          "obviatedEffects": [],
+          "confidence": "medium",
+          "evidenceRefs": [
+            "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "rotational-symmetry/rct4/boolean-encoding",
+            "rotational-symmetry/rct4/encoding-result",
+            "rotational-symmetry/rct4/orbit-line-encoding-method",
+            "sha256:c4463a9cacd5427f287bdb7239066657965cbb97abd1056b2869f35ef884de8c",
+            "sha256:528f61614dd026e6572e1aec9675dd435030e47721ed67847034b88ee117099f"
+          ]
+        }
+      ]
+    }
+  ]
+}

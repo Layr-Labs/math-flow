@@ -1,0 +1,598 @@
+{
+  "schemaVersion": 1,
+  "problemId": "no-three-in-line-77",
+  "programStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+  "horizonStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+  "baseCreditStateDigest": null,
+  "evaluations": {
+    "certified-configurations": {
+      "programId": "certified-configurations",
+      "unattributedWork": "0.2",
+      "unattributedShare": {
+        "numerator": "0.2",
+        "denominator": "1.5"
+      },
+      "unattributedHorizonStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+      "rationale": "Work is measured in the ledger's normalized exposure units, with each horizon thread's with-child exposure anchored at 1.00. Both contribution-level historical base ledgers are empty, so no obviated effect is assigned. The residual preserves uncertainty about shared certificate setup and how cheaply a competent solver could reconstruct the scoped computations.",
+      "children": [
+        {
+          "kind": "contribution",
+          "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+          "referenceBaseStateDigest": "sha256:f532d0f33a7c739004759640eb44fe79d320f65952a343f7d401737c236df55e",
+          "referencePostStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+          "referenceBaseThreads": [],
+          "referencePostThreads": [
+            {
+              "id": "certified-configurations/local-rigidity",
+              "title": "Local rigidity of certified embeddings",
+              "summary": "Exact analysis of bounded modification neighborhoods around specified embeddings of certified configurations.",
+              "kind": "research",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:eaadf117514f95322e60ad85358ad8f9888f5fa9d870ba7ffdc54dcd9a6dc408"
+            },
+            {
+              "id": "certified-configurations/record-verification",
+              "title": "Replayable verification of record configurations",
+              "summary": "Exact certificate decoding, determinant checking, and governed replay for established lower-bound configurations.",
+              "kind": "verification",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:448b5c29e5c53c390b641b5ff2bbfaf44e539b7aa5dc22051f58e54e0f54d984"
+            },
+            {
+              "id": "certified-configurations/unstructured-search",
+              "title": "Unstructured configuration work",
+              "summary": "Future configuration-certificate or local-neighborhood work not yet assigned to a more specific thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:34a88fb1900dddc125b767906a8e143b6bea455d9d7e6ffda65fe16c4a4e80f4"
+            }
+          ],
+          "horizonStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+          "horizonLedgerHead": "17928a941d7503ff0dc32740b707f475728300a3",
+          "counterfactual": "Remove the pinned checker, certificate copy, governed replay request, and resulting objective attestation. Retain the independently known 152-point lower bound, earlier certificate provenance, and the later rigidity contribution's self-contained recheck. A competent solver can therefore reconstruct only the missing durable verification infrastructure rather than rediscover the configuration.",
+          "directEffects": [
+            {
+              "threadId": "certified-configurations/record-verification",
+              "withoutWork": "1.4",
+              "withWork": "1",
+              "rationale": "The contribution avoids a modest but concrete amount of checker reconstruction, exact determinant replay, packaging, and attestation work. Its value is limited because the 152-point configuration and lower bound were independently available; the causal reduction is 0.40 work units."
+            }
+          ],
+          "obviatedEffects": [],
+          "directWork": "0.4",
+          "obviatedWork": "0",
+          "totalWork": "0.4",
+          "confidence": "medium",
+          "evidenceRefs": [
+            "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "certified-configurations/record-152-verification-result",
+            "certified-configurations/record-152-verifier",
+            "certified-configurations/record-verification",
+            "sha256:2c30e85cbe4588ba3cb4ee952e0b895347cfcd48c59a3731d92257c11978d386",
+            "sha256:e30ec607c35bad20ceb46a23bb736e1d372fe6ccdd4ff7033bead30f23f0544a"
+          ],
+          "allocationShare": {
+            "numerator": "0.4",
+            "denominator": "1.5"
+          }
+        },
+        {
+          "kind": "contribution",
+          "id": "17928a941d7503ff0dc32740b707f475728300a3",
+          "referenceBaseStateDigest": "sha256:f532d0f33a7c739004759640eb44fe79d320f65952a343f7d401737c236df55e",
+          "referencePostStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+          "referenceBaseThreads": [],
+          "referencePostThreads": [
+            {
+              "id": "certified-configurations/local-rigidity",
+              "title": "Local rigidity of certified embeddings",
+              "summary": "Exact analysis of bounded modification neighborhoods around specified embeddings of certified configurations.",
+              "kind": "research",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:eaadf117514f95322e60ad85358ad8f9888f5fa9d870ba7ffdc54dcd9a6dc408"
+            },
+            {
+              "id": "certified-configurations/record-verification",
+              "title": "Replayable verification of record configurations",
+              "summary": "Exact certificate decoding, determinant checking, and governed replay for established lower-bound configurations.",
+              "kind": "verification",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:448b5c29e5c53c390b641b5ff2bbfaf44e539b7aa5dc22051f58e54e0f54d984"
+            },
+            {
+              "id": "certified-configurations/unstructured-search",
+              "title": "Unstructured configuration work",
+              "summary": "Future configuration-certificate or local-neighborhood work not yet assigned to a more specific thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:34a88fb1900dddc125b767906a8e143b6bea455d9d7e6ffda65fe16c4a4e80f4"
+            }
+          ],
+          "horizonStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+          "horizonLedgerHead": "17928a941d7503ff0dc32740b707f475728300a3",
+          "counterfactual": "Remove the eight-embedding blocking census, depth-two deletion result, verifier, and information uniquely inherited from them. Retain the independently available 152-point certificate and lower-bound verification. A competent solver may rebuild an exact line-census or pair-line computation rather than repeat the historical implementation literally.",
+          "directEffects": [
+            {
+              "threadId": "certified-configurations/local-rigidity",
+              "withoutWork": "1.9",
+              "withWork": "1",
+              "rationale": "Without the contribution, the scoped local-rigidity question remains to be formulated, exhaustively computed, cross-checked, and verified for eight embeddings. The reusable exact verifier and complete census avoid about 0.90 work units even though the result is negative and strictly local."
+            }
+          ],
+          "obviatedEffects": [],
+          "directWork": "0.9",
+          "obviatedWork": "0",
+          "totalWork": "0.9",
+          "confidence": "medium",
+          "evidenceRefs": [
+            "17928a941d7503ff0dc32740b707f475728300a3",
+            "certified-configurations/eight-embedding-rigidity-result",
+            "certified-configurations/eight-embedding-rigidity-computation",
+            "certified-configurations/eight-embedding-rigidity-verifier",
+            "certified-configurations/local-rigidity",
+            "sha256:491b9b543314f9ab034e6eb52d7ad8f927d47ccc6ef5908b9be74149187f42ea",
+            "sha256:07ca42e610421fd1fc8157444b9cf85de8a8a39114072a67cbe80169b434faf8"
+          ],
+          "allocationShare": {
+            "numerator": "0.9",
+            "denominator": "1.5"
+          }
+        }
+      ],
+      "digest": "sha256:6bed9485936c64814c06b0c8ceb781ea64b7f43eebe419075b1820b86b93f79b"
+    },
+    "root": {
+      "programId": "root",
+      "unattributedWork": "0.6",
+      "unattributedShare": {
+        "numerator": "0.6",
+        "denominator": "2.2"
+      },
+      "unattributedHorizonStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+      "rationale": "The two program children are evaluated only for their marginal effect on the canonical problem at the common horizon, not by summing descendant scores. Their historical parent ledgers permit obviation only on root/unstructured-search. The relatively large residual reflects uncertain global relevance, interactions between routes, and problem-solving value not confidently attributable to either supplied program.",
+      "children": [
+        {
+          "kind": "program",
+          "id": "certified-configurations",
+          "referenceBaseStateDigest": "sha256:f532d0f33a7c739004759640eb44fe79d320f65952a343f7d401737c236df55e",
+          "referencePostStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+          "referenceBaseThreads": [
+            {
+              "id": "root/unstructured-search",
+              "title": "Unstructured search and overhead",
+              "summary": "Future work not yet assigned to a more specific research thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+            }
+          ],
+          "referencePostThreads": [
+            {
+              "id": "root/certified-configurations-agenda",
+              "title": "Certified configurations and their neighborhoods",
+              "summary": "Parent lane for exact configuration certificates, lower-bound verification, and local rigidity analysis.",
+              "kind": "research",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:b2c555da7d00fc871ed2d83c3c6287d4fec6dbeb168eba1707601fb972a5c4db"
+            },
+            {
+              "id": "root/rotational-symmetry-agenda",
+              "title": "Rotational symmetry and restricted models",
+              "summary": "Parent lane for rotation classifications and exact models of rotationally restricted configuration classes.",
+              "kind": "research",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:af78974e06bdb8d956a85a9117059ceff74503a3a2034c90cb3fbd6594ee358d"
+            },
+            {
+              "id": "root/unstructured-search",
+              "title": "Unstructured search and overhead",
+              "summary": "Future work not yet assigned to a more specific research thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+            }
+          ],
+          "horizonStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+          "horizonLedgerHead": "17928a941d7503ff0dc32740b707f475728300a3",
+          "counterfactual": "Remove the certified-configurations program and information uniquely inherited from its accepted verification and local-rigidity work. Retain the independently stated 152 lower bound and the entire rotational-symmetry program. Allow reconstruction of verification or neighborhood analysis only when an adaptive solver finds it worthwhile.",
+          "directEffects": [
+            {
+              "threadId": "root/certified-configurations-agenda",
+              "withoutWork": "1.65",
+              "withWork": "1",
+              "rationale": "The program supplies durable verification infrastructure and a reproducible depth-two exclusion around eight embeddings. Because the baseline lower bound is independently known and the rigidity result is narrow, its parent-lane causal reduction is estimated at 0.65 rather than the sum of its internal child scores."
+            }
+          ],
+          "obviatedEffects": [
+            {
+              "threadId": "root/unstructured-search",
+              "withoutWork": "1.08",
+              "withWork": "1",
+              "rationale": "The local-rigidity certificate modestly reduces exposure to unguided shallow modifications of the known record embeddings. Most global search remains unaffected, so only 0.08 work units are assigned here."
+            }
+          ],
+          "directWork": "0.65",
+          "obviatedWork": "0.08",
+          "totalWork": "0.73",
+          "confidence": "low",
+          "evidenceRefs": [
+            "certified-configurations",
+            "root/certified-configurations-agenda",
+            "root/unstructured-search",
+            "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "17928a941d7503ff0dc32740b707f475728300a3",
+            "certified-configurations/record-152-verification-result",
+            "certified-configurations/eight-embedding-rigidity-result",
+            "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd"
+          ],
+          "allocationShare": {
+            "numerator": "0.73",
+            "denominator": "2.2"
+          }
+        },
+        {
+          "kind": "program",
+          "id": "rotational-symmetry",
+          "referenceBaseStateDigest": "sha256:f532d0f33a7c739004759640eb44fe79d320f65952a343f7d401737c236df55e",
+          "referencePostStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+          "referenceBaseThreads": [
+            {
+              "id": "root/unstructured-search",
+              "title": "Unstructured search and overhead",
+              "summary": "Future work not yet assigned to a more specific research thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+            }
+          ],
+          "referencePostThreads": [
+            {
+              "id": "root/certified-configurations-agenda",
+              "title": "Certified configurations and their neighborhoods",
+              "summary": "Parent lane for exact configuration certificates, lower-bound verification, and local rigidity analysis.",
+              "kind": "research",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:b2c555da7d00fc871ed2d83c3c6287d4fec6dbeb168eba1707601fb972a5c4db"
+            },
+            {
+              "id": "root/rotational-symmetry-agenda",
+              "title": "Rotational symmetry and restricted models",
+              "summary": "Parent lane for rotation classifications and exact models of rotationally restricted configuration classes.",
+              "kind": "research",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:af78974e06bdb8d956a85a9117059ceff74503a3a2034c90cb3fbd6594ee358d"
+            },
+            {
+              "id": "root/unstructured-search",
+              "title": "Unstructured search and overhead",
+              "summary": "Future work not yet assigned to a more specific research thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+            }
+          ],
+          "horizonStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+          "horizonLedgerHead": "17928a941d7503ff0dc32740b707f475728300a3",
+          "counterfactual": "Remove the rotational-symmetry program, including its arbitrary-center classification and rct4 modeling information. Retain all certified-configuration work. A competent solver may rederive symmetry facts, choose a different restricted model, or abandon rotational routes if their expected value is too low.",
+          "directEffects": [
+            {
+              "threadId": "root/rotational-symmetry-agenda",
+              "withoutWork": "1.75",
+              "withWork": "1",
+              "rationale": "The program closes the arbitrary-center rotation classification and supplies one exact restricted model. These are useful structural organization but neither resolves feasibility nor changes the certified interval, yielding a parent-lane reduction of 0.75 work units."
+            }
+          ],
+          "obviatedEffects": [
+            {
+              "threadId": "root/unstructured-search",
+              "withoutWork": "1.12",
+              "withWork": "1",
+              "rationale": "The classification prevents unguided investigation of impossible rotational orders and centers, while the rct4 formulation replaces some ad hoc restricted-model design. Their narrow scope leaves most unstructured global work intact; assigned reduction is 0.12."
+            }
+          ],
+          "directWork": "0.75",
+          "obviatedWork": "0.12",
+          "totalWork": "0.87",
+          "confidence": "low",
+          "evidenceRefs": [
+            "rotational-symmetry",
+            "root/rotational-symmetry-agenda",
+            "root/unstructured-search",
+            "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+            "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "rotational-symmetry/finite-rotation-result",
+            "rotational-symmetry/rct4/encoding-result",
+            "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd"
+          ],
+          "allocationShare": {
+            "numerator": "0.87",
+            "denominator": "2.2"
+          }
+        }
+      ],
+      "digest": "sha256:0e1d4fca0b7ca40747a05a3bf9cd5a6090f55902584de94dab178f8e21f10d1b"
+    },
+    "rotational-symmetry": {
+      "programId": "rotational-symmetry",
+      "unattributedWork": "0.25",
+      "unattributedShare": {
+        "numerator": "0.25",
+        "denominator": "1.65"
+      },
+      "unattributedHorizonStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+      "rationale": "The finite-classification contribution and rct4 child program are scored on separate direct parent threads. Their historical base ledgers contain no other local threads, so no obviation is assigned. The residual covers uncertain shared symmetry setup and the uncertain replacement cost of these relatively elementary but carefully scoped formulations.",
+      "children": [
+        {
+          "kind": "contribution",
+          "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+          "referenceBaseStateDigest": "sha256:f532d0f33a7c739004759640eb44fe79d320f65952a343f7d401737c236df55e",
+          "referencePostStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+          "referenceBaseThreads": [],
+          "referencePostThreads": [
+            {
+              "id": "rotational-symmetry/finite-rotation-classification",
+              "title": "Finite rotation classification",
+              "summary": "Classify nonidentity Euclidean rotations preserving finite noncollinear lattice sets and apply the classification at cardinalities 153 and 154.",
+              "kind": "research",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:a92b96c54482dad45ebfcf874786416a30f01bb9d801e2f3158a75b139530951"
+            },
+            {
+              "id": "rotational-symmetry/rct4-subclass-models",
+              "title": "rct4 subclass models",
+              "summary": "Parent lane for the specialized objective of exact modeling and feasibility investigation within the rct4 subclass.",
+              "kind": "research",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:7bd4ddc7fd4c49e843becf06d6551ef354da02be4d20fb8362b04ddd0126defe"
+            },
+            {
+              "id": "rotational-symmetry/unstructured-search",
+              "title": "Unstructured rotational-symmetry work",
+              "summary": "Future rotational-symmetry work not yet assigned to a more specific thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:01e353fc491ab73570c785444e0d4d8452f4fc48d39fbc1af62b1379d39a81a1"
+            }
+          ],
+          "horizonStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+          "horizonLedgerHead": "17928a941d7503ff0dc32740b707f475728300a3",
+          "counterfactual": "Remove the arbitrary-center finite-rotation lemma, its proof, and the derived cardinality-153 and cardinality-154 consequences. Retain the independently available orbit-parity facts and the rct4 subclass model, which does not classify arbitrary-center rotations. Permit a competent solver to seek a shorter equivalent classification proof.",
+          "directEffects": [
+            {
+              "threadId": "rotational-symmetry/finite-rotation-classification",
+              "withoutWork": "1.8",
+              "withWork": "1",
+              "rationale": "The contribution completes the specified classification line by proving rationality and finite order of the rotation matrix and applying the resulting half-turn/quarter-turn restriction. The proof is compact enough to be independently rediscovered, but it still avoids about 0.80 work units of derivation and scope checking."
+            }
+          ],
+          "obviatedEffects": [],
+          "directWork": "0.8",
+          "obviatedWork": "0",
+          "totalWork": "0.8",
+          "confidence": "medium",
+          "evidenceRefs": [
+            "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+            "rotational-symmetry/finite-rotation-classification",
+            "rotational-symmetry/finite-rotation-result",
+            "rotational-symmetry/finite-rotation-proof",
+            "sha256:471c7800e63ce6bb749608b6f9c6c668822275c6e4796b8e64bbd7f63f37833a",
+            "sha256:515d9727f59936cb26ba0ac7b1e68a844cc30e3662d747fb214064cd466d75c1"
+          ],
+          "allocationShare": {
+            "numerator": "0.8",
+            "denominator": "1.65"
+          }
+        },
+        {
+          "kind": "program",
+          "id": "rotational-symmetry/rct4",
+          "referenceBaseStateDigest": "sha256:f532d0f33a7c739004759640eb44fe79d320f65952a343f7d401737c236df55e",
+          "referencePostStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+          "referenceBaseThreads": [],
+          "referencePostThreads": [
+            {
+              "id": "rotational-symmetry/finite-rotation-classification",
+              "title": "Finite rotation classification",
+              "summary": "Classify nonidentity Euclidean rotations preserving finite noncollinear lattice sets and apply the classification at cardinalities 153 and 154.",
+              "kind": "research",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:a92b96c54482dad45ebfcf874786416a30f01bb9d801e2f3158a75b139530951"
+            },
+            {
+              "id": "rotational-symmetry/rct4-subclass-models",
+              "title": "rct4 subclass models",
+              "summary": "Parent lane for the specialized objective of exact modeling and feasibility investigation within the rct4 subclass.",
+              "kind": "research",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:7bd4ddc7fd4c49e843becf06d6551ef354da02be4d20fb8362b04ddd0126defe"
+            },
+            {
+              "id": "rotational-symmetry/unstructured-search",
+              "title": "Unstructured rotational-symmetry work",
+              "summary": "Future rotational-symmetry work not yet assigned to a more specific thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:01e353fc491ab73570c785444e0d4d8452f4fc48d39fbc1af62b1379d39a81a1"
+            }
+          ],
+          "horizonStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+          "horizonLedgerHead": "17928a941d7503ff0dc32740b707f475728300a3",
+          "counterfactual": "Remove the rct4 child program and its uniquely inherited exact encoding information. Retain the finite-rotation classification, which identifies possible half-turn symmetry but neither defines nor solves the stricter rct4 subclass. Allow substitution of another restricted model or abandonment of this subclass.",
+          "directEffects": [
+            {
+              "threadId": "rotational-symmetry/rct4-subclass-models",
+              "withoutWork": "1.6",
+              "withWork": "1",
+              "rationale": "At the immediate parent edge, the program contributes a precise, searchable formulation for one strict subclass. Its effect is discounted because it supplies no feasibility result and covers neither all centered half-turn sets nor asymmetric sets. The estimated parent-thread reduction is 0.60, independent of the child's internal allocation score."
+            }
+          ],
+          "obviatedEffects": [],
+          "directWork": "0.6",
+          "obviatedWork": "0",
+          "totalWork": "0.6",
+          "confidence": "medium",
+          "evidenceRefs": [
+            "rotational-symmetry/rct4",
+            "rotational-symmetry/rct4-subclass-models",
+            "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "rotational-symmetry/rct4/encoding-result",
+            "rotational-symmetry/rct4/orbit-line-encoding-method",
+            "sha256:c4463a9cacd5427f287bdb7239066657965cbb97abd1056b2869f35ef884de8c"
+          ],
+          "allocationShare": {
+            "numerator": "0.6",
+            "denominator": "1.65"
+          }
+        }
+      ],
+      "digest": "sha256:49da42d9f86992d609f2f756aa1428bbf5f6542d4122572617e6709026752972"
+    },
+    "rotational-symmetry/rct4": {
+      "programId": "rotational-symmetry/rct4",
+      "unattributedWork": "0.15",
+      "unattributedShare": {
+        "numerator": "0.15",
+        "denominator": "0.9"
+      },
+      "unattributedHorizonStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+      "rationale": "The sole accepted child receives credit for completing the exact Boolean-encoding line. Its historical base ledger contains no other threads, precluding obviated-work claims. A small residual preserves uncertainty about prior subclass design and setup not uniquely attributable to the accepted atomic theorem.",
+      "children": [
+        {
+          "kind": "contribution",
+          "id": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+          "referenceBaseStateDigest": "sha256:f532d0f33a7c739004759640eb44fe79d320f65952a343f7d401737c236df55e",
+          "referencePostStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+          "referenceBaseThreads": [],
+          "referencePostThreads": [
+            {
+              "id": "rotational-symmetry/rct4/boolean-encoding",
+              "title": "Sound and complete Boolean encodings",
+              "summary": "Exact orbit-variable and maximal-line formulations for the explicitly defined rct4 subclass.",
+              "kind": "verification",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:421f6e27593dd1d3576d73fc778b872132c1601e71bd8a58eed43c51ea38d120"
+            },
+            {
+              "id": "rotational-symmetry/rct4/unstructured-search",
+              "title": "Unstructured rct4 work",
+              "summary": "Future rct4-subclass work not yet assigned to a more specific thread.",
+              "kind": "unstructured",
+              "status": "active",
+              "expectedExposure": "1",
+              "conditions": [],
+              "digest": "sha256:28b741dbb5150cd1b035d30b2a6c188709abe2b2f96dd62b46e30659b5552117"
+            }
+          ],
+          "horizonStateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+          "horizonLedgerHead": "17928a941d7503ff0dc32740b707f475728300a3",
+          "counterfactual": "Remove the sound-and-complete Boolean encoding theorem and orbit-line method. Retain the independently available broader rotational classification and the bare objective of investigating rct4. A competent solver may reconstruct an equivalent SAT, ILP, or CP formulation rather than reproduce this encoding verbatim.",
+          "directEffects": [
+            {
+              "threadId": "rotational-symmetry/rct4/boolean-encoding",
+              "withoutWork": "1.75",
+              "withWork": "1",
+              "rationale": "The contribution establishes the exact variable partition, cardinality equations, and maximal-line inequalities with a completeness proof. It avoids about 0.75 work units of formulation and correctness checking, net of the substantial feasibility search still required after the encoding."
+            }
+          ],
+          "obviatedEffects": [],
+          "directWork": "0.75",
+          "obviatedWork": "0",
+          "totalWork": "0.75",
+          "confidence": "medium",
+          "evidenceRefs": [
+            "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "rotational-symmetry/rct4/boolean-encoding",
+            "rotational-symmetry/rct4/encoding-result",
+            "rotational-symmetry/rct4/orbit-line-encoding-method",
+            "sha256:c4463a9cacd5427f287bdb7239066657965cbb97abd1056b2869f35ef884de8c",
+            "sha256:528f61614dd026e6572e1aec9675dd435030e47721ed67847034b88ee117099f"
+          ],
+          "allocationShare": {
+            "numerator": "0.75",
+            "denominator": "0.9"
+          }
+        }
+      ],
+      "digest": "sha256:c89740097bca7961b94dcb3e2c30c44b38119df15b6d4362f82c654291d0875b"
+    }
+  },
+  "allocations": {
+    "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0": {
+      "numerator": "0.292",
+      "denominator": "3.3"
+    },
+    "17928a941d7503ff0dc32740b707f475728300a3": {
+      "numerator": "0.657",
+      "denominator": "3.3"
+    },
+    "29ccbd396781fd36d436ed2e6d0952a4730361b9": {
+      "numerator": "0.696",
+      "denominator": "3.63"
+    },
+    "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d": {
+      "numerator": "0.3915",
+      "denominator": "3.267"
+    }
+  },
+  "residualAllocations": {
+    "root": {
+      "numerator": "0.6",
+      "denominator": "2.2"
+    },
+    "certified-configurations": {
+      "numerator": "0.146",
+      "denominator": "3.3"
+    },
+    "rotational-symmetry": {
+      "numerator": "0.2175",
+      "denominator": "3.63"
+    },
+    "rotational-symmetry/rct4": {
+      "numerator": "0.0783",
+      "denominator": "3.267"
+    }
+  },
+  "stateDigest": "sha256:9afe5e37893d48afa1c591a84fc1aa0c73f418c03ee7411ec0d49a9c9db009bb"
+}
