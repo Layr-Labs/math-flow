@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "entityKind": "thread",
+      "entityId": "root/theorem9-cited-premise-foundations",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-cited-premise-foundations",
+        "programId": "root",
+        "title": "Conditional Theorem 9 specialization and receiver marginalization",
+        "summary": "Premise-bounded specialization of the cited Gohari--Liu--Nair Theorem 9 system to private messages, including the exact 30-row expansion, input-only product-marginal reduction, conditional capacity-bound formulation, and Q0-supported local-value foundations.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/result/theorem9-cited-premise-foundations",
+      "baseDigest": null,
+      "value": {
+        "id": "root/result/theorem9-cited-premise-foundations",
+        "programId": "root",
+        "type": "result",
+        "title": "Conditional Theorem 9 private-message foundations",
+        "summary": "Assume the cited Gohari--Liu--Nair Theorem 9 outer-bound premise exactly as encoded in theorem9_spec.json and displayed for review in SOURCE_TRANSCRIPTION.md: for every finite auxiliary-receiver law T_{G,K|X,Y,Z}, achievable rates obey the stated factorization, equations (19a)-(19p), and both side conditions. Then setting R0=0 and exhaustively expanding the displayed minima and interval conditions gives exactly the independently generated local 30-row system; the exhaustive single-output term audit proves that replacing G,K by their input-only product marginals preserves the entire system, and hence for the physical BSSC C_sum <= inf_{finite-output binary-input T_{G|X},T_{K|X}} B(G,K). With the explicit extended-real local definitions (including sup(empty set)=-infinity), V_Q(G,K) <= V(1/2;G,K) <= B(G,K), and every Q0-supported row depends on the receiver channels only through (c,g,k,c), making V_0(g,k) finite and well defined on its realizable (g,k)-domain. No PDF-origin, source-fidelity, rendering, or visual-semantic assertion is part of this claim.\n\nScope qualifications:\n- The verdict does not authenticate the external theorem, manuscript, PDF, transcription provenance, rendering, or source fidelity.\n- The equality attestation is limited to syntactic and algebraic equality of the pinned encoded systems.\n- The product-marginal reduction relies on the audited system containing only single-output G or K information terms, with no joint (G,K) term and no conditioning of one receiver output on another.\n- The capacity conclusion is conditional on the premise's quantifier structure: one prior for each achievable rate pair works for every finite auxiliary-receiver law, with an appropriate finite hierarchy for each law.\n- Finiteness and well-definedness of V_0(g,k) are asserted only on the realizable (g,k)-domain.",
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/proof/theorem9-cited-premise-foundations",
+      "baseDigest": null,
+      "value": {
+        "id": "root/proof/theorem9-cited-premise-foundations",
+        "programId": "root",
+        "type": "proof",
+        "title": "Proof of the conditional Theorem 9 specialization and marginalization",
+        "summary": "Proof record bounded to `root/result/theorem9-cited-premise-foundations`. Starting from the explicitly assumed Theorem 9 system, the proof sets R0=0, expands each minimum and both interval side conditions, and compares the resulting 30 rows term by term with an independently generated three-receiver-path system. It exhaustively audits the output-bearing information terms and uses their single-output form to show that replacing an arbitrary admitted auxiliary-receiver law by the product of its input-conditioned G and K marginals preserves every row and side condition. It then applies the premise's stated quantifier and optimization order to obtain the conditional capacity inequality, obtains V_Q(G,K) <= V(1/2;G,K) <= B(G,K) by restriction and definition, and uses posterior mutual-information identities on Q0={0,1/2,1} to establish the accepted dependence and finiteness statement for V_0(g,k). This proof does not authenticate or re-prove the cited Theorem 9 premise and establishes no numerical bound, receiver-cardinality theorem, or continuum limit.",
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/tool/theorem9-specialization-audit",
+      "baseDigest": null,
+      "value": {
+        "id": "root/tool/theorem9-specialization-audit",
+        "programId": "root",
+        "type": "tool",
+        "title": "Exact checker for the premise-bounded Theorem 9 specialization",
+        "summary": "A standard-library exact checker associated only with the accepted conditional foundations result. It reads the pinned structured premise, verifies its factorization, 16 equation labels, and two side conditions, expands the private-message system, independently generates the local path rows, compares all 30 rows using only the stated chain-rule normalizations, and audits the exhaustive single-output term whitelist. It reads no PDF, performs no numerical optimization, and does not authenticate the external theorem or its transcription provenance. The tool is corroborative and is not an independently accepted mathematical claim or a reinterpretation of an execution attestation.",
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": []
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+      "claimKeys": [
+        "bssc-sum-capacity/theorem9-cited-premise-foundations"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/theorem9-cited-premise-foundations"
+      ],
+      "itemIds": [
+        "root/result/theorem9-cited-premise-foundations",
+        "root/proof/theorem9-cited-premise-foundations",
+        "root/tool/theorem9-specialization-audit"
+      ]
+    }
+  ]
+}

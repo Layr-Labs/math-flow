@@ -1,0 +1,103 @@
+{
+  "protocolVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+  "problemLedgerHead": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+  "problemLedgerDigest": "sha256:93861b5be5b000bcc4874d7036a31b95ff60696f51e16e4995eb5fc9c39c1655",
+  "judgeSpec": {
+    "id": "openrouter-hierarchical-research-builder-v4",
+    "digest": "sha256:a100a3b22008298520ad2a33661c2d360b9a95da2d3adf3e818980245736d4a5"
+  },
+  "runner": {
+    "implementation": "openrouter-hierarchical-research-builder-v4",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "accepted-validity-batch-program-state-v4",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "structured-research-batch-v4",
+    "reducer": "batched-research-state-v4"
+  },
+  "baseRun": "sha256:bbe5536e176a7f915f97de24f2c13e659e0391fbc664303a10e468fe972d7f5e",
+  "outputProfile": "math-flow/hierarchical-research-v4",
+  "requestDigests": [
+    "sha256:64f84cd78ab6c029b3494c420631fbb0634aa5baf601723c72477b4f8873fd12"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "organize",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787240796-YvPJdTSaAmmQwyyEBEHg",
+      "usage": {
+        "prompt_tokens": 25010,
+        "completion_tokens": 3122,
+        "total_tokens": 28132,
+        "cost": 0.11988125,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 1775,
+          "cache_write_tokens": 23232,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.11988125,
+          "upstream_inference_prompt_cost": 0.07305125,
+          "upstream_inference_completions_cost": 0.04683
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1604,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "knowledge-build",
+  "inputs": {
+    "laneId": "sha256:55011fd1b4b86c5045e8856ff405bff8491666be2df8c409b00fef1f54b2b7e3",
+    "judgmentIds": [
+      "sha256:e89563be428ced06af2609c5de6d0e18b9f6332c77c62ab4c122a85a9e238daa"
+    ],
+    "problemId": "bssc-sum-capacity",
+    "baseStateRun": "sha256:bbe5536e176a7f915f97de24f2c13e659e0391fbc664303a10e468fe972d7f5e",
+    "conflictIds": [],
+    "schemaVersion": 1,
+    "builderSpecDigest": "sha256:a100a3b22008298520ad2a33661c2d360b9a95da2d3adf3e818980245736d4a5",
+    "judgmentSetDigest": "sha256:035aa45786d0d20b81598dd395e2fdeae308a6e279ab2a2fc3a47d4cac9871cb",
+    "projectionSpecDigest": "sha256:295fa29fb5c7d4339c73652161bfc4d6d9d24048b929fd9696769570a37e4bd3",
+    "buildToken": "sha256:90c42be3cfa8fcdc99711807d41c7313a8ae7b240afae695c71242223ac7782e"
+  },
+  "artifacts": [
+    {
+      "path": "control/build-input.json",
+      "role": "knowledge-build-input",
+      "mediaType": "application/json",
+      "digest": "sha256:a1c40859ce5a219fa0b49d9e407bbd164011b772db0141c8f1cd5729f1a38491",
+      "bytes": 752
+    },
+    {
+      "path": "input/research-batch.json",
+      "role": "research-batch-input",
+      "mediaType": "application/json",
+      "digest": "sha256:ca3e96e79e50271dceb8cb0de313e576b8bfb11b1b976e8561575d7ceb591e37",
+      "bytes": 594
+    },
+    {
+      "path": "state/delta.json",
+      "role": "research-program-delta",
+      "mediaType": "application/json",
+      "digest": "sha256:febf6052faa9cd440f3687464393f67f76b6547abb6221c0c3a979acd8c3a6c2",
+      "bytes": 7119
+    },
+    {
+      "path": "state/state.json",
+      "role": "research-program-state",
+      "mediaType": "application/json",
+      "digest": "sha256:fd1306c040c3487bf209bef43c13f686f7c361c429b30bcd86bec8cb6cd0797d",
+      "bytes": 29261
+    }
+  ]
+}
