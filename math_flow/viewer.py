@@ -14,13 +14,19 @@ from .governance import projection_registry_index
 from .knowledge import validate_state_v2, validate_state_v3
 from .problem_registry import active_problem_ids
 from .repository import ledger, read_at
-from .research_state import validate_research_program_state
+from .research_state import (
+    empty_research_program_state,
+    validate_research_program_state,
+    validate_research_program_v5_batch_binding,
+    validate_research_program_v5_transition_shape,
+)
 
 
 HIERARCHICAL_RESEARCH_OUTPUT_PROFILES = {
     "math-flow/hierarchical-research-v2",
     "math-flow/hierarchical-research-v3",
     "math-flow/hierarchical-research-v4",
+    "math-flow/hierarchical-research-v5",
 }
 
 
@@ -328,6 +334,9 @@ def _export_research_viewer_data(
     runs: list[dict[str, object]] = []
     previous_digest: str | None = None
     previous_nodes: dict[str, dict[str, object]] = {}
+    previous_program_state: dict[str, object] | None = empty_research_program_state(
+        problem
+    )
     for ordinal, raw_bundle in enumerate(run_dirs, start=1):
         bundle = raw_bundle.resolve()
         manifest, manifest_digest = load_manifest(bundle)
@@ -344,6 +353,26 @@ def _export_research_viewer_data(
         state = _json_artifact(bundle, manifest, "research-program-state")
         validate_research_program_state(state, problem)
         delta = _json_artifact(bundle, manifest, "research-program-delta")
+        if manifest.get("outputProfile") == "math-flow/hierarchical-research-v5":
+            batch_input = _json_artifact(bundle, manifest, "research-batch-input")
+            problem_ledger_head = manifest.get("problemLedgerHead")
+            if not isinstance(problem_ledger_head, str):
+                raise MathFlowError(
+                    "viewer hierarchical research v5 run has no problem ledger head"
+                )
+            validate_research_program_v5_batch_binding(
+                batch_input,
+                delta,
+                state,
+                problem,
+                problem_ledger_head=problem_ledger_head,
+            )
+            if ordinal == 1 and manifest.get("baseRun") is not None:
+                previous_program_state = None
+            if previous_program_state is not None:
+                validate_research_program_v5_transition_shape(
+                    previous_program_state, delta, state
+                )
         nodes = _research_viewer_nodes(state, transaction_positions)
         changed_node_ids = [
             node_id
@@ -388,6 +417,7 @@ def _export_research_viewer_data(
         )
         previous_digest = manifest_digest
         previous_nodes = nodes
+        previous_program_state = state
 
     judgments_by_id: dict[str, dict[str, object]] = {}
     for judgment_dir in judgment_dirs or []:

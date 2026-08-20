@@ -547,6 +547,24 @@ class GovernanceRepositoryTests(unittest.TestCase):
         with self.assertRaisesRegex(MathFlowError, "version-matched"):
             validate_projection_registry(self.root)
 
+    def test_validity_v4_projection_accepts_additive_builder_v5(self) -> None:
+        write_json(
+            self.root / "protocol/judges/primary-v4.json",
+            {"implementation": "openrouter-validity-judgment-v4"},
+        )
+        write_json(
+            self.root / "protocol/judges/builder-v5.json",
+            {"implementation": "openrouter-hierarchical-research-builder-v5"},
+        )
+        projection = projection_spec("research-v3")
+        projection["primaryJudge"] = "protocol/judges/primary-v4.json"
+        projection["reconciliationJudge"] = None
+        projection["knowledgeBuilder"] = "protocol/judges/builder-v5.json"
+        write_json(
+            self.root / "protocol/projections/research-v3.json", projection
+        )
+        self.assertEqual(validate_projection_registry(self.root)["projections"], 1)
+
     def test_ordinary_contribution_does_not_require_governance_approval(self) -> None:
         write(
             self.root / "problems/demo/contributions/proof/README.md",

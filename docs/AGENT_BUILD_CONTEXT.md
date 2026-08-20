@@ -223,19 +223,22 @@ guards, and partial splits. Historical schema-v3 states remain readable without
 lineage fields, so existing projection histories and exact revision hashes do not
 change.
 
-The v3 taxonomy behavior is preserved in the versioned v4 builder used by the
-admitted `openrouter-research-v3` replacement lane. Earlier builder and
-projection identities remain byte-for-byte replayable; v1/v2 remain temporarily
-active comparison lanes until the governed retirement sequence completes.
+The neutral knowledge-builder v3 taxonomy supports move, reparent, split, and
+merge operations in its revision-based state representation. The separate
+hierarchical research builders v2-v4 did not port that behavior: they can create
+programs, but preserve every existing program parent, thread owner/kind, and
+item program/type. The v4 production lane therefore did not guarantee a useful
+initial hierarchy and could validly remain flat at root.
 
-The hierarchical research v1 experiment temporarily keeps program topology and
-item ownership stable so that its new local counterfactual-credit semantics can
-be evaluated independently. This is a scoped implementation deferral, not an
-architectural decision to freeze the first program taxonomy permanently. Future
-versions should restore audited move, reparent, split, and merge operations using
-append-only topology revisions, successor/retirement lineage, and deterministic
-credit invalidation or refresh for every affected local program edge. Preserve
-this evolution path when simplifying or replacing the experimental builder.
+The additive hierarchical builder v5 corrects initial formation without
+overstating topology evolution. It requires immutable placement audits, rejects
+an all-root state once at least two accepted contributions exist, and explicitly
+supports creation of sibling and nested local-objective programs. Existing
+topology remains fixed in v5. Future versions should restore audited move,
+reparent, split, and merge operations using append-only topology revisions,
+successor/retirement lineage, and deterministic credit invalidation or refresh
+for every affected local program edge. Preserve this evolution path when
+simplifying or replacing the experimental builder.
 
 Cross-program claims belong at root or another genuinely shared active scope.
 Do not duplicate a mathematical node merely because multiple programs depend on
@@ -268,7 +271,7 @@ preference.
 | Parallel primary judgments | Implemented with exact-subject automatic dispatch, same-subject queue/replan deduplication, and distinct-subject concurrency; validity v4 adds subject-and-declared-reference terminal-attestation deferral | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
 | Conflict detection and reconciliation | Implemented for legacy projections; the research-v3 validity-v4 replacement has no reconciliation stage | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
 | Coalescing, leased formation lanes | Implemented, including atomic submission-dependency components and one hosted lock spanning formation through final state publication | `math_flow/coordination.py`, `.github/workflows/project-openrouter.yml` |
-| Batched hierarchical research state | `openrouter-research-v3` is active with validity/builder v4 and current retained-problem states, preserving claim-local terminal reference attestations, judge-selected premise edges, and complete exclusion of invalid/indeterminate submissions | `math_flow/research_projection.py`, `math_flow/research_state.py`, `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md` |
+| Batched hierarchical research state | `openrouter-research-v3` is active with validity/builder v4 and current retained-problem states. Additive builder-v5 runtime support supplies audited sibling/nested initial formation and must be selected only by a later one-file governed projection edit. | `math_flow/research_projection.py`, `math_flow/research_state.py`, `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md`, `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V5.md` |
 | Holistic hierarchical state and revisions | Implemented | `math_flow/formation.py`, `math_flow/knowledge.py` |
 | Content-addressed projection publisher | Implemented, including optimistic cross-problem merge/retry and bounded GitHub commits | `math_flow/coordination.py`, `math_flow/projection_queue.py`, `math_flow/github_projection.py` |
 | Provider-free congestion probe | Implemented; models concurrent problems, solvers, judge streams, projection lanes, atomic reconciliations, throttling, failure recovery, optimistic publication, chunking, catalog export, and agent context with zero provider calls | `math_flow/scale_probe.py`, `tests/test_scale_probe.py` |
@@ -762,6 +765,8 @@ upgrade path.
 - `docs/MVP.md` — architecture, phased roadmap, and deferred decisions.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md` — current research-v3 validity,
   reference-attestation, and dependency-safe formation architecture.
+- `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V5.md` — additive audited initial
+  sibling/nested program formation and rollout boundary.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V2.md` — superseded historical
   validity-v2/builder-v2 architecture retained for replay.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V3.md` — superseded validity-v3 and

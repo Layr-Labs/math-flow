@@ -27,6 +27,7 @@ from .research_projection import (
     load_research_build_bundle,
 )
 from .research_state import (
+    apply_research_program_batch_delta_v5,
     credit_child_thread_ids,
     credit_children,
     empty_research_program_state,
@@ -236,6 +237,49 @@ def _accepted_history(
                     ],
                 }
             )
+
+        if manifest.get("outputProfile") == "math-flow/hierarchical-research-v5":
+            if (
+                batch_input.get("baseProgramStateDigest")
+                != prior_state.get("stateDigest")
+            ):
+                raise MathFlowError(
+                    "hierarchical research v5 history batch does not bind its prior state"
+                )
+            accepted_claims_by_transaction = {
+                str(record["subjectTransactionId"]): list(record["acceptedClaims"])
+                for record in accepted_records
+            }
+            judgment_ids = {
+                str(record["subjectTransactionId"]): str(record["judgmentId"])
+                for record in accepted_records
+            }
+            if accepted_claims_by_transaction:
+                problem_ledger_head = manifest.get("problemLedgerHead")
+                if not isinstance(problem_ledger_head, str):
+                    raise MathFlowError(
+                        "hierarchical research v5 history has no problem ledger head"
+                    )
+                replayed_state = apply_research_program_batch_delta_v5(
+                    prior_state,
+                    program_delta,
+                    ledger_head=problem_ledger_head,
+                    accepted_claims_by_transaction=accepted_claims_by_transaction,
+                    judgment_ids=judgment_ids,
+                )
+                if replayed_state != post_state:
+                    raise MathFlowError(
+                        "hierarchical research v5 history delta does not reproduce its post state"
+                    )
+            elif program_delta != {
+                "schemaVersion": 2,
+                "operations": [],
+                "contributions": [],
+                "placementAudits": [],
+            } or post_state != prior_state:
+                raise MathFlowError(
+                    "excluded-only hierarchical research v5 history must preserve its base state"
+                )
 
         for program_id, program in post_state["programs"].items():
             if program_id == "root" or program_id in prior_state["programs"]:

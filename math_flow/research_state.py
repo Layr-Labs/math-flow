@@ -756,6 +756,535 @@ def apply_research_program_batch_delta(
     return next_state
 
 
+def _program_is_descendant(
+    state: dict[str, object], candidate_id: str, ancestor_id: str
+) -> bool:
+    programs = state["programs"]
+    assert isinstance(programs, dict)
+    cursor: str | None = candidate_id
+    while cursor is not None:
+        if cursor == ancestor_id:
+            return True
+        program = programs.get(cursor)
+        if not isinstance(program, dict):
+            return False
+        parent = program.get("parentId")
+        cursor = str(parent) if isinstance(parent, str) else None
+    return False
+
+
+def _accepted_v5_batch_metadata(
+    value: object,
+) -> tuple[str, str, dict[str, dict[str, object]]]:
+    if not isinstance(value, dict) or set(value) != {
+        "schemaVersion",
+        "problemId",
+        "baseProgramStateDigest",
+        "judgments",
+    }:
+        raise MathFlowError("research build v5 batch input has an invalid envelope")
+    if value.get("schemaVersion") != 3:
+        raise MathFlowError("research build v5 batch input has an invalid version")
+    problem = _require_identifier(
+        value.get("problemId"), "research build v5 problem ID"
+    )
+    base_digest = value.get("baseProgramStateDigest")
+    if not isinstance(base_digest, str) or not DIGEST.fullmatch(base_digest):
+        raise MathFlowError("research build v5 batch input has an invalid base digest")
+    judgments = value.get("judgments")
+    if not isinstance(judgments, list):
+        raise MathFlowError("research build v5 batch input has invalid judgments")
+    accepted: dict[str, dict[str, object]] = {}
+    observed_subjects: set[str] = set()
+    for judgment in judgments:
+        if not isinstance(judgment, dict) or set(judgment) != {
+            "judgmentId",
+            "runDigest",
+            "subjectTransactionId",
+            "acceptedClaimKeys",
+            "excludedAssessments",
+        }:
+            raise MathFlowError("research build v5 batch input has an invalid judgment")
+        subject_transaction_id = judgment.get("subjectTransactionId")
+        judgment_id = judgment.get("judgmentId")
+        run_digest = judgment.get("runDigest")
+        if (
+            not isinstance(subject_transaction_id, str)
+            or not GIT_SHA.fullmatch(subject_transaction_id)
+            or subject_transaction_id in observed_subjects
+            or not isinstance(judgment_id, str)
+            or not DIGEST.fullmatch(judgment_id)
+            or not isinstance(run_digest, str)
+            or not DIGEST.fullmatch(run_digest)
+        ):
+            raise MathFlowError(
+                "research build v5 batch input has invalid judgment metadata"
+            )
+        observed_subjects.add(subject_transaction_id)
+        accepted_claim_keys = _require_strings(
+            judgment.get("acceptedClaimKeys"),
+            "research build v5 acceptedClaimKeys",
+        )
+        if any(not IDENTIFIER.fullmatch(item) for item in accepted_claim_keys):
+            raise MathFlowError(
+                "research build v5 batch input has an invalid accepted claim key"
+            )
+        if not isinstance(judgment.get("excludedAssessments"), list):
+            raise MathFlowError(
+                "research build v5 batch input has invalid excluded assessments"
+            )
+        if accepted_claim_keys:
+            accepted[subject_transaction_id] = {
+                "claimKeys": accepted_claim_keys,
+                "judgmentId": judgment_id,
+            }
+    return problem, base_digest, accepted
+
+
+def validate_research_program_v5_batch_binding(
+    batch_input: object,
+    delta: object,
+    post_state: dict[str, object],
+    problem: str,
+    *,
+    problem_ledger_head: str | None = None,
+) -> None:
+    batch_problem, batch_base_digest, accepted = _accepted_v5_batch_metadata(
+        batch_input
+    )
+    if batch_problem != problem or post_state.get("problemId") != problem:
+        raise MathFlowError("research build v5 batch input belongs to another problem")
+    validate_research_program_v5_delta(delta, post_state, set(accepted))
+    if accepted:
+        if post_state.get("baseStateDigest") != batch_base_digest:
+            raise MathFlowError(
+                "research build v5 batch input does not bind the post-state base"
+            )
+        if (
+            problem_ledger_head is not None
+            and post_state.get("ledgerHead") != problem_ledger_head
+        ):
+            raise MathFlowError(
+                "research build v5 post state does not match its problem ledger head"
+            )
+    elif (
+        delta
+        != {
+            "schemaVersion": 2,
+            "operations": [],
+            "contributions": [],
+            "placementAudits": [],
+        }
+        or post_state.get("stateDigest") != batch_base_digest
+    ):
+        raise MathFlowError(
+            "excluded-only research build v5 batch must preserve its base state with an empty delta"
+        )
+    assert isinstance(delta, dict)
+    contributions = delta["contributions"]
+    assert isinstance(contributions, list)
+    contribution_by_transaction = {
+        str(contribution["transactionId"]): contribution
+        for contribution in contributions
+    }
+    for transaction_id, metadata in accepted.items():
+        materialized = post_state["contributions"][transaction_id]
+        accepted_claim_keys = set(metadata["claimKeys"])
+        if (
+            set(contribution_by_transaction[transaction_id].get("claimKeys", []))
+            != accepted_claim_keys
+            or set(materialized.get("claimKeys", [])) != accepted_claim_keys
+            or materialized.get("judgmentId") != metadata["judgmentId"]
+        ):
+            raise MathFlowError(
+                "research build v5 delta does not match its accepted judgment metadata"
+            )
+
+
+def validate_research_program_v5_delta(
+    delta: object,
+    post_state: dict[str, object],
+    expected_transaction_ids: set[str] | None = None,
+) -> dict[str, object]:
+    """Validate immutable v5 placement audits against their materialized state."""
+
+    validate_research_program_state(post_state)
+    if not isinstance(delta, dict) or set(delta) != {
+        "schemaVersion",
+        "operations",
+        "contributions",
+        "placementAudits",
+    }:
+        raise MathFlowError("research program v5 delta has an invalid envelope")
+    if delta.get("schemaVersion") != 2:
+        raise MathFlowError("research program v5 delta has an unsupported version")
+    operations = delta.get("operations")
+    if not isinstance(operations, list):
+        raise MathFlowError("research program v5 operations must be an array")
+    seen_operations: set[tuple[str, str]] = set()
+    for operation in operations:
+        if not isinstance(operation, dict) or set(operation) != {
+            "entityKind",
+            "entityId",
+            "baseDigest",
+            "value",
+        }:
+            raise MathFlowError("research program v5 operation has invalid fields")
+        kind = operation.get("entityKind")
+        entity_id = operation.get("entityId")
+        base_digest = operation.get("baseDigest")
+        value = operation.get("value")
+        if kind not in {"program", "thread", "item"}:
+            raise MathFlowError("research program v5 operation has an invalid kind")
+        entity_id = _require_identifier(
+            entity_id, "research program v5 operation entity ID"
+        )
+        if (str(kind), entity_id) in seen_operations:
+            raise MathFlowError("research program v5 operation repeats an entity")
+        seen_operations.add((str(kind), entity_id))
+        if base_digest is not None and (
+            not isinstance(base_digest, str) or not DIGEST.fullmatch(base_digest)
+        ):
+            raise MathFlowError("research program v5 operation has an invalid base digest")
+        if not isinstance(value, dict) or value.get("id") != entity_id:
+            raise MathFlowError("research program v5 operation value has an invalid entity ID")
+        collection_name = {
+            "program": "programs",
+            "thread": "threads",
+            "item": "items",
+        }[str(kind)]
+        materialized_entity = post_state[collection_name].get(entity_id)
+        if not isinstance(materialized_entity, dict) or value != {
+            key: item
+            for key, item in materialized_entity.items()
+            if key != "digest"
+        }:
+            raise MathFlowError(
+                "research program v5 operation differs from materialized state"
+            )
+    placement_audits = delta.get("placementAudits")
+    if not isinstance(placement_audits, list):
+        raise MathFlowError("research program v5 placement audits must be an array")
+    contribution_values = delta.get("contributions")
+    if not isinstance(contribution_values, list):
+        raise MathFlowError("research program v5 contributions must be an array")
+    contribution_order: list[str] = []
+    for contribution_value in contribution_values:
+        if not isinstance(contribution_value, dict) or set(contribution_value) != {
+            "transactionId",
+            "claimKeys",
+            "directProgramId",
+            "directThreadIds",
+            "itemIds",
+        }:
+            raise MathFlowError("research program v5 contribution has invalid fields")
+        transaction_id = (
+            contribution_value.get("transactionId")
+            if isinstance(contribution_value, dict)
+            else None
+        )
+        if (
+            not isinstance(transaction_id, str)
+            or not GIT_SHA.fullmatch(transaction_id)
+            or transaction_id in contribution_order
+        ):
+            raise MathFlowError(
+                "research program v5 contribution has an invalid transaction"
+            )
+        contribution_order.append(transaction_id)
+        materialized = post_state["contributions"].get(transaction_id)
+        if not isinstance(materialized, dict) or any(
+            contribution_value.get(field) != materialized.get(field)
+            for field in (
+                "claimKeys",
+                "directProgramId",
+                "directThreadIds",
+                "itemIds",
+            )
+        ):
+            raise MathFlowError(
+                "research program v5 contribution mapping differs from materialized state"
+            )
+    subject_ids = set(contribution_order)
+    if expected_transaction_ids is not None and subject_ids != expected_transaction_ids:
+        raise MathFlowError(
+            "research program v5 contribution mappings do not match accepted submissions"
+        )
+    audits_by_transaction: dict[str, dict[str, object]] = {}
+    audit_order: list[str] = []
+    for audit in placement_audits:
+        if not isinstance(audit, dict) or set(audit) != {
+            "transactionId",
+            "basis",
+            "rationale",
+            "relatedProgramIds",
+        }:
+            raise MathFlowError("research program v5 placement audit has invalid fields")
+        transaction_id = audit.get("transactionId")
+        if (
+            not isinstance(transaction_id, str)
+            or transaction_id not in subject_ids
+            or transaction_id in audits_by_transaction
+        ):
+            raise MathFlowError(
+                "research program v5 placement audit has an invalid transaction"
+            )
+        basis = audit.get("basis")
+        if basis not in {
+            "local-objective",
+            "cross-program",
+            "canonical-objective",
+        }:
+            raise MathFlowError("research program v5 placement basis is invalid")
+        _require_text(audit.get("rationale"), "research program v5 placement rationale")
+        related_program_ids = _require_strings(
+            audit.get("relatedProgramIds"),
+            "research program v5 relatedProgramIds",
+        )
+        if any(not IDENTIFIER.fullmatch(item) for item in related_program_ids):
+            raise MathFlowError(
+                "research program v5 related program ID must be a stable lowercase path"
+            )
+        audits_by_transaction[transaction_id] = audit
+        audit_order.append(transaction_id)
+    if set(audits_by_transaction) != subject_ids or audit_order != contribution_order:
+        raise MathFlowError(
+            "research program v5 must audit every accepted submission exactly once in contribution order"
+        )
+    programs = post_state["programs"]
+    contributions = post_state["contributions"]
+    assert isinstance(programs, dict)
+    assert isinstance(contributions, dict)
+
+    for transaction_id, audit in audits_by_transaction.items():
+        contribution = contributions[transaction_id]
+        direct_program_id = str(contribution["directProgramId"])
+        basis = str(audit["basis"])
+        related_program_ids = list(audit["relatedProgramIds"])
+        if basis == "local-objective":
+            direct_program = programs.get(direct_program_id)
+            if (
+                direct_program_id == "root"
+                or not isinstance(direct_program, dict)
+                or direct_program.get("status") != "active"
+                or related_program_ids != [direct_program_id]
+            ):
+                raise MathFlowError(
+                    "research program v5 local placement must name its direct active non-root program"
+                )
+            continue
+        if direct_program_id != "root":
+            raise MathFlowError(
+                "research program v5 exceptional placement applies only at root"
+            )
+        if basis == "canonical-objective":
+            if related_program_ids:
+                raise MathFlowError(
+                    "research program v5 canonical-objective placement may not name local programs"
+                )
+            continue
+        if len(related_program_ids) < 2:
+            raise MathFlowError(
+                "research program v5 cross-program placement needs two local programs"
+            )
+        for program_id in related_program_ids:
+            program = programs.get(program_id)
+            if (
+                program_id == "root"
+                or not isinstance(program, dict)
+                or program.get("status") != "active"
+            ):
+                raise MathFlowError(
+                    "research program v5 cross-program placement names an invalid local program"
+                )
+        for index, left_id in enumerate(related_program_ids):
+            for right_id in related_program_ids[index + 1 :]:
+                if _program_is_descendant(
+                    post_state, left_id, right_id
+                ) or _program_is_descendant(post_state, right_id, left_id):
+                    raise MathFlowError(
+                        "research program v5 cross-program placement requires incomparable programs"
+                    )
+
+    if len(contributions) >= 2 and all(
+        contribution.get("directProgramId") == "root"
+        for contribution in contributions.values()
+    ):
+        raise MathFlowError(
+            "hierarchical research v5 multi-submission state may not remain root-only"
+        )
+    return delta
+
+
+def validate_research_program_v5_transition_shape(
+    base_state: dict[str, object],
+    delta: object,
+    post_state: dict[str, object],
+) -> None:
+    """Bind every materialized v5 entity change to its one delta operation."""
+
+    validate_research_program_state(base_state)
+    validate_research_program_v5_delta(delta, post_state)
+    assert isinstance(delta, dict)
+    operations = delta["operations"]
+    contribution_values = delta["contributions"]
+    assert isinstance(operations, list)
+    assert isinstance(contribution_values, list)
+    delta_transaction_ids = {
+        str(contribution["transactionId"])
+        for contribution in contribution_values
+    }
+    operation_keys = {
+        (str(operation["entityKind"]), str(operation["entityId"]))
+        for operation in operations
+    }
+    for operation in operations:
+        collection_name = {
+            "program": "programs",
+            "thread": "threads",
+            "item": "items",
+        }[str(operation["entityKind"])]
+        base_entity = base_state[collection_name].get(operation["entityId"])
+        expected_base_digest = (
+            base_entity.get("digest") if isinstance(base_entity, dict) else None
+        )
+        if operation.get("baseDigest") != expected_base_digest:
+            raise MathFlowError(
+                "research program v5 operation does not bind its exact base entity"
+            )
+        value = operation["value"]
+        assert isinstance(value, dict)
+        if not set(value["sourceTransactionIds"]) & delta_transaction_ids:
+            raise MathFlowError(
+                "research program v5 operation does not cite a current accepted submission"
+            )
+        if isinstance(base_entity, dict):
+            immutable_fields = {
+                "program": ("parentId", "parentThreadIds"),
+                "thread": ("programId", "kind"),
+                "item": ("programId", "type"),
+            }[str(operation["entityKind"])]
+            if any(
+                value.get(field) != base_entity.get(field)
+                for field in immutable_fields
+            ):
+                raise MathFlowError(
+                    "research program v5 transition changes frozen topology or type"
+                )
+            if not set(base_entity["sourceTransactionIds"]) <= set(
+                value["sourceTransactionIds"]
+            ):
+                raise MathFlowError(
+                    "research program v5 transition removes additive provenance"
+                )
+            if operation["entityKind"] == "item":
+                base_claim_refs = {
+                    (str(ref["transactionId"]), str(ref["claimKey"]))
+                    for ref in base_entity["claimRefs"]
+                }
+                post_claim_refs = {
+                    (str(ref["transactionId"]), str(ref["claimKey"]))
+                    for ref in value["claimRefs"]
+                }
+                if not base_claim_refs <= post_claim_refs or not set(
+                    base_entity["dependencyItemIds"]
+                ) <= set(value["dependencyItemIds"]):
+                    raise MathFlowError(
+                        "research program v5 transition removes additive item provenance"
+                    )
+    changed_keys: set[tuple[str, str]] = set()
+    for kind, collection_name in (
+        ("program", "programs"),
+        ("thread", "threads"),
+        ("item", "items"),
+    ):
+        base_collection = base_state[collection_name]
+        post_collection = post_state[collection_name]
+        assert isinstance(base_collection, dict)
+        assert isinstance(post_collection, dict)
+        if not set(base_collection) <= set(post_collection):
+            raise MathFlowError("research program v5 transition removes an entity")
+        changed_keys.update(
+            (kind, str(entity_id))
+            for entity_id, entity in post_collection.items()
+            if base_collection.get(entity_id) != entity
+        )
+    if operation_keys != changed_keys:
+        raise MathFlowError(
+            "research program v5 operations do not cover the exact materialized entity changes"
+        )
+
+    base_contributions = base_state["contributions"]
+    post_contributions = post_state["contributions"]
+    assert isinstance(base_contributions, dict)
+    assert isinstance(post_contributions, dict)
+    if any(
+        post_contributions.get(transaction_id) != contribution
+        for transaction_id, contribution in base_contributions.items()
+    ):
+        raise MathFlowError(
+            "research program v5 transition changes an accepted contribution"
+        )
+    new_transaction_ids = set(post_contributions) - set(base_contributions)
+    if delta_transaction_ids != new_transaction_ids:
+        raise MathFlowError(
+            "research program v5 delta does not cover the exact new contributions"
+        )
+    for contribution_value in contribution_values:
+        transaction_id = str(contribution_value["transactionId"])
+        represented_claims = {
+            (str(ref["transactionId"]), str(ref["claimKey"]))
+            for item_id in contribution_value["itemIds"]
+            for ref in post_state["items"][item_id]["claimRefs"]
+        }
+        missing_claims = {
+            (transaction_id, str(claim_key))
+            for claim_key in contribution_value["claimKeys"]
+        } - represented_claims
+        if missing_claims:
+            raise MathFlowError(
+                "research program v5 contribution item mapping omits an accepted claim"
+            )
+    if delta_transaction_ids:
+        if post_state.get("baseStateDigest") != base_state.get("stateDigest"):
+            raise MathFlowError(
+                "research program v5 post state does not bind its exact base state"
+            )
+    elif operations or delta.get("placementAudits") or post_state != base_state:
+        raise MathFlowError(
+            "excluded-only research program v5 transition must preserve its base state"
+        )
+
+
+def apply_research_program_batch_delta_v5(
+    base_state: dict[str, object],
+    delta: object,
+    *,
+    ledger_head: str,
+    accepted_claims_by_transaction: dict[str, list[dict[str, object]]],
+    judgment_ids: dict[str, str],
+) -> dict[str, object]:
+    """Apply a v5 batch while preserving the frozen state-schema-v1 reducer."""
+
+    if not isinstance(delta, dict):
+        raise MathFlowError("research program v5 delta has an invalid envelope")
+    post_state = apply_research_program_batch_delta(
+        base_state,
+        {
+            "schemaVersion": 1,
+            "operations": delta.get("operations"),
+            "contributions": delta.get("contributions"),
+        },
+        ledger_head=ledger_head,
+        accepted_claims_by_transaction=accepted_claims_by_transaction,
+        judgment_ids=judgment_ids,
+    )
+    validate_research_program_v5_delta(
+        delta, post_state, set(accepted_claims_by_transaction)
+    )
+    return post_state
+
+
 def research_program_index(state: dict[str, object]) -> dict[str, object]:
     validate_research_program_state(state)
     return {

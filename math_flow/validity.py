@@ -12,7 +12,10 @@ from .errors import MathFlowError
 from .governance import resolve_projection
 from .projection_queue import validate_scheduler_state
 from .repository import is_ancestor, list_files_at, read_at, sha256_json
-from .research_state import validate_research_program_state
+from .research_state import (
+    validate_research_program_state,
+    validate_research_program_v5_batch_binding,
+)
 
 
 TRANSACTION_ID = re.compile(r"\b[0-9a-f]{40}\b")
@@ -284,6 +287,18 @@ def research_state_dependency_context(
         state = json.loads(
             read_verified_artifact(bundle_dir, manifest, "research-program-state")
         )
+        if manifest.get("outputProfile") == "math-flow/hierarchical-research-v5":
+            delta = json.loads(
+                read_verified_artifact(
+                    bundle_dir, manifest, "research-program-delta"
+                )
+            )
+            batch_input = json.loads(
+                read_verified_artifact(bundle_dir, manifest, "research-batch-input")
+            )
+        else:
+            delta = None
+            batch_input = None
     except json.JSONDecodeError as exc:
         raise MathFlowError("validity research-state context is invalid JSON") from exc
     validate_research_program_state(state, problem)
@@ -297,6 +312,14 @@ def research_state_dependency_context(
         or transaction_ordinals.get(context_head, subject_ordinal) >= subject_ordinal
     ):
         raise MathFlowError("validity research-state context is not pre-subject")
+    if delta is not None:
+        validate_research_program_v5_batch_binding(
+            batch_input,
+            delta,
+            state,
+            problem,
+            problem_ledger_head=context_head,
+        )
     state_artifacts = [
         item
         for item in manifest.get("artifacts", [])
