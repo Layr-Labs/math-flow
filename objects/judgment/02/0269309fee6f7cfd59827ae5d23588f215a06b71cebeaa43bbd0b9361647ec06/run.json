@@ -1,0 +1,123 @@
+{
+  "protocolVersion": 1,
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "3baf1c8586af31bbd6509d0fd3e552658c03673b",
+  "problemLedgerHead": "3baf1c8586af31bbd6509d0fd3e552658c03673b",
+  "problemLedgerDigest": "sha256:ad9bcba40ed307bc357066de4ecfc26bcad247c0c084c0c27955cbd3ca530285",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "runner": {
+    "implementation": "openrouter-validity-judgment-v2",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "claim-dependency-packet-v2",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "report-extract-validity-v2",
+    "reducer": null
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/validity-judgment-v2",
+  "requestDigests": [
+    "sha256:4babe9e3452b9d27b16bbde15826f5b9523db2f51988b0331a8697ec15ccaa3f",
+    "sha256:2d9b0e2933c6fc48452e14f2d93962548028a62f9e3bc78a35be2a44e2e348ec"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "report",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787205546-pu5CO57s7qD1LkHjPpYn",
+      "usage": {
+        "prompt_tokens": 18639,
+        "completion_tokens": 6691,
+        "total_tokens": 25330,
+        "cost": 0.15861,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 18636,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.15861,
+          "upstream_inference_prompt_cost": 0.058245,
+          "upstream_inference_completions_cost": 0.100365
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 5667,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    },
+    {
+      "provider": "openrouter",
+      "stage": "extract",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787205658-WNWjE415i7qx8OhEtvf2",
+      "usage": {
+        "prompt_tokens": 1690,
+        "completion_tokens": 257,
+        "total_tokens": 1947,
+        "cost": 0.009134375,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 1687,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.009134375,
+          "upstream_inference_prompt_cost": 0.005279375,
+          "upstream_inference_completions_cost": 0.003855
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "judgment",
+  "inputs": {
+    "subjectTransactionIds": [
+      "3baf1c8586af31bbd6509d0fd3e552658c03673b"
+    ],
+    "dependencyTransactionIds": [
+      "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+    ],
+    "dependencyPacketDigest": "sha256:e96fbdf906400ee792cc02ac40463a40ffa69e4f33c0735fe016bf27b1cb2bf5",
+    "knowledgeContext": null
+  },
+  "artifacts": [
+    {
+      "path": "dependency-packet.json",
+      "role": "judgment-dependency-packet",
+      "mediaType": "application/json",
+      "digest": "sha256:704ede24e12f6e0bf21358e7abcadef410e9ee216f59e3b9d0dc6b011b95b9dd",
+      "bytes": 1591
+    },
+    {
+      "path": "judgment.json",
+      "role": "judgment-record",
+      "mediaType": "application/json",
+      "digest": "sha256:9e4a8bbc8a7c008c610c516dc488aecba68042d6c6a01b95aec48ade6a4583a6",
+      "bytes": 3032
+    },
+    {
+      "path": "report.md",
+      "role": "judgment-report",
+      "mediaType": "text/markdown",
+      "digest": "sha256:9b1caf66c963d9cdfedb1f0ea55ee9f41a06c22974cc465e49d388bb3931d41b",
+      "bytes": 4356
+    }
+  ]
+}
