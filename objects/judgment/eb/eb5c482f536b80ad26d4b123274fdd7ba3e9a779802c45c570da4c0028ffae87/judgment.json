@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 2,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "17928a941d7503ff0dc32740b707f475728300a3",
+  "problemLedgerDigest": "sha256:621d2dfa7452294f9698c71e4f086eca0f0d77f6c1314b7c08450465092d519a",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "17928a941d7503ff0dc32740b707f475728300a3",
+      "ledgerPosition": 10
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-eight-embedding-rigidity-attested",
+      "status": "indeterminate",
+      "premiseStatus": "missing",
+      "summary": "The verifier’s audited logic is substantially sound, and the final rigidity implication follows conditionally from the asserted exhaustive census. However, the supplied evidence contains no successful governed-run or terminal attestation showing that the configuration has the claimed digest and no-three-in-line property or that the verifier actually established the symmetry, embedding, blocking, and deletion statistics. Static code correctness and reported aggregates do not establish those computational facts.",
+      "scopeQualifications": [
+        "The conditional conclusion applies only to the eight asserted embeddings in G_77.",
+        "It does not establish rigidity for arbitrary record configurations or determine the global value of D(77).",
+        "If the exhaustive clauses hold, then for every no-three-in-line S with |E minus S| at most 2, one has |S minus E| at most 1 and |S| at most 152; consequently |S| at least 153 forces |E minus S| at least 3, |S minus E| at least 4, and symmetric difference at least 7."
+      ],
+      "evidenceIssues": [
+        "No terminal governed-run attestation or other affirmative execution record is supplied.",
+        "The claimed SHA-256 digest, decoding, and exhaustive no-three-in-line check are not independently demonstrated in the bounded evidence.",
+        "Quarter-turn invariance, exactly two dihedral images, and exactly eight translated embeddings remain computationally unverified.",
+        "The universal minimum-two-blockers assertion, absence of singleton freeings, at-most-one-cell deletion-pair property, and exactly 16 exceptional deletion pairs per embedding lack an independently checkable proof trace.",
+        "results.json supplies aggregates and positive cases but not sufficient witnesses for the universal and negative assertions; verification.json is only a request.",
+        "The byte-for-byte comparison between recomputed output and results.json has not been shown to have succeeded."
+      ],
+      "evidenceTransactionIds": [
+        "bf1301b6b472841276f79852c2e7fe0499309684"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-eight-embedding-rigidity-attested",
+      "stance": "uncertain",
+      "summary": "The verifier’s audited logic is substantially sound, and the final rigidity implication follows conditionally from the asserted exhaustive census. However, the supplied evidence contains no successful governed-run or terminal attestation showing that the configuration has the claimed digest and no-three-in-line property or that the verifier actually established the symmetry, embedding, blocking, and deletion statistics. Static code correctness and reported aggregates do not establish those computational facts.",
+      "subjectTransactionIds": [
+        "17928a941d7503ff0dc32740b707f475728300a3"
+      ],
+      "evidenceTransactionIds": [
+        "bf1301b6b472841276f79852c2e7fe0499309684"
+      ]
+    }
+  ],
+  "dependencyPacketDigest": "sha256:d85e0be9d9ac3e20bc00313b4a1c0894d9c6237695dfcf903efabf395d5365b6",
+  "reportDigest": "sha256:17be4c6308bf518dc842d7b193365714c87ecf2314befe1cdd74a666b39298b5",
+  "judgmentId": "sha256:bf48eedfca83bf1388d90fa1956434ca3039ff463e630166d9922ccb0797e7a0"
+}
