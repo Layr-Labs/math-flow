@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "evaluations": [
+    {
+      "programId": "root",
+      "unattributedWork": "0.45",
+      "rationale": "All children are evaluated at the locked common horizon in the ledger's normalized work units, using the current exposure 1 as the with-child anchor for each active thread. The residual preserves uncertainty about overlap among the two rotational contributions, the eventual usefulness of narrow symmetry and local-neighborhood results, and research value not confidently attributable to any accepted child. No observed pre/post change in estimated difficulty is used.",
+      "children": [
+        {
+          "kind": "contribution",
+          "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+          "counterfactual": "Remove the compact certificate checker, its canonical verification request, and its unique attestation. Retain the later eight-embedding contribution, which independently includes the same configuration and rechecks its no-three-in-line property, as well as all rotational results. A competent solver can therefore retain the certified 152-point lower bound and recreate a small standalone verifier only if separately needed.",
+          "directEffects": [
+            {
+              "threadId": "root/certified-configurations",
+              "withoutWork": "1.05",
+              "withWork": "1",
+              "rationale": "At the common horizon the lower-bound mathematics is independently available from the later rigidity computation, so withholding this contribution does not require rediscovering the configuration or lower bound. It causes only a small amount of additional work to recreate the simpler pinned, replayable certificate-verification artifact."
+            }
+          ],
+          "obviatedEffects": [],
+          "confidence": "high",
+          "evidenceRefs": [
+            "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "17928a941d7503ff0dc32740b707f475728300a3",
+            "root/result/record-152-lower-bound",
+            "root/tool/record-152-verifier",
+            "root/result/eight-embedding-local-rigidity",
+            "sha256:2c30e85cbe4588ba3cb4ee952e0b895347cfcd48c59a3731d92257c11978d386"
+          ]
+        },
+        {
+          "kind": "contribution",
+          "id": "17928a941d7503ff0dc32740b707f475728300a3",
+          "counterfactual": "Remove the exact blocking and deletion census and every conclusion uniquely inherited from it. Retain the independently certified 152-point configuration and lower bound, plus both rotational contributions. A competent solver may recompute the depth-two neighborhoods, construct a cheaper partial test, or abandon local perturbations in favor of broader searches.",
+          "directEffects": [
+            {
+              "threadId": "root/certified-configurations",
+              "withoutWork": "1.70",
+              "withWork": "1",
+              "rationale": "Without the contribution, establishing or safely exploiting depth-two rigidity for all eight embeddings requires substantial exact census, cross-checking, and verification work. The duplicated certification of the underlying 152-point configuration is excluded from this increment, and optimal adaptation limits the estimate because a solver could abandon this narrow neighborhood rather than fully reproduce the computation."
+            }
+          ],
+          "obviatedEffects": [
+            {
+              "threadId": "root/unstructured-search",
+              "withoutWork": "1.10",
+              "withWork": "1",
+              "rationale": "The certified bad news prevents some otherwise plausible ad hoc exploration of one- and two-deletion perturbations around these eight embeddings. Only generic exploration outside the direct certified-configuration line is counted here; recreation of the census itself remains entirely in the direct term."
+            }
+          ],
+          "confidence": "medium",
+          "evidenceRefs": [
+            "17928a941d7503ff0dc32740b707f475728300a3",
+            "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "root/result/eight-embedding-local-rigidity",
+            "root/computation/eight-embedding-rigidity-census",
+            "root/result/record-152-lower-bound",
+            "root/unstructured-search",
+            "sha256:491b9b543314f9ab034e6eb52d7ad8f927d47ccc6ef5908b9be74149187f42ea",
+            "sha256:07ca42e610421fd1fc8157444b9cf85de8a8a39114072a67cbe80169b434faf8"
+          ]
+        },
+        {
+          "kind": "contribution",
+          "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+          "counterfactual": "Remove the arbitrary-center finite-rotation lemma and its cardinality-153 and cardinality-154 consequences. Retain the rct4 encoding, which is independently proved but remains a strict subclass, and retain all certified-configuration information. A competent solver can rederive the classification, restrict attention provisionally to known square symmetries, or avoid rotational routes.",
+          "directEffects": [
+            {
+              "threadId": "root/rotational-structure",
+              "withoutWork": "1.55",
+              "withWork": "1",
+              "rationale": "The contribution supplies a self-contained arbitrary-center classification and closes a genuine logical gap before applying orbit and saturation arguments. Reproving it is moderate rather than dominant work because the proof is compact and an adaptive solver could bypass a complete classification if rotational search ceased to be promising."
+            }
+          ],
+          "obviatedEffects": [
+            {
+              "threadId": "root/unstructured-search",
+              "withoutWork": "1.12",
+              "withWork": "1",
+              "rationale": "Knowing that size 153 cannot be rotationally symmetric and that rotationally symmetric size 154 sets must use the centered half-turn reduces exposure to generic exploratory searches over impossible rotational cases. The reduction is limited because asymmetric, reflective, and general half-turn cases remain open and the certified interval is unchanged."
+            }
+          ],
+          "confidence": "medium",
+          "evidenceRefs": [
+            "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+            "root/result/finite-rotation-classification",
+            "root/proof/finite-rotation-classification",
+            "root/rotational-structure",
+            "root/unstructured-search",
+            "sha256:471c7800e63ce6bb749608b6f9c6c668822275c6e4796b8e64bbd7f63f37833a",
+            "sha256:515d9727f59936cb26ba0ac7b1e68a844cc30e3662d747fb214064cd466d75c1"
+          ]
+        },
+        {
+          "kind": "contribution",
+          "id": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+          "counterfactual": "Remove the abstract soundness-and-completeness theorem and its orbit-variable/maximal-line formulation. Retain the independent finite-rotation classification, which does not imply this strict rct4 model. A competent solver can reconstruct an equivalent model, use a broader centered-half-turn encoding, or abandon the narrow subclass.",
+          "directEffects": [
+            {
+              "threadId": "root/rotational-structure",
+              "withoutWork": "1.35",
+              "withWork": "1",
+              "rationale": "The contribution avoids the work of defining the exact variable partition, deriving the cardinality equations, enumerating maximal-line constraints, and checking both directions of the encoding equivalence. Optimal adaptation and the narrow scope cap the value: it proves neither satisfiability nor infeasibility and does not encode the full half-turn class."
+            }
+          ],
+          "obviatedEffects": [
+            {
+              "threadId": "root/unstructured-search",
+              "withoutWork": "1.03",
+              "withWork": "1",
+              "rationale": "A ready, scope-correct Boolean model slightly reduces generic model-selection and exploratory setup work that might otherwise precede a reproducible restricted search. The effect is small because no solver outcome is supplied and broader or asymmetric searches remain necessary."
+            }
+          ],
+          "confidence": "medium",
+          "evidenceRefs": [
+            "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "root/result/rct4-154-encoding-equivalence",
+            "root/method/rct4-154-boolean-encoding",
+            "root/rotational-structure",
+            "root/unstructured-search",
+            "sha256:c4463a9cacd5427f287bdb7239066657965cbb97abd1056b2869f35ef884de8c",
+            "sha256:528f61614dd026e6572e1aec9675dd435030e47721ed67847034b88ee117099f"
+          ]
+        }
+      ]
+    }
+  ]
+}
