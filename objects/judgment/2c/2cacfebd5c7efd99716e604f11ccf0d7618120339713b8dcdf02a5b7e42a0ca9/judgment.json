@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 3,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+  "problemLedgerDigest": "sha256:f0b5a93ab08839f1d61f37b6147654bdf17b207e10612d5612aeb18f8a1327b5",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+      "ledgerPosition": 3
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go",
+      "status": "valid",
+      "premiseStatus": "not-required",
+      "summary": "The self-contained argument establishes both components. The finite-block telescope, Fano endpoint bounds, time-sharing conversion, induced-law factorization, and four rate inequalities are valid. The explicit finite entropic witness satisfies the stated base entropies, structural equalities, conditional BEC identities, exact dependence balance, sharp support inequalities, and attains both objective branches at 2h_2(1/4)-5/4. Because it is an actual finite distribution, universal finite-variable information inequalities cannot exclude it, and conditional resampling preserves its marginal and objective through any finite sequence of standard copy-lemma extensions.",
+      "scopeQualifications": [
+        "The finite-block theorem is verified for message alphabet sizes N_1,N_2>=2, with R_j=(1/n)log_2 N_j; no singleton-message extension is established without an additional convention.",
+        "The code-induced variables have alphabets that can grow with blocklength, so the necessary condition is not by itself a fixed-cardinality single-letter outer region.",
+        "The entropy/copy obstruction applies only to the specified coarse relaxation and its universal-information-inequality or finite standard-copy refinements.",
+        "The witness is deliberately tuple-valued and nonbinary, not a valid binary BSSC input distribution; binary-posterior and other channel-specific consistency constraints remain viable.",
+        "The no-go theorem does not itself establish a broadcast-channel capacity bound."
+      ],
+      "evidenceIssues": [
+        "No objective checker attestation was supplied, so any claimed checker output is not treated as executed evidence; the relevant identities and objective value were instead verified analytically.",
+        "The condensed declaration omits the explicit assumptions N_1,N_2>=2 and the definition R_j=(1/n)log_2 N_j that are needed for the displayed Fano terms and rate rows."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go",
+      "stance": "supports",
+      "summary": "The self-contained argument establishes both components. The finite-block telescope, Fano endpoint bounds, time-sharing conversion, induced-law factorization, and four rate inequalities are valid. The explicit finite entropic witness satisfies the stated base entropies, structural equalities, conditional BEC identities, exact dependence balance, sharp support inequalities, and attains both objective branches at 2h_2(1/4)-5/4. Because it is an actual finite distribution, universal finite-variable information inequalities cannot exclude it, and conditional resampling preserves its marginal and objective through any finite sequence of standard copy-lemma extensions.",
+      "subjectTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:f08d6409049fd0de1bb16341d7bcb2e7bb2c1dfdb449248d53c4171225ee0cda",
+  "reportDigest": "sha256:4e35ab5d97416c412f7a0a5edda7c0aae7656f2689144ebd59f09753514f4692",
+  "judgmentId": "sha256:cb29e56d73fcca9dcc725ef47309bdffe5d1063f1c7c3eb98cc9c5af92fe7491"
+}

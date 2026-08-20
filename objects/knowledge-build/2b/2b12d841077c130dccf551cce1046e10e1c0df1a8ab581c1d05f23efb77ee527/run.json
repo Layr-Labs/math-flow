@@ -1,0 +1,107 @@
+{
+  "protocolVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "77c8fb935fabd62175eeee91d298fccc8f3be9eb",
+  "problemLedgerHead": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+  "problemLedgerDigest": "sha256:f0b5a93ab08839f1d61f37b6147654bdf17b207e10612d5612aeb18f8a1327b5",
+  "judgeSpec": {
+    "id": "openrouter-hierarchical-research-builder-v3",
+    "digest": "sha256:7a860e24060549b877c06136df7e8b66e558be29363c873983debaa8381c9d96"
+  },
+  "runner": {
+    "implementation": "openrouter-hierarchical-research-builder-v3",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "accepted-validity-batch-program-state-v3",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "structured-research-batch-v3",
+    "reducer": "batched-research-state-v3"
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/hierarchical-research-v3",
+  "requestDigests": [
+    "sha256:6339b78ea04cbd6e4c5517d7f0e62d3ea66de52e14ccfac3bdbe31931d1c1acc"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "organize",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787210100-SC2Qe01MwOAZTGxtnk3t",
+      "usage": {
+        "prompt_tokens": 51051,
+        "completion_tokens": 7648,
+        "total_tokens": 58699,
+        "cost": 0.2742525,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 51048,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.2742525,
+          "upstream_inference_prompt_cost": 0.1595325,
+          "upstream_inference_completions_cost": 0.11472
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2779,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "knowledge-build",
+  "inputs": {
+    "projectionSpecDigest": "sha256:df3a8d053a3734d1027930d2188dcd9a4caeb8a57f0317ca46b6c72bfc8bae5e",
+    "baseStateRun": null,
+    "problemId": "bssc-sum-capacity",
+    "conflictIds": [],
+    "schemaVersion": 1,
+    "laneId": "sha256:799d0af2dd75709864aa327bf17ff1ca6cf988ecbf03dbe503f4e2931de5f395",
+    "judgmentSetDigest": "sha256:00a9fd520385d3d6021ff92a1d93a9911e3140536ea37c0a849c8d542c4f8085",
+    "judgmentIds": [
+      "sha256:576690e499fa9088d48ba221c12c0bdaddc0435a6009290b2a3fb74c9b51b8fd",
+      "sha256:5cb2c5b122649959f720e36d66bb0dfbb77fa69ca5826b5600f45fefcbe8dc60",
+      "sha256:836ab59fe07eeeaa060ab56cac261611785a014d54d1e2dc25d788f7d1ead525",
+      "sha256:cb29e56d73fcca9dcc725ef47309bdffe5d1063f1c7c3eb98cc9c5af92fe7491",
+      "sha256:e3ac6e843234335e769e576b7aad3ffb737cc704c4c6935ccf51243709ecffaf"
+    ],
+    "builderSpecDigest": "sha256:7a860e24060549b877c06136df7e8b66e558be29363c873983debaa8381c9d96",
+    "buildToken": "sha256:311d9cffa0a4a09d2d3e3814ed6c93605a926fe4f1064eb66d540fd16e4e39ba"
+  },
+  "artifacts": [
+    {
+      "path": "control/build-input.json",
+      "role": "knowledge-build-input",
+      "mediaType": "application/json",
+      "digest": "sha256:84aa18770c3a62102a75bd6589f2ac3d650e647b8138d99bc057e0d93e32bbf0",
+      "bytes": 999
+    },
+    {
+      "path": "input/research-batch.json",
+      "role": "research-batch-input",
+      "mediaType": "application/json",
+      "digest": "sha256:780ef37075c47fc109f3d1639d587bc6cbec396b3a77f4345f0e19609b9492f7",
+      "bytes": 7742
+    },
+    {
+      "path": "state/delta.json",
+      "role": "research-program-delta",
+      "mediaType": "application/json",
+      "digest": "sha256:6525aa5bd774daa573bd1908ee00bf5bd7e669c9b5f5a5642ff8510f5ae93f7c",
+      "bytes": 19729
+    },
+    {
+      "path": "state/state.json",
+      "role": "research-program-state",
+      "mediaType": "application/json",
+      "digest": "sha256:feb54f37bb6bae8ed898db8fbee8cd3713d8ce490f9baaa9308226316cef69b0",
+      "bytes": 21239
+    }
+  ]
+}
