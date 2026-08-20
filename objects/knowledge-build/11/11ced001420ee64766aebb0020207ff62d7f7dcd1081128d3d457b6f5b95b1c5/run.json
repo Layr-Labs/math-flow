@@ -1,0 +1,109 @@
+{
+  "protocolVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "0ee3fa9ecb9c0d06c9dba7e3318f334360d31375",
+  "problemLedgerHead": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+  "problemLedgerDigest": "sha256:361ab8c751586738730b9a86a3b2eac0196f13be92f6a72929a7714f15bde30f",
+  "judgeSpec": {
+    "id": "openrouter-hierarchical-research-builder-v4",
+    "digest": "sha256:a100a3b22008298520ad2a33661c2d360b9a95da2d3adf3e818980245736d4a5"
+  },
+  "runner": {
+    "implementation": "openrouter-hierarchical-research-builder-v4",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "accepted-validity-batch-program-state-v4",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "structured-research-batch-v4",
+    "reducer": "batched-research-state-v4"
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/hierarchical-research-v4",
+  "requestDigests": [
+    "sha256:000736bb6288eeb38f9373a0309a2ead6d0f9ddde0b9688ca29fbe08897a2fe8"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "organize",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787217710-uqm79lCfLSZ3AdP46krp",
+      "usage": {
+        "prompt_tokens": 51182,
+        "completion_tokens": 9248,
+        "total_tokens": 60430,
+        "cost": 0.15152225,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 51179,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.15152225,
+          "upstream_inference_prompt_cost": 0.01280225,
+          "upstream_inference_completions_cost": 0.13872
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 4422,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "knowledge-build",
+  "inputs": {
+    "builderSpecDigest": "sha256:a100a3b22008298520ad2a33661c2d360b9a95da2d3adf3e818980245736d4a5",
+    "baseStateRun": null,
+    "conflictIds": [],
+    "projectionSpecDigest": "sha256:295fa29fb5c7d4339c73652161bfc4d6d9d24048b929fd9696769570a37e4bd3",
+    "judgmentIds": [
+      "sha256:022c0115e9100e368cdeb6e0d952cd699500d00462dcc4c4c053bd01bf24cbe4",
+      "sha256:202500b2ea88b1348061f2d10a78e7d96539a4ce8d18d4515c7b8e9aaed1ffd0",
+      "sha256:2c29fd881dec9aa923aa0713acc56df2c05d02f30ac544213f720af9158b7a41",
+      "sha256:34c5377dbd5c5d147acb250ac80640770b6176749e6c235d4a71ebc508b615c2",
+      "sha256:4818e8c26697f566c938f4de337eaea572d6f0ce789e1021b2c4114d1a07edff",
+      "sha256:600dc553581e6b5801ed722dcb50a61f70a137239ee14ba9cb6f9e70ce597037",
+      "sha256:6811dbc06c253fd81a1d9244887b661fff26b22c3cdcda708cd6bdf5642a7293"
+    ],
+    "laneId": "sha256:55011fd1b4b86c5045e8856ff405bff8491666be2df8c409b00fef1f54b2b7e3",
+    "judgmentSetDigest": "sha256:ae2ff2f05b5b41696aaec0a86fb61fb89427475e86e9c0a406549f9ff61362f5",
+    "problemId": "bssc-sum-capacity",
+    "schemaVersion": 1,
+    "buildToken": "sha256:d5a87cbc4b30882a9bad05f91132fd4048bdbe9901b2864d77cecbf8a185452f"
+  },
+  "artifacts": [
+    {
+      "path": "control/build-input.json",
+      "role": "knowledge-build-input",
+      "mediaType": "application/json",
+      "digest": "sha256:5988b6a5386221060fb57f10f03a8d658aa2487088d2fef54cfd701258a43087",
+      "bytes": 1157
+    },
+    {
+      "path": "input/research-batch.json",
+      "role": "research-batch-input",
+      "mediaType": "application/json",
+      "digest": "sha256:80a1c386d6a163b8058a5ba0e57d82e3c0f3479c71ae437729b4224a5a19d43e",
+      "bytes": 16912
+    },
+    {
+      "path": "state/delta.json",
+      "role": "research-program-delta",
+      "mediaType": "application/json",
+      "digest": "sha256:1fb0d340de28c3038d4a1060529125af4d57e3f2da655591de32ef1224595032",
+      "bytes": 20113
+    },
+    {
+      "path": "state/state.json",
+      "role": "research-program-state",
+      "mediaType": "application/json",
+      "digest": "sha256:6dd1fd81566d0ac5a30e6396f22558039668ebe8a321fb302d044c5db93bc3c0",
+      "bytes": 22028
+    }
+  ]
+}
