@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "subject": {
+    "transactionId": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+    "contributionId": "theorem9-source-bound-audit",
+    "path": "problems/bssc-sum-capacity/contributions/theorem9-source-bound-audit"
+  },
+  "verifier": {
+    "id": "python-stdlib-3-13-v1",
+    "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "implementation": "oci-command-v1"
+  },
+  "environment": {
+    "kind": "oci",
+    "image": "python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689",
+    "platform": "linux/amd64",
+    "network": "none",
+    "readOnlyRoot": true,
+    "user": "65534:65534",
+    "capabilities": [],
+    "noNewPrivileges": true,
+    "memoryBytes": 536870912,
+    "cpuCount": 1,
+    "pidsLimit": 128,
+    "tmpfsBytes": 67108864
+  },
+  "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+  "requestDigest": "sha256:d79e1a395000987b3c2f02e64a008fcea59a135e3460d1a7db285093b510ebca",
+  "inputs": [
+    {
+      "path": "GK-outer.pdf",
+      "digest": "sha256:24c4153530008f7ae339ac19ca8cb90fb8ea574ea8fbcd6a36c2221722d651fa",
+      "bytes": 255268
+    },
+    {
+      "path": "README.md",
+      "digest": "sha256:4a5e7991705eeb40c05324d16559d71afe14994d8e45119b56b456420bbe2d67",
+      "bytes": 12193
+    },
+    {
+      "path": "SOURCE_TRANSCRIPTION.md",
+      "digest": "sha256:331ddb08876871762f644ba3fc5cb33aba27f6c3848fece58de4b59908599754",
+      "bytes": 4147
+    },
+    {
+      "path": "claims.json",
+      "digest": "sha256:dfe61b38169ce0fd888aab313bc15ff642ed4ce63285fbaa7364b821b37227ba",
+      "bytes": 984
+    },
+    {
+      "path": "pdf_source_extract.py",
+      "digest": "sha256:65e2f4319016b9e1394f2803b25ede5cb86ffcb6eba7fd089c99cdd5e993073d",
+      "bytes": 12543
+    },
+    {
+      "path": "theorem9_spec.json",
+      "digest": "sha256:43a9215addc867150482f218d3d2212e2b267fc6e91663cf68dcf4794320ade6",
+      "bytes": 6773
+    },
+    {
+      "path": "verification.json",
+      "digest": "sha256:d0dce591c90e6b529890b34e4bd515167ea3c447daef11e95f28e1c5f3c328d2",
+      "bytes": 236
+    },
+    {
+      "path": "verify_specialization.py",
+      "digest": "sha256:243a56db54df58dc05297301ae54d41212fbe231469ea39663bb0d0aad2997a1",
+      "bytes": 25611
+    }
+  ],
+  "invocation": {
+    "executable": "python3",
+    "fixedArguments": [
+      "-I",
+      "-B"
+    ],
+    "entrypoint": "verify_specialization.py",
+    "arguments": [],
+    "timeoutSeconds": 300,
+    "maximumOutputBytes": 262144,
+    "successExitCodes": [
+      0
+    ]
+  },
+  "result": {
+    "status": "passed",
+    "exitCode": 0,
+    "timedOut": false
+  },
+  "outputs": {
+    "stdout": {
+      "digest": "sha256:5014f1f609722550f0e9be1b2a99aa3627d6240950075a70aef08224d74aad7f",
+      "bytes": 2084
+    },
+    "stderr": {
+      "digest": "sha256:b8e20dbe02a71ea3cbeabb5a2f892045556fb9f5febb685d6851681d536d62a7",
+      "bytes": 882
+    }
+  },
+  "producer": {
+    "implementation": "math-flow-oci-attestation-producer-v1",
+    "mathFlowVersion": "0.6.0"
+  },
+  "attestationId": "sha256:32c6f085d0c5fb5cfebf9aecb625bc01b7283e38daee128c3286256415870cbb"
+}
