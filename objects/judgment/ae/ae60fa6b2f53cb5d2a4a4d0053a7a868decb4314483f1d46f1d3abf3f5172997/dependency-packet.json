@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 3,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+  "subjectLedgerPosition": 11,
+  "claims": [
+    {
+      "claimKey": "bssc-sum-capacity/finite-grid-q0-foundations",
+      "statement": "Using the accepted private-message 30-row definitions and optimization order of transaction e3c1036ca607539a5ebcddf3058e6014ac5c1cd9, let Q be any N-point posterior grid containing {0,1/2,1}. Every finite-output binary-input receiver has an at-most-N-output replacement with the same mutual-information samples on Q, so inf_{G,K finite} V_Q(G,K) = inf_{|G|,|K|<=N} V_Q(G,K); when Q is reflection closed, inf_{m finite} V_Q(m,m^circ) = inf_{|supp(m)|<=N} V_Q(m,m^circ). For Q0={0,1/2,1} and c=h_2(1/4)-1/2, inf_{G,K finite} V_{Q0}(G,K) = inf_{m finite} V_{Q0}(m,m^circ) = c. Moreover, for every finite-output input-only pair G,K with g=J_G(1/2), k=J_K(1/2), B(G,K) >= V_0(g,k) >= max{F(g),F(k)}, where F(x)=2c max{c,x}/(c+x); consequently, if c <= U < 2c and B(G,K) <= U, then 2c^2/U-c <= g,k <= Uc/(2c-U). These are finite-grid and necessary-coercivity statements only, with no continuum cardinality, limit interchange, or full-functional reflected-optimality assertion.",
+      "declaredReferenceTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ]
+    }
+  ],
+  "declaredReferenceTransactionIds": [
+    "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+  ],
+  "knowledgeContext": {
+    "sourceKind": "research-program-state",
+    "runDigest": "sha256:0e490d162886246de8f4d5a13fb378c23d6f79a91f6e74b4155ac0877542c7f3",
+    "stateDigest": "sha256:2d4dc8dfef85861ea33fc7b7305f4a05c116099b69f2c3e60601a2dff1673c3c",
+    "stateArtifactDigest": "sha256:5de18d9d9249ea235c81ff40434d3afc36b9e1cb0084a1b8cf49334a721b3fb1",
+    "problemLedgerHead": "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+    "selectedPrograms": {
+      "root": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "status": "active",
+        "parentThreadIds": [],
+        "sourceTransactionIds": [],
+        "digest": "sha256:4bc4e85d0ca6e4224902591c71cf9cb813718dfe5961d8be774384d474797c99"
+      }
+    },
+    "selectedThreads": {
+      "root/theorem9-cited-premise-foundations": {
+        "id": "root/theorem9-cited-premise-foundations",
+        "programId": "root",
+        "title": "Conditional Theorem 9 specialization and receiver marginalization",
+        "summary": "Premise-bounded specialization of the cited Gohari--Liu--Nair Theorem 9 system to private messages, including the exact 30-row expansion, input-only product-marginal reduction, conditional capacity-bound formulation, Q0-supported local-value foundations, and a continuous weak-duality upper certificate for one fixed binary auxiliary-receiver pair.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1"
+        ],
+        "digest": "sha256:7b0f7206acc40af4da341849ec2f9150ddc180e7351f08cb4e85a3adc70275ba"
+      }
+    },
+    "selectedItems": {
+      "root/proof/theorem9-cited-premise-foundations": {
+        "id": "root/proof/theorem9-cited-premise-foundations",
+        "programId": "root",
+        "type": "proof",
+        "title": "Proof of the conditional Theorem 9 specialization and marginalization",
+        "summary": "Proof record bounded to `root/result/theorem9-cited-premise-foundations`. Starting from the explicitly assumed Theorem 9 system, the proof sets R0=0, expands each minimum and both interval side conditions, and compares the resulting 30 rows term by term with an independently generated three-receiver-path system. It exhaustively audits the output-bearing information terms and uses their single-output form to show that replacing an arbitrary admitted auxiliary-receiver law by the product of its input-conditioned G and K marginals preserves every row and side condition. It then applies the premise's stated quantifier and optimization order to obtain the conditional capacity inequality, obtains V_Q(G,K) <= V(1/2;G,K) <= B(G,K) by restriction and definition, and uses posterior mutual-information identities on Q0={0,1/2,1} to establish the accepted dependence and finiteness statement for V_0(g,k). This proof does not authenticate or re-prove the cited Theorem 9 premise and establishes no numerical bound, receiver-cardinality theorem, or continuum limit.",
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [],
+        "digest": "sha256:bf7fc37285f9eac63f59eb082dd9141094a0276501502e415945f35f89da9640"
+      },
+      "root/result/theorem9-cited-premise-foundations": {
+        "id": "root/result/theorem9-cited-premise-foundations",
+        "programId": "root",
+        "type": "result",
+        "title": "Conditional Theorem 9 private-message foundations",
+        "summary": "Assume the cited Gohari--Liu--Nair Theorem 9 outer-bound premise exactly as encoded in theorem9_spec.json and displayed for review in SOURCE_TRANSCRIPTION.md: for every finite auxiliary-receiver law T_{G,K|X,Y,Z}, achievable rates obey the stated factorization, equations (19a)-(19p), and both side conditions. Then setting R0=0 and exhaustively expanding the displayed minima and interval conditions gives exactly the independently generated local 30-row system; the exhaustive single-output term audit proves that replacing G,K by their input-only product marginals preserves the entire system, and hence for the physical BSSC C_sum <= inf_{finite-output binary-input T_{G|X},T_{K|X}} B(G,K). With the explicit extended-real local definitions (including sup(empty set)=-infinity), V_Q(G,K) <= V(1/2;G,K) <= B(G,K), and every Q0-supported row depends on the receiver channels only through (c,g,k,c), making V_0(g,k) finite and well defined on its realizable (g,k)-domain. No PDF-origin, source-fidelity, rendering, or visual-semantic assertion is part of this claim.\n\nScope qualifications:\n- The verdict does not authenticate the external theorem, manuscript, PDF, transcription provenance, rendering, or source fidelity.\n- The equality attestation is limited to syntactic and algebraic equality of the pinned encoded systems.\n- The product-marginal reduction relies on the audited system containing only single-output G or K information terms, with no joint (G,K) term and no conditioning of one receiver output on another.\n- The capacity conclusion is conditional on the premise's quantifier structure: one prior for each achievable rate pair works for every finite auxiliary-receiver law, with an appropriate finite hierarchy for each law.\n- Finiteness and well-definedness of V_0(g,k) are asserted only on the realizable (g,k)-domain.",
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [],
+        "digest": "sha256:a686df3e31c9e135fdbebfda24982615093953e1977c5de42a6c57f13b83aa5f"
+      },
+      "root/tool/theorem9-specialization-audit": {
+        "id": "root/tool/theorem9-specialization-audit",
+        "programId": "root",
+        "type": "tool",
+        "title": "Exact checker for the premise-bounded Theorem 9 specialization",
+        "summary": "A standard-library exact checker associated only with the accepted conditional foundations result. It reads the pinned structured premise, verifies its factorization, 16 equation labels, and two side conditions, expands the private-message system, independently generates the local path rows, compares all 30 rows using only the stated chain-rule normalizations, and audits the exhaustive single-output term whitelist. It reads no PDF, performs no numerical optimization, and does not authenticate the external theorem or its transcription provenance. The tool is corroborative and is not an independently accepted mathematical claim or a reinterpretation of an execution attestation.",
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [],
+        "digest": "sha256:717f2c26a0851e74e5e9619ce3f727dde23872555d7dc143bffce3eff3a8f82c"
+      }
+    },
+    "unresolvedDependencyTransactionIds": []
+  },
+  "objectiveAttestations": [
+    {
+      "transactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+      "relation": "subject",
+      "attestation": {
+        "schemaVersion": 1,
+        "requestDigest": "sha256:bf49df34e13af622e08e35d4704bc719238252a2d03a052588d270d3f3f269a2",
+        "runDigest": "sha256:6dfb1921afbb38af166c4cbfb472a132f0bdf9332371afb39d05c86b99870145",
+        "attestationId": "sha256:a71dfee1b6b06ceec3f1df3a48c98829618d81624c141c9da9a862ef4bae358a",
+        "status": "passed",
+        "verifier": {
+          "id": "python-stdlib-3-13-v1",
+          "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+          "implementation": "oci-command-v1"
+        },
+        "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+        "result": {
+          "status": "passed",
+          "exitCode": 0,
+          "timedOut": false
+        },
+        "artifacts": {
+          "verifier-attestation": {
+            "digest": "sha256:f0dfab2c1c84b796f8dc149f6774412e7b61fd99215522e8eca07234468bc504",
+            "bytes": 2496
+          },
+          "verifier-stderr": {
+            "digest": "sha256:e0b44311dc84e4993631aa4289458657fbc9c8bad94b21ffdae3ec5b16d7f944",
+            "bytes": 915
+          },
+          "verifier-stdout": {
+            "digest": "sha256:e716fdfbff683bc32d88b94340527047874d61852f3603bf25808d96659d48d4",
+            "bytes": 583
+          }
+        },
+        "stdout": {
+          "text": "PASS sole logical dependency: e3c1036ca607539a5ebcddf3058e6014ac5c1cd9\nPASS foundation rows: e3c1036ca607539a5ebcddf3058e6014ac5c1cd9, sha256:9d742dba6f0c176fbf5152ead6e44ffbb48095aa48a41e6f31f598529dcfb931\nPASS skew symmetry: G/K, Y/Z, group order, U/V, and R1/R2\nPASS H: all 30 row slacks and all 15 box slacks are nonnegative\nPASS L: all 30 row slacks and all 15 box slacks are nonnegative\nPASS X: all 30 row slacks and all 15 box slacks are nonnegative\nPASS upper: SL(1,U) is identically c when all four Q0 curves agree\nPASS: exact finite-grid Q0 coercivity certificate complete\n",
+          "truncated": false,
+          "bytes": 583,
+          "digest": "sha256:e716fdfbff683bc32d88b94340527047874d61852f3603bf25808d96659d48d4"
+        },
+        "stderr": {
+          "text": "Unable to find image 'python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689' locally\ndocker.io/library/python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689: Pulling from library/python\n8c7716127147: Pulling fs layer\n31fd2a94d723: Pulling fs layer\n66b685f2f76b: Pulling fs layer\n7d456e82f89b: Pulling fs layer\n7d456e82f89b: Waiting\n66b685f2f76b: Verifying Checksum\n66b685f2f76b: Download complete\n31fd2a94d723: Download complete\n8c7716127147: Verifying Checksum\n8c7716127147: Download complete\n7d456e82f89b: Verifying Checksum\n7d456e82f89b: Download complete\n8c7716127147: Pull complete\n31fd2a94d723: Pull complete\n66b685f2f76b: Pull complete\n7d456e82f89b: Pull complete\nDigest: sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nStatus: Downloaded newer image for python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\n",
+          "truncated": false,
+          "bytes": 915,
+          "digest": "sha256:e0b44311dc84e4993631aa4289458657fbc9c8bad94b21ffdae3ec5b16d7f944"
+        }
+      }
+    },
+    {
+      "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+      "relation": "declared-reference",
+      "attestation": {
+        "schemaVersion": 1,
+        "requestDigest": "sha256:e7fa3e40ba2899d90ff9acac8e05738d8025c9c859d2900cee454f6276f402e8",
+        "runDigest": "sha256:299f63bdfc8445dd6c2b20a730967fb8f6f8163d1b4ee3d0115f67abb76ecb26",
+        "attestationId": "sha256:5f4dafd868ff2d7e5f9a0dd14c97747287b211ed7bb7dcb72948e17260e7e73a",
+        "status": "passed",
+        "verifier": {
+          "id": "python-stdlib-3-13-v1",
+          "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+          "implementation": "oci-command-v1"
+        },
+        "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+        "result": {
+          "status": "passed",
+          "exitCode": 0,
+          "timedOut": false
+        },
+        "artifacts": {
+          "verifier-attestation": {
+            "digest": "sha256:3d5e13a13ba47172f6f28f894275379fd321f9018110f3f21793113a5cccbf8c",
+            "bytes": 2862
+          },
+          "verifier-stderr": {
+            "digest": "sha256:35d603e98509f80dbc3dd68868b7b6a219e8282f1bed8e39d61dca19aca5b37a",
+            "bytes": 915
+          },
+          "verifier-stdout": {
+            "digest": "sha256:5a6ee7b77c77ae527ac8b1800e60ebac2e8fcb57a3037224829ecc5416b5a2cc",
+            "bytes": 1320
+          }
+        },
+        "stdout": {
+          "text": "PASS explicit cited premise structure: factorization, 16 equations, 2 side conditions\nPASS (19a) branch 0 -> N_Y(0)\nPASS (19a) branch 1 -> N_Y(1)\nPASS (19a) branch 2 -> N_Y(2)\nPASS (19b) branch 0 -> N_Z(0)\nPASS (19b) branch 1 -> N_Z(1)\nPASS (19b) branch 2 -> N_Z(2)\nPASS (19c,19d) branch 0 -> R1T(0)\nPASS (19c,19d) branch 1 -> R1T(1)\nPASS (19c,19d) branch 2 -> R1T(2)\nPASS (19e,19f) branch 0 -> R1A(0)\nPASS (19e,19f) branch 1 -> R1A(1)\nPASS (19e,19f) branch 2 -> R1A(2)\nPASS (19g,19h) branch 0 -> R2A(0)\nPASS (19g,19h) branch 1 -> R2A(1)\nPASS (19g,19h) branch 2 -> R2A(2)\nPASS (19i,19j) branch 0 -> R2T(0)\nPASS (19i,19j) branch 1 -> R2T(1)\nPASS (19i,19j) branch 2 -> R2T(2)\nPASS (19k) branch 0 -> SL(3,U)\nPASS (19k) branch 1 -> SL(3,C)\nPASS (19l) branch 0 -> SR(1,C)\nPASS (19l) branch 1 -> SR(1,U)\nPASS (19m) branch 0 -> SL(2,U)\nPASS (19n) branch 0 -> SL(1,U)\nPASS (19o) branch 0 -> SR(2,U)\nPASS (19p) branch 0 -> SR(3,U)\nPASS Z-K side condition: left -> F_Z_left\nPASS Z-K side condition: right-minus-left -> F_Z_right_minus_left\nPASS Y-G side condition: left -> F_Y_left\nPASS Y-G side condition: right-minus-left -> F_Y_right_minus_left\nPASS exhaustive single-output term audit: {'Y': 3, 'G': 12, 'K': 12, 'Z': 3}\nPASS: cited-premise R0=0 expansion and all 30 independently generated private-message rows agree exactly\n",
+          "truncated": false,
+          "bytes": 1320,
+          "digest": "sha256:5a6ee7b77c77ae527ac8b1800e60ebac2e8fcb57a3037224829ecc5416b5a2cc"
+        },
+        "stderr": {
+          "text": "Unable to find image 'python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689' locally\ndocker.io/library/python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689: Pulling from library/python\n8c7716127147: Pulling fs layer\n31fd2a94d723: Pulling fs layer\n66b685f2f76b: Pulling fs layer\n7d456e82f89b: Pulling fs layer\n7d456e82f89b: Waiting\n31fd2a94d723: Download complete\n7d456e82f89b: Verifying Checksum\n7d456e82f89b: Download complete\n66b685f2f76b: Verifying Checksum\n66b685f2f76b: Download complete\n8c7716127147: Verifying Checksum\n8c7716127147: Download complete\n8c7716127147: Pull complete\n31fd2a94d723: Pull complete\n66b685f2f76b: Pull complete\n7d456e82f89b: Pull complete\nDigest: sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nStatus: Downloaded newer image for python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\n",
+          "truncated": false,
+          "bytes": 915,
+          "digest": "sha256:35d603e98509f80dbc3dd68868b7b6a219e8282f1bed8e39d61dca19aca5b37a"
+        }
+      }
+    }
+  ],
+  "packetDigest": "sha256:31d47a835eec6053c2f849850cc97f79a963184f1f6bd1cbd3992fe5f9ab2c9d"
+}
