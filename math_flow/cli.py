@@ -68,6 +68,7 @@ from .runs import run_judge_bundle
 from .scale_probe import run_provider_free_scale_probe
 from .solver_tools import credit_status, register_direction
 from .viewer import export_viewer_catalog, export_viewer_data
+from .validity import formation_dependency_transaction_ids
 
 
 def _write_json(value: object, output: str | None) -> None:
@@ -1045,7 +1046,10 @@ def main(argv: list[str] | None = None) -> int:
                 judgment_id = str(judgment["judgmentId"])
                 judgment_ids.append(judgment_id)
                 loaded_judgments.append((bundle_dir, manifest, judgment, judgment_id))
-                if manifest.get("outputProfile") == "math-flow/validity-judgment-v2":
+                if manifest.get("outputProfile") in {
+                    "math-flow/validity-judgment-v2",
+                    "math-flow/validity-judgment-v3",
+                }:
                     subjects = judgment.get("subjects")
                     if not isinstance(subjects, list) or len(subjects) != 1:
                         raise MathFlowError(
@@ -1066,8 +1070,13 @@ def main(argv: list[str] | None = None) -> int:
                         ),
                     }
             judgment_dependencies: dict[str, list[str]] = {}
-            for bundle_dir, manifest, _, judgment_id in loaded_judgments:
-                if manifest.get("outputProfile") != "math-flow/validity-judgment-v2":
+            ready_judgment_ids = set(judgment_ids)
+            v3_judgment_ids: set[str] = set()
+            for bundle_dir, manifest, judgment, judgment_id in loaded_judgments:
+                if manifest.get("outputProfile") not in {
+                    "math-flow/validity-judgment-v2",
+                    "math-flow/validity-judgment-v3",
+                }:
                     continue
                 try:
                     packet = json.loads(
@@ -1079,25 +1088,51 @@ def main(argv: list[str] | None = None) -> int:
                     raise MathFlowError(
                         "knowledge trigger validity dependency packet is invalid JSON"
                     ) from exc
-                dependency_transactions = packet.get("dependencyTransactionIds")
-                if not isinstance(dependency_transactions, list) or any(
-                    not isinstance(item, str) for item in dependency_transactions
-                ):
-                    raise MathFlowError(
-                        "knowledge trigger validity dependency packet is invalid"
-                    )
+                dependency_transactions = formation_dependency_transaction_ids(
+                    judgment, packet
+                )
+                is_v3 = (
+                    manifest.get("outputProfile")
+                    == "math-flow/validity-judgment-v3"
+                )
+                if is_v3:
+                    v3_judgment_ids.add(judgment_id)
                 dependency_judgments: list[str] = []
                 for transaction_id in dependency_transactions:
                     dependency_judgment = validity_by_subject.get(transaction_id)
                     if dependency_judgment is None:
+                        if is_v3:
+                            ready_judgment_ids.discard(judgment_id)
+                            break
                         raise MathFlowError(
                             "knowledge trigger validity dependency has no supplied judgment: "
                             f"{transaction_id}"
                         )
                     dependency_judgments.append(dependency_judgment)
-                judgment_dependencies[judgment_id] = sorted(
-                    set(dependency_judgments)
-                )
+                else:
+                    judgment_dependencies[judgment_id] = sorted(
+                        set(dependency_judgments)
+                    )
+            while True:
+                blocked = {
+                    judgment_id
+                    for judgment_id in v3_judgment_ids & ready_judgment_ids
+                    if not set(judgment_dependencies.get(judgment_id, []))
+                    <= ready_judgment_ids
+                }
+                if not blocked:
+                    break
+                ready_judgment_ids.difference_update(blocked)
+            judgment_ids = [
+                judgment_id
+                for judgment_id in judgment_ids
+                if judgment_id in ready_judgment_ids
+            ]
+            judgment_dependencies = {
+                judgment_id: dependencies
+                for judgment_id, dependencies in judgment_dependencies.items()
+                if judgment_id in ready_judgment_ids
+            }
             conflict_ids = []
             conflict_dependencies: dict[str, list[str]] = {}
             if args.conflicts:
@@ -1156,7 +1191,10 @@ def main(argv: list[str] | None = None) -> int:
             builder = load_judge_spec(args.builder)
             if (
                 builder["implementation"]
-                == "openrouter-hierarchical-research-builder-v2"
+                in {
+                    "openrouter-hierarchical-research-builder-v2",
+                    "openrouter-hierarchical-research-builder-v3",
+                }
             ):
                 result = run_research_build_bundle(
                     root,

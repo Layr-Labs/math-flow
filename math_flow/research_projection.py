@@ -32,7 +32,7 @@ from .research_state import (
     validate_research_program_state,
 )
 from .runs import run_envelope
-from .validity import validate_dependency_packet
+from .validity import validate_dependency_packet, validate_evidence_packet_v3
 
 
 WORK_PATTERN = r"^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$"
@@ -522,9 +522,24 @@ def _accepted_claims(
         claim = claim_by_key.get(str(claim_key))
         if not isinstance(claim, dict):
             raise MathFlowError("validity assessment has no declared claim")
+        if packet.get("schemaVersion") == 2:
+            references = claim.get("declaredReferenceTransactionIds")
+            required = assessment.get("requiredDependencyTransactionIds")
+            if not isinstance(references, list) or not isinstance(required, list):
+                raise MathFlowError(
+                    "validity-v3 assessment has invalid dependency provenance"
+                )
+            normalized_claim = {
+                "claimKey": claim["claimKey"],
+                "statement": claim["statement"],
+                "declaredReferenceTransactionIds": list(references),
+                "dependencyTransactionIds": list(required),
+            }
+        else:
+            normalized_claim = dict(claim)
         accepted.append(
             {
-                **claim,
+                **normalized_claim,
                 "validitySummary": assessment.get("summary"),
                 "scopeQualifications": assessment.get("scopeQualifications"),
                 "evidenceTransactionIds": assessment.get("evidenceTransactionIds"),
@@ -662,7 +677,11 @@ def load_research_build_bundle(
     manifest, manifest_digest = verify_bundle(bundle_dir)
     if (
         manifest.get("runKind") != "knowledge-build"
-        or manifest.get("outputProfile") != "math-flow/hierarchical-research-v2"
+        or manifest.get("outputProfile")
+        not in {
+            "math-flow/hierarchical-research-v2",
+            "math-flow/hierarchical-research-v3",
+        }
     ):
         raise MathFlowError("bundle is not a batched hierarchical research build")
     try:
@@ -709,10 +728,15 @@ def run_research_build_bundle(
 
     root = root.resolve()
     spec = load_judge_spec(builder_path)
-    if spec["implementation"] != "openrouter-hierarchical-research-builder-v2":
+    implementation = str(spec["implementation"])
+    if implementation not in {
+        "openrouter-hierarchical-research-builder-v2",
+        "openrouter-hierarchical-research-builder-v3",
+    }:
         raise MathFlowError(
-            "research knowledge-build requires the hierarchical research builder v2 spec"
+            "research knowledge-build requires a hierarchical research builder spec"
         )
+    is_v3 = implementation == "openrouter-hierarchical-research-builder-v3"
     builder_digest = f"sha256:{sha256_json(spec)}"
     build_input = validate_build_claim(claim, problem, builder_digest)
     if build_input["conflictIds"]:
@@ -735,12 +759,17 @@ def run_research_build_bundle(
         if judgment_id in loaded:
             raise MathFlowError("research-build judgment input contains duplicates")
         if (
-            manifest.get("outputProfile") != "math-flow/validity-judgment-v2"
+            manifest.get("outputProfile")
+            != (
+                "math-flow/validity-judgment-v3"
+                if is_v3
+                else "math-flow/validity-judgment-v2"
+            )
             or judgment.get("problemId") != problem
             or judgment.get("judgmentKind") != "primary"
         ):
             raise MathFlowError(
-                "hierarchical research formation requires validity-v2 primary judgments"
+                "hierarchical research formation requires its matching validity primary judgments"
             )
         subjects = judgment.get("subjects")
         if not isinstance(subjects, list) or len(subjects) != 1:
@@ -760,7 +789,9 @@ def run_research_build_bundle(
             raise MathFlowError(
                 "research-build validity dependency packet is invalid JSON"
             ) from exc
-        validate_dependency_packet(packet)
+        (validate_evidence_packet_v3 if is_v3 else validate_dependency_packet)(
+            packet
+        )
         if packet.get("subjectTransactionId") != subject_id:
             raise MathFlowError(
                 "research-build validity packet does not match its subject"
@@ -840,7 +871,7 @@ def run_research_build_bundle(
             )
 
     batch_input = {
-        "schemaVersion": 1,
+        "schemaVersion": 2 if is_v3 else 1,
         "problemId": problem,
         "baseProgramStateDigest": base_state["stateDigest"],
         "judgments": [
@@ -894,7 +925,14 @@ def run_research_build_bundle(
             [
                 "Materialize one atomic post-batch research-program state from the supplied claims that the primary judge marked valid.",
                 "Do not perform mathematical adjudication, repair an argument, infer additional conclusions, or include any claim marked invalid or indeterminate. Preserve every accepted claim's exact statement and qualifications.",
-                "Separate durable mathematical results from reusable proofs, methods, computations, tools, and open questions. A submission is provenance, not a knowledge item. Map every accepted submission exactly once to its local direct program, direct research threads, and durable items.",
+                "Separate durable mathematical results from the proofs, methods, computations, and tools that establish those exact accepted claims. The original submission is evidence for that separation, not an independently accepted claim source. Never promote an assertion, lemma, corollary, heuristic, or theorem-like statement found elsewhere in the submission unless it lies within a claim marked valid; represent a proof or method only insofar as it participates in establishing such a claim. A submission is provenance, not a knowledge item. Map every accepted submission exactly once to its local direct program, direct research threads, and durable items.",
+                *(
+                    [
+                        "The accepted validity records distinguish required mathematical dependencies from declared historical or credit references. Enforce only required dependencies as accepted-state prerequisites. Preserve declared references in the immutable accepted record for downstream provenance and credit, but never import an invalid or indeterminate referenced submission or any of its claims into research state.",
+                    ]
+                    if is_v3
+                    else []
+                ),
                 "Programs form the current strict tree of local objectives and credit contexts. Preserve existing parent links, thread ownership and kind, and item program and type in this version. Cross-program use is represented through item dependencies. The topology is intentionally revisable by a future governed builder version, so do not encode the current tree as an eternal ontology.",
                 "Every entity operation must cite at least one accepted submission in this batch and may retain prior accepted provenance. Use the smallest complete delta that makes the full post-state accurate.",
                 f"Formation rubric:\n{json.dumps(spec['rubric'], indent=2, ensure_ascii=False)}",

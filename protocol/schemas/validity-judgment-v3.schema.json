@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/validity-judgment-v3.schema.json",
+  "title": "Math Flow Validity Judgment v3",
+  "type": "object",
+  "required": ["schemaVersion", "judgmentId", "judgmentKind", "problemId", "ledgerHead", "problemLedgerDigest", "judgeSpec", "subjects", "assessments", "findings", "dependencyPacketDigest", "reportDigest"],
+  "properties": {
+    "schemaVersion": { "const": 3 },
+    "judgmentId": { "$ref": "#/$defs/digest" },
+    "judgmentKind": { "const": "primary" },
+    "problemId": { "type": "string" },
+    "ledgerHead": { "type": "string" },
+    "problemLedgerDigest": { "$ref": "#/$defs/digest" },
+    "judgeSpec": {
+      "type": "object",
+      "required": ["id", "digest"],
+      "properties": { "id": {"type": "string"}, "digest": {"$ref": "#/$defs/digest"} },
+      "additionalProperties": false
+    },
+    "subjects": {
+      "type": "array", "minItems": 1, "maxItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["kind", "id", "ledgerPosition"],
+        "properties": { "kind": {"const": "transaction"}, "id": {"$ref": "#/$defs/transaction"}, "ledgerPosition": {"type": "integer", "minimum": 1} },
+        "additionalProperties": false
+      }
+    },
+    "assessments": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["claimKey", "status", "premiseStatus", "summary", "scopeQualifications", "evidenceIssues", "evidenceTransactionIds", "requiredDependencyTransactionIds"],
+        "properties": {
+          "claimKey": { "$ref": "#/$defs/id" },
+          "status": { "enum": ["valid", "invalid", "indeterminate"] },
+          "premiseStatus": { "enum": ["satisfied", "missing", "disputed", "not-required"] },
+          "summary": { "type": "string", "minLength": 1 },
+          "scopeQualifications": { "type": "array", "items": {"type": "string", "minLength": 1} },
+          "evidenceIssues": { "type": "array", "items": {"type": "string", "minLength": 1} },
+          "evidenceTransactionIds": { "type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/transaction"} },
+          "requiredDependencyTransactionIds": { "type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/transaction"} }
+        },
+        "additionalProperties": false
+      }
+    },
+    "findings": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["claimKey", "stance", "summary", "subjectTransactionIds", "evidenceTransactionIds"],
+        "properties": {
+          "claimKey": { "$ref": "#/$defs/id" },
+          "stance": { "enum": ["supports", "refutes", "uncertain"] },
+          "summary": { "type": "string", "minLength": 1 },
+          "subjectTransactionIds": { "type": "array", "minItems": 1, "maxItems": 1, "items": {"$ref": "#/$defs/transaction"} },
+          "evidenceTransactionIds": { "type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/transaction"} }
+        },
+        "additionalProperties": false
+      }
+    },
+    "dependencyPacketDigest": { "$ref": "#/$defs/digest" },
+    "reportDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+  }
+}

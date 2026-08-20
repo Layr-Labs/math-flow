@@ -12,6 +12,7 @@ on:
         required: true
 
 permissions:
+  actions: write
   contents: write
 
 concurrency:
@@ -152,3 +153,49 @@ jobs:
           path: ${{ runner.temp }}/attestation-bundle
           retention-days: 14
           if-no-files-found: error
+      - name: Redispatch active attestation-aware validity streams
+        env:
+          GH_TOKEN: "${{ github.token }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            "+refs/heads/main:refs/remotes/origin/main"
+          projection_plan="${RUNNER_TEMP}/attestation-aware-projections.json"
+          python -m math_flow list-active-projections \
+            --problem "$MATH_FLOW_PROBLEM_ID" \
+            --head refs/remotes/origin/main \
+            --engine openrouter-repository-v1 \
+            --output "$projection_plan"
+          while IFS= read -r stream; do
+            judgment_stream_id="$(jq -r '.judgmentStreamId' <<< "$stream")"
+            first_projection="$(jq -r '.projections[0]' <<< "$stream")"
+            remaining_projections="$(jq -c '.projections[1:]' <<< "$stream")"
+            for attempt in {1..5}; do
+              if gh workflow run project-openrouter.yml \
+                --repo "$GITHUB_REPOSITORY" \
+                --ref main \
+                -f projection="$first_projection" \
+                -f problem="$MATH_FLOW_PROBLEM_ID" \
+                -f judgment_stream_id="$judgment_stream_id" \
+                -f remaining_projections="$remaining_projections"; then
+                break
+              fi
+              if [[ "$attempt" -eq 5 ]]; then
+                echo "Failed to redispatch attestation-aware stream $judgment_stream_id." >&2
+                exit 1
+              fi
+              sleep 2
+            done
+          done < <(
+            jq -c '
+              .projections
+              | map(select(.primaryJudge | endswith("validity-judgment-v3.json")))
+              | sort_by(.judgmentStreamId, .projectionId)
+              | group_by(.judgmentStreamId)[]
+              | {
+                  judgmentStreamId: .[0].judgmentStreamId,
+                  projections: [.[].projectionId]
+                }
+            ' "$projection_plan"
+          )

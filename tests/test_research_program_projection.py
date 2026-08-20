@@ -102,6 +102,43 @@ class ResearchProgramProjectionTests(unittest.TestCase):
         self.assertNotIn("credit", builder["stages"])
         self.assertIn("exclude invalid and indeterminate claims", builder["systemPrompt"])
 
+    def test_validity_v3_components_are_additive_and_self_contextual(self) -> None:
+        judge = load_judge_spec(
+            self.root
+            / "protocol/judges/openrouter-validity-judgment-v3.json"
+        )
+        builder = load_judge_spec(
+            self.root
+            / "protocol/judges/openrouter-hierarchical-research-builder-v3.json"
+        )
+        self.assertEqual(judge["contextProjection"], "openrouter-research-v2")
+        self.assertEqual(judge["inputBuilder"], "claim-evidence-packet-v3")
+        self.assertIn("terminal objective attestation", judge["description"])
+        self.assertEqual(
+            builder["inputBuilder"],
+            "accepted-validity-batch-program-state-v3",
+        )
+        self.assertIn("reference", builder["rubric"]["dependencyBoundary"])
+        self.assertIn(
+            "independent unjudged assertion",
+            builder["rubric"]["atomicClaimBoundary"],
+        )
+        self.assertIn("unclaimed content has not passed", builder["systemPrompt"])
+
+    def test_attestation_publication_redispatches_only_v3_validity_streams(self) -> None:
+        attestation = (
+            self.root / ".github/workflows/project-attestation.yml"
+        ).read_text(encoding="utf-8")
+        projection = (
+            self.root / ".github/workflows/project-openrouter.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("actions: write", attestation)
+        self.assertIn("validity-judgment-v3.json", attestation)
+        self.assertIn("group_by(.judgmentStreamId)", attestation)
+        self.assertIn("project-openrouter.yml", attestation)
+        self.assertIn("openrouter-validity-judgment-v3", projection)
+        self.assertIn("deferredTransactions", projection)
+
     def test_hosted_primary_judgments_are_not_globally_serialized(self) -> None:
         workflow = (
             self.root / ".github/workflows/project-openrouter.yml"

@@ -45,6 +45,14 @@ Roll out the runtime and versioned builder before admitting the projection that
 uses them. A projection addition or edit remains a separate one-file governed PR
 under the admission policy below.
 
+The validity-v3/hierarchical-research-v3 upgrade follows this rule. Its runtime,
+schemas, profiles, judge, and builder merge first. A later one-file admission
+adds a fresh `openrouter-research-v2` projection pairing those v3 components;
+the active `openrouter-research-v1` specification is not edited in place. The
+fresh validity judge's `contextProjection` points to that v2 projection ID so
+future bounded history comes from its own state lane. Retarget or add credit
+overlays only after the new producer chain is current.
+
 Overlay cadence is governed projection identity, not an advisory runner hint.
 With only `minimumIntervalSeconds`, a rolling overlay becomes eligible when its
 verified dependency state changes and the interval after the preceding run has

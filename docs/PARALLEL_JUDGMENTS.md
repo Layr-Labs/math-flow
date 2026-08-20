@@ -12,8 +12,10 @@ contributions
                               batched hierarchical formation
 ```
 
-This is the default validity-v2 path. Legacy judgment projections may still
-insert conflict detection and reconciliation before formation.
+This is the default validity-v2 path. The additive validity-v3 path preserves
+the same parallel topology while narrowing dependency and objective-attestation
+semantics. Legacy judgment projections may still insert conflict detection and
+reconciliation before formation.
 
 ## Run a primary judgment
 
@@ -75,6 +77,36 @@ depth or breadth of the mathematical audit. Missing premises, proof defects, and
 scope qualifications remain attached to that assessment rather than becoming
 new top-level claim identities. Novelty, global placement, program organization,
 and cumulative state remain the knowledge builder's responsibility.
+
+### Frozen validity-v3 boundary
+
+Validity v3 separates a contribution's declared references from the premises
+that its proof actually needs. Every prior transaction cited by the claim is
+recorded in `declaredReferenceTransactionIds` and supplied to the judge. The
+judge returns `requiredDependencyTransactionIds`, an exact subset containing
+only results that must already be valid for the current argument to establish
+the claim. Attribution-only citations and arguments fully restated in the
+current submission remain provenance, not formation edges.
+
+Formation consumes only the judge-selected required set. A required submission
+must have a valid judgment and already belong to research state. Invalid and
+indeterminate submissions are excluded completely, while all declared
+references remain in immutable judgment/build history for later credit analysis.
+This contract is versioned; validity-v2 packets keep their legacy dependency
+semantics.
+
+A v3 subject that declares objective verification is deferred until its exact
+content-addressed request has a verified terminal attestation. Coverage reports
+it in `deferredTransactions` rather than the judgment matrix. This is a
+subject-local gate: unrelated ordinary subjects remain in the matrix and run in
+parallel. Passing and failing terminal outcomes both unblock the judge, which
+receives the attestation as evidence rather than as a verdict. The packet,
+judgment identity, and manifest inputs bind the attestation run digest. Terminal
+publication redispatches the applicable active v3 streams so the deferred
+subject is reconsidered automatically.
+
+See `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V3.md` for the complete frozen contract
+and rollout boundary.
 
 Before dispatching work, automation can compare the canonical problem ledger
 with the published projection index:

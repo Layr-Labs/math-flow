@@ -144,7 +144,7 @@ jobs:
           echo "matrix=$(jq -c '.matrix' "$plan")" >> "$GITHUB_OUTPUT"
           echo "count=$(jq '.missingTransactions | length' "$plan")" >> "$GITHUB_OUTPUT"
           echo "expected_subjects=$(jq -c '[.missingTransactions[].transactionId]' "$plan")" >> "$GITHUB_OUTPUT"
-          jq '{problemId, judgeSpec, covered: (.coveredTransactionIds | length), missingTransactions}' "$plan"
+          jq '{problemId, judgeSpec, covered: (.coveredTransactionIds | length), missingTransactions, deferredTransactions: (.deferredTransactions // [])}' "$plan"
 
   judgment:
     needs: plan
@@ -165,7 +165,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: Prepare bounded knowledge context
-        if: needs.plan.outputs.primary_judge_implementation == 'openrouter-validity-judgment-v2'
+        if: >-
+          needs.plan.outputs.primary_judge_implementation == 'openrouter-validity-judgment-v2' ||
+          needs.plan.outputs.primary_judge_implementation == 'openrouter-validity-judgment-v3'
         run: |
           set -euo pipefail
           projection_dir="${RUNNER_TEMP}/projection-branch"
@@ -200,7 +202,8 @@ jobs:
             --subject "${{ matrix.transactionId }}"
             --output-dir "$staging_dir/judgment-${{ matrix.ordinal }}"
           )
-          if [[ "${{ needs.plan.outputs.primary_judge_implementation }}" == "openrouter-validity-judgment-v2" ]]; then
+          if [[ "${{ needs.plan.outputs.primary_judge_implementation }}" == "openrouter-validity-judgment-v2" || \
+                "${{ needs.plan.outputs.primary_judge_implementation }}" == "openrouter-validity-judgment-v3" ]]; then
             command+=(--projection-dir "${RUNNER_TEMP}/projection-branch")
           else
             while IFS= read -r evidence; do
