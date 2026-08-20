@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "entityKind": "thread",
+      "entityId": "root/record-152-eight-embedding-rigidity",
+      "baseDigest": null,
+      "value": {
+        "id": "root/record-152-eight-embedding-rigidity",
+        "programId": "root",
+        "title": "Local rigidity of the eight verified 152-point embeddings",
+        "summary": "Maintain exact computational verification of the depth-two neighborhoods of the eight verified embeddings in G_77 arising from the certified quarter-turn-invariant 152-point configuration in G_76. The conclusions apply only to those eight embeddings and do not determine D(77) or address arbitrary record configurations.",
+        "kind": "verification",
+        "status": "completed",
+        "expectedExposure": "0",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "17928a941d7503ff0dc32740b707f475728300a3"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/record-152-eight-embedding-rigidity/result",
+      "baseDigest": null,
+      "value": {
+        "id": "root/record-152-eight-embedding-rigidity/result",
+        "programId": "root",
+        "type": "result",
+        "title": "Depth-two local rigidity of eight 152-point embeddings in G_77",
+        "summary": "The included configuration.txt has SHA-256 digest a23f1f55d9a914cff49fb6ba369b9f392f7af4c5ce08085267b3af1e7d7742c4 and decodes to a 152-point no-three-in-line subset C of G_76. It is invariant under a quarter turn, its dihedral orbit has exactly two distinct images, and translating those images by the four vectors in {0,1}^2 gives exactly eight distinct embeddings E in G_77. For each of those eight E, every cell of G_77 minus E is blocked by at least two distinct unordered pairs of E; deleting any one point of E frees no originally outside cell; deleting any unordered pair frees at most one originally outside cell; and exactly 16 deletion pairs per E free one cell. Consequently, every no-three-in-line S in G_77 with |E minus S| at most 2 has |S minus E| at most 1 and |S| at most 152; hence |S| at least 153 implies |E minus S| at least 3, |S minus E| at least 4, and symmetric difference at least 7. This claim concerns only those eight embeddings, not arbitrary record configurations or the global value of D(77).",
+        "claimRefs": [
+          {
+            "transactionId": "17928a941d7503ff0dc32740b707f475728300a3",
+            "claimKey": "no-three-in-line-77/record-152-eight-embedding-rigidity-attested"
+          }
+        ],
+        "sourceTransactionIds": [
+          "17928a941d7503ff0dc32740b707f475728300a3"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/record-152-eight-embedding-rigidity/computation",
+      "baseDigest": null,
+      "value": {
+        "id": "root/record-152-eight-embedding-rigidity/computation",
+        "programId": "root",
+        "type": "computation",
+        "title": "Exact exhaustive rigidity census for the eight embeddings",
+        "summary": "Exact computation participating in the accepted local-rigidity result: the audited verifier checks the configuration digest, decodes and verifies the 152-point no-three-in-line subset of G_76, checks quarter-turn invariance, reconstructs its two distinct dihedral images and eight translated embeddings in G_77, and exhaustively computes blocking pairs and the effects of every singleton and unordered pair deletion. For each embedding it establishes minimum blocking multiplicity two, no outside cell freed by one deletion, at most one outside cell freed by two deletions, and exactly 16 deletion pairs that free one cell. The computation establishes only the accepted conclusions for these eight embeddings and makes no claim about arbitrary record configurations or the global value of D(77).",
+        "claimRefs": [
+          {
+            "transactionId": "17928a941d7503ff0dc32740b707f475728300a3",
+            "claimKey": "no-three-in-line-77/record-152-eight-embedding-rigidity-attested"
+          }
+        ],
+        "sourceTransactionIds": [
+          "17928a941d7503ff0dc32740b707f475728300a3"
+        ],
+        "dependencyItemIds": []
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "17928a941d7503ff0dc32740b707f475728300a3",
+      "claimKeys": [
+        "no-three-in-line-77/record-152-eight-embedding-rigidity-attested"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/record-152-eight-embedding-rigidity"
+      ],
+      "itemIds": [
+        "root/record-152-eight-embedding-rigidity/result",
+        "root/record-152-eight-embedding-rigidity/computation"
+      ]
+    }
+  ]
+}
