@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 3,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+  "problemLedgerDigest": "sha256:361ab8c751586738730b9a86a3b2eac0196f13be92f6a72929a7714f15bde30f",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+      "ledgerPosition": 7
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-source-bound-audit",
+      "status": "indeterminate",
+      "premiseStatus": "satisfied",
+      "summary": "The downstream 30-row specialization, marginalization, extended-real inequalities, and finiteness and representation-independence of V_0 are mathematically established conditional on the source transcription. However, the all-or-nothing claim remains indeterminate because the verifier proves equality only with its limited deterministic extraction, not faithful reproduction of the complete rendered theorem in the pinned PDF.",
+      "scopeQualifications": [
+        "Gohari–Liu–Nair Theorem 9 is assumed as a primary-source premise and is not itself proved.",
+        "Conditional on the transcription, setting R0=0 and expanding minima and both side conditions yields exactly 30 rows; the UW and VW chain-rule normalizations used in comparing them are valid.",
+        "Conditional on the audited term list and factorization, replacing G and K by input-only product channels preserves every relevant joint law and information term because no term jointly involves G and K or conditions one output on another; product channels remain admissible, giving the reverse inclusion.",
+        "The inequalities V_Q(G,K) <= V(1/2;G,K) <= B(G,K) follow from feasible-set inclusion and remain valid under sup(empty set)=-infinity.",
+        "For Q0={0,1/2,1}, all audited terms depend on receiver channels only through their fair-prior Jensen values, hence through (c,g,k,c). A zero-rate feasible construction proves nonemptiness, and branch-zero rows bound R1 and R2 by 1, so V_0(g,k) is finite and well-defined.",
+        "The attestation authenticates only the committed bytes and digest; it does not independently prove that they are the official author-hosted PDF."
+      ],
+      "evidenceIssues": [
+        "The PDF decoder handles Tj and TJ but silently ignores other legal text-showing operators, including apostrophe and quotation-mark operators.",
+        "The verifier does not recursively process form XObjects invoked through Do and does not establish that relevant page resources contain no theorem content in such objects.",
+        "Decoded strings are concatenated in content-stream order without checking position, rendering mode, clipping, or visibility, so invisible expected text could coexist with different visible content.",
+        "No exhaustive PDF-operator audit establishes that every theorem-bearing element on the pinned pages is represented by the handled Tj/TJ operations.",
+        "Accordingly, equality between generated strings and parser output does not establish complete visual or semantic fidelity to the rendered source theorem. No counterexample for the pinned bytes is shown, so this is unresolved rather than decisively false."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-source-bound-audit",
+      "stance": "uncertain",
+      "summary": "The downstream 30-row specialization, marginalization, extended-real inequalities, and finiteness and representation-independence of V_0 are mathematically established conditional on the source transcription. However, the all-or-nothing claim remains indeterminate because the verifier proves equality only with its limited deterministic extraction, not faithful reproduction of the complete rendered theorem in the pinned PDF.",
+      "subjectTransactionIds": [
+        "dcdd3ab29be1a45b42a75767dbee30d8381544eb"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:be3a4afc955b58ae6e8b4a03d95fb5792fc9e3c7bff01e2226725aeef07f8801",
+  "reportDigest": "sha256:e3f7e77239c46aaa38e0c3c148872e20c54cc8413ab9b20b27e9f6841c46e658",
+  "judgmentId": "sha256:5923d14df99a15390f0f6581a839afabe3bb272cd01680e0b346d16bdf924937"
+}
