@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "0ee3fa9ecb9c0d06c9dba7e3318f334360d31375",
+  "problemLedgerDigest": "sha256:361ab8c751586738730b9a86a3b2eac0196f13be92f6a72929a7714f15bde30f",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+      "ledgerPosition": 3
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go",
+      "status": "valid",
+      "premiseStatus": "not-required",
+      "summary": "The supplied argument establishes both parts internally. The finite-block telescope, Fano endpoint bounds, induced-law factorization, fixed encoder map, and all four compatible rate rows are correctly derived for deterministic private-message codes. The explicit finite entropic witness satisfies the stated coarse BSSC entropy, independence, encoding, Markov, dependence-balance, BEC, and scalar support constraints, attains both objective branches at 2h_2(1/4)-5/4, and remains feasible under universally valid finite-variable information inequalities and any finite sequence of standard copy-lemma extensions.",
+      "scopeQualifications": [
+        "The displayed Fano formula is literal for message alphabet sizes N_1,N_2 at least 2; singleton messages require a harmless separate convention.",
+        "The induced auxiliaries have blocklength-dependent alphabets, so the finite-block result is not itself a fixed-cardinality single-letter outer region.",
+        "The entropy witness is an actual finite distribution but not an actual binary-input BSSC distribution: X is a tuple of six nondegenerate independent binary components.",
+        "The no-go result applies only to the specified coarse entropy/universal-inequality/finite-copy relaxation; exact binary-posterior and other channel-specific consistency constraints may exclude the witness.",
+        "The conclusion is an obstruction to that refinement route, not a broadcast-channel capacity bound."
+      ],
+      "evidenceIssues": [
+        "No objective execution attestations were supplied; validity rests on the self-contained analytic derivations and direct verification of the witness construction rather than trusted checker output."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go",
+      "stance": "supports",
+      "summary": "The supplied argument establishes both parts internally. The finite-block telescope, Fano endpoint bounds, induced-law factorization, fixed encoder map, and all four compatible rate rows are correctly derived for deterministic private-message codes. The explicit finite entropic witness satisfies the stated coarse BSSC entropy, independence, encoding, Markov, dependence-balance, BEC, and scalar support constraints, attains both objective branches at 2h_2(1/4)-5/4, and remains feasible under universally valid finite-variable information inequalities and any finite sequence of standard copy-lemma extensions.",
+      "subjectTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:6ea1a26b6bb65404d0c837dd3e30be28e1a77b6e998f65e910adc93b15fd1088",
+  "reportDigest": "sha256:c9c35162e12423329bea693f3d76ec95293d9907407519a98ddb97747973db90",
+  "judgmentId": "sha256:6811dbc06c253fd81a1d9244887b661fff26b22c3cdcda708cd6bdf5642a7293"
+}

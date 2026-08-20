@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "0ee3fa9ecb9c0d06c9dba7e3318f334360d31375",
+  "problemLedgerDigest": "sha256:361ab8c751586738730b9a86a3b2eac0196f13be92f6a72929a7714f15bde30f",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+      "ledgerPosition": 7
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-source-bound-audit",
+      "status": "indeterminate",
+      "premiseStatus": "not-required",
+      "summary": "The conditional mathematical audit supports the 30-row specialization, input-only product marginalization, the inequalities V_Q(G,K) <= V(1/2;G,K) <= B(G,K), and finiteness and midpoint-parameter dependence of V_0. However, the all-or-nothing source-fidelity assertion remains unresolved because the bounded PDF decoder is not shown to capture every possible text-display mechanism, and the committed file's status as the official source is not independently authenticated.",
+      "scopeQualifications": [
+        "Gohari–Liu–Nair Theorem 9 is taken as a primary-source premise; its coding-theoretic converse is not independently proved.",
+        "The verifier establishes exact agreement between its bounded PDF-decoder output and the canonical specification for the checked header, factorization, equations (19a)–(19p), and both side conditions.",
+        "Expanding the six three-branch minima, two two-branch minima, equations (19m)–(19p), and two double inequalities correctly yields 30 scalar rows, with normalized information terms agreeing with the independently generated local formulation.",
+        "Product marginalization preserves the system because every output-bearing term uses G alone or K alone, never jointly, and no output is conditioned on another output; the required single-output marginals are preserved.",
+        "The optimization inequalities hold with the stated extended-real convention sup(empty set)=-infinity.",
+        "For Q_0-supported hierarchies, receiver-channel dependence enters only through the midpoint values (c,g,k,c); feasibility is therefore invariant between channel pairs having the same g and k.",
+        "The construction W_a=W_b=W_c=X with constant U_j,V_j shows nonemptiness, while individual-rate rows imply 0 <= V_0(g,k) <= 2. Thus V_0 is finite on its natural domain of realizable midpoint pairs."
+      ],
+      "evidenceIssues": [
+        "The PDF extractor handles literal strings displayed through Tj and TJ but is not proved fail-closed for quote text-showing operators, text in invoked form XObjects, or other unsupported content operators.",
+        "No exhaustive operator and resource whitelist is asserted for the relevant page streams, so equality with the bounded decoder's output does not establish that every displayed theorem component in the PDF was captured.",
+        "The attested hash and byte count authenticate the committed bytes internally, but no network retrieval, publisher-origin verification, or source-signature check establishes the provenance descriptor \"official\".",
+        "Because faithful and official source reproduction is an express component of the declared claim, these unresolved extraction and provenance obligations prevent a valid verdict; no decisive mathematical error supports an invalid verdict."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-source-bound-audit",
+      "stance": "uncertain",
+      "summary": "The conditional mathematical audit supports the 30-row specialization, input-only product marginalization, the inequalities V_Q(G,K) <= V(1/2;G,K) <= B(G,K), and finiteness and midpoint-parameter dependence of V_0. However, the all-or-nothing source-fidelity assertion remains unresolved because the bounded PDF decoder is not shown to capture every possible text-display mechanism, and the committed file's status as the official source is not independently authenticated.",
+      "subjectTransactionIds": [
+        "dcdd3ab29be1a45b42a75767dbee30d8381544eb"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:192a72fe4b2c319c18701d2ee26dd68ea047f93b446a9c402245c2920db2c05b",
+  "reportDigest": "sha256:9d64f1c25d26f02c7eef1fb6855e6c9acaf01a9f6b32c90854723e34cecdf193",
+  "judgmentId": "sha256:600dc553581e6b5801ed722dcb50a61f70a137239ee14ba9cb6f9e70ce597037"
+}

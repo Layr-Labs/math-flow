@@ -1,0 +1,124 @@
+{
+  "protocolVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "0ee3fa9ecb9c0d06c9dba7e3318f334360d31375",
+  "problemLedgerHead": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+  "problemLedgerDigest": "sha256:361ab8c751586738730b9a86a3b2eac0196f13be92f6a72929a7714f15bde30f",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "runner": {
+    "implementation": "openrouter-validity-judgment-v4",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "claim-evidence-packet-v4",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "report-extract-validity-v4",
+    "reducer": null
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/validity-judgment-v4",
+  "requestDigests": [
+    "sha256:6b584cb1223f7ad76efc63824225bb23076181a5d91f51a53491f3a848184e99",
+    "sha256:5aa3e6acc208468ec88a45313a30da0aede2e79069d95db01b5642769a01aae2"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "report",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787216923-5pPt0UdelJrK4iIrwQuG",
+      "usage": {
+        "prompt_tokens": 29630,
+        "completion_tokens": 8883,
+        "total_tokens": 38513,
+        "cost": 0.14065925,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 29627,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.14065925,
+          "upstream_inference_prompt_cost": 0.00741425,
+          "upstream_inference_completions_cost": 0.133245
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 6732,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    },
+    {
+      "provider": "openrouter",
+      "stage": "extract",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787217063-VHvwB2UKP2ISpM07WPti",
+      "usage": {
+        "prompt_tokens": 3442,
+        "completion_tokens": 387,
+        "total_tokens": 3829,
+        "cost": 0.016559375,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 3439,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.016559375,
+          "upstream_inference_prompt_cost": 0.010754375,
+          "upstream_inference_completions_cost": 0.005805
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "judgment",
+  "inputs": {
+    "subjectTransactionIds": [
+      "f236017c62c67ce4218c1f81ea34134f0954b556"
+    ],
+    "declaredReferenceTransactionIds": [
+      "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+    ],
+    "dependencyPacketDigest": "sha256:360e610e9f3abe82263c6a40d43d6d255887de44b8fbaccc1c38edf96bb7891a",
+    "objectiveAttestationRunDigestsByTransactionId": {},
+    "knowledgeContext": null
+  },
+  "artifacts": [
+    {
+      "path": "dependency-packet.json",
+      "role": "judgment-dependency-packet",
+      "mediaType": "application/json",
+      "digest": "sha256:b086fdff51fac1bbed30f3370ca95a0f8c92576663f820ab90bcfd8479422945",
+      "bytes": 2882
+    },
+    {
+      "path": "judgment.json",
+      "role": "judgment-record",
+      "mediaType": "application/json",
+      "digest": "sha256:587302778c4c5423458bb1c3eeb3265b0eb51f85b7b36724184688965914b4ed",
+      "bytes": 3522
+    },
+    {
+      "path": "report.md",
+      "role": "judgment-report",
+      "mediaType": "text/markdown",
+      "digest": "sha256:26e4ce4b4ac6e025d49d087e708e1ea0adb448bef8ade4187a37a23d67a67399",
+      "bytes": 6785
+    }
+  ]
+}
