@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 2,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+  "subjectLedgerPosition": 10,
+  "claims": [
+    {
+      "claimKey": "bssc-sum-capacity/fixed-pair-upper-bound-attested",
+      "statement": "Assume the cited Gohari--Liu--Nair Theorem 9 outer-bound premise exactly as stated in the sole declared dependency. For the half-skew BSSC, fix binary auxiliary receivers with P(G=0|X=0)=0.206961624915382, P(G=0|X=1)=0.826953249115544, P(K=0|X=0)=0.173046750884456, and P(K=0|X=1)=0.793038375084618, treating every displayed decimal as exact. The dependency's premise-bound private-message rows and the included exact-rational plus directed-interval weak-duality certificate prove C_sum <= U with U in [0.36929694596920284244271335135600317726937686320586339865039784778686683932875798, 0.36929694596920284244271335135600317726937686320586339865039784778686683932875818], and hence C_sum <= 0.369296945969202842443. This claim concerns only this fixed receiver pair and dual certificate; it does not authenticate or re-prove the cited theorem premise and does not assert receiver or dual optimality, a matching achievable rate, or the exact BSSC sum-capacity.",
+      "declaredReferenceTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ]
+    }
+  ],
+  "declaredReferenceTransactionIds": [
+    "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+  ],
+  "knowledgeContext": {
+    "sourceKind": "research-program-state",
+    "runDigest": "sha256:2592313d4498e4bdabe5916427a6885e9a9213bbc0f2833743361e4b52c6407e",
+    "stateDigest": "sha256:7cd67203f4f03e64b94356468f55afc36cbe54cd78d8f78717687b399333782a",
+    "stateArtifactDigest": "sha256:2c1d77fbf3108c03cd79fc7d9e75df3ee306ccd28b6f876aaa1ca169901e51bb",
+    "problemLedgerHead": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+    "selectedPrograms": {
+      "root": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "status": "active",
+        "parentThreadIds": [],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "digest": "sha256:70ffaf12fdd8c9d1101a698a9638ba1776e80fa5eafb616507aead77d83cd252"
+      }
+    },
+    "selectedThreads": {
+      "root/theorem9-private-message-foundations": {
+        "id": "root/theorem9-private-message-foundations",
+        "programId": "root",
+        "title": "Theorem 9 private-message specialization foundations",
+        "summary": "Organize accepted conditional consequences of the exactly encoded Gohari--Liu--Nair Theorem 9 premise, including private-message row expansion, auxiliary-receiver marginalization, the resulting receiver-infimum upper-bound formula, and finite-support local reductions.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "digest": "sha256:6988abcfca64a620ee07430d72e034323df47bc4863ee74975ab04d18edd842a"
+      }
+    },
+    "selectedItems": {
+      "root/proof/theorem9-cited-premise-foundations": {
+        "id": "root/proof/theorem9-cited-premise-foundations",
+        "programId": "root",
+        "type": "proof",
+        "title": "Proof of the conditional Theorem 9 private-message foundations",
+        "summary": "Under the exact encoded Theorem 9 premise, the accepted proof sets R0=0, expands all minimum branches and both interval side conditions into 30 scalar rows, and compares them term by term with an independently generated L=3 path system using only the displayed chain-rule normalizations. An exhaustive audit shows that every output-bearing mutual-information term contains only one of Y, G, K, or Z, so replacing G and K by their input-only product marginals preserves every required marginal and every row. The proof then applies the specialized system at fixed q,G,K to obtain the stated receiver-infimum capacity upper-bound formula without interchanging optimization orders. Posterior identities expressed through J_A(t), together with J_A(0)=J_A(1)=0, establish the Q0 midpoint-value reduction; an explicit zero-rate hierarchy and individual-rate rows establish finiteness on the realizable domain. The argument proves only the accepted conditional claim and does not prove or authenticate the assumed Theorem 9 premise or numerically evaluate the receiver infimum.",
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [],
+        "digest": "sha256:03f6e03efe86ee3840ad450c561af148f670311c21110a82057107c20eaf2400"
+      },
+      "root/result/theorem9-cited-premise-foundations": {
+        "id": "root/result/theorem9-cited-premise-foundations",
+        "programId": "root",
+        "type": "result",
+        "title": "Theorem 9 cited-premise private-message foundations",
+        "summary": "Assume the cited Gohari--Liu--Nair Theorem 9 outer-bound premise exactly as encoded in theorem9_spec.json and displayed for review in SOURCE_TRANSCRIPTION.md: for every finite auxiliary-receiver law T_{G,K|X,Y,Z}, achievable rates obey the stated factorization, equations (19a)-(19p), and both side conditions. Then setting R0=0 and exhaustively expanding the displayed minima and interval conditions gives exactly the independently generated local 30-row system; the exhaustive single-output term audit proves that replacing G,K by their input-only product marginals preserves the entire system, and hence for the physical BSSC C_sum <= inf_{finite-output binary-input T_{G|X},T_{K|X}} B(G,K). With the explicit extended-real local definitions (including sup(empty set)=-infinity), V_Q(G,K) <= V(1/2;G,K) <= B(G,K), and every Q0-supported row depends on the receiver channels only through (c,g,k,c), making V_0(g,k) finite and well defined on its realizable (g,k)-domain. No PDF-origin, source-fidelity, rendering, or visual-semantic assertion is part of this claim.\n\nScope qualifications:\n- The result is conditional on the explicitly assumed Theorem 9 premise; it does not prove that theorem or authenticate its cited manuscript source.\n- No PDF-origin, source-fidelity, rendering, or visual-semantic assertion is established.\n- The capacity conclusion is an upper-bound formula, not an unconditional numerical evaluation of that infimum.\n- The well-definedness and finiteness of V_0(g,k) apply on the realizable (g,k)-domain.",
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [],
+        "digest": "sha256:fed04d47a30dd61ade0dcadcf292c361ee392cbe79434ca96a0187a48fcbdb7e"
+      },
+      "root/tool/theorem9-specialization-audit": {
+        "id": "root/tool/theorem9-specialization-audit",
+        "programId": "root",
+        "type": "tool",
+        "title": "Exact Theorem 9 specialization and single-output-term audit",
+        "summary": "The supplied standard-library verifier reads the exact structured premise, expands its private-message branches and side conditions, independently constructs the L=3 path rows, normalizes only by I(U,W;A)=I(W;A)+I(U;A|W) and its V analogue, and compares all 30 rows exactly. It also checks the exhaustive 3/12/12/3 single-output term audit used in the product-marginal reduction. The tool establishes only the audited downstream specialization; it performs no PDF authentication, source-fidelity verification, numerical optimization, or proof of the assumed Theorem 9 premise.",
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [],
+        "digest": "sha256:070b63279cc6680c0f9bba5ca57d096c7b660cc8d84f1504921e53e4aa698264"
+      }
+    },
+    "unresolvedDependencyTransactionIds": []
+  },
+  "objectiveAttestation": {
+    "schemaVersion": 1,
+    "requestDigest": "sha256:5e7a694cbea646543618ab37d56dce1c6d6d4fedff6f2c792294ffdc48018998",
+    "runDigest": "sha256:01a32686c0658f76af7e41d9074dff8924d6862e266afb14f5ac6594f86f5a88",
+    "attestationId": "sha256:e0d849b94d74b20f3cf57318001759a474ff81d59223826c9fdd889e943d3e78",
+    "status": "passed",
+    "verifier": {
+      "id": "python-stdlib-3-13-v1",
+      "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+      "implementation": "oci-command-v1"
+    },
+    "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+    "result": {
+      "status": "passed",
+      "exitCode": 0,
+      "timedOut": false
+    },
+    "artifacts": {
+      "verifier-attestation": {
+        "digest": "sha256:ccc0b979d8e8e2d9b5ef8cea738f0202968d7b231acb6080dc2a278d98e2ec9f",
+        "bytes": 2499
+      },
+      "verifier-stderr": {
+        "digest": "sha256:fb02ef70822ffa9f90e27e7893fe14a543b2bf3cbadedab67cd4195946d4587f",
+        "bytes": 915
+      },
+      "verifier-stdout": {
+        "digest": "sha256:416c6071757a563da64db30100d070af9e52793a69d241fccc8b3837172817c1",
+        "bytes": 381
+      }
+    },
+    "stdout": {
+      "text": "PASS: exact row/tensor audit; continuous D1/D2; all priors;\n      three hostile Decimal contexts identical\nU = [0.36929694596920284244271335135600317726937686320586339865039784778686683932875798, 0.36929694596920284244271335135600317726937686320586339865039784778686683932875818]\ncertified rounded headline = 0.369296945969202842443\nregular interval cover: 136 cells; max depth 30\n",
+      "truncated": false,
+      "bytes": 381,
+      "digest": "sha256:416c6071757a563da64db30100d070af9e52793a69d241fccc8b3837172817c1"
+    },
+    "stderr": {
+      "text": "Unable to find image 'python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689' locally\ndocker.io/library/python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689: Pulling from library/python\n8c7716127147: Pulling fs layer\n31fd2a94d723: Pulling fs layer\n66b685f2f76b: Pulling fs layer\n7d456e82f89b: Pulling fs layer\n7d456e82f89b: Waiting\n31fd2a94d723: Download complete\n66b685f2f76b: Verifying Checksum\n66b685f2f76b: Download complete\n8c7716127147: Verifying Checksum\n8c7716127147: Download complete\n7d456e82f89b: Verifying Checksum\n7d456e82f89b: Download complete\n8c7716127147: Pull complete\n31fd2a94d723: Pull complete\n66b685f2f76b: Pull complete\n7d456e82f89b: Pull complete\nDigest: sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nStatus: Downloaded newer image for python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\n",
+      "truncated": false,
+      "bytes": 915,
+      "digest": "sha256:fb02ef70822ffa9f90e27e7893fe14a543b2bf3cbadedab67cd4195946d4587f"
+    }
+  },
+  "packetDigest": "sha256:1c11739aa862fa2b6b1ee7f74f572cceca24d1e537a78b369596a806a558887d"
+}

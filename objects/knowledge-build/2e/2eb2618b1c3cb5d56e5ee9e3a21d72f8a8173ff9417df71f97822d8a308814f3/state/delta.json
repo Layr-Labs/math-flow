@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:70ffaf12fdd8c9d1101a698a9638ba1776e80fa5eafb616507aead77d83cd252",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "status": "active",
+        "parentThreadIds": [],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "root/theorem9-fixed-pair-certificates",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-fixed-pair-certificates",
+        "programId": "root",
+        "title": "Theorem 9 fixed-pair continuous certificates",
+        "summary": "Organize accepted premise-bound upper certificates for specified fixed auxiliary-receiver pairs, including their exact continuous-domain weak-duality proofs and reproducible verifier tools.",
+        "kind": "verification",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/result/fixed-pair-upper-bound-attested",
+      "baseDigest": null,
+      "value": {
+        "id": "root/result/fixed-pair-upper-bound-attested",
+        "programId": "root",
+        "type": "result",
+        "title": "Attested fixed-pair BSSC upper bound",
+        "summary": "Assume the cited Gohari--Liu--Nair Theorem 9 outer-bound premise exactly as stated in the sole declared dependency. For the half-skew BSSC, fix binary auxiliary receivers with P(G=0|X=0)=0.206961624915382, P(G=0|X=1)=0.826953249115544, P(K=0|X=0)=0.173046750884456, and P(K=0|X=1)=0.793038375084618, treating every displayed decimal as exact. The dependency's premise-bound private-message rows and the included exact-rational plus directed-interval weak-duality certificate prove C_sum <= U with U in [0.36929694596920284244271335135600317726937686320586339865039784778686683932875798, 0.36929694596920284244271335135600317726937686320586339865039784778686683932875818], and hence C_sum <= 0.369296945969202842443. This claim concerns only this fixed receiver pair and dual certificate; it does not authenticate or re-prove the cited theorem premise and does not assert receiver or dual optimality, a matching achievable rate, or the exact BSSC sum-capacity.",
+        "claimRefs": [
+          {
+            "transactionId": "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+            "claimKey": "bssc-sum-capacity/fixed-pair-upper-bound-attested"
+          }
+        ],
+        "sourceTransactionIds": [
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [
+          "root/result/theorem9-cited-premise-foundations"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/proof/fixed-pair-upper-bound-attested",
+      "baseDigest": null,
+      "value": {
+        "id": "root/proof/fixed-pair-upper-bound-attested",
+        "programId": "root",
+        "type": "proof",
+        "title": "Continuous weak-duality proof for the attested fixed pair",
+        "summary": "Conditional on the required Theorem 9 foundation, the accepted proof takes an exact nonnegative combination of six audited private-message rows whose rate coefficients are both one, rewrites its information terms using binary-input posterior and martingale identities, and bounds the resulting posterior objectives by affine inner and outer lines. Exact rational curvature and ordering checks cover the analytic regions; fail-closed directed-interval subdivision covers the remaining continuous regions. The martingale identities yield the weak-duality bound, and the resulting prior expression is concave and reflection symmetric, so its all-prior maximum is certified at the fair prior. Directed interval evaluation gives exactly the accepted interval for U and its rounded upper bound. This proof establishes only the accepted fixed-pair conclusion and does not authenticate the assumed theorem premise, prove receiver or dual optimality, supply a matching achievable rate, or determine the exact sum-capacity.",
+        "claimRefs": [
+          {
+            "transactionId": "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+            "claimKey": "bssc-sum-capacity/fixed-pair-upper-bound-attested"
+          }
+        ],
+        "sourceTransactionIds": [
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [
+          "root/result/theorem9-cited-premise-foundations"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/tool/fixed-pair-upper-bound-verifier",
+      "baseDigest": null,
+      "value": {
+        "id": "root/tool/fixed-pair-upper-bound-verifier",
+        "programId": "root",
+        "type": "tool",
+        "title": "Exact and directed-interval verifier for the attested fixed pair",
+        "summary": "The supplied Python standard-library verifier audits the six premise-bound rows and their exact rational tensor combination, checks the continuous affine majorants using exact sign tests and directed Decimal interval subdivision, certifies the all-prior reduction, and requires the computed interval to equal the accepted interval exactly and lie below the rounded headline. It fails closed on unresolved cells, evidence drift, exhausted guards, or failed assertions and repeats the evidence calculation under three hostile ambient Decimal contexts. The tool verifies only the accepted fixed-pair certificate under the required theorem premise; it does not establish receiver or dual optimality or prove the premise itself.",
+        "claimRefs": [
+          {
+            "transactionId": "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+            "claimKey": "bssc-sum-capacity/fixed-pair-upper-bound-attested"
+          }
+        ],
+        "sourceTransactionIds": [
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [
+          "root/result/theorem9-cited-premise-foundations"
+        ]
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+      "claimKeys": [
+        "bssc-sum-capacity/fixed-pair-upper-bound-attested"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/theorem9-fixed-pair-certificates"
+      ],
+      "itemIds": [
+        "root/result/fixed-pair-upper-bound-attested",
+        "root/proof/fixed-pair-upper-bound-attested",
+        "root/tool/fixed-pair-upper-bound-verifier"
+      ]
+    }
+  ]
+}
