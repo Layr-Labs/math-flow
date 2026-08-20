@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 2,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "bf1301b6b472841276f79852c2e7fe0499309684",
+  "problemLedgerDigest": "sha256:3ecb138ccd31a3e5526d69fe431fefdc1fea7484192d5d1a4e8f5d01ef88b52c",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "bf1301b6b472841276f79852c2e7fe0499309684",
+      "ledgerPosition": 8
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-governed-replay",
+      "status": "indeterminate",
+      "premiseStatus": "missing",
+      "summary": "The verifier logic, decoding to 152 distinct points in G_76, exhaustive triple count of 573,800, exact determinant test, conditional inference D(77) >= 152, and the limited semantics of verification.json are sound. However, the record does not independently establish either asserted SHA-256 digest or the decisive concrete execution result that every tested determinant is nonzero and the verifier exits successfully. The allowed dependency repeats the configuration, checker, and claimed output but supplies no independent execution attestation or exhaustive calculation, so the composite claim remains indeterminate.",
+      "scopeQualifications": [
+        "The displayed configuration text agrees with the dependency’s configuration, but byte-for-byte identity is not established; the dependency verifier appears to include an additional terminal blank line.",
+        "No counterexample, malformed decoding, duplicate point, bounds defect, triple-enumeration defect, determinant defect, or logical defect in the conditional lower-bound inference was identified.",
+        "If all 573,800 determinants are nonzero, the decoded set is no-three-in-line in G_76 and therefore certifies D(77) >= 152 because G_76 is contained in G_77.",
+        "verification.json requests the replay and does not itself assert a hosted-success outcome.",
+        "No improved bound, optimality, or exact value of D(77) is assessed or claimed."
+      ],
+      "evidenceIssues": [
+        "No independent hash computation, trusted manifest, or attestation establishes the claimed SHA-256 digest of configuration.txt.",
+        "No independent hash computation, trusted manifest, or attestation establishes the claimed SHA-256 digest of verify.py.",
+        "No authenticated execution transcript, governed replay attestation, determinant output, or independently checkable auxiliary certificate establishes that all 573,800 determinants for this input are nonzero or that the command exited successfully.",
+        "Transaction dfc0cc40d41105292a119840dcdbe6f22860cf43 does not close the execution-evidence gap because it repeats the claimed result without independent execution evidence."
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-governed-replay",
+      "stance": "uncertain",
+      "summary": "The verifier logic, decoding to 152 distinct points in G_76, exhaustive triple count of 573,800, exact determinant test, conditional inference D(77) >= 152, and the limited semantics of verification.json are sound. However, the record does not independently establish either asserted SHA-256 digest or the decisive concrete execution result that every tested determinant is nonzero and the verifier exits successfully. The allowed dependency repeats the configuration, checker, and claimed output but supplies no independent execution attestation or exhaustive calculation, so the composite claim remains indeterminate.",
+      "subjectTransactionIds": [
+        "bf1301b6b472841276f79852c2e7fe0499309684"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    }
+  ],
+  "dependencyPacketDigest": "sha256:59cfef940916fb2f747487939d6304798582a75999126f8be050144a89fe887e",
+  "reportDigest": "sha256:f7b80f4421b3f43b00a25475820d1d9fcd8dff58cb13e32d15d28a68de4f2daf",
+  "judgmentId": "sha256:6f8da491d09bf7a33d706eab084fb1965087a742367c208451814a530e15a28c"
+}
