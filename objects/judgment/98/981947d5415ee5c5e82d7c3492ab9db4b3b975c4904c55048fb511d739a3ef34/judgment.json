@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 2,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+  "problemLedgerDigest": "sha256:93861b5be5b000bcc4874d7036a31b95ff60696f51e16e4995eb5fc9c39c1655",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+      "ledgerPosition": 9
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations",
+      "status": "valid",
+      "premiseStatus": "satisfied",
+      "summary": "Conditional on the expressly assumed encoded Theorem 9 premise, setting R0=0 and expanding all minimum branches and interval side conditions yields exactly 30 scalar rows. The audited information terms use only one auxiliary group with one receiver output, so replacing G,K by their input-only product marginals preserves every required marginal and every row. The premise’s quantifiers then give C_sum <= inf B(G,K) without interchanging sup and inf. The restricted feasible-set inclusions, with sup(empty set)=-infinity, establish V_Q(G,K) <= V(1/2;G,K) <= B(G,K). On Q0={0,1/2,1}, endpoint information functions vanish, so all restricted rows depend on the channels only through (c,g,k,c); an explicit feasible zero-rate hierarchy and binary-output upper bounds show V_0(g,k) is an unambiguous finite real value on the realizable domain.",
+      "scopeQualifications": [
+        "Validity is conditional on the factorization, equations (19a)-(19p), side conditions, and quantifier order encoded in theorem9_spec.json and displayed in SOURCE_TRANSCRIPTION.md.",
+        "The record does not establish fidelity to the cited PDF, correctness of the original Gohari–Liu–Nair theorem, or any PDF-origin, rendering, or visual-semantic assertion.",
+        "The converse infimum ranges over finite-output, binary-input input-only channels T_{G|X} and T_{K|X}.",
+        "V_0(g,k) is asserted to be well defined and finite only on the realizable (g,k)-domain.",
+        "No additional authenticated-source, numerical-bound, cardinality, or continuum-optimization assertion is established."
+      ],
+      "evidenceIssues": [],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations",
+      "stance": "supports",
+      "summary": "Conditional on the expressly assumed encoded Theorem 9 premise, setting R0=0 and expanding all minimum branches and interval side conditions yields exactly 30 scalar rows. The audited information terms use only one auxiliary group with one receiver output, so replacing G,K by their input-only product marginals preserves every required marginal and every row. The premise’s quantifiers then give C_sum <= inf B(G,K) without interchanging sup and inf. The restricted feasible-set inclusions, with sup(empty set)=-infinity, establish V_Q(G,K) <= V(1/2;G,K) <= B(G,K). On Q0={0,1/2,1}, endpoint information functions vanish, so all restricted rows depend on the channels only through (c,g,k,c); an explicit feasible zero-rate hierarchy and binary-output upper bounds show V_0(g,k) is an unambiguous finite real value on the realizable domain.",
+      "subjectTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:79dffb647ef9eb47d6351cb8aacd72f3fbbab8375cf86de1437c01e8293614f2",
+  "reportDigest": "sha256:bae89d90e516e4194f67b015be7c304500b436d278f647b1c0e812476ca82c5c",
+  "judgmentId": "sha256:6e9406ddc5cee907a63ee20d43dddebcfed1a582c1935bc300b1e2896baff912"
+}
