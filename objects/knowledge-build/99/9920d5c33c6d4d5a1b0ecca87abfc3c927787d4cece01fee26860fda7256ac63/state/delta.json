@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:d77f594488dd5db43044f320380d8268097f9bc9066d140503bdbf4244a61aca",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "status": "active",
+        "parentThreadIds": [],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "root/theorem9-private-message-foundations",
+      "baseDigest": "sha256:6988abcfca64a620ee07430d72e034323df47bc4863ee74975ab04d18edd842a",
+      "value": {
+        "id": "root/theorem9-private-message-foundations",
+        "programId": "root",
+        "title": "Theorem 9 private-message specialization foundations",
+        "summary": "Organize accepted conditional consequences of the exactly encoded Gohari--Liu--Nair Theorem 9 premise, including private-message row expansion, auxiliary-receiver marginalization, the resulting receiver-infimum upper-bound formula, finite-grid receiver cardinality reductions, exact Q0 optimization, and midpoint coercivity.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/result/finite-grid-q0-foundations",
+      "baseDigest": null,
+      "value": {
+        "id": "root/result/finite-grid-q0-foundations",
+        "programId": "root",
+        "type": "result",
+        "title": "Finite-grid receiver reduction and exact Q0 foundations",
+        "summary": "Using the accepted private-message 30-row definitions and optimization order of transaction e3c1036ca607539a5ebcddf3058e6014ac5c1cd9, let Q be any N-point posterior grid containing {0,1/2,1}. Every finite-output binary-input receiver has an at-most-N-output replacement with the same mutual-information samples on Q, so inf_{G,K finite} V_Q(G,K) = inf_{|G|,|K|<=N} V_Q(G,K); when Q is reflection closed, inf_{m finite} V_Q(m,m^circ) = inf_{|supp(m)|<=N} V_Q(m,m^circ). For Q0={0,1/2,1} and c=h_2(1/4)-1/2, inf_{G,K finite} V_{Q0}(G,K) = inf_{m finite} V_{Q0}(m,m^circ) = c. Moreover, for every finite-output input-only pair G,K with g=J_G(1/2), k=J_K(1/2), B(G,K) >= V_0(g,k) >= max{F(g),F(k)}, where F(x)=2c max{c,x}/(c+x); consequently, if c <= U < 2c and B(G,K) <= U, then 2c^2/U-c <= g,k <= Uc/(2c-U). These are finite-grid and necessary-coercivity statements only, with no continuum cardinality, limit interchange, or full-functional reflected-optimality assertion.\n\nScope qualifications:\n- Validity is relative to the exact accepted private-message 30-row system supplied by the dependency.\n- The result applies to finite posterior grids and finite-output receivers only.\n- No continuum receiver-cardinality bound or grid-limit interchange is established.\n- No full-functional reflected-optimality or symmetrization assertion for arbitrary receiver pairs is established.\n- No new numerical sum-capacity bound or independent capacity-converse interpretation is established.",
+        "claimRefs": [
+          {
+            "transactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+            "claimKey": "bssc-sum-capacity/finite-grid-q0-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [
+          "root/result/theorem9-cited-premise-foundations"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/proof/finite-grid-q0-foundations",
+      "baseDigest": null,
+      "value": {
+        "id": "root/proof/finite-grid-q0-foundations",
+        "programId": "root",
+        "type": "proof",
+        "title": "Proof of the finite-grid reduction, Q0 infima, and midpoint coercivity",
+        "summary": "Relative to the required accepted 30-row foundation, the accepted proof represents each finite-output binary-input receiver by its finite fair-prior posterior measure and applies Caratheodory compression to preserve all receiver-curve samples on a fixed N-point grid with at most N outputs. Reflection of posterior measures gives the corresponding reduction for an already reflected receiver pair. On Q0, the proof parameterizes supported auxiliary blocks by endpoint-moving refinements, uses the complete 30-row symmetry and the H, L, and X feasible witness families to establish the stated coercive floor, and uses a reflected revealing-erasure receiver together with row SL(1,U) to establish both Q0 infima equal to c. Solving the two branches of the accepted scalar floor gives the stated necessary midpoint window. The proof establishes only the accepted finite-grid and necessary-coercivity statements and supplies no continuum cardinality theorem, grid-limit interchange, arbitrary-pair symmetrization, full-functional reflected optimality, or new capacity bound.",
+        "claimRefs": [
+          {
+            "transactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+            "claimKey": "bssc-sum-capacity/finite-grid-q0-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [
+          "root/result/theorem9-cited-premise-foundations"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/tool/finite-grid-q0-verifier",
+      "baseDigest": null,
+      "value": {
+        "id": "root/tool/finite-grid-q0-verifier",
+        "programId": "root",
+        "type": "tool",
+        "title": "Exact symbolic verifier for the Q0 coercivity certificate",
+        "summary": "The supplied Python standard-library verifier requires the accepted foundation transaction as its sole logical dependency, independently rebuilds the 30 private-message rows, checks their reviewed canonical signature and skew symmetry, and verifies every row slack and block-box slack for the H, L, and X witness families by exact coefficientwise nonnegativity over rational polynomials. It also verifies that row SL(1,U) has constant coefficient one when all four Q0 sampled receiver curves agree. The tool uses no floating point, optimizer, third-party package, or network request. It audits the exact symbolic portions of the accepted proof but does not re-prove Caratheodory's theorem, establish continuum cardinality or limit interchange, or provide a capacity bound.",
+        "claimRefs": [
+          {
+            "transactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+            "claimKey": "bssc-sum-capacity/finite-grid-q0-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [
+          "root/result/theorem9-cited-premise-foundations"
+        ]
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+      "claimKeys": [
+        "bssc-sum-capacity/finite-grid-q0-foundations"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/theorem9-private-message-foundations"
+      ],
+      "itemIds": [
+        "root/result/finite-grid-q0-foundations",
+        "root/proof/finite-grid-q0-foundations",
+        "root/tool/finite-grid-q0-verifier"
+      ]
+    }
+  ]
+}
