@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 2,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "54ace2045150d21f8ac4c06b3dde8d109fc82e0f",
+  "problemLedgerDigest": "sha256:dd6920770481c1ca12a7206fba559bc23712e5ef3a97a8f4592a2abbb0529e3d",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "54ace2045150d21f8ac4c06b3dde8d109fc82e0f",
+      "ledgerPosition": 8
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-render-complete-audit",
+      "status": "indeterminate",
+      "premiseStatus": "missing",
+      "summary": "The conjunctive claim is not fully established. Conditional on the stated transcription, factorization, and completeness of the term inventory, the 30-row expansion and R0=0 specialization, input-only product marginalization, extended-real inequalities, Q0 channel reduction, and finiteness of V0 are mathematically sound. However, exact fidelity to the primary-source PDF and the asserted fail-closed, render-complete semantic certification remain unverified, so the all-or-nothing claim cannot be rated valid.",
+      "scopeQualifications": [
+        "The 30-row count is correct conditional on the transcription: 26 rows from equations (19a)–(19p), plus four scalar rows from the two side conditions.",
+        "The local row equivalence after setting R0=0 is correct conditional on the encoded equations; the mutual-information chain-rule normalization used is valid.",
+        "Product marginalization preserves the system conditional on the stated factorization and a complete inventory containing only single-output terms; no audited term may jointly involve G and K or condition one output on the other.",
+        "The inequalities V_Q(G,K) <= V(1/2;G,K) <= B(G,K) follow directly from feasible-set inclusion and the supremum definition, including the convention sup(empty set)=-infinity.",
+        "The Q0 reduction is valid conditional on completeness of the term list: every supported row depends on the channels through (c,g,k,c), with c=h2(1/4)-1/2.",
+        "The explicit feasible zero-rate construction and binary-output entropy bounds establish that V0 is nonempty, bounded, and finite."
+      ],
+      "evidenceIssues": [
+        "The committed GK-outer.pdf bytes and an independently authenticated copy were not supplied.",
+        "No successful governed-verifier output, signed attestation, or other auditable execution record was supplied; verification.json only specifies an execution setup.",
+        "The claimed PDF digest, byte length, xref/object profile, page glyph stream, equation comparisons, and final 30-row comparison therefore cannot be checked.",
+        "SOURCE_TRANSCRIPTION.md is part of the contribution under audit and is not independent evidence of the absent source PDF's contents.",
+        "The renderer inventories encrypted Type1 CharString names but does not decode and execute each glyph outline, so glyph names and ToUnicode mappings do not by themselves prove painted visual semantics.",
+        "Pinned font hashes lack an independent certificate connecting the font bytes to the claimed glyph outlines.",
+        "Glyph rectangles derive from FontBBox rather than actual CharString outlines, leaving painted-shape containment, clipping, and nonoverlap uncertified.",
+        "The geometry digest binds extractor metadata and derived rectangles, not actual rendering or glyph-outline semantics."
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-render-complete-audit",
+      "stance": "uncertain",
+      "summary": "The conjunctive claim is not fully established. Conditional on the stated transcription, factorization, and completeness of the term inventory, the 30-row expansion and R0=0 specialization, input-only product marginalization, extended-real inequalities, Q0 channel reduction, and finiteness of V0 are mathematically sound. However, exact fidelity to the primary-source PDF and the asserted fail-closed, render-complete semantic certification remain unverified, so the all-or-nothing claim cannot be rated valid.",
+      "subjectTransactionIds": [
+        "54ace2045150d21f8ac4c06b3dde8d109fc82e0f"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:bb2861cc5ebef2265bacaf09a623bf2ef5cc22c7862dd0a547c638d2e8a445bf",
+  "reportDigest": "sha256:e95bcab2f37eae498d11bde80555ca8403c704bd634ead6c405618f6d5187cf1",
+  "judgmentId": "sha256:c727ecfc221e5506e703f83c47e16c3316050b9624b4863b8fa450d36d25ce03"
+}
