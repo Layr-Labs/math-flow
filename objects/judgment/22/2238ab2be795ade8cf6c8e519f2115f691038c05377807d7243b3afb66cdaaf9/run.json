@@ -1,0 +1,122 @@
+{
+  "protocolVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "54ace2045150d21f8ac4c06b3dde8d109fc82e0f",
+  "problemLedgerHead": "54ace2045150d21f8ac4c06b3dde8d109fc82e0f",
+  "problemLedgerDigest": "sha256:dd6920770481c1ca12a7206fba559bc23712e5ef3a97a8f4592a2abbb0529e3d",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "runner": {
+    "implementation": "openrouter-validity-judgment-v3",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "claim-evidence-packet-v3",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "report-extract-validity-v3",
+    "reducer": null
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/validity-judgment-v3",
+  "requestDigests": [
+    "sha256:9acbc7b50b4c0bdda03677858e5a24de11803599e57bbe6cca63214a7560f2b5",
+    "sha256:4ede4e5995eef4f4aa7b6828b8994c33a8d320343e4f19b9cdd80a64fd60ea62"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "report",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787238776-oGysoiemVUo3AZyodODT",
+      "usage": {
+        "prompt_tokens": 34817,
+        "completion_tokens": 7026,
+        "total_tokens": 41843,
+        "cost": 0.21419125,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 34814,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.21419125,
+          "upstream_inference_prompt_cost": 0.10880125,
+          "upstream_inference_completions_cost": 0.10539
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 5696,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    },
+    {
+      "provider": "openrouter",
+      "stage": "extract",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787238896-eRVNN0qCawvZY7WnW4VG",
+      "usage": {
+        "prompt_tokens": 1963,
+        "completion_tokens": 864,
+        "total_tokens": 2827,
+        "cost": 0.0190925,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 1960,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.0190925,
+          "upstream_inference_prompt_cost": 0.0061325,
+          "upstream_inference_completions_cost": 0.01296
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 285,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "judgment",
+  "inputs": {
+    "subjectTransactionIds": [
+      "54ace2045150d21f8ac4c06b3dde8d109fc82e0f"
+    ],
+    "declaredReferenceTransactionIds": [],
+    "dependencyPacketDigest": "sha256:c9619d2f6e177056e1b82ad3a96cdd99b188874bce79a8257edd60f098c1ed62",
+    "objectiveAttestationRunDigest": "sha256:cd00318a6134f597dbe302de8454d7222361ce3593cc9743c94f0b4bda17d626",
+    "knowledgeContext": null
+  },
+  "artifacts": [
+    {
+      "path": "dependency-packet.json",
+      "role": "judgment-dependency-packet",
+      "mediaType": "application/json",
+      "digest": "sha256:525190bb73c7ca18b7a4754d25f9ffd23c8b72b0aeeafa33e46cd76e10876247",
+      "bytes": 6751
+    },
+    {
+      "path": "judgment.json",
+      "role": "judgment-record",
+      "mediaType": "application/json",
+      "digest": "sha256:e45bd6ce005259af0c473e506c16a0ac552dbd90e1d93a704dcd46ef7950448c",
+      "bytes": 4400
+    },
+    {
+      "path": "report.md",
+      "role": "judgment-report",
+      "mediaType": "text/markdown",
+      "digest": "sha256:ca0e323d5672ce114e72477f6577201cda95351858fc9562c408b7604c24edc6",
+      "bytes": 4898
+    }
+  ]
+}

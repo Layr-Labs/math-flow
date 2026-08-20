@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 3,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "54ace2045150d21f8ac4c06b3dde8d109fc82e0f",
+  "problemLedgerDigest": "sha256:dd6920770481c1ca12a7206fba559bc23712e5ef3a97a8f4592a2abbb0529e3d",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "54ace2045150d21f8ac4c06b3dde8d109fc82e0f",
+      "ledgerPosition": 8
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-render-complete-audit",
+      "status": "indeterminate",
+      "premiseStatus": "satisfied",
+      "summary": "The private-message specialization, 30-row algebraic equivalence, input-only product marginalization, extended-real inequalities, Q0 midpoint dependence, and finiteness of V_0 are established conditional on the structured transcription. However, the checker does not establish the claimed render-complete visible-glyph semantic equivalence to the official PDF, so the composite source-fidelity claim remains unresolved.",
+      "scopeQualifications": [
+        "The correctness of Gohari–Liu–Nair Theorem 9 is taken as a primary-source premise and is not independently reproved.",
+        "Setting R0=0, expanding each minimum into scalar branches, and splitting interval constraints yields exactly 30 rows: 26 branch rows and 4 interval rows.",
+        "The local and transcribed rows agree modulo the identities I(U,W;A)=I(W;A)+I(U;A|W) and I(V,W;A)=I(W;A)+I(V;A|W).",
+        "Product input-only marginalization preserves all audited single-output terms and side conditions because the term list contains neither joint (G,K) terms nor conditioning of one receiver output on another; reverse inclusion is immediate.",
+        "With sup(empty set)=-infinity, feasible-set restriction and q=1/2 membership establish V_Q(G,K) <= V(1/2;G,K) <= B(G,K).",
+        "For Q0={0,1/2,1}, endpoint mutual informations vanish, so every audited row depends on the receiver channels only through midpoint values (c,g,k,c).",
+        "The Q0-supported feasible set is nonempty, and branch-zero bounds give 0 <= V_0(g,k) <= 2; thus V_0 is finite and unambiguous for realizable g,k."
+      ],
+      "evidenceIssues": [
+        "The terminal attestation proves successful execution and checker acceptance, including PDF authentication, structural and geometry checks, extracted-character comparison, all 30 generated-row comparisons, and the single-output term whitelist.",
+        "The Type1 handling inventories CharString names and binds whole-font bytes by hashes but does not parse or execute Type1 CharString programs to verify the actually painted glyph outlines.",
+        "ToUnicode mappings, glyph names, widths, declared bounding boxes, CharStrings-dictionary membership, and hard-coded font hashes do not independently establish that visible glyph shapes have the asserted Unicode semantics.",
+        "Accordingly, successful checker acceptance does not prove the stronger claimed render-complete semantic equivalence; because source fidelity is a conjunct of the declared composite claim, the conditional correctness of the later mathematics is insufficient for a valid verdict."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-render-complete-audit",
+      "stance": "uncertain",
+      "summary": "The private-message specialization, 30-row algebraic equivalence, input-only product marginalization, extended-real inequalities, Q0 midpoint dependence, and finiteness of V_0 are established conditional on the structured transcription. However, the checker does not establish the claimed render-complete visible-glyph semantic equivalence to the official PDF, so the composite source-fidelity claim remains unresolved.",
+      "subjectTransactionIds": [
+        "54ace2045150d21f8ac4c06b3dde8d109fc82e0f"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:c9619d2f6e177056e1b82ad3a96cdd99b188874bce79a8257edd60f098c1ed62",
+  "reportDigest": "sha256:ca0e323d5672ce114e72477f6577201cda95351858fc9562c408b7604c24edc6",
+  "judgmentId": "sha256:e0be85289f80add3052ecc6924fcc3ba675a26e01e7134823a0f0f79d9e3016f"
+}
