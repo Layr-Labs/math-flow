@@ -1,0 +1,502 @@
+{
+  "schemaVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+  "baseStateDigest": "sha256:555441f11e25df4899d1341b3cff16df08f6a7f527564e0ce913381a97318013",
+  "rootProgramId": "root",
+  "programs": {
+    "root": {
+      "id": "root",
+      "parentId": null,
+      "title": "Canonical problem",
+      "objective": "Resolve the canonical problem.",
+      "status": "active",
+      "parentThreadIds": [],
+      "sourceTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "digest": "sha256:df79ef7389f1f766b7136af9223a9970bc413ac61ac2a46807f9987fde3d134e"
+    }
+  },
+  "threads": {
+    "root/unstructured-search": {
+      "id": "root/unstructured-search",
+      "programId": "root",
+      "title": "Unstructured search and overhead",
+      "summary": "Future work not yet assigned to a more specific research thread.",
+      "kind": "unstructured",
+      "status": "active",
+      "expectedExposure": "1",
+      "conditions": [],
+      "sourceTransactionIds": [],
+      "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+    },
+    "root/code-induced-converse-structure": {
+      "id": "root/code-induced-converse-structure",
+      "programId": "root",
+      "title": "Code-induced converse structure",
+      "summary": "Study exact necessary conditions inherited from deterministic private-message codes, including dependence balance, fixed-coordinate encoder structure, compatible rate rows, and the unresolved support-reduction problem.",
+      "kind": "research",
+      "status": "active",
+      "expectedExposure": "1",
+      "conditions": [],
+      "sourceTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "digest": "sha256:350ad728e8d51265925d63466dc2a16000d8b1f7ef391690780424b2f09270b4"
+    },
+    "root/entropy-copy-relaxation-limits": {
+      "id": "root/entropy-copy-relaxation-limits",
+      "programId": "root",
+      "title": "Entropy/copy relaxation limits and channel-specific constraints",
+      "summary": "Determine the limits of coarse entropy/copy refinements of code-induced converse constraints and pursue exact binary-posterior or other channel-specific consistency constraints that are not captured by universal entropy geometry.",
+      "kind": "research",
+      "status": "active",
+      "expectedExposure": "1",
+      "conditions": [],
+      "sourceTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "digest": "sha256:d35ca878bc2346295f791db8f8eea5f04a746e47cd64b3159cf7606860b4904e"
+    },
+    "root/relaxed-uv-functional-tensorization": {
+      "id": "root/relaxed-uv-functional-tensorization",
+      "programId": "root",
+      "title": "Separately relaxed UV scalar tensorization",
+      "summary": "Study product additivity, receiver-skew symmetry, and exact evaluation of the separately relaxed scalar UV sum-rate functionals, without extending conclusions to the full UV region, common joint-(U,V) optimization, GK functional, broader converse systems, or capacity.",
+      "kind": "research",
+      "status": "active",
+      "expectedExposure": "1",
+      "conditions": [],
+      "sourceTransactionIds": [
+        "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9"
+      ],
+      "digest": "sha256:16544f574ed029d233114fa892ef5ecf5cdf84271ee3872e31b59cc79b48877f"
+    },
+    "root/theorem9-cited-premise-converse-foundations": {
+      "id": "root/theorem9-cited-premise-converse-foundations",
+      "programId": "root",
+      "title": "Cited-premise Theorem 9 private-message converse foundations",
+      "summary": "Develop the private-message specialization, auxiliary-receiver marginalization, and restricted-posterior foundations that follow conditionally from the explicitly encoded Gohari--Liu--Nair Theorem 9 premise, without asserting source fidelity, authenticating that premise, or claiming a numerical capacity bound.",
+      "kind": "research",
+      "status": "active",
+      "expectedExposure": "1",
+      "conditions": [],
+      "sourceTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ],
+      "digest": "sha256:1a03415fd4b2b26e285d5ceaf6e501be06823ee1638bb7a3baae00f951cdad57"
+    },
+    "root/finite-grid-q0-foundations": {
+      "id": "root/finite-grid-q0-foundations",
+      "programId": "root",
+      "title": "Finite-grid receiver reduction and exact Q0 foundations",
+      "summary": "Develop exact finite-posterior-grid receiver reductions, solve the Q0 sampled optimization, and derive midpoint coercivity conditions within the accepted conditional Theorem 9 private-message framework, without asserting continuum cardinality, limit interchange, full-functional reflected optimality, or an unconditional capacity converse.",
+      "kind": "research",
+      "status": "active",
+      "expectedExposure": "1",
+      "conditions": [
+        "Conditional on the accepted private-message 30-row outer-bound premise and definitions of transaction e3c1036ca607539a5ebcddf3058e6014ac5c1cd9."
+      ],
+      "sourceTransactionIds": [
+        "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+      ],
+      "digest": "sha256:da92fb3b18e310d711c0541ba66f4f5a51a34e56e6f7f19c96702f4c568032ba"
+    }
+  },
+  "items": {
+    "root/result/finite-block-code-induced-balance": {
+      "id": "root/result/finite-block-code-induced-balance",
+      "programId": "root",
+      "type": "result",
+      "title": "Finite-block code-induced dependence balance and compatible rate rows",
+      "summary": "This is the finite-block component of an attributed, independently audited port of the consecutive accepted Yukon artifacts `upper-dependence-balance` and `upper-entropy-nogo`, which together form one dependency-complete structural result. Let A and B be independent uniform private messages of sizes N₁,N₂≥2, encoded deterministically over n uses of a finite-alphabet memoryless broadcast channel. Receiver Y estimates A with average error p₁ and receiver Z estimates B with average error p₂. Define Fⱼ=h₂(pⱼ)+pⱼ log₂(Nⱼ−1), δⱼ=Fⱼ/n, and Sᵢ=(Yⁱ⁻¹,Zᵢ₊₁ⁿ). Then exactly\n\nΣᵢ₌₁ⁿ [I(A;B∣Sᵢ,Yᵢ)−I(A;B∣Sᵢ,Zᵢ)] = I(A;B∣Yⁿ)−I(A;B∣Zⁿ).\n\nBoth endpoints are nonnegative, while Fano bounds them by F₁ and F₂, respectively. With independent uniform time T and U=A, V=B, W=S_T, X=X_T, Y=Y_T, Z=Z_T, every such code induces\n\n|I(U;V∣W,T,Y)−I(U;V∣W,T,Z)| ≤ max{δ₁,δ₂}.\n\nThe complete induced law retains the fixed coordinate map:\n\np(t,u,v,w,x,y,z)=(1/n)p_U(u)p_V(v)p(w∣u,v,t) 1{x=f_t(u,v)}P_{YZ∣X}(y,z∣x).\n\nIn particular, U⊥V, T⊥(U,V), X=f_T(U,V), and realized W cannot select another encoder map after (u,v,t) are fixed. With Rⱼ=(1/n)log₂Nⱼ, the same variables satisfy\n\nR₁≤I(U,W;Y∣T)+δ₁,\nR₂≤I(V,W;Z∣T)+δ₂,\nR₁+R₂≤I(U,W;Y∣T)+I(X;Z∣U,W,T)+δ₁+δ₂,\nR₁+R₂≤I(V,W;Z∣T)+I(X;Y∣V,W,T)+δ₁+δ₂.\n\nThis is an exact sequence-level necessary condition. The message alphabets and W may grow with blocklength, so it is not by itself a fixed-cardinality single-letter outer region and does not establish a new capacity upper bound.",
+      "claimRefs": [
+        {
+          "transactionId": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "claimKey": "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go"
+        }
+      ],
+      "sourceTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "dependencyItemIds": [
+        "root/proof/finite-block-balance-and-rate-rows"
+      ],
+      "digest": "sha256:9f8e09a8d3babf06c433418f6c7451a87944112a6e7fc9dbd5f66884576666fb"
+    },
+    "root/result/entropy-copy-no-go": {
+      "id": "root/result/entropy-copy-no-go",
+      "programId": "root",
+      "type": "result",
+      "title": "Exact entropy/copy no-go theorem for the stated coarse BSSC relaxation",
+      "summary": "At uniform input, put h=h₂(1/4), c=h−1/2, and r=h−3/4. Consider the coarse entropy relaxation imposing: (i) the complete seven nonempty entropies of the common-noise BSSC coupling, namely H(X)=1, H(Y)=H(Z)=h, H(X,Y)=H(X,Z)=H(Y,Z)=3/2, and H(X,Y,Z)=2; (ii) message/time independence, deterministic encoding, the fixed-map equality, the memoryless Markov equality, and exact dependence balance; (iii) every conditional BEC identity I(L;Y,Z∣K)=(1/2)I(L;X∣K) for disjoint subtuples L,K⊆{U,V,W,T}, L nonempty; and (iv) the two sharp scalar BSSC posterior-support inequalities with right side r. There is an actual finite entropic point satisfying all these constraints for which both direct sum branches equal\n\n2h₂(1/4)−5/4 = 0.3725562489182657… .\n\nConsequently, adding any collection of universally valid finite-variable information inequalities, including unknown non-Shannon inequalities, cannot lower this relaxation below that value. Nor can any finite sequence of standard copy-lemma extensions: each copy step can be realized by conditional resampling of the finite witness while preserving its original marginal and objective. The witness is deliberately not a binary BSSC distribution: X is a tuple of six nondegenerate independent binary components. Exact binary-posterior or other channel-specific consistency constraints exclude it and remain viable. The theorem obstructs only the stated coarse entropy/copy relaxation and finite sequences of standard copy-lemma extensions; it does not establish a new capacity upper bound.",
+      "claimRefs": [
+        {
+          "transactionId": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "claimKey": "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go"
+        }
+      ],
+      "sourceTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "dependencyItemIds": [
+        "root/result/finite-block-code-induced-balance",
+        "root/proof/entropy-counterfeit-witness"
+      ],
+      "digest": "sha256:284ae85dd13ef6261751a6343aeffab1d3faeca685e9f920eea7a5e788007935"
+    },
+    "root/proof/finite-block-balance-and-rate-rows": {
+      "id": "root/proof/finite-block-balance-and-rate-rows",
+      "programId": "root",
+      "type": "proof",
+      "title": "Telescope, Fano, fixed-map factorization, and conditioned Csiszár proof",
+      "summary": "Set Dᵢ=I(A;B∣Yⁱ,Zᵢ₊₁ⁿ) for 0≤i≤n. The ith balance summand is exactly Dᵢ−Dᵢ₋₁, so summation gives the claimed endpoint telescope without a channel inequality. Separate Fano bounds control D_n by F₁ and D₀ by F₂. After uniform time sharing, memorylessness and deterministic encoding give the fixed-coordinate induced-law factorization because, conditional on (A,B,T), the current input is fixed and the current output is independent of the past/future outputs in W. The individual rate rows follow from Fano and forward or reverse chain rules. The two sum-rate rows follow from conditioned Csiszár sum identities; the uncancelled remainders are respectively ΣᵢI(Yⁱ⁻¹;Yᵢ) and ΣᵢI(Zᵢ₊₁ⁿ;Zᵢ), hence nonnegative.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "dependencyItemIds": [],
+      "digest": "sha256:79bbf5755353e89b36fa57f568d414276055d9aa77c4c7573d9915f0fe714c13"
+    },
+    "root/proof/entropy-counterfeit-witness": {
+      "id": "root/proof/entropy-counterfeit-witness",
+      "programId": "root",
+      "type": "proof",
+      "title": "Posterior-support calculation and finite entropic counterfeit construction",
+      "summary": "For g(q)=I_Z(q)−I_Y(q), direct differentiation gives g″(q)=(2q−1)/(ln(2)q(1−q)(1+q)(2−q)), so g is concave through 1/2 and convex thereafter. The exact identities g(1/5)=(8/5)r and g′(1/5)=−2r make 2r(1−q) a global upper support. A posterior mixture of mass 5/8 at 1/5 and 3/8 at 1 has mean 1/2 and support value r; reflection gives the other direction. The finite witness uses mutually independent binary components C,A,B1c,B2c,Eu,Ev,Ny,Nz with respective entropies 2r, 1−h, r, 7/4−2h, 1/2−r, r, 1/2, 1/2, and tuple variables U=(C,A,B2c,Eu), V=(B1c,Ev), X=(C,A,B1c,B2c,Eu,Ev), Y=(C,A,Ny), Z=(C,B1c,B2c,Nz), with W,T constant. Component-set intersections verify the complete base entropy vector, structural equalities, all conditional BEC identities, exact dependence balance, both support rows, and both objective branches. Because this is an actual finite distribution, every universally valid finite-variable information inequality holds. Conditional resampling realizes each finite standard copy-lemma extension while preserving the original marginal and objective.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "dependencyItemIds": [
+        "root/result/finite-block-code-induced-balance"
+      ],
+      "digest": "sha256:b2484b014720d6e7ff8b6f1984d9fa53302a917adeb256e5ddba8fdb3e429bb2"
+    },
+    "root/tool/exact-entropy-witness-checker": {
+      "id": "root/tool/exact-entropy-witness-checker",
+      "programId": "root",
+      "type": "tool",
+      "title": "Exact affine-in-h entropy-witness checker",
+      "summary": "A reproducible standard-library Python checker represents every component entropy as an exact rational affine expression a+bh with h=h₂(1/4). Using weighted component unions and intersections rather than floating-point arithmetic, it checks positivity from 3/4<h<7/8, the complete base entropy vector and structural equalities, both zero-valued dependence-balance sides, all 65 disjoint-subtuple conditional BEC identities, both sharp support rows, and both objective branches at 2h₂(1/4)−5/4. It reports successful exact audits for the affine-in-h construction, the 65 BEC identities, dependence balance, support rows, and both branches.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "dependencyItemIds": [
+        "root/proof/entropy-counterfeit-witness"
+      ],
+      "digest": "sha256:4963f55b82c097876dd396146119cda030a92bcc5d1e7d279d53bee04aad69a4"
+    },
+    "root/question/safe-support-reduction": {
+      "id": "root/question/safe-support-reduction",
+      "programId": "root",
+      "type": "question",
+      "title": "Safe support reduction for code-induced laws",
+      "summary": "Is there a cardinality or compactness reduction that simultaneously preserves U⊥V, T⊥(U,V), X=f_T(U,V), I(X;W∣U,V,T)=0, both sides of the code-induced dependence-balance constraint, and all four compatible rate rows? The accepted result supplies no such reduction.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "dependencyItemIds": [
+        "root/result/finite-block-code-induced-balance"
+      ],
+      "digest": "sha256:6a7d0e64ff21cb99a1818c6eb05505efb3d72bb2614b125c89bd6b57fde6bcb8"
+    },
+    "root/question/binary-posterior-penalty": {
+      "id": "root/question/binary-posterior-penalty",
+      "programId": "root",
+      "type": "question",
+      "title": "Exact penalty from jointly consistent binary BSSC posteriors",
+      "summary": "Find an exact inequality for jointly consistent binary BSSC posterior refinements that supplies a strict penalty absent from universal entropy geometry. Exact binary-posterior or other channel-specific consistency constraints can exclude the accepted tuple-valued counterfeit and remain viable.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "dependencyItemIds": [
+        "root/result/entropy-copy-no-go"
+      ],
+      "digest": "sha256:f223f1ddb1b9f7806c03fefe7bcea21e0045f7459d33b015e2df258281d2659a"
+    },
+    "root/result/separately-relaxed-uv-tensorization": {
+      "id": "root/result/separately-relaxed-uv-tensorization",
+      "programId": "root",
+      "type": "result",
+      "title": "Product tensorization of separately relaxed UV scalar functionals",
+      "summary": "For a finite-alphabet discrete memoryless broadcast channel W and input law p, define t_W(p)=I_p(X;Y)−I_p(X;Z), let 𝔠[f](p) be the upper concave envelope of f at p, and put A_W(p)=I_p(X;Y)+𝔠[−t_W](p), D_W(p)=I_p(X;Z)+𝔠[t_W](p), B_avg(W)=sup_p(A_W(p)+D_W(p))/2, and B_br(W)=sup_p min{A_W(p),D_W(p)}. For finite-alphabet discrete memoryless broadcast channels, the averaged separately-relaxed UV sum-rate functional defined in this contribution is exactly additive under products. On a receiver-skew channel the branchwise functional equals the averaged functional, and the same equality and additivity hold for every finite product of receiver-skew channels. Consequently, for the half-skew BSSC P and every integer n >= 1, both functionals on P^{times n} equal n(2 h_2(1/4) - 5/4) bits. This is a theorem only about the two separately-relaxed scalar UV functionals, not about tensorization of the full UV region, a common joint-(U,V) optimization, the GK functional, or the capacity itself. The BSSC specialization relies on the previously accepted sharp scalar BSSC posterior-support inequality and contact identity.",
+      "claimRefs": [
+        {
+          "transactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "claimKey": "bssc-sum-capacity/uv-relaxed-converse-tensorization"
+        }
+      ],
+      "sourceTransactionIds": [
+        "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "dependencyItemIds": [
+        "root/proof/separately-relaxed-uv-product-and-skew-proof",
+        "root/result/entropy-copy-no-go"
+      ],
+      "digest": "sha256:53727893eb533ef934f2971ffbecbe56dc6a74e5b0b4b04a7695d2310e54c16d"
+    },
+    "root/proof/separately-relaxed-uv-product-and-skew-proof": {
+      "id": "root/proof/separately-relaxed-uv-product-and-skew-proof",
+      "programId": "root",
+      "type": "proof",
+      "title": "Concave-envelope product decomposition and receiver-skew symmetrization",
+      "summary": "For a product channel, opposite-order mutual-information expansions and the Csiszár sum identity decompose the conditional receiver-information difference into factorwise terms. Applying this to every posterior ensemble bounds the upper concave envelopes of t and −t by the sums of their factor envelopes, including for correlated product inputs and auxiliaries joint across factors. Output entropy subadditivity supplies the corresponding A and D upper bounds. Product input laws and independent products of factor posterior ensembles give the reverse inequalities, proving exact additivity of B_avg without an attainment assumption. For a receiver-skew involution S, relabeling gives A(Sp)=D(p) and D(Sp)=A(p); concavity at (p+Sp)/2 then proves B_br=B_avg and permits restriction to invariant input laws. Product involutions extend this equality and additivity to finite products. For the half-skew BSSC, the invariant binary input is uniform, and the previously accepted sharp posterior-support inequality together with its attaining posterior mixture evaluates both envelopes there as h_2(1/4)−3/4, yielding n(2h_2(1/4)−5/4).",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "dependencyItemIds": [
+        "root/result/entropy-copy-no-go"
+      ],
+      "digest": "sha256:f2cfba6e4464708258f9e40e76b0eb726c432cb369804c36b0c91853514b65a4"
+    },
+    "root/tool/uv-bssc-specialization-checker": {
+      "id": "root/tool/uv-bssc-specialization-checker",
+      "programId": "root",
+      "type": "tool",
+      "title": "High-precision half-skew BSSC relaxed-UV specialization checker",
+      "summary": "A reproducible standard-library Python script evaluates the BSSC mutual-information formulas at 90-decimal precision, checks the support contact at q=4/5, the attaining posterior mixture with masses 5/8 and 3/8, the receiver-skew channel relations, and the normalized value 2h_2(1/4)−5/4. It corroborates the exact BSSC specialization; the universal product and symmetry theorem rests on the analytic proof.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9"
+      ],
+      "dependencyItemIds": [
+        "root/result/separately-relaxed-uv-tensorization",
+        "root/proof/separately-relaxed-uv-product-and-skew-proof"
+      ],
+      "digest": "sha256:f4c050e13a2266d98288906c2f96ed548c31a8da5377dc67f00084afc6484e7f"
+    },
+    "root/result/theorem9-cited-premise-private-message-foundations": {
+      "id": "root/result/theorem9-cited-premise-private-message-foundations",
+      "programId": "root",
+      "type": "result",
+      "title": "Conditional Theorem 9 private-message specialization and input-only receiver reduction",
+      "summary": "Accepted statement (exact): Assume the cited Gohari--Liu--Nair Theorem 9 outer-bound premise exactly as encoded in theorem9_spec.json and displayed for review in SOURCE_TRANSCRIPTION.md: for every finite auxiliary-receiver law T_{G,K|X,Y,Z}, achievable rates obey the stated factorization, equations (19a)-(19p), and both side conditions. Then setting R0=0 and exhaustively expanding the displayed minima and interval conditions gives exactly the independently generated local 30-row system; the exhaustive single-output term audit proves that replacing G,K by their input-only product marginals preserves the entire system, and hence for the physical BSSC C_sum <= inf_{finite-output binary-input T_{G|X},T_{K|X}} B(G,K). With the explicit extended-real local definitions (including sup(empty set)=-infinity), V_Q(G,K) <= V(1/2;G,K) <= B(G,K), and every Q0-supported row depends on the receiver channels only through (c,g,k,c), making V_0(g,k) finite and well defined on its realizable (g,k)-domain. No PDF-origin, source-fidelity, rendering, or visual-semantic assertion is part of this claim.\n\nScope qualifications (exact): Validity is conditional on the factorization, equations (19a)-(19p), side conditions, and quantifier order encoded in theorem9_spec.json and displayed in SOURCE_TRANSCRIPTION.md. The record does not establish fidelity to the cited PDF, correctness of the original Gohari–Liu–Nair theorem, or any PDF-origin, rendering, or visual-semantic assertion. The converse infimum ranges over finite-output, binary-input input-only channels T_{G|X} and T_{K|X}. V_0(g,k) is asserted to be well defined and finite only on the realizable (g,k)-domain. No additional authenticated-source, numerical-bound, cardinality, or continuum-optimization assertion is established.",
+      "claimRefs": [
+        {
+          "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+        }
+      ],
+      "sourceTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ],
+      "dependencyItemIds": [
+        "root/proof/theorem9-specialization-and-marginalization"
+      ],
+      "digest": "sha256:73ac586aaf4a0acba14fb46332ae6043048c988d83db3bddd2d3d479ec692915"
+    },
+    "root/proof/theorem9-specialization-and-marginalization": {
+      "id": "root/proof/theorem9-specialization-and-marginalization",
+      "programId": "root",
+      "type": "proof",
+      "title": "Proof of the conditional 30-row specialization, marginalization, and restricted-value consequences",
+      "summary": "Starting from the explicitly assumed encoded Theorem 9 premise, set R0=0, expand the displayed minima into 26 scalar rows, and split the two interval side conditions into four nonnegative-slack rows. Exact comparison with the independently generated local path rows establishes the stated 30-row specialization. The exhaustive output-term audit shows that every information term contains only one auxiliary group and one receiver output; consequently, replacing an admitted joint auxiliary-receiver law by the product of its input-only G and K marginals preserves each required marginal and every row. The premise's quantifier order then gives the stated infimum bound without interchanging the receiver infimum and input-prior supremum. Restricted feasible-set inclusion gives V_Q(G,K) <= V(1/2;G,K) <= B(G,K). For Q0-supported hierarchies, the endpoint receiver-information functions vanish, so the posterior identities reduce every audited row to the four midpoint values (c,g,k,c). The explicit zero-rate hierarchy and binary-output individual-rate bounds establish the claimed finiteness on the realizable (g,k)-domain.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ],
+      "dependencyItemIds": [
+        "root/method/theorem9-row-and-output-term-audit"
+      ],
+      "digest": "sha256:7ef9621e536130758fb684b9b81240898b0ec79dba5fc7a09a7455fb95a396c6"
+    },
+    "root/method/theorem9-row-and-output-term-audit": {
+      "id": "root/method/theorem9-row-and-output-term-audit",
+      "programId": "root",
+      "type": "method",
+      "title": "Structured-premise row expansion and exhaustive single-output term audit",
+      "summary": "The accepted claim is established using two exact constructions of the private-message constraint system: direct expansion of the structured equations (19a)-(19p) and side conditions, and independent generation from generic three-link path formulas. Rows are compared after only the chain-rule normalizations I(U,W;A)=I(W;A)+I(U;A|W) and I(V,W;A)=I(W;A)+I(V;A|W). A separately encoded exhaustive whitelist records every output-bearing term and verifies the absence of joint-(G,K) output terms or conditioning of one output on another. This method is used only for the accepted conditional specialization and input-only marginalization result; it does not authenticate the cited premise or optimize the resulting converse.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ],
+      "dependencyItemIds": [],
+      "digest": "sha256:c26bf01b53dbc7b110a48639fdf667145f3710c7c45673234c1832c18e88645f"
+    },
+    "root/tool/theorem9-specialization-verifier": {
+      "id": "root/tool/theorem9-specialization-verifier",
+      "programId": "root",
+      "type": "tool",
+      "title": "Exact verifier for the encoded Theorem 9 private-message specialization",
+      "summary": "The standard-library Python verifier reads theorem9_spec.json as the explicit mathematical premise, checks its factorization, all 16 equation labels, and both side conditions, expands the premise to 30 rows, independently constructs the corresponding three-link path rows, and compares rate coefficients and signed information terms exactly. It also checks the separately encoded 3/12/12/3 single-output term audit. The verifier uses exact integer linear forms and makes no PDF, network, rendering, optimizer, or source-authentication assertion.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ],
+      "dependencyItemIds": [
+        "root/result/theorem9-cited-premise-private-message-foundations",
+        "root/proof/theorem9-specialization-and-marginalization",
+        "root/method/theorem9-row-and-output-term-audit"
+      ],
+      "digest": "sha256:6af23aa392424e70883e39aa444052d71e928a2b60ded4cb8482d6f2203486d7"
+    },
+    "root/result/finite-grid-q0-foundations": {
+      "id": "root/result/finite-grid-q0-foundations",
+      "programId": "root",
+      "type": "result",
+      "title": "Finite-grid receiver reduction, exact Q0 infima, and midpoint coercivity",
+      "summary": "Accepted statement (exact): Using the accepted private-message 30-row definitions and optimization order of transaction e3c1036ca607539a5ebcddf3058e6014ac5c1cd9, let Q be any N-point posterior grid containing {0,1/2,1}. Every finite-output binary-input receiver has an at-most-N-output replacement with the same mutual-information samples on Q, so inf_{G,K finite} V_Q(G,K) = inf_{|G|,|K|<=N} V_Q(G,K); when Q is reflection closed, inf_{m finite} V_Q(m,m^circ) = inf_{|supp(m)|<=N} V_Q(m,m^circ). For Q0={0,1/2,1} and c=h_2(1/4)-1/2, inf_{G,K finite} V_{Q0}(G,K) = inf_{m finite} V_{Q0}(m,m^circ) = c. Moreover, for every finite-output input-only pair G,K with g=J_G(1/2), k=J_K(1/2), B(G,K) >= V_0(g,k) >= max{F(g),F(k)}, where F(x)=2c max{c,x}/(c+x); consequently, if c <= U < 2c and B(G,K) <= U, then 2c^2/U-c <= g,k <= Uc/(2c-U). These are finite-grid and necessary-coercivity statements only, with no continuum cardinality, limit interchange, or full-functional reflected-optimality assertion.\n\nScope qualifications (exact):\n- Validity is conditional on the accepted private-message 30-row outer-bound premise and definitions in the cited transaction.\n- The receiver reductions apply to finite-output, binary-input, input-only receivers and finite grids Q containing {0,1/2,1}.\n- The reflected reduction applies only when Q is reflection closed and only within the class (m,m^circ); it does not establish arbitrary-pair symmetrization or full-functional reflected optimality.\n- The Q0 conclusions are sampled finite-grid statements and do not establish continuum cardinality bounds, limit interchange, or an unconditional capacity converse.\n- The coercivity bounds are necessary conditions derived from B(G,K) <= U, not sufficient conditions or a benchmark improvement.",
+      "claimRefs": [
+        {
+          "transactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "claimKey": "bssc-sum-capacity/finite-grid-q0-foundations"
+        }
+      ],
+      "sourceTransactionIds": [
+        "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+      ],
+      "dependencyItemIds": [
+        "root/result/theorem9-cited-premise-private-message-foundations",
+        "root/proof/finite-grid-q0-reduction-and-coercivity"
+      ],
+      "digest": "sha256:3d8d9e2ad6772eb6329713f809a28d51e615f931552b7d508cd54819de714813"
+    },
+    "root/proof/finite-grid-q0-reduction-and-coercivity": {
+      "id": "root/proof/finite-grid-q0-reduction-and-coercivity",
+      "programId": "root",
+      "type": "proof",
+      "title": "Proof of finite-grid reduction, exact Q0 infima, and coercive midpoint bounds",
+      "summary": "The proof first applies the posterior-measure sampled-curve method to replace each finite-output receiver by an at-most-N-output receiver while preserving all receiver terms in the accepted 30-row system on Q; reflection of posterior measures preserves an already reflected pair when Q is reflection closed. On Q0, each auxiliary block is parameterized by three nonnegative quantities (A,U,V), and every row depends on the four receivers only through (c,g,k,c). Three explicit feasible witness families H, L, and X cover the high, low, and straddling cases and establish V_0(g,k) >= max{F(g),F(k)}. A reflection-invariant three-output revealing-erasure receiver with midpoint value c, together with the SL(1,U) row when all four sampled curves agree, gives both Q0 infima at c. Solving F(g),F(k) <= U on their two scalar branches yields the stated necessary midpoint window. The argument remains conditional on the accepted 30-row foundation and makes no continuum or unconditional converse claim.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+      ],
+      "dependencyItemIds": [
+        "root/result/theorem9-cited-premise-private-message-foundations",
+        "root/method/posterior-measure-finite-grid-reduction"
+      ],
+      "digest": "sha256:5f6041da9a37657f1b204c887f3bc4f65e9aa91a5009513c1946c56b9ceae197"
+    },
+    "root/method/posterior-measure-finite-grid-reduction": {
+      "id": "root/method/posterior-measure-finite-grid-reduction",
+      "programId": "root",
+      "type": "method",
+      "title": "Posterior-measure sampled-curve reduction for finite grids",
+      "summary": "Represent a finite-output binary-input receiver under the fair prior by a finite posterior measure of mean 1/2 and express its mutual-information curve J_A(q) as an integral of the sampled posterior kernel. For an N-point grid containing 0, 1/2, and 1, apply Caratheodory's convex-hull theorem to the posterior coordinate and the N−2 nonendpoint curve samples, obtaining at most N posterior atoms with the same mean and all the same samples on Q. Posterior-conditioning identities express every receiver term in the accepted 30-row audit through these samples, so the replacement preserves the restricted optimization exactly. Reflection is handled by pushing the posterior measure forward under rho -> 1-rho, which preserves an already reflected pair on a reflection-closed grid. This method is only a fixed-finite-grid reduction and supplies no continuum receiver-cardinality theorem.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+      ],
+      "dependencyItemIds": [
+        "root/result/theorem9-cited-premise-private-message-foundations",
+        "root/method/theorem9-row-and-output-term-audit"
+      ],
+      "digest": "sha256:8663f5ce0ea973856e5d16c6729e1d57d16bc5ae57a1a3550dee0adb938828cd"
+    },
+    "root/tool/finite-grid-q0-exact-verifier": {
+      "id": "root/tool/finite-grid-q0-exact-verifier",
+      "programId": "root",
+      "type": "tool",
+      "title": "Exact symbolic verifier for the finite-grid Q0 foundations",
+      "summary": "The standard-library Python verifier checks that the contribution declares exactly the accepted 30-row foundation dependency, independently rebuilds the 30 path rows, and compares their canonical signature with the reviewed dependency signature. Using exact rational-polynomial arithmetic and no floating point or optimizer, it verifies all 30 row slacks and all 15 block-box slacks for each H, L, and X witness family, checks the relevant skew symmetry, and confirms that SL(1,U) has constant coefficient one when all four Q0 sampled curves agree. The checker is a local deterministic audit and does not authenticate the dependency transaction, prove continuum reduction, or establish an unconditional capacity bound.",
+      "claimRefs": [],
+      "sourceTransactionIds": [
+        "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+      ],
+      "dependencyItemIds": [
+        "root/result/finite-grid-q0-foundations",
+        "root/proof/finite-grid-q0-reduction-and-coercivity",
+        "root/method/posterior-measure-finite-grid-reduction"
+      ],
+      "digest": "sha256:46f1a6ee10bdc625b5c82de1e978482fb4c372f41f3826a922635dd176c23069"
+    }
+  },
+  "contributions": {
+    "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6": {
+      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+      "transactionId": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+      "claimKeys": [
+        "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/code-induced-converse-structure",
+        "root/entropy-copy-relaxation-limits"
+      ],
+      "itemIds": [
+        "root/result/finite-block-code-induced-balance",
+        "root/result/entropy-copy-no-go",
+        "root/proof/finite-block-balance-and-rate-rows",
+        "root/proof/entropy-counterfeit-witness",
+        "root/tool/exact-entropy-witness-checker",
+        "root/question/safe-support-reduction",
+        "root/question/binary-posterior-penalty"
+      ],
+      "dependencyTransactionIds": [],
+      "judgmentId": "sha256:ad3dca0e36b3634da7b47596d9985548ab59e07b5f24885d2c75e6a1c014d8ea",
+      "digest": "sha256:726f078424b967241ccee40c76ba343047c13bcf4bc3837b63b033e548973f2e"
+    },
+    "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9": {
+      "id": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+      "transactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+      "claimKeys": [
+        "bssc-sum-capacity/uv-relaxed-converse-tensorization"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/relaxed-uv-functional-tensorization"
+      ],
+      "itemIds": [
+        "root/result/separately-relaxed-uv-tensorization",
+        "root/proof/separately-relaxed-uv-product-and-skew-proof",
+        "root/tool/uv-bssc-specialization-checker"
+      ],
+      "dependencyTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "judgmentId": "sha256:f4f8a74527c53499d4e2424cb4bcfd4414dbcb8d0775b27149a7cf378561d76b",
+      "digest": "sha256:414460d2a0681e86204e7df891148978a613426ff8fb2bab295fc267a9e7c901"
+    },
+    "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9": {
+      "id": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+      "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+      "claimKeys": [
+        "bssc-sum-capacity/theorem9-cited-premise-foundations"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/theorem9-cited-premise-converse-foundations"
+      ],
+      "itemIds": [
+        "root/result/theorem9-cited-premise-private-message-foundations",
+        "root/proof/theorem9-specialization-and-marginalization",
+        "root/method/theorem9-row-and-output-term-audit",
+        "root/tool/theorem9-specialization-verifier"
+      ],
+      "dependencyTransactionIds": [],
+      "judgmentId": "sha256:6e9406ddc5cee907a63ee20d43dddebcfed1a582c1935bc300b1e2896baff912",
+      "digest": "sha256:55952dc2afdfe4590fa2a321bada1007d5bdea0964bad907b8f73044d71affd9"
+    },
+    "e2bbc1e210e496b3c834e658820fc90287f3b2c0": {
+      "id": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+      "transactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+      "claimKeys": [
+        "bssc-sum-capacity/finite-grid-q0-foundations"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/finite-grid-q0-foundations"
+      ],
+      "itemIds": [
+        "root/result/finite-grid-q0-foundations",
+        "root/proof/finite-grid-q0-reduction-and-coercivity",
+        "root/method/posterior-measure-finite-grid-reduction",
+        "root/tool/finite-grid-q0-exact-verifier"
+      ],
+      "dependencyTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ],
+      "judgmentId": "sha256:3f84350558339ca62bb09bc0c4d7e6e40dbab6e2e6c5f0451b1a1697f4532966",
+      "digest": "sha256:97b637266048726f5af4e6acd8d95e32be66cee04f352cb511f38cd312d980d3"
+    }
+  },
+  "stateDigest": "sha256:8fe1f2f5364d5cd92893f3a47572d8ae49b801b4ca9a121f24f1c292932c0d2d"
+}
