@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 2,
+  "problemId": "no-three-in-line-77",
+  "baseProgramStateDigest": "sha256:f532d0f33a7c739004759640eb44fe79d320f65952a343f7d401737c236df55e",
+  "judgments": [
+    {
+      "judgmentId": "sha256:64c488469559052df47c9648c615275ab6689972ab9553eb228799a46f726517",
+      "runDigest": "sha256:a018f152eaf695d8daf59cb10cad3598605bc35157d15e9eb3bd4f2c1cdee36e",
+      "subjectTransactionId": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+      "acceptedClaimKeys": [],
+      "excludedAssessments": [
+        {
+          "claimKey": "no-three-in-line-77/record-152-certificate",
+          "status": "indeterminate",
+          "premiseStatus": "not-required",
+          "summary": "The row-counting argument establishes D(77) <= 154, and the reproduced verifier is conditionally sound: a successful run on the supplied payload would establish a 152-point no-three-in-line configuration in the 76 x 76 grid and hence D(77) >= 152 by inclusion into the 77 x 77 grid. However, the bounded record contains neither trusted successful-execution evidence nor an independently checked exhaustive determinant trace. Thus the decisive noncollinearity predicate, the lower bound D(77) >= 152, and consequently the full interval 152 <= D(77) <= 154 remain unverified.",
+          "scopeQualifications": [
+            "No external dependency is required; the database links are provenance-only because the payload and verifier are reproduced in the subject.",
+            "The encoding/cardinality checks establish 152 distinct in-range grid points.",
+            "The verifier's determinant test correctly characterizes collinearity and uses exact integer arithmetic.",
+            "The upper bound D(77) <= 154 is established because each of the 77 horizontal rows contains at most two points.",
+            "A 154-point configuration would have exactly two points in every row and, by the analogous column argument, every column."
+          ],
+          "evidenceIssues": [
+            "The quoted successful-verification output is an untrusted assertion rather than objective execution evidence.",
+            "No pinned successful execution of the verifier on the supplied configuration is present.",
+            "No independently supplied exhaustive trace verifies nonzero determinants for all 573,800 triples."
+          ],
+          "evidenceTransactionIds": [],
+          "requiredDependencyTransactionIds": []
+        }
+      ]
+    },
+    {
+      "judgmentId": "sha256:eebf85b907acaea6c9a083540fcd2ae291a9de9e9a4fbdae6c53722341bb63d4",
+      "runDigest": "sha256:41789849b695b3f8e162f05f55adae7969cfa33085170539f3c99469c35c46b2",
+      "subjectTransactionId": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+      "acceptedClaimKeys": [],
+      "excludedAssessments": [
+        {
+          "claimKey": "no-three-in-line-77/record-152-local-rigidity",
+          "status": "indeterminate",
+          "premiseStatus": "missing",
+          "summary": "The checker appears to encode the stated no-three-in-line, embedding-count, saturation, one-removal, two-removal, and corollary predicates correctly, but the bounded evidence does not establish that it was successfully run on the intended 152-point configuration. The configuration bytes are absent, objectiveAttestation is null, and results.json is only asserted output rather than a self-verifying certificate. Thus the claim is not disproved, but its coordinates, exactly eight embeddings, all 5777-cell saturation checks, removal census, and output agreement remain unverified.",
+          "scopeQualifications": [
+            "Conditional on successful execution against the intended configuration bytes, the static audit found the checker substantially aligned with all declared predicates.",
+            "The arithmetic 77^2 - 152 = 5777 and the stated corollary from the removal bounds are correct.",
+            "No declared reference transactions exist, so no external mathematical dependency may be used."
+          ],
+          "evidenceIssues": [
+            "The bytes of ../record-152-certificate/configuration.txt are not supplied, so the claimed 152-point set cannot be decoded or independently checked.",
+            "objectiveAttestation is null; there is no trusted evidence that rigidity.py ran successfully against the intended configuration and committed results.json.",
+            "The SHA-256 value in results.json cannot recover or certify the missing configuration bytes.",
+            "results.json does not itself contain enough independently checkable information to verify all 5777-cell computations.",
+            "The actual no-three-in-line property, symmetry and embedding count, saturation, one-removal robustness, two-removal enumeration, and computed-output agreement remain unresolved."
+          ],
+          "evidenceTransactionIds": [],
+          "requiredDependencyTransactionIds": []
+        }
+      ]
+    },
+    {
+      "judgmentId": "sha256:fe7608de5c679a70afa7ddd87e32592ca1ddba40c49a85d9e389f425d5fb8481",
+      "runDigest": "sha256:31243d242424f7db0a7e7aa4a0c2441a90a3bc538f9048379bfd217393dbd6ed",
+      "subjectTransactionId": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+      "acceptedClaimKeys": [],
+      "excludedAssessments": [
+        {
+          "claimKey": "no-three-in-line-77/rct4-154-search-instance",
+          "status": "indeterminate",
+          "premiseStatus": "not-required",
+          "summary": "The central rct4 encoding is statically plausible and appears sound and complete within its expressly defined subclass, and the half-turn/quarter-turn arguments are largely correct. However, the full declared contribution is not established: the claim that rct4 is the only rotational route overreaches because general central half-turn (rot2) configurations are not shown to satisfy the stricter rct4 conditions; the assertion that 153-point sets have no rotational symmetry omits the classification needed to exclude rotations other than half- and quarter-turns; and the numerical model count, certificate-validation results, and bounded solver runs are unsupported execution claims without trusted transcripts or objective attestation. These gaps do not supply a counterexample or refute the model, so the bounded record remains indeterminate.",
+          "scopeQualifications": [
+            "Static reasoning supports soundness and completeness only for the defined rct4 subclass, not all half-turn-invariant 154-point configurations.",
+            "The symmetry lemma establishes the central half-turn envelope at size 154 only after restricting to the considered square-grid rotations; exclusion of all other planar rotational symmetries requires an omitted finite-order rational-rotation argument.",
+            "The bounded searches have no bearing on satisfiability, nonexistence, or the value of D(77).",
+            "The contribution does not alter the baseline interval 152 <= D(77) <= 154."
+          ],
+          "evidenceIssues": [
+            "The statement that rct4 is the only rotational route is unsupported: rct4 imposes an empty anti-diagonal, full off-diagonal quarter-turn orbits, and one main-diagonal antipodal pair, none of which follows from central half-turn symmetry.",
+            "The conclusion that a 153-point set has no rotational symmetry at all omits an argument excluding rotational orders other than 2 and 4 or an explicit restriction to square-grid automorphisms.",
+            "The asserted count of 388,148 distinct constraints depends on execution and is not established by the prose alone.",
+            "Claims that all five calibration certificates pass, have the listed hashes, and satisfy the reported constraint counts lack a trusted execution transcript or terminal objective attestation; results.json is only claimed output.",
+            "The reported CP-SAT and CaDiCaL runs lack logs or content-addressed artifacts; the CaDiCaL invocation is unspecified, and the displayed n=77 command differs from the tabulated worker count and duration.",
+            "The prose that every maximal grid line contributes a constraint is literally imprecise because tautological lines are omitted and equivalent expressions are deduplicated, though this does not appear to impair model correctness."
+          ],
+          "evidenceTransactionIds": [],
+          "requiredDependencyTransactionIds": []
+        }
+      ]
+    },
+    {
+      "judgmentId": "sha256:2e63f97e4a920542608ce246e8152c0c15b160475293a04ef2694a1cbf2d6e12",
+      "runDigest": "sha256:33e1edcdc5ae8a9bc739ee2726834ab68910c5e66146ba2245d2fa2c3407be14",
+      "subjectTransactionId": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+      "acceptedClaimKeys": [
+        "no-three-in-line-77/finite-rotation-classification-proof"
+      ],
+      "excludedAssessments": []
+    },
+    {
+      "judgmentId": "sha256:febff57c74149d57e4744cccc900300edba4c8071aef6c382549f4f546e568c0",
+      "runDigest": "sha256:05c1a7d86dd39910a0ed1ee3392f6d4d45d7181ebce3e546a3b37675cefd9cc3",
+      "subjectTransactionId": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+      "acceptedClaimKeys": [
+        "no-three-in-line-77/record-152-objective-verification"
+      ],
+      "excludedAssessments": []
+    },
+    {
+      "judgmentId": "sha256:b3009111acaf420b7ed2de592318b47a7c31b53988ff00d37f41db6f94dc3104",
+      "runDigest": "sha256:b1185b7c56cbf3d592f7debe2547a557374eab02a017d18fb4c7d3d20d407942",
+      "subjectTransactionId": "3baf1c8586af31bbd6509d0fd3e552658c03673b",
+      "acceptedClaimKeys": [],
+      "excludedAssessments": [
+        {
+          "claimKey": "no-three-in-line-77/record-152-eight-embedding-local-rigidity",
+          "status": "indeterminate",
+          "premiseStatus": "missing",
+          "summary": "The mathematical reduction and checker logic appear appropriate, and the stated consequences for nearby no-three-in-line sets follow conditionally from the claimed blocking census. However, the record supplies no trusted execution attestation or exhaustive certificate establishing that the checker successfully ran on the exact referenced configuration bytes and produced the asserted results. The committed results file alone does not certify all per-cell blocking computations. Thus the claim is not affirmatively established, although no decisive mathematical error was found.",
+          "scopeQualifications": [
+            "The claim is limited to the eight embeddings derived from the referenced 152-point configuration, not other 152-point configurations or the global value of D(77).",
+            "The local-rigidity conclusions are valid only conditional on successful exhaustive verification of the asserted blocking and deletion census."
+          ],
+          "evidenceIssues": [
+            "The exact configuration coordinates are not included in the subject and must be obtained from the declared reference.",
+            "No terminal objective attestation or trusted execution transcript confirms successful verification on the supplied bytes.",
+            "The asserted results file omits the exhaustive per-cell line censuses and cannot independently establish saturation or exhaustiveness.",
+            "Neither the dependency verifier nor the rigidity checker is attested as having run successfully."
+          ],
+          "evidenceTransactionIds": [
+            "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+          ],
+          "requiredDependencyTransactionIds": [
+            "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+          ]
+        }
+      ]
+    },
+    {
+      "judgmentId": "sha256:fe29fe9552e27acb35b8596c4cd638f18a41a38961dee746bbeb123fff032cac",
+      "runDigest": "sha256:c35d384fc598d26031cee5b62efa357fa3f6a9cd29b77394df50f6b1a7dcc30b",
+      "subjectTransactionId": "046e8f269922a6d2ce37ce17d4878ccdb0aa7721",
+      "acceptedClaimKeys": [],
+      "excludedAssessments": [
+        {
+          "claimKey": "no-three-in-line-77/rct4-154-exact-subclass-encoding",
+          "status": "indeterminate",
+          "premiseStatus": "not-required",
+          "summary": "Static source-level analysis supports the subclass encoding and line-constraint semantics: there are 1,444 four-cell off-diagonal rotation orbits and 38 main-diagonal antipodal pairs; selecting 38 orbit variables and one pair variable gives 154 points; and the weighted maximal-line inequalities are sound and complete for the no-three-in-line condition within the explicitly defined subclass. However, the material assertions that canonical deduplication yields exactly 388,148 constraints and that the serialization has SHA-256 digest 5c0051739717f52f8eddd00cd01e8a83030849b3fd7b4516b0d308882c9aaf62 are not established by trusted execution, a supplied complete serialization, or equivalent evidence. No contradiction or counterexample was found, so the claim remains indeterminate rather than invalid.",
+          "scopeQualifications": [
+            "Assessment is limited to the explicitly defined rct4 subclass for n=77.",
+            "The claim does not establish satisfiability or infeasibility of the Boolean system.",
+            "It does not cover general half-turn, reflection-symmetric, asymmetric, or all rotational configurations.",
+            "It does not alter bounds on D(77)."
+          ],
+          "evidenceIssues": [
+            "results.json only reports the asserted count and digest; it does not independently establish them.",
+            "The complete canonical constraint serialization was not supplied for direct counting and hashing.",
+            "No trusted execution or terminal attestation for verify_rct4_instance.py was provided.",
+            "Smaller-instance calibration certificates do not establish the n=77 count or digest.",
+            "Static inspection establishes the computation's intended semantics but not its asserted numerical output."
+          ],
+          "evidenceTransactionIds": [],
+          "requiredDependencyTransactionIds": []
+        }
+      ]
+    },
+    {
+      "judgmentId": "sha256:0414d9e0650172a4ee68f1276f22a75e23463a15c4c19ffa448ea90b81580c65",
+      "runDigest": "sha256:0e4f24326cf6bba83636a60ffaa71170c9d22a549e3672da7167b3214592c5af",
+      "subjectTransactionId": "bf1301b6b472841276f79852c2e7fe0499309684",
+      "acceptedClaimKeys": [
+        "no-three-in-line-77/record-152-governed-replay"
+      ],
+      "excludedAssessments": []
+    },
+    {
+      "judgmentId": "sha256:ea12a2a911c15117d96cb36ac39d96c11ce962f232d8d0926dc0c8593bff5633",
+      "runDigest": "sha256:f67ea4a95b429fc0cf75a0e724a6dfc695d3c22a7cb94217affba684ef5dbb85",
+      "subjectTransactionId": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+      "acceptedClaimKeys": [
+        "no-three-in-line-77/rct4-154-subclass-encoding-theorem"
+      ],
+      "excludedAssessments": []
+    }
+  ]
+}

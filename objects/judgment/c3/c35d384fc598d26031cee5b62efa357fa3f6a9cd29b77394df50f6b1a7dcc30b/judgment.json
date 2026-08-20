@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 3,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+  "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "046e8f269922a6d2ce37ce17d4878ccdb0aa7721",
+      "ledgerPosition": 7
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/rct4-154-exact-subclass-encoding",
+      "status": "indeterminate",
+      "premiseStatus": "not-required",
+      "summary": "Static source-level analysis supports the subclass encoding and line-constraint semantics: there are 1,444 four-cell off-diagonal rotation orbits and 38 main-diagonal antipodal pairs; selecting 38 orbit variables and one pair variable gives 154 points; and the weighted maximal-line inequalities are sound and complete for the no-three-in-line condition within the explicitly defined subclass. However, the material assertions that canonical deduplication yields exactly 388,148 constraints and that the serialization has SHA-256 digest 5c0051739717f52f8eddd00cd01e8a83030849b3fd7b4516b0d308882c9aaf62 are not established by trusted execution, a supplied complete serialization, or equivalent evidence. No contradiction or counterexample was found, so the claim remains indeterminate rather than invalid.",
+      "scopeQualifications": [
+        "Assessment is limited to the explicitly defined rct4 subclass for n=77.",
+        "The claim does not establish satisfiability or infeasibility of the Boolean system.",
+        "It does not cover general half-turn, reflection-symmetric, asymmetric, or all rotational configurations.",
+        "It does not alter bounds on D(77)."
+      ],
+      "evidenceIssues": [
+        "results.json only reports the asserted count and digest; it does not independently establish them.",
+        "The complete canonical constraint serialization was not supplied for direct counting and hashing.",
+        "No trusted execution or terminal attestation for verify_rct4_instance.py was provided.",
+        "Smaller-instance calibration certificates do not establish the n=77 count or digest.",
+        "Static inspection establishes the computation's intended semantics but not its asserted numerical output."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/rct4-154-exact-subclass-encoding",
+      "stance": "uncertain",
+      "summary": "Static source-level analysis supports the subclass encoding and line-constraint semantics: there are 1,444 four-cell off-diagonal rotation orbits and 38 main-diagonal antipodal pairs; selecting 38 orbit variables and one pair variable gives 154 points; and the weighted maximal-line inequalities are sound and complete for the no-three-in-line condition within the explicitly defined subclass. However, the material assertions that canonical deduplication yields exactly 388,148 constraints and that the serialization has SHA-256 digest 5c0051739717f52f8eddd00cd01e8a83030849b3fd7b4516b0d308882c9aaf62 are not established by trusted execution, a supplied complete serialization, or equivalent evidence. No contradiction or counterexample was found, so the claim remains indeterminate rather than invalid.",
+      "subjectTransactionIds": [
+        "046e8f269922a6d2ce37ce17d4878ccdb0aa7721"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:35ddeb5edb7c4bd88c4ef009bacf5772f6e6774a988923eb2edc1f38dfb17bca",
+  "reportDigest": "sha256:94836b551652853b4e1140af19c0e62528c68f7ef923b7afd6a1262b0a5bb7c3",
+  "judgmentId": "sha256:fe29fe9552e27acb35b8596c4cd638f18a41a38961dee746bbeb123fff032cac"
+}

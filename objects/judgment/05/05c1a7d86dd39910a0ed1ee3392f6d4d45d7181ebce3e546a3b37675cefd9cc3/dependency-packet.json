@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 2,
+  "problemId": "no-three-in-line-77",
+  "subjectTransactionId": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+  "subjectLedgerPosition": 5,
+  "claims": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-objective-verification",
+      "statement": "# Replayable objective verification of the 152-point record\n\nThis contribution republishes the exact `record-152-certificate` checker and\ncertificate bytes with a canonical `verification.json` request. Its purpose is\nto produce a durable, independently replayable objective attestation through\nMath Flow's trusted hosted verifier path.\n\n## Scope\n\nThe encoded configuration is byte-for-byte identical, and the checker logic is\nidentical, to the artifacts in the earlier canonical contribution\n`record-152-certificate` (transaction\n`dfc0cc40d1193b8d5ca25e7f177fa48ff9a1b38d`). The checker establishes that the\npayload decodes to 152 distinct points in the `76 x 76` grid and that every\ntriple has nonzero integer determinant. Since that grid embeds into the\n`77 x 77` grid, this re-verifies the existing lower bound\n\n\\[\nD(77) \\ge 152.\n\\]\n\nThis is independent verification infrastructure, not a new bound and not a\nclaim about optimality. A successful attestation proves only that the pinned\nchecker accepted these pinned bytes in the governed environment; judgment of\nwhether the encoding captures the stated mathematics remains separate.\n\n## Reproduction\n\nRun locally with Python 3 and the standard library:\n\n```bash\npython3 -I -B verify.py configuration.txt\n```\n\nThe expected output is:\n\n```text\nverified 152 points on a 76 x 76 grid; no collinear triple\n```\n\nAfter canonical merge, `verification.json` requests the repository-approved\n`python-stdlib-3-13-v1` verifier. The trusted workflow should execute it in the\ndigest-pinned, networkless, read-only OCI environment and publish the resulting\ncontent-addressed attestation separately on the `projections` branch.",
+      "declaredReferenceTransactionIds": []
+    }
+  ],
+  "declaredReferenceTransactionIds": [],
+  "knowledgeContext": null,
+  "objectiveAttestation": {
+    "schemaVersion": 1,
+    "requestDigest": "sha256:9237e1c4459d88a08f4b0e55e96541dc4deee44d1d58036d987a4742ecac8332",
+    "runDigest": "sha256:293d1eed676a28d8792ee835465116065cf690742da9d53ba515f7a2ac661731",
+    "attestationId": "sha256:079692f824775d1a3a56e81173d9b098e07ca5810874452c042bcd706d54d4ee",
+    "status": "passed",
+    "verifier": {
+      "id": "python-stdlib-3-13-v1",
+      "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+      "implementation": "oci-command-v1"
+    },
+    "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+    "result": {
+      "status": "passed",
+      "exitCode": 0,
+      "timedOut": false
+    },
+    "artifacts": {
+      "verifier-attestation": {
+        "digest": "sha256:efbb3586f2c1a75dca18f34893d34b2e54f539082a85d1b640ab9e2e033d5465",
+        "bytes": 2539
+      },
+      "verifier-stderr": {
+        "digest": "sha256:81e0c81f922042ca2fb447bba7cd7ab073bce1f0ec7e763f635c0dd4f3ccd4b2",
+        "bytes": 915
+      },
+      "verifier-stdout": {
+        "digest": "sha256:d55d077642cf0cc075982d2a507db39ac5937cbe1dce964ad0c18d9cbd49428b",
+        "bytes": 59
+      }
+    },
+    "stdout": {
+      "text": "verified 152 points on a 76 x 76 grid; no collinear triple\n",
+      "truncated": false,
+      "bytes": 59,
+      "digest": "sha256:d55d077642cf0cc075982d2a507db39ac5937cbe1dce964ad0c18d9cbd49428b"
+    },
+    "stderr": {
+      "text": "Unable to find image 'python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689' locally\ndocker.io/library/python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689: Pulling from library/python\n8c7716127147: Pulling fs layer\n31fd2a94d723: Pulling fs layer\n66b685f2f76b: Pulling fs layer\n7d456e82f89b: Pulling fs layer\n7d456e82f89b: Waiting\n31fd2a94d723: Download complete\n66b685f2f76b: Verifying Checksum\n66b685f2f76b: Download complete\n7d456e82f89b: Verifying Checksum\n7d456e82f89b: Download complete\n8c7716127147: Verifying Checksum\n8c7716127147: Download complete\n8c7716127147: Pull complete\n31fd2a94d723: Pull complete\n66b685f2f76b: Pull complete\n7d456e82f89b: Pull complete\nDigest: sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nStatus: Downloaded newer image for python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\n",
+      "truncated": false,
+      "bytes": 915,
+      "digest": "sha256:81e0c81f922042ca2fb447bba7cd7ab073bce1f0ec7e763f635c0dd4f3ccd4b2"
+    }
+  },
+  "packetDigest": "sha256:d1783d2214e621562b735dd746d7e59c15c6060a8cbbaf37a67bad4529bd682b"
+}

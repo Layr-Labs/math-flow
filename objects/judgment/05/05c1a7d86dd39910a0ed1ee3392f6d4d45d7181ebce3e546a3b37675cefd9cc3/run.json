@@ -1,0 +1,122 @@
+{
+  "protocolVersion": 1,
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+  "problemLedgerHead": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+  "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "runner": {
+    "implementation": "openrouter-validity-judgment-v3",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "claim-evidence-packet-v3",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "report-extract-validity-v3",
+    "reducer": null
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/validity-judgment-v3",
+  "requestDigests": [
+    "sha256:d4a1a48c615d40f865772957747a7a61e94c8cb3543bf0d585676c36d62a04d9",
+    "sha256:82d982e6882b64117746c81372cba956127d0db69378d481183decec11e06bc3"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "report",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787209726-aIE0uQp04n39eeqO660Z",
+      "usage": {
+        "prompt_tokens": 4299,
+        "completion_tokens": 3189,
+        "total_tokens": 7488,
+        "cost": 0.0612675,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 4296,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.0612675,
+          "upstream_inference_prompt_cost": 0.0134325,
+          "upstream_inference_completions_cost": 0.047835
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2545,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    },
+    {
+      "provider": "openrouter",
+      "stage": "extract",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787209779-3mAQ0AtoWyfjkMzMKD4n",
+      "usage": {
+        "prompt_tokens": 1499,
+        "completion_tokens": 213,
+        "total_tokens": 1712,
+        "cost": 0.0078775,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 1496,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.0078775,
+          "upstream_inference_prompt_cost": 0.0046825,
+          "upstream_inference_completions_cost": 0.003195
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "judgment",
+  "inputs": {
+    "subjectTransactionIds": [
+      "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+    ],
+    "declaredReferenceTransactionIds": [],
+    "dependencyPacketDigest": "sha256:d1783d2214e621562b735dd746d7e59c15c6060a8cbbaf37a67bad4529bd682b",
+    "objectiveAttestationRunDigest": "sha256:293d1eed676a28d8792ee835465116065cf690742da9d53ba515f7a2ac661731",
+    "knowledgeContext": null
+  },
+  "artifacts": [
+    {
+      "path": "dependency-packet.json",
+      "role": "judgment-dependency-packet",
+      "mediaType": "application/json",
+      "digest": "sha256:cd657fc96623eccedb3ecb853a156cbde4615aec1d122e41f417aa4d3b68b7e8",
+      "bytes": 4793
+    },
+    {
+      "path": "judgment.json",
+      "role": "judgment-record",
+      "mediaType": "application/json",
+      "digest": "sha256:97361c80ff5054134c60b0a873c5714e271f7b847db3f778a6e4741e66578fe6",
+      "bytes": 2464
+    },
+    {
+      "path": "report.md",
+      "role": "judgment-report",
+      "mediaType": "text/markdown",
+      "digest": "sha256:7c6090cd343c1119e8602ada581865258790393f1ee3642b9eadc7029c144a5d",
+      "bytes": 2571
+    }
+  ]
+}

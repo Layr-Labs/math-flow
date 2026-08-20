@@ -1,0 +1,124 @@
+{
+  "protocolVersion": 1,
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+  "problemLedgerHead": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+  "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "runner": {
+    "implementation": "openrouter-validity-judgment-v3",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "claim-evidence-packet-v3",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "report-extract-validity-v3",
+    "reducer": null
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/validity-judgment-v3",
+  "requestDigests": [
+    "sha256:82cb9e9341c33f887a14c1bf074bff41ea31c83692291b2aec5371d519fe3857",
+    "sha256:e598454aee2a4fa40a7981c7084a3a19b94354a10114015e92ee09ea29d30049"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "report",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787209730-WSQ9gnDbrLEAmYfehSSZ",
+      "usage": {
+        "prompt_tokens": 6803,
+        "completion_tokens": 5038,
+        "total_tokens": 11841,
+        "cost": 0.0968275,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 6800,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.0968275,
+          "upstream_inference_prompt_cost": 0.0212575,
+          "upstream_inference_completions_cost": 0.07557
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 4142,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    },
+    {
+      "provider": "openrouter",
+      "stage": "extract",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787209817-BZQxKAuwSfKRxOIaGdqb",
+      "usage": {
+        "prompt_tokens": 1695,
+        "completion_tokens": 914,
+        "total_tokens": 2609,
+        "cost": 0.019005,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 1692,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.019005,
+          "upstream_inference_prompt_cost": 0.005295,
+          "upstream_inference_completions_cost": 0.01371
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 643,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "judgment",
+  "inputs": {
+    "subjectTransactionIds": [
+      "bf1301b6b472841276f79852c2e7fe0499309684"
+    ],
+    "declaredReferenceTransactionIds": [
+      "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+    ],
+    "dependencyPacketDigest": "sha256:8ef1ff4cbbdf4cfa8101f8d153e21cbbb11030c60cb6563433f6f9fb7d0d1b50",
+    "objectiveAttestationRunDigest": "sha256:903ffa4b4ce185c8d872b584afe08694df7215c11e306cd105b79f422efebdad",
+    "knowledgeContext": null
+  },
+  "artifacts": [
+    {
+      "path": "dependency-packet.json",
+      "role": "judgment-dependency-packet",
+      "mediaType": "application/json",
+      "digest": "sha256:67ffe7ff59bba1344704be6c232904d81adc938b20a99334a2ffa3cf3a4b11a7",
+      "bytes": 4047
+    },
+    {
+      "path": "judgment.json",
+      "role": "judgment-record",
+      "mediaType": "application/json",
+      "digest": "sha256:ff7462532d625170f9a0d035673d013f8b30a9ee30116e214693f5aac539c37f",
+      "bytes": 2890
+    },
+    {
+      "path": "report.md",
+      "role": "judgment-report",
+      "mediaType": "text/markdown",
+      "digest": "sha256:95c2ea45d2b5f8c09244fcd2ee39e44e718fb3acd74fe0dbf621f1e222ba3276",
+      "bytes": 3467
+    }
+  ]
+}

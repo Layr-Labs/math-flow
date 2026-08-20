@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 3,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+  "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+      "ledgerPosition": 1
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-certificate",
+      "status": "indeterminate",
+      "premiseStatus": "not-required",
+      "summary": "The row-counting argument establishes D(77) <= 154, and the reproduced verifier is conditionally sound: a successful run on the supplied payload would establish a 152-point no-three-in-line configuration in the 76 x 76 grid and hence D(77) >= 152 by inclusion into the 77 x 77 grid. However, the bounded record contains neither trusted successful-execution evidence nor an independently checked exhaustive determinant trace. Thus the decisive noncollinearity predicate, the lower bound D(77) >= 152, and consequently the full interval 152 <= D(77) <= 154 remain unverified.",
+      "scopeQualifications": [
+        "No external dependency is required; the database links are provenance-only because the payload and verifier are reproduced in the subject.",
+        "The encoding/cardinality checks establish 152 distinct in-range grid points.",
+        "The verifier's determinant test correctly characterizes collinearity and uses exact integer arithmetic.",
+        "The upper bound D(77) <= 154 is established because each of the 77 horizontal rows contains at most two points.",
+        "A 154-point configuration would have exactly two points in every row and, by the analogous column argument, every column."
+      ],
+      "evidenceIssues": [
+        "The quoted successful-verification output is an untrusted assertion rather than objective execution evidence.",
+        "No pinned successful execution of the verifier on the supplied configuration is present.",
+        "No independently supplied exhaustive trace verifies nonzero determinants for all 573,800 triples."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-certificate",
+      "stance": "uncertain",
+      "summary": "The row-counting argument establishes D(77) <= 154, and the reproduced verifier is conditionally sound: a successful run on the supplied payload would establish a 152-point no-three-in-line configuration in the 76 x 76 grid and hence D(77) >= 152 by inclusion into the 77 x 77 grid. However, the bounded record contains neither trusted successful-execution evidence nor an independently checked exhaustive determinant trace. Thus the decisive noncollinearity predicate, the lower bound D(77) >= 152, and consequently the full interval 152 <= D(77) <= 154 remain unverified.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:859c280be64ae14f38c9d8ac4e8b2d9988d909c8faefed0e39854f2a7497801e",
+  "reportDigest": "sha256:833debc634b9f7564b11a3fd0460d13984ac084a5dfa9c5cdf61bfbde3c308cd",
+  "judgmentId": "sha256:64c488469559052df47c9648c615275ab6689972ab9553eb228799a46f726517"
+}

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 3,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+  "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+      "ledgerPosition": 2
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-local-rigidity",
+      "status": "indeterminate",
+      "premiseStatus": "missing",
+      "summary": "The checker appears to encode the stated no-three-in-line, embedding-count, saturation, one-removal, two-removal, and corollary predicates correctly, but the bounded evidence does not establish that it was successfully run on the intended 152-point configuration. The configuration bytes are absent, objectiveAttestation is null, and results.json is only asserted output rather than a self-verifying certificate. Thus the claim is not disproved, but its coordinates, exactly eight embeddings, all 5777-cell saturation checks, removal census, and output agreement remain unverified.",
+      "scopeQualifications": [
+        "Conditional on successful execution against the intended configuration bytes, the static audit found the checker substantially aligned with all declared predicates.",
+        "The arithmetic 77^2 - 152 = 5777 and the stated corollary from the removal bounds are correct.",
+        "No declared reference transactions exist, so no external mathematical dependency may be used."
+      ],
+      "evidenceIssues": [
+        "The bytes of ../record-152-certificate/configuration.txt are not supplied, so the claimed 152-point set cannot be decoded or independently checked.",
+        "objectiveAttestation is null; there is no trusted evidence that rigidity.py ran successfully against the intended configuration and committed results.json.",
+        "The SHA-256 value in results.json cannot recover or certify the missing configuration bytes.",
+        "results.json does not itself contain enough independently checkable information to verify all 5777-cell computations.",
+        "The actual no-three-in-line property, symmetry and embedding count, saturation, one-removal robustness, two-removal enumeration, and computed-output agreement remain unresolved."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-local-rigidity",
+      "stance": "uncertain",
+      "summary": "The checker appears to encode the stated no-three-in-line, embedding-count, saturation, one-removal, two-removal, and corollary predicates correctly, but the bounded evidence does not establish that it was successfully run on the intended 152-point configuration. The configuration bytes are absent, objectiveAttestation is null, and results.json is only asserted output rather than a self-verifying certificate. Thus the claim is not disproved, but its coordinates, exactly eight embeddings, all 5777-cell saturation checks, removal census, and output agreement remain unverified.",
+      "subjectTransactionIds": [
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:041d0480a75cdde1bc859eb27eb3bbcc43041cefde1b3dffaa456550ac590a92",
+  "reportDigest": "sha256:a91861750ad80cca3f08284e302b54bbf1a415434a430c2f1e0030d9f941ea7b",
+  "judgmentId": "sha256:eebf85b907acaea6c9a083540fcd2ae291a9de9e9a4fbdae6c53722341bb63d4"
+}

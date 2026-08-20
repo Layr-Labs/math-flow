@@ -1,0 +1,124 @@
+{
+  "protocolVersion": 1,
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+  "problemLedgerHead": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+  "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "runner": {
+    "implementation": "openrouter-validity-judgment-v3",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "claim-evidence-packet-v3",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "report-extract-validity-v3",
+    "reducer": null
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/validity-judgment-v3",
+  "requestDigests": [
+    "sha256:e06a007e993b2824a44ca933020100173abf40ad194af6dcf99ebf58f3577fe3",
+    "sha256:7885b9502c10084d34fca0b58585ee8a0b243bc548c1a8195f7d8140f01fe0ef"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "report",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787209727-I4F7CIY3bMxRjVP7WMSO",
+      "usage": {
+        "prompt_tokens": 18809,
+        "completion_tokens": 6440,
+        "total_tokens": 25249,
+        "cost": 0.15537625,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 18806,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.15537625,
+          "upstream_inference_prompt_cost": 0.05877625,
+          "upstream_inference_completions_cost": 0.0966
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 5173,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    },
+    {
+      "provider": "openrouter",
+      "stage": "extract",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787209839-lmwwmAompd4QRp0bc2hA",
+      "usage": {
+        "prompt_tokens": 2084,
+        "completion_tokens": 338,
+        "total_tokens": 2422,
+        "cost": 0.011580625,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 2081,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.011580625,
+          "upstream_inference_prompt_cost": 0.006510625,
+          "upstream_inference_completions_cost": 0.00507
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "judgment",
+  "inputs": {
+    "subjectTransactionIds": [
+      "3baf1c8586af31bbd6509d0fd3e552658c03673b"
+    ],
+    "declaredReferenceTransactionIds": [
+      "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+    ],
+    "dependencyPacketDigest": "sha256:ca09a5644e10ebd161e9b8247d5e489e897ca426dc79fdfcc6691a857822e55f",
+    "objectiveAttestationRunDigest": null,
+    "knowledgeContext": null
+  },
+  "artifacts": [
+    {
+      "path": "dependency-packet.json",
+      "role": "judgment-dependency-packet",
+      "mediaType": "application/json",
+      "digest": "sha256:29f219de9601d419ae59338fd8865385da06bbefb518386982d55e23480d2967",
+      "bytes": 1637
+    },
+    {
+      "path": "judgment.json",
+      "role": "judgment-record",
+      "mediaType": "application/json",
+      "digest": "sha256:0178640f0b4e78a642a89cb6c40a945983f2a116372d2470fbc29c9a3229ec8b",
+      "bytes": 3670
+    },
+    {
+      "path": "report.md",
+      "role": "judgment-report",
+      "mediaType": "text/markdown",
+      "digest": "sha256:b26ea099b29e7df9a014ff5e7f0d5a2f7bb86452483cda50a24c7ae15b8b5eac",
+      "bytes": 5461
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 3,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+  "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "c98dd877ad81611a9a469b1bd790cd909b56b1ce",
+      "ledgerPosition": 3
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/rct4-154-search-instance",
+      "status": "indeterminate",
+      "premiseStatus": "not-required",
+      "summary": "The central rct4 encoding is statically plausible and appears sound and complete within its expressly defined subclass, and the half-turn/quarter-turn arguments are largely correct. However, the full declared contribution is not established: the claim that rct4 is the only rotational route overreaches because general central half-turn (rot2) configurations are not shown to satisfy the stricter rct4 conditions; the assertion that 153-point sets have no rotational symmetry omits the classification needed to exclude rotations other than half- and quarter-turns; and the numerical model count, certificate-validation results, and bounded solver runs are unsupported execution claims without trusted transcripts or objective attestation. These gaps do not supply a counterexample or refute the model, so the bounded record remains indeterminate.",
+      "scopeQualifications": [
+        "Static reasoning supports soundness and completeness only for the defined rct4 subclass, not all half-turn-invariant 154-point configurations.",
+        "The symmetry lemma establishes the central half-turn envelope at size 154 only after restricting to the considered square-grid rotations; exclusion of all other planar rotational symmetries requires an omitted finite-order rational-rotation argument.",
+        "The bounded searches have no bearing on satisfiability, nonexistence, or the value of D(77).",
+        "The contribution does not alter the baseline interval 152 <= D(77) <= 154."
+      ],
+      "evidenceIssues": [
+        "The statement that rct4 is the only rotational route is unsupported: rct4 imposes an empty anti-diagonal, full off-diagonal quarter-turn orbits, and one main-diagonal antipodal pair, none of which follows from central half-turn symmetry.",
+        "The conclusion that a 153-point set has no rotational symmetry at all omits an argument excluding rotational orders other than 2 and 4 or an explicit restriction to square-grid automorphisms.",
+        "The asserted count of 388,148 distinct constraints depends on execution and is not established by the prose alone.",
+        "Claims that all five calibration certificates pass, have the listed hashes, and satisfy the reported constraint counts lack a trusted execution transcript or terminal objective attestation; results.json is only claimed output.",
+        "The reported CP-SAT and CaDiCaL runs lack logs or content-addressed artifacts; the CaDiCaL invocation is unspecified, and the displayed n=77 command differs from the tabulated worker count and duration.",
+        "The prose that every maximal grid line contributes a constraint is literally imprecise because tautological lines are omitted and equivalent expressions are deduplicated, though this does not appear to impair model correctness."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/rct4-154-search-instance",
+      "stance": "uncertain",
+      "summary": "The central rct4 encoding is statically plausible and appears sound and complete within its expressly defined subclass, and the half-turn/quarter-turn arguments are largely correct. However, the full declared contribution is not established: the claim that rct4 is the only rotational route overreaches because general central half-turn (rot2) configurations are not shown to satisfy the stricter rct4 conditions; the assertion that 153-point sets have no rotational symmetry omits the classification needed to exclude rotations other than half- and quarter-turns; and the numerical model count, certificate-validation results, and bounded solver runs are unsupported execution claims without trusted transcripts or objective attestation. These gaps do not supply a counterexample or refute the model, so the bounded record remains indeterminate.",
+      "subjectTransactionIds": [
+        "c98dd877ad81611a9a469b1bd790cd909b56b1ce"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:8cada24661ed5bc8f6a20915952dda4debafa89da875a8aabe6c8c034a8d4c1a",
+  "reportDigest": "sha256:f78fc0ab7649e60073beaede9f7b660c1dfbbde6bfc33947fb309e0013e40ed0",
+  "judgmentId": "sha256:fe7608de5c679a70afa7ddd87e32592ca1ddba40c49a85d9e389f425d5fb8481"
+}

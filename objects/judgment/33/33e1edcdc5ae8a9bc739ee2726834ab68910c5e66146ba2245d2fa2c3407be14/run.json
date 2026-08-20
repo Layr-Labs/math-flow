@@ -1,0 +1,124 @@
+{
+  "protocolVersion": 1,
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+  "problemLedgerHead": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+  "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "runner": {
+    "implementation": "openrouter-validity-judgment-v3",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "claim-evidence-packet-v3",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "report-extract-validity-v3",
+    "reducer": null
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/validity-judgment-v3",
+  "requestDigests": [
+    "sha256:bcfb21a81cf36d986cc0dbca129d91f6907e1beef031292b3d1c36c32a339cfe",
+    "sha256:caea69946a5fd4328a2028a57e3bbfa19f1a379c1bf378cdaa90b86ce130f501"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "report",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787209724-F3iPcqutPAOWDucKmnkU",
+      "usage": {
+        "prompt_tokens": 14160,
+        "completion_tokens": 2788,
+        "total_tokens": 16948,
+        "cost": 0.086068125,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 14157,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.086068125,
+          "upstream_inference_prompt_cost": 0.044248125,
+          "upstream_inference_completions_cost": 0.04182
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1552,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    },
+    {
+      "provider": "openrouter",
+      "stage": "extract",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787209768-CYutMMIwmhemrJVd2Y8G",
+      "usage": {
+        "prompt_tokens": 3852,
+        "completion_tokens": 271,
+        "total_tokens": 4123,
+        "cost": 0.016100625,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 3849,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.016100625,
+          "upstream_inference_prompt_cost": 0.012035625,
+          "upstream_inference_completions_cost": 0.004065
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "judgment",
+  "inputs": {
+    "subjectTransactionIds": [
+      "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+    ],
+    "declaredReferenceTransactionIds": [
+      "c98dd877ad81611a9a469b1bd790cd909b56b1ce"
+    ],
+    "dependencyPacketDigest": "sha256:7736e5c7014ab3079523c8adb613a1a80319b305765f08373ce807983fd99ce0",
+    "objectiveAttestationRunDigest": null,
+    "knowledgeContext": null
+  },
+  "artifacts": [
+    {
+      "path": "dependency-packet.json",
+      "role": "judgment-dependency-packet",
+      "mediaType": "application/json",
+      "digest": "sha256:f6028f061fbb7e5f01f1289a25b211c625b57759dd6a44dac57949cdad1fd622",
+      "bytes": 7637
+    },
+    {
+      "path": "judgment.json",
+      "role": "judgment-record",
+      "mediaType": "application/json",
+      "digest": "sha256:67b590ff9f615f3ee9b5bee9f7cc5ace6621ea8b7b38b53d45d3f5b9237605c1",
+      "bytes": 3057
+    },
+    {
+      "path": "report.md",
+      "role": "judgment-report",
+      "mediaType": "text/markdown",
+      "digest": "sha256:1e9d9605065d293667d10501950d2a5c6bbb44ae9ed307520a66257e21f3c69b",
+      "bytes": 4688
+    }
+  ]
+}

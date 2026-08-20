@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 2,
+  "problemId": "no-three-in-line-77",
+  "subjectTransactionId": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+  "subjectLedgerPosition": 2,
+  "claims": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-local-rigidity",
+      "statement": "Let `C` be the 152-point configuration decoded from\n[`../record-152-certificate/configuration.txt`](../record-152-certificate/configuration.txt),\nand let `E` range over the embeddings of `C` into `G_77`, meaning every image\nof `C` under the dihedral symmetries of `G_76` followed by a translation by\n`(tx, ty)` with `tx, ty` in `{0, 1}`. There are exactly 8 distinct such\nembeddings (see \"By-product\" below). For every embedding `E`:\n\n1. **Saturation (maximality).** Every one of the `77^2 - 152 = 5777` cells of\n   `G_77 \\ E` is collinear with at least two points of `E` (in fact with at\n   least two distinct blocking pairs). Hence no proper superset of `E` in\n   `G_77` is a no-three-in-line set; in particular `E` extends to neither 153\n   nor 154 points.\n2. **One-robust saturation.** For every single point `r` of `E`, the 151-point\n   set `E \\ {r}` still blocks every cell of `G_77 \\ E`. No cell is freed by\n   any single removal.\n3. **Two-removal accounting.** Removing any unordered pair of points of `E`\n   frees at most one cell of `G_77 \\ E`. Exactly 16 removal pairs free a cell;\n   they are listed exhaustively in [`results.json`](results.json). The 16\n   pairs concentrate on 4 freed cells (4 pairs each), and every instance is of\n   the \"two lines of two\" pattern: the freed cell lies on exactly two heavy\n   lines, each carrying exactly two configuration points.\n\n**Corollary (certified).** For every embedding `E` and every no-three-in-line\nset `S` in `G_77` with `|E \\ S| <= 2`, it holds that `|S \\ E| <= 1`, hence\n`|S| <= 152`. Therefore any hypothetical 153- or 154-point no-three-in-line\nset in `G_77` must omit at least 3 points of every embedding of the record and\ncontain at least 4 points outside it — symmetric difference at least 7 with\nevery embedding. (Proof of the corollary from claims 1-3: write\n`S = (E \\ R) ∪ A` with `R = E \\ S`, `A = S \\ E`. Every cell of `A` must be\nfree with respect to `E \\ R`; for `|R| = 0, 1` there are no free cells, and\nfor `|R| = 2` there is at most one, so `|A| <= 1` and\n`|S| = 152 - |R| + |A| <= 152` whenever `|R| <= 2`.)\n\nA weaker immediate consequence of claim 1 alone: adding two points at once is\nalso impossible, since each added point would in particular have to be\nindividually addable.",
+      "declaredReferenceTransactionIds": []
+    }
+  ],
+  "declaredReferenceTransactionIds": [],
+  "knowledgeContext": null,
+  "objectiveAttestation": null,
+  "packetDigest": "sha256:041d0480a75cdde1bc859eb27eb3bbcc43041cefde1b3dffaa456550ac590a92"
+}

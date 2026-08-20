@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 3,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+  "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "bf1301b6b472841276f79852c2e7fe0499309684",
+      "ledgerPosition": 8
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-governed-replay",
+      "status": "valid",
+      "premiseStatus": "not-required",
+      "summary": "The audited artifacts have the claimed digests; configuration.txt matches the canonical certificate byte-for-byte. The pinned replay successfully decodes 152 distinct points in G_76, checks all 573,800 unordered triples using exact integer determinants, and finds none collinear. Embedding G_76 into G_77 establishes D(77) >= 152. The replay request does not itself pre-assert a hosted result.",
+      "scopeQualifications": [
+        "The claim does not assert that verify.py is byte-for-byte identical to the canonical checker; the canonical checker’s additional trailing blank line is therefore immaterial.",
+        "Successful execution is established by the separate terminal attestation, not by verification.json itself.",
+        "The result establishes only D(77) >= 152; it claims no improvement, optimality, or exact value of D(77).",
+        "The canonical transaction is relevant only to the artifact-identity clause; its mathematical content is not a necessary premise because the supplied certificate, verifier, and replay establish the lower bound directly."
+      ],
+      "evidenceIssues": [],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-governed-replay",
+      "stance": "supports",
+      "summary": "The audited artifacts have the claimed digests; configuration.txt matches the canonical certificate byte-for-byte. The pinned replay successfully decodes 152 distinct points in G_76, checks all 573,800 unordered triples using exact integer determinants, and finds none collinear. Embedding G_76 into G_77 establishes D(77) >= 152. The replay request does not itself pre-assert a hosted result.",
+      "subjectTransactionIds": [
+        "bf1301b6b472841276f79852c2e7fe0499309684"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:8ef1ff4cbbdf4cfa8101f8d153e21cbbb11030c60cb6563433f6f9fb7d0d1b50",
+  "reportDigest": "sha256:95c2ea45d2b5f8c09244fcd2ee39e44e718fb3acd74fe0dbf621f1e222ba3276",
+  "judgmentId": "sha256:0414d9e0650172a4ee68f1276f22a75e23463a15c4c19ffa448ea90b81580c65"
+}

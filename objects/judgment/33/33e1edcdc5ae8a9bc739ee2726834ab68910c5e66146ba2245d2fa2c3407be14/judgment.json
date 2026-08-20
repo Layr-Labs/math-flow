@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 3,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "be5cadd97b2cd4b5916c5cda87838c5e132ec5a2",
+  "problemLedgerDigest": "sha256:7f1b880efd5b9e0d043ddabad88a31b5a25beed435108a6505a337c0b96b00e3",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+      "ledgerPosition": 4
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/finite-rotation-classification-proof",
+      "status": "valid",
+      "premiseStatus": "not-required",
+      "summary": "The argument correctly proves that any nonidentity Euclidean rotation preserving a finite noncollinear subset of Z^2 must be a half-turn or quarter-turn. It then correctly uses orbit cardinalities and the no-three-in-line condition to exclude all nontrivial rotations for size 153, and to show that any rotationally symmetric size-154 set must be invariant under the half-turn centered at (38,38), with that center unselected. The declared reference is provenance-only because all necessary orbit and occupancy arguments are reproduced in the subject.",
+      "scopeQualifications": [
+        "The result classifies rotations only, not reflections, affine maps, or approximate symmetries.",
+        "The size-154 conclusion is conditional and does not construct such a configuration.",
+        "The proof establishes neither existence nor global nonexistence of 153- or 154-point no-three-in-line sets.",
+        "It does not identify the rct4 subclass with the full centered half-turn class.",
+        "It does not improve the certified bound 152 <= D(77) <= 154."
+      ],
+      "evidenceIssues": [],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/finite-rotation-classification-proof",
+      "stance": "supports",
+      "summary": "The argument correctly proves that any nonidentity Euclidean rotation preserving a finite noncollinear subset of Z^2 must be a half-turn or quarter-turn. It then correctly uses orbit cardinalities and the no-three-in-line condition to exclude all nontrivial rotations for size 153, and to show that any rotationally symmetric size-154 set must be invariant under the half-turn centered at (38,38), with that center unselected. The declared reference is provenance-only because all necessary orbit and occupancy arguments are reproduced in the subject.",
+      "subjectTransactionIds": [
+        "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:7736e5c7014ab3079523c8adb613a1a80319b305765f08373ce807983fd99ce0",
+  "reportDigest": "sha256:1e9d9605065d293667d10501950d2a5c6bbb44ae9ed307520a66257e21f3c69b",
+  "judgmentId": "sha256:2e63f97e4a920542608ce246e8152c0c15b160475293a04ef2694a1cbf2d6e12"
+}
