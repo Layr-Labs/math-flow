@@ -430,6 +430,12 @@ def _viewer_judgment(bundle: Path, problem: str) -> dict[str, object]:
     if manifest.get("runKind") != "judgment" or manifest.get("problemId") != problem:
         raise MathFlowError(f"viewer judgment belongs to another problem or run kind: {bundle}")
     record = _json_artifact(bundle, manifest, "judgment-record")
+    declared_references_by_claim = None
+    if record.get("schemaVersion") == 3:
+        packet = _json_artifact(bundle, manifest, "judgment-dependency-packet")
+        declared_references_by_claim = _viewer_declared_references_by_claim(
+            record, packet
+        )
     judgment_id = record.get("judgmentId")
     if not isinstance(judgment_id, str):
         raise MathFlowError(f"viewer judgment has no content address: {bundle}")
@@ -455,7 +461,7 @@ def _viewer_judgment(bundle: Path, problem: str) -> dict[str, object]:
             )
         }
     )
-    return {
+    result = {
         "judgmentId": judgment_id,
         "runDigest": run_digest,
         "judgmentKind": record.get("judgmentKind"),
@@ -468,6 +474,66 @@ def _viewer_judgment(bundle: Path, problem: str) -> dict[str, object]:
         "reportMarkdown": report,
         "record": record,
     }
+    if declared_references_by_claim is not None:
+        result["declaredReferenceTransactionIdsByClaim"] = (
+            declared_references_by_claim
+        )
+    return result
+
+
+def _viewer_declared_references_by_claim(
+    record: dict[str, object], packet: dict[str, object]
+) -> dict[str, list[str]]:
+    """Extract the compact validity-v3 provenance view from a verified packet."""
+
+    if (
+        packet.get("schemaVersion") != 2
+        or packet.get("packetDigest") != record.get("dependencyPacketDigest")
+    ):
+        raise MathFlowError(
+            "viewer validity-v3 dependency packet does not match its judgment"
+        )
+    claims = packet.get("claims")
+    assessments = record.get("assessments")
+    if not isinstance(claims, list) or not isinstance(assessments, list):
+        raise MathFlowError("viewer validity-v3 judgment has invalid claim provenance")
+
+    declared: dict[str, list[str]] = {}
+    for claim in claims:
+        if not isinstance(claim, dict):
+            raise MathFlowError("viewer validity-v3 claim provenance is invalid")
+        claim_key = claim.get("claimKey")
+        references = claim.get("declaredReferenceTransactionIds")
+        if (
+            not isinstance(claim_key, str)
+            or claim_key in declared
+            or not isinstance(references, list)
+            or any(not isinstance(item, str) for item in references)
+            or len(references) != len(set(references))
+        ):
+            raise MathFlowError("viewer validity-v3 claim provenance is invalid")
+        declared[claim_key] = list(references)
+
+    assessed: set[str] = set()
+    for assessment in assessments:
+        if not isinstance(assessment, dict):
+            raise MathFlowError("viewer validity-v3 assessment provenance is invalid")
+        claim_key = assessment.get("claimKey")
+        required = assessment.get("requiredDependencyTransactionIds")
+        if (
+            not isinstance(claim_key, str)
+            or claim_key in assessed
+            or claim_key not in declared
+            or not isinstance(required, list)
+            or any(not isinstance(item, str) for item in required)
+            or len(required) != len(set(required))
+            or not set(required) <= set(declared[claim_key])
+        ):
+            raise MathFlowError("viewer validity-v3 assessment provenance is invalid")
+        assessed.add(claim_key)
+    if assessed != set(declared):
+        raise MathFlowError("viewer validity-v3 claim provenance is incomplete")
+    return declared
 
 
 def _viewer_credit_assignment(

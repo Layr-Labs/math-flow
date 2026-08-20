@@ -7,6 +7,7 @@ import { collectProgramContributionIds } from "../app/programContributions.mjs";
 import { splitDisplayMath, splitInlineMath } from "../app/markdownMath.mjs";
 import { createViewerReferenceResolver } from "../app/referenceLinks.mjs";
 import { preferredTransactionDetailMode, resolveTransactionDetailMode } from "../app/transactionDetailMode.mjs";
+import { validityReferenceGroups } from "../app/validityPresentation.mjs";
 import { creditRunSelectionPatch, historicalOverlaySelection, knowledgeRunSelectionPatch, latestOverlaySelectionPatch, projectionByIdentity, publishedHeadSelectionPatch } from "../app/projectionHeadState.mjs";
 import { applyViewerStateToSearch, parseViewerState } from "../app/viewerState.mjs";
 
@@ -78,6 +79,9 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /Qualitative credit · separate overlay/);
   assert.match(viewer, /Two-term hierarchical credit · separate overlay/);
   assert.match(viewer, /Validity assessments/);
+  assert.match(viewer, /Declared references \/ provenance/);
+  assert.match(viewer, /Required premises/);
+  assert.match(viewer, /validityReferenceGroups/);
   assert.match(viewer, /Knowledge-routing findings/);
   assert.match(viewer, /Research program state/);
   assert.match(viewer, /Local program credit/);
@@ -116,6 +120,7 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(styles, /\.credit-selector-bubble/);
   assert.match(styles, /\.latest-state-button/);
   assert.match(styles, /\.validity-assessment/);
+  assert.match(styles, /\.validity-reference-groups/);
   assert.match(styles, /\.hierarchical-credit-summary/);
   assert.match(styles, /\.program-credit-context/);
   assert.doesNotMatch(styles, /\.run-strip/);
@@ -138,6 +143,34 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
     throw error;
   });
   assert.deepEqual(previewAssets, []);
+});
+
+test("separates validity-v3 declared references from judge-selected premises", () => {
+  const declaredA = "1".repeat(40);
+  const declaredB = "2".repeat(40);
+  const assessment = {
+    claimKey: "fixture/claim",
+    requiredDependencyTransactionIds: [declaredA],
+  };
+  assert.deepEqual(
+    validityReferenceGroups(
+      {
+        declaredReferenceTransactionIdsByClaim: {
+          "fixture/claim": [declaredA, declaredB],
+        },
+      },
+      assessment,
+    ),
+    {
+      declaredReferenceTransactionIds: [declaredA, declaredB],
+      requiredDependencyTransactionIds: [declaredA],
+    },
+  );
+  assert.equal(
+    validityReferenceGroups({}, { claimKey: "fixture/claim" }),
+    null,
+    "validity-v2 assessments retain their existing presentation",
+  );
 });
 
 test("recognizes and renders inline and display LaTeX without consuming code", () => {
