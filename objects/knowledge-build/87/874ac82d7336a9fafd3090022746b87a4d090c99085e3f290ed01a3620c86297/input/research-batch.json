@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 2,
+  "problemId": "bssc-sum-capacity",
+  "baseProgramStateDigest": "sha256:52d55da254a843ee8d151d50d65a0ac9017b2d03f17fb88ba027be0ba3bce740",
+  "judgments": [
+    {
+      "judgmentId": "sha256:9b942c5c69022ac087f827104eb8bb88156c418f386b172376255a7d79761805",
+      "runDigest": "sha256:d64e0dfdd4430e00db7a8a7ad8b734314a5ca490376dc4e156b27e43c5d05cfa",
+      "subjectTransactionId": "f093396fe03f8920f9905c385ef34b1335792d5e",
+      "acceptedClaimKeys": [],
+      "excludedAssessments": [
+        {
+          "claimKey": "bssc-sum-capacity/theorem9-private-row-audit",
+          "status": "indeterminate",
+          "premiseStatus": "missing",
+          "summary": "The internal audit establishes, relative to the supplied transcription, the exact 30-row private-message expansion, preservation under input-only product marginalization, the optimization inequalities, and well-definedness of V_0(g,k). However, the composite claim also asserts faithful reproduction of the external Gohari–Liu–Nair Theorem 9, and the record neither supplies authenticated source text nor performs a semantic comparison with that theorem. Therefore the full claim is not established.",
+          "scopeQualifications": [
+            "The 30-row equivalence is valid only relative to the supplied transcribed system and executable local formulation: 26 min-expanded equation rows plus four scalar side-condition rows.",
+            "The product-marginalization proof preserves every audited single-output information term and both side conditions, provided the transcription is exhaustive and faithful; it cannot be extended unconditionally to the external theorem without source verification.",
+            "The inequalities V_Q(G,K) <= V(1/2;G,K) <= B(G,K) follow directly from feasible-set restriction and the definition of B; the restricted feasible set is nonempty and the relevant rates are bounded.",
+            "For the transcribed system, every Q0-supported information term depends on each binary-input receiver channel only through its fair-prior Jensen gap, with endpoint gaps zero; hence the channel dependence is through (c,g,k,c), making V_0(g,k) unambiguous on its stated domain."
+          ],
+          "evidenceIssues": [
+            "No reviewed PDF bytes or independently authenticated primary-source text were supplied.",
+            "The attested verifier was run without --source-pdf, so the asserted source hash and byte count were not authenticated.",
+            "Even optional source-PDF verification would check only hash and size, not semantically compare the displayed equations, side conditions, or factorization against the source.",
+            "The executable audit does not encode or check the claimed factorization.",
+            "Because exact primary-source fidelity is an essential conjunct of the declared claim, the otherwise verified internal algebra does not make the composite claim valid."
+          ],
+          "evidenceTransactionIds": [],
+          "requiredDependencyTransactionIds": []
+        }
+      ]
+    }
+  ]
+}
