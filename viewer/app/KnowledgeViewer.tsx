@@ -2,6 +2,7 @@
 
 import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import katex from "katex";
+import { validKnowledgeProjectionIndex } from "./catalogValidation.mjs";
 import { compatibleCreditProjections as compatibleCreditProjectionList, creditRunAssignmentCount, formatCreditFraction, hierarchicalCreditForTransaction, isHierarchicalCreditProjection, isHierarchicalCreditRun } from "./creditPresentation.mjs";
 import { splitDisplayMath, splitInlineMath } from "./markdownMath.mjs";
 import { collectProgramContributionIds } from "./programContributions.mjs";
@@ -491,39 +492,25 @@ function isViewerCatalog(value: unknown): value is ViewerCatalog {
   );
   return catalog.schemaVersion === 1 &&
     !!catalog.repository &&
-    Array.isArray(catalog.projections) &&
-    catalog.projections.length > 0 &&
-    catalog.projections.every((projection) =>
-      typeof projection?.id === "string" &&
-      typeof projection?.problemId === "string" &&
-      Array.isArray(projection?.data?.runs) &&
-      projection.data.runs.length > 0,
-    ) && validCredits && validHierarchicalCredits && validDirections && validAttestations;
+    validKnowledgeProjectionIndex(catalog.projections) &&
+    validCredits && validHierarchicalCredits && validDirections && validAttestations;
 }
 
-export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: ViewerData }) {
-  const fallbackProjection: RepositoryProjection = {
-    id: `fallback:${fallbackData.problem.id}`,
-    problemId: fallbackData.problem.id,
-    label: "checked-in demonstration",
-    builder: { id: "demo", digest: "local" },
-    latestRunDigest: fallbackData.runs.at(-1)?.runDigest ?? "local",
-    runCount: fallbackData.runs.length,
-    data: fallbackData,
-  };
-  const fallbackCatalog: ViewerCatalog = {
-    schemaVersion: 1,
-    repository: { slug: "Layr-Labs/math-flow", canonicalRef: "main", projectionRef: "projections" },
-    projections: [fallbackProjection],
-    creditProjections: [],
-    hierarchicalCreditProjections: [],
-    researchDirections: [],
-    objectiveAttestations: [],
-    defaultProjectionId: fallbackProjection.id,
-  };
-  const [catalog, setCatalog] = useState(fallbackCatalog);
-  const catalogRef = useRef(fallbackCatalog);
-  const [source, setSource] = useState<"checking" | "repository" | "fallback">("checking");
+const unavailableCatalog: ViewerCatalog = {
+  schemaVersion: 1,
+  repository: { slug: "Layr-Labs/math-flow", canonicalRef: "main", projectionRef: "projections" },
+  projections: [],
+  creditProjections: [],
+  hierarchicalCreditProjections: [],
+  researchDirections: [],
+  objectiveAttestations: [],
+  defaultProjectionId: null,
+};
+
+export function RepositoryKnowledgeViewer() {
+  const [catalog, setCatalog] = useState(unavailableCatalog);
+  const catalogRef = useRef(unavailableCatalog);
+  const [source, setSource] = useState<"checking" | "repository" | "unavailable">("checking");
   const [viewerState, setViewerState] = useState<ViewerState>(() =>
     typeof window === "undefined" ? {} : parseViewerState(window.location.search) as ViewerState,
   );
@@ -569,7 +556,11 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
         if (Object.keys(selectionPatch).length) updateViewerState(selectionPatch);
         setSource("repository");
       } catch {
-        if (active) setSource("fallback");
+        if (active) {
+          catalogRef.current = unavailableCatalog;
+          setCatalog(unavailableCatalog);
+          setSource("unavailable");
+        }
       }
     }
     void refresh();
@@ -579,6 +570,31 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
       window.clearInterval(interval);
     };
   }, [updateViewerState]);
+
+  if (source === "checking") {
+    return (
+      <main className="repository-loading" aria-live="polite">
+        <div className="loading-mark">MF</div>
+        <span className="eyebrow">Math Flow · research atlas</span>
+        <h1>Loading repository state</h1>
+        <p>The atlas remains empty unless the live governed catalog is available.</p>
+        <span className="loading-line" aria-hidden="true" />
+      </main>
+    );
+  }
+
+  if (!catalog.projections.length) {
+    return (
+      <main className="repository-loading repository-empty" aria-live="polite">
+        <div className="loading-mark">MF</div>
+        <span className="eyebrow">Math Flow · research atlas</span>
+        <h1>{source === "unavailable" ? "Repository catalog unavailable" : "No active knowledge states"}</h1>
+        <p>{source === "unavailable"
+          ? "The governed projection catalog could not be loaded. No problem or archived snapshot is shown while repository state is unavailable."
+          : "The live repository catalog contains no published knowledge projections for active problems."}</p>
+      </main>
+    );
+  }
 
   const problems = [...new Set(catalog.projections.map((item) => item.problemId))].sort();
   const requestedProjection = projectionByIdentity(
@@ -702,18 +718,6 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
     }) as Partial<ViewerState>);
   }
 
-  if (source === "checking") {
-    return (
-      <main className="repository-loading" aria-live="polite">
-        <div className="loading-mark">MF</div>
-        <span className="eyebrow">Math Flow · research atlas</span>
-        <h1>Loading repository state</h1>
-        <p>The checked-in demonstration will be used only if the live projection is unavailable.</p>
-        <span className="loading-line" aria-hidden="true" />
-      </main>
-    );
-  }
-
   return (
     <div className="repository-shell">
       <nav className="repository-toolbar" aria-label="Repository projection selection">
@@ -721,7 +725,7 @@ export function RepositoryKnowledgeViewer({ fallbackData }: { fallbackData: View
           <span className={`source-light source-${source}`} />
           <span>
             <strong>{catalog.repository.slug}</strong>
-            <small>{catalog.repository.canonicalRef} → {catalog.repository.projectionRef} · {source === "repository" ? "live repository state" : source === "checking" ? "checking repository" : "local fallback"}</small>
+            <small>{catalog.repository.canonicalRef} → {catalog.repository.projectionRef} · live repository state</small>
           </span>
         </div>
         <div className="problem-control">

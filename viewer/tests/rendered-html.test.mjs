@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 import katex from "katex";
+import { validKnowledgeProjectionIndex } from "../app/catalogValidation.mjs";
 import { allCreditProjections, compatibleCreditProjections, creditRunAssignmentCount, formatCreditFraction, hierarchicalCreditForTransaction, isHierarchicalCreditProjection } from "../app/creditPresentation.mjs";
 import { collectProgramContributionIds } from "../app/programContributions.mjs";
 import { splitDisplayMath, splitInlineMath } from "../app/markdownMath.mjs";
@@ -35,25 +36,29 @@ test("server-renders a stable loading state before repository data arrives", asy
   assert.match(html, /<title>Math Flow · Research Atlas<\/title>/i);
   assert.match(initialMarkup, /Math Flow · research atlas/);
   assert.match(initialMarkup, /Loading repository state/);
-  assert.match(initialMarkup, /checked-in demonstration will be used only if the live projection is unavailable/i);
+  assert.match(initialMarkup, /remains empty unless the live governed catalog is available/i);
   assert.doesNotMatch(initialMarkup, /Triangle midpoint quadrilateral/);
   assert.doesNotMatch(initialMarkup, /State[^<]*<!-- -->03/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|SkeletonPreview/i);
 });
 
+test("accepts an empty knowledge projection index without inventing a fallback", () => {
+  assert.equal(validKnowledgeProjectionIndex([]), true);
+  assert.equal(validKnowledgeProjectionIndex(undefined), false);
+  assert.equal(validKnowledgeProjectionIndex([{ id: "incomplete" }]), false);
+});
+
 test("keeps the viewer data-driven with contextual artifact details", async () => {
-  const [page, layout, packageJson, data, viewer, styles] = await Promise.all([
+  const [page, layout, packageJson, viewer, styles] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
-    readFile(new URL("../app/math-flow-data.json", import.meta.url), "utf8"),
     readFile(new URL("../app/KnowledgeViewer.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /math-flow-data\.json/);
   assert.match(page, /<RepositoryKnowledgeViewer/);
-  assert.match(page, /fallbackData=/);
+  assert.doesNotMatch(page, /math-flow-data\.json|fallbackData=/);
   assert.match(layout, /Math Flow · Research Atlas/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton|site-creator-vinext-starter/);
   assert.match(viewer, /detail-tabs-transaction/);
@@ -71,6 +76,11 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /View latest knowledge &amp; credit|View latest knowledge & credit/);
   assert.match(viewer, /publishedHeadSelectionPatch/);
   assert.match(viewer, /latestOverlaySelectionPatch/);
+  assert.match(viewer, /Repository catalog unavailable/);
+  assert.match(viewer, /No problem or archived snapshot is shown/);
+  assert.match(viewer, /projections: \[\]/);
+  assert.doesNotMatch(viewer, /checked-in demonstration|fallback:/);
+  assert.doesNotMatch(page + viewer, /triangle-midpoints|Triangle midpoint/i);
   assert.doesNotMatch(viewer, /className="run-strip"/);
   assert.match(viewer, /Historical state/);
   assert.match(viewer, /Historical input lock/);
@@ -129,15 +139,6 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /katex\.renderToString/);
   assert.match(styles, /\.math-display/);
 
-  const parsed = JSON.parse(data);
-  assert.equal(parsed.runs.length, 3);
-  assert.equal(parsed.transactions.length, 3);
-  assert.equal(parsed.judgments.length, 1);
-  assert.equal(parsed.judgments[0].judgmentKind, "primary");
-  assert.match(parsed.judgments[0].reportMarkdown, /^#/);
-  assert.equal(parsed.judgments[0].record.judgmentId, parsed.judgments[0].judgmentId);
-  assert.equal(parsed.latestRunId, "run-live-3");
-  assert.ok(parsed.runs.every((run) => run.revisionIds.length > 0));
   const previewAssets = await readdir(new URL("app/_sites-preview", templateRoot)).catch((error) => {
     if (error?.code === "ENOENT") return [];
     throw error;

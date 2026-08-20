@@ -45,20 +45,19 @@ Roll out the runtime and versioned builder before admitting the projection that
 uses them. A projection addition or edit remains a separate one-file governed PR
 under the admission policy below.
 
-The validity-v3/hierarchical-research-v3 upgrade follows this rule. Its runtime,
-schemas, profiles, judge, and builder merge first. A later one-file admission
-adds a fresh `openrouter-research-v2` projection pairing those v3 components;
-the active `openrouter-research-v1` specification is not edited in place. The
-fresh validity judge's `contextProjection` points to that v2 projection ID so
-future bounded history comes from its own state lane. Retarget or add credit
-overlays only after the new producer chain is current.
-
-The validity-v4/hierarchical-research-v4 correction follows the same additive
-rule. It adds claim-bounded terminal objective evidence for declared references
-without modifying the admitted v3 components or `openrouter-research-v2`.
-Runtime, schemas, profiles, judge, and builder merge first. A later one-file
-admission adds `openrouter-research-v3`; credit must not target that lane until
-its retained problem states are current. See
+The validity-v3/hierarchical-research-v3 and validity-v4/hierarchical-research-v4
+upgrades followed this rule. Each runtime and its versioned components merged
+before a separate one-file projection admission. The resulting production
+knowledge identity is `openrouter-research-v3`; it adds claim-bounded terminal
+objective evidence for declared references and uses the v4 builder without
+editing the earlier v1, v2, or v3 component identities. Its active producer
+states cover the two retained problems, `bssc-sum-capacity` and
+`no-three-in-line-77`. `openrouter-research-credit-v3` was admitted only after
+both producer states were current and locks that exact producer family. Its
+required runtime fix is deployed, its governed status is active again, and its
+first assignments are current for both retained problems. The v1/v2 producer
+lanes and v2 credit consumer remain temporarily active; they may now be disabled
+in dependency order. They remain available for explicit historical replay. See
 `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md`.
 
 Overlay cadence is governed projection identity, not an advisory runner hint.
@@ -84,8 +83,8 @@ Validate or inspect the registry without making a provider call:
 ```bash
 python -m math_flow validate-projections
 python -m math_flow resolve-projection \
-  --projection openrouter-research-v1 \
-  --problem triangle-midpoints \
+  --projection openrouter-research-v3 \
+  --problem bssc-sum-capacity \
   --head HEAD
 python -m math_flow list-active-projections \
   --problem no-three-in-line-77 \
@@ -117,6 +116,25 @@ contributions, directions, judgments, or published projection objects. It
 removes the problem from ordinary discovery, new participant admission, active
 projection resolution, recovery scheduling, and the live viewer catalog.
 Removing an ID from the same governed registry restores the problem.
+
+### Projection retirement operations
+
+Changing a governed projection from `active` to `disabled` stops new scheduling
+but does not rewrite its published objects. Disable a consumer before the
+producer it depends on, and do not retire the old producer until its replacement
+is current for every retained problem. After the retirement PRs merge, manually
+refresh the projection-branch catalog:
+
+```bash
+gh workflow run refresh-viewer-catalog.yml --ref main
+gh run list --workflow refresh-viewer-catalog.yml --branch main \
+  --event workflow_dispatch --limit 1
+gh run watch <run-id> --exit-status
+```
+
+`refresh-viewer-catalog.yml` is dispatch-only. Without this step, the published
+catalog can continue to expose or default to a lane that canonical governance
+has already disabled.
 
 The check counts either an approving review against the PR's current head commit
 or an exact head-bound command comment from a configured administrator:

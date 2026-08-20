@@ -1,5 +1,12 @@
 # Hierarchical Research Protocol v2
 
+> **Superseded historical design.** This document records the immutable
+> validity-v2/builder-v2 semantics of `openrouter-research-v1`. The preferred
+> replacement production lane is `openrouter-research-v3`; v1/v2 remain
+> temporarily active comparison lanes during retirement. See
+> `HIERARCHICAL_RESEARCH_PROTOCOL_V4.md`. The historical identities and command
+> examples below are intentionally not rewritten.
+
 The default `openrouter-research-v1` projection now separates three concerns:
 
 1. parallel primary judgments decide mathematical validity;

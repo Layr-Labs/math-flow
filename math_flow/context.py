@@ -23,22 +23,31 @@ def _select_projection(
         if isinstance(item, dict) and item.get("problemId") == problem
     ]
     choices = sorted(str(item.get("id")) for item in candidates)
-    if not candidates:
-        raise MathFlowError(f"no published knowledge projection exists for problem: {problem}")
-    if projection_id is None:
-        if len(candidates) != 1:
+    if projection_id is not None:
+        matches = [item for item in candidates if item.get("id") == projection_id]
+        if len(matches) != 1:
             raise MathFlowError(
-                "multiple knowledge projections exist; select one with --projection: "
+                f"unknown projection {projection_id!r} for {problem}; choices: "
                 + ", ".join(choices)
             )
-        return candidates[0]
-    matches = [item for item in candidates if item.get("id") == projection_id]
-    if len(matches) != 1:
+        return matches[0]
+
+    active = [
+        item for item in candidates if isinstance(item.get("projectionSpec"), dict)
+    ]
+    active_choices = sorted(str(item.get("id")) for item in active)
+    if not active:
+        suffix = f"; historical choices: {', '.join(choices)}" if choices else ""
         raise MathFlowError(
-            f"unknown projection {projection_id!r} for {problem}; choices: "
-            + ", ".join(choices)
+            f"no active registered knowledge projection exists for problem: {problem}"
+            f"{suffix}"
         )
-    return matches[0]
+    if len(active) != 1:
+        raise MathFlowError(
+            "multiple active registered knowledge projections exist; select one with "
+            "--projection: " + ", ".join(active_choices)
+        )
+    return active[0]
 
 
 def _history_relation(root: Path, projected_head: str, canonical_head: str) -> str:

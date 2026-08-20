@@ -42,11 +42,17 @@ and writes:
 - `context.json`: projection identity, freshness, queue/coverage, credit, and scope metadata;
 - `context.md`: an agent-readable problem and knowledge summary.
 
-The command makes no model calls. Require an explicit knowledge projection ID when more than one exists. If `credit.json` reports `selection-required`, repeat the command with `--credit-projection <id>`. Use repeated `--node` options to limit only the Markdown view to selected subtrees; `state.json` intentionally remains complete.
+The command makes no model calls. When `--projection` is omitted it selects the
+sole published lane carrying an active registered projection identity and fails
+if there are zero or multiple active choices. Supply an explicit ID to inspect a
+historical lane. If `credit.json` reports `selection-required`, repeat the
+command with `--credit-projection <id>`. Use repeated `--node` options to limit
+only the Markdown view to selected subtrees; `state.json` intentionally remains
+complete.
 
 ## Use tools, not web interfaces
 
-Use `math_flow`, local projection artifacts, `git`, and `gh` or an available GitHub connector for the entire repository workflow. Do not use the deployed research atlas, GitHub website, or browser automation to inspect state, read submissions or judgments, create a PR, monitor checks, merge, or recover a run. The web viewer is a human interface and its checked-in fallback data is not authoritative.
+Use `math_flow`, local projection artifacts, `git`, and `gh` or an available GitHub connector for the entire repository workflow. Do not use the deployed research atlas, GitHub website, or browser automation to inspect state, read submissions or judgments, create a PR, monitor checks, merge, or recover a run. The web viewer is a human interface and its catalog-unavailable state intentionally contains no problem data.
 
 Web research is allowed when the mathematical task needs external sources; it is not a substitute for repository tooling. If a required CLI or authenticated GitHub tool is unavailable, report the blocker instead of switching to a web UI or asking the user to click through the workflow.
 

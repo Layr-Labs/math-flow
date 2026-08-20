@@ -126,6 +126,10 @@ class AgentContextTests(unittest.TestCase):
                     "id": "projection-one",
                     "problemId": "demo",
                     "label": "Builder one",
+                    "projectionSpec": {
+                        "id": "projection-one",
+                        "digest": "sha256:" + "9" * 64,
+                    },
                     "builder": {"id": "builder-one"},
                     "latestRunDigest": "sha256:" + "c" * 64,
                     "runCount": 1,
@@ -206,12 +210,57 @@ class AgentContextTests(unittest.TestCase):
         self.assertNotIn("Unrelated assessment.", markdown)
         self.assertIn("untrusted research content", markdown)
 
-    def test_requires_explicit_projection_when_multiple_exist(self) -> None:
+    def test_omitted_projection_selects_sole_active_registered_lane(self) -> None:
+        catalog = self._catalog()
+        historical = dict(catalog["projections"][0])
+        historical["id"] = "projection-historical"
+        historical["projectionSpec"] = None
+        catalog["projections"].insert(0, historical)
+
+        self.assertEqual(
+            _select_projection(catalog, "demo", None)["id"],
+            "projection-one",
+        )
+        self.assertEqual(
+            _select_projection(catalog, "demo", "projection-historical")["id"],
+            "projection-historical",
+        )
+
+    def test_omitted_projection_rejects_zero_active_registered_lanes(self) -> None:
+        catalog = self._catalog()
+        catalog["projections"][0]["projectionSpec"] = None
+
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "no active registered knowledge projection.*historical choices: projection-one",
+        ):
+            _select_projection(catalog, "demo", None)
+        self.assertEqual(
+            _select_projection(catalog, "demo", "projection-one")["id"],
+            "projection-one",
+        )
+
+        catalog["projections"] = []
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "no active registered knowledge projection exists for problem: demo",
+        ):
+            _select_projection(catalog, "demo", None)
+
+    def test_omitted_projection_rejects_multiple_active_registered_lanes(self) -> None:
         catalog = self._catalog()
         second = dict(catalog["projections"][0])
         second["id"] = "projection-two"
+        second["projectionSpec"] = {
+            "id": "projection-two",
+            "digest": "sha256:" + "8" * 64,
+        }
         catalog["projections"].append(second)
-        with self.assertRaisesRegex(MathFlowError, "select one with --projection"):
+
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "multiple active registered knowledge projections.*projection-one, projection-two",
+        ):
             _select_projection(catalog, "demo", None)
         self.assertEqual(
             _select_projection(catalog, "demo", "projection-two")["id"],

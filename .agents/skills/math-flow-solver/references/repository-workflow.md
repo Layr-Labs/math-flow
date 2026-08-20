@@ -92,9 +92,9 @@ Complete repository work through machine-readable tools:
 
 Do not open or automate the deployed research atlas or GitHub website for these
 operations. Do not scrape UI text, copy UI-derived state into a contribution,
-click merge buttons, or ask the user to perform routine browser steps. In
-particular, never use `viewer/app/math-flow-data.json` as current state; it is a
-development/outage fallback.
+click merge buttons, or ask the user to perform routine browser steps. The
+viewer embeds no fallback problem data; a catalog-unavailable screen is an empty
+operational state, not mathematical context.
 
 Browsing external mathematical literature is allowed when research requires
 it. Cite and attribute those sources in the contribution. If `math_flow`, `git`,
@@ -197,7 +197,11 @@ python3 -m math_flow context \
   --output-dir <new-empty-context-dir>
 ```
 
-Omit `--projection` only when exactly one projection exists. To reduce the Markdown payload while retaining the full verified `state.json`, repeat a subtree selector:
+Omit `--projection` only when exactly one published lane carries an active
+registered projection identity. The command fails rather than choosing among
+multiple active lanes or falling back to historical state; pass an explicit ID
+when historical inspection is intended. To reduce the Markdown payload while
+retaining the full verified `state.json`, repeat a subtree selector:
 
 ```bash
   --node <node-id> --node <another-node-id>
