@@ -2565,8 +2565,8 @@
         "id": "openrouter-hierarchical-research-builder-v3",
         "digest": "sha256:7a860e24060549b877c06136df7e8b66e558be29363c873983debaa8381c9d96"
       },
-      "latestRunDigest": "sha256:874ac82d7336a9fafd3090022746b87a4d090c99085e3f290ed01a3620c86297",
-      "runCount": 2,
+      "latestRunDigest": "sha256:5301d210dba53fb9782c784bdd746cb2be7ee4fa2171b4d4f2e8c69ffefde1f7",
+      "runCount": 3,
       "data": {
         "schemaVersion": 1,
         "problem": {
@@ -2574,7 +2574,7 @@
           "title": "Half-skew BSSC private-message sum-capacity",
           "statementMarkdown": "# Half-skew BSSC private-message sum-capacity\n\nConsider the binary-input, two-receiver discrete memoryless broadcast channel\nwith \\(X,Y,Z\\in\\{0,1\\}\\) and marginal transition matrices, whose rows are\nindexed by \\(x=0,1\\) and columns by the output symbol \\(0,1\\),\n\n\\[\nP_{Y|X}=\\begin{pmatrix}\\tfrac12&\\tfrac12\\\\0&1\\end{pmatrix},\n\\qquad\nP_{Z|X}=\\begin{pmatrix}1&0\\\\\\tfrac12&\\tfrac12\\end{pmatrix}.\n\\]\n\nThere are two independent private messages: receiver \\(Y\\) must decode the\nfirst and receiver \\(Z\\) the second. There is no common message and no\nfeedback. A nonnegative rate pair \\((R_1,R_2)\\) is *achievable* if there is a\nsequence of length-\\(n\\) broadcast codes with message-set sizes\n\\(2^{n(R_i-o(1))}\\) whose average decoding error at both receivers tends to\nzero. Only the two displayed marginals affect this private-message capacity;\nany fixed joint coupling \\(P_{Y,Z|X}\\) with those marginals gives the same\nobjective. All logarithms are base two and rates are in bits per channel use.\nDefine\n\n\\[\nC_{\\mathrm{sum}}\n=\\sup\\{R_1+R_2:(R_1,R_2)\\text{ is achievable}\\}.\n\\]\n\nDetermine \\(C_{\\mathrm{sum}}\\), or rigorously improve either side of the\npublished benchmark interval\n\n\\[\n0.361642884421954615663441578150587\\ldots\n\\le C_{\\mathrm{sum}}\\le\n0.369316568803963.\n\\]\n\nThe lower endpoint is the randomized-time-division value within Marton's inner\nbound. The January 2026 Gohari--Liu--Nair manuscript records the displayed\nupper endpoint and reports the smaller numerical value\n\\(0.369296340638082\\) from a simplified two-auxiliary-receiver calculation.\nA numerical minimization or finite posterior grid alone does not certify a\nconverse over every admissible auxiliary law, so the latter decimal is a lead\nrather than the governed baseline here.\n\nThis problem is ported from `Layr-Labs/bssc-challenge`. Its public `main`\nbaseline is commit `2e11491b10730ec601cea363cf2565cc13cf2892`. The source\nworktree's local `local-yukon/canonical` commit\n`1af4e641fcfd4c76ec382c4e7cd5bed32af15e9c` records later accepted artifacts,\nincluding a fixed-pair continuous certificate\n\\(C_{\\mathrm{sum}}\\le0.369296945969202842443\\). Those artifacts are candidates\nfor separate governed contributions; this admission neither copies nor\npre-accepts them.\n\nUseful contributions include:\n\n- an achievable coding scheme with a rigorously evaluated larger sum rate;\n- a converse proving a smaller universal upper bound;\n- an exact or globally certified optimization of a named inner- or\n  outer-bound functional;\n- a cardinality, extremal, tensorization, or multiletter theorem with its\n  precise scope stated;\n- an auditable formal or interval-arithmetic certificate covering every point\n  in the claimed continuous domain;\n- an independent port and verification of a source-challenge artifact; or\n- a reproducible numerical lead or non-finding clearly labeled as non-proof.\n\n## Frontier sources\n\n- Layr Labs,\n  [BSSC challenge public baseline](https://github.com/Layr-Labs/bssc-challenge/tree/2e11491b10730ec601cea363cf2565cc13cf2892).\n- Amin Gohari, Yi Liu, and Chandra Nair,\n  [A Two Auxiliary Receiver Outer Bound to the Capacity Region of a Two-Receiver Discrete Memoryless Broadcast Channel](https://chandra.ie.cuhk.edu.hk/pub/papers/BC/GK-outer.pdf),\n  manuscript, 2026-01.\n- Yanlin Geng, Varun Jog, Chandra Nair, and Zizhou Vincent Wang,\n  [An Information Inequality and Evaluation of Marton's Inner Bound for Binary Input Broadcast Channels](https://arxiv.org/abs/1001.1468),\n  IEEE Transactions on Information Theory 59 (2013).\n- Varun Jog and Chandra Nair,\n  [An information inequality for the BSSC channel](https://arxiv.org/abs/0901.1492),\n  2009.\n"
         },
-        "ledgerHead": "f093396fe03f8920f9905c385ef34b1335792d5e",
+        "ledgerHead": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
         "transactions": [
           {
             "ordinal": 1,
@@ -2641,6 +2641,17 @@
               "email": "35671663+mooselumph@users.noreply.github.com"
             },
             "contentMarkdown": "# Exact Theorem 9 private-message row audit\n\n## Claim and exact scope\n\nThe bounded primary-source transcription in this contribution faithfully\nreproduces the factorization, equations (19a)--(19p), and both side conditions\nof Gohari--Liu--Nair Theorem 9.  After the private-message specialization\n$R_0=0$, expanding every displayed minimum produces 26 scalar rows and\nsplitting the two interval side conditions produces four more; these are\nexactly, term for term, the local 30-row formulation independently generated\nby the generic $L=3$ path formulas in `verify_specialization.py`.\n\nTaking the cited Theorem 9 as a primary-source premise, the exhaustive term\naudit also proves that input-only product marginalization of $G,K$ preserves\nthe entire system.  Under the explicit local definitions below,\n\n\\[\nV_Q(G,K)\\le V(1/2;G,K)\\le B(G,K),\n\\]\n\nand on $Q_0=\\{0,1/2,1\\}$ every row depends on the four receiver channels only\nthrough $(c,g,k,c)$; hence $V_0(g,k)$ is well defined.  The source equivalence,\nmarginalization, and $Q_0$ reduction form one all-or-nothing foundation claim.\n\nThis contribution does **not** re-prove Theorem 9 itself and does **not**\nclaim a numerical capacity bound, the optimum of the $Q_0$ problem, a\ncoercive inequality, a receiver-cardinality theorem, or a continuum limit.\n\n## Primary-source boundary\n\nThe primary source is:\n\n> Amin Gohari, Yi Liu, and Chandra Nair, *A Two Auxiliary Receiver Outer Bound\n> to the Capacity Region of a Two-Receiver Discrete Memoryless Broadcast\n> Channel*, Appendix B, Theorem 9, equations (19a)--(19p).\n\nOfficial manuscript:\n<https://chandra.ie.cuhk.edu.hk/pub/papers/BC/GK-outer.pdf>\n\nThe reviewed PDF has 255268 bytes, embedded creation date 2026-01-14, and\nSHA-256\n`24c4153530008f7ae339ac19ca8cb90fb8ea574ea8fbcd6a36c2221722d651fa`.\n`SOURCE_TRANSCRIPTION.md` reproduces the complete factorization, all source\nequations, and both side conditions.  `theorem9_spec.json` separately encodes\nthe same source terms for the executable comparison.  This avoids treating a\ncitation or a previously hard-coded row list as evidence of transcription\nfidelity.\n\nThe earlier transaction\n`d638c346212db3e75f6a53dcebcfd09f55125852` motivated this audit, but the\nproof and artifacts here do not use it as a mathematical premise.  It is\ntherefore a provenance reference, not a declared claim dependency.\n\n## Definitions and optimization order\n\nFix the physical BSSC $T_{Y,Z|X}$.  After the marginalization proved below,\nfix finite-output binary-input channels $T_{G|X}$ and $T_{K|X}$.  For\n$q\\in[0,1]$, use $P(X=1)=q$.\n\nDefine $V(q;G,K)$ to be the supremum of $R_1+R_2$ over:\n\n1. nonnegative $R_1,R_2$;\n2. finite auxiliary triples\n   $(U_j,V_j,W_j)$, $j\\in\\{a,b,c\\}$, with conditional law\n   \\[\n   p_{U_a,V_a,W_a|X}p_{U_b,V_b,W_b|X}p_{U_c,V_c,W_c|X};\n   \\]\n3. choices satisfying all 26 private-rate/nonnegativity rows obtained from\n   (19a)--(19p) after setting $R_0=0$, and all four scalar inequalities\n   obtained from the two side conditions.\n\nThus the supremum over rates and finite auxiliary hierarchies is taken while\n$q,G,K$ are fixed.  No closure or attainment is assumed.\n\nDefine the fixed-receiver full-prior value by\n\n\\[\nB(G,K):=\\sup_{q\\in[0,1]}V(q;G,K).\n\\]\n\nThis order is important: first optimize the Theorem 9 auxiliary hierarchy at\nfixed $q,G,K$, then take the supremum over $q$.  The resulting receiver\nouter bound is subsequently minimized over finite $G,K$:\n\n\\[\nC_{\\rm sum}\\le \\inf_{G,K}B(G,K).\n\\]\n\nNo equality or interchange with\n$\\sup_q\\inf_{G,K}V(q;G,K)$ is asserted.\n\nFor a fixed receiver $A\\in\\{Y,G,K,Z\\}$, let\n\n\\[\nJ_A(t):=I(X;A)\\quad\\text{when }P(X=1)=t\n\\]\n\nwith $T_{A|X}$ held fixed.  Let $Q\\subset[0,1]$ be finite and contain\n$1/2$.  A fair-prior auxiliary hierarchy is **$Q$-supported** when every\npositive-probability posterior\n\n\\[\nP(X=1|W_j),\\qquad P(X=1|U_j,W_j),\\qquad\nP(X=1|V_j,W_j)\n\\]\n\nbelongs to $Q$, for all three groups.  Define\n\n\\[\nV_Q(G,K):=\\sup\\{R_1+R_2:\\text{the defining optimization for }\nV(1/2;G,K)\\text{ uses a }Q\\text{-supported hierarchy}\\}.\n\\]\n\nThis is a restriction inside the auxiliary-hierarchy supremum, hence\n\n\\[\nV_Q(G,K)\\le V(1/2;G,K)\\le \\sup_qV(q;G,K)=B(G,K).\n\\]\n\nFinally let\n\n\\[\nQ_0=\\{0,1/2,1\\},\\qquad\nc=J_Y(1/2)=J_Z(1/2)=h_2(1/4)-1/2.\n\\]\n\nFor any $G,K$, put $g=J_G(1/2)$, $k=J_K(1/2)$, and define\n\n\\[\nV_0(g,k):=V_{Q_0}(G,K).\n\\]\n\nThe proof below shows that the right-hand side depends only on $g,k$, not on\nwhich channels realize those two midpoint values, so this definition is\nunambiguous.\n\n## Exact expansion to 30 rows\n\nIn the source, (19c)--(19d), (19e)--(19f), (19g)--(19h), and\n(19i)--(19j) are four inequalities whose continuations carry separate equation\nlabels.  Expanding a condition $L\\le A+\\min\\{b_1,\\ldots,b_m\\}$ means imposing\nthe $m$ scalar rows $L\\le A+b_i$.  The complete mapping is:\n\n| source line(s) | branches | generated local rows |\n|---|---:|---|\n| (19a) | 3 | `N_Y(0)`, `N_Y(1)`, `N_Y(2)` |\n| (19b) | 3 | `N_Z(0)`, `N_Z(1)`, `N_Z(2)` |\n| (19c)--(19d) | 3 | `R1T(0)`, `R1T(1)`, `R1T(2)` |\n| (19e)--(19f) | 3 | `R1A(0)`, `R1A(1)`, `R1A(2)` |\n| (19g)--(19h) | 3 | `R2A(0)`, `R2A(1)`, `R2A(2)` |\n| (19i)--(19j) | 3 | `R2T(0)`, `R2T(1)`, `R2T(2)` |\n| (19k) | 2 | `SL(3,U)`, `SL(3,C)` |\n| (19l) | 2 | `SR(1,C)`, `SR(1,U)` |\n| (19m) | 1 | `SL(2,U)` |\n| (19n) | 1 | `SL(1,U)` |\n| (19o) | 1 | `SR(2,U)` |\n| (19p) | 1 | `SR(3,U)` |\n\nThese are 26 rows.  Each side condition $0\\le L\\le R$ is exactly the pair\n$L\\ge0$, $R-L\\ge0$.  The $Z,K$ condition gives `F_Z_left` and\n`F_Z_right_minus_left`; the $Y,G$ condition gives `F_Y_left` and\n`F_Y_right_minus_left`.  The total is therefore 30.\n\nThe verifier constructs those rows in two independent ways.  First, it reads\nthe direct equation transcription in `theorem9_spec.json`, expands every\nminimum, and splits the side conditions.  Second, `make_path_rows` builds an\n$L=3$ chain $Y\\to G\\to K\\to Z$ from generic left- and right-walk formulas.\nIt normalizes the results only with\n\n\\[\nI(U,W;A)=I(W;A)+I(U;A|W),\\qquad\nI(V,W;A)=I(W;A)+I(V;A|W),\n\\]\n\nand compares the rate coefficients and every signed information term exactly.\n\n## Exhaustive output-term audit and marginalization\n\nThe complete distinct output-bearing term set from the source transcription is:\n\n| output | terms |\n|---|---|\n| $Y$ | $I(W_a;Y)$, $I(U_a;Y|W_a)$, $I(X;Y|V_a,W_a)$ |\n| $Z$ | $I(W_c;Z)$, $I(V_c;Z|W_c)$, $I(X;Z|U_c,W_c)$ |\n| $G$ | $I(W_a;G)$, $I(W_b;G)$, $I(U_a,W_a;G)$, $I(U_b,W_b;G)$, $I(V_a,W_a;G)$, $I(V_b,W_b;G)$, $I(U_a;G|W_a)$, $I(U_b;G|W_b)$, $I(V_b;G|W_b)$, $I(X;G|U_a,W_a)$, $I(X;G|V_a,W_a)$, $I(X;G|V_b,W_b)$ |\n| $K$ | $I(W_b;K)$, $I(W_c;K)$, $I(U_b,W_b;K)$, $I(U_c,W_c;K)$, $I(V_b,W_b;K)$, $I(V_c,W_c;K)$, $I(U_b;K|W_b)$, $I(V_b;K|W_b)$, $I(V_c;K|W_c)$, $I(X;K|U_b,W_b)$, $I(X;K|U_c,W_c)$, $I(X;K|V_c,W_c)$ |\n\nThe verifier compares this 3/12/12/3 audit against a second, independently\nencoded whitelist.  In particular, there is no joint $(G,K)$ output term and\nno term that conditions one output on another.\n\nFor an arbitrary admitted $T_{G,K|X,Y,Z}$, define\n\n\\[\n\\bar T_{G|X}(g|x)=\\sum_{y,z,k}T_{Y,Z|X}(y,z|x)\nT_{G,K|X,Y,Z}(g,k|x,y,z),\n\\]\n\n\\[\n\\bar T_{K|X}(k|x)=\\sum_{y,z,g}T_{Y,Z|X}(y,z|x)\nT_{G,K|X,Y,Z}(g,k|x,y,z),\n\\]\n\nand replace it by\n\n\\[\nT'_{G,K|X,Y,Z}(g,k|x,y,z)=\\bar T_{G|X}(g|x)\\bar T_{K|X}(k|x).\n\\]\n\nIf $D$ is any subtuple of one auxiliary group, then the Theorem 9\nfactorization gives\n\n\\[\np(d,x,g)=p_X(x)p_{D|X}(d|x)\\bar T_{G|X}(g|x).\n\\]\n\nThis law is unchanged by $T'$, and the same calculation holds for $K$.\nThe $Y,Z$ laws are unchanged directly.  The exhaustive term audit therefore\nshows that every row and both side conditions are preserved term by term.  The\nreverse inclusion is immediate because an input-only product channel is an\nallowed $T_{G,K|X,Y,Z}$.\n\n## Why $V_0(g,k)$ is well defined\n\nFor any Markov chain $S-X-A$, posterior conditioning and the chain rule give\n\n\\[\nI(S;A)=J_A(1/2)-\\mathbb E[J_A(q_S)],\\qquad\nI(X;A|S)=\\mathbb E[J_A(q_S)],\n\\]\n\nwhere $q_S=P(X=1|S)$.  In particular,\n\n\\[\nI(U;A|W)=\\mathbb E[J_A(q_W)]-\\mathbb E[J_A(q_{U,W})],\n\\]\n\nwith the analogous $V$ identity.  These identities cover every term kind in\nthe audited system: `W`, `U|W`, `V|W`, `UW`, `VW`, `X|UW`, and `X|VW`.\n\nFor $Q_0$-supported hierarchies, $J_A(0)=J_A(1)=0$; hence all these\nexpectations use only $J_A(1/2)$.  The physical BSSC values are $c,c$, and\nthe auxiliary-receiver values are $g,k$.  Therefore every objective row and\nfeasibility row is determined by the four scalar values $(c,g,k,c)$, proving\nthat $V_{Q_0}(G,K)$ depends on $G,K$ only through $g,k$.\n\n## Reproduction\n\nFrom this contribution directory, the repository-bounded check is:\n\n```bash\nPYTHONDONTWRITEBYTECODE=1 python3 verify_specialization.py\n```\n\n`verification.json` requests that exact no-argument command in the governed\n`python-stdlib-3-13-v1` environment, pinned at verifier-spec digest\n`sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884`.\nThe trusted attestation therefore covers the committed source-spec expansion,\nindependent path-row comparison, and exhaustive term audit.  It makes no\nnetwork request and does not claim to authenticate an external PDF.\n\nSeparately, a reviewer with network access can authenticate the exact reviewed\nprimary-source PDF and run the same internal audit:\n\n```bash\ncurl -fsS https://chandra.ie.cuhk.edu.hk/pub/papers/BC/GK-outer.pdf \\\n  -o /tmp/GK-outer.pdf\nPYTHONDONTWRITEBYTECODE=1 python3 verify_specialization.py \\\n  --source-pdf /tmp/GK-outer.pdf\n```\n\nThe checker uses only the Python standard library, exact integer linear forms,\nand SHA-256.  It emits one `PASS` line for every source branch/side-condition\nrow, authenticates the exhaustive term audit, and finishes with:\n\n```text\nPASS: (19a)-(19p), both side conditions, and all 30 private-message rows agree exactly\n```\n\n## Limitations and authorship\n\n- This audit uses Theorem 9 as a primary-source premise; it does not re-prove\n  the coding-theorem converse behind Theorem 9.\n- The official URL is mutable.  The byte length, SHA-256, embedded creation\n  date, page location, and complete bounded transcription pin the reviewed\n  version.\n- No assertion is made about a $Q_0$ optimum, midpoint coercivity, receiver\n  cardinality, continuum convergence, reflected optimality, or a numerical\n  capacity upper bound.\n- The mathematical theorem and equations are attributed to Gohari, Liu, and\n  Nair.  The independent transcription audit, definitions, path comparison,\n  and verifier in this contribution were prepared for Math Flow.\n"
+          },
+          {
+            "ordinal": 7,
+            "transactionId": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+            "contributionId": "theorem9-source-bound-audit",
+            "path": "problems/bssc-sum-capacity/contributions/theorem9-source-bound-audit",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Source-bound Theorem 9 private-message row audit\n\n## Claim and exact scope\n\nThe committed primary-source PDF and the structured transcription in\n`theorem9_spec.json` agree exactly on the factorization, equations\n(19a)--(19p), and\nboth side conditions of Gohari--Liu--Nair Theorem 9.  The no-argument verifier\nreads the PDF itself, follows the pinned pdfTeX page/resource/font structures,\ndecodes the embedded ToUnicode maps, and compares the extracted mathematical\nstatement with `theorem9_spec.json`.  After the private-message specialization\n$R_0=0$, expanding every displayed minimum produces 26 scalar rows and\nsplitting the two interval side conditions produces four more; these are\nexactly, term for term, the local 30-row formulation independently generated\nby the generic $L=3$ path formulas in `verify_specialization.py`.\n\nTaking the cited Theorem 9 as a primary-source premise, the exhaustive term\naudit also proves that input-only product marginalization of $G,K$ preserves\nthe entire system.  Under the explicit extended-real definitions below,\n\n\\[\nV_Q(G,K)\\le V(1/2;G,K)\\le B(G,K),\n\\]\n\nand on $Q_0=\\{0,1/2,1\\}$ every row depends on the four receiver channels only\nthrough $(c,g,k,c)$; hence $V_0(g,k)$ is well defined.  The source binding,\nsource equivalence, marginalization, and $Q_0$ reduction form one\nall-or-nothing foundation claim.\n\nThis contribution does **not** re-prove Theorem 9 itself and does **not**\nclaim a numerical capacity bound, the optimum of the $Q_0$ problem, a\ncoercive inequality, a receiver-cardinality theorem, or a continuum limit.\n\n## Primary-source boundary\n\nThe primary source is:\n\n> Amin Gohari, Yi Liu, and Chandra Nair, *A Two Auxiliary Receiver Outer Bound\n> to the Capacity Region of a Two-Receiver Discrete Memoryless Broadcast\n> Channel*, Appendix B, Theorem 9, equations (19a)--(19p).\n\nOfficial manuscript:\n<https://chandra.ie.cuhk.edu.hk/pub/papers/BC/GK-outer.pdf>\n\nThe exact reviewed manuscript is committed as `GK-outer.pdf`.  It has 255268\nbytes, embedded creation date 2026-01-14, and SHA-256\n`24c4153530008f7ae339ac19ca8cb90fb8ea574ea8fbcd6a36c2221722d651fa`.\n`SOURCE_TRANSCRIPTION.md` is a human-readable rendering for review;\n`theorem9_spec.json` is the authoritative machine-bound transcription of the\ncomplete factorization, source equations, and side conditions.\n`pdf_source_extract.py` is a deliberately bounded standard-library parser for\nthe pinned two Appendix\nB pages: it checks the page/content/resource bindings, decompresses the exact\nobject stream, resolves every referenced font's ToUnicode CMap, and decodes\nthe PDF text-showing operators.  The verifier generates the source-facing\nequations, factorization, and side conditions from the structured term spec\nand compares them with that decoded source text.  Thus neither a citation nor\na second hard-coded row list stands in for source fidelity.\n\nThe earlier transactions\n`d638c346212db3e75f6a53dcebcfd09f55125852` and\n`f093396fe03f8920f9905c385ef34b1335792d5e` motivated this source-bound\nreplacement, but the proof and artifacts here do not use either as a\nmathematical premise.  They are provenance references, not declared claim\ndependencies.\n\n## Definitions and optimization order\n\nFix the physical BSSC $T_{Y,Z|X}$.  After the marginalization proved below,\nfix finite-output binary-input channels $T_{G|X}$ and $T_{K|X}$.  For\n$q\\in[0,1]$, use $P(X=1)=q$.\n\nDefine $V(q;G,K)$ to be the extended-real supremum of $R_1+R_2$ over:\n\n1. nonnegative $R_1,R_2$;\n2. finite auxiliary triples\n   $(U_j,V_j,W_j)$, $j\\in\\{a,b,c\\}$, with conditional law\n   \\[\n   p_{U_a,V_a,W_a|X}p_{U_b,V_b,W_b|X}p_{U_c,V_c,W_c|X};\n   \\]\n3. choices satisfying all 26 private-rate/nonnegativity rows obtained from\n   (19a)--(19p) after setting $R_0=0$, and all four scalar inequalities\n   obtained from the two side conditions.\n\nThus the supremum over rates and finite auxiliary hierarchies is taken while\n$q,G,K$ are fixed.  No closure or attainment is assumed.  Throughout this\ncontribution, $\\sup\\varnothing=-\\infty$; this makes every restricted value\ndefined even when a support restriction admits no feasible hierarchy.\n\nDefine the fixed-receiver full-prior value by\n\n\\[\nB(G,K):=\\sup_{q\\in[0,1]}V(q;G,K).\n\\]\n\nThis order is important: first optimize the Theorem 9 auxiliary hierarchy at\nfixed $q,G,K$, then take the supremum over $q$.  The resulting receiver\nouter bound is subsequently minimized over finite $G,K$:\n\n\\[\nC_{\\rm sum}\\le \\inf_{G,K}B(G,K).\n\\]\n\nNo equality or interchange with\n$\\sup_q\\inf_{G,K}V(q;G,K)$ is asserted.\n\nFor a fixed receiver $A\\in\\{Y,G,K,Z\\}$, let\n\n\\[\nJ_A(t):=I(X;A)\\quad\\text{when }P(X=1)=t\n\\]\n\nwith $T_{A|X}$ held fixed.  Let $Q\\subset[0,1]$ be finite and contain\n$1/2$.  A fair-prior auxiliary hierarchy is **$Q$-supported** when every\npositive-probability posterior\n\n\\[\nP(X=1|W_j),\\qquad P(X=1|U_j,W_j),\\qquad\nP(X=1|V_j,W_j)\n\\]\n\nbelongs to $Q$, for all three groups.  Define\n\n\\[\nV_Q(G,K):=\\sup\\{R_1+R_2:\\text{the defining optimization for }\nV(1/2;G,K)\\text{ uses a }Q\\text{-supported hierarchy}\\}.\n\\]\n\nThis is a restriction inside the auxiliary-hierarchy supremum, hence\n\n\\[\nV_Q(G,K)\\le V(1/2;G,K)\\le \\sup_qV(q;G,K)=B(G,K).\n\\]\n\nFinally let\n\n\\[\nQ_0=\\{0,1/2,1\\},\\qquad\nc=J_Y(1/2)=J_Z(1/2)=h_2(1/4)-1/2.\n\\]\n\nFor any $G,K$, put $g=J_G(1/2)$, $k=J_K(1/2)$, and define\n\n\\[\nV_0(g,k):=V_{Q_0}(G,K).\n\\]\n\nThe proof below shows that the right-hand side depends only on $g,k$, not on\nwhich channels realize those two midpoint values, so this definition is\nunambiguous.  It is also a finite real value: the $Q_0$-supported choice\n$W_a=W_b=W_c=X$ with all $U_j,V_j$ constant makes both side conditions zero\nand admits $R_1=R_2=0$, while the branch-zero individual-rate rows give\n$R_1\\le I(U_a,W_a;Y)\\le1$ and\n$R_2\\le I(V_c,W_c;Z)\\le1$.\n\n## Exact expansion to 30 rows\n\nIn the source, (19c)--(19d), (19e)--(19f), (19g)--(19h), and\n(19i)--(19j) are four inequalities whose continuations carry separate equation\nlabels.  Expanding a condition $L\\le A+\\min\\{b_1,\\ldots,b_m\\}$ means imposing\nthe $m$ scalar rows $L\\le A+b_i$.  The complete mapping is:\n\n| source line(s) | branches | generated local rows |\n|---|---:|---|\n| (19a) | 3 | `N_Y(0)`, `N_Y(1)`, `N_Y(2)` |\n| (19b) | 3 | `N_Z(0)`, `N_Z(1)`, `N_Z(2)` |\n| (19c)--(19d) | 3 | `R1T(0)`, `R1T(1)`, `R1T(2)` |\n| (19e)--(19f) | 3 | `R1A(0)`, `R1A(1)`, `R1A(2)` |\n| (19g)--(19h) | 3 | `R2A(0)`, `R2A(1)`, `R2A(2)` |\n| (19i)--(19j) | 3 | `R2T(0)`, `R2T(1)`, `R2T(2)` |\n| (19k) | 2 | `SL(3,U)`, `SL(3,C)` |\n| (19l) | 2 | `SR(1,C)`, `SR(1,U)` |\n| (19m) | 1 | `SL(2,U)` |\n| (19n) | 1 | `SL(1,U)` |\n| (19o) | 1 | `SR(2,U)` |\n| (19p) | 1 | `SR(3,U)` |\n\nThese are 26 rows.  Each side condition $0\\le L\\le R$ is exactly the pair\n$L\\ge0$, $R-L\\ge0$.  The $Z,K$ condition gives `F_Z_left` and\n`F_Z_right_minus_left`; the $Y,G$ condition gives `F_Y_left` and\n`F_Y_right_minus_left`.  The total is therefore 30.\n\nBefore constructing rows, the verifier authenticates `GK-outer.pdf`, extracts\nthe complete theorem statement from source pages 14--15, and checks all 16\nequation labels, the factorization, and both side conditions against the\nstructured term spec.  It then constructs rows in two independent ways.\nFirst, it reads `theorem9_spec.json`, expands every minimum, and splits the\nside conditions.  Second, `make_path_rows` builds an $L=3$ chain\n$Y\\to G\\to K\\to Z$ from generic left- and right-walk formulas.\nIt normalizes the results only with\n\n\\[\nI(U,W;A)=I(W;A)+I(U;A|W),\\qquad\nI(V,W;A)=I(W;A)+I(V;A|W),\n\\]\n\nand compares the rate coefficients and every signed information term exactly.\n\n## Exhaustive output-term audit and marginalization\n\nThe complete distinct output-bearing term set from the source transcription is:\n\n| output | terms |\n|---|---|\n| $Y$ | $I(W_a;Y)$, $I(U_a;Y|W_a)$, $I(X;Y|V_a,W_a)$ |\n| $Z$ | $I(W_c;Z)$, $I(V_c;Z|W_c)$, $I(X;Z|U_c,W_c)$ |\n| $G$ | $I(W_a;G)$, $I(W_b;G)$, $I(U_a,W_a;G)$, $I(U_b,W_b;G)$, $I(V_a,W_a;G)$, $I(V_b,W_b;G)$, $I(U_a;G|W_a)$, $I(U_b;G|W_b)$, $I(V_b;G|W_b)$, $I(X;G|U_a,W_a)$, $I(X;G|V_a,W_a)$, $I(X;G|V_b,W_b)$ |\n| $K$ | $I(W_b;K)$, $I(W_c;K)$, $I(U_b,W_b;K)$, $I(U_c,W_c;K)$, $I(V_b,W_b;K)$, $I(V_c,W_c;K)$, $I(U_b;K|W_b)$, $I(V_b;K|W_b)$, $I(V_c;K|W_c)$, $I(X;K|U_b,W_b)$, $I(X;K|U_c,W_c)$, $I(X;K|V_c,W_c)$ |\n\nThe verifier compares this 3/12/12/3 audit against a second, independently\nencoded whitelist.  In particular, there is no joint $(G,K)$ output term and\nno term that conditions one output on another.\n\nFor an arbitrary admitted $T_{G,K|X,Y,Z}$, define\n\n\\[\n\\bar T_{G|X}(g|x)=\\sum_{y,z,k}T_{Y,Z|X}(y,z|x)\nT_{G,K|X,Y,Z}(g,k|x,y,z),\n\\]\n\n\\[\n\\bar T_{K|X}(k|x)=\\sum_{y,z,g}T_{Y,Z|X}(y,z|x)\nT_{G,K|X,Y,Z}(g,k|x,y,z),\n\\]\n\nand replace it by\n\n\\[\nT'_{G,K|X,Y,Z}(g,k|x,y,z)=\\bar T_{G|X}(g|x)\\bar T_{K|X}(k|x).\n\\]\n\nIf $D$ is any subtuple of one auxiliary group, then the Theorem 9\nfactorization gives\n\n\\[\np(d,x,g)=p_X(x)p_{D|X}(d|x)\\bar T_{G|X}(g|x).\n\\]\n\nThis law is unchanged by $T'$, and the same calculation holds for $K$.\nThe $Y,Z$ laws are unchanged directly.  The exhaustive term audit therefore\nshows that every row and both side conditions are preserved term by term.  The\nreverse inclusion is immediate because an input-only product channel is an\nallowed $T_{G,K|X,Y,Z}$.\n\n## Why $V_0(g,k)$ is well defined\n\nFor any Markov chain $S-X-A$, posterior conditioning and the chain rule give\n\n\\[\nI(S;A)=J_A(1/2)-\\mathbb E[J_A(q_S)],\\qquad\nI(X;A|S)=\\mathbb E[J_A(q_S)],\n\\]\n\nwhere $q_S=P(X=1|S)$.  In particular,\n\n\\[\nI(U;A|W)=\\mathbb E[J_A(q_W)]-\\mathbb E[J_A(q_{U,W})],\n\\]\n\nwith the analogous $V$ identity.  These identities cover every term kind in\nthe audited system: `W`, `U|W`, `V|W`, `UW`, `VW`, `X|UW`, and `X|VW`.\n\nFor $Q_0$-supported hierarchies, $J_A(0)=J_A(1)=0$; hence all these\nexpectations use only $J_A(1/2)$.  The physical BSSC values are $c,c$, and\nthe auxiliary-receiver values are $g,k$.  Therefore every objective row and\nfeasibility row is determined by the four scalar values $(c,g,k,c)$, proving\nthat $V_{Q_0}(G,K)$ depends on $G,K$ only through $g,k$.\n\n## Reproduction\n\nFrom this contribution directory, the repository-bounded check is:\n\n```bash\nPYTHONDONTWRITEBYTECODE=1 python3 verify_specialization.py\n```\n\n`verification.json` requests that exact no-argument entrypoint in the governed\n`python-stdlib-3-13-v1` environment, pinned at verifier-spec digest\n`sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884`.\nThe governed runner invokes `python3 -I -B verify_specialization.py`; the\nextractor is loaded by its exact sibling path and does not rely on ambient\nmodule search paths.  The trusted attestation therefore covers the committed\nPDF bytes, its semantic comparison with the structured source spec, the\nindependent path-row comparison, and the exhaustive term audit.  It makes no\nnetwork request.\n\nA reviewer can independently redownload the public author-hosted bytes and\ncompare their digest with the committed source:\n\n```bash\ncurl -fsS https://chandra.ie.cuhk.edu.hk/pub/papers/BC/GK-outer.pdf \\\n  -o /tmp/GK-outer.pdf\nshasum -a 256 /tmp/GK-outer.pdf GK-outer.pdf\n```\n\nThe checker uses only the Python standard library, exact integer linear forms,\nzlib decoding, embedded ToUnicode maps, and SHA-256.  It emits one `PASS` line\nfor every source equation and source branch/side-condition row, authenticates\nthe factorization and exhaustive term audit, and finishes with:\n\n```text\nPASS: committed primary source, factorization, (19a)-(19p), both side conditions, and all 30 private-message rows agree exactly\n```\n\n## Limitations and authorship\n\n- This audit uses Theorem 9 as a primary-source premise; it does not re-prove\n  the coding-theorem converse behind Theorem 9.\n- The official URL is mutable.  The committed PDF bytes, byte length, SHA-256,\n  embedded creation date, page location, and semantic extraction pin the\n  reviewed version.\n- No assertion is made about a $Q_0$ optimum, midpoint coercivity, receiver\n  cardinality, continuum convergence, reflected optimality, or a numerical\n  capacity upper bound.\n- The mathematical theorem and equations are attributed to Gohari, Liu, and\n  Nair.  The independent transcription audit, definitions, path comparison,\n  and verifier in this contribution were prepared for Math Flow.\n"
           }
         ],
         "judgments": [
@@ -3102,6 +3113,83 @@
             },
             "declaredReferenceTransactionIdsByClaim": {
               "bssc-sum-capacity/theorem9-private-row-audit": []
+            }
+          },
+          {
+            "judgmentId": "sha256:5923d14df99a15390f0f6581a839afabe3bb272cd01680e0b346d16bdf924937",
+            "runDigest": "sha256:200f3b4220145af2af4c8b559d1555e80922a2765ec56cf87ad861a9f2020df5",
+            "judgmentKind": "primary",
+            "ledgerHead": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+            "problemLedgerHead": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v3",
+              "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.21314937499999997,
+            "reportDigest": "sha256:e3f7e77239c46aaa38e0c3c148872e20c54cc8413ab9b20b27e9f6841c46e658",
+            "reportMarkdown": "## `bssc-sum-capacity/theorem9-source-bound-audit`\n\n**Verdict: indeterminate**\n\n**Required declared dependencies:** none.  \nGohari–Liu–Nair Theorem 9 is explicitly assumed as a primary-source premise rather than proved here. No transaction reference is needed for the downstream algebra because the needed constraint system is restated in the subject.\n\n### What the terminal attestation establishes\n\nThe trusted execution establishes that the pinned verifier:\n\n- read a 255268-byte file with SHA-256  \n  `24c4153530008f7ae339ac19ca8cb90fb8ea574ea8fbcd6a36c2221722d651fa`;\n- extracted text that its parser associates with equations (19a)–(19p), the factorization, and two side conditions;\n- found that text equal to the strings generated from `theorem9_spec.json`;\n- expanded the specification into 30 rows;\n- compared those rows, after only the stated \\(UW\\) and \\(VW\\) chain-rule normalizations, with the independently coded path-row generator;\n- found the audited distinct output-term sets to have sizes \\(3,12,12,3\\).\n\nIt does **not** establish Theorem 9 itself, any numerical capacity bound, or the subsequent marginalization and \\(V_0\\) arguments; those must be checked mathematically.\n\n### Material unresolved source-fidelity obligation\n\nThe exact declared claim says that the transcription **faithfully reproduces the theorem in the source PDF**. The verifier’s encoded predicate is weaker than complete PDF-semantic or visual equivalence:\n\n- `_decode_text` recognizes text shown through `Tj` and `TJ`, but silently ignores other PDF operators after clearing their operands. In particular, it does not fail if text is shown through other legal text-showing operators such as `'` or `\"`.\n- It does not recursively process form XObjects invoked through `Do`, nor prove that the relevant page resources contain no such source of theorem content.\n- It concatenates decoded strings in content-stream order without checking text position, rendering mode, clipping, or visibility. Thus it does not rule out expected but invisible text coexisting with different visible content.\n- The verifier does not perform an exhaustive operator audit showing that all theorem-bearing content in the pinned pages is represented by the handled `Tj`/`TJ` operations.\n\nConsequently, the passed execution certifies equality with the parser’s extracted string, but the supplied record does not affirmatively prove that this string is the complete rendered mathematical statement in the PDF. There is no demonstrated counterexample involving the pinned bytes, so this is an unresolved material obligation rather than a decisive falsification.\n\nThe attestation also authenticates only the committed bytes and digest; it does not independently establish the provenance assertion that those bytes are the official author-hosted version. That is primarily a source-provenance limitation, not a mathematical defect.\n\n### Conditional verification of the 30-row specialization\n\nConditional on the displayed source transcription being correct:\n\n1. Replacing \\(R_0\\) by zero is direct.\n2. An inequality\n   \\[\n   L\\le A+\\min_i b_i\n   \\]\n   is equivalent to the collection \\(L\\le A+b_i\\) for every branch \\(i\\).\n3. The branch counts are\n   \\[\n   6\\cdot3+2\\cdot2+4\\cdot1=26.\n   \\]\n4. Each side condition \\(0\\le L\\le R\\) is equivalent to \\(L\\ge0\\) and \\(R-L\\ge0\\), adding four rows.\n\nThus the stated total of \\(30\\) rows is correct. The verifier checks equality of rate coefficients and normalized information-term coefficients for all 30 rows. The normalization\n\\[\nI(U,W;A)=I(W;A)+I(U;A\\mid W)\n\\]\nand its \\(V\\)-analogue is universally valid, so the row comparison is mathematically sound conditional on the transcription.\n\n### Marginalization argument\n\nThis portion is correct conditional on the factorization and audited term list.\n\nFor any subtuple \\(D\\) of one auxiliary group, the factorization gives\n\\[\np(d,x,g)=p_X(x)p_{D\\mid X}(d\\mid x)\\bar T_{G\\mid X}(g\\mid x),\n\\]\nwhere \\(\\bar T_{G\\mid X}\\) is the \\(G\\)-marginal induced by the original auxiliary-receiver channel and the fixed physical channel. Replacing the latter by\n\\[\nT'_{G,K\\mid X,Y,Z}\n =\\bar T_{G\\mid X}\\bar T_{K\\mid X}\n\\]\ntherefore preserves every joint law \\((D,X,G)\\); likewise it preserves every \\((D,X,K)\\) law. The \\(Y\\)- and \\(Z\\)-bearing laws are unchanged.\n\nSince the audited system contains no joint \\((G,K)\\) term and no output conditioned on another output, every listed information quantity, including those in the side conditions, is preserved. Product input-only channels are themselves admissible, so the claimed reverse inclusion is also valid.\n\n### Extended-real inequalities\n\nThese follow immediately from set inclusion:\n\\[\nV_Q(G,K)\\le V(1/2;G,K)\n\\]\nbecause \\(Q\\)-support restricts the fair-prior feasible hierarchies, and\n\\[\nV(1/2;G,K)\\le \\sup_{q\\in[0,1]}V(q;G,K)=B(G,K).\n\\]\nThe convention \\(\\sup\\varnothing=-\\infty\\) handles an empty restricted feasible set without changing these inequalities.\n\n### Well-definedness and finiteness of \\(V_0\\)\n\nFor \\(S-X-A\\) at the fair prior,\n\\[\nI(S;A)=J_A(1/2)-\\mathbb E J_A(q_S),\\qquad\nI(X;A\\mid S)=\\mathbb E J_A(q_S).\n\\]\nSubtracting the corresponding identities gives\n\\[\nI(U;A\\mid W)\n =\\mathbb E J_A(q_W)-\\mathbb E J_A(q_{U,W}),\n\\]\nand similarly for \\(V\\). These identities cover every audited term type.\n\nFor \\(Q_0=\\{0,\\tfrac12,1\\}\\),\n\\[\nJ_A(0)=J_A(1)=0,\n\\]\nso channel dependence enters only through \\(J_A(1/2)\\). For the physical BSSC,\n\\[\nJ_Y(1/2)=J_Z(1/2)=h_2(1/4)-\\tfrac12=c.\n\\]\nHence all rows and side conditions depend on the receiver channels only through \\((c,g,k,c)\\), establishing representation-independence of \\(V_0(g,k)\\).\n\nThe restricted problem is nonempty: choose \\(W_a=W_b=W_c=X\\) and all \\(U_j,V_j\\) constant. All relevant posteriors lie in \\(Q_0\\), both side conditions vanish, and \\(R_1=R_2=0\\) satisfies the rows. Finally, branch-zero rows imply\n\\[\nR_1\\le I(U_a,W_a;Y)\\le1,\\qquad\nR_2\\le I(V_c,W_c;Z)\\le1,\n\\]\nso the supremum is finite. Thus this downstream part is correct.\n\nBecause the source-fidelity conjunct remains unsupported by the verifier’s exact encoded predicate, the all-or-nothing declared claim cannot be marked valid.\n",
+            "record": {
+              "schemaVersion": 3,
+              "judgmentKind": "primary",
+              "problemId": "bssc-sum-capacity",
+              "ledgerHead": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+              "problemLedgerDigest": "sha256:361ab8c751586738730b9a86a3b2eac0196f13be92f6a72929a7714f15bde30f",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v3",
+                "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+                  "ledgerPosition": 7
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "bssc-sum-capacity/theorem9-source-bound-audit",
+                  "status": "indeterminate",
+                  "premiseStatus": "satisfied",
+                  "summary": "The downstream 30-row specialization, marginalization, extended-real inequalities, and finiteness and representation-independence of V_0 are mathematically established conditional on the source transcription. However, the all-or-nothing claim remains indeterminate because the verifier proves equality only with its limited deterministic extraction, not faithful reproduction of the complete rendered theorem in the pinned PDF.",
+                  "scopeQualifications": [
+                    "Gohari–Liu–Nair Theorem 9 is assumed as a primary-source premise and is not itself proved.",
+                    "Conditional on the transcription, setting R0=0 and expanding minima and both side conditions yields exactly 30 rows; the UW and VW chain-rule normalizations used in comparing them are valid.",
+                    "Conditional on the audited term list and factorization, replacing G and K by input-only product channels preserves every relevant joint law and information term because no term jointly involves G and K or conditions one output on another; product channels remain admissible, giving the reverse inclusion.",
+                    "The inequalities V_Q(G,K) <= V(1/2;G,K) <= B(G,K) follow from feasible-set inclusion and remain valid under sup(empty set)=-infinity.",
+                    "For Q0={0,1/2,1}, all audited terms depend on receiver channels only through their fair-prior Jensen values, hence through (c,g,k,c). A zero-rate feasible construction proves nonemptiness, and branch-zero rows bound R1 and R2 by 1, so V_0(g,k) is finite and well-defined.",
+                    "The attestation authenticates only the committed bytes and digest; it does not independently prove that they are the official author-hosted PDF."
+                  ],
+                  "evidenceIssues": [
+                    "The PDF decoder handles Tj and TJ but silently ignores other legal text-showing operators, including apostrophe and quotation-mark operators.",
+                    "The verifier does not recursively process form XObjects invoked through Do and does not establish that relevant page resources contain no theorem content in such objects.",
+                    "Decoded strings are concatenated in content-stream order without checking position, rendering mode, clipping, or visibility, so invisible expected text could coexist with different visible content.",
+                    "No exhaustive PDF-operator audit establishes that every theorem-bearing element on the pinned pages is represented by the handled Tj/TJ operations.",
+                    "Accordingly, equality between generated strings and parser output does not establish complete visual or semantic fidelity to the rendered source theorem. No counterexample for the pinned bytes is shown, so this is unresolved rather than decisively false."
+                  ],
+                  "evidenceTransactionIds": [],
+                  "requiredDependencyTransactionIds": []
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "bssc-sum-capacity/theorem9-source-bound-audit",
+                  "stance": "uncertain",
+                  "summary": "The downstream 30-row specialization, marginalization, extended-real inequalities, and finiteness and representation-independence of V_0 are mathematically established conditional on the source transcription. However, the all-or-nothing claim remains indeterminate because the verifier proves equality only with its limited deterministic extraction, not faithful reproduction of the complete rendered theorem in the pinned PDF.",
+                  "subjectTransactionIds": [
+                    "dcdd3ab29be1a45b42a75767dbee30d8381544eb"
+                  ],
+                  "evidenceTransactionIds": []
+                }
+              ],
+              "dependencyPacketDigest": "sha256:be3a4afc955b58ae6e8b4a03d95fb5792fc9e3c7bff01e2226725aeef07f8801",
+              "reportDigest": "sha256:e3f7e77239c46aaa38e0c3c148872e20c54cc8413ab9b20b27e9f6841c46e658",
+              "judgmentId": "sha256:5923d14df99a15390f0f6581a839afabe3bb272cd01680e0b346d16bdf924937"
+            },
+            "declaredReferenceTransactionIdsByClaim": {
+              "bssc-sum-capacity/theorem9-source-bound-audit": []
             }
           }
         ],
@@ -3996,11 +4084,322 @@
             "changedNodeIds": [],
             "reportDigest": "sha256:52d55da254a843ee8d151d50d65a0ac9017b2d03f17fb88ba027be0ba3bce740",
             "revisionSemantics": "neutral-knowledge"
+          },
+          {
+            "id": "5301d210dba53fb9782c784bdd746cb2be7ee4fa2171b4d4f2e8c69ffefde1f7",
+            "ordinal": 3,
+            "ledgerHead": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+            "problemLedgerHead": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+            "runDigest": "sha256:5301d210dba53fb9782c784bdd746cb2be7ee4fa2171b4d4f2e8c69ffefde1f7",
+            "baseRun": "sha256:874ac82d7336a9fafd3090022746b87a4d090c99085e3f290ed01a3620c86297",
+            "runKind": "knowledge-build",
+            "inputs": {
+              "judgmentIds": [
+                "sha256:5923d14df99a15390f0f6581a839afabe3bb272cd01680e0b346d16bdf924937"
+              ],
+              "laneId": "sha256:799d0af2dd75709864aa327bf17ff1ca6cf988ecbf03dbe503f4e2931de5f395",
+              "projectionSpecDigest": "sha256:df3a8d053a3734d1027930d2188dcd9a4caeb8a57f0317ca46b6c72bfc8bae5e",
+              "builderSpecDigest": "sha256:7a860e24060549b877c06136df7e8b66e558be29363c873983debaa8381c9d96",
+              "baseStateRun": "sha256:874ac82d7336a9fafd3090022746b87a4d090c99085e3f290ed01a3620c86297",
+              "conflictIds": [],
+              "judgmentSetDigest": "sha256:f7d5777f996506e2b7b3b4bd90c4df9aaf0888333bcb6b6814b3409254f746d5",
+              "schemaVersion": 1,
+              "problemId": "bssc-sum-capacity",
+              "buildToken": "sha256:dcbde4928f75b6bae4b178b8b7cd62c8fc91a15e13f425d24ec1f0c1e0ee11f8"
+            },
+            "judgeSpec": {
+              "id": "openrouter-hierarchical-research-builder-v3",
+              "digest": "sha256:7a860e24060549b877c06136df7e8b66e558be29363c873983debaa8381c9d96"
+            },
+            "runner": {
+              "implementation": "openrouter-hierarchical-research-builder-v3",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0,
+            "selection": {
+              "selectedNodeIds": [],
+              "rationale": "Nodes changed by the accepted validity batch."
+            },
+            "normalizations": [],
+            "delta": {
+              "schemaVersion": 1,
+              "operations": [],
+              "contributions": []
+            },
+            "state": {
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "program",
+                  "title": "Canonical problem",
+                  "summary": "Resolve the canonical problem.",
+                  "status": "active",
+                  "contentMarkdown": "## Objective\n\nResolve the canonical problem.\n\n## Local credit context\n\nRoot program.",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                      "ledgerPosition": 3,
+                      "relation": "source"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+                      "ledgerPosition": 4,
+                      "relation": "source"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                      "ledgerPosition": 5,
+                      "relation": "source"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:67de17d075e45f1b9b5de9365b47114cd1b4014221465cbd88b58ea8ea9a3644"
+                },
+                "thread:root/unstructured-search": {
+                  "id": "thread:root/unstructured-search",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Unstructured search and overhead",
+                  "summary": "Future work not yet assigned to a more specific research thread.",
+                  "status": "active",
+                  "contentMarkdown": "Future work not yet assigned to a more specific research thread.\n\n**Thread kind:** unstructured\n\n**Expected local exposure:** 1\n\n**Conditions:** none",
+                  "subjects": [],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+                },
+                "thread:root/code-induced-converse-structure": {
+                  "id": "thread:root/code-induced-converse-structure",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Code-induced converse structure and entropy-relaxation obstructions",
+                  "summary": "Organize accepted structural necessary conditions induced by deterministic private-message codes and accepted limitations of specified entropy/copy converse relaxations.",
+                  "status": "active",
+                  "contentMarkdown": "Organize accepted structural necessary conditions induced by deterministic private-message codes and accepted limitations of specified entropy/copy converse relaxations.\n\n**Thread kind:** research\n\n**Expected local exposure:** 1\n\n**Conditions:** none",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                      "ledgerPosition": 3,
+                      "relation": "source"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:09a038fbd7d327a4242aa6bdde198d975399034a48e1d565af0a2113aac42ed9"
+                },
+                "thread:root/uv-relaxed-tensorization": {
+                  "id": "thread:root/uv-relaxed-tensorization",
+                  "parentId": "root",
+                  "type": "question",
+                  "title": "Tensorization of separately relaxed UV scalar functionals",
+                  "summary": "Organize accepted product-additivity and receiver-skew results for the two separately relaxed scalar UV functionals, including their exact half-skew BSSC specialization.",
+                  "status": "active",
+                  "contentMarkdown": "Organize accepted product-additivity and receiver-skew results for the two separately relaxed scalar UV functionals, including their exact half-skew BSSC specialization.\n\n**Thread kind:** research\n\n**Expected local exposure:** 1\n\n**Conditions:** none",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+                      "ledgerPosition": 4,
+                      "relation": "source"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                      "ledgerPosition": 5,
+                      "relation": "source"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:f24d28aef3d83d31a7994c4522ed77e9ac034851723d709d6bfe6c6c9e819198"
+                },
+                "item:root/result/code-induced-dependence-balance-and-entropy-no-go": {
+                  "id": "item:root/result/code-induced-dependence-balance-and-entropy-no-go",
+                  "parentId": "root",
+                  "type": "result",
+                  "title": "Code-induced dependence balance and entropy/copy no-go",
+                  "summary": "This is an attributed, independently audited port of the consecutive accepted\nYukon artifacts `upper-dependence-balance` and `upper-entropy-nogo`.  They form\none dependency-complete structural result: the first derives a necessary\ncondition from every deterministic private-message code, and the second proves\nthat a specified entropy-only relaxation of that condition cannot improve the\nclassical UV value.\n\n### Finite-block code-induced balance\n\nLet (A) and (B) be independent uniform private messages, encoded\ndeterministically over (n) uses of a finite-alphabet memoryless broadcast\nchannel.  Receiver (Y) estimates (A) with average error (p_1), and\nreceiver (Z) estimates (B) with error (p_2).  Define\n\n\\[\nF_j=h_2(p_j)+p_j\\log_2(N_j-1),\\qquad \\delta_j=F_j/n.\n\\]\n\nFor\n\n\\[\nS_i=(Y^{i-1},Z_{i+1}^n),\n\\]\n\nthe exact telescope is\n\n\\[\n\\sum_{i=1}^n\n\\left[I(A;B\\mid S_i,Y_i)-I(A;B\\mid S_i,Z_i)\\right]\n=I(A;B\\mid Y^n)-I(A;B\\mid Z^n).\n\\]\n\nBoth endpoints are nonnegative, while Fano bounds them by (F_1) and\n(F_2), respectively.  With independent uniform time (T), and\n\n\\[\nU=A,\\quad V=B,\\quad W=S_T,\\quad X=X_T,\\quad Y=Y_T,\\quad Z=Z_T,\n\\]\n\nevery such code therefore induces\n\n\\[\n\\left|I(U;V\\mid W,T,Y)-I(U;V\\mid W,T,Z)\\right|\n\\le\\max\\{\\delta_1,\\delta_2\\}.\n\\]\n\nThe complete induced law retains the fixed coordinate map:\n\n\\[\np(t,u,v,w,x,y,z)=\\frac1n p_U(u)p_V(v)p(w\\mid u,v,t)\n\\mathbf 1\\{x=f_t(u,v)\\}P_{YZ\\mid X}(y,z\\mid x).\n\\]\n\nIn particular, (U\\perp V), (T\\perp(U,V)), (X=f_T(U,V)), and the\nrealized state (W) cannot select another encoder map after (u,v,t) are\nfixed.  The same variables satisfy four compatible rate rows:\n\n\\[\n\\begin{aligned}\nR_1&\\le I(U,W;Y\\mid T)+\\delta_1,\\\\\nR_2&\\le I(V,W;Z\\mid T)+\\delta_2,\\\\\nR_1+R_2&\\le I(U,W;Y\\mid T)+I(X;Z\\mid U,W,T)+\\delta_1+\\delta_2,\\\\\nR_1+R_2&\\le I(V,W;Z\\mid T)+I(X;Y\\mid V,W,T)+\\delta_1+\\delta_2.\n\\end{aligned}\n\\]\n\nThis is an exact sequence-level necessary condition.  The alphabets of the\nmessages and (W) grow with blocklength, so it is not by itself a fixed-\ncardinality single-letter outer region.\n\n### Exact entropy/copy no-go theorem\n\nAt uniform input, put\n\n\\[\nh=h_2(1/4),\\qquad c=h-1/2,\\qquad r=h-3/4.\n\\]\n\nConsider the coarse entropy relaxation that imposes:\n\n- the complete seven nonempty entropies of the common-noise BSSC coupling,\n  namely (H(X)=1), (H(Y)=H(Z)=h),\n  (H(X,Y)=H(X,Z)=H(Y,Z)=3/2), and (H(X,Y,Z)=2);\n- message/time independence, deterministic encoding, the fixed-map equality,\n  the memoryless Markov equality, and exact dependence balance;\n- every conditional BEC identity\n  (I(L;Y,Z\\mid K)=\\tfrac12I(L;X\\mid K)) for disjoint subtuples\n  (L,K\\subseteq\\{U,V,W,T\\}), with (L\\ne\\varnothing);\n- the two sharp scalar BSSC posterior-support inequalities with right side\n  (r).\n\nThere is an actual finite entropic point satisfying all these constraints for\nwhich both direct sum branches equal\n\n\\[\n\\boxed{2h_2(1/4)-\\frac54\n=0.3725562489182657\\ldots}.\n\\]\n\nConsequently, adding any collection of universally valid finite-variable\ninformation inequalities, including unknown non-Shannon inequalities, cannot\nlower this relaxation below that value.  Nor can any finite sequence of\nstandard copy-lemma extensions: each copy step can be realized by conditional\nresampling of the finite witness while preserving its original marginal and\nobjective.\n\nThe witness is deliberately not a binary BSSC distribution.  Its (X) is a\ntuple of six nondegenerate independent binary components.  Exact binary-\nposterior or other channel-specific consistency constraints exclude it and\nremain viable.  The theorem obstructs only the stated entropy/copy refinement\nroute.\n\nScope qualifications:\n- The finite-block theorem is verified for message alphabet sizes N_1,N_2>=2, with R_j=(1/n)log_2 N_j; no singleton-message extension is established without an additional convention.\n- The code-induced variables have alphabets that can grow with blocklength, so the necessary condition is not by itself a fixed-cardinality single-letter outer region.\n- The entropy/copy obstruction applies only to the specified coarse relaxation and its universal-information-inequality or finite standard-copy refinements.\n- The witness is deliberately tuple-valued and nonbinary, not a valid binary BSSC input distribution; binary-posterior and other channel-specific consistency constraints remain viable.\n- The no-go theorem does not itself establish a broadcast-channel capacity bound.",
+                  "status": "active",
+                  "contentMarkdown": "This is an attributed, independently audited port of the consecutive accepted\nYukon artifacts `upper-dependence-balance` and `upper-entropy-nogo`.  They form\none dependency-complete structural result: the first derives a necessary\ncondition from every deterministic private-message code, and the second proves\nthat a specified entropy-only relaxation of that condition cannot improve the\nclassical UV value.\n\n### Finite-block code-induced balance\n\nLet (A) and (B) be independent uniform private messages, encoded\ndeterministically over (n) uses of a finite-alphabet memoryless broadcast\nchannel.  Receiver (Y) estimates (A) with average error (p_1), and\nreceiver (Z) estimates (B) with error (p_2).  Define\n\n\\[\nF_j=h_2(p_j)+p_j\\log_2(N_j-1),\\qquad \\delta_j=F_j/n.\n\\]\n\nFor\n\n\\[\nS_i=(Y^{i-1},Z_{i+1}^n),\n\\]\n\nthe exact telescope is\n\n\\[\n\\sum_{i=1}^n\n\\left[I(A;B\\mid S_i,Y_i)-I(A;B\\mid S_i,Z_i)\\right]\n=I(A;B\\mid Y^n)-I(A;B\\mid Z^n).\n\\]\n\nBoth endpoints are nonnegative, while Fano bounds them by (F_1) and\n(F_2), respectively.  With independent uniform time (T), and\n\n\\[\nU=A,\\quad V=B,\\quad W=S_T,\\quad X=X_T,\\quad Y=Y_T,\\quad Z=Z_T,\n\\]\n\nevery such code therefore induces\n\n\\[\n\\left|I(U;V\\mid W,T,Y)-I(U;V\\mid W,T,Z)\\right|\n\\le\\max\\{\\delta_1,\\delta_2\\}.\n\\]\n\nThe complete induced law retains the fixed coordinate map:\n\n\\[\np(t,u,v,w,x,y,z)=\\frac1n p_U(u)p_V(v)p(w\\mid u,v,t)\n\\mathbf 1\\{x=f_t(u,v)\\}P_{YZ\\mid X}(y,z\\mid x).\n\\]\n\nIn particular, (U\\perp V), (T\\perp(U,V)), (X=f_T(U,V)), and the\nrealized state (W) cannot select another encoder map after (u,v,t) are\nfixed.  The same variables satisfy four compatible rate rows:\n\n\\[\n\\begin{aligned}\nR_1&\\le I(U,W;Y\\mid T)+\\delta_1,\\\\\nR_2&\\le I(V,W;Z\\mid T)+\\delta_2,\\\\\nR_1+R_2&\\le I(U,W;Y\\mid T)+I(X;Z\\mid U,W,T)+\\delta_1+\\delta_2,\\\\\nR_1+R_2&\\le I(V,W;Z\\mid T)+I(X;Y\\mid V,W,T)+\\delta_1+\\delta_2.\n\\end{aligned}\n\\]\n\nThis is an exact sequence-level necessary condition.  The alphabets of the\nmessages and (W) grow with blocklength, so it is not by itself a fixed-\ncardinality single-letter outer region.\n\n### Exact entropy/copy no-go theorem\n\nAt uniform input, put\n\n\\[\nh=h_2(1/4),\\qquad c=h-1/2,\\qquad r=h-3/4.\n\\]\n\nConsider the coarse entropy relaxation that imposes:\n\n- the complete seven nonempty entropies of the common-noise BSSC coupling,\n  namely (H(X)=1), (H(Y)=H(Z)=h),\n  (H(X,Y)=H(X,Z)=H(Y,Z)=3/2), and (H(X,Y,Z)=2);\n- message/time independence, deterministic encoding, the fixed-map equality,\n  the memoryless Markov equality, and exact dependence balance;\n- every conditional BEC identity\n  (I(L;Y,Z\\mid K)=\\tfrac12I(L;X\\mid K)) for disjoint subtuples\n  (L,K\\subseteq\\{U,V,W,T\\}), with (L\\ne\\varnothing);\n- the two sharp scalar BSSC posterior-support inequalities with right side\n  (r).\n\nThere is an actual finite entropic point satisfying all these constraints for\nwhich both direct sum branches equal\n\n\\[\n\\boxed{2h_2(1/4)-\\frac54\n=0.3725562489182657\\ldots}.\n\\]\n\nConsequently, adding any collection of universally valid finite-variable\ninformation inequalities, including unknown non-Shannon inequalities, cannot\nlower this relaxation below that value.  Nor can any finite sequence of\nstandard copy-lemma extensions: each copy step can be realized by conditional\nresampling of the finite witness while preserving its original marginal and\nobjective.\n\nThe witness is deliberately not a binary BSSC distribution.  Its (X) is a\ntuple of six nondegenerate independent binary components.  Exact binary-\nposterior or other channel-specific consistency constraints exclude it and\nremain viable.  The theorem obstructs only the stated entropy/copy refinement\nroute.\n\nScope qualifications:\n- The finite-block theorem is verified for message alphabet sizes N_1,N_2>=2, with R_j=(1/n)log_2 N_j; no singleton-message extension is established without an additional convention.\n- The code-induced variables have alphabets that can grow with blocklength, so the necessary condition is not by itself a fixed-cardinality single-letter outer region.\n- The entropy/copy obstruction applies only to the specified coarse relaxation and its universal-information-inequality or finite standard-copy refinements.\n- The witness is deliberately tuple-valued and nonbinary, not a valid binary BSSC input distribution; binary-posterior and other channel-specific consistency constraints remain viable.\n- The no-go theorem does not itself establish a broadcast-channel capacity bound.\n\n## Accepted claims\n\n- `bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go` from `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                      "ledgerPosition": 3,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:de9b7f1e94bc1eea63514e9cd2b939a08af54412fdc09dec23161f782f697300"
+                },
+                "item:root/proof/code-induced-dependence-balance-and-entropy-no-go": {
+                  "id": "item:root/proof/code-induced-dependence-balance-and-entropy-no-go",
+                  "parentId": "root",
+                  "type": "proof",
+                  "title": "Proof of code-induced balance and the finite entropic obstruction",
+                  "summary": "For the accepted finite-block result, the proof defines D_i=I(A;B|Y^i,Z_{i+1}^n), telescopes consecutive differences, bounds the two endpoints separately by Fano's inequality, introduces an independent uniform time coordinate, derives the fixed-map induced-law factorization, and obtains the four rate rows through conditioned Csiszar identities with nonnegative remainders. For the accepted no-go result, it proves the sharp scalar BSSC support by a one-dimensional calculus argument and constructs an actual finite entropic witness from independent binary components; component-set entropy arithmetic verifies the stated equalities and objective, while conditional resampling realizes finite standard copy-lemma extensions. This proof establishes only the exact accepted result and its stated qualifications; it supplies neither a fixed-cardinality reduction nor a capacity bound.",
+                  "status": "active",
+                  "contentMarkdown": "For the accepted finite-block result, the proof defines D_i=I(A;B|Y^i,Z_{i+1}^n), telescopes consecutive differences, bounds the two endpoints separately by Fano's inequality, introduces an independent uniform time coordinate, derives the fixed-map induced-law factorization, and obtains the four rate rows through conditioned Csiszar identities with nonnegative remainders. For the accepted no-go result, it proves the sharp scalar BSSC support by a one-dimensional calculus argument and constructs an actual finite entropic witness from independent binary components; component-set entropy arithmetic verifies the stated equalities and objective, while conditional resampling realizes finite standard copy-lemma extensions. This proof establishes only the exact accepted result and its stated qualifications; it supplies neither a fixed-cardinality reduction nor a capacity bound.\n\n## Accepted claims\n\n- `bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go` from `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                      "ledgerPosition": 3,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [],
+                  "reportRef": null,
+                  "digest": "sha256:6050177b74f2248b475aa4b74d83c7f84e7193f8d0fe5f9e051618adbfbe187a"
+                },
+                "item:root/result/uv-product-branchwise-additivity": {
+                  "id": "item:root/result/uv-product-branchwise-additivity",
+                  "parentId": "root",
+                  "type": "result",
+                  "title": "Exact UV product and branchwise additivity",
+                  "summary": "This contribution independently ports and rechecks the two accepted Yukon\nartifacts `upper-uv-additivity` and `frontier-uv-branchwise`.  They form one\ndependency-ordered theorem chain for the two separately relaxed UV sum-rate\nrows.\n\nFor a finite-alphabet discrete memoryless broadcast channel \\(W\\), write\n\n\\[\nt_W(p)=I_p(X;Y)-I_p(X;Z)\n\\]\n\nand let \\(\\mathfrak C\\) denote the upper concave envelope on the input\nsimplex.  Define\n\n\\[\nA_W(p)=I_p(X;Y)+\\mathfrak C[-t_W](p),\n\\qquad\nD_W(p)=I_p(X;Z)+\\mathfrak C[t_W](p),\n\\]\n\n\\[\nB_{\\rm avg}(W)=\\sup_p\\frac{A_W(p)+D_W(p)}2,\n\\qquad\nB_{\\rm br}(W)=\\sup_p\\min\\{A_W(p),D_W(p)\\}.\n\\]\n\nThe checked claims are:\n\n1. For arbitrary finite-alphabet DMBCs,\n   \\[\n   B_{\\rm avg}(W_1\\times W_2)\n   =B_{\\rm avg}(W_1)+B_{\\rm avg}(W_2).\n   \\]\n   The product-channel prior may be correlated and the envelope auxiliary may\n   be joint across factors.\n2. If an involutive input relabeling exchanges the two receivers, then\n   \\[\n   B_{\\rm br}(W)=B_{\\rm avg}(W),\n   \\]\n   and the optimum may be restricted to invariant input laws.\n3. Finite products preserve this receiver-skew symmetry, so both scalar\n   functionals are exactly additive on arbitrary finite products of such\n   channels.\n4. For the half-skew BSSC \\(P\\), the unique invariant binary prior is the fair\n   prior.  Combining the theorem with the sharp BSSC posterior support already\n   represented by canonical transaction\n   `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6` gives\n   \\[\n   B_{\\rm br}(P^{\\times n})=B_{\\rm avg}(P^{\\times n})\n   =n\\left(2h_2(1/4)-\\frac54\\right)\n   \\]\n   for every finite \\(n\\ge1\\).  Numerically, the normalized value is\n   \\(0.3725562489182657\\ldots\\) bits per channel use.\n\nThe last value is a valid but non-frontier UV converse.  It is weaker than the\ncurrent certified full-Theorem-9 capacity upper bound\n\\(0.369296945969202842443\\), so this contribution does not move either endpoint\nof the governed capacity interval.\n\nThis is an ordinary unregistered contribution.  The UV program lies outside\nthe registered `yukon-auxiliary-converse-port` scope, and this contribution\ndoes not claim to advance or complete that direction.\n\nScope qualifications:\n- The theorem applies to finite-alphabet discrete memoryless broadcast channels and arbitrary finite products.\n- The product proof permits correlated product-channel input laws and finite joint envelope auxiliaries.\n- For the half-skew BSSC, the exact value depends on the referenced global posterior-support inequality and equality contact.\n- The resulting normalized BSSC bound, 0.3725562489182657... bits per use, is a valid but non-frontier UV converse and does not improve the governed upper endpoint.\n- The report does not independently certify the stronger quoted frontier value 0.369296945969202842443; non-improvement already follows from the weaker governed published endpoint 0.369316568803963.\n- Commit, authorship, byte-identity, prior-acceptance, and registration-scope descriptions are provenance only and are not mathematical dependencies.",
+                  "status": "active",
+                  "contentMarkdown": "This contribution independently ports and rechecks the two accepted Yukon\nartifacts `upper-uv-additivity` and `frontier-uv-branchwise`.  They form one\ndependency-ordered theorem chain for the two separately relaxed UV sum-rate\nrows.\n\nFor a finite-alphabet discrete memoryless broadcast channel \\(W\\), write\n\n\\[\nt_W(p)=I_p(X;Y)-I_p(X;Z)\n\\]\n\nand let \\(\\mathfrak C\\) denote the upper concave envelope on the input\nsimplex.  Define\n\n\\[\nA_W(p)=I_p(X;Y)+\\mathfrak C[-t_W](p),\n\\qquad\nD_W(p)=I_p(X;Z)+\\mathfrak C[t_W](p),\n\\]\n\n\\[\nB_{\\rm avg}(W)=\\sup_p\\frac{A_W(p)+D_W(p)}2,\n\\qquad\nB_{\\rm br}(W)=\\sup_p\\min\\{A_W(p),D_W(p)\\}.\n\\]\n\nThe checked claims are:\n\n1. For arbitrary finite-alphabet DMBCs,\n   \\[\n   B_{\\rm avg}(W_1\\times W_2)\n   =B_{\\rm avg}(W_1)+B_{\\rm avg}(W_2).\n   \\]\n   The product-channel prior may be correlated and the envelope auxiliary may\n   be joint across factors.\n2. If an involutive input relabeling exchanges the two receivers, then\n   \\[\n   B_{\\rm br}(W)=B_{\\rm avg}(W),\n   \\]\n   and the optimum may be restricted to invariant input laws.\n3. Finite products preserve this receiver-skew symmetry, so both scalar\n   functionals are exactly additive on arbitrary finite products of such\n   channels.\n4. For the half-skew BSSC \\(P\\), the unique invariant binary prior is the fair\n   prior.  Combining the theorem with the sharp BSSC posterior support already\n   represented by canonical transaction\n   `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6` gives\n   \\[\n   B_{\\rm br}(P^{\\times n})=B_{\\rm avg}(P^{\\times n})\n   =n\\left(2h_2(1/4)-\\frac54\\right)\n   \\]\n   for every finite \\(n\\ge1\\).  Numerically, the normalized value is\n   \\(0.3725562489182657\\ldots\\) bits per channel use.\n\nThe last value is a valid but non-frontier UV converse.  It is weaker than the\ncurrent certified full-Theorem-9 capacity upper bound\n\\(0.369296945969202842443\\), so this contribution does not move either endpoint\nof the governed capacity interval.\n\nThis is an ordinary unregistered contribution.  The UV program lies outside\nthe registered `yukon-auxiliary-converse-port` scope, and this contribution\ndoes not claim to advance or complete that direction.\n\nScope qualifications:\n- The theorem applies to finite-alphabet discrete memoryless broadcast channels and arbitrary finite products.\n- The product proof permits correlated product-channel input laws and finite joint envelope auxiliaries.\n- For the half-skew BSSC, the exact value depends on the referenced global posterior-support inequality and equality contact.\n- The resulting normalized BSSC bound, 0.3725562489182657... bits per use, is a valid but non-frontier UV converse and does not improve the governed upper endpoint.\n- The report does not independently certify the stronger quoted frontier value 0.369296945969202842443; non-improvement already follows from the weaker governed published endpoint 0.369316568803963.\n- Commit, authorship, byte-identity, prior-acceptance, and registration-scope descriptions are provenance only and are not mathematical dependencies.\n\n## Accepted claims\n\n- `bssc-sum-capacity/uv-product-branchwise-additivity` from `f236017c62c67ce4218c1f81ea34134f0954b556`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+                      "ledgerPosition": 4,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                      "ledgerPosition": 3,
+                      "relation": "source"
+                    },
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/result/code-induced-dependence-balance-and-entropy-no-go",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:db310741b5ecb1bba2849ab455d47fd98d9289b2190dbacf1e97bbe72817bca6"
+                },
+                "item:root/proof/uv-product-branchwise-additivity": {
+                  "id": "item:root/proof/uv-product-branchwise-additivity",
+                  "parentId": "root",
+                  "type": "proof",
+                  "title": "Proof of exact UV product and receiver-skew additivity",
+                  "summary": "The accepted analytic proof derives an exact product-channel chain-rule identity in which the two cross terms cancel, bounds both upper concave envelopes for arbitrary correlated product priors and joint auxiliaries, combines those bounds with mutual-information subadditivity, and obtains the reverse inequality from product priors and product posterior decompositions. Envelope covariance under the receiver-skew involution and concavity at the symmetrized prior prove equality of the branchwise and averaged functionals; product symmetry then yields finite-product additivity. The half-skew BSSC evaluation uses the required sharp posterior-support result represented by transaction c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6. Computational checks are corroborative only and are not represented as proofs.",
+                  "status": "active",
+                  "contentMarkdown": "The accepted analytic proof derives an exact product-channel chain-rule identity in which the two cross terms cancel, bounds both upper concave envelopes for arbitrary correlated product priors and joint auxiliaries, combines those bounds with mutual-information subadditivity, and obtains the reverse inequality from product priors and product posterior decompositions. Envelope covariance under the receiver-skew involution and concavity at the symmetrized prior prove equality of the branchwise and averaged functionals; product symmetry then yields finite-product additivity. The half-skew BSSC evaluation uses the required sharp posterior-support result represented by transaction c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6. Computational checks are corroborative only and are not represented as proofs.\n\n## Accepted claims\n\n- `bssc-sum-capacity/uv-product-branchwise-additivity` from `f236017c62c67ce4218c1f81ea34134f0954b556`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+                      "ledgerPosition": 4,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                      "ledgerPosition": 3,
+                      "relation": "source"
+                    },
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/result/code-induced-dependence-balance-and-entropy-no-go",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:237980cb63a1fc0282676e225b80014682bfe29307e879d22db4917ee647b2f1"
+                },
+                "item:root/result/uv-relaxed-converse-tensorization": {
+                  "id": "item:root/result/uv-relaxed-converse-tensorization",
+                  "parentId": "root",
+                  "type": "result",
+                  "title": "Tensorization of two separately relaxed UV scalar functionals",
+                  "summary": "For finite-alphabet discrete memoryless broadcast channels, the averaged separately-relaxed UV sum-rate functional defined in this contribution is exactly additive under products. On a receiver-skew channel the branchwise functional equals the averaged functional, and the same equality and additivity hold for every finite product of receiver-skew channels. Consequently, for the half-skew BSSC P and every integer n >= 1, both functionals on P^{times n} equal n(2 h_2(1/4) - 5/4) bits. This is a theorem only about the two separately-relaxed scalar UV functionals, not about tensorization of the full UV region, a common joint-(U,V) optimization, the GK functional, or the capacity itself.\n\nScope qualifications:\n- The theorem concerns only the two separately-relaxed scalar UV functionals.\n- It does not establish tensorization of the full UV region, a common joint-(U,V) optimization, the GK functional, or broadcast-channel capacity.\n- The objective script corroborates finite identities and numerical values but does not itself verify the continuum support inequality or universal product theorem.\n- A minor README decimal typo does not affect the exact formula.",
+                  "status": "active",
+                  "contentMarkdown": "For finite-alphabet discrete memoryless broadcast channels, the averaged separately-relaxed UV sum-rate functional defined in this contribution is exactly additive under products. On a receiver-skew channel the branchwise functional equals the averaged functional, and the same equality and additivity hold for every finite product of receiver-skew channels. Consequently, for the half-skew BSSC P and every integer n >= 1, both functionals on P^{times n} equal n(2 h_2(1/4) - 5/4) bits. This is a theorem only about the two separately-relaxed scalar UV functionals, not about tensorization of the full UV region, a common joint-(U,V) optimization, the GK functional, or the capacity itself.\n\nScope qualifications:\n- The theorem concerns only the two separately-relaxed scalar UV functionals.\n- It does not establish tensorization of the full UV region, a common joint-(U,V) optimization, the GK functional, or broadcast-channel capacity.\n- The objective script corroborates finite identities and numerical values but does not itself verify the continuum support inequality or universal product theorem.\n- A minor README decimal typo does not affect the exact formula.\n\n## Accepted claims\n\n- `bssc-sum-capacity/uv-relaxed-converse-tensorization` from `14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                      "ledgerPosition": 5,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                      "ledgerPosition": 3,
+                      "relation": "source"
+                    },
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/result/code-induced-dependence-balance-and-entropy-no-go",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:42bbf2f4e7d21b3fad1b6f62e26566ef1b6a7a499e4260fa2e71b4223aabc67b"
+                },
+                "item:root/proof/uv-relaxed-converse-tensorization": {
+                  "id": "item:root/proof/uv-relaxed-converse-tensorization",
+                  "parentId": "root",
+                  "type": "proof",
+                  "title": "Proof of relaxed-UV converse tensorization",
+                  "summary": "The accepted proof uses product-channel chain-rule decomposition and cancellation, concave-envelope bounds for posterior ensembles with correlated product-channel priors, mutual-information subadditivity, and product posterior ensembles for the reverse inequality. Receiver-skew symmetrization exchanges the two relaxed rows and proves equality of their branchwise and averaged scalar functionals; coordinatewise symmetry extends the conclusion to finite products. The exact half-skew BSSC specialization uses the required sharp global posterior-support inequality from transaction c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6. The supplied objective script is only corroborative and does not establish the continuum support inequality or universal theorem.",
+                  "status": "active",
+                  "contentMarkdown": "The accepted proof uses product-channel chain-rule decomposition and cancellation, concave-envelope bounds for posterior ensembles with correlated product-channel priors, mutual-information subadditivity, and product posterior ensembles for the reverse inequality. Receiver-skew symmetrization exchanges the two relaxed rows and proves equality of their branchwise and averaged scalar functionals; coordinatewise symmetry extends the conclusion to finite products. The exact half-skew BSSC specialization uses the required sharp global posterior-support inequality from transaction c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6. The supplied objective script is only corroborative and does not establish the continuum support inequality or universal theorem.\n\n## Accepted claims\n\n- `bssc-sum-capacity/uv-relaxed-converse-tensorization` from `14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                      "ledgerPosition": 5,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "transaction",
+                      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                      "ledgerPosition": 3,
+                      "relation": "source"
+                    },
+                    {
+                      "kind": "knowledge-node",
+                      "id": "item:root/result/code-induced-dependence-balance-and-entropy-no-go",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:51911b94f5ee6c4973349ed2fb356b29b413525e3cb1cb70645393db54ea0027"
+                }
+              },
+              "stateDigest": "sha256:52d55da254a843ee8d151d50d65a0ac9017b2d03f17fb88ba027be0ba3bce740"
+            },
+            "revisionIds": [],
+            "addedRevisionIds": [],
+            "changedNodeIds": [],
+            "reportDigest": "sha256:52d55da254a843ee8d151d50d65a0ac9017b2d03f17fb88ba027be0ba3bce740",
+            "revisionSemantics": "neutral-knowledge"
           }
         ],
         "revisions": [],
         "reports": [],
-        "latestRunId": "874ac82d7336a9fafd3090022746b87a4d090c99085e3f290ed01a3620c86297"
+        "latestRunId": "5301d210dba53fb9782c784bdd746cb2be7ee4fa2171b4d4f2e8c69ffefde1f7"
       }
     },
     {
