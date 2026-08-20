@@ -723,6 +723,119 @@ def fail_build(
     return lane
 
 
+def assert_judgment_publication_unique(
+    projection_root: Path,
+    bundle_dirs: list[Path],
+) -> None:
+    """Reject competing primary-subject or reconciliation-conflict outcomes."""
+
+    from .judgments import load_judgment_bundle
+
+    root = projection_root.resolve()
+    incoming: list[tuple[dict[str, object], dict[str, object], str, Path]] = []
+    problems: set[str] = set()
+    for bundle_dir in bundle_dirs:
+        manifest, _ = verify_bundle(bundle_dir)
+        if manifest.get("runKind") != "judgment":
+            continue
+        loaded_manifest, judgment, run_digest = load_judgment_bundle(bundle_dir)
+        problem = loaded_manifest.get("problemId")
+        if not isinstance(problem, str):
+            raise MathFlowError("judgment publication has no problem identity")
+        validate_slug(problem, "judgment problem id")
+        problems.add(problem)
+        incoming.append((loaded_manifest, judgment, run_digest, bundle_dir.resolve()))
+
+    if not incoming:
+        return
+
+    candidates = list(incoming)
+    for problem in sorted(problems):
+        index_path = root / "indexes" / "problems" / problem / "runs.json"
+        if not index_path.exists():
+            continue
+        try:
+            entries = json.loads(index_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise MathFlowError(f"could not read projection judgment index: {exc}") from exc
+        if not isinstance(entries, list) or any(
+            not isinstance(item, dict) for item in entries
+        ):
+            raise MathFlowError("projection judgment index must be an object array")
+        for entry in entries:
+            if entry.get("runKind") != "judgment":
+                continue
+            relative = entry.get("path")
+            expected_digest = entry.get("runDigest")
+            if not isinstance(relative, str) or not isinstance(expected_digest, str):
+                raise MathFlowError("projection judgment index entry is incomplete")
+            target = (root / relative).resolve()
+            try:
+                target.relative_to(root)
+            except ValueError as exc:
+                raise MathFlowError(
+                    f"projection judgment path escapes its root: {relative}"
+                ) from exc
+            loaded_manifest, judgment, run_digest = load_judgment_bundle(target)
+            if run_digest != expected_digest:
+                raise MathFlowError(
+                    f"projection judgment digest does not match its index: {relative}"
+                )
+            if loaded_manifest.get("problemId") != problem:
+                raise MathFlowError(
+                    "published judgment does not match its problem index"
+                )
+            candidates.append((loaded_manifest, judgment, run_digest, target))
+
+    primary_by_identity: dict[tuple[str, str, str], tuple[str, Path]] = {}
+    reconciliation_by_identity: dict[
+        tuple[str, str, str], tuple[str, Path]
+    ] = {}
+    for manifest, judgment, _, path in sorted(
+        candidates,
+        key=lambda item: (str(item[2]), str(item[3])),
+    ):
+        judge_spec = judgment.get("judgeSpec")
+        if not isinstance(judge_spec, dict):
+            raise MathFlowError("judgment has no judge identity")
+        judge_digest = _digest(
+            judge_spec.get("digest"), "judgment judge spec digest"
+        )
+        judgment_id = _digest(
+            judgment.get("judgmentId"), "judgment id"
+        )
+        problem = str(manifest["problemId"])
+        if judgment.get("judgmentKind") == "primary":
+            for subject in judgment["subjects"]:
+                subject_id = str(subject["id"])
+                identity = (problem, judge_digest, subject_id)
+                existing = primary_by_identity.get(identity)
+                if existing is not None and existing[0] != judgment_id:
+                    raise MathFlowError(
+                        "projection publication would create multiple distinct primary "
+                        f"judgments for judge {judge_digest} and subject {subject_id}"
+                    )
+                primary_by_identity[identity] = (judgment_id, path)
+            continue
+        reconciliation = judgment.get("reconciliation")
+        if judgment.get("judgmentKind") != "reconciliation" or not isinstance(
+            reconciliation, dict
+        ):
+            continue
+        conflict_id = _digest(
+            reconciliation.get("conflictId"),
+            "reconciliation judgment conflict ID",
+        )
+        identity = (problem, judge_digest, conflict_id)
+        existing = reconciliation_by_identity.get(identity)
+        if existing is not None and existing[0] != judgment_id:
+            raise MathFlowError(
+                "projection publication would create multiple distinct reconciliation "
+                f"judgments for judge {judge_digest} and conflict {conflict_id}"
+            )
+        reconciliation_by_identity[identity] = (judgment_id, path)
+
+
 def publish_batch(projection_root: Path, bundle_dirs: list[Path]) -> dict[str, object]:
     if not bundle_dirs:
         raise MathFlowError("projection publication requires at least one run bundle")
@@ -746,6 +859,7 @@ def publish_batch(projection_root: Path, bundle_dirs: list[Path]) -> dict[str, o
                 "publication batch contains different outcomes for one objective verification request"
             )
         incoming_attestations[key] = identity["runDigest"]
+    assert_judgment_publication_unique(root, bundle_dirs)
     root.mkdir(parents=True, exist_ok=True)
     published: list[dict[str, object]] = []
     for bundle_dir in bundle_dirs:

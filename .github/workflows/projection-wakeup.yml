@@ -62,47 +62,52 @@ jobs:
             --output "${RUNNER_TEMP}/filtered-due-projections.json"
           mv "${RUNNER_TEMP}/filtered-due-projections.json" \
             "${RUNNER_TEMP}/due-projections.json"
+          python -m math_flow projection-wakeup-plan \
+            --plan "${RUNNER_TEMP}/due-projections.json" \
+            --run-history "${RUNNER_TEMP}/projection-run-history.json" \
+            --projection-dir "$projection_dir" \
+            --targeted-projection openrouter-research-v3 \
+            --targeted-problem bssc-sum-capacity \
+            --targeted-problem no-three-in-line-77 \
+            --output "${RUNNER_TEMP}/projection-wakeup-dispatches.json"
       - name: Dispatch one recoverable queue per independent judgment stream
         env:
           GH_TOKEN: "${{ github.token }}"
         run: |
           set -euo pipefail
-          plan="${RUNNER_TEMP}/due-projections.json"
+          plan="${RUNNER_TEMP}/projection-wakeup-dispatches.json"
           failed_stream_dispatches=0
-          while IFS= read -r queue; do
-            problem="$(jq -r '.problemId' <<< "$queue")"
-            judgment_stream_id="$(jq -r '.judgmentStreamId' <<< "$queue")"
-            first_projection="$(jq -r '.projections[0]' <<< "$queue")"
-            remaining="$(jq -c '.projections[1:]' <<< "$queue")"
+          while IFS= read -r dispatch; do
+            problem="$(jq -r '.problemId' <<< "$dispatch")"
+            judgment_stream_id="$(jq -r '.judgmentStreamId' <<< "$dispatch")"
+            projection="$(jq -r '.projectionId' <<< "$dispatch")"
+            remaining="$(jq -c '.remainingProjectionIds' <<< "$dispatch")"
+            subject_transaction="$(jq -r '.subjectTransactionId // empty' <<< "$dispatch")"
+            require_no_primary_work="$(jq -r '.requireNoPrimaryWork' <<< "$dispatch")"
             for attempt in {1..5}; do
-              if gh workflow run project-openrouter.yml \
+              command=(gh workflow run project-openrouter.yml \
+                --repo "$GITHUB_REPOSITORY" \
                 --ref main \
-                -f projection="$first_projection" \
+                -f projection="$projection" \
                 -f problem="$problem" \
                 -f judgment_stream_id="$judgment_stream_id" \
-                -f remaining_projections="$remaining"; then
+                -f remaining_projections="$remaining")
+              if [[ -n "$subject_transaction" ]]; then
+                command+=(-f subject_transaction="$subject_transaction")
+              fi
+              if [[ "$require_no_primary_work" == "true" ]]; then
+                command+=(-f require_no_primary_work=true)
+              fi
+              if "${command[@]}"; then
                 break
               fi
               if [[ "$attempt" -eq 5 ]]; then
-                echo "Failed to dispatch judgment stream $judgment_stream_id." >&2
+                echo "Failed to dispatch judgment stream $judgment_stream_id/${subject_transaction:-batch}." >&2
                 failed_stream_dispatches=$((failed_stream_dispatches + 1))
               fi
               sleep 2
             done
-          done < <(
-            jq -c '
-              .problems[]
-              | .problemId as $problem
-              | .projections
-              | sort_by(.judgmentStreamId, .projectionId)
-              | group_by(.judgmentStreamId)[]
-              | {
-                  problemId: $problem,
-                  judgmentStreamId: .[0].judgmentStreamId,
-                  projections: [.[].projectionId]
-                }
-            ' "$plan"
-          )
+          done < <(jq -c '.dispatches[]' "$plan")
           if [[ "$failed_stream_dispatches" -gt 0 ]]; then
             exit 1
           fi

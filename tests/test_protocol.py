@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -643,6 +644,562 @@ class GitProtocolTests(unittest.TestCase):
                 transport=lambda _: response,
             )
 
+    def test_primary_publication_rejects_distinct_judgments_for_same_subject(
+        self,
+    ) -> None:
+        subject = self.commit_contribution(
+            "duplicate-subject",
+            "# Claim\n\nEvidence for one transaction.",
+        )
+        judge = (
+            Path(__file__).parents[1]
+            / "protocol/judges/openrouter-markdown-judgment-v1.json"
+        )
+
+        def build(name: str, conclusion: str) -> Path:
+            responses = iter(
+                [
+                    {
+                        "id": f"report-{name}",
+                        "model": "openai/gpt-5.6-sol",
+                        "choices": [
+                            {
+                                "message": {
+                                    "content": f"# Assessment\n\n{conclusion}"
+                                }
+                            }
+                        ],
+                    },
+                    {
+                        "id": f"extract-{name}",
+                        "model": "openai/gpt-5.6-sol",
+                        "choices": [
+                            {
+                                "message": {
+                                    "content": json.dumps(
+                                        {
+                                            "findings": [
+                                                {
+                                                    "claimKey": "demo/duplicate-subject",
+                                                    "stance": "supports",
+                                                    "summary": conclusion,
+                                                    "subjectTransactionIds": [subject],
+                                                    "evidenceTransactionIds": [subject],
+                                                }
+                                            ]
+                                        }
+                                    )
+                                }
+                            }
+                        ],
+                    },
+                ]
+            )
+            output = self.root / f"judgment-{name}"
+            run_primary_judgment_bundle(
+                self.root,
+                "demo",
+                judge,
+                subject,
+                [subject],
+                output,
+                transport=lambda _: next(responses),
+            )
+            return output
+
+        first = build("first", "The first rigorous assessment accepts the claim.")
+        second = build("second", "A distinct rigorous assessment also accepts it.")
+        _, first_judgment, _ = load_judgment_bundle(first)
+        second_manifest, second_judgment, second_run_digest = load_judgment_bundle(
+            second
+        )
+        self.assertNotEqual(
+            first_judgment["judgmentId"], second_judgment["judgmentId"]
+        )
+
+        atomic_projection = self.root / "atomic-publication"
+        with self.assertRaisesRegex(
+            MathFlowError, "multiple distinct primary judgments"
+        ):
+            publish_batch(atomic_projection, [first, second])
+        self.assertFalse(atomic_projection.exists())
+
+        projection = self.root / "sequential-publication"
+        publish_batch(projection, [first])
+        with self.assertRaisesRegex(
+            MathFlowError, "multiple distinct primary judgments"
+        ):
+            publish_batch(projection, [second])
+        index_path = projection / "indexes/problems/demo/runs.json"
+        index = json.loads(index_path.read_text(encoding="utf-8"))
+        self.assertEqual(len(index), 1)
+
+        digest_hex = second_run_digest.removeprefix("sha256:")
+        relative = Path("objects") / "judgment" / digest_hex[:2] / digest_hex
+        shutil.copytree(second, projection / relative)
+        index.append(
+            {
+                "runDigest": second_run_digest,
+                "runKind": "judgment",
+                "problemId": second_manifest["problemId"],
+                "path": relative.as_posix(),
+            }
+        )
+        write(index_path, json.dumps(index, indent=2) + "\n")
+        with self.assertRaisesRegex(
+            MathFlowError, "multiple distinct reusable primary judgments"
+        ):
+            plan_primary_judgment_coverage(
+                self.root,
+                projection,
+                "demo",
+                judge,
+                subject,
+                subject_transaction_id=subject,
+            )
+
+    def test_partial_matrix_artifacts_are_bounded_to_the_frozen_plan(self) -> None:
+        supporting_head = self.commit_contribution(
+            "partial-support", "# Support\n\nEvidence for two claims."
+        )
+        refuting_head = self.commit_contribution(
+            "partial-refute", "# Refutation\n\nCounterevidence for two claims."
+        )
+        primary_judge = (
+            Path(__file__).parents[1]
+            / "protocol/judges/openrouter-markdown-judgment-v1.json"
+        )
+
+        def primary_transport(subject: str, stance: str):
+            responses = iter(
+                [
+                    {
+                        "id": f"partial-report-{stance}",
+                        "model": "openai/gpt-5.6-sol",
+                        "choices": [
+                            {
+                                "message": {
+                                    "content": "# Assessment\n\nTwo claims were checked."
+                                }
+                            }
+                        ],
+                    },
+                    {
+                        "id": f"partial-extract-{stance}",
+                        "model": "openai/gpt-5.6-sol",
+                        "choices": [
+                            {
+                                "message": {
+                                    "content": json.dumps(
+                                        {
+                                            "findings": [
+                                                {
+                                                    "claimKey": claim_key,
+                                                    "stance": stance,
+                                                    "summary": f"The subject {stance} {claim_key}.",
+                                                    "subjectTransactionIds": [subject],
+                                                    "evidenceTransactionIds": [subject],
+                                                }
+                                                for claim_key in (
+                                                    "demo/partial-a",
+                                                    "demo/partial-b",
+                                                )
+                                            ]
+                                        }
+                                    )
+                                }
+                            }
+                        ],
+                    },
+                ]
+            )
+            return lambda _: next(responses)
+
+        supporting_bundle = self.root / "partial-primary-support"
+        refuting_bundle = self.root / "partial-primary-refute"
+        run_primary_judgment_bundle(
+            self.root,
+            "demo",
+            primary_judge,
+            refuting_head,
+            [supporting_head],
+            supporting_bundle,
+            transport=primary_transport(supporting_head, "supports"),
+        )
+        run_primary_judgment_bundle(
+            self.root,
+            "demo",
+            primary_judge,
+            refuting_head,
+            [refuting_head],
+            refuting_bundle,
+            transport=primary_transport(refuting_head, "refutes"),
+        )
+
+        partial_primary = verify_primary_judgment_artifacts(
+            self.root,
+            supporting_bundle,
+            "demo",
+            primary_judge,
+            refuting_head,
+            [supporting_head, refuting_head],
+            allow_expected_subset=True,
+        )
+        self.assertEqual(
+            partial_primary["missingExpectedSubjectTransactionIds"],
+            [refuting_head],
+        )
+        with self.assertRaisesRegex(MathFlowError, "do not match the current plan"):
+            verify_primary_judgment_artifacts(
+                self.root,
+                supporting_bundle,
+                "demo",
+                primary_judge,
+                refuting_head,
+                [supporting_head, refuting_head],
+            )
+        with self.assertRaisesRegex(MathFlowError, "outside the current plan"):
+            verify_primary_judgment_artifacts(
+                self.root,
+                supporting_bundle,
+                "demo",
+                primary_judge,
+                refuting_head,
+                [refuting_head],
+                allow_expected_subset=True,
+            )
+
+        resume_projection = self.root / "partial-resume-projection"
+        publish_batch(resume_projection, [supporting_bundle])
+        resume_plan = plan_primary_judgment_coverage(
+            self.root,
+            resume_projection,
+            "demo",
+            primary_judge,
+            refuting_head,
+        )
+        self.assertEqual(
+            [
+                item["transactionId"]
+                for item in resume_plan["missingTransactions"]
+            ],
+            [refuting_head],
+        )
+        resume_artifacts = self.root / "partial-resume-artifacts"
+        shutil.copytree(supporting_bundle, resume_artifacts / "judgment-support")
+        shutil.copytree(refuting_bundle, resume_artifacts / "judgment-refute")
+        retained_resume = verify_primary_judgment_artifacts(
+            self.root,
+            resume_artifacts,
+            "demo",
+            primary_judge,
+            refuting_head,
+            [refuting_head],
+            retain_expected_subset=True,
+        )
+        _, supporting_judgment, _ = load_judgment_bundle(supporting_bundle)
+        _, refuting_judgment, _ = load_judgment_bundle(refuting_bundle)
+        self.assertEqual(
+            [item["judgmentId"] for item in retained_resume["bundles"]],
+            [refuting_judgment["judgmentId"]],
+        )
+        self.assertEqual(
+            [item["judgmentId"] for item in retained_resume["rejectedBundles"]],
+            [supporting_judgment["judgmentId"]],
+        )
+        self.assertEqual(
+            retained_resume["rejectedSubjectTransactionIds"],
+            [supporting_head],
+        )
+        publish_batch(
+            resume_projection,
+            [Path(str(retained_resume["bundles"][0]["path"]))],
+        )
+        self.assertEqual(
+            plan_primary_judgment_coverage(
+                self.root,
+                resume_projection,
+                "demo",
+                primary_judge,
+                refuting_head,
+            )["missingTransactions"],
+            [],
+        )
+
+        mixed_responses = iter(
+            [
+                {
+                    "id": "mixed-resume-report",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": "# Assessment\n\nA mixed-subject bundle."
+                            }
+                        }
+                    ],
+                },
+                {
+                    "id": "mixed-resume-extract",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps(
+                                    {
+                                        "findings": [
+                                            {
+                                                "claimKey": "demo/mixed-resume",
+                                                "stance": "supports",
+                                                "summary": "The mixed evidence was assessed.",
+                                                "subjectTransactionIds": [
+                                                    supporting_head,
+                                                    refuting_head,
+                                                ],
+                                                "evidenceTransactionIds": [
+                                                    supporting_head,
+                                                    refuting_head,
+                                                ],
+                                            }
+                                        ]
+                                    }
+                                )
+                            }
+                        }
+                    ],
+                },
+            ]
+        )
+        mixed_bundle = self.root / "mixed-resume-bundle"
+        run_primary_judgment_bundle(
+            self.root,
+            "demo",
+            primary_judge,
+            refuting_head,
+            [supporting_head, refuting_head],
+            mixed_bundle,
+            transport=lambda _: next(mixed_responses),
+        )
+        with self.assertRaisesRegex(
+            MathFlowError, "do not contain a retained planned subject"
+        ):
+            verify_primary_judgment_artifacts(
+                self.root,
+                mixed_bundle,
+                "demo",
+                primary_judge,
+                refuting_head,
+                [refuting_head],
+                retain_expected_subset=True,
+            )
+
+        conflicts = {
+            str(item["claimKey"]): item
+            for item in detect_conflicts([supporting_bundle, refuting_bundle])
+        }
+        self.assertEqual(set(conflicts), {"demo/partial-a", "demo/partial-b"})
+        first_conflict = conflicts["demo/partial-a"]
+        second_conflict = conflicts["demo/partial-b"]
+        reconciliation_judge = (
+            Path(__file__).parents[1]
+            / "protocol/judges/openrouter-markdown-reconciliation-v1.json"
+        )
+        reconciliation_responses = iter(
+            [
+                {
+                    "id": "partial-reconciliation-report",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": "# Reconciliation\n\nThe first conflict remains open."
+                            }
+                        }
+                    ],
+                },
+                {
+                    "id": "partial-reconciliation-extract",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps(
+                                    {
+                                        "outcome": "unresolved",
+                                        "summary": "The first conflict remains open.",
+                                        "findings": [
+                                            {
+                                                "claimKey": "demo/partial-a",
+                                                "stance": "uncertain",
+                                                "summary": "Neither assessment is decisive.",
+                                                "subjectTransactionIds": [
+                                                    supporting_head,
+                                                    refuting_head,
+                                                ],
+                                                "evidenceTransactionIds": [
+                                                    supporting_head,
+                                                    refuting_head,
+                                                ],
+                                            }
+                                        ],
+                                    }
+                                )
+                            }
+                        }
+                    ],
+                },
+            ]
+        )
+        reconciliation_bundle = self.root / "partial-reconciliation"
+        run_reconciliation_judgment_bundle(
+            self.root,
+            "demo",
+            reconciliation_judge,
+            refuting_head,
+            first_conflict,
+            [supporting_bundle, refuting_bundle],
+            reconciliation_bundle,
+            transport=lambda _: next(reconciliation_responses),
+        )
+        second_reconciliation_responses = iter(
+            [
+                {
+                    "id": "complete-reconciliation-report",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": "# Reconciliation\n\nThe second conflict also remains open."
+                            }
+                        }
+                    ],
+                },
+                {
+                    "id": "complete-reconciliation-extract",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps(
+                                    {
+                                        "outcome": "unresolved",
+                                        "summary": "The second conflict remains open.",
+                                        "findings": [
+                                            {
+                                                "claimKey": "demo/partial-b",
+                                                "stance": "uncertain",
+                                                "summary": "Neither second assessment is decisive.",
+                                                "subjectTransactionIds": [
+                                                    supporting_head,
+                                                    refuting_head,
+                                                ],
+                                                "evidenceTransactionIds": [
+                                                    supporting_head,
+                                                    refuting_head,
+                                                ],
+                                            }
+                                        ],
+                                    }
+                                )
+                            }
+                        }
+                    ],
+                },
+            ]
+        )
+        second_reconciliation_bundle = self.root / "complete-reconciliation"
+        run_reconciliation_judgment_bundle(
+            self.root,
+            "demo",
+            reconciliation_judge,
+            refuting_head,
+            second_conflict,
+            [supporting_bundle, refuting_bundle],
+            second_reconciliation_bundle,
+            transport=lambda _: next(second_reconciliation_responses),
+        )
+        expected_conflicts = [
+            str(first_conflict["conflictId"]),
+            str(second_conflict["conflictId"]),
+        ]
+        partial_reconciliation = plan_reconciliation_inputs(
+            self.root,
+            self.root / "partial-reconciliation-projection",
+            "demo",
+            primary_judge,
+            reconciliation_judge,
+            refuting_head,
+            [supporting_bundle, refuting_bundle],
+            [reconciliation_bundle],
+            expected_conflicts,
+            allow_expected_subset=True,
+        )
+        self.assertEqual(
+            partial_reconciliation["missingExpectedConflictIds"],
+            [str(second_conflict["conflictId"])],
+        )
+        self.assertEqual(
+            [item["conflictId"] for item in partial_reconciliation["newBundles"]],
+            [str(first_conflict["conflictId"])],
+        )
+        with self.assertRaisesRegex(MathFlowError, "do not match the current plan"):
+            plan_reconciliation_inputs(
+                self.root,
+                self.root / "partial-reconciliation-projection",
+                "demo",
+                primary_judge,
+                reconciliation_judge,
+                refuting_head,
+                [supporting_bundle, refuting_bundle],
+                [reconciliation_bundle],
+                expected_conflicts,
+            )
+        with self.assertRaisesRegex(MathFlowError, "outside the current plan"):
+            plan_reconciliation_inputs(
+                self.root,
+                self.root / "partial-reconciliation-projection",
+                "demo",
+                primary_judge,
+                reconciliation_judge,
+                refuting_head,
+                [supporting_bundle, refuting_bundle],
+                [reconciliation_bundle],
+                [str(second_conflict["conflictId"])],
+                allow_expected_subset=True,
+            )
+
+        overlap_projection = self.root / "overlap-reconciliation-projection"
+        publish_batch(overlap_projection, [reconciliation_bundle])
+        overlap_plan = plan_reconciliation_inputs(
+            self.root,
+            overlap_projection,
+            "demo",
+            primary_judge,
+            reconciliation_judge,
+            refuting_head,
+            [supporting_bundle, refuting_bundle],
+            [reconciliation_bundle, second_reconciliation_bundle],
+            expected_conflicts,
+            allow_expected_subset=True,
+        )
+        self.assertEqual(overlap_plan["missingExpectedConflictIds"], [])
+        self.assertEqual(
+            {str(item["conflictId"]) for item in overlap_plan["newBundles"]},
+            set(expected_conflicts),
+        )
+        for bundle in overlap_plan["newBundles"]:
+            publish_batch(overlap_projection, [Path(str(bundle["path"]))])
+        completed_overlap = plan_reconciliation_inputs(
+            self.root,
+            overlap_projection,
+            "demo",
+            primary_judge,
+            reconciliation_judge,
+            refuting_head,
+            [supporting_bundle, refuting_bundle],
+        )
+        self.assertEqual(completed_overlap["missingConflicts"], [])
+
     def test_parallel_judgments_trigger_conflict_and_coalesced_knowledge_build(self) -> None:
         supporting_head = self.commit_contribution(
             "supporting-proof", "# Supporting proof\n\nA proposed proof of the claim."
@@ -717,11 +1274,90 @@ class GitProtocolTests(unittest.TestCase):
             context_transaction_ids=[supporting_head],
             transport=transport_for(refuting_head, "refutes"),
         )
+        current_supporting_bundle = self.root / "judgment-supporting-current"
+        run_primary_judgment_bundle(
+            self.root,
+            "demo",
+            judge,
+            refuting_head,
+            [supporting_head],
+            current_supporting_bundle,
+            transport=transport_for(supporting_head, "supports"),
+        )
         _, supporting, supporting_run_digest = load_judgment_bundle(supporting_bundle)
         _, refuting, refuting_run_digest = load_judgment_bundle(refuting_bundle)
         self.assertNotEqual(supporting["judgmentId"], refuting["judgmentId"])
         self.assertEqual(
             [item["id"] for item in refuting["subjects"]], [refuting_head]
+        )
+
+        partial_projection = self.root / "targeted-partial-projection"
+        supporting_partial = plan_primary_judgment_inputs(
+            self.root,
+            partial_projection,
+            "demo",
+            judge,
+            refuting_head,
+            [current_supporting_bundle],
+            [supporting_head],
+            target_subject_transaction_id=supporting_head,
+        )
+        self.assertEqual(
+            [
+                item["transactionId"]
+                for item in supporting_partial["pendingTransactions"]
+            ],
+            [refuting_head],
+        )
+        refuting_partial = plan_primary_judgment_inputs(
+            self.root,
+            partial_projection,
+            "demo",
+            judge,
+            refuting_head,
+            [refuting_bundle],
+            [refuting_head],
+            target_subject_transaction_id=refuting_head,
+        )
+        self.assertEqual(
+            [
+                item["transactionId"]
+                for item in refuting_partial["pendingTransactions"]
+            ],
+            [supporting_head],
+        )
+        with self.assertRaisesRegex(
+            MathFlowError, "omit an attestation-ready subject"
+        ):
+            plan_primary_judgment_inputs(
+                self.root,
+                partial_projection,
+                "demo",
+                judge,
+                refuting_head,
+                [current_supporting_bundle],
+                [supporting_head],
+            )
+
+        idempotent_projection = self.root / "targeted-idempotent-projection"
+        publish_batch(idempotent_projection, [current_supporting_bundle])
+        idempotent_target = plan_primary_judgment_inputs(
+            self.root,
+            idempotent_projection,
+            "demo",
+            judge,
+            refuting_head,
+            [current_supporting_bundle],
+            [supporting_head],
+            target_subject_transaction_id=supporting_head,
+        )
+        self.assertEqual(idempotent_target["newBundles"], [])
+        self.assertEqual(
+            [
+                item["transactionId"]
+                for item in idempotent_target["pendingTransactions"]
+            ],
+            [refuting_head],
         )
 
         reusable_projection = self.root / "reusable-projection"
@@ -885,10 +1521,155 @@ class GitProtocolTests(unittest.TestCase):
             {supporting["judgmentId"], refuting["judgmentId"]},
         )
 
+        alternate_reconciliation_responses = iter(
+            [
+                {
+                    "id": "alternate-reconciliation-report",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": "# Alternate reconciliation\n\nA second assessment also leaves the conflict unresolved."
+                            }
+                        }
+                    ],
+                },
+                {
+                    "id": "alternate-reconciliation-extract",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps(
+                                    {
+                                        "outcome": "unresolved",
+                                        "summary": "The alternate assessment is not decisive.",
+                                        "findings": [
+                                            {
+                                                "claimKey": "demo/main-claim",
+                                                "stance": "uncertain",
+                                                "summary": "The second conflict assessment remains open.",
+                                                "subjectTransactionIds": [
+                                                    supporting_head,
+                                                    refuting_head,
+                                                ],
+                                                "evidenceTransactionIds": [
+                                                    supporting_head,
+                                                    refuting_head,
+                                                ],
+                                            }
+                                        ],
+                                    }
+                                )
+                            }
+                        }
+                    ],
+                },
+            ]
+        )
+        alternate_reconciliation_bundle = (
+            self.root / "judgment-reconciliation-alternate"
+        )
+        run_reconciliation_judgment_bundle(
+            self.root,
+            "demo",
+            Path(__file__).parents[1]
+            / "protocol/judges/openrouter-markdown-reconciliation-v1.json",
+            refuting_head,
+            conflicts[0],
+            [supporting_bundle, refuting_bundle],
+            alternate_reconciliation_bundle,
+            transport=lambda _: next(alternate_reconciliation_responses),
+        )
+        (
+            alternate_manifest,
+            alternate_reconciliation,
+            alternate_reconciliation_run_digest,
+        ) = load_judgment_bundle(alternate_reconciliation_bundle)
+        self.assertNotEqual(
+            reconciliation["judgmentId"],
+            alternate_reconciliation["judgmentId"],
+        )
+
+        atomic_reconciliation_projection = (
+            self.root / "atomic-reconciliation-publication"
+        )
+        with self.assertRaisesRegex(
+            MathFlowError, "multiple distinct reconciliation judgments"
+        ):
+            publish_batch(
+                atomic_reconciliation_projection,
+                [reconciliation_bundle, alternate_reconciliation_bundle],
+            )
+        self.assertFalse(atomic_reconciliation_projection.exists())
+
+        reconciliation_identity_projection = (
+            self.root / "reconciliation-identity-publication"
+        )
+        publish_batch(
+            reconciliation_identity_projection,
+            [supporting_bundle, refuting_bundle],
+        )
+        publish_batch(reconciliation_identity_projection, [reconciliation_bundle])
+        with self.assertRaisesRegex(
+            MathFlowError, "multiple distinct reconciliation judgments"
+        ):
+            publish_batch(
+                reconciliation_identity_projection,
+                [alternate_reconciliation_bundle],
+            )
+        identity_index_path = (
+            reconciliation_identity_projection
+            / "indexes/problems/demo/runs.json"
+        )
+        identity_index = json.loads(
+            identity_index_path.read_text(encoding="utf-8")
+        )
+        self.assertEqual(len(identity_index), 3)
+
+        alternate_hex = alternate_reconciliation_run_digest.removeprefix(
+            "sha256:"
+        )
+        alternate_relative = (
+            Path("objects")
+            / "judgment"
+            / alternate_hex[:2]
+            / alternate_hex
+        )
+        shutil.copytree(
+            alternate_reconciliation_bundle,
+            reconciliation_identity_projection / alternate_relative,
+        )
+        identity_index.append(
+            {
+                "runDigest": alternate_reconciliation_run_digest,
+                "runKind": "judgment",
+                "problemId": alternate_manifest["problemId"],
+                "path": alternate_relative.as_posix(),
+            }
+        )
+        write(
+            identity_index_path,
+            json.dumps(identity_index, indent=2) + "\n",
+        )
+
         reconciliation_judge = (
             Path(__file__).parents[1]
             / "protocol/judges/openrouter-markdown-reconciliation-v1.json"
         )
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "multiple distinct reusable reconciliation judgments",
+        ):
+            plan_reconciliation_inputs(
+                self.root,
+                reconciliation_identity_projection,
+                "demo",
+                judge,
+                reconciliation_judge,
+                refuting_head,
+                [supporting_bundle, refuting_bundle],
+            )
         missing_reconciliation = plan_reconciliation_inputs(
             self.root,
             reusable_projection,

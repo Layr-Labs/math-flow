@@ -14,15 +14,18 @@ from math_flow.coordination import (
     claim_due_build,
     fail_build,
     load_scheduler,
+    publish_batch,
     record_completed_inputs,
 )
 from math_flow.cli import main
 from math_flow.errors import MathFlowError
 from math_flow.governance import resolve_projection
+from math_flow.judgments import load_judgment_bundle, run_primary_judgment_bundle
 from math_flow.projection_queue import (
     filter_projection_dispatch_history,
     merge_scheduler_states,
     plan_due_projection_dispatches,
+    plan_projection_wakeup_dispatches,
     validate_scheduler_state,
 )
 from math_flow.repository import ledger, sha256_json
@@ -471,11 +474,13 @@ class ProjectionQueueTests(unittest.TestCase):
             status: str = "completed",
             conclusion: str | None = "failure",
             head: str | None = None,
+            subject: str | None = None,
         ) -> dict[str, object]:
+            suffix = "" if subject is None else f"/{subject}"
             return {
                 "conclusion": conclusion,
                 "databaseId": run_id,
-                "displayTitle": f"Project {projection}/first-problem",
+                "displayTitle": f"Project {projection}/first-problem{suffix}",
                 "headSha": head or self.head,
                 "status": status,
             }
@@ -515,6 +520,39 @@ class ProjectionQueueTests(unittest.TestCase):
             ["zeta-v1"],
         )
 
+        target_active = filter_projection_dispatch_history(
+            plan,
+            [
+                run(
+                    8,
+                    "alpha-v1",
+                    status="in_progress",
+                    conclusion=None,
+                    subject="a" * 40,
+                )
+            ],
+        )
+        self.assertEqual(
+            [item["projectionId"] for item in target_active["problems"][0]["projections"]],
+            ["alpha-v1", "zeta-v1"],
+        )
+        batch_active = filter_projection_dispatch_history(
+            plan,
+            [
+                run(
+                    9,
+                    "alpha-v1",
+                    status="in_progress",
+                    conclusion=None,
+                    subject="batch",
+                )
+            ],
+        )
+        self.assertEqual(
+            [item["projectionId"] for item in batch_active["problems"][0]["projections"]],
+            ["zeta-v1"],
+        )
+
         plan_path = self.root / "results/history-plan.json"
         history_path = self.root / "results/history-runs.json"
         output = self.root / "results/filtered-history-plan.json"
@@ -537,6 +575,255 @@ class ProjectionQueueTests(unittest.TestCase):
             0,
         )
         self.assertEqual(json.loads(output.read_text(encoding="utf-8")), filtered)
+
+    def test_wakeup_expands_only_authorized_streams_into_exact_subjects(self) -> None:
+        repository_root = Path(__file__).resolve().parents[1]
+        primary_spec = json.loads(
+            (
+                repository_root
+                / "protocol/judges/openrouter-markdown-judgment-v1.json"
+            ).read_text(encoding="utf-8")
+        )
+        write_json(self.root / "protocol/judges/primary.json", primary_spec)
+        git(self.root, "add", "protocol/judges/primary.json")
+        git(self.root, "commit", "-qm", "Use a complete primary judge")
+        self.head = git(self.root, "rev-parse", "HEAD")
+        projection_root = self.root / "published-wakeup"
+
+        def plan() -> dict[str, object]:
+            return {
+                "schemaVersion": 1,
+                "repositoryHead": self.head,
+                "problems": [
+                    {
+                        "problemId": "first-problem",
+                        "projections": [
+                            resolve_projection(
+                                self.root, "alpha-v1", "first-problem", self.head
+                            ),
+                            resolve_projection(
+                                self.root, "zeta-v1", "first-problem", self.head
+                            ),
+                        ],
+                    }
+                ],
+            }
+
+        empty = plan_projection_wakeup_dispatches(
+            self.root,
+            projection_root,
+            plan(),
+            [],
+            {"alpha-v1"},
+            {"first-problem"},
+        )
+        self.assertEqual(len(empty["dispatches"]), 1)
+        self.assertIsNone(empty["dispatches"][0]["subjectTransactionId"])
+        self.assertTrue(empty["dispatches"][0]["requireNoPrimaryWork"])
+
+        first = self.add_contribution("first-problem", "wakeup-first")
+        second = self.add_contribution("first-problem", "wakeup-second")
+        exact = plan_projection_wakeup_dispatches(
+            self.root,
+            projection_root,
+            plan(),
+            [],
+            {"alpha-v1"},
+            {"first-problem"},
+        )
+        self.assertEqual(
+            [item["subjectTransactionId"] for item in exact["dispatches"]],
+            [first, second],
+        )
+        self.assertTrue(
+            all(not item["requireNoPrimaryWork"] for item in exact["dispatches"])
+        )
+        self.assertTrue(
+            all(item["projectionId"] == "alpha-v1" for item in exact["dispatches"])
+        )
+        self.assertTrue(
+            all(
+                item["remainingProjectionIds"] == ["zeta-v1"]
+                for item in exact["dispatches"]
+            )
+        )
+        cli_plan = self.root / "wakeup-plan.json"
+        cli_history = self.root / "wakeup-history.json"
+        cli_output = self.root / "results/wakeup-dispatches.json"
+        write_json(cli_plan, plan())
+        write_json(cli_history, [])
+        self.assertEqual(
+            main(
+                [
+                    "--root",
+                    str(self.root),
+                    "projection-wakeup-plan",
+                    "--plan",
+                    str(cli_plan),
+                    "--run-history",
+                    str(cli_history),
+                    "--projection-dir",
+                    str(projection_root),
+                    "--targeted-projection",
+                    "alpha-v1",
+                    "--targeted-problem",
+                    "first-problem",
+                    "--output",
+                    str(cli_output),
+                ]
+            ),
+            0,
+        )
+        self.assertEqual(
+            json.loads(cli_output.read_text(encoding="utf-8")), exact
+        )
+
+        active_first = {
+            "conclusion": None,
+            "databaseId": 1,
+            "displayTitle": f"Project zeta-v1/first-problem/{first}",
+            "headSha": self.head,
+            "status": "in_progress",
+        }
+        independent = plan_projection_wakeup_dispatches(
+            self.root,
+            projection_root,
+            plan(),
+            [active_first],
+            {"alpha-v1"},
+            {"first-problem"},
+        )
+        self.assertEqual(
+            [item["subjectTransactionId"] for item in independent["dispatches"]],
+            [second],
+        )
+        active_batch = {
+            "conclusion": None,
+            "databaseId": 2,
+            "displayTitle": "Project alpha-v1/first-problem/batch",
+            "headSha": self.head,
+            "status": "in_progress",
+        }
+        prefiltered = filter_projection_dispatch_history(plan(), [active_batch])
+        self.assertEqual(
+            [
+                item["projectionId"]
+                for item in prefiltered["problems"][0]["projections"]
+            ],
+            ["zeta-v1"],
+        )
+        shared_stream_suppressed = plan_projection_wakeup_dispatches(
+            self.root,
+            projection_root,
+            prefiltered,
+            [active_batch],
+            {"alpha-v1"},
+            {"first-problem"},
+        )
+        self.assertEqual(shared_stream_suppressed["dispatches"], [])
+        active_sibling_batch = {
+            "conclusion": None,
+            "databaseId": 3,
+            "displayTitle": "Project zeta-v1/first-problem/batch",
+            "headSha": self.head,
+            "status": "in_progress",
+        }
+        target_survives = filter_projection_dispatch_history(
+            plan(), [active_sibling_batch]
+        )
+        self.assertEqual(
+            [
+                item["projectionId"]
+                for item in target_survives["problems"][0]["projections"]
+            ],
+            ["alpha-v1"],
+        )
+        sibling_batch_suppressed = plan_projection_wakeup_dispatches(
+            self.root,
+            projection_root,
+            target_survives,
+            [active_sibling_batch],
+            {"alpha-v1"},
+            {"first-problem"},
+        )
+        self.assertEqual(sibling_batch_suppressed["dispatches"], [])
+
+        failures = [
+            {
+                "conclusion": "failure",
+                "databaseId": run_id,
+                "displayTitle": f"Project alpha-v1/first-problem/{first}",
+                "headSha": self.head,
+                "status": "completed",
+            }
+            for run_id in range(1, 6)
+        ]
+        capped = plan_projection_wakeup_dispatches(
+            self.root,
+            projection_root,
+            plan(),
+            failures,
+            {"alpha-v1"},
+            {"first-problem"},
+        )
+        self.assertEqual(
+            [item["subjectTransactionId"] for item in capped["dispatches"]],
+            [second],
+        )
+        second_failures = [
+            {
+                "conclusion": "failure",
+                "databaseId": run_id,
+                "displayTitle": f"Project zeta-v1/first-problem/{second}",
+                "headSha": self.head,
+                "status": "completed",
+            }
+            for run_id in range(6, 11)
+        ]
+        all_capped = plan_projection_wakeup_dispatches(
+            self.root,
+            projection_root,
+            plan(),
+            [*failures, *second_failures],
+            {"alpha-v1"},
+            {"first-problem"},
+        )
+        self.assertEqual(all_capped["dispatches"], [])
+
+        unauthorized_problem = plan_projection_wakeup_dispatches(
+            self.root,
+            projection_root,
+            plan(),
+            [],
+            {"alpha-v1"},
+            {"second-problem"},
+        )
+        self.assertEqual(unauthorized_problem["dispatches"], [])
+
+        legacy = plan_projection_wakeup_dispatches(
+            self.root,
+            projection_root,
+            plan(),
+            [],
+            {"unrelated-v1"},
+            {"first-problem"},
+        )
+        self.assertEqual(len(legacy["dispatches"]), 1)
+        self.assertIsNone(legacy["dispatches"][0]["subjectTransactionId"])
+        self.assertFalse(legacy["dispatches"][0]["requireNoPrimaryWork"])
+
+        inconsistent = plan()
+        projections = inconsistent["problems"][0]["projections"]
+        projections[1]["primaryJudge"] = "protocol/judges/reconciliation.json"
+        with self.assertRaisesRegex(MathFlowError, "governed projection"):
+            plan_projection_wakeup_dispatches(
+                self.root,
+                projection_root,
+                inconsistent,
+                [],
+                {"alpha-v1"},
+                {"first-problem"},
+            )
 
     def test_recovery_planner_queues_never_run_active_projections(self) -> None:
         self.add_contribution("first-problem")
@@ -654,6 +941,141 @@ class ProjectionQueueTests(unittest.TestCase):
             [item["projectionId"] for item in plan["problems"][0]["projections"]],
             ["alpha-v1"],
         )
+
+    def test_recovery_planner_queues_unobserved_published_judgment_at_current_ledger(
+        self,
+    ) -> None:
+        repository_root = Path(__file__).resolve().parents[1]
+        primary_spec = json.loads(
+            (
+                repository_root
+                / "protocol/judges/openrouter-markdown-judgment-v1.json"
+            ).read_text(encoding="utf-8")
+        )
+        write_json(self.root / "protocol/judges/primary.json", primary_spec)
+        disabled = projection_spec("zeta-v1")
+        disabled["status"] = "disabled"
+        write_json(self.root / "protocol/projections/zeta-v1.json", disabled)
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Use the full primary and one active lane")
+        self.head = git(self.root, "rev-parse", "HEAD")
+
+        subject = self.add_contribution("first-problem", "durable-primary")
+        scheduler = self.root / "durable-primary-scheduler.json"
+        projection_root = self.root / "published-durable-primary"
+        lane = self.publish_latest_state(
+            scheduler,
+            projection_root,
+            "first-problem",
+            "alpha-v1",
+        )
+        baseline = plan_due_projection_dispatches(
+            self.root,
+            load_scheduler(scheduler),
+            now=10,
+            repository_head=self.head,
+            projection_root=projection_root,
+        )
+        self.assertEqual(baseline["problems"], [])
+
+        responses = iter(
+            [
+                {
+                    "id": "durable-report",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": "# Assessment\n\nThe supplied subject supports its claim."
+                            }
+                        }
+                    ],
+                },
+                {
+                    "id": "durable-extract",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps(
+                                    {
+                                        "findings": [
+                                            {
+                                                "claimKey": "first-problem/durable-primary",
+                                                "stance": "supports",
+                                                "summary": "The subject supports its claim.",
+                                                "subjectTransactionIds": [subject],
+                                                "evidenceTransactionIds": [subject],
+                                            }
+                                        ]
+                                    }
+                                )
+                            }
+                        }
+                    ],
+                },
+            ]
+        )
+        bundle = self.root / "durable-primary-bundle"
+        run_primary_judgment_bundle(
+            self.root,
+            "first-problem",
+            self.root / "protocol/judges/primary.json",
+            self.head,
+            [subject],
+            bundle,
+            transport=lambda _: next(responses),
+        )
+        publish_batch(projection_root, [bundle])
+        _, judgment, _ = load_judgment_bundle(bundle)
+
+        state = load_scheduler(scheduler)
+        durable_lane = state["lanes"][str(lane["laneId"])]
+        old_pending = "sha256:" + "a" * 64
+        durable_lane["observedJudgmentIds"] = [old_pending]
+        durable_lane["pendingJudgmentIds"] = [old_pending]
+        retry_at = 10_000
+        durable_lane["nextEligibleAt"] = retry_at
+        durable_lane["lastFailure"] = {
+            "schemaVersion": 1,
+            "laneId": lane["laneId"],
+            "buildToken": "sha256:" + "b" * 64,
+            "problemLedgerDigest": ledger(
+                self.root, "first-problem", self.head
+            )["problemLedgerDigest"],
+            "failedAt": 9,
+            "consecutiveFailures": 5,
+            "retryNotBefore": retry_at,
+        }
+        write_json(scheduler, state)
+
+        recovered = plan_due_projection_dispatches(
+            self.root,
+            load_scheduler(scheduler),
+            now=10,
+            repository_head=self.head,
+            projection_root=projection_root,
+        )
+        self.assertEqual(
+            [
+                item["projectionId"]
+                for item in recovered["problems"][0]["projections"]
+            ],
+            ["alpha-v1"],
+        )
+        refreshed = record_completed_inputs(
+            scheduler,
+            "first-problem",
+            self.builder_digest,
+            [str(judgment["judgmentId"])],
+            [],
+            minimum_interval_seconds=60,
+            now=10,
+            projection_spec_digest=self.projection_digest(
+                "alpha-v1", "first-problem"
+            ),
+        )
+        self.assertNotIn("lastFailure", refreshed)
 
     def test_recovery_planner_ignores_disabled_and_unknown_stale_lanes(self) -> None:
         self.add_contribution("first-problem")

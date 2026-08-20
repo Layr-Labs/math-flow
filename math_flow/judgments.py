@@ -1346,6 +1346,7 @@ def _published_primary_judgment_bundles(
         raise MathFlowError("projection judgment index must be an object array")
 
     by_judgment_id: dict[str, dict[str, object]] = {}
+    judgment_id_by_subject: dict[str, str] = {}
     for entry in sorted(
         entries,
         key=lambda item: (str(item.get("runDigest", "")), str(item.get("path", ""))),
@@ -1387,6 +1388,18 @@ def _published_primary_judgment_bundles(
                 str(subject["id"]) for subject in judgment["subjects"]
             ],
         }
+        for subject_id in candidate["subjectTransactionIds"]:
+            existing_judgment_id = judgment_id_by_subject.get(subject_id)
+            if (
+                existing_judgment_id is not None
+                and existing_judgment_id != judgment_id
+            ):
+                raise MathFlowError(
+                    "published index contains multiple distinct reusable primary "
+                    "judgments for judge "
+                    f"{judge_identity['digest']} and subject {subject_id}"
+                )
+            judgment_id_by_subject[subject_id] = judgment_id
         existing = by_judgment_id.get(judgment_id)
         if existing is None or (str(candidate["runDigest"]), str(candidate["path"])) < (
             str(existing["runDigest"]),
@@ -1509,8 +1522,9 @@ def plan_primary_judgment_coverage(
     problem: str,
     judge_path: Path,
     head: str,
+    subject_transaction_id: str | None = None,
 ) -> dict[str, object]:
-    """Find ledger transactions without a published primary judgment from this judge."""
+    """Find uncovered transactions, optionally for exactly one targeted subject."""
 
     root = root.resolve()
     projection_root = projection_root.resolve()
@@ -1519,6 +1533,18 @@ def plan_primary_judgment_coverage(
     )
     judge_digest = f"sha256:{sha256_json(spec)}"
     transactions = list(source["transactions"])
+    if subject_transaction_id is not None:
+        transactions_by_id = {
+            str(transaction["transactionId"]): transaction
+            for transaction in transactions
+        }
+        target = transactions_by_id.get(subject_transaction_id)
+        if target is None:
+            raise MathFlowError(
+                "target judgment subject is outside the current problem ledger: "
+                f"{subject_transaction_id}"
+            )
+        transactions = [target]
     covered = {
         subject_id
         for bundle in published_bundles
@@ -1573,6 +1599,8 @@ def plan_primary_judgment_coverage(
         "openrouter-validity-judgment-v4",
     }:
         result["deferredTransactions"] = deferred
+    if subject_transaction_id is not None:
+        result["targetSubjectTransactionId"] = subject_transaction_id
     return result
 
 
@@ -1584,12 +1612,17 @@ def plan_primary_judgment_inputs(
     head: str,
     additional_roots: list[Path] | None = None,
     expected_new_subject_ids: list[str] | None = None,
+    target_subject_transaction_id: str | None = None,
 ) -> dict[str, object]:
-    """Plan the complete verified primary-judgment input set for formation.
+    """Plan verified primary inputs for complete or targeted formation.
 
     Published judgments are reusable across knowledge lanes.  Additional roots
     hold newly produced workflow artifacts and must cover exactly the subjects
     from the preceding coverage plan when that expectation is supplied.
+    Untargeted mode requires every attestation-ready ledger subject. Targeted
+    mode requires its exact ready subject and reports other ready omissions in
+    ``pendingTransactions`` so callers can apply their governed formation
+    barrier without discarding published work.
     """
 
     root = root.resolve()
@@ -1597,9 +1630,26 @@ def plan_primary_judgment_inputs(
     source, spec, published = _published_primary_judgment_bundles(
         root, projection_root, problem, judge_path, head
     )
+    ledger_by_id = {
+        str(item["transactionId"]): item for item in source["transactions"]
+    }
+    if (
+        target_subject_transaction_id is not None
+        and target_subject_transaction_id not in ledger_by_id
+    ):
+        raise MathFlowError(
+            "target judgment subject is outside the current problem ledger: "
+            f"{target_subject_transaction_id}"
+        )
     expected = None if expected_new_subject_ids is None else list(expected_new_subject_ids)
     if expected is not None and len(expected) != len(set(expected)):
         raise MathFlowError("expected new judgment subjects contain duplicates")
+    if target_subject_transaction_id is not None and any(
+        subject_id != target_subject_transaction_id for subject_id in expected or []
+    ):
+        raise MathFlowError(
+            "targeted judgment inputs may expect only the targeted subject"
+        )
 
     additional: list[dict[str, object]] = []
     for search_root in additional_roots or []:
@@ -1642,9 +1692,37 @@ def plan_primary_judgment_inputs(
     }
     overlap = published_subjects & additional_subjects
     if overlap:
-        raise MathFlowError(
-            f"new judgment duplicates a published subject: {sorted(overlap)[0]}"
-        )
+        if target_subject_transaction_id is None:
+            raise MathFlowError(
+                f"new judgment duplicates a published subject: {sorted(overlap)[0]}"
+            )
+        published_ids_by_subject: dict[str, set[str]] = {}
+        for bundle in published:
+            for subject_id in bundle["subjectTransactionIds"]:
+                published_ids_by_subject.setdefault(str(subject_id), set()).add(
+                    str(bundle["judgmentId"])
+                )
+        retained_additional: list[dict[str, object]] = []
+        for bundle in additional:
+            judgment_id = str(bundle["judgmentId"])
+            overlapping_subjects = set(bundle["subjectTransactionIds"]) & overlap
+            if overlapping_subjects:
+                if any(
+                    published_ids_by_subject.get(str(subject_id)) != {judgment_id}
+                    for subject_id in overlapping_subjects
+                ):
+                    raise MathFlowError(
+                        "new targeted judgment conflicts with a published subject: "
+                        f"{sorted(str(item) for item in overlapping_subjects)[0]}"
+                    )
+                continue
+            retained_additional.append(bundle)
+        additional = retained_additional
+        additional_subjects = {
+            str(subject_id)
+            for bundle in additional
+            for subject_id in bundle["subjectTransactionIds"]
+        }
     combined_by_id = {str(item["judgmentId"]): item for item in published}
     for item in additional:
         judgment_id = str(item["judgmentId"])
@@ -1655,10 +1733,11 @@ def plan_primary_judgment_inputs(
         combined_by_id.values(),
         key=lambda item: (str(item["judgmentId"]), str(item["runDigest"])),
     )
-    ledger_ids = {str(item["transactionId"]) for item in source["transactions"]}
+    ledger_ids = set(ledger_by_id)
     combined_subjects = published_subjects | additional_subjects
     missing = ledger_ids - combined_subjects
     deferred: list[dict[str, object]] = []
+    ready: list[dict[str, object]] = []
     if missing and spec["implementation"] in {
         "openrouter-validity-judgment-v3",
         "openrouter-validity-judgment-v4",
@@ -1681,12 +1760,34 @@ def plan_primary_judgment_inputs(
             ready, deferred = _partition_attestation_ready_transactions(
                 root, projection_root, problem, head, missing_transactions
             )
+    elif missing:
+        ready = [
+            {
+                "transactionId": str(transaction["transactionId"]),
+                "ordinal": int(transaction["ordinal"]),
+                "contributionId": str(transaction["contributionId"]),
+            }
+            for transaction in source["transactions"]
+            if transaction["transactionId"] in missing
+        ]
+
+    pending: list[dict[str, object]] = []
+    if target_subject_transaction_id is None:
         if ready:
             raise MathFlowError(
                 "formation judgment inputs omit an attestation-ready subject: "
                 f"{ready[0]['transactionId']}"
             )
-    elif missing:
+    else:
+        ready_ids = {str(item["transactionId"]) for item in ready}
+        if target_subject_transaction_id in ready_ids:
+            raise MathFlowError(
+                "targeted formation inputs omit their ready subject: "
+                f"{target_subject_transaction_id}"
+            )
+        pending = ready
+
+    if missing and not ready and not deferred:
         raise MathFlowError(
             f"formation judgment inputs do not cover the current ledger: {sorted(missing)[0]}"
         )
@@ -1713,6 +1814,9 @@ def plan_primary_judgment_inputs(
         "openrouter-validity-judgment-v4",
     }:
         result["deferredTransactions"] = deferred
+    if target_subject_transaction_id is not None:
+        result["targetSubjectTransactionId"] = target_subject_transaction_id
+        result["pendingTransactions"] = pending
     return result
 
 
@@ -1723,13 +1827,19 @@ def verify_primary_judgment_artifacts(
     judge_path: Path,
     head: str,
     expected_subject_ids: list[str] | None = None,
+    allow_expected_subset: bool = False,
+    retain_expected_subset: bool = False,
 ) -> dict[str, object]:
-    """Discover and verify a complete primary-judgment artifact batch.
+    """Discover and verify a primary-judgment artifact batch.
 
     download-artifact may extract one matching artifact directly into its target
     directory while extracting multiple matches into per-artifact directories.
     Discovering manifests recursively supports both layouts without weakening
-    bundle, judge, ledger, or expected-subject validation.
+    bundle, judge, ledger, or expected-subject validation.  Partial publication
+    mode accepts a nonempty subset of an explicit frozen plan, but never an
+    artifact for a subject outside that plan. Resume filtering first verifies
+    every candidate, then retains only whole bundles contained in the frozen
+    plan; it never splits a mixed-subject bundle.
     """
 
     root = root.resolve()
@@ -1748,6 +1858,18 @@ def verify_primary_judgment_artifacts(
     expected = list(expected_subject_ids or [])
     if len(expected) != len(set(expected)):
         raise MathFlowError("expected judgment subjects contain duplicates")
+    if allow_expected_subset and not expected:
+        raise MathFlowError(
+            "partial judgment artifact verification requires expected subjects"
+        )
+    if retain_expected_subset and not expected:
+        raise MathFlowError(
+            "resume judgment artifact filtering requires expected subjects"
+        )
+    if allow_expected_subset and retain_expected_subset:
+        raise MathFlowError(
+            "judgment artifact subset modes are mutually exclusive"
+        )
     unknown_expected = set(expected) - transactions.keys()
     if unknown_expected:
         raise MathFlowError(
@@ -1814,14 +1936,53 @@ def verify_primary_judgment_artifacts(
             }
         )
 
-    if expected and observed_subjects != set(expected):
-        missing = set(expected) - observed_subjects
-        extra = observed_subjects - set(expected)
+    expected_set = set(expected)
+    rejected_bundles: list[dict[str, object]] = []
+    if retain_expected_subset:
+        retained: list[dict[str, object]] = []
+        retained_subjects: set[str] = set()
+        for bundle in bundles:
+            bundle_subjects = {
+                str(item) for item in bundle["subjectTransactionIds"]
+            }
+            unexpected = bundle_subjects - expected_set
+            if unexpected:
+                rejected_bundles.append(
+                    {
+                        "judgmentId": str(bundle["judgmentId"]),
+                        "runDigest": str(bundle["runDigest"]),
+                        "subjectTransactionIds": sorted(bundle_subjects),
+                        "unexpectedSubjectTransactionIds": sorted(unexpected),
+                    }
+                )
+                continue
+            retained.append(bundle)
+            retained_subjects.update(bundle_subjects)
+        if not retained_subjects:
+            raise MathFlowError(
+                "resume judgment artifacts do not contain a retained planned subject"
+            )
+        bundles = retained
+        observed_subjects = retained_subjects
+    elif allow_expected_subset:
+        if not observed_subjects:
+            raise MathFlowError(
+                "partial judgment artifacts do not contain a planned subject"
+            )
+        extra = observed_subjects - expected_set
+        if extra:
+            raise MathFlowError(
+                "downloaded judgment subject is outside the current plan: "
+                f"{sorted(extra)[0]}"
+            )
+    elif expected and observed_subjects != expected_set:
+        missing = expected_set - observed_subjects
+        extra = observed_subjects - expected_set
         detail = sorted(missing or extra)[0]
         raise MathFlowError(
             f"downloaded judgment subjects do not match the current plan: {detail}"
         )
-    return {
+    result: dict[str, object] = {
         "schemaVersion": 1,
         "problemId": problem,
         "ledgerHead": source["ledgerHead"],
@@ -1830,6 +1991,20 @@ def verify_primary_judgment_artifacts(
         "expectedSubjectTransactionIds": expected,
         "bundles": bundles,
     }
+    if allow_expected_subset or retain_expected_subset:
+        result["missingExpectedSubjectTransactionIds"] = sorted(
+            expected_set - observed_subjects
+        )
+    if retain_expected_subset:
+        result["rejectedBundles"] = rejected_bundles
+        result["rejectedSubjectTransactionIds"] = sorted(
+            {
+                str(subject_id)
+                for bundle in rejected_bundles
+                for subject_id in bundle["unexpectedSubjectTransactionIds"]
+            }
+        )
+    return result
 
 
 def detect_conflicts(bundle_dirs: list[Path]) -> list[dict[str, object]]:
@@ -1905,6 +2080,7 @@ def _published_reconciliation_bundles(
         raise MathFlowError("projection reconciliation index must be an object array")
 
     by_judgment_id: dict[str, dict[str, object]] = {}
+    judgment_id_by_conflict: dict[str, str] = {}
     for entry in sorted(
         entries,
         key=lambda item: (str(item.get("runDigest", "")), str(item.get("path", ""))),
@@ -1967,6 +2143,17 @@ def _published_reconciliation_bundles(
                 str(subject["id"]) for subject in judgment["subjects"]
             ],
         }
+        existing_judgment_id = judgment_id_by_conflict.get(conflict_id)
+        if (
+            existing_judgment_id is not None
+            and existing_judgment_id != judgment_id
+        ):
+            raise MathFlowError(
+                "published index contains multiple distinct reusable reconciliation "
+                "judgments for judge "
+                f"{judge_identity['digest']} and conflict {conflict_id}"
+            )
+        judgment_id_by_conflict[conflict_id] = judgment_id
         existing = by_judgment_id.get(judgment_id)
         if existing is None or (str(candidate["runDigest"]), str(candidate["path"])) < (
             str(existing["runDigest"]),
@@ -2101,8 +2288,14 @@ def plan_reconciliation_inputs(
     primary_bundle_dirs: list[Path],
     additional_roots: list[Path] | None = None,
     expected_new_conflict_ids: list[str] | None = None,
+    allow_expected_subset: bool = False,
 ) -> dict[str, object]:
-    """Derive current conflicts and bind their published/new reconciliations."""
+    """Derive conflicts and bind published or planned new reconciliations.
+
+    Partial publication mode verifies a nonempty subset of the exact expected
+    conflict plan.  It is only a durability path for already-produced artifacts;
+    missing expected conflicts remain explicit and cannot enter formation.
+    """
 
     root = root.resolve()
     projection_root = projection_root.resolve()
@@ -2175,27 +2368,54 @@ def plan_reconciliation_inputs(
     if expected is not None:
         if len(expected) != len(set(expected)):
             raise MathFlowError("expected reconciliation conflicts contain duplicates")
+        if allow_expected_subset and not expected:
+            raise MathFlowError(
+                "partial reconciliation verification requires expected conflicts"
+            )
         unknown = set(expected) - conflicts.keys()
         if unknown:
             raise MathFlowError(
                 f"expected reconciliation targets a non-current conflict: {sorted(unknown)[0]}"
             )
         observed = {str(item["conflictId"]) for item in additional}
-        if observed != set(expected):
+        if allow_expected_subset:
+            if not observed:
+                raise MathFlowError(
+                    "partial reconciliation artifacts do not contain a planned conflict"
+                )
+            extra = observed - set(expected)
+            if extra:
+                raise MathFlowError(
+                    "additional reconciliation conflict is outside the current plan: "
+                    f"{sorted(extra)[0]}"
+                )
+        elif observed != set(expected):
             difference = set(expected) - observed or observed - set(expected)
             raise MathFlowError(
                 f"additional reconciliation conflicts do not match the current plan: {sorted(difference)[0]}"
             )
+    elif allow_expected_subset:
+        raise MathFlowError(
+            "partial reconciliation verification requires expected conflicts"
+        )
 
     published_conflicts = {str(item["conflictId"]) for item in published}
     additional_conflicts = {str(item["conflictId"]) for item in additional}
     overlap = published_conflicts & additional_conflicts
-    if overlap:
+    if overlap and not allow_expected_subset:
         raise MathFlowError(
             f"new reconciliation duplicates a published conflict: {sorted(overlap)[0]}"
         )
     combined_by_id = {str(item["judgmentId"]): item for item in published}
     for item in additional:
+        if (
+            allow_expected_subset
+            and str(item["conflictId"]) in published_conflicts
+        ):
+            # Keep canonical inputs unambiguous. The additional bundle remains
+            # in newBundles so independent publication can reject or identify
+            # an exact already-published object without stranding its siblings.
+            continue
         judgment_id = str(item["judgmentId"])
         if judgment_id in combined_by_id:
             raise MathFlowError(
@@ -2215,11 +2435,11 @@ def plan_reconciliation_inputs(
         conflicts[conflict_id]
         for conflict_id in sorted(set(conflicts) - covered_conflicts)
     ]
-    if expected is not None and missing:
+    if expected is not None and missing and not allow_expected_subset:
         raise MathFlowError(
             f"reconciliation inputs do not cover current conflict: {missing[0]['conflictId']}"
         )
-    return {
+    result: dict[str, object] = {
         "schemaVersion": 1,
         "problemId": problem,
         "ledgerHead": source["ledgerHead"],
@@ -2243,3 +2463,9 @@ def plan_reconciliation_inputs(
             ]
         },
     }
+    if allow_expected_subset:
+        expected_set = set(expected or [])
+        result["missingExpectedConflictIds"] = sorted(
+            expected_set - (published_conflicts | additional_conflicts)
+        )
+    return result

@@ -140,14 +140,68 @@ python -m math_flow judgment-plan \
   --judge protocol/judges/openrouter-markdown-judgment-v1.json \
   --head HEAD \
   --projection-dir /path/to/projections-worktree \
+  --subject-transaction <transaction-sha> \
   --output /tmp/judgment-plan.json
 ```
 
 Coverage is scoped to the full judge-spec digest: a primary judgment from an
 older or different judge remains part of history but does not satisfy the active
 judge's queue. The output contains a GitHub-compatible matrix with one entry for
-every uncovered transaction. Those judgments may execute in parallel because
-they do not read or mutate a base knowledge state.
+the targeted uncovered transaction. Omit `--subject-transaction` only for an
+explicit manual batch/recovery plan. Hosted contribution and attestation
+dispatches always name an exact subject. Workflows for different subjects have
+different concurrency keys and may execute in parallel; two triggers for the
+same projection, problem, and subject queue with cancellation disabled. The
+waiting trigger then replans against the latest published index and becomes a
+zero-call run when the first trigger succeeded.
+
+Attestation publication compares pre-publication and post-publication coverage
+for each applicable judge stream and dispatches one targeted run for each exact
+subject that became ready. This includes claims unblocked by an attested
+declared reference without waking unrelated missing work. A target is propagated
+through every projection that shares the judgment stream.
+
+Publication and subsequent index loading both fail closed if two distinct
+primary judgment IDs claim the same `(judgeSpecDigest, subjectTransactionId)`.
+Content-addressed repetition of the identical judgment remains idempotent.
+Legacy reconciliation publication applies the analogous
+`(judgeSpecDigest, conflictId)` uniqueness rule.
+The current active research lanes have no reconciliation stage. A future
+reactivation of legacy reconciliation should add a just-in-time conflict replan
+before the provider call; today, overlapping manual/targeted legacy runs can
+still pay for the same reconciliation even though only one identity may publish.
+
+Each paid primary bundle is verified against the workflow's fixed canonical
+commit and published to the immutable object index immediately after its matrix
+finishes, before reconciliation or formation. This publication does not mutate
+the knowledge scheduler. Reconciliation-enabled profiles likewise publish each
+completed reconciliation before formation. If an explicit subjectless primary
+or reconciliation matrix partially fails, the publication boundary accepts only
+a nonempty subset of that matrix's exact frozen plan, rejects every artifact
+outside it, publishes the verified successful siblings one at a time, and then
+keeps the run failed until the missing items are recovered. A subjectless resume
+fully verifies every historical artifact, retains only whole bundles contained
+in its newly frozen expected plan, reports and excludes out-of-plan bundles, and
+never splits a mixed-subject bundle. Any rejection leaves that resume failed
+after the retained artifacts publish. An exact-subject run remains exact.
+Primary per-object CAS retries mean an overlapping manual batch can still
+preserve its nonconflicting subjects even if another run won one subject's
+identity race.
+
+Formation and final knowledge/scheduler publication share one
+projection/problem concurrency lock. For validity v3/v4 lanes with no
+reconciliation stage, the locked job may integrate whatever independent
+published judgments are ready; `knowledge-trigger` withholds a valid dependent
+claim until every required-premise judgment is supplied and accepted. Legacy
+reconciliation lanes retain the complete-primary barrier because conflicts are
+defined over the full ready ledger. A durable wake treats published reusable
+judgments not yet present in the lane's `observedJudgmentIds` as due work, so a
+canceled or failed formation never requires another paid primary call.
+
+Every job in one hosted run verifies mathematics against `${{ github.sha }}`.
+Publication separately fetches current `origin/main` before rebuilding the
+viewer catalog, preventing an older in-flight run from regressing the catalog
+after a newer contribution merges.
 
 ## Detect and reconcile conflicts (legacy projections)
 
@@ -320,6 +374,22 @@ builders, and replaced GitHub pending runs recover without an unrelated
 contribution. The wake-up pass also checks same-head workflow history: an active
 run suppresses a duplicate dispatch, and five consecutive pre-formation failures
 stop automatic retries for that projection without blocking other projections.
+For the explicitly authorized `openrouter-research-v3` problems, the scheduled
+planner recomputes full validity-v4 coverage and emits one exact dispatch for
+each ready missing subject. Active/failure history is matched to that exact
+subject across the shared judgment stream, so one subject never suppresses
+another. It emits a single subjectless formation/recovery wake only when no
+ready primary is missing. The projection and problem allowlists are both
+explicit: a targeted projection is not scheduled at all for an out-of-scope
+problem, while non-targeted legacy lanes retain their existing subjectless
+batch behavior. If batch-history filtering suppresses a targeted projection,
+another projection that shares its judge stream cannot revive the same payload
+as a subjectless batch. Conversely, an active subjectless batch on any sibling
+in that full governed stream suppresses exact wakeups until it finishes; exact
+subject history is also matched across every sibling projection.
+The scheduled subjectless wake carries a live `require_no_primary_work` guard.
+If a commit or terminal attestation makes a primary ready after wake planning,
+the hosted run stops before any provider call instead of widening into a batch.
 Direct workflow dispatch remains available for an operator retry.
 Redispatching an already-current lane is a successful no-op. A newly registered
 knowledge lane still forms from the complete inherited judgment set even when
