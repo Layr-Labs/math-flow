@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+  "subjectLedgerPosition": 5,
+  "claims": [
+    {
+      "claimKey": "bssc-sum-capacity/uv-relaxed-converse-tensorization",
+      "statement": "For finite-alphabet discrete memoryless broadcast channels, the averaged separately-relaxed UV sum-rate functional defined in this contribution is exactly additive under products. On a receiver-skew channel the branchwise functional equals the averaged functional, and the same equality and additivity hold for every finite product of receiver-skew channels. Consequently, for the half-skew BSSC P and every integer n >= 1, both functionals on P^{times n} equal n(2 h_2(1/4) - 5/4) bits. This is a theorem only about the two separately-relaxed scalar UV functionals, not about tensorization of the full UV region, a common joint-(U,V) optimization, the GK functional, or the capacity itself.",
+      "dependencyTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ]
+    }
+  ],
+  "dependencyTransactionIds": [
+    "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+  ],
+  "knowledgeContext": {
+    "sourceKind": "research-program-state",
+    "runDigest": "sha256:748362090003f9c4cd380a60f5ba4a670b7cd29e73b77a15e0b9550303d4d4dd",
+    "stateDigest": "sha256:f221ef2fbba047ba25edbd15355d1875557f7d5741e035e82937a628d00cf518",
+    "stateArtifactDigest": "sha256:9f145534b166a8670b4d6f466396e7c6a6504a5d71c54062560be7882821464d",
+    "problemLedgerHead": "f236017c62c67ce4218c1f81ea34134f0954b556",
+    "selectedPrograms": {
+      "root": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "status": "active",
+        "parentThreadIds": [],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "digest": "sha256:df79ef7389f1f766b7136af9223a9970bc413ac61ac2a46807f9987fde3d134e"
+      }
+    },
+    "selectedThreads": {
+      "root/code-induced-converse-structure": {
+        "id": "root/code-induced-converse-structure",
+        "programId": "root",
+        "title": "Code-induced converse structure",
+        "summary": "Study exact necessary conditions inherited from deterministic private-message codes, including dependence balance, fixed-coordinate encoder structure, compatible rate rows, and the unresolved support-reduction problem.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "digest": "sha256:350ad728e8d51265925d63466dc2a16000d8b1f7ef391690780424b2f09270b4"
+      },
+      "root/entropy-copy-relaxation-limits": {
+        "id": "root/entropy-copy-relaxation-limits",
+        "programId": "root",
+        "title": "Entropy/copy relaxation limits and channel-specific constraints",
+        "summary": "Determine the limits of coarse entropy/copy refinements of code-induced converse constraints and pursue exact binary-posterior or other channel-specific consistency constraints that are not captured by universal entropy geometry.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "digest": "sha256:d35ca878bc2346295f791db8f8eea5f04a746e47cd64b3159cf7606860b4904e"
+      }
+    },
+    "selectedItems": {
+      "root/proof/entropy-counterfeit-witness": {
+        "id": "root/proof/entropy-counterfeit-witness",
+        "programId": "root",
+        "type": "proof",
+        "title": "Posterior-support calculation and finite entropic counterfeit construction",
+        "summary": "For g(q)=I_Z(q)−I_Y(q), direct differentiation gives g″(q)=(2q−1)/(ln(2)q(1−q)(1+q)(2−q)), so g is concave through 1/2 and convex thereafter. The exact identities g(1/5)=(8/5)r and g′(1/5)=−2r make 2r(1−q) a global upper support. A posterior mixture of mass 5/8 at 1/5 and 3/8 at 1 has mean 1/2 and support value r; reflection gives the other direction. The finite witness uses mutually independent binary components C,A,B1c,B2c,Eu,Ev,Ny,Nz with respective entropies 2r, 1−h, r, 7/4−2h, 1/2−r, r, 1/2, 1/2, and tuple variables U=(C,A,B2c,Eu), V=(B1c,Ev), X=(C,A,B1c,B2c,Eu,Ev), Y=(C,A,Ny), Z=(C,B1c,B2c,Nz), with W,T constant. Component-set intersections verify the complete base entropy vector, structural equalities, all conditional BEC identities, exact dependence balance, both support rows, and both objective branches. Because this is an actual finite distribution, every universally valid finite-variable information inequality holds. Conditional resampling realizes each finite standard copy-lemma extension while preserving the original marginal and objective.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "dependencyItemIds": [
+          "root/result/finite-block-code-induced-balance"
+        ],
+        "digest": "sha256:b2484b014720d6e7ff8b6f1984d9fa53302a917adeb256e5ddba8fdb3e429bb2"
+      },
+      "root/proof/finite-block-balance-and-rate-rows": {
+        "id": "root/proof/finite-block-balance-and-rate-rows",
+        "programId": "root",
+        "type": "proof",
+        "title": "Telescope, Fano, fixed-map factorization, and conditioned Csiszár proof",
+        "summary": "Set Dᵢ=I(A;B∣Yⁱ,Zᵢ₊₁ⁿ) for 0≤i≤n. The ith balance summand is exactly Dᵢ−Dᵢ₋₁, so summation gives the claimed endpoint telescope without a channel inequality. Separate Fano bounds control D_n by F₁ and D₀ by F₂. After uniform time sharing, memorylessness and deterministic encoding give the fixed-coordinate induced-law factorization because, conditional on (A,B,T), the current input is fixed and the current output is independent of the past/future outputs in W. The individual rate rows follow from Fano and forward or reverse chain rules. The two sum-rate rows follow from conditioned Csiszár sum identities; the uncancelled remainders are respectively ΣᵢI(Yⁱ⁻¹;Yᵢ) and ΣᵢI(Zᵢ₊₁ⁿ;Zᵢ), hence nonnegative.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "dependencyItemIds": [],
+        "digest": "sha256:79bbf5755353e89b36fa57f568d414276055d9aa77c4c7573d9915f0fe714c13"
+      },
+      "root/question/binary-posterior-penalty": {
+        "id": "root/question/binary-posterior-penalty",
+        "programId": "root",
+        "type": "question",
+        "title": "Exact penalty from jointly consistent binary BSSC posteriors",
+        "summary": "Find an exact inequality for jointly consistent binary BSSC posterior refinements that supplies a strict penalty absent from universal entropy geometry. Exact binary-posterior or other channel-specific consistency constraints can exclude the accepted tuple-valued counterfeit and remain viable.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "dependencyItemIds": [
+          "root/result/entropy-copy-no-go"
+        ],
+        "digest": "sha256:f223f1ddb1b9f7806c03fefe7bcea21e0045f7459d33b015e2df258281d2659a"
+      },
+      "root/question/safe-support-reduction": {
+        "id": "root/question/safe-support-reduction",
+        "programId": "root",
+        "type": "question",
+        "title": "Safe support reduction for code-induced laws",
+        "summary": "Is there a cardinality or compactness reduction that simultaneously preserves U⊥V, T⊥(U,V), X=f_T(U,V), I(X;W∣U,V,T)=0, both sides of the code-induced dependence-balance constraint, and all four compatible rate rows? The accepted result supplies no such reduction.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "dependencyItemIds": [
+          "root/result/finite-block-code-induced-balance"
+        ],
+        "digest": "sha256:6a7d0e64ff21cb99a1818c6eb05505efb3d72bb2614b125c89bd6b57fde6bcb8"
+      },
+      "root/result/entropy-copy-no-go": {
+        "id": "root/result/entropy-copy-no-go",
+        "programId": "root",
+        "type": "result",
+        "title": "Exact entropy/copy no-go theorem for the stated coarse BSSC relaxation",
+        "summary": "At uniform input, put h=h₂(1/4), c=h−1/2, and r=h−3/4. Consider the coarse entropy relaxation imposing: (i) the complete seven nonempty entropies of the common-noise BSSC coupling, namely H(X)=1, H(Y)=H(Z)=h, H(X,Y)=H(X,Z)=H(Y,Z)=3/2, and H(X,Y,Z)=2; (ii) message/time independence, deterministic encoding, the fixed-map equality, the memoryless Markov equality, and exact dependence balance; (iii) every conditional BEC identity I(L;Y,Z∣K)=(1/2)I(L;X∣K) for disjoint subtuples L,K⊆{U,V,W,T}, L nonempty; and (iv) the two sharp scalar BSSC posterior-support inequalities with right side r. There is an actual finite entropic point satisfying all these constraints for which both direct sum branches equal\n\n2h₂(1/4)−5/4 = 0.3725562489182657… .\n\nConsequently, adding any collection of universally valid finite-variable information inequalities, including unknown non-Shannon inequalities, cannot lower this relaxation below that value. Nor can any finite sequence of standard copy-lemma extensions: each copy step can be realized by conditional resampling of the finite witness while preserving its original marginal and objective. The witness is deliberately not a binary BSSC distribution: X is a tuple of six nondegenerate independent binary components. Exact binary-posterior or other channel-specific consistency constraints exclude it and remain viable. The theorem obstructs only the stated coarse entropy/copy relaxation and finite sequences of standard copy-lemma extensions; it does not establish a new capacity upper bound.",
+        "claimRefs": [
+          {
+            "transactionId": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+            "claimKey": "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go"
+          }
+        ],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "dependencyItemIds": [
+          "root/result/finite-block-code-induced-balance",
+          "root/proof/entropy-counterfeit-witness"
+        ],
+        "digest": "sha256:284ae85dd13ef6261751a6343aeffab1d3faeca685e9f920eea7a5e788007935"
+      },
+      "root/result/finite-block-code-induced-balance": {
+        "id": "root/result/finite-block-code-induced-balance",
+        "programId": "root",
+        "type": "result",
+        "title": "Finite-block code-induced dependence balance and compatible rate rows",
+        "summary": "This is the finite-block component of an attributed, independently audited port of the consecutive accepted Yukon artifacts `upper-dependence-balance` and `upper-entropy-nogo`, which together form one dependency-complete structural result. Let A and B be independent uniform private messages of sizes N₁,N₂≥2, encoded deterministically over n uses of a finite-alphabet memoryless broadcast channel. Receiver Y estimates A with average error p₁ and receiver Z estimates B with average error p₂. Define Fⱼ=h₂(pⱼ)+pⱼ log₂(Nⱼ−1), δⱼ=Fⱼ/n, and Sᵢ=(Yⁱ⁻¹,Zᵢ₊₁ⁿ). Then exactly\n\nΣᵢ₌₁ⁿ [I(A;B∣Sᵢ,Yᵢ)−I(A;B∣Sᵢ,Zᵢ)] = I(A;B∣Yⁿ)−I(A;B∣Zⁿ).\n\nBoth endpoints are nonnegative, while Fano bounds them by F₁ and F₂, respectively. With independent uniform time T and U=A, V=B, W=S_T, X=X_T, Y=Y_T, Z=Z_T, every such code induces\n\n|I(U;V∣W,T,Y)−I(U;V∣W,T,Z)| ≤ max{δ₁,δ₂}.\n\nThe complete induced law retains the fixed coordinate map:\n\np(t,u,v,w,x,y,z)=(1/n)p_U(u)p_V(v)p(w∣u,v,t) 1{x=f_t(u,v)}P_{YZ∣X}(y,z∣x).\n\nIn particular, U⊥V, T⊥(U,V), X=f_T(U,V), and realized W cannot select another encoder map after (u,v,t) are fixed. With Rⱼ=(1/n)log₂Nⱼ, the same variables satisfy\n\nR₁≤I(U,W;Y∣T)+δ₁,\nR₂≤I(V,W;Z∣T)+δ₂,\nR₁+R₂≤I(U,W;Y∣T)+I(X;Z∣U,W,T)+δ₁+δ₂,\nR₁+R₂≤I(V,W;Z∣T)+I(X;Y∣V,W,T)+δ₁+δ₂.\n\nThis is an exact sequence-level necessary condition. The message alphabets and W may grow with blocklength, so it is not by itself a fixed-cardinality single-letter outer region and does not establish a new capacity upper bound.",
+        "claimRefs": [
+          {
+            "transactionId": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+            "claimKey": "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go"
+          }
+        ],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "dependencyItemIds": [
+          "root/proof/finite-block-balance-and-rate-rows"
+        ],
+        "digest": "sha256:9f8e09a8d3babf06c433418f6c7451a87944112a6e7fc9dbd5f66884576666fb"
+      },
+      "root/tool/exact-entropy-witness-checker": {
+        "id": "root/tool/exact-entropy-witness-checker",
+        "programId": "root",
+        "type": "tool",
+        "title": "Exact affine-in-h entropy-witness checker",
+        "summary": "A reproducible standard-library Python checker represents every component entropy as an exact rational affine expression a+bh with h=h₂(1/4). Using weighted component unions and intersections rather than floating-point arithmetic, it checks positivity from 3/4<h<7/8, the complete base entropy vector and structural equalities, both zero-valued dependence-balance sides, all 65 disjoint-subtuple conditional BEC identities, both sharp support rows, and both objective branches at 2h₂(1/4)−5/4. It reports successful exact audits for the affine-in-h construction, the 65 BEC identities, dependence balance, support rows, and both branches.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "dependencyItemIds": [
+          "root/proof/entropy-counterfeit-witness"
+        ],
+        "digest": "sha256:4963f55b82c097876dd396146119cda030a92bcc5d1e7d279d53bee04aad69a4"
+      }
+    },
+    "unresolvedDependencyTransactionIds": []
+  },
+  "packetDigest": "sha256:89fc5b3383633e5dc3bfc99fc77f5f699eef5fa8f5e07ca9e01a1c246aec0820"
+}

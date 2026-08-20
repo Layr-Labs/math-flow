@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "entityKind": "thread",
+      "entityId": "root/relaxed-uv-functional-tensorization",
+      "baseDigest": null,
+      "value": {
+        "id": "root/relaxed-uv-functional-tensorization",
+        "programId": "root",
+        "title": "Separately relaxed UV scalar tensorization",
+        "summary": "Study product additivity, receiver-skew symmetry, and exact evaluation of the separately relaxed scalar UV sum-rate functionals, without extending conclusions to the full UV region, common joint-(U,V) optimization, GK functional, broader converse systems, or capacity.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/result/separately-relaxed-uv-tensorization",
+      "baseDigest": null,
+      "value": {
+        "id": "root/result/separately-relaxed-uv-tensorization",
+        "programId": "root",
+        "type": "result",
+        "title": "Product tensorization of separately relaxed UV scalar functionals",
+        "summary": "For a finite-alphabet discrete memoryless broadcast channel W and input law p, define t_W(p)=I_p(X;Y)−I_p(X;Z), let 𝔠[f](p) be the upper concave envelope of f at p, and put A_W(p)=I_p(X;Y)+𝔠[−t_W](p), D_W(p)=I_p(X;Z)+𝔠[t_W](p), B_avg(W)=sup_p(A_W(p)+D_W(p))/2, and B_br(W)=sup_p min{A_W(p),D_W(p)}. For finite-alphabet discrete memoryless broadcast channels, the averaged separately-relaxed UV sum-rate functional defined in this contribution is exactly additive under products. On a receiver-skew channel the branchwise functional equals the averaged functional, and the same equality and additivity hold for every finite product of receiver-skew channels. Consequently, for the half-skew BSSC P and every integer n >= 1, both functionals on P^{times n} equal n(2 h_2(1/4) - 5/4) bits. This is a theorem only about the two separately-relaxed scalar UV functionals, not about tensorization of the full UV region, a common joint-(U,V) optimization, the GK functional, or the capacity itself. The BSSC specialization relies on the previously accepted sharp scalar BSSC posterior-support inequality and contact identity.",
+        "claimRefs": [
+          {
+            "transactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+            "claimKey": "bssc-sum-capacity/uv-relaxed-converse-tensorization"
+          }
+        ],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "dependencyItemIds": [
+          "root/proof/separately-relaxed-uv-product-and-skew-proof",
+          "root/result/entropy-copy-no-go"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/proof/separately-relaxed-uv-product-and-skew-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "root/proof/separately-relaxed-uv-product-and-skew-proof",
+        "programId": "root",
+        "type": "proof",
+        "title": "Concave-envelope product decomposition and receiver-skew symmetrization",
+        "summary": "For a product channel, opposite-order mutual-information expansions and the Csiszár sum identity decompose the conditional receiver-information difference into factorwise terms. Applying this to every posterior ensemble bounds the upper concave envelopes of t and −t by the sums of their factor envelopes, including for correlated product inputs and auxiliaries joint across factors. Output entropy subadditivity supplies the corresponding A and D upper bounds. Product input laws and independent products of factor posterior ensembles give the reverse inequalities, proving exact additivity of B_avg without an attainment assumption. For a receiver-skew involution S, relabeling gives A(Sp)=D(p) and D(Sp)=A(p); concavity at (p+Sp)/2 then proves B_br=B_avg and permits restriction to invariant input laws. Product involutions extend this equality and additivity to finite products. For the half-skew BSSC, the invariant binary input is uniform, and the previously accepted sharp posterior-support inequality together with its attaining posterior mixture evaluates both envelopes there as h_2(1/4)−3/4, yielding n(2h_2(1/4)−5/4).",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "dependencyItemIds": [
+          "root/result/entropy-copy-no-go"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/tool/uv-bssc-specialization-checker",
+      "baseDigest": null,
+      "value": {
+        "id": "root/tool/uv-bssc-specialization-checker",
+        "programId": "root",
+        "type": "tool",
+        "title": "High-precision half-skew BSSC relaxed-UV specialization checker",
+        "summary": "A reproducible standard-library Python script evaluates the BSSC mutual-information formulas at 90-decimal precision, checks the support contact at q=4/5, the attaining posterior mixture with masses 5/8 and 3/8, the receiver-skew channel relations, and the normalized value 2h_2(1/4)−5/4. It corroborates the exact BSSC specialization; the universal product and symmetry theorem rests on the analytic proof.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9"
+        ],
+        "dependencyItemIds": [
+          "root/result/separately-relaxed-uv-tensorization",
+          "root/proof/separately-relaxed-uv-product-and-skew-proof"
+        ]
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+      "claimKeys": [
+        "bssc-sum-capacity/uv-relaxed-converse-tensorization"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/relaxed-uv-functional-tensorization"
+      ],
+      "itemIds": [
+        "root/result/separately-relaxed-uv-tensorization",
+        "root/proof/separately-relaxed-uv-product-and-skew-proof",
+        "root/tool/uv-bssc-specialization-checker"
+      ]
+    }
+  ]
+}
