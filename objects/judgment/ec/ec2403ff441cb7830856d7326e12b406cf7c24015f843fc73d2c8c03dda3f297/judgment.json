@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 2,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+  "problemLedgerDigest": "sha256:361ab8c751586738730b9a86a3b2eac0196f13be92f6a72929a7714f15bde30f",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+      "ledgerPosition": 7
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-source-bound-audit",
+      "status": "indeterminate",
+      "premiseStatus": "missing",
+      "summary": "The downstream mathematical audit is sound conditional on the supplied structured transcription being a complete and faithful reproduction of Theorem 9. The 30-row private-message specialization, input-only product marginalization, extended-real value inequalities, Q0 midpoint dependence, nonemptiness, and finiteness are verified for the displayed system. However, the composite claim also requires exact primary-source fidelity, which the bounded evidence does not establish; therefore the overall claim remains indeterminate.",
+      "scopeQualifications": [
+        "The 30-row equivalence is established only between the supplied structured transcription and the independently generated local formulation, not against the unavailable source PDF.",
+        "The marginalization proof preserves every term in the supplied exhaustive 3/12/12/3 audit, but its coverage of the entire actual Theorem 9 statement is conditional on transcription completeness.",
+        "The inequalities V_Q(G,K) <= V(1/2;G,K) <= B(G,K) hold as extended-real inequalities, including sup(empty set)=-infinity.",
+        "Dependence only on (c,g,k,c) establishes well-definedness for (g,k) induced by the admitted finite-output channels.",
+        "A Q0-supported zero-rate construction proves nonemptiness, while individual-rate bounds imply 0 <= V_0(g,k) <= 2 for admitted channel pairs."
+      ],
+      "evidenceIssues": [
+        "The bytes of GK-outer.pdf were not supplied, so its asserted digest, size, structure, and extracted theorem text cannot be checked.",
+        "No governed execution result or signed attestation establishes that the extractor and verifier successfully ran on the asserted PDF bytes.",
+        "No allowed independent reference evidence binds the asserted digest to the official author-hosted manuscript.",
+        "The expected digest is self-declared in the same contribution and therefore does not independently establish provenance or content.",
+        "The verifier does not inspect the embedded PDF creation date despite the README mentioning it.",
+        "Taking Theorem 9 as a premise does not discharge the separate obligation to prove that the bounded transcription faithfully reproduces it."
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-source-bound-audit",
+      "stance": "uncertain",
+      "summary": "The downstream mathematical audit is sound conditional on the supplied structured transcription being a complete and faithful reproduction of Theorem 9. The 30-row private-message specialization, input-only product marginalization, extended-real value inequalities, Q0 midpoint dependence, nonemptiness, and finiteness are verified for the displayed system. However, the composite claim also requires exact primary-source fidelity, which the bounded evidence does not establish; therefore the overall claim remains indeterminate.",
+      "subjectTransactionIds": [
+        "dcdd3ab29be1a45b42a75767dbee30d8381544eb"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:06c67ef7a703fea9412d9fda7f7a0d8d8f612a3b7b0df101cbef37d2b92bbe6e",
+  "reportDigest": "sha256:0c73982767183a70fc01909d783495653edb31c3417b45e862ba7032277a0d32",
+  "judgmentId": "sha256:903cd80e2b171a3a8966983414210ce3950b959a2a3c8f38583005077f9f3203"
+}
