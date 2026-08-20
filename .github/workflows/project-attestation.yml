@@ -190,7 +190,10 @@ jobs:
           done < <(
             jq -c '
               .projections
-              | map(select(.primaryJudge | endswith("validity-judgment-v3.json")))
+              | map(select(
+                  (.primaryJudge | endswith("validity-judgment-v3.json")) or
+                  (.primaryJudge | endswith("validity-judgment-v4.json"))
+                ))
               | sort_by(.judgmentStreamId, .projectionId)
               | group_by(.judgmentStreamId)[]
               | {

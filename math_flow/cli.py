@@ -1049,6 +1049,7 @@ def main(argv: list[str] | None = None) -> int:
                 if manifest.get("outputProfile") in {
                     "math-flow/validity-judgment-v2",
                     "math-flow/validity-judgment-v3",
+                    "math-flow/validity-judgment-v4",
                 }:
                     subjects = judgment.get("subjects")
                     if not isinstance(subjects, list) or len(subjects) != 1:
@@ -1071,11 +1072,12 @@ def main(argv: list[str] | None = None) -> int:
                     }
             judgment_dependencies: dict[str, list[str]] = {}
             ready_judgment_ids = set(judgment_ids)
-            v3_judgment_ids: set[str] = set()
+            reference_aware_judgment_ids: set[str] = set()
             for bundle_dir, manifest, judgment, judgment_id in loaded_judgments:
                 if manifest.get("outputProfile") not in {
                     "math-flow/validity-judgment-v2",
                     "math-flow/validity-judgment-v3",
+                    "math-flow/validity-judgment-v4",
                 }:
                     continue
                 try:
@@ -1091,17 +1093,17 @@ def main(argv: list[str] | None = None) -> int:
                 dependency_transactions = formation_dependency_transaction_ids(
                     judgment, packet
                 )
-                is_v3 = (
-                    manifest.get("outputProfile")
-                    == "math-flow/validity-judgment-v3"
-                )
-                if is_v3:
-                    v3_judgment_ids.add(judgment_id)
+                is_reference_aware = manifest.get("outputProfile") in {
+                    "math-flow/validity-judgment-v3",
+                    "math-flow/validity-judgment-v4",
+                }
+                if is_reference_aware:
+                    reference_aware_judgment_ids.add(judgment_id)
                 dependency_judgments: list[str] = []
                 for transaction_id in dependency_transactions:
                     dependency_judgment = validity_by_subject.get(transaction_id)
                     if dependency_judgment is None:
-                        if is_v3:
+                        if is_reference_aware:
                             ready_judgment_ids.discard(judgment_id)
                             break
                         raise MathFlowError(
@@ -1116,7 +1118,9 @@ def main(argv: list[str] | None = None) -> int:
             while True:
                 blocked = {
                     judgment_id
-                    for judgment_id in v3_judgment_ids & ready_judgment_ids
+                    for judgment_id in (
+                        reference_aware_judgment_ids & ready_judgment_ids
+                    )
                     if not set(judgment_dependencies.get(judgment_id, []))
                     <= ready_judgment_ids
                 }
@@ -1194,6 +1198,7 @@ def main(argv: list[str] | None = None) -> int:
                 in {
                     "openrouter-hierarchical-research-builder-v2",
                     "openrouter-hierarchical-research-builder-v3",
+                    "openrouter-hierarchical-research-builder-v4",
                 }
             ):
                 result = run_research_build_bundle(

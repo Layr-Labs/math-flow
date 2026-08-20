@@ -167,7 +167,8 @@ jobs:
       - name: Prepare bounded knowledge context
         if: >-
           needs.plan.outputs.primary_judge_implementation == 'openrouter-validity-judgment-v2' ||
-          needs.plan.outputs.primary_judge_implementation == 'openrouter-validity-judgment-v3'
+          needs.plan.outputs.primary_judge_implementation == 'openrouter-validity-judgment-v3' ||
+          needs.plan.outputs.primary_judge_implementation == 'openrouter-validity-judgment-v4'
         run: |
           set -euo pipefail
           projection_dir="${RUNNER_TEMP}/projection-branch"
@@ -203,7 +204,8 @@ jobs:
             --output-dir "$staging_dir/judgment-${{ matrix.ordinal }}"
           )
           if [[ "${{ needs.plan.outputs.primary_judge_implementation }}" == "openrouter-validity-judgment-v2" || \
-                "${{ needs.plan.outputs.primary_judge_implementation }}" == "openrouter-validity-judgment-v3" ]]; then
+                "${{ needs.plan.outputs.primary_judge_implementation }}" == "openrouter-validity-judgment-v3" || \
+                "${{ needs.plan.outputs.primary_judge_implementation }}" == "openrouter-validity-judgment-v4" ]]; then
             command+=(--projection-dir "${RUNNER_TEMP}/projection-branch")
           else
             while IFS= read -r evidence; do

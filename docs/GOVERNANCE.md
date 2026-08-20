@@ -53,6 +53,14 @@ fresh validity judge's `contextProjection` points to that v2 projection ID so
 future bounded history comes from its own state lane. Retarget or add credit
 overlays only after the new producer chain is current.
 
+The validity-v4/hierarchical-research-v4 correction follows the same additive
+rule. It adds claim-bounded terminal objective evidence for declared references
+without modifying the admitted v3 components or `openrouter-research-v2`.
+Runtime, schemas, profiles, judge, and builder merge first. A later one-file
+admission adds `openrouter-research-v3`; credit must not target that lane until
+its retained problem states are current. See
+`docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md`.
+
 Overlay cadence is governed projection identity, not an advisory runner hint.
 With only `minimumIntervalSeconds`, a rolling overlay becomes eligible when its
 verified dependency state changes and the interval after the preceding run has

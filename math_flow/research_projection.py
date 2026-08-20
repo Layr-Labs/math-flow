@@ -32,7 +32,11 @@ from .research_state import (
     validate_research_program_state,
 )
 from .runs import run_envelope
-from .validity import validate_dependency_packet, validate_evidence_packet_v3
+from .validity import (
+    validate_dependency_packet,
+    validate_evidence_packet_v3,
+    validate_evidence_packet_v4,
+)
 
 
 WORK_PATTERN = r"^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$"
@@ -522,12 +526,12 @@ def _accepted_claims(
         claim = claim_by_key.get(str(claim_key))
         if not isinstance(claim, dict):
             raise MathFlowError("validity assessment has no declared claim")
-        if packet.get("schemaVersion") == 2:
+        if packet.get("schemaVersion") in {2, 3}:
             references = claim.get("declaredReferenceTransactionIds")
             required = assessment.get("requiredDependencyTransactionIds")
             if not isinstance(references, list) or not isinstance(required, list):
                 raise MathFlowError(
-                    "validity-v3 assessment has invalid dependency provenance"
+                    "reference-aware validity assessment has invalid dependency provenance"
                 )
             normalized_claim = {
                 "claimKey": claim["claimKey"],
@@ -681,6 +685,7 @@ def load_research_build_bundle(
         not in {
             "math-flow/hierarchical-research-v2",
             "math-flow/hierarchical-research-v3",
+            "math-flow/hierarchical-research-v4",
         }
     ):
         raise MathFlowError("bundle is not a batched hierarchical research build")
@@ -732,11 +737,14 @@ def run_research_build_bundle(
     if implementation not in {
         "openrouter-hierarchical-research-builder-v2",
         "openrouter-hierarchical-research-builder-v3",
+        "openrouter-hierarchical-research-builder-v4",
     }:
         raise MathFlowError(
             "research knowledge-build requires a hierarchical research builder spec"
         )
     is_v3 = implementation == "openrouter-hierarchical-research-builder-v3"
+    is_v4 = implementation == "openrouter-hierarchical-research-builder-v4"
+    is_reference_aware = is_v3 or is_v4
     builder_digest = f"sha256:{sha256_json(spec)}"
     build_input = validate_build_claim(claim, problem, builder_digest)
     if build_input["conflictIds"]:
@@ -761,7 +769,9 @@ def run_research_build_bundle(
         if (
             manifest.get("outputProfile")
             != (
-                "math-flow/validity-judgment-v3"
+                "math-flow/validity-judgment-v4"
+                if is_v4
+                else "math-flow/validity-judgment-v3"
                 if is_v3
                 else "math-flow/validity-judgment-v2"
             )
@@ -789,9 +799,13 @@ def run_research_build_bundle(
             raise MathFlowError(
                 "research-build validity dependency packet is invalid JSON"
             ) from exc
-        (validate_evidence_packet_v3 if is_v3 else validate_dependency_packet)(
-            packet
-        )
+        (
+            validate_evidence_packet_v4
+            if is_v4
+            else validate_evidence_packet_v3
+            if is_v3
+            else validate_dependency_packet
+        )(packet)
         if packet.get("subjectTransactionId") != subject_id:
             raise MathFlowError(
                 "research-build validity packet does not match its subject"
@@ -871,7 +885,7 @@ def run_research_build_bundle(
             )
 
     batch_input = {
-        "schemaVersion": 2 if is_v3 else 1,
+        "schemaVersion": 3 if is_v4 else 2 if is_v3 else 1,
         "problemId": problem,
         "baseProgramStateDigest": base_state["stateDigest"],
         "judgments": [
@@ -930,7 +944,7 @@ def run_research_build_bundle(
                     [
                         "The accepted validity records distinguish required mathematical dependencies from declared historical or credit references. Enforce only required dependencies as accepted-state prerequisites. Preserve declared references in the immutable accepted record for downstream provenance and credit, but never import an invalid or indeterminate referenced submission or any of its claims into research state.",
                     ]
-                    if is_v3
+                    if is_reference_aware
                     else []
                 ),
                 "Programs form the current strict tree of local objectives and credit contexts. Preserve existing parent links, thread ownership and kind, and item program and type in this version. Cross-program use is represented through item dependencies. The topology is intentionally revisable by a future governed builder version, so do not encode the current tree as an eternal ontology.",
