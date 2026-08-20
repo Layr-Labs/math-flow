@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "0ee3fa9ecb9c0d06c9dba7e3318f334360d31375",
+  "problemLedgerDigest": "sha256:621d2dfa7452294f9698c71e4f086eca0f0d77f6c1314b7c08450465092d519a",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+      "ledgerPosition": 5
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-objective-verification",
+      "status": "valid",
+      "premiseStatus": "not-required",
+      "summary": "The pinned checker, certificate, and successful attested execution establish 152 distinct points in the 76×76 grid and exhaustively verify that every triple has nonzero determinant. Since the 76×76 grid embeds in the 77×77 grid, this proves D(77) ≥ 152.",
+      "scopeQualifications": [
+        "Establishes only the existing lower bound D(77) ≥ 152, not optimality or an upper bound.",
+        "The attestation establishes one successful execution of the pinned request and artifacts, not that future or local executions will use identical infrastructure.",
+        "The assertion that the artifacts are byte-for-byte identical to transaction dfc0cc40d1193b8d5ca25e7f177fa48ff9a1b38d is not independently verified, but is unnecessary for the mathematical conclusion.",
+        "The described networkless and read-only execution properties are not independently confirmed by the summarized attestation and are unnecessary for the mathematical implication."
+      ],
+      "evidenceIssues": [],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-objective-verification",
+      "stance": "supports",
+      "summary": "The pinned checker, certificate, and successful attested execution establish 152 distinct points in the 76×76 grid and exhaustively verify that every triple has nonzero determinant. Since the 76×76 grid embeds in the 77×77 grid, this proves D(77) ≥ 152.",
+      "subjectTransactionIds": [
+        "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:23b99ce51457a27f611fd5b0d5bdab78266225eaaf3797967c56befb62c9c618",
+  "reportDigest": "sha256:5464d6381120276eeb89bc728eeed1f946c2f6110988ba31a9b343036af8d186",
+  "judgmentId": "sha256:2c30e85cbe4588ba3cb4ee952e0b895347cfcd48c59a3731d92257c11978d386"
+}

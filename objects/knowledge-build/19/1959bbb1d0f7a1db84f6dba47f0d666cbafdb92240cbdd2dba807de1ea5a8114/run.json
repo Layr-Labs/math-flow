@@ -1,0 +1,112 @@
+{
+  "protocolVersion": 1,
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "0ee3fa9ecb9c0d06c9dba7e3318f334360d31375",
+  "problemLedgerHead": "17928a941d7503ff0dc32740b707f475728300a3",
+  "problemLedgerDigest": "sha256:621d2dfa7452294f9698c71e4f086eca0f0d77f6c1314b7c08450465092d519a",
+  "judgeSpec": {
+    "id": "openrouter-hierarchical-research-builder-v4",
+    "digest": "sha256:a100a3b22008298520ad2a33661c2d360b9a95da2d3adf3e818980245736d4a5"
+  },
+  "runner": {
+    "implementation": "openrouter-hierarchical-research-builder-v4",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "accepted-validity-batch-program-state-v4",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "structured-research-batch-v4",
+    "reducer": "batched-research-state-v4"
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/hierarchical-research-v4",
+  "requestDigests": [
+    "sha256:978a2d55d01985fedb67d0af46569f699ba8ce24b5d16509ab578a91560fe75b"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "organize",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787216213-KypOKqvTqyzIeRbH2CeS",
+      "usage": {
+        "prompt_tokens": 29800,
+        "completion_tokens": 6921,
+        "total_tokens": 36721,
+        "cost": 0.196938125,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 29797,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.196938125,
+          "upstream_inference_prompt_cost": 0.093123125,
+          "upstream_inference_completions_cost": 0.103815
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 3552,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "knowledge-build",
+  "inputs": {
+    "judgmentSetDigest": "sha256:e819c74b935dc8211140e54f9060f7403a460fc039b2ac544b99477188045585",
+    "baseStateRun": null,
+    "builderSpecDigest": "sha256:a100a3b22008298520ad2a33661c2d360b9a95da2d3adf3e818980245736d4a5",
+    "schemaVersion": 1,
+    "problemId": "no-three-in-line-77",
+    "laneId": "sha256:5901e242f099bc72dd1a41ed550e128e567eaa969e296fcc5e5e490736597897",
+    "conflictIds": [],
+    "projectionSpecDigest": "sha256:295fa29fb5c7d4339c73652161bfc4d6d9d24048b929fd9696769570a37e4bd3",
+    "judgmentIds": [
+      "sha256:2c30e85cbe4588ba3cb4ee952e0b895347cfcd48c59a3731d92257c11978d386",
+      "sha256:39b856f2d726500c1e725cd141905c93eb458c0f0e111159abe1888d58110ac6",
+      "sha256:471c7800e63ce6bb749608b6f9c6c668822275c6e4796b8e64bbd7f63f37833a",
+      "sha256:491b9b543314f9ab034e6eb52d7ad8f927d47ccc6ef5908b9be74149187f42ea",
+      "sha256:4d75d573654580af430bf63063127ca37f1cdd40b7085a4a9f67f05d1b15d719",
+      "sha256:506b236bfbeeab3b1f391b9e2479735488334501d31c622beeff4ae400cc9227",
+      "sha256:50bb3e1c5a4ed674154555220a63cad62ebe4ce7e300fc115c77699e9a1e47da",
+      "sha256:841e37f9adaf5e693f5f4b56129e9871f6f27956c2c49dbd5d5762e1f3799823",
+      "sha256:a4b5deccdf14166664c8575530aa555cc69bccafd7693c5da7f70da34181385c",
+      "sha256:c4463a9cacd5427f287bdb7239066657965cbb97abd1056b2869f35ef884de8c"
+    ],
+    "buildToken": "sha256:ac9bcc16c238308340733f00c0ba91af97e673004e9de1548253ff2df97eae68"
+  },
+  "artifacts": [
+    {
+      "path": "control/build-input.json",
+      "role": "knowledge-build-input",
+      "mediaType": "application/json",
+      "digest": "sha256:25c7037681aac70071ef687d9407fa4118c2a9f369b59093999ae4b2f18866fe",
+      "bytes": 1396
+    },
+    {
+      "path": "input/research-batch.json",
+      "role": "research-batch-input",
+      "mediaType": "application/json",
+      "digest": "sha256:4ec32a76b2ea1236105c8cc28597efe54ac523fb6decaaf3f9c76450ec0ea7b9",
+      "bytes": 17056
+    },
+    {
+      "path": "state/delta.json",
+      "role": "research-program-delta",
+      "mediaType": "application/json",
+      "digest": "sha256:3d9efc077d146883e25126ff153647e890956aa082297238cefbd6dd97890c35",
+      "bytes": 15960
+    },
+    {
+      "path": "state/state.json",
+      "role": "research-program-state",
+      "mediaType": "application/json",
+      "digest": "sha256:f2d85f0cc03bda5ef1f56b54d16d6ae648ad75edcbaeda8adda9de3d07e2ff03",
+      "bytes": 18047
+    }
+  ]
+}

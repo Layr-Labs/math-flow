@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "0ee3fa9ecb9c0d06c9dba7e3318f334360d31375",
+  "problemLedgerDigest": "sha256:621d2dfa7452294f9698c71e4f086eca0f0d77f6c1314b7c08450465092d519a",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "046e8f269922a6d2ce37ce17d4878ccdb0aa7721",
+      "ledgerPosition": 7
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/rct4-154-exact-subclass-encoding",
+      "status": "indeterminate",
+      "premiseStatus": "not-required",
+      "summary": "The source-level audit supports the stated subclass decomposition and the soundness and completeness of the weighted maximal-line encoding. However, the exact total of 388,148 canonical deduplicated constraints and the asserted SHA-256 digest are material computational outputs not independently established by the supplied record. With no trusted execution attestation or complete serialized constraint list, the full claim remains indeterminate rather than invalid.",
+      "scopeQualifications": [
+        "The supported structural argument applies only to the explicitly defined rct4 subclass for n=77: empty anti-diagonal, complete four-cell rho-orbits off both diagonals, and exactly one antipodal main-diagonal pair.",
+        "The claim does not establish satisfiability or infeasibility, does not cover general half-turn, reflection-symmetric, or asymmetric configurations, does not classify all rotations, and does not alter bounds on D(77).",
+        "The encoding theorem is supported conditionally at source level, but its asserted exact constraint count and serialization digest remain unverified."
+      ],
+      "evidenceIssues": [
+        "No terminal or otherwise trusted execution attestation was supplied for recomputing the n=77 instance.",
+        "No complete canonical serialized constraint list was supplied from which the count and digest could be independently verified.",
+        "results.json merely repeats the asserted count and digest and does not independently establish them.",
+        "Smaller calibration fixtures do not establish the n=77 count or digest and likewise lack execution attestation."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/rct4-154-exact-subclass-encoding",
+      "stance": "uncertain",
+      "summary": "The source-level audit supports the stated subclass decomposition and the soundness and completeness of the weighted maximal-line encoding. However, the exact total of 388,148 canonical deduplicated constraints and the asserted SHA-256 digest are material computational outputs not independently established by the supplied record. With no trusted execution attestation or complete serialized constraint list, the full claim remains indeterminate rather than invalid.",
+      "subjectTransactionIds": [
+        "046e8f269922a6d2ce37ce17d4878ccdb0aa7721"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:0694a619a11dca2e488f391a284f10cbf08654464eb1001aa7f81b73c1d7af77",
+  "reportDigest": "sha256:07b1536cb14a6de17f2e905f257e95e4abe5c5935010c29257e6ff0d9d4a4a9b",
+  "judgmentId": "sha256:506b236bfbeeab3b1f391b9e2479735488334501d31c622beeff4ae400cc9227"
+}

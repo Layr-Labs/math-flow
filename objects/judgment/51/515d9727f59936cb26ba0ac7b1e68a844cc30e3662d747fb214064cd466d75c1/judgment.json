@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "0ee3fa9ecb9c0d06c9dba7e3318f334360d31375",
+  "problemLedgerDigest": "sha256:621d2dfa7452294f9698c71e4f086eca0f0d77f6c1314b7c08450465092d519a",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+      "ledgerPosition": 4
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/finite-rotation-classification-proof",
+      "status": "valid",
+      "premiseStatus": "not-required",
+      "summary": "The self-contained proof correctly shows that any nonidentity Euclidean rotation preserving a finite noncollinear subset of Z^2 must be a half-turn or quarter-turn. Rationality of the rotation matrix follows from integer difference matrices; finite-set invariance gives finite order; and the rational algebraic-integer trace argument excludes all other angles. The orbit and parity arguments then rule out rotational symmetry for a 153-point no-three-in-line set. At size 154 they rule out quarter-turns, while row/column saturation forces the bounding box to be [0,76]^2, so any preserving half-turn is centered at (38,38); even cardinality implies that center is absent.",
+      "scopeQualifications": [
+        "The result classifies rotations only, not reflections, affine maps, or other transformations.",
+        "The size-154 conclusion is conditional and does not construct a configuration.",
+        "It establishes neither existence nor global nonexistence at sizes 153 or 154 and does not improve the certified bound 152 <= D(77) <= 154.",
+        "It does not identify the strict rct4 subclass with the full centered half-turn class."
+      ],
+      "evidenceIssues": [],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/finite-rotation-classification-proof",
+      "stance": "supports",
+      "summary": "The self-contained proof correctly shows that any nonidentity Euclidean rotation preserving a finite noncollinear subset of Z^2 must be a half-turn or quarter-turn. Rationality of the rotation matrix follows from integer difference matrices; finite-set invariance gives finite order; and the rational algebraic-integer trace argument excludes all other angles. The orbit and parity arguments then rule out rotational symmetry for a 153-point no-three-in-line set. At size 154 they rule out quarter-turns, while row/column saturation forces the bounding box to be [0,76]^2, so any preserving half-turn is centered at (38,38); even cardinality implies that center is absent.",
+      "subjectTransactionIds": [
+        "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:6b3106fc45fc2dcfd20a69f65b46e77ac3332914b24854e049772ab7081c4224",
+  "reportDigest": "sha256:ac4705571c7c00c88e4063f6f3564fc4fbf1b077c0d73d6c9e5f98c2900514bd",
+  "judgmentId": "sha256:471c7800e63ce6bb749608b6f9c6c668822275c6e4796b8e64bbd7f63f37833a"
+}

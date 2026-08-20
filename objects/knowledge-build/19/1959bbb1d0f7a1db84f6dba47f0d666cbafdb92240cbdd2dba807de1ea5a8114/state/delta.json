@@ -1,0 +1,285 @@
+{
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "entityKind": "thread",
+      "entityId": "root/certified-configurations",
+      "baseDigest": null,
+      "value": {
+        "id": "root/certified-configurations",
+        "programId": "root",
+        "title": "Certified configurations and local rigidity",
+        "summary": "Verification of exact no-three-in-line configurations, their embeddings, and rigorously bounded local neighborhoods.",
+        "kind": "verification",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+          "17928a941d7503ff0dc32740b707f475728300a3"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "root/rotational-structure",
+      "baseDigest": null,
+      "value": {
+        "id": "root/rotational-structure",
+        "programId": "root",
+        "title": "Rotational structure and symmetry-restricted models",
+        "summary": "Exact structural results about rotational symmetry and sound, scope-limited encodings of rotationally restricted subclasses.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+          "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/result/finite-rotation-classification",
+      "baseDigest": null,
+      "value": {
+        "id": "root/result/finite-rotation-classification",
+        "programId": "root",
+        "type": "result",
+        "title": "Arbitrary-center rotational classification at cardinalities 153 and 154",
+        "summary": "Finite-rotation lemma. Let S⊂Z² be finite and noncollinear. If a nonidentity Euclidean rotation T satisfies T(S)=S, then T is a half-turn or a quarter-turn (in either orientation). This allows an arbitrary center; no assumption is made that the rotation preserves the whole ambient square or the whole integer lattice. Consequently, for a no-three-in-line set S⊂G_77: (1) if |S|=153, then S has no nontrivial rotational symmetry; (2) if |S|=154 and S has nontrivial rotational symmetry, it is invariant under the half-turn about (38,38), and (38,38)∉S. Qualifications: The result classifies rotations only, not reflections, affine maps, or other transformations. The size-154 conclusion is conditional and does not construct a configuration. It establishes neither existence nor global nonexistence at sizes 153 or 154 and does not improve the certified bound 152 <= D(77) <= 154. It does not identify the strict rct4 subclass with the full centered half-turn class.",
+        "claimRefs": [
+          {
+            "transactionId": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+            "claimKey": "no-three-in-line-77/finite-rotation-classification-proof"
+          }
+        ],
+        "sourceTransactionIds": [
+          "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+        ],
+        "dependencyItemIds": [
+          "root/proof/finite-rotation-classification"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/proof/finite-rotation-classification",
+      "baseDigest": null,
+      "value": {
+        "id": "root/proof/finite-rotation-classification",
+        "programId": "root",
+        "type": "proof",
+        "title": "Proof of the finite-rotation classification and its G_77 consequences",
+        "summary": "Proof establishing only the accepted finite-rotation lemma and its stated cardinality-153 and cardinality-154 consequences. Integer difference matrices show that the rotation matrix has rational entries; finite-set invariance gives finite order; and the rational algebraic-integer trace argument leaves only half-turns and quarter-turns among nonidentity rotations. Orbit and parity arguments exclude both rotation types at size 153 and exclude quarter-turns at size 154. At size 154, row and column saturation force bounding box [0,76]², locating any preserving half-turn at (38,38), while the selected center is excluded. This proof establishes no claim beyond the exact accepted result and its qualifications.",
+        "claimRefs": [
+          {
+            "transactionId": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+            "claimKey": "no-three-in-line-77/finite-rotation-classification-proof"
+          }
+        ],
+        "sourceTransactionIds": [
+          "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/result/record-152-lower-bound",
+      "baseDigest": null,
+      "value": {
+        "id": "root/result/record-152-lower-bound",
+        "programId": "root",
+        "type": "result",
+        "title": "Certified lower bound D(77) ≥ 152",
+        "summary": "The pinned checker, certificate, and successful attested execution establish 152 distinct points in the 76×76 grid and exhaustively verify that every triple has nonzero determinant. Since the 76×76 grid embeds in the 77×77 grid, this proves D(77) ≥ 152. Qualifications: Establishes only the existing lower bound D(77) ≥ 152, not optimality or an upper bound. The attestation establishes one successful execution of the pinned request and artifacts, not that future or local executions will use identical infrastructure. The assertion that the artifacts are byte-for-byte identical to transaction dfc0cc40d1193b8d5ca25e7f177fa48ff9a1b38d is not independently verified, but is unnecessary for the mathematical conclusion. The described networkless and read-only execution properties are not independently confirmed by the summarized attestation and are unnecessary for the mathematical implication.",
+        "claimRefs": [
+          {
+            "transactionId": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "claimKey": "no-three-in-line-77/record-152-objective-verification"
+          }
+        ],
+        "sourceTransactionIds": [
+          "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+        ],
+        "dependencyItemIds": [
+          "root/tool/record-152-verifier"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/tool/record-152-verifier",
+      "baseDigest": null,
+      "value": {
+        "id": "root/tool/record-152-verifier",
+        "programId": "root",
+        "type": "tool",
+        "title": "Pinned exact verifier for the 152-point certificate",
+        "summary": "Establishment artifact for the accepted lower-bound claim, not an independent mathematical claim. The pinned Python-standard-library checker decodes the pinned certificate, checks that it gives 152 distinct points within a 76×76 grid, and checks every triple using an exact integer determinant. The canonical verification request and successful attested execution support only the accepted conclusion D(77) ≥ 152 and the stated execution qualifications.",
+        "claimRefs": [
+          {
+            "transactionId": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+            "claimKey": "no-three-in-line-77/record-152-objective-verification"
+          }
+        ],
+        "sourceTransactionIds": [
+          "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/result/rct4-154-encoding-equivalence",
+      "baseDigest": null,
+      "value": {
+        "id": "root/result/rct4-154-encoding-equivalence",
+        "programId": "root",
+        "type": "result",
+        "title": "Sound and complete Boolean encoding of the 154-point rct4 subclass",
+        "summary": "Let rho(x,y)=(y,76-x), and define the rct4 subclass of G_77 to consist exactly of sets with empty anti-diagonal, occupied off-diagonal cells equal to unions of complete four-cell rho-orbits, and main-diagonal intersection equal to exactly one antipodal pair. Give each such four-cell orbit and diagonal pair a Boolean variable, require exactly 38 four-orbit variables and one diagonal-pair variable, and for every maximal lattice line L with at least three grid cells require the weighted inequality sum_v |L intersect O_v| y_v at most 2. Expanding a satisfying assignment gives a 154-point no-three-in-line member of the rct4 subclass, and every 154-point no-three-in-line member of that subclass gives exactly one satisfying assignment. This claim makes no assertion about an implementation-specific constraint count or digest, satisfiability or infeasibility, any larger symmetry class, classification of rotations, or the value of D(77). Qualifications: The result is only a bijection between satisfying assignments of the stated abstract system and 154-point no-three-in-line members of the explicitly defined rct4 subclass. It makes no assertion about satisfiability or infeasibility, implementation-specific constraint counts or digests, larger symmetry classes, rotation classifications, or D(77).",
+        "claimRefs": [
+          {
+            "transactionId": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "claimKey": "no-three-in-line-77/rct4-154-subclass-encoding-theorem"
+          }
+        ],
+        "sourceTransactionIds": [
+          "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d"
+        ],
+        "dependencyItemIds": [
+          "root/method/rct4-154-boolean-encoding"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/method/rct4-154-boolean-encoding",
+      "baseDigest": null,
+      "value": {
+        "id": "root/method/rct4-154-boolean-encoding",
+        "programId": "root",
+        "type": "method",
+        "title": "Orbit-variable and maximal-line method for the rct4 subclass",
+        "summary": "Method participating only in the accepted rct4 encoding theorem. It partitions selectable cells into complete four-cell rho-orbits off both diagonals and 38 antipodal main-diagonal pairs, selects exactly 38 orbit variables and one pair variable, and imposes one weighted occupancy inequality for each maximal lattice line with at least three grid cells. The weighted sum counts selected cells on that line exactly. This method carries the theorem's strict rct4 scope and makes no satisfiability, implementation-statistics, larger-symmetry, rotation-classification, or D(77) assertion.",
+        "claimRefs": [
+          {
+            "transactionId": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+            "claimKey": "no-three-in-line-77/rct4-154-subclass-encoding-theorem"
+          }
+        ],
+        "sourceTransactionIds": [
+          "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/result/eight-embedding-local-rigidity",
+      "baseDigest": null,
+      "value": {
+        "id": "root/result/eight-embedding-local-rigidity",
+        "programId": "root",
+        "type": "result",
+        "title": "Depth-two local rigidity of eight embeddings of the 152-point record",
+        "summary": "The included configuration.txt has SHA-256 digest a23f1f55d9a914cff49fb6ba369b9f392f7af4c5ce08085267b3af1e7d7742c4 and decodes to a 152-point no-three-in-line subset C of G_76. It is invariant under a quarter turn, its dihedral orbit has exactly two distinct images, and translating those images by the four vectors in {0,1}² gives exactly eight distinct embeddings E in G_77. For each of those eight E, every cell of G_77 minus E is blocked by at least two distinct unordered pairs of E; deleting any one point of E frees no originally outside cell; deleting any unordered pair frees at most one originally outside cell; and exactly 16 deletion pairs per E free one cell. Consequently, every no-three-in-line S in G_77 with |E minus S| at most 2 has |S minus E| at most 1 and |S| at most 152; hence |S| at least 153 implies |E minus S| at least 3, |S minus E| at least 4, and symmetric difference at least 7. This claim concerns only those eight embeddings, not arbitrary record configurations or the global value of D(77). Qualifications: The result applies only to the eight specified embeddings. It does not establish a property of arbitrary record configurations or determine the global value of D(77). The declared reference is not required because the subject verifier fully rechecks all mathematical facts needed for the claim.",
+        "claimRefs": [
+          {
+            "transactionId": "17928a941d7503ff0dc32740b707f475728300a3",
+            "claimKey": "no-three-in-line-77/record-152-eight-embedding-rigidity-attested"
+          }
+        ],
+        "sourceTransactionIds": [
+          "17928a941d7503ff0dc32740b707f475728300a3"
+        ],
+        "dependencyItemIds": [
+          "root/computation/eight-embedding-rigidity-census"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/computation/eight-embedding-rigidity-census",
+      "baseDigest": null,
+      "value": {
+        "id": "root/computation/eight-embedding-rigidity-census",
+        "programId": "root",
+        "type": "computation",
+        "title": "Exact blocking and deletion census for the eight record embeddings",
+        "summary": "Computation establishing only the accepted eight-embedding claim. The audited verifier checks the configuration digest and all triples with exact integer determinants, reconstructs its dihedral images and eight translated embeddings, and exhaustively computes blocking pairs and one- and two-point deletion behavior for every outside cell. It cross-checks the census by walking lattice lines through every point pair and directly simulates every reported freeing. The computation is restricted to the eight specified embeddings and supplies no conclusion about arbitrary configurations or the value of D(77).",
+        "claimRefs": [
+          {
+            "transactionId": "17928a941d7503ff0dc32740b707f475728300a3",
+            "claimKey": "no-three-in-line-77/record-152-eight-embedding-rigidity-attested"
+          }
+        ],
+        "sourceTransactionIds": [
+          "17928a941d7503ff0dc32740b707f475728300a3"
+        ],
+        "dependencyItemIds": []
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+      "claimKeys": [
+        "no-three-in-line-77/finite-rotation-classification-proof"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/rotational-structure"
+      ],
+      "itemIds": [
+        "root/result/finite-rotation-classification",
+        "root/proof/finite-rotation-classification"
+      ]
+    },
+    {
+      "transactionId": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+      "claimKeys": [
+        "no-three-in-line-77/record-152-objective-verification"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/certified-configurations"
+      ],
+      "itemIds": [
+        "root/result/record-152-lower-bound",
+        "root/tool/record-152-verifier"
+      ]
+    },
+    {
+      "transactionId": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+      "claimKeys": [
+        "no-three-in-line-77/rct4-154-subclass-encoding-theorem"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/rotational-structure"
+      ],
+      "itemIds": [
+        "root/result/rct4-154-encoding-equivalence",
+        "root/method/rct4-154-boolean-encoding"
+      ]
+    },
+    {
+      "transactionId": "17928a941d7503ff0dc32740b707f475728300a3",
+      "claimKeys": [
+        "no-three-in-line-77/record-152-eight-embedding-rigidity-attested"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/certified-configurations"
+      ],
+      "itemIds": [
+        "root/result/eight-embedding-local-rigidity",
+        "root/computation/eight-embedding-rigidity-census"
+      ]
+    }
+  ]
+}

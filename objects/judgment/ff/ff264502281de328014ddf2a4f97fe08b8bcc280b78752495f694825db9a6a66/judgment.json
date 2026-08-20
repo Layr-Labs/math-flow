@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "0ee3fa9ecb9c0d06c9dba7e3318f334360d31375",
+  "problemLedgerDigest": "sha256:621d2dfa7452294f9698c71e4f086eca0f0d77f6c1314b7c08450465092d519a",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "bf1301b6b472841276f79852c2e7fe0499309684",
+      "ledgerPosition": 8
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-governed-replay",
+      "status": "indeterminate",
+      "premiseStatus": "satisfied",
+      "summary": "The verifier logic, successful governed replay, exact enumeration of 573,800 triples, and implication D(77) >= 152 are supported. The request appropriately does not itself assert a hosted outcome, and certificate identity with the canonical transaction is supported. However, the bounded record does not verify the two asserted SHA-256 digests, so the full composite claim is not established; no mismatch is shown that would make it invalid.",
+      "scopeQualifications": [
+        "A successful run establishes 152 distinct points in G_76 with no collinear triple and therefore D(77) >= 152 because G_76 is contained in G_77.",
+        "The canonical transaction is required only for the byte-for-byte certificate-identity clause, not for the independently replayed lower bound.",
+        "No improved bound, optimality, or exact value of D(77) is established or claimed."
+      ],
+      "evidenceIssues": [
+        "The executed verify.py does not compute or compare either asserted SHA-256 digest.",
+        "The replay attestation does not expose an input-file manifest proving the asserted configuration.txt and verify.py hashes.",
+        "The unavailable attestation artifact's content address does not establish the claimed input-file digests.",
+        "There is no demonstrated digest mismatch, so the defect leaves the claim indeterminate rather than invalid."
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "requiredDependencyTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-governed-replay",
+      "stance": "uncertain",
+      "summary": "The verifier logic, successful governed replay, exact enumeration of 573,800 triples, and implication D(77) >= 152 are supported. The request appropriately does not itself assert a hosted outcome, and certificate identity with the canonical transaction is supported. However, the bounded record does not verify the two asserted SHA-256 digests, so the full composite claim is not established; no mismatch is shown that would make it invalid.",
+      "subjectTransactionIds": [
+        "bf1301b6b472841276f79852c2e7fe0499309684"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    }
+  ],
+  "dependencyPacketDigest": "sha256:f8273835e630794269859db69f77a6170ec8053109ca801ddd99beb212450dad",
+  "reportDigest": "sha256:76ff31e81ebb008c01d6a6b98f5c0460150d33c582ae62e1c029ac055c02ce3c",
+  "judgmentId": "sha256:50bb3e1c5a4ed674154555220a63cad62ebe4ce7e300fc115c77699e9a1e47da"
+}

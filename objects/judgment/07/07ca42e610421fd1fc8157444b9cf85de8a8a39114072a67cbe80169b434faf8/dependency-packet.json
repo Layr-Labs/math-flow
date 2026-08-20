@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 3,
+  "problemId": "no-three-in-line-77",
+  "subjectTransactionId": "17928a941d7503ff0dc32740b707f475728300a3",
+  "subjectLedgerPosition": 10,
+  "claims": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-eight-embedding-rigidity-attested",
+      "statement": "The included configuration.txt has SHA-256 digest a23f1f55d9a914cff49fb6ba369b9f392f7af4c5ce08085267b3af1e7d7742c4 and decodes to a 152-point no-three-in-line subset C of G_76. It is invariant under a quarter turn, its dihedral orbit has exactly two distinct images, and translating those images by the four vectors in {0,1}^2 gives exactly eight distinct embeddings E in G_77. For each of those eight E, every cell of G_77 minus E is blocked by at least two distinct unordered pairs of E; deleting any one point of E frees no originally outside cell; deleting any unordered pair frees at most one originally outside cell; and exactly 16 deletion pairs per E free one cell. Consequently, every no-three-in-line S in G_77 with |E minus S| at most 2 has |S minus E| at most 1 and |S| at most 152; hence |S| at least 153 implies |E minus S| at least 3, |S minus E| at least 4, and symmetric difference at least 7. This claim concerns only those eight embeddings, not arbitrary record configurations or the global value of D(77).",
+      "declaredReferenceTransactionIds": [
+        "bf1301b6b472841276f79852c2e7fe0499309684"
+      ]
+    }
+  ],
+  "declaredReferenceTransactionIds": [
+    "bf1301b6b472841276f79852c2e7fe0499309684"
+  ],
+  "knowledgeContext": null,
+  "objectiveAttestations": [
+    {
+      "transactionId": "17928a941d7503ff0dc32740b707f475728300a3",
+      "relation": "subject",
+      "attestation": {
+        "schemaVersion": 1,
+        "requestDigest": "sha256:f77e82a5d559879a59e0c7f43ac56a00252ce806aa53bf8d534e20f4a6c84dac",
+        "runDigest": "sha256:2c7b640541f933a6678c392fefdf71cf5b7fb495b36b230a1863da6edd4cb1c8",
+        "attestationId": "sha256:a6f981e266074cbb4c20faada581b9b9fbe1da48ba27aa053610aa34183d6991",
+        "status": "passed",
+        "verifier": {
+          "id": "python-stdlib-3-13-v1",
+          "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+          "implementation": "oci-command-v1"
+        },
+        "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+        "result": {
+          "status": "passed",
+          "exitCode": 0,
+          "timedOut": false
+        },
+        "artifacts": {
+          "verifier-attestation": {
+            "digest": "sha256:afade3745cf890f8320e261802dcfd436d1f38263fc7db355a82cd111d5c1e9d",
+            "bytes": 2845
+          },
+          "verifier-stderr": {
+            "digest": "sha256:19de6cdcf862ae10e834aafabb468d01fd7c659d54f605808b3b5d82eb0ba236",
+            "bytes": 2075
+          },
+          "verifier-stdout": {
+            "digest": "sha256:f913cf345bd386873ad10ddb8dfd253ca86c6186aeded3b03f25b66073b16535",
+            "bytes": 331
+          }
+        },
+        "stdout": {
+          "text": "verified: all 8 embeddings of the 152-point record are maximal in G_77, remain saturating after any single removal, and admit at most one freed cell after any pair removal (16 freeing pairs each; see results.json). Any 153-point or 154-point configuration, if one exists, has symmetric difference >= 7 with every embedding. [4.9s]\n",
+          "truncated": false,
+          "bytes": 331,
+          "digest": "sha256:f913cf345bd386873ad10ddb8dfd253ca86c6186aeded3b03f25b66073b16535"
+        },
+        "stderr": {
+          "text": "Unable to find image 'python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689' locally\ndocker.io/library/python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689: Pulling from library/python\n8c7716127147: Pulling fs layer\n31fd2a94d723: Pulling fs layer\n66b685f2f76b: Pulling fs layer\n7d456e82f89b: Pulling fs layer\n7d456e82f89b: Waiting\n31fd2a94d723: Download complete\n66b685f2f76b: Verifying Checksum\n66b685f2f76b: Download complete\n8c7716127147: Verifying Checksum\n8c7716127147: Download complete\n7d456e82f89b: Verifying Checksum\n7d456e82f89b: Download complete\n8c7716127147: Pull complete\n31fd2a94d723: Pull complete\n66b685f2f76b: Pull complete\n7d456e82f89b: Pull complete\nDigest: sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nStatus: Downloaded newer image for python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nembedding 0 (transforms anti-transpose,flip-x,flip-y,transpose, offset (0, 0)): saturated, 0 single-removal freeings, 16 pair-removal freeings [0.5s]\nembedding 1 (transforms anti-transpose,flip-x,flip-y,transpose, offset (0, 1)): saturated, 0 single-removal freeings, 16 pair-removal freeings [0.5s]\nembedding 2 (transforms anti-transpose,flip-x,flip-y,transpose, offset (1, 0)): saturated, 0 single-removal freeings, 16 pair-removal freeings [0.5s]\nembedding 3 (transforms anti-transpose,flip-x,flip-y,transpose, offset (1, 1)): saturated, 0 single-removal freeings, 16 pair-removal freeings [0.5s]\nembedding 4 (transforms identity,rot180,rot270,rot90, offset (0, 0)): saturated, 0 single-removal freeings, 16 pair-removal freeings [0.5s]\nembedding 5 (transforms identity,rot180,rot270,rot90, offset (0, 1)): saturated, 0 single-removal freeings, 16 pair-removal freeings [0.5s]\nembedding 6 (transforms identity,rot180,rot270,rot90, offset (1, 0)): saturated, 0 single-removal freeings, 16 pair-removal freeings [0.5s]\nembedding 7 (transforms identity,rot180,rot270,rot90, offset (1, 1)): saturated, 0 single-removal freeings, 16 pair-removal freeings [0.5s]\n",
+          "truncated": false,
+          "bytes": 2075,
+          "digest": "sha256:19de6cdcf862ae10e834aafabb468d01fd7c659d54f605808b3b5d82eb0ba236"
+        }
+      }
+    },
+    {
+      "transactionId": "bf1301b6b472841276f79852c2e7fe0499309684",
+      "relation": "declared-reference",
+      "attestation": {
+        "schemaVersion": 1,
+        "requestDigest": "sha256:b7fd638fca157f23de343d44f4c9c2f0cbc231451413d7dff9170b4e57d0479c",
+        "runDigest": "sha256:903ffa4b4ce185c8d872b584afe08694df7215c11e306cd105b79f422efebdad",
+        "attestationId": "sha256:8ebb9cc557a80af48d1bc4e55c233be951a1012ccf4de49a9b55072a5b5f9ea2",
+        "status": "passed",
+        "verifier": {
+          "id": "python-stdlib-3-13-v1",
+          "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+          "implementation": "oci-command-v1"
+        },
+        "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+        "result": {
+          "status": "passed",
+          "exitCode": 0,
+          "timedOut": false
+        },
+        "artifacts": {
+          "verifier-attestation": {
+            "digest": "sha256:2d2338a872ce41e992f769887e2aa95f9007250011b21da40a518e1f12a63b31",
+            "bytes": 2678
+          },
+          "verifier-stderr": {
+            "digest": "sha256:57acaebd4ca2415e19e05107adf00450e4df1e38879d74114857d3fbaab45a0f",
+            "bytes": 915
+          },
+          "verifier-stdout": {
+            "digest": "sha256:d55d077642cf0cc075982d2a507db39ac5937cbe1dce964ad0c18d9cbd49428b",
+            "bytes": 59
+          }
+        },
+        "stdout": {
+          "text": "verified 152 points on a 76 x 76 grid; no collinear triple\n",
+          "truncated": false,
+          "bytes": 59,
+          "digest": "sha256:d55d077642cf0cc075982d2a507db39ac5937cbe1dce964ad0c18d9cbd49428b"
+        },
+        "stderr": {
+          "text": "Unable to find image 'python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689' locally\ndocker.io/library/python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689: Pulling from library/python\n8c7716127147: Pulling fs layer\n31fd2a94d723: Pulling fs layer\n66b685f2f76b: Pulling fs layer\n7d456e82f89b: Pulling fs layer\n7d456e82f89b: Waiting\n31fd2a94d723: Verifying Checksum\n31fd2a94d723: Download complete\n66b685f2f76b: Verifying Checksum\n66b685f2f76b: Download complete\n8c7716127147: Verifying Checksum\n8c7716127147: Download complete\n7d456e82f89b: Download complete\n8c7716127147: Pull complete\n31fd2a94d723: Pull complete\n66b685f2f76b: Pull complete\n7d456e82f89b: Pull complete\nDigest: sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nStatus: Downloaded newer image for python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\n",
+          "truncated": false,
+          "bytes": 915,
+          "digest": "sha256:57acaebd4ca2415e19e05107adf00450e4df1e38879d74114857d3fbaab45a0f"
+        }
+      }
+    }
+  ],
+  "packetDigest": "sha256:7d47848c67f4540c2a420148203605c447258f23c287347ce31879306304a46c"
+}

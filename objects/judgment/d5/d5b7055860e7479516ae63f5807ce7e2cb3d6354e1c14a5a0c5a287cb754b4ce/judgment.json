@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "0ee3fa9ecb9c0d06c9dba7e3318f334360d31375",
+  "problemLedgerDigest": "sha256:621d2dfa7452294f9698c71e4f086eca0f0d77f6c1314b7c08450465092d519a",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "3baf1c8586af31bbd6509d0fd3e552658c03673b",
+      "ledgerPosition": 6
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-eight-embedding-local-rigidity",
+      "status": "indeterminate",
+      "premiseStatus": "satisfied",
+      "summary": "The checker’s exact-arithmetic logic appears structurally adequate: it reconstructs the 152-point configuration, verifies no-three-in-line, derives exactly eight embeddings, performs the blocking and deletion censuses, and supports the stated local-rigidity consequences. However, the record contains no trusted objective attestation that the checker successfully ran to completion on the supplied bytes or that its recomputed output matched results.json. Because those exhaustive computations are essential, validity is not established, although no decisive mathematical or source-code error was found.",
+      "scopeQualifications": [
+        "The conclusions apply only to the eight embeddings generated from the referenced 152-point configuration by its distinct dihedral images and the four translations in {0,1}^2.",
+        "The record does not address other 152-point configurations in G_77 or establish the global value of D(77).",
+        "The mathematical conclusions are supported only conditionally on successful execution of the supplied checker against the exact referenced configuration and committed result bytes."
+      ],
+      "evidenceIssues": [
+        "No terminal or other trusted objective execution attestation establishes that rigidity.py completed successfully on the exact supplied files.",
+        "The README’s command, expected output, and SHA-256 strings are authored assertions rather than independent execution evidence.",
+        "results.json is not a full per-cell certificate and alone cannot verify the exhaustive blocking results for all 5,777 outside cells of each embedding.",
+        "There is no trusted evidence that every determinant and blocking-census loop completed without failure or that the recomputed report matched results.json byte for byte.",
+        "The stronger minimum blocking count of two is bound to the computation through the claimed output comparison; analyze_embedding itself directly rejects only zero blocking count."
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "requiredDependencyTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-eight-embedding-local-rigidity",
+      "stance": "uncertain",
+      "summary": "The checker’s exact-arithmetic logic appears structurally adequate: it reconstructs the 152-point configuration, verifies no-three-in-line, derives exactly eight embeddings, performs the blocking and deletion censuses, and supports the stated local-rigidity consequences. However, the record contains no trusted objective attestation that the checker successfully ran to completion on the supplied bytes or that its recomputed output matched results.json. Because those exhaustive computations are essential, validity is not established, although no decisive mathematical or source-code error was found.",
+      "subjectTransactionIds": [
+        "3baf1c8586af31bbd6509d0fd3e552658c03673b"
+      ],
+      "evidenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    }
+  ],
+  "dependencyPacketDigest": "sha256:116cb8465493859158d92dbfebfc27aec0f8c5100f53a7ca49863d62e9948183",
+  "reportDigest": "sha256:4775d425dc5f7869bb29eaba65a7cfbf94d462ea5d1f54c58afcdfef90408935",
+  "judgmentId": "sha256:39b856f2d726500c1e725cd141905c93eb458c0f0e111159abe1888d58110ac6"
+}

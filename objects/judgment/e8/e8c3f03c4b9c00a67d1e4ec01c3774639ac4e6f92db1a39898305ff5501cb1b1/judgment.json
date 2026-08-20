@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "0ee3fa9ecb9c0d06c9dba7e3318f334360d31375",
+  "problemLedgerDigest": "sha256:621d2dfa7452294f9698c71e4f086eca0f0d77f6c1314b7c08450465092d519a",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "dfc0cc40d41105292a119840dcdbe6f22860cf43",
+      "ledgerPosition": 1
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-certificate",
+      "status": "indeterminate",
+      "premiseStatus": "not-required",
+      "summary": "The decoding, cardinality, coordinate bounds, verifier logic, grid embedding, and row-count upper bound are sound. However, the record provides no independently checkable execution attestation, determinant table, or equivalent exhaustive calculation showing that all 573,800 determinants for the supplied certificate are nonzero. Thus D(77) <= 154 is established, but the computational obligation needed for D(77) >= 152—and hence the combined interval 152 <= D(77) <= 154—remains unresolved.",
+      "scopeQualifications": [
+        "Conditional on the verifier completing with the stated success message on the supplied file, the certificate establishes 152 distinct points with no collinear triple in the 76 x 76 grid and therefore D(77) >= 152.",
+        "The horizontal-row argument unconditionally establishes D(77) <= 154.",
+        "A hypothetical 154-point configuration must contain exactly two points in every row and every column.",
+        "The database links are provenance-only and are not mathematically required because the certificate is reproduced locally."
+      ],
+      "evidenceIssues": [
+        "No terminal objective attestation or independently checkable execution trace establishes that the verifier completed successfully on the supplied bytes.",
+        "No determinant table or other exhaustive calculation establishes that none of the 573,800 tested determinants is zero.",
+        "Static inspection validates what the verifier would check but does not establish the certificate's actual noncollinearity."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-certificate",
+      "stance": "uncertain",
+      "summary": "The decoding, cardinality, coordinate bounds, verifier logic, grid embedding, and row-count upper bound are sound. However, the record provides no independently checkable execution attestation, determinant table, or equivalent exhaustive calculation showing that all 573,800 determinants for the supplied certificate are nonzero. Thus D(77) <= 154 is established, but the computational obligation needed for D(77) >= 152—and hence the combined interval 152 <= D(77) <= 154—remains unresolved.",
+      "subjectTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:30f42a2c378a34903ceb95228b3f1c6caeb751a79785cf00a045f1bf66ad5d4e",
+  "reportDigest": "sha256:986f4eda1dc42516b2f91f5d9888e59bbbb3787676d5e7b2f79c088d2d27c2d0",
+  "judgmentId": "sha256:4d75d573654580af430bf63063127ca37f1cdd40b7085a4a9f67f05d1b15d719"
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "no-three-in-line-77",
+  "ledgerHead": "0ee3fa9ecb9c0d06c9dba7e3318f334360d31375",
+  "problemLedgerDigest": "sha256:621d2dfa7452294f9698c71e4f086eca0f0d77f6c1314b7c08450465092d519a",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "c5e8096d942d57228bb4fed00f7617fb6b43af9f",
+      "ledgerPosition": 2
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-local-rigidity",
+      "status": "indeterminate",
+      "premiseStatus": "missing",
+      "summary": "The proof logic and checker design are sound on static audit, including the blocking census, removal-depth analysis, cross-check, maximality consequence, and stated corollary. However, the exhaustive claims are not established in the supplied record because the decoded configuration and objective evidence of a successful checker execution are absent.",
+      "scopeQualifications": [
+        "Conditional on successful execution of the described checker against the claimed 152-point configuration, the saturation, one-removal, two-removal, and corollary arguments are logically appropriate.",
+        "The arithmetic count 77^2 - 152 = 5777 is correct.",
+        "The claimed eight distinct embeddings and all numerical census claims remain unverified."
+      ],
+      "evidenceIssues": [
+        "The referenced configuration file is not supplied, so its coordinates, hash, no-three-in-line property, symmetry, orbit size, and eight embeddings cannot be checked.",
+        "There is no terminal or other objective attestation that the pinned checker ran successfully and byte-matched results.json.",
+        "results.json is only asserted output and does not independently certify exhaustiveness without the full input and verified execution.",
+        "Fixed conclusion fields produced by build_results are justified only if preceding checks ran and passed; no evidence of such a run is present."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-local-rigidity",
+      "stance": "uncertain",
+      "summary": "The proof logic and checker design are sound on static audit, including the blocking census, removal-depth analysis, cross-check, maximality consequence, and stated corollary. However, the exhaustive claims are not established in the supplied record because the decoded configuration and objective evidence of a successful checker execution are absent.",
+      "subjectTransactionIds": [
+        "c5e8096d942d57228bb4fed00f7617fb6b43af9f"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:738e0c4caf7740b815026aa7e2eafd05a4005147bed180f8eb700c4107a6b2e1",
+  "reportDigest": "sha256:a7a00a461be2512dce29a2f2fe2d017485298c7806056f25455f7e147546e44c",
+  "judgmentId": "sha256:a4b5deccdf14166664c8575530aa555cc69bccafd7693c5da7f70da34181385c"
+}

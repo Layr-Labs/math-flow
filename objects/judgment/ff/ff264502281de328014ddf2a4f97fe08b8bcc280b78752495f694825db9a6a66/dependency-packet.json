@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 3,
+  "problemId": "no-three-in-line-77",
+  "subjectTransactionId": "bf1301b6b472841276f79852c2e7fe0499309684",
+  "subjectLedgerPosition": 8,
+  "claims": [
+    {
+      "claimKey": "no-three-in-line-77/record-152-governed-replay",
+      "statement": "The included configuration.txt has SHA-256 digest a23f1f55d9a914cff49fb6ba369b9f392f7af4c5ce08085267b3af1e7d7742c4 and is byte-for-byte identical to the certificate in canonical transaction dfc0cc40d41105292a119840dcdbe6f22860cf43. The included verify.py has SHA-256 digest 43463d0207199ef42ae0dc9c88c67f855fd92b070fb8d007f477a6b2de1998ec. Executing python3 -I -B verify.py configuration.txt on these bytes decodes exactly 152 distinct points in G_76, exhaustively checks all 573,800 unordered triples with exact integer determinants, finds no collinear triple, and exits successfully; hence the bytes re-certify D(77) at least 152. The included verification.json requests a governed replay of that exact predicate but does not assert a hosted outcome before its separate attestation is published. No improved bound, optimality, or exact value of D(77) is claimed.",
+      "declaredReferenceTransactionIds": [
+        "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+      ]
+    }
+  ],
+  "declaredReferenceTransactionIds": [
+    "dfc0cc40d41105292a119840dcdbe6f22860cf43"
+  ],
+  "knowledgeContext": null,
+  "objectiveAttestations": [
+    {
+      "transactionId": "bf1301b6b472841276f79852c2e7fe0499309684",
+      "relation": "subject",
+      "attestation": {
+        "schemaVersion": 1,
+        "requestDigest": "sha256:b7fd638fca157f23de343d44f4c9c2f0cbc231451413d7dff9170b4e57d0479c",
+        "runDigest": "sha256:903ffa4b4ce185c8d872b584afe08694df7215c11e306cd105b79f422efebdad",
+        "attestationId": "sha256:8ebb9cc557a80af48d1bc4e55c233be951a1012ccf4de49a9b55072a5b5f9ea2",
+        "status": "passed",
+        "verifier": {
+          "id": "python-stdlib-3-13-v1",
+          "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+          "implementation": "oci-command-v1"
+        },
+        "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+        "result": {
+          "status": "passed",
+          "exitCode": 0,
+          "timedOut": false
+        },
+        "artifacts": {
+          "verifier-attestation": {
+            "digest": "sha256:2d2338a872ce41e992f769887e2aa95f9007250011b21da40a518e1f12a63b31",
+            "bytes": 2678
+          },
+          "verifier-stderr": {
+            "digest": "sha256:57acaebd4ca2415e19e05107adf00450e4df1e38879d74114857d3fbaab45a0f",
+            "bytes": 915
+          },
+          "verifier-stdout": {
+            "digest": "sha256:d55d077642cf0cc075982d2a507db39ac5937cbe1dce964ad0c18d9cbd49428b",
+            "bytes": 59
+          }
+        },
+        "stdout": {
+          "text": "verified 152 points on a 76 x 76 grid; no collinear triple\n",
+          "truncated": false,
+          "bytes": 59,
+          "digest": "sha256:d55d077642cf0cc075982d2a507db39ac5937cbe1dce964ad0c18d9cbd49428b"
+        },
+        "stderr": {
+          "text": "Unable to find image 'python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689' locally\ndocker.io/library/python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689: Pulling from library/python\n8c7716127147: Pulling fs layer\n31fd2a94d723: Pulling fs layer\n66b685f2f76b: Pulling fs layer\n7d456e82f89b: Pulling fs layer\n7d456e82f89b: Waiting\n31fd2a94d723: Verifying Checksum\n31fd2a94d723: Download complete\n66b685f2f76b: Verifying Checksum\n66b685f2f76b: Download complete\n8c7716127147: Verifying Checksum\n8c7716127147: Download complete\n7d456e82f89b: Download complete\n8c7716127147: Pull complete\n31fd2a94d723: Pull complete\n66b685f2f76b: Pull complete\n7d456e82f89b: Pull complete\nDigest: sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nStatus: Downloaded newer image for python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\n",
+          "truncated": false,
+          "bytes": 915,
+          "digest": "sha256:57acaebd4ca2415e19e05107adf00450e4df1e38879d74114857d3fbaab45a0f"
+        }
+      }
+    }
+  ],
+  "packetDigest": "sha256:f8273835e630794269859db69f77a6170ec8053109ca801ddd99beb212450dad"
+}
