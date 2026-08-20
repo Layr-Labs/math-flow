@@ -60,6 +60,13 @@ lanes and v2 credit consumer remain temporarily active; they may now be disabled
 in dependency order. They remain available for explicit historical replay. See
 `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md`.
 
+The additive hierarchical builder v5 follows the same rollout boundary. Its
+runtime, profile, audited batch-delta schema, and versioned builder merge first.
+A later one-file governed edit may pair the existing validity-v4 primary with
+builder v5 under `openrouter-research-v3`; the changed projection digest starts
+a fresh lane and leaves the builder-v4 chain replayable. See
+`docs/HIERARCHICAL_RESEARCH_PROTOCOL_V5.md`.
+
 Overlay cadence is governed projection identity, not an advisory runner hint.
 With only `minimumIntervalSeconds`, a rolling overlay becomes eligible when its
 verified dependency state changes and the interval after the preceding run has

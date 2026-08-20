@@ -25,11 +25,13 @@ from .research_state import (
     affected_credit_targets,
     apply_research_program_delta,
     apply_research_program_batch_delta,
+    apply_research_program_batch_delta_v5,
     credit_children,
     empty_research_program_state,
     materialize_credit_evaluations,
     validate_credit_against_program_state,
     validate_research_program_state,
+    validate_research_program_v5_batch_binding,
 )
 from .runs import run_envelope
 from .validity import (
@@ -358,6 +360,7 @@ def _batch_organization_schema(
     *,
     accepted_claim_keys_by_transaction: dict[str, list[str]],
     transaction_ids: list[str],
+    placement_audits: bool = False,
 ) -> dict[str, object]:
     if not accepted_claim_keys_by_transaction:
         raise MathFlowError("research organization schema needs accepted submissions")
@@ -415,7 +418,53 @@ def _batch_organization_schema(
         "maxItems": len(variants),
         "items": {"anyOf": variants},
     }
-    schema["required"] = ["schemaVersion", "operations", "contributions"]
+    if placement_audits:
+        properties["schemaVersion"] = {"type": "integer", "const": 2}
+        audit_variants = [
+            {
+                "type": "object",
+                "properties": {
+                    "transactionId": {
+                        "type": "string",
+                        "const": transaction_id,
+                    },
+                    "basis": {
+                        "type": "string",
+                        "enum": [
+                            "local-objective",
+                            "cross-program",
+                            "canonical-objective",
+                        ],
+                    },
+                    "rationale": {"type": "string", "minLength": 1},
+                    "relatedProgramIds": _string_array(
+                        {"type": "string", "pattern": IDENTIFIER_PATTERN}
+                    ),
+                },
+                "required": [
+                    "transactionId",
+                    "basis",
+                    "rationale",
+                    "relatedProgramIds",
+                ],
+                "additionalProperties": False,
+            }
+            for transaction_id in accepted_claim_keys_by_transaction
+        ]
+        properties["placementAudits"] = {
+            "type": "array",
+            "minItems": len(audit_variants),
+            "maxItems": len(audit_variants),
+            "items": {"anyOf": audit_variants},
+        }
+        schema["required"] = [
+            "schemaVersion",
+            "operations",
+            "contributions",
+            "placementAudits",
+        ]
+    else:
+        schema["required"] = ["schemaVersion", "operations", "contributions"]
     return schema
 
 
@@ -690,6 +739,7 @@ def load_research_build_bundle(
             "math-flow/hierarchical-research-v2",
             "math-flow/hierarchical-research-v3",
             "math-flow/hierarchical-research-v4",
+            "math-flow/hierarchical-research-v5",
         }
     ):
         raise MathFlowError("bundle is not a batched hierarchical research build")
@@ -697,9 +747,34 @@ def load_research_build_bundle(
         program_state = json.loads(
             read_verified_artifact(bundle_dir, manifest, "research-program-state")
         )
+        if manifest.get("outputProfile") == "math-flow/hierarchical-research-v5":
+            program_delta = json.loads(
+                read_verified_artifact(
+                    bundle_dir, manifest, "research-program-delta"
+                )
+            )
+            batch_input = json.loads(
+                read_verified_artifact(bundle_dir, manifest, "research-batch-input")
+            )
+        else:
+            program_delta = None
+            batch_input = None
     except json.JSONDecodeError as exc:
         raise MathFlowError("research build bundle contains invalid JSON") from exc
     validate_research_program_state(program_state, str(manifest["problemId"]))
+    if program_delta is not None:
+        problem_ledger_head = manifest.get("problemLedgerHead")
+        if not isinstance(problem_ledger_head, str):
+            raise MathFlowError(
+                "hierarchical research v5 build has no problem ledger head"
+            )
+        validate_research_program_v5_batch_binding(
+            batch_input,
+            program_delta,
+            program_state,
+            str(manifest["problemId"]),
+            problem_ledger_head=problem_ledger_head,
+        )
     return manifest, program_state, manifest_digest
 
 
@@ -742,13 +817,18 @@ def run_research_build_bundle(
         "openrouter-hierarchical-research-builder-v2",
         "openrouter-hierarchical-research-builder-v3",
         "openrouter-hierarchical-research-builder-v4",
+        "openrouter-hierarchical-research-builder-v5",
     }:
         raise MathFlowError(
             "research knowledge-build requires a hierarchical research builder spec"
         )
     is_v3 = implementation == "openrouter-hierarchical-research-builder-v3"
-    is_v4 = implementation == "openrouter-hierarchical-research-builder-v4"
-    is_reference_aware = is_v3 or is_v4
+    is_v5 = implementation == "openrouter-hierarchical-research-builder-v5"
+    uses_validity_v4 = implementation in {
+        "openrouter-hierarchical-research-builder-v4",
+        "openrouter-hierarchical-research-builder-v5",
+    }
+    is_reference_aware = is_v3 or uses_validity_v4
     builder_digest = f"sha256:{sha256_json(spec)}"
     build_input = validate_build_claim(claim, problem, builder_digest)
     if build_input["conflictIds"]:
@@ -774,7 +854,7 @@ def run_research_build_bundle(
             manifest.get("outputProfile")
             != (
                 "math-flow/validity-judgment-v4"
-                if is_v4
+                if uses_validity_v4
                 else "math-flow/validity-judgment-v3"
                 if is_v3
                 else "math-flow/validity-judgment-v2"
@@ -805,7 +885,7 @@ def run_research_build_bundle(
             ) from exc
         (
             validate_evidence_packet_v4
-            if is_v4
+            if uses_validity_v4
             else validate_evidence_packet_v3
             if is_v3
             else validate_dependency_packet
@@ -889,7 +969,7 @@ def run_research_build_bundle(
             )
 
     batch_input = {
-        "schemaVersion": 3 if is_v4 else 2 if is_v3 else 1,
+        "schemaVersion": 3 if uses_validity_v4 else 2 if is_v3 else 1,
         "problemId": problem,
         "baseProgramStateDigest": base_state["stateDigest"],
         "judgments": [
@@ -951,8 +1031,26 @@ def run_research_build_bundle(
                     if is_reference_aware
                     else []
                 ),
-                "Programs form the current strict tree of local objectives and credit contexts. Preserve existing parent links, thread ownership and kind, and item program and type in this version. Cross-program use is represented through item dependencies. The topology is intentionally revisable by a future governed builder version, so do not encode the current tree as an eternal ontology.",
-                "Every entity operation must cite at least one accepted submission in this batch and may retain prior accepted provenance. Use the smallest complete delta that makes the full post-state accurate.",
+                *(
+                    [
+                        "Programs form the current strict tree of local objectives and credit contexts. On a fresh lane, construct a useful initial taxonomy rather than treating root as the default container: create sibling programs for genuinely distinct durable agendas and nested programs when a specialization has its own local objective within a broader agenda. A program is justified by a stable research objective, never merely by a submission, contributor, chronology, or display convenience. Every new active program needs at least one parent local thread in its parent program and exactly one active unstructured local thread.",
+                        "Place each contribution directly in the narrowest coherent local-objective program. Direct root placement is exceptional and must be audited: use canonical-objective only for a genuinely problem-global result, or cross-program only when the result directly spans at least two incomparable non-root programs named in relatedProgramIds. For local-objective placement, name exactly the direct non-root program. Supply one non-empty placement audit per accepted contribution in the same order as the contribution mappings. Once the post-state contains two or more accepted submissions, at least one contribution must use a non-root program; when a root-only singleton base receives the next accepted submission, organize a local program in that transition.",
+                        "This version may create new sibling or nested programs but preserves existing parent links, thread ownership and kind, and item program and type. Planned split, merge, move, and reparent evolution remains a future governed version; do not encode the current tree as an eternal ontology.",
+                    ]
+                    if is_v5
+                    else [
+                        "Programs form the current strict tree of local objectives and credit contexts. Preserve existing parent links, thread ownership and kind, and item program and type in this version. Cross-program use is represented through item dependencies. The topology is intentionally revisable by a future governed builder version, so do not encode the current tree as an eternal ontology.",
+                    ]
+                ),
+                *(
+                    [
+                        "Every entity operation must cite at least one accepted submission in this batch and may retain prior accepted provenance. Use the smallest complete delta that makes the full post-state accurate, but do not minimize away program structure required by the formation rubric.",
+                    ]
+                    if is_v5
+                    else [
+                        "Every entity operation must cite at least one accepted submission in this batch and may retain prior accepted provenance. Use the smallest complete delta that makes the full post-state accurate.",
+                    ]
+                ),
                 f"Formation rubric:\n{json.dumps(spec['rubric'], indent=2, ensure_ascii=False)}",
                 f"Problem:\n{problem_statement}",
                 f"Current research-program state:\n{json.dumps(base_state, indent=2, ensure_ascii=False)}",
@@ -963,43 +1061,69 @@ def run_research_build_bundle(
                 + _transaction_evidence(root, source, head, dependency_ids),
             ]
         )
-        request = _request(
-            spec,
-            "organize",
-            [
-                {"role": "system", "content": str(spec["systemPrompt"])},
-                {"role": "user", "content": prompt},
-            ],
-            _batch_organization_schema(
-                accepted_claim_keys_by_transaction={
-                    transaction_id: [str(claim["claimKey"]) for claim in claims]
-                    for transaction_id, claims in accepted_claims_by_transaction.items()
-                },
-                transaction_ids=transaction_ids,
-            ),
+        organization_schema = _batch_organization_schema(
+            accepted_claim_keys_by_transaction={
+                transaction_id: [str(claim["claimKey"]) for claim in claims]
+                for transaction_id, claims in accepted_claims_by_transaction.items()
+            },
+            transaction_ids=transaction_ids,
+            placement_audits=is_v5,
         )
+        messages = [
+            {"role": "system", "content": str(spec["systemPrompt"])},
+            {"role": "user", "content": prompt},
+        ]
         send: OpenRouterTransport = transport or send_chat_completion
+        checkpoint_transport: _ReplayCheckpointTransport | None = None
         if checkpoint_dir is not None:
             checkpoint_transport = _ReplayCheckpointTransport(checkpoint_dir, send)
             checkpoint_transport.begin_stage()
             send = checkpoint_transport
-        response = send(request)
-        _reject_truncated_response(response, "batch organization")
-        program_delta = _structured_content(response, "organize")
-        post_state = apply_research_program_batch_delta(
-            base_state,
-            program_delta,
-            ledger_head=str(source["problemLedgerHead"]),
-            accepted_claims_by_transaction=accepted_claims_by_transaction,
-            judgment_ids=judgment_ids,
+        apply_delta = (
+            apply_research_program_batch_delta_v5
+            if is_v5
+            else apply_research_program_batch_delta
         )
-        requests.append(request)
-        responses.append(response)
+        for attempt in range(3 if is_v5 else 1):
+            request = _request(spec, "organize", messages, organization_schema)
+            try:
+                response = send(request)
+                requests.append(request)
+                responses.append(response)
+                _reject_truncated_response(response, "batch organization")
+                program_delta = _structured_content(response, "organize")
+                post_state = apply_delta(
+                    base_state,
+                    program_delta,
+                    ledger_head=str(source["problemLedgerHead"]),
+                    accepted_claims_by_transaction=accepted_claims_by_transaction,
+                    judgment_ids=judgment_ids,
+                )
+            except MathFlowError as exc:
+                if checkpoint_transport is not None:
+                    checkpoint_transport.invalidate_last()
+                if not is_v5 or attempt == 2:
+                    raise
+                messages = [
+                    *messages,
+                    {
+                        "role": "user",
+                        "content": (
+                            "The proposed v5 delta failed deterministic protocol "
+                            f"validation: {exc}. Return a corrected complete delta. "
+                            "In particular, preserve accepted-claim atomicity and "
+                            "the audited local-program/root-placement rules."
+                        ),
+                    },
+                ]
+                continue
+            break
     else:
         program_delta = {
-            "schemaVersion": 1,
+            "schemaVersion": 2 if is_v5 else 1,
             "operations": [],
             "contributions": [],
+            **({"placementAudits": []} if is_v5 else {}),
         }
         post_state = base_state
 

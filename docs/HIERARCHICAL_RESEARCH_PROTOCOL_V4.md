@@ -122,3 +122,9 @@ Disabled specifications and their published bundles keep their original
 identities and are never rewritten. Because retirement alone publishes no
 mathematical run, operators must dispatch `refresh-viewer-catalog.yml` after the
 retirement PRs merge so the live catalog reflects the governed active set.
+
+Builder v4 preserves existing topology but did not deterministically require a
+non-root initial taxonomy. The additive builder-v5 correction introduces
+audited local/root placement and sibling/nested initial formation without
+changing validity v4. See `HIERARCHICAL_RESEARCH_PROTOCOL_V5.md`; v4 artifacts
+remain immutable and replayable.

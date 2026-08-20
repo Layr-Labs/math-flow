@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import copy
 import json
+import shutil
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 
 from math_flow.cli import main
-from math_flow.artifacts import load_manifest, read_verified_artifact
+from math_flow.artifacts import load_manifest, read_verified_artifact, sha256_bytes
 from math_flow.coordination import (
     claim_due_build,
     complete_build,
@@ -35,6 +37,16 @@ from math_flow.research_credit import (
     load_hierarchical_credit_assignment_bundle,
 )
 from math_flow.research_state import empty_research_program_state
+from math_flow.research_state import (
+    affected_credit_targets,
+    apply_research_program_batch_delta,
+    credit_child_thread_ids,
+    credit_children,
+    materialize_credit_evaluations,
+    validate_research_program_v5_batch_binding,
+    validate_research_program_v5_delta,
+    validate_research_program_v5_transition_shape,
+)
 from math_flow.research_projection import (
     _credit_schema,
     load_research_build_bundle,
@@ -211,6 +223,356 @@ def accepted_replay_response(
             ],
         }
     return response(json.dumps(value), index)
+
+
+def _v5_contribution_variants(request: dict[str, object]) -> list[dict[str, object]]:
+    return request["response_format"]["json_schema"]["schema"]["properties"][
+        "contributions"
+    ]["items"]["anyOf"]
+
+
+def root_only_v5_response(
+    request: dict[str, object], index: int
+) -> dict[str, object]:
+    operations: list[dict[str, object]] = []
+    contributions: list[dict[str, object]] = []
+    audits: list[dict[str, object]] = []
+    for variant in _v5_contribution_variants(request):
+        properties = variant["properties"]
+        transaction_id = properties["transactionId"]["const"]
+        claim_keys = properties["claimKeys"]["items"]["enum"]
+        suffix = transaction_id[:12]
+        thread_id = f"root/v5-flat-line-{suffix}"
+        item_id = f"root/v5-flat-result-{suffix}"
+        operations.extend(
+            [
+                {
+                    "entityKind": "thread",
+                    "entityId": thread_id,
+                    "baseDigest": None,
+                    "value": {
+                        "id": thread_id,
+                        "programId": "root",
+                        "title": f"Flat line {suffix}",
+                        "summary": "A deliberately flat v5 fixture line.",
+                        "kind": "research",
+                        "status": "active",
+                        "expectedExposure": "1",
+                        "conditions": [],
+                        "sourceTransactionIds": [transaction_id],
+                    },
+                },
+                {
+                    "entityKind": "item",
+                    "entityId": item_id,
+                    "baseDigest": None,
+                    "value": {
+                        "id": item_id,
+                        "programId": "root",
+                        "type": "result",
+                        "title": f"Flat result {suffix}",
+                        "summary": "Represent the accepted claims without hierarchy.",
+                        "claimRefs": [
+                            {"transactionId": transaction_id, "claimKey": key}
+                            for key in claim_keys
+                        ],
+                        "sourceTransactionIds": [transaction_id],
+                        "dependencyItemIds": [],
+                    },
+                },
+            ]
+        )
+        contributions.append(
+            {
+                "transactionId": transaction_id,
+                "claimKeys": claim_keys,
+                "directProgramId": "root",
+                "directThreadIds": [thread_id],
+                "itemIds": [item_id],
+            }
+        )
+        audits.append(
+            {
+                "transactionId": transaction_id,
+                "basis": "canonical-objective",
+                "rationale": "Deliberately exercise the root-only rejection boundary.",
+                "relatedProgramIds": [],
+            }
+        )
+    return response(
+        json.dumps(
+            {
+                "schemaVersion": 2,
+                "operations": operations,
+                "contributions": contributions,
+                "placementAudits": audits,
+            }
+        ),
+        index,
+    )
+
+
+def hierarchical_v5_response(
+    request: dict[str, object], index: int
+) -> dict[str, object]:
+    variants = _v5_contribution_variants(request)
+    if len(variants) != 3:
+        raise AssertionError("hierarchical v5 fixture expects three contributions")
+    transaction_ids = [
+        variant["properties"]["transactionId"]["const"] for variant in variants
+    ]
+    claim_keys = [
+        variant["properties"]["claimKeys"]["items"]["enum"]
+        for variant in variants
+    ]
+    analytic_tx, computational_tx, global_tx = transaction_ids
+    analytic_claims, computational_claims, global_claims = claim_keys
+
+    def program(
+        program_id: str,
+        parent_id: str,
+        title: str,
+        objective: str,
+        parent_thread_id: str,
+        source: str,
+    ) -> dict[str, object]:
+        return {
+            "entityKind": "program",
+            "entityId": program_id,
+            "baseDigest": None,
+            "value": {
+                "id": program_id,
+                "parentId": parent_id,
+                "title": title,
+                "objective": objective,
+                "status": "active",
+                "parentThreadIds": [parent_thread_id],
+                "sourceTransactionIds": [source],
+            },
+        }
+
+    def thread(
+        thread_id: str,
+        program_id: str,
+        title: str,
+        summary: str,
+        source: str,
+        *,
+        kind: str = "research",
+    ) -> dict[str, object]:
+        return {
+            "entityKind": "thread",
+            "entityId": thread_id,
+            "baseDigest": None,
+            "value": {
+                "id": thread_id,
+                "programId": program_id,
+                "title": title,
+                "summary": summary,
+                "kind": kind,
+                "status": "active",
+                "expectedExposure": "1",
+                "conditions": [],
+                "sourceTransactionIds": [source],
+            },
+        }
+
+    def item(
+        item_id: str,
+        program_id: str,
+        title: str,
+        transaction_id: str,
+        keys: list[str],
+    ) -> dict[str, object]:
+        return {
+            "entityKind": "item",
+            "entityId": item_id,
+            "baseDigest": None,
+            "value": {
+                "id": item_id,
+                "programId": program_id,
+                "type": "result",
+                "title": title,
+                "summary": "Represent the exact accepted fixture claims.",
+                "claimRefs": [
+                    {"transactionId": transaction_id, "claimKey": key}
+                    for key in keys
+                ],
+                "sourceTransactionIds": [transaction_id],
+                "dependencyItemIds": [],
+            },
+        }
+
+    operations = [
+        thread(
+            "root/analytic-agenda",
+            "root",
+            "Analytic agenda",
+            "Develop analytic bounds and structural reductions.",
+            analytic_tx,
+        ),
+        thread(
+            "root/computational-agenda",
+            "root",
+            "Computational agenda",
+            "Develop certified computational bounds.",
+            computational_tx,
+        ),
+        thread(
+            "root/cross-program-line",
+            "root",
+            "Cross-program synthesis",
+            "Connect the analytic and computational agendas.",
+            global_tx,
+        ),
+        program(
+            "program/analytic",
+            "root",
+            "Analytic bounds",
+            "Advance analytic upper bounds for the canonical capacity.",
+            "root/analytic-agenda",
+            analytic_tx,
+        ),
+        program(
+            "program/computational",
+            "root",
+            "Certified computation",
+            "Advance rigorous computational certificates for capacity bounds.",
+            "root/computational-agenda",
+            computational_tx,
+        ),
+        thread(
+            "program/analytic/local-bound-agenda",
+            "program/analytic",
+            "Local analytic specialization",
+            "Establish a specialized local analytic bound.",
+            analytic_tx,
+        ),
+        program(
+            "program/analytic/local-bound",
+            "program/analytic",
+            "Local analytic bound",
+            "Resolve the specialized local bound inside the analytic agenda.",
+            "program/analytic/local-bound-agenda",
+            analytic_tx,
+        ),
+        thread(
+            "program/analytic/unstructured-search",
+            "program/analytic",
+            "Unstructured analytic work",
+            "Analytic work not yet assigned to a narrower thread.",
+            analytic_tx,
+            kind="unstructured",
+        ),
+        thread(
+            "program/computational/unstructured-search",
+            "program/computational",
+            "Unstructured computational work",
+            "Computational work not yet assigned to a narrower thread.",
+            computational_tx,
+            kind="unstructured",
+        ),
+        thread(
+            "program/analytic/local-bound/unstructured-search",
+            "program/analytic/local-bound",
+            "Unstructured local-bound work",
+            "Local-bound work not yet assigned to a narrower thread.",
+            analytic_tx,
+            kind="unstructured",
+        ),
+        thread(
+            "program/analytic/local-bound/direct",
+            "program/analytic/local-bound",
+            "Direct local-bound line",
+            "Track the accepted local analytic result.",
+            analytic_tx,
+        ),
+        thread(
+            "program/computational/direct",
+            "program/computational",
+            "Direct certificate line",
+            "Track the accepted computational result.",
+            computational_tx,
+        ),
+        item(
+            "program/analytic/local-bound/result",
+            "program/analytic/local-bound",
+            "Accepted local analytic result",
+            analytic_tx,
+            analytic_claims,
+        ),
+        item(
+            "program/computational/result",
+            "program/computational",
+            "Accepted computational result",
+            computational_tx,
+            computational_claims,
+        ),
+        item(
+            "root/cross-program-result",
+            "root",
+            "Accepted cross-program result",
+            global_tx,
+            global_claims,
+        ),
+    ]
+    contributions = [
+        {
+            "transactionId": analytic_tx,
+            "claimKeys": analytic_claims,
+            "directProgramId": "program/analytic/local-bound",
+            "directThreadIds": ["program/analytic/local-bound/direct"],
+            "itemIds": ["program/analytic/local-bound/result"],
+        },
+        {
+            "transactionId": computational_tx,
+            "claimKeys": computational_claims,
+            "directProgramId": "program/computational",
+            "directThreadIds": ["program/computational/direct"],
+            "itemIds": ["program/computational/result"],
+        },
+        {
+            "transactionId": global_tx,
+            "claimKeys": global_claims,
+            "directProgramId": "root",
+            "directThreadIds": ["root/cross-program-line"],
+            "itemIds": ["root/cross-program-result"],
+        },
+    ]
+    audits = [
+        {
+            "transactionId": analytic_tx,
+            "basis": "local-objective",
+            "rationale": "The result directly advances the nested local analytic objective.",
+            "relatedProgramIds": ["program/analytic/local-bound"],
+        },
+        {
+            "transactionId": computational_tx,
+            "basis": "local-objective",
+            "rationale": "The result directly advances certified computation.",
+            "relatedProgramIds": ["program/computational"],
+        },
+        {
+            "transactionId": global_tx,
+            "basis": "cross-program",
+            "rationale": "The result directly connects incomparable analytic and computational contexts.",
+            "relatedProgramIds": [
+                "program/analytic/local-bound",
+                "program/computational",
+            ],
+        },
+    ]
+    return response(
+        json.dumps(
+            {
+                "schemaVersion": 2,
+                "operations": operations,
+                "contributions": contributions,
+                "placementAudits": audits,
+            }
+        ),
+        index,
+    )
 
 
 class ResearchProjectionTests(unittest.TestCase):
@@ -1381,6 +1743,536 @@ class ResearchProjectionTests(unittest.TestCase):
                     transport=self._batch_transport,
                 )
 
+    def test_v5_build_retries_flat_output_and_materializes_sibling_nested_credit_contexts(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            validity_dirs = [
+                self._validity_v4_bundle(
+                    root,
+                    PROBLEM,
+                    transaction_id,
+                    status="valid",
+                    required_dependencies=[],
+                    evidence_transaction_ids=[],
+                )
+                for transaction_id in TRANSACTIONS[:3]
+            ]
+            builder = load_judge_spec(
+                ROOT
+                / "protocol/judges/openrouter-hierarchical-research-builder-v5.json"
+            )
+            judgment_ids = [
+                str(load_judgment_bundle(bundle)[1]["judgmentId"])
+                for bundle in validity_dirs
+            ]
+            scheduler = root / "scheduler-v5.json"
+            lane = record_completed_inputs(
+                scheduler,
+                PROBLEM,
+                f"sha256:{sha256_json(builder)}",
+                judgment_ids,
+                [],
+                0,
+                1,
+            )
+            claim = claim_due_build(scheduler, str(lane["laneId"]), 1, 500)
+            self.assertIsNotNone(claim)
+
+            calls = 0
+            rejected_flat_delta: dict[str, object] | None = None
+
+            def correcting_transport(
+                request: dict[str, object],
+            ) -> dict[str, object]:
+                nonlocal calls, rejected_flat_delta
+                calls += 1
+                if calls == 1:
+                    flat_response = root_only_v5_response(request, calls)
+                    rejected_flat_delta = json.loads(
+                        flat_response["choices"][0]["message"]["content"]
+                    )
+                    return flat_response
+                return hierarchical_v5_response(request, calls)
+
+            output = root / "research-build-v5"
+            checkpoint_dir = root / "checkpoints"
+            run_research_build_bundle(
+                ROOT,
+                PROBLEM,
+                ROOT
+                / "protocol/judges/openrouter-hierarchical-research-builder-v5.json",
+                TRANSACTIONS[2],
+                claim,
+                validity_dirs,
+                None,
+                output,
+                transport=correcting_transport,
+                checkpoint_dir=checkpoint_dir,
+            )
+            self.assertEqual(calls, 2)
+            self.assertEqual(len(list(checkpoint_dir.glob("*.json"))), 1)
+
+            manifest, state, build_digest = load_research_build_bundle(output)
+            self.assertEqual(
+                manifest["outputProfile"], "math-flow/hierarchical-research-v5"
+            )
+            self.assertEqual(
+                set(state["programs"]),
+                {
+                    "root",
+                    "program/analytic",
+                    "program/computational",
+                    "program/analytic/local-bound",
+                },
+            )
+            self.assertEqual(
+                credit_children(state, "root"),
+                [
+                    {"kind": "contribution", "id": TRANSACTIONS[2]},
+                    {"kind": "program", "id": "program/analytic"},
+                    {"kind": "program", "id": "program/computational"},
+                ],
+            )
+            self.assertEqual(
+                credit_children(state, "program/analytic"),
+                [{"kind": "program", "id": "program/analytic/local-bound"}],
+            )
+            self.assertEqual(
+                credit_children(state, "program/analytic/local-bound"),
+                [{"kind": "contribution", "id": TRANSACTIONS[0]}],
+            )
+            self.assertEqual(
+                set(affected_credit_targets(state, TRANSACTIONS[0])),
+                {"root", "program/analytic", "program/analytic/local-bound"},
+            )
+
+            delta = json.loads(
+                read_verified_artifact(output, manifest, "research-program-delta")
+            )
+            self.assertEqual(delta["schemaVersion"], 2)
+            self.assertEqual(
+                [audit["basis"] for audit in delta["placementAudits"]],
+                ["local-objective", "local-objective", "cross-program"],
+            )
+            omitted_operation_delta = copy.deepcopy(delta)
+            omitted_operation_delta["operations"] = [
+                operation
+                for operation in omitted_operation_delta["operations"]
+                if not (
+                    operation["entityKind"] == "program"
+                    and operation["entityId"] == "program/analytic"
+                )
+            ]
+            with self.assertRaisesRegex(MathFlowError, "exact materialized"):
+                validate_research_program_v5_transition_shape(
+                    empty_research_program_state(PROBLEM),
+                    omitted_operation_delta,
+                    state,
+                )
+            wrong_base_digest_delta = copy.deepcopy(delta)
+            wrong_base_digest_delta["operations"][0]["baseDigest"] = (
+                "sha256:" + "0" * 64
+            )
+            with self.assertRaisesRegex(MathFlowError, "exact base entity"):
+                validate_research_program_v5_transition_shape(
+                    empty_research_program_state(PROBLEM),
+                    wrong_base_digest_delta,
+                    state,
+                )
+            no_current_source_state = copy.deepcopy(state)
+            no_current_source_thread = {
+                key: value
+                for key, value in no_current_source_state["threads"][
+                    "root/analytic-agenda"
+                ].items()
+                if key != "digest"
+            }
+            no_current_source_thread["title"] = "Unbound historical update"
+            no_current_source_state["threads"]["root/analytic-agenda"] = {
+                **no_current_source_thread,
+                "digest": f"sha256:{sha256_json(no_current_source_thread)}",
+            }
+            no_current_source_payload = {
+                key: value
+                for key, value in no_current_source_state.items()
+                if key != "stateDigest"
+            }
+            no_current_source_state["stateDigest"] = (
+                f"sha256:{sha256_json(no_current_source_payload)}"
+            )
+            no_current_source_delta = {
+                "schemaVersion": 2,
+                "operations": [
+                    {
+                        "entityKind": "thread",
+                        "entityId": "root/analytic-agenda",
+                        "baseDigest": state["threads"]["root/analytic-agenda"][
+                            "digest"
+                        ],
+                        "value": no_current_source_thread,
+                    }
+                ],
+                "contributions": [],
+                "placementAudits": [],
+            }
+            with self.assertRaisesRegex(MathFlowError, "current accepted submission"):
+                validate_research_program_v5_transition_shape(
+                    state,
+                    no_current_source_delta,
+                    no_current_source_state,
+                )
+            bad_delta = copy.deepcopy(delta)
+            bad_delta["placementAudits"][2]["relatedProgramIds"] = [
+                "program/analytic",
+                "program/analytic/local-bound",
+            ]
+            with self.assertRaisesRegex(MathFlowError, "incomparable"):
+                validate_research_program_v5_delta(bad_delta, state)
+            duplicate_cross_program_delta = copy.deepcopy(delta)
+            duplicate_cross_program_delta["placementAudits"][2][
+                "relatedProgramIds"
+            ] = ["program/analytic", "program/analytic"]
+            with self.assertRaisesRegex(MathFlowError, "unique"):
+                validate_research_program_v5_delta(
+                    duplicate_cross_program_delta, state
+                )
+            retired_cross_state = copy.deepcopy(state)
+            retired_program = {
+                "id": "program/retired",
+                "parentId": "root",
+                "title": "Retired sibling",
+                "objective": "Exercise cross-program lifecycle validation.",
+                "status": "retired",
+                "parentThreadIds": ["root/cross-program-line"],
+                "sourceTransactionIds": [TRANSACTIONS[2]],
+            }
+            retired_cross_state["programs"]["program/retired"] = {
+                **retired_program,
+                "digest": f"sha256:{sha256_json(retired_program)}",
+            }
+            retired_state_payload = {
+                key: value
+                for key, value in retired_cross_state.items()
+                if key != "stateDigest"
+            }
+            retired_cross_state["stateDigest"] = (
+                f"sha256:{sha256_json(retired_state_payload)}"
+            )
+            retired_cross_delta = copy.deepcopy(delta)
+            retired_cross_delta["placementAudits"][2]["relatedProgramIds"] = [
+                "program/analytic",
+                "program/retired",
+            ]
+            with self.assertRaisesRegex(MathFlowError, "invalid local program"):
+                validate_research_program_v5_delta(
+                    retired_cross_delta, retired_cross_state
+                )
+
+            batch_input = json.loads(
+                read_verified_artifact(output, manifest, "research-batch-input")
+            )
+            validate_research_program_v5_batch_binding(
+                batch_input,
+                delta,
+                state,
+                PROBLEM,
+                problem_ledger_head=str(manifest["problemLedgerHead"]),
+            )
+            wrong_base_batch = copy.deepcopy(batch_input)
+            wrong_base_batch["baseProgramStateDigest"] = "sha256:" + "0" * 64
+            with self.assertRaisesRegex(MathFlowError, "post-state base"):
+                validate_research_program_v5_batch_binding(
+                    wrong_base_batch, delta, state, PROBLEM
+                )
+            with self.assertRaisesRegex(MathFlowError, "problem ledger head"):
+                validate_research_program_v5_batch_binding(
+                    batch_input,
+                    delta,
+                    state,
+                    PROBLEM,
+                    problem_ledger_head=TRANSACTIONS[3],
+                )
+            wrong_problem_batch = copy.deepcopy(batch_input)
+            wrong_problem_batch["problemId"] = "another-problem"
+            with self.assertRaisesRegex(MathFlowError, "another problem"):
+                validate_research_program_v5_batch_binding(
+                    wrong_problem_batch, delta, state, PROBLEM
+                )
+            wrong_claim_batch = copy.deepcopy(batch_input)
+            wrong_claim_batch["judgments"][0]["acceptedClaimKeys"] = [
+                "different-claim"
+            ]
+            with self.assertRaisesRegex(
+                MathFlowError, "accepted judgment metadata"
+            ):
+                validate_research_program_v5_batch_binding(
+                    wrong_claim_batch, delta, state, PROBLEM
+                )
+            wrong_judgment_batch = copy.deepcopy(batch_input)
+            wrong_judgment_batch["judgments"][0]["judgmentId"] = (
+                "sha256:" + "0" * 64
+            )
+            with self.assertRaisesRegex(
+                MathFlowError, "accepted judgment metadata"
+            ):
+                validate_research_program_v5_batch_binding(
+                    wrong_judgment_batch, delta, state, PROBLEM
+                )
+
+            forged_ledger = root / "forged-ledger-head-v5"
+            shutil.copytree(output, forged_ledger)
+            forged_ledger_manifest_path = forged_ledger / "run.json"
+            forged_ledger_manifest = json.loads(
+                forged_ledger_manifest_path.read_text(encoding="utf-8")
+            )
+            forged_ledger_manifest["problemLedgerHead"] = TRANSACTIONS[3]
+            forged_ledger_manifest_path.write_text(
+                json.dumps(forged_ledger_manifest, indent=2, ensure_ascii=False)
+                + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(MathFlowError, "problem ledger head"):
+                load_research_build_bundle(forged_ledger)
+
+            forged_base = root / "forged-batch-base-v5"
+            shutil.copytree(output, forged_base)
+            forged_base_batch = copy.deepcopy(batch_input)
+            forged_base_batch["baseProgramStateDigest"] = "sha256:" + "0" * 64
+            forged_base_batch_path = forged_base / "input" / "research-batch.json"
+            forged_base_batch_bytes = (
+                json.dumps(forged_base_batch, indent=2, ensure_ascii=False) + "\n"
+            ).encode("utf-8")
+            forged_base_batch_path.write_bytes(forged_base_batch_bytes)
+            forged_base_manifest_path = forged_base / "run.json"
+            forged_base_manifest = json.loads(
+                forged_base_manifest_path.read_text(encoding="utf-8")
+            )
+            forged_base_artifact = next(
+                artifact
+                for artifact in forged_base_manifest["artifacts"]
+                if artifact["role"] == "research-batch-input"
+            )
+            forged_base_artifact["digest"] = sha256_bytes(
+                forged_base_batch_bytes
+            )
+            forged_base_artifact["bytes"] = len(forged_base_batch_bytes)
+            forged_base_manifest_path.write_text(
+                json.dumps(forged_base_manifest, indent=2, ensure_ascii=False)
+                + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(MathFlowError, "post-state base"):
+                load_research_build_bundle(forged_base)
+
+            forged = root / "forged-omitted-accepted-v5"
+            shutil.copytree(output, forged)
+            forged_delta = copy.deepcopy(delta)
+            forged_delta["contributions"] = forged_delta["contributions"][:-1]
+            forged_delta["placementAudits"] = forged_delta["placementAudits"][:-1]
+            forged_delta_path = forged / "state" / "delta.json"
+            forged_delta_bytes = (
+                json.dumps(forged_delta, indent=2, ensure_ascii=False) + "\n"
+            ).encode("utf-8")
+            forged_delta_path.write_bytes(forged_delta_bytes)
+            forged_manifest_path = forged / "run.json"
+            forged_manifest = json.loads(
+                forged_manifest_path.read_text(encoding="utf-8")
+            )
+            forged_artifact = next(
+                artifact
+                for artifact in forged_manifest["artifacts"]
+                if artifact["role"] == "research-program-delta"
+            )
+            forged_artifact["digest"] = sha256_bytes(forged_delta_bytes)
+            forged_artifact["bytes"] = len(forged_delta_bytes)
+            forged_manifest_path.write_text(
+                json.dumps(forged_manifest, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(
+                MathFlowError, "do not match accepted submissions"
+            ):
+                load_research_build_bundle(forged)
+
+            viewer = export_viewer_data(
+                ROOT,
+                PROBLEM,
+                TRANSACTIONS[2],
+                [output],
+                judgment_dirs=validity_dirs,
+            )
+            self.assertEqual(
+                viewer["runs"][0]["delta"]["placementAudits"],
+                delta["placementAudits"],
+            )
+            self.assertIn(
+                "program/analytic/local-bound",
+                viewer["runs"][0]["state"]["nodes"],
+            )
+            later_source = load_source(ROOT, PROBLEM, TRANSACTIONS[3])
+            dependency_context = research_state_dependency_context(
+                output,
+                PROBLEM,
+                later_source,
+                4,
+                [TRANSACTIONS[0]],
+            )
+            self.assertEqual(
+                dependency_context["unresolvedDependencyTransactionIds"], []
+            )
+            self.assertIn(
+                "program/analytic/local-bound",
+                dependency_context["selectedPrograms"],
+            )
+
+            self.assertIsNotNone(rejected_flat_delta)
+            assert rejected_flat_delta is not None
+            flat_state = apply_research_program_batch_delta(
+                empty_research_program_state(PROBLEM),
+                {
+                    "schemaVersion": 1,
+                    "operations": rejected_flat_delta["operations"],
+                    "contributions": rejected_flat_delta["contributions"],
+                },
+                ledger_head=str(manifest["problemLedgerHead"]),
+                accepted_claims_by_transaction={
+                    str(contribution["transactionId"]): [
+                        {
+                            "claimKey": claim_key,
+                            "dependencyTransactionIds": [],
+                        }
+                        for claim_key in contribution["claimKeys"]
+                    ]
+                    for contribution in rejected_flat_delta["contributions"]
+                },
+                judgment_ids={
+                    transaction_id: judgment_id
+                    for transaction_id, judgment_id in zip(
+                        TRANSACTIONS[:3], judgment_ids, strict=True
+                    )
+                },
+            )
+            forged_flat = root / "forged-root-only-context-v5"
+            shutil.copytree(output, forged_flat)
+            forged_flat_manifest_path = forged_flat / "run.json"
+            forged_flat_manifest = json.loads(
+                forged_flat_manifest_path.read_text(encoding="utf-8")
+            )
+            for relative_path, role, artifact_value in (
+                (
+                    "state/delta.json",
+                    "research-program-delta",
+                    rejected_flat_delta,
+                ),
+                ("state/state.json", "research-program-state", flat_state),
+            ):
+                artifact_bytes = (
+                    json.dumps(artifact_value, indent=2, ensure_ascii=False) + "\n"
+                ).encode("utf-8")
+                (forged_flat / relative_path).write_bytes(artifact_bytes)
+                artifact_record = next(
+                    artifact
+                    for artifact in forged_flat_manifest["artifacts"]
+                    if artifact["role"] == role
+                )
+                artifact_record["digest"] = sha256_bytes(artifact_bytes)
+                artifact_record["bytes"] = len(artifact_bytes)
+            forged_flat_manifest_path.write_text(
+                json.dumps(forged_flat_manifest, indent=2, ensure_ascii=False)
+                + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(MathFlowError, "may not remain root-only"):
+                research_state_dependency_context(
+                    forged_flat,
+                    PROBLEM,
+                    later_source,
+                    4,
+                    [TRANSACTIONS[0]],
+                )
+
+            projection_root = root / "published"
+            publish_batch(projection_root, [*validity_dirs, output])
+            history, history_digests, references = _accepted_history(
+                projection_root=projection_root,
+                latest_run_digest=build_digest,
+                latest_state=state,
+            )
+            self.assertEqual(history_digests, [build_digest])
+            self.assertEqual(
+                history[0]["programDelta"]["placementAudits"],
+                delta["placementAudits"],
+            )
+            self.assertIn(
+                ("root", "program", "program/analytic"), references
+            )
+            self.assertIn(
+                (
+                    "program/analytic",
+                    "program",
+                    "program/analytic/local-bound",
+                ),
+                references,
+            )
+
+            targets = {
+                program_id: children
+                for program_id in state["programs"]
+                if (children := credit_children(state, program_id))
+            }
+            evaluations = []
+            for program_id, children in targets.items():
+                raw_children = []
+                for child in children:
+                    thread_ids = credit_child_thread_ids(
+                        state,
+                        program_id,
+                        child["kind"],
+                        child["id"],
+                    )
+                    raw_children.append(
+                        {
+                            "kind": child["kind"],
+                            "id": child["id"],
+                            "counterfactual": "Remove this local child at the common horizon.",
+                            "directEffects": [
+                                {
+                                    "threadId": thread_id,
+                                    "withoutWork": "1",
+                                    "withWork": "0",
+                                    "rationale": "The fixture child completes its direct line.",
+                                }
+                                for thread_id in thread_ids
+                            ],
+                            "obviatedEffects": [],
+                            "confidence": "medium",
+                            "evidenceRefs": [child["id"]],
+                        }
+                    )
+                evaluations.append(
+                    {
+                        "programId": program_id,
+                        "unattributedWork": "1",
+                        "rationale": "Retain one unit of local residual work.",
+                        "children": raw_children,
+                    }
+                )
+            credit_state = materialize_credit_evaluations(
+                prior_credit_state=None,
+                base_program_state=state,
+                post_program_state=state,
+                horizon_program_state=state,
+                subject_transaction_id=None,
+                raw_delta={"schemaVersion": 1, "evaluations": evaluations},
+                target_children_by_program=targets,
+                reference_states_by_child=references,
+            )
+            self.assertEqual(
+                set(credit_state["allocations"]), set(TRANSACTIONS[:3])
+            )
+
     def test_all_invalid_batch_advances_scheduler_without_provider_call(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1408,6 +2300,70 @@ class ResearchProjectionTests(unittest.TestCase):
             _, state, _ = load_research_build_bundle(output)
             self.assertEqual(state["contributions"], {})
             self.assertEqual(manifest["providerRuns"], [])
+
+    def test_all_invalid_v5_batch_emits_empty_audited_delta_without_provider_call(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            invalid = self._validity_v4_bundle(
+                root,
+                PROBLEM,
+                TRANSACTIONS[0],
+                status="invalid",
+                required_dependencies=[],
+                evidence_transaction_ids=[],
+            )
+            builder = load_judge_spec(
+                ROOT
+                / "protocol/judges/openrouter-hierarchical-research-builder-v5.json"
+            )
+            judgment_id = str(load_judgment_bundle(invalid)[1]["judgmentId"])
+            scheduler = root / "scheduler-invalid-v5.json"
+            lane = record_completed_inputs(
+                scheduler,
+                PROBLEM,
+                f"sha256:{sha256_json(builder)}",
+                [judgment_id],
+                [],
+                0,
+                1,
+            )
+            claim = claim_due_build(scheduler, str(lane["laneId"]), 1, 500)
+            self.assertIsNotNone(claim)
+
+            def unexpected(_: dict[str, object]) -> dict[str, object]:
+                raise AssertionError("excluded v5 judgments must not call the organizer")
+
+            output = root / "invalid-v5-build"
+            run_research_build_bundle(
+                ROOT,
+                PROBLEM,
+                ROOT
+                / "protocol/judges/openrouter-hierarchical-research-builder-v5.json",
+                TRANSACTIONS[0],
+                claim,
+                [invalid],
+                None,
+                output,
+                transport=unexpected,
+            )
+            manifest, state, _ = load_research_build_bundle(output)
+            self.assertEqual(state["contributions"], {})
+            self.assertEqual(manifest["providerRuns"], [])
+            self.assertEqual(
+                json.loads(
+                    read_verified_artifact(
+                        output, manifest, "research-program-delta"
+                    )
+                ),
+                {
+                    "schemaVersion": 2,
+                    "operations": [],
+                    "contributions": [],
+                    "placementAudits": [],
+                },
+            )
 
     def test_hierarchical_credit_normalizes_representation_not_meaning(self) -> None:
         self.assertTrue(_normalized_credit_decimal_matches("1.00", "1"))

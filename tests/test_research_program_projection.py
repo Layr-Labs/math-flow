@@ -153,6 +153,39 @@ class ResearchProgramProjectionTests(unittest.TestCase):
         self.assertIn("unclaimed content has not passed", builder["systemPrompt"])
         self.assertIn("do not reinterpret", builder["systemPrompt"])
 
+    def test_builder_v5_adds_audited_initial_hierarchy_without_rewriting_v4(
+        self,
+    ) -> None:
+        v4_path = (
+            self.root
+            / "protocol/judges/openrouter-hierarchical-research-builder-v4.json"
+        )
+        v5_path = (
+            self.root
+            / "protocol/judges/openrouter-hierarchical-research-builder-v5.json"
+        )
+        v4 = load_judge_spec(v4_path)
+        v5 = load_judge_spec(v5_path)
+        self.assertEqual(v4["outputProfile"], "math-flow/hierarchical-research-v4")
+        self.assertEqual(
+            v5["inputBuilder"], "accepted-validity-batch-program-state-v5"
+        )
+        self.assertEqual(v5["outputProfile"], "math-flow/hierarchical-research-v5")
+        self.assertEqual(v5["outputAdapter"], "structured-research-batch-v5")
+        self.assertEqual(v5["reducer"], "batched-research-state-v5")
+        self.assertIn("Do not use root as the default", v5["systemPrompt"])
+        self.assertIn("sibling and nested", v5["rubric"]["topology"])
+        self.assertIn("two or more", v5["rubric"]["freshHierarchy"])
+        profile = json.loads(
+            (
+                self.root / "protocol/profiles/hierarchical-research-v5.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertIn(
+            "protocol/schemas/research-program-delta-v5.schema.json",
+            profile["schemas"],
+        )
+
     def test_attestation_publication_redispatches_v3_and_v4_validity_streams(self) -> None:
         attestation = (
             self.root / ".github/workflows/project-attestation.yml"

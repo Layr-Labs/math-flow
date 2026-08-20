@@ -7,10 +7,12 @@ from math_flow.errors import MathFlowError
 from math_flow.research_state import (
     apply_research_program_delta,
     apply_research_program_batch_delta,
+    apply_research_program_batch_delta_v5,
     empty_research_program_state,
     materialize_credit_evaluations,
     validate_hierarchical_credit_state,
     validate_research_program_state,
+    validate_research_program_v5_batch_binding,
 )
 
 
@@ -487,6 +489,311 @@ class ResearchStateTests(unittest.TestCase):
                 subject_transaction_id=TX1,
                 accepted_claims=[claim(TX1, "main")],
                 judgment_id=JUDGMENT,
+            )
+
+    def test_v5_root_singleton_is_valid_but_second_root_singleton_is_rejected(
+        self,
+    ) -> None:
+        base = empty_research_program_state("demo")
+        first = apply_research_program_batch_delta_v5(
+            base,
+            {
+                "schemaVersion": 2,
+                "operations": first_delta()["operations"],
+                "contributions": [
+                    {"transactionId": TX1, **first_delta()["contribution"]}
+                ],
+                "placementAudits": [
+                    {
+                        "transactionId": TX1,
+                        "basis": "canonical-objective",
+                        "rationale": "This fixture result addresses the canonical objective directly.",
+                        "relatedProgramIds": [],
+                    }
+                ],
+            },
+            ledger_head=TX1,
+            accepted_claims_by_transaction={TX1: [claim(TX1, "main")]},
+            judgment_ids={TX1: JUDGMENT},
+        )
+        self.assertEqual(first["contributions"][TX1]["directProgramId"], "root")
+
+        second_delta = {
+            "schemaVersion": 2,
+            "operations": [
+                {
+                    "entityKind": "thread",
+                    "entityId": "root/second-global-line",
+                    "baseDigest": None,
+                    "value": {
+                        "id": "root/second-global-line",
+                        "programId": "root",
+                        "title": "Second global line",
+                        "summary": "Track a second accepted global result.",
+                        "kind": "research",
+                        "status": "active",
+                        "expectedExposure": "2",
+                        "conditions": [],
+                        "sourceTransactionIds": [TX2],
+                    },
+                },
+                {
+                    "entityKind": "item",
+                    "entityId": "root/result-two",
+                    "baseDigest": None,
+                    "value": {
+                        "id": "root/result-two",
+                        "programId": "root",
+                        "type": "result",
+                        "title": "Second result",
+                        "summary": "The second accepted mathematical conclusion.",
+                        "claimRefs": [
+                            {"transactionId": TX2, "claimKey": "second"}
+                        ],
+                        "sourceTransactionIds": [TX2],
+                        "dependencyItemIds": [],
+                    },
+                },
+            ],
+            "contributions": [
+                {
+                    "transactionId": TX2,
+                    "claimKeys": ["second"],
+                    "directProgramId": "root",
+                    "directThreadIds": ["root/second-global-line"],
+                    "itemIds": ["root/result-two"],
+                }
+            ],
+            "placementAudits": [
+                {
+                    "transactionId": TX2,
+                    "basis": "canonical-objective",
+                    "rationale": "This fixture also claims direct canonical scope.",
+                    "relatedProgramIds": [],
+                }
+            ],
+        }
+        with self.assertRaisesRegex(MathFlowError, "may not remain root-only"):
+            apply_research_program_batch_delta_v5(
+                first,
+                second_delta,
+                ledger_head=TX2,
+                accepted_claims_by_transaction={TX2: [claim(TX2, "second")]},
+                judgment_ids={TX2: "sha256:" + "d" * 64},
+            )
+
+    def test_v5_local_placement_rejects_a_retired_direct_program(self) -> None:
+        base = empty_research_program_state("demo")
+        delta = {
+            "schemaVersion": 2,
+            "operations": [
+                {
+                    "entityKind": "thread",
+                    "entityId": "root/retired-agenda",
+                    "baseDigest": None,
+                    "value": {
+                        "id": "root/retired-agenda",
+                        "programId": "root",
+                        "title": "Retired agenda",
+                        "summary": "A parent line for the retired program fixture.",
+                        "kind": "research",
+                        "status": "active",
+                        "expectedExposure": "1",
+                        "conditions": [],
+                        "sourceTransactionIds": [TX1],
+                    },
+                },
+                {
+                    "entityKind": "program",
+                    "entityId": "program/retired",
+                    "baseDigest": None,
+                    "value": {
+                        "id": "program/retired",
+                        "parentId": "root",
+                        "title": "Retired program",
+                        "objective": "Exercise local placement lifecycle validation.",
+                        "status": "retired",
+                        "parentThreadIds": ["root/retired-agenda"],
+                        "sourceTransactionIds": [TX1],
+                    },
+                },
+                {
+                    "entityKind": "thread",
+                    "entityId": "program/retired/direct",
+                    "baseDigest": None,
+                    "value": {
+                        "id": "program/retired/direct",
+                        "programId": "program/retired",
+                        "title": "Retired direct line",
+                        "summary": "A direct line under a retired program.",
+                        "kind": "research",
+                        "status": "active",
+                        "expectedExposure": "1",
+                        "conditions": [],
+                        "sourceTransactionIds": [TX1],
+                    },
+                },
+                {
+                    "entityKind": "item",
+                    "entityId": "program/retired/result",
+                    "baseDigest": None,
+                    "value": {
+                        "id": "program/retired/result",
+                        "programId": "program/retired",
+                        "type": "result",
+                        "title": "Retired-program result",
+                        "summary": "An accepted fixture result.",
+                        "claimRefs": [
+                            {"transactionId": TX1, "claimKey": "main"}
+                        ],
+                        "sourceTransactionIds": [TX1],
+                        "dependencyItemIds": [],
+                    },
+                },
+            ],
+            "contributions": [
+                {
+                    "transactionId": TX1,
+                    "claimKeys": ["main"],
+                    "directProgramId": "program/retired",
+                    "directThreadIds": ["program/retired/direct"],
+                    "itemIds": ["program/retired/result"],
+                }
+            ],
+            "placementAudits": [
+                {
+                    "transactionId": TX1,
+                    "basis": "local-objective",
+                    "rationale": "Deliberately name a retired local program.",
+                    "relatedProgramIds": ["program/retired"],
+                }
+            ],
+        }
+        with self.assertRaisesRegex(MathFlowError, "active non-root program"):
+            apply_research_program_batch_delta_v5(
+                base,
+                delta,
+                ledger_head=TX1,
+                accepted_claims_by_transaction={TX1: [claim(TX1, "main")]},
+                judgment_ids={TX1: JUDGMENT},
+            )
+
+    def test_v5_batch_binding_treats_claim_keys_as_an_unordered_set(self) -> None:
+        base = empty_research_program_state("demo")
+        operations = copy.deepcopy(first_delta()["operations"])
+        operations.append(
+            {
+                "entityKind": "item",
+                "entityId": "root/result-auxiliary",
+                "baseDigest": None,
+                "value": {
+                    "id": "root/result-auxiliary",
+                    "programId": "root",
+                    "type": "result",
+                    "title": "Auxiliary result",
+                    "summary": "Represent the second accepted fixture claim.",
+                    "claimRefs": [
+                        {"transactionId": TX1, "claimKey": "auxiliary"}
+                    ],
+                    "sourceTransactionIds": [TX1],
+                    "dependencyItemIds": [],
+                },
+            }
+        )
+        delta = {
+            "schemaVersion": 2,
+            "operations": operations,
+            "contributions": [
+                {
+                    "transactionId": TX1,
+                    "claimKeys": ["auxiliary", "main"],
+                    "directProgramId": "root",
+                    "directThreadIds": ["root/direct-line"],
+                    "itemIds": [
+                        "root/result-one",
+                        "root/proof-one",
+                        "root/result-auxiliary",
+                    ],
+                }
+            ],
+            "placementAudits": [
+                {
+                    "transactionId": TX1,
+                    "basis": "canonical-objective",
+                    "rationale": "The two-claim fixture addresses the canonical objective.",
+                    "relatedProgramIds": [],
+                }
+            ],
+        }
+        post = apply_research_program_batch_delta_v5(
+            base,
+            delta,
+            ledger_head=TX1,
+            accepted_claims_by_transaction={
+                TX1: [claim(TX1, "main"), claim(TX1, "auxiliary")]
+            },
+            judgment_ids={TX1: JUDGMENT},
+        )
+        validate_research_program_v5_batch_binding(
+            {
+                "schemaVersion": 3,
+                "problemId": "demo",
+                "baseProgramStateDigest": base["stateDigest"],
+                "judgments": [
+                    {
+                        "judgmentId": JUDGMENT,
+                        "runDigest": "sha256:" + "e" * 64,
+                        "subjectTransactionId": TX1,
+                        "acceptedClaimKeys": ["main", "auxiliary"],
+                        "excludedAssessments": [],
+                    }
+                ],
+            },
+            delta,
+            post,
+            "demo",
+        )
+
+    def test_v5_excluded_only_batch_binding_requires_the_exact_empty_delta(
+        self,
+    ) -> None:
+        state = empty_research_program_state("demo")
+        root_program = state["programs"]["root"]
+        with self.assertRaisesRegex(MathFlowError, "empty delta"):
+            validate_research_program_v5_batch_binding(
+                {
+                    "schemaVersion": 3,
+                    "problemId": "demo",
+                    "baseProgramStateDigest": state["stateDigest"],
+                    "judgments": [
+                        {
+                            "judgmentId": JUDGMENT,
+                            "runDigest": "sha256:" + "e" * 64,
+                            "subjectTransactionId": TX1,
+                            "acceptedClaimKeys": [],
+                            "excludedAssessments": [],
+                        }
+                    ],
+                },
+                {
+                    "schemaVersion": 2,
+                    "operations": [
+                        {
+                            "entityKind": "program",
+                            "entityId": "root",
+                            "baseDigest": root_program["digest"],
+                            "value": {
+                                key: value
+                                for key, value in root_program.items()
+                                if key != "digest"
+                            },
+                        }
+                    ],
+                    "contributions": [],
+                    "placementAudits": [],
+                },
+                state,
+                "demo",
             )
 
 
