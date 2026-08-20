@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "subject": {
+    "transactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+    "contributionId": "finite-grid-q0-foundations",
+    "path": "problems/bssc-sum-capacity/contributions/finite-grid-q0-foundations"
+  },
+  "verifier": {
+    "id": "python-stdlib-3-13-v1",
+    "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "implementation": "oci-command-v1"
+  },
+  "environment": {
+    "kind": "oci",
+    "image": "python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689",
+    "platform": "linux/amd64",
+    "network": "none",
+    "readOnlyRoot": true,
+    "user": "65534:65534",
+    "capabilities": [],
+    "noNewPrivileges": true,
+    "memoryBytes": 536870912,
+    "cpuCount": 1,
+    "pidsLimit": 128,
+    "tmpfsBytes": 67108864
+  },
+  "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+  "requestDigest": "sha256:bf49df34e13af622e08e35d4704bc719238252a2d03a052588d270d3f3f269a2",
+  "inputs": [
+    {
+      "path": "README.md",
+      "digest": "sha256:aa3bf8159f97be9b4ad1bcbbbf4aff3aa674348e6f52a5bf786ceff2138dccb9",
+      "bytes": 12329
+    },
+    {
+      "path": "claims.json",
+      "digest": "sha256:98970f9e963ac310d114a213f24b1a49bd6fee74793e3770af4d00f206e8f286",
+      "bytes": 1210
+    },
+    {
+      "path": "verification.json",
+      "digest": "sha256:1718d0c95881d9f249be125dce4b2c6b2d99de9a23b82a29fdf43cdfc06f2466",
+      "bytes": 224
+    },
+    {
+      "path": "verify_q0.py",
+      "digest": "sha256:0e20ba65773d2ec212182f96ecaae3f12bd1eaa28150ac3a0051ad34f748b9d4",
+      "bytes": 13879
+    }
+  ],
+  "invocation": {
+    "executable": "python3",
+    "fixedArguments": [
+      "-I",
+      "-B"
+    ],
+    "entrypoint": "verify_q0.py",
+    "arguments": [],
+    "timeoutSeconds": 300,
+    "maximumOutputBytes": 262144,
+    "successExitCodes": [
+      0
+    ]
+  },
+  "result": {
+    "status": "passed",
+    "exitCode": 0,
+    "timedOut": false
+  },
+  "outputs": {
+    "stdout": {
+      "digest": "sha256:e716fdfbff683bc32d88b94340527047874d61852f3603bf25808d96659d48d4",
+      "bytes": 583
+    },
+    "stderr": {
+      "digest": "sha256:e0b44311dc84e4993631aa4289458657fbc9c8bad94b21ffdae3ec5b16d7f944",
+      "bytes": 915
+    }
+  },
+  "producer": {
+    "implementation": "math-flow-oci-attestation-producer-v1",
+    "mathFlowVersion": "0.6.0"
+  },
+  "attestationId": "sha256:a71dfee1b6b06ceec3f1df3a48c98829618d81624c141c9da9a862ef4bae358a"
+}
