@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+  "problemLedgerDigest": "sha256:f3b30b22c15b2bc2ce0154529bbddff18c6516c4973a77afc809be1da2eeb0e6",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+      "ledgerPosition": 10
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/fixed-pair-upper-bound-attested",
+      "status": "valid",
+      "premiseStatus": "satisfied",
+      "summary": "Assuming the declared Gohari–Liu–Nair Theorem 9 outer-bound interface exactly as encoded, the exact-rational reductions and directed-interval weak-duality certificate establish the fixed-pair bound C_sum <= U, with U in the stated interval and therefore C_sum <= 0.369296945969202842443.",
+      "scopeQualifications": [
+        "The result is conditional on the declared dependency’s transcription of the external Theorem 9 premise; the external theorem and its transcription are not independently authenticated or re-proved.",
+        "The dependency is needed only for the outer-bound interface and the assertion that the six inequalities constrain every achievable private-message rate pair for the fixed receivers; its broader product-marginal reduction, Q0 discussion, and provenance material are unnecessary.",
+        "The certificate applies only to the specified fixed auxiliary receiver pair, with every displayed decimal treated as exact.",
+        "No receiver optimality, dual optimality, matching achievable rate, or exact BSSC sum-capacity is established.",
+        "The proof uses weak duality over the full continuous posterior domain and all input priors; it does not rely on strong duality, attainment, minimax interchange, or a sampled grid."
+      ],
+      "evidenceIssues": [
+        "The supplied evidence does not authenticate the external manuscript or independently prove Gohari–Liu–Nair Theorem 9; this is not fatal because that premise is explicitly assumed."
+      ],
+      "evidenceTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ],
+      "requiredDependencyTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/fixed-pair-upper-bound-attested",
+      "stance": "supports",
+      "summary": "Assuming the declared Gohari–Liu–Nair Theorem 9 outer-bound interface exactly as encoded, the exact-rational reductions and directed-interval weak-duality certificate establish the fixed-pair bound C_sum <= U, with U in the stated interval and therefore C_sum <= 0.369296945969202842443.",
+      "subjectTransactionIds": [
+        "d2506be78c46f1799e9b54cfcb6eee17b984f0f1"
+      ],
+      "evidenceTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ]
+    }
+  ],
+  "dependencyPacketDigest": "sha256:c2a6e44c4f243e298fc45a5d5d748ce3a0e1bcbd8607c04b6adfe953577157f8",
+  "reportDigest": "sha256:ee3e95a6f56d10efd9825213f1df6180510aa862497d375c467ed23c867ff3bc",
+  "judgmentId": "sha256:5046c2345351f57ac7f82aecf1cf537fbd64cd92dad1e3694282ae6ec9f1f2bc"
+}
