@@ -1156,6 +1156,97 @@ class ResearchProjectionTests(unittest.TestCase):
                 required_dependencies=[dependency_transaction],
                 evidence_transaction_ids=[dependency_transaction],
             )
+            _, dependency_judgment, _ = load_judgment_bundle(dependency)
+            _, dependent_judgment, _ = load_judgment_bundle(dependent)
+
+            independent_scheduler = root / "scheduler-independent-v4.json"
+            independent_lane_output = root / "lane-independent-v4.json"
+            status = main(
+                [
+                    "--root",
+                    str(ROOT),
+                    "knowledge-trigger",
+                    "--scheduler-file",
+                    str(independent_scheduler),
+                    "--problem",
+                    PROBLEM,
+                    "--head",
+                    dependent_transaction,
+                    "--builder",
+                    str(
+                        ROOT
+                        / "protocol/judges/openrouter-hierarchical-research-builder-v4.json"
+                    ),
+                    "--minimum-interval",
+                    "0",
+                    "--judgment-dir",
+                    str(dependency),
+                    "--now",
+                    "1",
+                    "--output",
+                    str(independent_lane_output),
+                ]
+            )
+            self.assertEqual(status, 0)
+            independent_lane = json.loads(
+                independent_lane_output.read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                independent_lane["observedJudgmentIds"],
+                [dependency_judgment["judgmentId"]],
+            )
+            self.assertIsNotNone(
+                claim_due_build(
+                    independent_scheduler,
+                    str(independent_lane["laneId"]),
+                    1,
+                    500,
+                )
+            )
+
+            blocked_scheduler = root / "scheduler-blocked-v4.json"
+            blocked_lane_output = root / "lane-blocked-v4.json"
+            status = main(
+                [
+                    "--root",
+                    str(ROOT),
+                    "knowledge-trigger",
+                    "--scheduler-file",
+                    str(blocked_scheduler),
+                    "--problem",
+                    PROBLEM,
+                    "--head",
+                    dependent_transaction,
+                    "--builder",
+                    str(
+                        ROOT
+                        / "protocol/judges/openrouter-hierarchical-research-builder-v4.json"
+                    ),
+                    "--minimum-interval",
+                    "0",
+                    "--judgment-dir",
+                    str(dependent),
+                    "--now",
+                    "1",
+                    "--output",
+                    str(blocked_lane_output),
+                ]
+            )
+            self.assertEqual(status, 0)
+            blocked_lane = json.loads(
+                blocked_lane_output.read_text(encoding="utf-8")
+            )
+            self.assertEqual(blocked_lane["observedJudgmentIds"], [])
+            self.assertEqual(blocked_lane["pendingJudgmentIds"], [])
+            self.assertIsNone(
+                claim_due_build(
+                    blocked_scheduler,
+                    str(blocked_lane["laneId"]),
+                    1,
+                    500,
+                )
+            )
+
             scheduler = root / "scheduler-v4.json"
             lane_output = root / "lane-v4.json"
             status = main(
@@ -1187,8 +1278,6 @@ class ResearchProjectionTests(unittest.TestCase):
                 ]
             )
             self.assertEqual(status, 0)
-            _, dependency_judgment, _ = load_judgment_bundle(dependency)
-            _, dependent_judgment, _ = load_judgment_bundle(dependent)
             lane = json.loads(lane_output.read_text(encoding="utf-8"))
             self.assertEqual(
                 lane["judgmentDependencies"][dependent_judgment["judgmentId"]],

@@ -167,26 +167,65 @@ jobs:
             --head refs/remotes/origin/main \
             --engine openrouter-repository-v1 \
             --output "$projection_plan"
+          projection_dir="${RUNNER_TEMP}/projection-wake"
+          if git ls-remote --exit-code origin refs/heads/projections >/dev/null 2>&1; then
+            git fetch origin refs/heads/projections:refs/remotes/origin/projections
+            git worktree add --detach "$projection_dir" refs/remotes/origin/projections
+          else
+            mkdir -p "$projection_dir"
+          fi
+          failed_stream_dispatches=0
           while IFS= read -r stream; do
             judgment_stream_id="$(jq -r '.judgmentStreamId' <<< "$stream")"
+            primary_judge="$(jq -r '.primaryJudge' <<< "$stream")"
             first_projection="$(jq -r '.projections[0]' <<< "$stream")"
             remaining_projections="$(jq -c '.projections[1:]' <<< "$stream")"
-            for attempt in {1..5}; do
-              if gh workflow run project-openrouter.yml \
-                --repo "$GITHUB_REPOSITORY" \
-                --ref main \
-                -f projection="$first_projection" \
-                -f problem="$MATH_FLOW_PROBLEM_ID" \
-                -f judgment_stream_id="$judgment_stream_id" \
-                -f remaining_projections="$remaining_projections"; then
-                break
+            before_coverage="${RUNNER_TEMP}/attestation-coverage-before-${judgment_stream_id#sha256:}.json"
+            coverage="${RUNNER_TEMP}/attestation-coverage-after-${judgment_stream_id#sha256:}.json"
+            python -m math_flow judgment-plan \
+              --problem "$MATH_FLOW_PROBLEM_ID" \
+              --judge "$primary_judge" \
+              --head refs/remotes/origin/main \
+              --projection-dir "${RUNNER_TEMP}/projection-preflight" \
+              --output "$before_coverage"
+            python -m math_flow judgment-plan \
+              --problem "$MATH_FLOW_PROBLEM_ID" \
+              --judge "$primary_judge" \
+              --head refs/remotes/origin/main \
+              --projection-dir "$projection_dir" \
+              --output "$coverage"
+            while IFS= read -r subject_transaction; do
+              dispatched=false
+              for attempt in {1..5}; do
+                if gh workflow run project-openrouter.yml \
+                  --repo "$GITHUB_REPOSITORY" \
+                  --ref main \
+                  -f projection="$first_projection" \
+                  -f problem="$MATH_FLOW_PROBLEM_ID" \
+                  -f judgment_stream_id="$judgment_stream_id" \
+                  -f subject_transaction="$subject_transaction" \
+                  -f remaining_projections="$remaining_projections"; then
+                  dispatched=true
+                  break
+                fi
+                sleep 2
+              done
+              if [[ "$dispatched" != "true" ]]; then
+                echo "Failed to redispatch $judgment_stream_id/$subject_transaction." >&2
+                failed_stream_dispatches=$((failed_stream_dispatches + 1))
               fi
-              if [[ "$attempt" -eq 5 ]]; then
-                echo "Failed to redispatch attestation-aware stream $judgment_stream_id." >&2
-                exit 1
-              fi
-              sleep 2
-            done
+            done < <(
+              jq -r --slurpfile before "$before_coverage" '
+                .missingTransactions[]
+                | .transactionId as $id
+                | select(
+                    ($before[0].missingTransactions
+                    | map(.transactionId)
+                    | index($id)) == null
+                  )
+                | $id
+              ' "$coverage"
+            )
           done < <(
             jq -c '
               .projections
@@ -198,7 +237,11 @@ jobs:
               | group_by(.judgmentStreamId)[]
               | {
                   judgmentStreamId: .[0].judgmentStreamId,
+                  primaryJudge: .[0].primaryJudge,
                   projections: [.[].projectionId]
                 }
             ' "$projection_plan"
           )
+          if [[ "$failed_stream_dispatches" -gt 0 ]]; then
+            exit 1
+          fi

@@ -56,6 +56,7 @@ from .projection_queue import (
     filter_projection_dispatch_history,
     merge_scheduler_states,
     plan_due_projection_dispatches,
+    plan_projection_wakeup_dispatches,
 )
 from .repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
 from .research_projection import (
@@ -431,6 +432,10 @@ def build_parser() -> argparse.ArgumentParser:
     judgment_plan_parser.add_argument("--judge", required=True, type=Path)
     judgment_plan_parser.add_argument("--head", default="HEAD")
     judgment_plan_parser.add_argument("--projection-dir", required=True, type=Path)
+    judgment_plan_parser.add_argument(
+        "--subject-transaction",
+        help="limit coverage to one exact canonical transaction",
+    )
     judgment_plan_parser.add_argument("--output", type=Path)
 
     judgment_input_parser = commands.add_parser(
@@ -453,6 +458,10 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         default=[],
         dest="expected_new_subjects",
+    )
+    judgment_input_parser.add_argument(
+        "--target-subject",
+        help="allow other ready subjects to remain explicitly pending",
     )
     judgment_input_parser.add_argument("--output", type=Path)
 
@@ -491,6 +500,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         dest="expected_new_conflicts",
     )
+    reconciliation_plan_parser.add_argument(
+        "--allow-expected-subset",
+        action="store_true",
+        help="verify a nonempty artifact subset of the exact expected conflict plan",
+    )
     reconciliation_plan_parser.add_argument("--output", type=Path)
 
     verify_judgments_parser = commands.add_parser(
@@ -506,6 +520,16 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         default=[],
         dest="expected_subjects",
+    )
+    verify_judgments_parser.add_argument(
+        "--allow-expected-subset",
+        action="store_true",
+        help="verify a nonempty artifact subset of the exact expected subject plan",
+    )
+    verify_judgments_parser.add_argument(
+        "--retain-expected-subset",
+        action="store_true",
+        help="verify all artifacts but retain only whole bundles inside the expected plan",
     )
     verify_judgments_parser.add_argument("--output", type=Path)
 
@@ -644,6 +668,31 @@ def build_parser() -> argparse.ArgumentParser:
         "--run-history", required=True, type=Path
     )
     filter_projection_parser.add_argument("--output", required=True, type=Path)
+
+    wakeup_projection_parser = commands.add_parser(
+        "projection-wakeup-plan",
+        help="expand due projection streams into authorized exact-subject wakeups",
+    )
+    wakeup_projection_parser.add_argument("--plan", required=True, type=Path)
+    wakeup_projection_parser.add_argument(
+        "--run-history", required=True, type=Path
+    )
+    wakeup_projection_parser.add_argument(
+        "--projection-dir", required=True, type=Path
+    )
+    wakeup_projection_parser.add_argument(
+        "--targeted-projection",
+        required=True,
+        action="append",
+        dest="targeted_projections",
+    )
+    wakeup_projection_parser.add_argument(
+        "--targeted-problem",
+        required=True,
+        action="append",
+        dest="targeted_problems",
+    )
+    wakeup_projection_parser.add_argument("--output", required=True, type=Path)
 
     viewer_parser = commands.add_parser(
         "export-viewer", help="export a hierarchical run chain for the interactive viewer"
@@ -962,6 +1011,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.problem,
                 args.judge,
                 args.head,
+                args.subject_transaction,
             )
             _write_json(result, str(args.output) if args.output else None)
             return 0
@@ -974,6 +1024,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.head,
                 args.additional_roots,
                 args.expected_new_subjects,
+                args.target_subject,
             )
             _write_json(result, str(args.output) if args.output else None)
             return 0
@@ -988,6 +1039,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.primary_judgment_dirs,
                 args.reconciliation_additional_roots,
                 args.expected_new_conflicts,
+                args.allow_expected_subset,
             )
             _write_json(result, str(args.output) if args.output else None)
             return 0
@@ -999,6 +1051,8 @@ def main(argv: list[str] | None = None) -> int:
                 args.judge,
                 args.head,
                 args.expected_subjects,
+                args.allow_expected_subset,
+                args.retain_expected_subset,
             )
             _write_json(result, str(args.output) if args.output else None)
             return 0
@@ -1299,6 +1353,26 @@ def main(argv: list[str] | None = None) -> int:
                     "projection plan or workflow history is not valid JSON"
                 ) from exc
             result = filter_projection_dispatch_history(plan, run_history)
+            _write_json(result, str(args.output))
+            return 0
+        elif args.command == "projection-wakeup-plan":
+            try:
+                plan = json.loads(args.plan.read_text(encoding="utf-8"))
+                run_history = json.loads(
+                    args.run_history.read_text(encoding="utf-8")
+                )
+            except json.JSONDecodeError as exc:
+                raise MathFlowError(
+                    "projection wakeup plan or workflow history is not valid JSON"
+                ) from exc
+            result = plan_projection_wakeup_dispatches(
+                root,
+                args.projection_dir,
+                plan,
+                run_history,
+                set(args.targeted_projections),
+                set(args.targeted_problems),
+            )
             _write_json(result, str(args.output))
             return 0
         elif args.command == "export-viewer":

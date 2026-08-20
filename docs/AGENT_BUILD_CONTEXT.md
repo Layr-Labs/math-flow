@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-19 (`25b8bf8`).
+Last reconciled with `main`: 2026-08-20 (`d2506be`).
 
 ## Product thesis
 
@@ -140,6 +140,12 @@ automatic squash merge to main
   independent transaction without being discarded or forcing either judgment to
   rerun. Only an explicit mathematical dependency may create a validity-ordering
   constraint; single-writer knowledge formation is a downstream concern.
+- Hosted automatic dispatches identify one exact subject transaction. Runs are
+  concurrency-keyed by projection, problem, and subject with cancellation
+  disabled: duplicate triggers for one subject queue and replan after waiting,
+  while different subjects remain parallel. Manual batch planning remains an
+  explicit recovery mode. Published indexes and publication preflight reject
+  distinct primary judgment IDs for one judge-spec digest and subject.
 - A validity-only primary judge devotes its mathematical work to rigorous,
   conservative correctness verification, with prevention of false acceptance
   as its overriding priority. It may decompose a proof into any number of
@@ -259,10 +265,10 @@ preference.
 | Generic run/artifact envelope | Implemented | `math_flow/runs.py`, `math_flow/artifacts.py` |
 | Approved projection registry | Implemented | `math_flow/governance.py`, `protocol/projections/` |
 | Permissioned governed admission | Implemented; native reviews or exact `/approve-admission <full-head-SHA>` comments | `math_flow/governance.py`, `.github/workflows/admission-control.yml` |
-| Parallel primary judgments | Implemented; validity v4 adds subject-and-declared-reference terminal-attestation deferral while keeping unrelated subjects parallel | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
+| Parallel primary judgments | Implemented with exact-subject automatic dispatch, same-subject queue/replan deduplication, and distinct-subject concurrency; validity v4 adds subject-and-declared-reference terminal-attestation deferral | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
 | Conflict detection and reconciliation | Implemented for legacy projections; the default validity-v2 path omits this stage | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
-| Coalescing, leased formation lanes | Implemented, including atomic submission-dependency components | `math_flow/coordination.py` |
-| Batched hierarchical research state | research-v2 is active with validity/builder v3; additive validity/builder v4 runtime is implemented for a later governed research-v3 admission, preserving judge-selected premise edges and complete exclusion of invalid/indeterminate submissions | `math_flow/research_projection.py`, `math_flow/research_state.py`, `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md` |
+| Coalescing, leased formation lanes | Implemented, including atomic submission-dependency components and one hosted lock spanning formation through final state publication | `math_flow/coordination.py`, `.github/workflows/project-openrouter.yml` |
+| Batched hierarchical research state | research-v3 is active with validity/builder v4, claim-local terminal reference attestations, judge-selected premise edges, and complete exclusion of invalid/indeterminate submissions | `math_flow/research_projection.py`, `math_flow/research_state.py`, `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md` |
 | Holistic hierarchical state and revisions | Implemented | `math_flow/formation.py`, `math_flow/knowledge.py` |
 | Content-addressed projection publisher | Implemented, including optimistic cross-problem merge/retry and bounded GitHub commits | `math_flow/coordination.py`, `math_flow/projection_queue.py`, `math_flow/github_projection.py` |
 | Provider-free congestion probe | Implemented; models concurrent problems, solvers, judge streams, projection lanes, atomic reconciliations, throttling, failure recovery, optimistic publication, chunking, catalog export, and agent context with zero provider calls | `math_flow/scale_probe.py`, `tests/test_scale_probe.py` |
@@ -278,7 +284,7 @@ preference.
 
 The approved hosted projections are:
 
-- `openrouter-research-v1`, the wildcard default knowledge projection. It uses
+- `openrouter-research-v1`, the legacy wildcard knowledge projection. It uses
   parallel validity-v2 judgments, no reconciliation stage, the batched
   hierarchical research-state v2 builder, and a five-minute formation interval
   for every admitted problem with a nonempty canonical ledger;
@@ -286,6 +292,10 @@ The approved hosted projections are:
   validity-v3 judgments and hierarchical research builder v3, with
   judge-selected required premises and subject-local objective-attestation
   gating;
+- `openrouter-research-v3`, the current manual-workflow default wildcard lane.
+  It uses validity/builder v4 and binds terminal attestations for the subject
+  and exactly its declared references while retaining claim-local required
+  premise edges;
 - `openrouter-no-three-in-line-research-programs-v2`, a knowledge-only profile
   for `no-three-in-line-77` that reuses the same immutable primary and
   reconciliation judgments while prioritizing independent research programs;
@@ -298,10 +308,10 @@ The approved hosted projections are:
   evidence, its locked knowledge dependency, and the direction-event ledger are
   approved inputs to its OpenRouter runner.
 
-The v4 validity and hierarchical-research components are versioned runtime
-surfaces, not yet an approved hosted projection at this snapshot. Admit them
-only through a separate one-file `openrouter-research-v3` projection PR after
-the runtime change merges; see `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md`.
+The v4 validity and hierarchical-research components were admitted additively
+through `openrouter-research-v3`; the older v1/v2 specifications remain
+immutable for replay while their retirement is handled through separate
+governed status changes. See `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md`.
 
 The `openrouter-credit-assignment-v2` runner/profile embeds the verified
 direction-event ledger and lets assignments cite exact prior canonical
@@ -506,34 +516,61 @@ The ordinary solver path is fully automatic:
 3. If the PR is still open, non-draft, targets `main`, and every required check
    succeeded, it is squash-merged at the exact validated head SHA.
 4. For a contribution, the auto-merger explicitly dispatches the baseline and
-   approved OpenRouter workflows for only the affected problem. If the merged
+   approved OpenRouter workflows for only the affected problem and exact merged
+   transaction. If the merged
    transaction contains `verification.json`, it also dispatches the trusted,
    provider-free objective-attestation workflow for that exact squash SHA. A direction
    event dispatches only the provider-free viewer-catalog refresh because it has
    no mathematical judgment effect.
-5. OpenRouter coverage planning fans out one primary judgment for each
-   transaction not covered by the active judge-spec digest. On validity v3, a
+5. Automatic OpenRouter coverage planning targets the dispatched transaction
+   and emits a one-item or empty matrix according to the active judge-spec
+   digest. Different subjects retain independent concurrency; duplicate
+   same-subject triggers wait and replan to zero after successful publication.
+   On validity v3, a
    transaction requesting objective verification is listed as deferred until
    its terminal attestation exists; unrelated transactions stay in the matrix
    and continue in parallel. Validity v4 applies the same subject-local rule to
    pending requests on the exact declared-reference union, without scanning the
-   preceding ledger. Terminal attestation publication redispatches each
-   applicable active v3 or v4 judge stream.
-6. The default validity-v2 path reconstructs the complete verified primary set
+   preceding ledger. Terminal attestation publication diffs pre/post coverage
+   and redispatches each exact newly-ready subject in every applicable active v3
+   or v4 judge stream, including subjects unblocked through a declared reference.
+6. Each paid primary result is verified and published as an immutable object
+   before reconciliation or formation and without touching the scheduler. One
+   projection/problem lock then spans formation through final knowledge-state
+   and scheduler publication. Reconciliation-free validity v3/v4 lanes may
+   integrate ready independent judgments while another primary is pending;
+   `knowledge-trigger` withholds any claim whose required-premise judgment is
+   absent. Legacy reconciliation lanes retain complete ready-primary coverage.
+   Durable recovery treats reusable published judgments absent from the lane's
+   observed IDs as fresh work even when the problem ledger is unchanged.
+7. The validity-v2 path reconstructs the complete verified primary set
    and derives the submission dependency graph directly from immutable validity
    packets. Validity v3 instead derives formation edges from the exact required
    premises selected by the primary judge, while retaining broader declared
    references only as provenance. Validity v4 preserves that formation rule and
    adds bounded reference-attestation evidence to the immutable packet. Legacy projections additionally derive current conflicts, reuse
    matching published reconciliations, and fan out missing reconciliation calls.
-7. Completed judgments are claimed dependency-atomically into one batched
+8. Completed judgments are claimed dependency-atomically into one batched
    knowledge build, then published with the updated scheduler, indexes, and
    viewer catalog. Later knowledge projections using the same judge identities
    reuse those published judgments.
-8. Cross-problem publications three-way merge disjoint scheduler lanes against
+9. Cross-problem publications three-way merge disjoint scheduler lanes against
    the latest orphan-branch head and retry expected-head races. A scheduled
-   wake-up pass redispatches due coalesced lanes every five minutes. Formation
-   failures publish their claim rollback and an exponential retry marker;
+   wake-up pass redispatches due coalesced lanes every five minutes. For the
+   explicitly allowlisted research-v3 problems it recomputes validity-v4
+   coverage, dispatches each ready missing primary as an exact subject, and
+   uses one subjectless wake only when formation/recovery remains with no ready
+   primary gap. Exact-subject run history suppresses only that subject; legacy
+   projection streams retain their subjectless behavior, while an allowlisted
+   projection is suppressed completely outside its explicit problem allowlist.
+   Batch-history suppression of that projection also suppresses any surviving
+   projection in the same judge stream, so it cannot bypass the target boundary.
+   An active sibling batch suppresses exact wakeups for that full stream until
+   it finishes, and exact-subject history is shared across every sibling.
+   Subjectless scheduled recovery carries a live no-primary-work guard, so a
+   newly ready subject stops the run before provider work rather than widening
+   it into a batch. Formation failures publish their claim rollback and an
+   exponential retry marker;
    automatic retry stops after five failures on one problem ledger. Same-head
    workflow history applies the same cap to failures before formation begins,
    while leaving unrelated projections eligible.
@@ -555,10 +592,14 @@ do not rerun paid judgments. After fixing the downstream defect, dispatch
 `resume_run_id` to the failed run. The workflow downloads and re-verifies the
 retained judgment artifacts and skips the judgment matrix.
 
-If one parallel judgment job itself fails, use GitHub Actions' **rerun failed
-jobs** operation on that original run. This preserves successful matrix jobs,
-regenerates only the missing judgment, and then reruns the dependent formation
-and publication jobs. `resume_run_id` is not a partial-matrix repair mechanism.
+If one primary or reconciliation matrix job itself fails, its publisher first
+verifies and durably publishes every successful sibling artifact that is a
+nonempty subset of the frozen plan, then leaves the run failed. Use GitHub
+Actions' **rerun failed jobs** operation on that original run. This regenerates
+only the missing item and then reruns the dependent formation and publication
+jobs. A subjectless `resume_run_id` can preserve an already-produced in-plan
+subset while excluding and reporting whole out-of-plan bundles, but it cannot
+regenerate missing work and is not a partial-matrix repair mechanism.
 
 Formation caches successful provider stages by exact request digest. Empty
 assistant messages are retried up to three times and are never checkpointed;

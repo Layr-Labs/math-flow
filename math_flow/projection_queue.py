@@ -7,7 +7,7 @@ from pathlib import Path
 from .artifacts import verify_bundle
 from .coordination import DIGEST, MAX_AUTOMATIC_FAILURES, lane_id
 from .errors import MathFlowError
-from .governance import list_active_projections
+from .governance import list_active_projections, resolve_projection
 from .problem_registry import active_problem_ids
 from .repository import (
     ledger,
@@ -59,6 +59,13 @@ _LAST_FAILURE_FIELDS = {
     "failedAt",
     "consecutiveFailures",
     "retryNotBefore",
+}
+_ACTIVE_WORKFLOW_STATUSES = {
+    "in_progress",
+    "pending",
+    "queued",
+    "requested",
+    "waiting",
 }
 
 
@@ -618,6 +625,60 @@ def filter_projection_dispatch_history(
         or not isinstance(problems, list)
     ):
         raise MathFlowError("projection dispatch plan is invalid")
+    runs = _validated_projection_run_history(run_history)
+
+    filtered_problems: list[dict[str, object]] = []
+    for problem_item in problems:
+        if not isinstance(problem_item, dict) or set(problem_item) != {
+            "problemId",
+            "projections",
+        }:
+            raise MathFlowError("projection dispatch plan contains an invalid problem")
+        problem = problem_item.get("problemId")
+        projections = problem_item.get("projections")
+        if not isinstance(problem, str) or not isinstance(projections, list):
+            raise MathFlowError("projection dispatch plan contains an invalid problem")
+        selected: list[object] = []
+        for projection in projections:
+            if not isinstance(projection, dict):
+                raise MathFlowError(
+                    "projection dispatch plan contains an invalid projection"
+                )
+            projection_id = projection.get("projectionId")
+            if not isinstance(projection_id, str):
+                raise MathFlowError(
+                    "projection dispatch plan contains an invalid projection"
+                )
+            # Legacy workflows used the unsuffixed title.  Target-aware
+            # workflows reserve ``/batch`` for subjectless recovery; exact
+            # subject titles are filtered independently so one running subject
+            # never suppresses another ready subject in the same stream.
+            titles = {
+                f"Project {projection_id}/{problem}",
+                f"Project {projection_id}/{problem}/batch",
+            }
+            if not _projection_dispatch_allowed(
+                runs,
+                titles,
+                repository_head,
+                maximum_consecutive_failures,
+            ):
+                continue
+            selected.append(copy.deepcopy(projection))
+        if selected:
+            filtered_problems.append(
+                {"problemId": problem, "projections": selected}
+            )
+    return {
+        "schemaVersion": 1,
+        "repositoryHead": repository_head,
+        "problems": filtered_problems,
+    }
+
+
+def _validated_projection_run_history(
+    run_history: object,
+) -> list[dict[str, object]]:
     if not isinstance(run_history, list):
         raise MathFlowError("projection workflow history must be a list")
 
@@ -650,64 +711,243 @@ def filter_projection_dispatch_history(
         seen_run_ids.add(run_id)
         runs.append(item)
     runs.sort(key=lambda item: int(item["databaseId"]), reverse=True)
+    return runs
 
-    active_statuses = {
-        "in_progress",
-        "pending",
-        "queued",
-        "requested",
-        "waiting",
-    }
-    filtered_problems: list[dict[str, object]] = []
-    for problem_item in problems:
-        if not isinstance(problem_item, dict) or set(problem_item) != {
-            "problemId",
-            "projections",
-        }:
-            raise MathFlowError("projection dispatch plan contains an invalid problem")
-        problem = problem_item.get("problemId")
-        projections = problem_item.get("projections")
-        if not isinstance(problem, str) or not isinstance(projections, list):
-            raise MathFlowError("projection dispatch plan contains an invalid problem")
-        selected: list[object] = []
-        for projection in projections:
-            if not isinstance(projection, dict):
-                raise MathFlowError(
-                    "projection dispatch plan contains an invalid projection"
-                )
+
+def _projection_dispatch_allowed(
+    runs: list[dict[str, object]],
+    titles: set[str],
+    repository_head: str,
+    maximum_consecutive_failures: int,
+) -> bool:
+    matching = [
+        run
+        for run in runs
+        if run["displayTitle"] in titles and run["headSha"] == repository_head
+    ]
+
+    if any(run["status"] in _ACTIVE_WORKFLOW_STATUSES for run in matching):
+        return False
+    consecutive_failures = 0
+    for run in matching:
+        if run["status"] != "completed":
+            continue
+        if run["conclusion"] == "success":
+            break
+        if run["conclusion"] == "failure":
+            consecutive_failures += 1
+    return consecutive_failures < maximum_consecutive_failures
+
+
+def _projection_dispatch_active(
+    runs: list[dict[str, object]],
+    titles: set[str],
+    repository_head: str,
+) -> bool:
+    return any(
+        run["displayTitle"] in titles
+        and run["headSha"] == repository_head
+        and run["status"] in _ACTIVE_WORKFLOW_STATUSES
+        for run in runs
+    )
+
+
+def plan_projection_wakeup_dispatches(
+    root: Path,
+    projection_root: Path,
+    plan: object,
+    run_history: object,
+    targeted_projection_ids: set[str],
+    targeted_problem_ids: set[str],
+    maximum_consecutive_failures: int = MAX_AUTOMATIC_FAILURES,
+) -> dict[str, object]:
+    """Expand due streams into exact ready subjects or one recovery batch.
+
+    Only streams containing an explicitly targeted projection are expanded into
+    exact subjects.  Other streams retain their historical subjectless behavior.
+    The caller therefore controls the external-data authorization boundary.
+    """
+
+    if not isinstance(targeted_projection_ids, set) or not targeted_projection_ids:
+        raise MathFlowError("projection wakeup targets must be a nonempty set")
+    for projection_id in targeted_projection_ids:
+        if not isinstance(projection_id, str):
+            raise MathFlowError("projection wakeup target IDs must be strings")
+        validate_slug(projection_id, "projection wakeup target id")
+    if not isinstance(targeted_problem_ids, set) or not targeted_problem_ids:
+        raise MathFlowError("projection wakeup problems must be a nonempty set")
+    for problem_id in targeted_problem_ids:
+        if not isinstance(problem_id, str):
+            raise MathFlowError("projection wakeup problem IDs must be strings")
+        validate_slug(problem_id, "projection wakeup problem id")
+
+    # Reuse the governed dispatch-plan validator without applying any history
+    # suppression.  The supplied plan has already passed the subjectless batch
+    # filter; exact subjects are filtered independently below.
+    validated = filter_projection_dispatch_history(
+        plan, [], maximum_consecutive_failures
+    )
+    runs = _validated_projection_run_history(run_history)
+    repository_head = str(validated["repositoryHead"])
+    root = root.resolve()
+    projection_root = projection_root.resolve()
+
+    from .judgments import plan_primary_judgment_coverage
+
+    dispatches: list[dict[str, object]] = []
+    for problem_item in validated["problems"]:
+        problem = str(problem_item["problemId"])
+        active = list_active_projections(
+            root,
+            problem,
+            repository_head,
+            engine="openrouter-repository-v1",
+        )["projections"]
+        targeted_stream_ids = {
+            str(item["judgmentStreamId"])
+            for item in active
+            if str(item["projectionId"]) in targeted_projection_ids
+        }
+        active_projection_ids_by_stream: dict[str, list[str]] = {}
+        for item in active:
+            active_projection_ids_by_stream.setdefault(
+                str(item["judgmentStreamId"]), []
+            ).append(str(item["projectionId"]))
+        for projection_ids in active_projection_ids_by_stream.values():
+            projection_ids.sort()
+        streams: dict[str, list[dict[str, object]]] = {}
+        stream_judges: dict[str, str] = {}
+        for projection in problem_item["projections"]:
             projection_id = projection.get("projectionId")
-            if not isinstance(projection_id, str):
+            stream_id = projection.get("judgmentStreamId")
+            primary_judge = projection.get("primaryJudge")
+            if not all(
+                isinstance(value, str)
+                for value in (projection_id, stream_id, primary_judge)
+            ):
                 raise MathFlowError(
-                    "projection dispatch plan contains an invalid projection"
+                    "projection wakeup plan contains an incomplete judgment stream"
                 )
-            title = f"Project {projection_id}/{problem}"
-            matching = [
-                run
-                for run in runs
-                if run["displayTitle"] == title
-                and run["headSha"] == repository_head
-            ]
-            if any(run["status"] in active_statuses for run in matching):
-                continue
-            consecutive_failures = 0
-            for run in matching:
-                if run["status"] != "completed":
-                    continue
-                if run["conclusion"] == "success":
-                    break
-                if run["conclusion"] == "failure":
-                    consecutive_failures += 1
-            if consecutive_failures >= maximum_consecutive_failures:
-                continue
-            selected.append(copy.deepcopy(projection))
-        if selected:
-            filtered_problems.append(
-                {"problemId": problem, "projections": selected}
+            governed = resolve_projection(
+                root, projection_id, problem, repository_head
             )
+            if projection != governed:
+                raise MathFlowError(
+                    "projection wakeup plan does not match its governed projection"
+                )
+            previous_judge = stream_judges.setdefault(stream_id, primary_judge)
+            if previous_judge != primary_judge:
+                raise MathFlowError(
+                    "projection wakeup stream has inconsistent primary judges"
+                )
+            streams.setdefault(stream_id, []).append(projection)
+
+        for stream_id in sorted(streams):
+            targeted_stream = stream_id in targeted_stream_ids
+            targeted_projection_present = any(
+                str(item["projectionId"]) in targeted_projection_ids
+                for item in streams[stream_id]
+            )
+            authorized_stream = problem in targeted_problem_ids and targeted_stream
+            stream = sorted(
+                streams[stream_id],
+                key=lambda item: (
+                    authorized_stream
+                    and str(item["projectionId"]) not in targeted_projection_ids,
+                    str(item["projectionId"]),
+                ),
+            )
+            projection_ids = [str(item["projectionId"]) for item in stream]
+            first_projection = projection_ids[0]
+            remaining = projection_ids[1:]
+            base = {
+                "problemId": problem,
+                "judgmentStreamId": stream_id,
+                "projectionId": first_projection,
+                "remainingProjectionIds": remaining,
+                "requireNoPrimaryWork": False,
+            }
+            if targeted_stream and not targeted_projection_present:
+                # The subjectless history prefilter may remove the authorized
+                # projection while leaving another projection in its shared
+                # judge stream.  Suppress the whole stream instead of routing
+                # the same primary payload through that survivor.
+                continue
+            if targeted_stream and problem not in targeted_problem_ids:
+                # A targeted wildcard projection must never fall back to an
+                # unscoped batch for a problem outside the explicit egress
+                # authorization.
+                continue
+            if not authorized_stream:
+                dispatches.append({**base, "subjectTransactionId": None})
+                continue
+
+            history_projection_ids = active_projection_ids_by_stream[stream_id]
+            batch_titles = {
+                title
+                for projection_id in history_projection_ids
+                for title in (
+                    f"Project {projection_id}/{problem}",
+                    f"Project {projection_id}/{problem}/batch",
+                )
+            }
+            if _projection_dispatch_active(
+                runs, batch_titles, repository_head
+            ):
+                # A sibling batch in the same judge stream may be producing all
+                # of these primary judgments under another projection key.
+                continue
+
+            primary_judge = stream_judges[stream_id]
+            coverage = plan_primary_judgment_coverage(
+                root,
+                projection_root,
+                problem,
+                root / primary_judge,
+                repository_head,
+            )
+            missing = coverage["missingTransactions"]
+            if not isinstance(missing, list):
+                raise MathFlowError(
+                    "projection wakeup judgment coverage is malformed"
+                )
+            if not missing:
+                dispatches.append(
+                    {
+                        **base,
+                        "subjectTransactionId": None,
+                        "requireNoPrimaryWork": True,
+                    }
+                )
+                continue
+
+            for subject in missing:
+                if not isinstance(subject, dict) or not isinstance(
+                    subject.get("transactionId"), str
+                ):
+                    raise MathFlowError(
+                        "projection wakeup judgment coverage has an invalid subject"
+                    )
+                subject_id = str(subject["transactionId"])
+                titles = {
+                    f"Project {projection_id}/{problem}/{subject_id}"
+                    for projection_id in history_projection_ids
+                }
+                if not _projection_dispatch_allowed(
+                    runs,
+                    titles,
+                    repository_head,
+                    maximum_consecutive_failures,
+                ):
+                    continue
+                dispatches.append(
+                    {**base, "subjectTransactionId": subject_id}
+                )
+
     return {
         "schemaVersion": 1,
         "repositoryHead": repository_head,
-        "problems": filtered_problems,
+        "dispatches": dispatches,
     }
 
 
@@ -788,6 +1028,78 @@ def _latest_state_is_current(
     return manifest_ledger == problem_ledger_digest
 
 
+def _published_judgment_work_due(
+    root: Path,
+    projection_root: Path,
+    problem: str,
+    repository_head: str,
+    projection: dict[str, object],
+    observed_judgment_ids: list[str],
+) -> bool:
+    """Detect durable judgment work not yet absorbed by one scheduler lane."""
+
+    index_path = projection_root / "indexes" / "problems" / problem / "runs.json"
+    if not index_path.exists():
+        return False
+    try:
+        entries = json.loads(index_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise MathFlowError(f"could not read projection judgment index: {exc}") from exc
+    if not isinstance(entries, list) or any(
+        not isinstance(item, dict) for item in entries
+    ):
+        raise MathFlowError("projection judgment index must be an object array")
+    if not any(item.get("runKind") == "judgment" for item in entries):
+        return False
+
+    from .judgments import (
+        plan_primary_judgment_coverage,
+        plan_reconciliation_inputs,
+    )
+
+    primary_judge = projection.get("primaryJudge")
+    if not isinstance(primary_judge, str):
+        raise MathFlowError("active projection has no primary judge")
+    coverage = plan_primary_judgment_coverage(
+        root,
+        projection_root,
+        problem,
+        root / primary_judge,
+        repository_head,
+    )
+    if coverage["missingTransactions"]:
+        return True
+    published_ids = {
+        str(bundle["judgmentId"]) for bundle in coverage["publishedBundles"]
+    }
+    if published_ids - set(observed_judgment_ids):
+        return True
+
+    reconciliation_judge = projection.get("reconciliationJudge")
+    if reconciliation_judge is None:
+        return False
+    if not isinstance(reconciliation_judge, str):
+        raise MathFlowError("active projection has an invalid reconciliation judge")
+    if coverage.get("deferredTransactions"):
+        return False
+    reconciliation = plan_reconciliation_inputs(
+        root,
+        projection_root,
+        problem,
+        root / primary_judge,
+        root / reconciliation_judge,
+        repository_head,
+        [Path(str(bundle["path"])) for bundle in coverage["publishedBundles"]],
+    )
+    if reconciliation["missingConflicts"]:
+        return True
+    published_ids.update(
+        str(bundle["judgmentId"])
+        for bundle in reconciliation["publishedBundles"]
+    )
+    return bool(published_ids - set(observed_judgment_ids))
+
+
 def _plan_recoverable_projection_dispatches(
     root: Path,
     state: dict[str, object],
@@ -846,6 +1158,20 @@ def _plan_recoverable_projection_dispatches(
                 str(current_ledger["problemLedgerDigest"]),
             )
             if lane["activeBuild"] is not None:
+                continue
+            judgment_work_due = _published_judgment_work_due(
+                root,
+                projection_root,
+                problem,
+                repository_head,
+                projection,
+                list(lane["observedJudgmentIds"]),
+            )
+            # Newly published immutable judgments are fresh durable input.  Give
+            # them priority over a same-ledger retry cap so the next trigger can
+            # record the new IDs and reset the lane's previous failure state.
+            if judgment_work_due:
+                due.append(projection)
                 continue
             pending = bool(
                 lane["pendingJudgmentIds"] or lane["pendingConflictIds"]

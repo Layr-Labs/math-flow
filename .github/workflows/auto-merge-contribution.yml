@@ -252,6 +252,7 @@ jobs:
               -f projection="$first_projection" \
               -f problem="$PROBLEM" \
               -f judgment_stream_id="$judgment_stream_id" \
+              -f subject_transaction="$MERGED_SHA" \
               -f remaining_projections="$remaining_projections"; then
               echo "Failed to dispatch judgment stream $judgment_stream_id." >&2
               failed_stream_dispatches=$((failed_stream_dispatches + 1))

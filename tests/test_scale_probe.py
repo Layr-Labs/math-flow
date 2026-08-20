@@ -80,17 +80,31 @@ class ProviderFreeScaleProbeTests(unittest.TestCase):
             encoding="utf-8"
         )
 
-        self.assertNotIn("\nconcurrency:\n", projection)
+        self.assertIn("\nconcurrency:\n", projection)
+        self.assertIn("inputs.subject_transaction || 'batch'", projection)
+        self.assertIn("cancel-in-progress: false", projection)
+        self.assertIn("--subject-transaction", projection)
         self.assertIn(
             'judgment_stream_id does not match the governed primary judge.',
             projection,
         )
         self.assertIn("reconciliation_enabled", projection)
         self.assertIn('--repo "$GITHUB_REPOSITORY"', projection)
+        self.assertIn('-f subject_transaction="$MERGED_SHA"', auto_merge)
+        self.assertIn("group_by(.judgmentStreamId)", auto_merge)
         for caller in (auto_merge, wakeup):
-            self.assertIn("group_by(.judgmentStreamId)", caller)
             self.assertIn('-f judgment_stream_id="$judgment_stream_id"', caller)
             self.assertIn("failed_stream_dispatches", caller)
+        self.assertIn("projection-wakeup-plan", wakeup)
+        self.assertIn(
+            "--targeted-projection openrouter-research-v3", wakeup
+        )
+        self.assertIn("--targeted-problem bssc-sum-capacity", wakeup)
+        self.assertIn("--targeted-problem no-three-in-line-77", wakeup)
+        self.assertIn("jq -c '.dispatches[]'", wakeup)
+        self.assertIn(
+            'command+=(-f subject_transaction="$subject_transaction")', wakeup
+        )
 
 
 if __name__ == "__main__":

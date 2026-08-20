@@ -485,6 +485,17 @@ class ObjectiveAttestationTests(unittest.TestCase):
         )
         _, judgment, _ = load_judgment_bundle(judgment_dir)
         self.assertEqual(judgment["schemaVersion"], 3)
+        publish_batch(projections, [judgment_dir])
+        replanned = plan_primary_judgment_coverage(
+            self.root,
+            projections,
+            "demo",
+            judge,
+            "HEAD",
+            subject_transaction_id=transaction,
+        )
+        self.assertEqual(replanned["targetSubjectTransactionId"], transaction)
+        self.assertEqual(replanned["missingTransactions"], [])
 
     def test_validity_v3_coverage_keeps_independent_subject_ready(self) -> None:
         attestation_subject = self.add_contribution()
@@ -702,6 +713,38 @@ class ObjectiveAttestationTests(unittest.TestCase):
                 }
             ],
         )
+        dependent_only = plan_primary_judgment_coverage(
+            self.root,
+            projections,
+            "demo",
+            judge,
+            "HEAD",
+            subject_transaction_id=dependent,
+        )
+        self.assertEqual(dependent_only["missingTransactions"], [])
+        self.assertEqual(
+            [
+                item["transactionId"]
+                for item in dependent_only["deferredTransactions"]
+            ],
+            [dependent],
+        )
+        independent_only = plan_primary_judgment_coverage(
+            self.root,
+            projections,
+            "demo",
+            judge,
+            "HEAD",
+            subject_transaction_id=independent,
+        )
+        self.assertEqual(
+            [
+                item["transactionId"]
+                for item in independent_only["missingTransactions"]
+            ],
+            [independent],
+        )
+        self.assertEqual(independent_only["deferredTransactions"], [])
         with self.assertRaisesRegex(
             MathFlowError, f"declared-reference {reference}"
         ):
@@ -733,6 +776,33 @@ class ObjectiveAttestationTests(unittest.TestCase):
         self.assertEqual(
             [item["transactionId"] for item in ready["missingTransactions"]],
             [reference, dependent, independent],
+        )
+        before_ready = {
+            item["transactionId"] for item in coverage["missingTransactions"]
+        }
+        self.assertEqual(
+            [
+                item["transactionId"]
+                for item in ready["missingTransactions"]
+                if item["transactionId"] not in before_ready
+            ],
+            [reference, dependent],
+        )
+        dependent_ready = plan_primary_judgment_coverage(
+            self.root,
+            projections,
+            "demo",
+            judge,
+            "HEAD",
+            subject_transaction_id=dependent,
+        )
+        self.assertEqual(dependent_ready["deferredTransactions"], [])
+        self.assertEqual(
+            [
+                item["transactionId"]
+                for item in dependent_ready["missingTransactions"]
+            ],
+            [dependent],
         )
 
     def test_validity_v4_reference_without_request_neither_blocks_nor_expands(

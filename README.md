@@ -335,7 +335,7 @@ python3 -m math_flow list-problems \
 python3 -m math_flow context \
   --problem triangle-midpoints \
   --projection-dir /path/to/projection-worktree \
-  --projection openrouter-research-v1 \
+  --projection openrouter-research-v3 \
   --head origin/main \
   --output-dir /tmp/math-flow-context
 

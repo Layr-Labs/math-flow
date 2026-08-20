@@ -1,5 +1,5 @@
 name: OpenRouter repository projection
-run-name: "Project ${{ inputs.projection }}/${{ inputs.problem }}"
+run-name: "Project ${{ inputs.projection }}/${{ inputs.problem }}/${{ inputs.subject_transaction || 'batch' }}"
 
 on:
   workflow_dispatch:
@@ -7,11 +7,10 @@ on:
       projection:
         description: Approved projection id
         required: true
-        default: openrouter-research-v1
+        default: openrouter-research-v3
       problem:
         description: Problem id
         required: true
-        default: triangle-midpoints
       resume_run_id:
         description: Prior workflow run containing successful judgment artifacts
         required: false
@@ -24,6 +23,15 @@ on:
         description: Internal verified problem/primary-judge stream identity
         required: false
         default: ""
+      subject_transaction:
+        description: Exact canonical transaction targeted by this workflow
+        required: false
+        default: ""
+      require_no_primary_work:
+        description: Fail before provider work unless live primary coverage is complete
+        required: false
+        type: boolean
+        default: false
 
 env:
   MATH_FLOW_PROJECTION_ID: "${{ inputs.projection }}"
@@ -31,6 +39,12 @@ env:
   MATH_FLOW_RESUME_RUN_ID: "${{ inputs.resume_run_id }}"
   MATH_FLOW_REMAINING_PROJECTIONS: "${{ inputs.remaining_projections }}"
   MATH_FLOW_JUDGMENT_STREAM_ID: "${{ inputs.judgment_stream_id }}"
+  MATH_FLOW_SUBJECT_TRANSACTION: "${{ inputs.subject_transaction }}"
+  MATH_FLOW_REQUIRE_NO_PRIMARY_WORK: "${{ inputs.require_no_primary_work }}"
+
+concurrency:
+  group: "openrouter-projection-${{ inputs.projection }}-${{ inputs.problem }}-${{ inputs.subject_transaction || 'batch' }}"
+  cancel-in-progress: false
 
 jobs:
   plan:
@@ -69,6 +83,16 @@ jobs:
             echo "judgment_stream_id must be empty or a SHA-256 digest." >&2
             exit 1
           fi
+          if [[ -n "$MATH_FLOW_SUBJECT_TRANSACTION" && \
+                ! "$MATH_FLOW_SUBJECT_TRANSACTION" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "subject_transaction must be empty or a full canonical commit SHA." >&2
+            exit 1
+          fi
+          if [[ "$MATH_FLOW_REQUIRE_NO_PRIMARY_WORK" != "true" && \
+                "$MATH_FLOW_REQUIRE_NO_PRIMARY_WORK" != "false" ]]; then
+            echo "require_no_primary_work must be a boolean." >&2
+            exit 1
+          fi
           if ! jq -e '
             type == "array" and
             all(.[]; type == "string" and test("^[a-z0-9][a-z0-9-]*$")) and
@@ -80,7 +104,7 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
-          ref: main
+          ref: "${{ github.sha }}"
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
@@ -135,12 +159,21 @@ jobs:
         run: |
           set -euo pipefail
           plan="${RUNNER_TEMP}/judgment-plan.json"
-          python -m math_flow judgment-plan \
+          command=(python -m math_flow judgment-plan \
             --problem "$MATH_FLOW_PROBLEM_ID" \
             --judge "${{ steps.registry.outputs.primary_judge }}" \
             --head HEAD \
             --projection-dir "${RUNNER_TEMP}/projection-branch" \
-            --output "$plan"
+            --output "$plan")
+          if [[ -n "$MATH_FLOW_SUBJECT_TRANSACTION" ]]; then
+            command+=(--subject-transaction "$MATH_FLOW_SUBJECT_TRANSACTION")
+          fi
+          "${command[@]}"
+          if [[ "$MATH_FLOW_REQUIRE_NO_PRIMARY_WORK" == "true" && \
+                "$(jq '.missingTransactions | length' "$plan")" != "0" ]]; then
+            echo "Formation-only wake found live missing primary work; refusing a batch judgment." >&2
+            exit 1
+          fi
           echo "matrix=$(jq -c '.matrix' "$plan")" >> "$GITHUB_OUTPUT"
           echo "count=$(jq '.missingTransactions | length' "$plan")" >> "$GITHUB_OUTPUT"
           echo "expected_subjects=$(jq -c '[.missingTransactions[].transactionId]' "$plan")" >> "$GITHUB_OUTPUT"
@@ -160,7 +193,7 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
-          ref: main
+          ref: "${{ github.sha }}"
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
@@ -224,14 +257,160 @@ jobs:
           path: "${{ runner.temp }}/math-flow-staging/judgment-${{ matrix.ordinal }}"
           if-no-files-found: error
 
-  reconciliation_plan:
+  publish_primary:
     needs: [plan, judgment]
     if: >-
       always() &&
       needs.plan.result == 'success' &&
       (needs.plan.outputs.count == '0' ||
       needs.judgment.result == 'success' ||
+      (inputs.subject_transaction == '' && needs.judgment.result == 'failure') ||
       (inputs.resume_run_id != '' && needs.judgment.result == 'skipped'))
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          ref: "${{ github.sha }}"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        if: needs.plan.outputs.count != '0'
+        with:
+          pattern: "judgment-${{ inputs.problem }}-*"
+          path: "${{ runner.temp }}/primary-publication/judgments"
+          github-token: "${{ github.token }}"
+          run-id: "${{ inputs.resume_run_id || github.run_id }}"
+      - name: Verify and publish each immutable primary judgment
+        env:
+          GITHUB_TOKEN: "${{ github.token }}"
+          MATH_FLOW_EXPECTED_SUBJECTS: "${{ needs.plan.outputs.expected_subjects }}"
+          MATH_FLOW_JUDGMENT_RESULT: "${{ needs.judgment.result }}"
+          MATH_FLOW_RESUME_RUN_ID: "${{ inputs.resume_run_id }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ needs.plan.outputs.count }}" == "0" ]]; then
+            echo "The targeted primary judgment is already published or deferred."
+            exit 0
+          fi
+          staging_dir="${RUNNER_TEMP}/primary-publication"
+          verified="$staging_dir/verified-primary.json"
+          allow_primary_subset=false
+          retain_primary_subset=false
+          failed_primary_matrix=false
+          if [[ -z "$MATH_FLOW_SUBJECT_TRANSACTION" && \
+                "$MATH_FLOW_JUDGMENT_RESULT" == "failure" ]]; then
+            # A fail-fast:false matrix can retain successful paid siblings.
+            # Publish that verified planned subset before reporting failure.
+            allow_primary_subset=true
+            failed_primary_matrix=true
+          elif [[ -z "$MATH_FLOW_SUBJECT_TRANSACTION" && \
+                  -n "$MATH_FLOW_RESUME_RUN_ID" ]]; then
+            # A subjectless resume may refer to a partially failed historical
+            # matrix. Its successful subset is still immutable and reusable.
+            retain_primary_subset=true
+          fi
+          verify=(
+            python -m math_flow verify-judgment-artifacts
+            --problem "$MATH_FLOW_PROBLEM_ID"
+            --judge "${{ needs.plan.outputs.primary_judge }}"
+            --head HEAD
+            --search-root "$staging_dir/judgments"
+            --output "$verified"
+          )
+          while IFS= read -r subject; do
+            verify+=(--expected-subject "$subject")
+          done < <(
+            printf '%s\n' "$MATH_FLOW_EXPECTED_SUBJECTS" | jq -r '.[]'
+          )
+          if [[ "$allow_primary_subset" == "true" ]]; then
+            verify+=(--allow-expected-subset)
+          elif [[ "$retain_primary_subset" == "true" ]]; then
+            verify+=(--retain-expected-subset)
+          fi
+          "${verify[@]}"
+
+          publish_one() {
+            local bundle_dir="$1"
+            local bundle_number="$2"
+            for attempt in {1..8}; do
+              local projection_dir="${RUNNER_TEMP}/primary-publish-${bundle_number}-${attempt}"
+              git fetch origin \
+                +refs/heads/main:refs/remotes/origin/main
+              if git ls-remote --exit-code origin refs/heads/projections >/dev/null 2>&1; then
+                git fetch origin \
+                  +refs/heads/projections:refs/remotes/origin/projections
+                git worktree add --detach "$projection_dir" \
+                  refs/remotes/origin/projections
+              else
+                git worktree add --detach "$projection_dir" HEAD
+                git -C "$projection_dir" switch --orphan projection-publish
+              fi
+              if ! python -m math_flow publish-batch \
+                --projection-dir "$projection_dir" \
+                --bundle "$bundle_dir"; then
+                return 1
+              fi
+              python -m math_flow export-viewer-catalog \
+                --projection-dir "$projection_dir" \
+                --repository "${{ github.repository }}" \
+                --canonical-ref refs/remotes/origin/main \
+                --projection-ref projections \
+                --output "$projection_dir/viewer/catalog.json"
+              if [[ -z "$(git -C "$projection_dir" status --porcelain=v1 \
+                --untracked-files=all)" ]]; then
+                return 0
+              fi
+              if python -m math_flow github-publish-projection \
+                --projection-dir "$projection_dir" \
+                --repository "$GITHUB_REPOSITORY" \
+                --branch projections \
+                --message "Publish primary $bundle_number for ${MATH_FLOW_PROJECTION_ID}/${MATH_FLOW_PROBLEM_ID} from run ${GITHUB_RUN_ID}"; then
+                return 0
+              fi
+              sleep $((attempt * 2))
+            done
+            return 1
+          }
+
+          failures=0
+          bundle_number=0
+          while IFS= read -r bundle_dir; do
+            bundle_number=$((bundle_number + 1))
+            if ! publish_one "$bundle_dir" "$bundle_number"; then
+              echo "Failed to publish verified primary bundle $bundle_number." >&2
+              failures=$((failures + 1))
+            fi
+          done < <(jq -r '.bundles[].path' "$verified")
+          if [[ "$failures" -gt 0 ]]; then
+            exit 1
+          fi
+          if [[ "$allow_primary_subset" == "true" || \
+                "$retain_primary_subset" == "true" ]]; then
+            missing_subjects="$(jq -c \
+              '.missingExpectedSubjectTransactionIds' "$verified")"
+            rejected_bundles='[]'
+            if [[ "$retain_primary_subset" == "true" ]]; then
+              rejected_bundles="$(jq -c '.rejectedBundles' "$verified")"
+            fi
+            if [[ "$missing_subjects" != "[]" || \
+                  "$rejected_bundles" != "[]" || \
+                  "$failed_primary_matrix" == "true" ]]; then
+              echo "Published the retained primary subset; the matrix remains incomplete. Missing subjects: $missing_subjects; rejected bundles: $rejected_bundles" >&2
+              exit 1
+            fi
+          fi
+
+  reconciliation_plan:
+    needs: [plan, judgment, publish_primary]
+    if: >-
+      always() &&
+      needs.publish_primary.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -244,17 +423,10 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
-          ref: main
+          ref: "${{ github.sha }}"
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        if: needs.plan.outputs.count != '0'
-        with:
-          pattern: "judgment-${{ inputs.problem }}-*"
-          path: "${{ runner.temp }}/math-flow-reconciliation-plan/judgments"
-          github-token: "${{ github.token }}"
-          run-id: "${{ inputs.resume_run_id || github.run_id }}"
       - name: Prepare published projection state
         run: |
           set -euo pipefail
@@ -289,15 +461,19 @@ jobs:
             --projection-dir "${RUNNER_TEMP}/projection-branch"
             --output "$primary_plan"
           )
-          if [[ "${{ needs.plan.outputs.count }}" != "0" ]]; then
-            command+=(--additional-root "$staging_dir/judgments")
-            while IFS= read -r subject; do
-              command+=(--expected-new-subject "$subject")
-            done < <(
-              printf '%s\n' "$MATH_FLOW_EXPECTED_SUBJECTS" | jq -r '.[]'
-            )
+          if [[ -n "$MATH_FLOW_SUBJECT_TRANSACTION" ]]; then
+            command+=(--target-subject "$MATH_FLOW_SUBJECT_TRANSACTION")
           fi
           "${command[@]}"
+
+          if [[ -n "$MATH_FLOW_SUBJECT_TRANSACTION" && \
+                "$(jq '.pendingTransactions | length' "$primary_plan")" != "0" ]]; then
+            echo 'matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+            echo 'count=0' >> "$GITHUB_OUTPUT"
+            echo 'expected_conflicts=[]' >> "$GITHUB_OUTPUT"
+            echo "Other ready primary subjects remain pending; reconciliation waits for their immutable publication."
+            exit 0
+          fi
 
           mapfile -t primary_dirs < <(jq -r '.bundles[].path' "$primary_plan")
           reconciliation_plan="$staging_dir/reconciliation-plan.json"
@@ -320,7 +496,7 @@ jobs:
           jq '{problemId, primaryJudgments: (.primaryJudgmentIds | length), conflicts: (.conflicts | length), inherited: (.publishedBundles | length), missingConflicts}' "$reconciliation_plan"
 
   reconciliation:
-    needs: [plan, judgment, reconciliation_plan]
+    needs: [plan, publish_primary, reconciliation_plan]
     if: >-
       always() &&
       needs.reconciliation_plan.result == 'success' &&
@@ -338,17 +514,10 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
-          ref: main
+          ref: "${{ github.sha }}"
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        if: needs.plan.outputs.count != '0'
-        with:
-          pattern: "judgment-${{ inputs.problem }}-*"
-          path: "${{ runner.temp }}/math-flow-reconciliation/judgments"
-          github-token: "${{ github.token }}"
-          run-id: "${{ inputs.resume_run_id || github.run_id }}"
       - name: Prepare published projection state
         run: |
           set -euo pipefail
@@ -363,7 +532,6 @@ jobs:
       - name: Reconcile conflict ${{ matrix.ordinal }}
         env:
           OPENROUTER_API_KEY: "${{ secrets.OPENROUTER_API_KEY }}"
-          MATH_FLOW_EXPECTED_SUBJECTS: "${{ needs.plan.outputs.expected_subjects }}"
           MATH_FLOW_SITE_URL: "${{ github.server_url }}/${{ github.repository }}"
         run: |
           set -euo pipefail
@@ -381,13 +549,8 @@ jobs:
             --projection-dir "${RUNNER_TEMP}/projection-branch"
             --output "$primary_plan"
           )
-          if [[ "${{ needs.plan.outputs.count }}" != "0" ]]; then
-            command+=(--additional-root "$staging_dir/judgments")
-            while IFS= read -r subject; do
-              command+=(--expected-new-subject "$subject")
-            done < <(
-              printf '%s\n' "$MATH_FLOW_EXPECTED_SUBJECTS" | jq -r '.[]'
-            )
+          if [[ -n "$MATH_FLOW_SUBJECT_TRANSACTION" ]]; then
+            command+=(--target-subject "$MATH_FLOW_SUBJECT_TRANSACTION")
           fi
           "${command[@]}"
 
@@ -426,41 +589,170 @@ jobs:
           path: "${{ runner.temp }}/math-flow-reconciliation/reconciliation-${{ matrix.ordinal }}"
           if-no-files-found: error
 
-  form:
-    needs: [plan, judgment, reconciliation_plan, reconciliation]
+  publish_reconciliation:
+    needs: [plan, publish_primary, reconciliation_plan, reconciliation]
     if: >-
       always() &&
       needs.reconciliation_plan.result == 'success' &&
       (needs.reconciliation_plan.outputs.count == '0' ||
-      needs.reconciliation.result == 'success')
+      needs.reconciliation.result == 'success' ||
+      needs.reconciliation.result == 'failure')
     runs-on: ubuntu-latest
     permissions:
       actions: read
-      contents: read
+      contents: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          ref: "${{ github.sha }}"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        if: needs.reconciliation_plan.outputs.count != '0'
+        with:
+          pattern: "reconciliation-${{ inputs.problem }}-*"
+          path: "${{ runner.temp }}/reconciliation-publication/artifacts"
+          github-token: "${{ github.token }}"
+          run-id: "${{ github.run_id }}"
+      - name: Verify and publish each immutable reconciliation judgment
+        env:
+          GITHUB_TOKEN: "${{ github.token }}"
+          MATH_FLOW_EXPECTED_CONFLICTS: "${{ needs.reconciliation_plan.outputs.expected_conflicts }}"
+          MATH_FLOW_RECONCILIATION_RESULT: "${{ needs.reconciliation.result }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ needs.reconciliation_plan.outputs.count }}" == "0" ]]; then
+            echo "No new reconciliation judgment needs publication."
+            exit 0
+          fi
+          staging_dir="${RUNNER_TEMP}/reconciliation-publication"
+          failed_reconciliation_matrix=false
+          if [[ "$MATH_FLOW_RECONCILIATION_RESULT" == "failure" ]]; then
+            # Retain every successfully paid sibling from a fail-fast:false
+            # matrix, while keeping formation blocked until the plan is whole.
+            failed_reconciliation_matrix=true
+          fi
+          projection_dir="$staging_dir/verification-projection"
+          if git ls-remote --exit-code origin refs/heads/projections >/dev/null 2>&1; then
+            git fetch origin refs/heads/projections:refs/remotes/origin/projections
+            git worktree add --detach "$projection_dir" refs/remotes/origin/projections
+          else
+            mkdir -p "$projection_dir"
+          fi
+          primary_plan="$staging_dir/primary-inputs.json"
+          python -m math_flow judgment-input-plan \
+            --problem "$MATH_FLOW_PROBLEM_ID" \
+            --judge "${{ needs.plan.outputs.primary_judge }}" \
+            --head HEAD \
+            --projection-dir "$projection_dir" \
+            --output "$primary_plan"
+          verified="$staging_dir/verified-reconciliations.json"
+          reconcile=(
+            python -m math_flow reconciliation-plan
+            --problem "$MATH_FLOW_PROBLEM_ID"
+            --primary-judge "${{ needs.plan.outputs.primary_judge }}"
+            --reconciliation-judge "${{ needs.plan.outputs.reconciliation_judge }}"
+            --head HEAD
+            --projection-dir "$projection_dir"
+            --additional-root "$staging_dir/artifacts"
+            --output "$verified"
+          )
+          while IFS= read -r primary_dir; do
+            reconcile+=(--primary-judgment-dir "$primary_dir")
+          done < <(jq -r '.bundles[].path' "$primary_plan")
+          while IFS= read -r conflict_id; do
+            reconcile+=(--expected-new-conflict "$conflict_id")
+          done < <(
+            printf '%s\n' "$MATH_FLOW_EXPECTED_CONFLICTS" | jq -r '.[]'
+          )
+          # Always use the frozen-plan subset verifier at publication. A
+          # successful matrix must still be complete below, but this lets an
+          # overlapping canonical conflict reach per-bundle idempotency or
+          # uniqueness checks without stranding unrelated bundles.
+          reconcile+=(--allow-expected-subset)
+          "${reconcile[@]}"
+
+          publish_one() {
+            local bundle_dir="$1"
+            local bundle_number="$2"
+            for attempt in {1..8}; do
+              local publish_dir="${RUNNER_TEMP}/reconciliation-publish-${bundle_number}-${attempt}"
+              git fetch origin \
+                +refs/heads/projections:refs/remotes/origin/projections \
+                +refs/heads/main:refs/remotes/origin/main
+              git worktree add --detach "$publish_dir" \
+                refs/remotes/origin/projections
+              if ! python -m math_flow publish-batch \
+                --projection-dir "$publish_dir" \
+                --bundle "$bundle_dir"; then
+                return 1
+              fi
+              python -m math_flow export-viewer-catalog \
+                --projection-dir "$publish_dir" \
+                --repository "${{ github.repository }}" \
+                --canonical-ref refs/remotes/origin/main \
+                --projection-ref projections \
+                --output "$publish_dir/viewer/catalog.json"
+              if [[ -z "$(git -C "$publish_dir" status --porcelain=v1 \
+                --untracked-files=all)" ]]; then
+                return 0
+              fi
+              if python -m math_flow github-publish-projection \
+                --projection-dir "$publish_dir" \
+                --repository "$GITHUB_REPOSITORY" \
+                --branch projections \
+                --message "Publish reconciliation $bundle_number for ${MATH_FLOW_PROJECTION_ID}/${MATH_FLOW_PROBLEM_ID} from run ${GITHUB_RUN_ID}"; then
+                return 0
+              fi
+              sleep $((attempt * 2))
+            done
+            return 1
+          }
+
+          failures=0
+          bundle_number=0
+          while IFS= read -r bundle_dir; do
+            bundle_number=$((bundle_number + 1))
+            if ! publish_one "$bundle_dir" "$bundle_number"; then
+              echo "Failed to publish reconciliation bundle $bundle_number." >&2
+              failures=$((failures + 1))
+            fi
+          done < <(jq -r '.newBundles[].path' "$verified")
+          if [[ "$failures" -gt 0 ]]; then
+            exit 1
+          fi
+          missing_conflicts="$(jq -c '.missingExpectedConflictIds' "$verified")"
+          if [[ "$failed_reconciliation_matrix" == "true" || \
+                "$missing_conflicts" != "[]" ]]; then
+            echo "Published the successful reconciliation subset; the matrix remains incomplete. Missing conflicts: $missing_conflicts" >&2
+            exit 1
+          fi
+
+  form:
+    needs: [plan, publish_primary, reconciliation_plan, publish_reconciliation]
+    if: >-
+      always() &&
+      needs.publish_reconciliation.result == 'success'
+    concurrency:
+      group: "openrouter-formation-${{ inputs.projection }}-${{ inputs.problem }}"
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
     outputs:
       publication_changed: ${{ steps.staging.outputs.changed }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
-          ref: main
+          ref: "${{ github.sha }}"
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        if: needs.plan.outputs.count != '0'
-        with:
-          pattern: "judgment-${{ inputs.problem }}-*"
-          path: "${{ runner.temp }}/math-flow-staging/judgments"
-          github-token: "${{ github.token }}"
-          run-id: "${{ inputs.resume_run_id || github.run_id }}"
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        if: needs.reconciliation_plan.outputs.count != '0'
-        with:
-          pattern: "reconciliation-${{ inputs.problem }}-*"
-          path: "${{ runner.temp }}/math-flow-staging/reconciliations"
-          github-token: "${{ github.token }}"
-          run-id: "${{ github.run_id }}"
       - name: Prepare the orphan projection worktree
         run: |
           set -euo pipefail
@@ -481,10 +773,7 @@ jobs:
             printf '{"schemaVersion":1,"lanes":{}}\n' \
               > "$staging_dir/scheduler-base.json"
           fi
-      - name: Plan complete verified judgment and conflict inputs
-        env:
-          MATH_FLOW_EXPECTED_CONFLICTS: "${{ needs.reconciliation_plan.outputs.expected_conflicts }}"
-          MATH_FLOW_EXPECTED_SUBJECTS: "${{ needs.plan.outputs.expected_subjects }}"
+      - name: Plan published judgment and conflict inputs
         run: |
           set -euo pipefail
           staging_dir="${RUNNER_TEMP}/math-flow-staging"
@@ -498,19 +787,40 @@ jobs:
             --projection-dir "${RUNNER_TEMP}/projection-branch"
             --output "$input_plan"
           )
-          if [[ "${{ needs.plan.outputs.count }}" != "0" ]]; then
-            command+=(--additional-root "$staging_dir/judgments")
-            while IFS= read -r subject; do
-              command+=(--expected-new-subject "$subject")
-            done < <(
-              printf '%s\n' "$MATH_FLOW_EXPECTED_SUBJECTS" | jq -r '.[]'
-            )
+          if [[ -n "$MATH_FLOW_SUBJECT_TRANSACTION" ]]; then
+            command+=(--target-subject "$MATH_FLOW_SUBJECT_TRANSACTION")
           fi
           "${command[@]}"
 
+          if [[ -n "$MATH_FLOW_SUBJECT_TRANSACTION" && \
+                "$(jq '.pendingTransactions | length' "$input_plan")" != "0" ]]; then
+            if [[ "${{ needs.plan.outputs.reconciliation_enabled }}" == "true" ]]; then
+              touch "$staging_dir/formation-deferred"
+              jq -r '"Formation waits for every reconciliation-enabled primary subject: " +
+                ([.pendingTransactions[].transactionId] | join(", "))' "$input_plan"
+            else
+              jq -r '"Formation will integrate published independent work while other primary subjects remain pending: " +
+                ([.pendingTransactions[].transactionId] | join(", "))' "$input_plan"
+            fi
+          fi
+
           mapfile -t primary_dirs < <(jq -r '.bundles[].path' "$input_plan")
           reconciliation_plan="$staging_dir/reconciliation-plan.json"
-          if [[ "${{ needs.plan.outputs.reconciliation_enabled }}" == "true" ]]; then
+          if [[ -f "$staging_dir/formation-deferred" ]]; then
+            jq -n \
+              --arg problem "$MATH_FLOW_PROBLEM_ID" \
+              '{
+                schemaVersion: 1,
+                problemId: $problem,
+                primaryJudgmentIds: [],
+                conflicts: [],
+                publishedBundles: [],
+                newBundles: [],
+                missingConflicts: [],
+                matrix: {include: []},
+                bundles: []
+              }' > "$reconciliation_plan"
+          elif [[ "${{ needs.plan.outputs.reconciliation_enabled }}" == "true" ]]; then
             reconcile=(
               python -m math_flow reconciliation-plan
               --problem "$MATH_FLOW_PROBLEM_ID"
@@ -523,15 +833,11 @@ jobs:
             for primary_dir in "${primary_dirs[@]}"; do
               reconcile+=(--primary-judgment-dir "$primary_dir")
             done
-            if [[ "${{ needs.reconciliation_plan.outputs.count }}" != "0" ]]; then
-              reconcile+=(--additional-root "$staging_dir/reconciliations")
-              while IFS= read -r conflict_id; do
-                reconcile+=(--expected-new-conflict "$conflict_id")
-              done < <(
-                printf '%s\n' "$MATH_FLOW_EXPECTED_CONFLICTS" | jq -r '.[]'
-              )
-            fi
             "${reconcile[@]}"
+            if [[ "$(jq '.missingConflicts | length' "$reconciliation_plan")" != "0" ]]; then
+              touch "$staging_dir/formation-deferred"
+              echo "Formation waits for missing reconciliation judgments."
+            fi
           else
             jq -n \
               --arg problem "$MATH_FLOW_PROBLEM_ID" \
@@ -550,8 +856,7 @@ jobs:
 
           jq -r '.bundles[].path' "$input_plan" > "$staging_dir/judgment-dirs.txt"
           jq -r '.bundles[].path' "$reconciliation_plan" >> "$staging_dir/judgment-dirs.txt"
-          jq -r '.newBundles[].path' "$input_plan" > "$staging_dir/new-judgment-dirs.txt"
-          jq -r '.newBundles[].path' "$reconciliation_plan" >> "$staging_dir/new-judgment-dirs.txt"
+          : > "$staging_dir/new-judgment-dirs.txt"
           jq -s '{bundles: (.[0].bundles + .[1].bundles)}' \
             "$input_plan" "$reconciliation_plan" \
             > "$staging_dir/all-judgment-inputs.json"
@@ -578,6 +883,11 @@ jobs:
           set -euo pipefail
           projection_dir="${RUNNER_TEMP}/projection-branch"
           staging_dir="${RUNNER_TEMP}/math-flow-staging"
+          if [[ -f "$staging_dir/formation-deferred" ]]; then
+            echo "claimed=false" >> "$GITHUB_OUTPUT"
+            echo "The targeted run published its immutable judgments; a complete later run will form them."
+            exit 0
+          fi
           scheduler="$projection_dir/coordination/scheduler.json"
           mapfile -t judgment_dirs < "$staging_dir/judgment-dirs.txt"
           trigger=(
@@ -736,46 +1046,21 @@ jobs:
           path: "${{ runner.temp }}/math-flow-staging/publication"
           if-no-files-found: error
           retention-days: 7
-      - name: Upload formation diagnostics after a failure
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: "formation-diagnostics-${{ inputs.problem }}-${{ github.run_id }}"
-          path: "${{ runner.temp }}/math-flow-staging"
-          if-no-files-found: error
-          retention-days: 7
-
-  publish:
-    needs: [plan, form]
-    if: always() && needs.form.outputs.publication_changed == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: write
-    steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
-        with:
-          fetch-depth: 0
-          ref: main
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: "3.12"
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: "projection-publication-${{ inputs.problem }}-${{ github.run_id }}"
-          path: "${{ runner.temp }}/projection-publication"
-      - name: Merge and publish against the latest projection head
+      - name: Publish scheduler and knowledge state while holding the formation lane
+        if: always() && steps.staging.outputs.changed == 'true'
         env:
           GITHUB_TOKEN: "${{ github.token }}"
         run: |
           set -euo pipefail
-          publication="${RUNNER_TEMP}/projection-publication"
+          publication="${RUNNER_TEMP}/math-flow-staging/publication"
           mapfile -d '' -t bundle_dirs < <(
             find "$publication/bundles" -mindepth 1 -maxdepth 1 \
               -type d -print0 | sort -z
           )
           for attempt in {1..8}; do
             projection_dir="${RUNNER_TEMP}/projection-publish-${attempt}"
+            git fetch origin \
+              +refs/heads/main:refs/remotes/origin/main
             if git ls-remote --exit-code origin refs/heads/projections >/dev/null 2>&1; then
               git fetch origin \
                 +refs/heads/projections:refs/remotes/origin/projections
@@ -808,7 +1093,7 @@ jobs:
             python -m math_flow export-viewer-catalog \
               --projection-dir "$projection_dir" \
               --repository "${{ github.repository }}" \
-              --canonical-ref main \
+              --canonical-ref refs/remotes/origin/main \
               --projection-ref projections \
               --output "$projection_dir/viewer/catalog.json"
 
@@ -830,19 +1115,17 @@ jobs:
             fi
             sleep $((attempt * 2))
           done
-      - name: Upload publication diagnostics after a failure
+      - name: Upload formation diagnostics after a failure
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: "publication-diagnostics-${{ inputs.problem }}-${{ github.run_id }}"
-          path: |
-            ${{ runner.temp }}/projection-publication
-            ${{ runner.temp }}/projection-publish-*/coordination/scheduler.json
-          if-no-files-found: warn
+          name: "formation-diagnostics-${{ inputs.problem }}-${{ github.run_id }}"
+          path: "${{ runner.temp }}/math-flow-staging"
+          if-no-files-found: error
           retention-days: 7
 
   dispatch-next:
-    needs: [plan, judgment, form, publish]
+    needs: [plan, publish_primary, publish_reconciliation, form]
     if: always()
     runs-on: ubuntu-latest
     permissions:
@@ -856,9 +1139,6 @@ jobs:
           if [[ "${{ needs.plan.result }}" != "success" || \
                 "${{ needs.form.result }}" != "success" ]]; then
             echo "The current projection did not finish formation; the durable wake-up planner will retry it." >&2
-          elif [[ "${{ needs.form.outputs.publication_changed }}" == "true" && \
-                "${{ needs.publish.result }}" != "success" ]]; then
-            echo "The current projection did not publish; the durable wake-up planner will retry it." >&2
           fi
           next_projection="$(jq -r '.[0] // empty' <<< "$MATH_FLOW_REMAINING_PROJECTIONS")"
           if [[ -z "$next_projection" ]]; then
@@ -871,4 +1151,6 @@ jobs:
             -f projection="$next_projection" \
             -f problem="$MATH_FLOW_PROBLEM_ID" \
             -f judgment_stream_id="${{ needs.plan.outputs.judgment_stream_id }}" \
+            -f subject_transaction="$MATH_FLOW_SUBJECT_TRANSACTION" \
+            -f require_no_primary_work="$MATH_FLOW_REQUIRE_NO_PRIMARY_WORK" \
             -f remaining_projections="$remaining"

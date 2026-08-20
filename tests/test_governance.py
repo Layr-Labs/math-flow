@@ -601,9 +601,17 @@ class CurrentRegistryTests(unittest.TestCase):
         result = validate_projection_registry(root)
         self.assertGreaterEqual(result["projections"], 1)
         resolved = resolve_projection(
-            root, "openrouter-research-v1", "bssc-sum-capacity", "WORKTREE"
+            root, "openrouter-research-v3", "bssc-sum-capacity", "WORKTREE"
         )
         self.assertEqual(resolved["problemId"], "bssc-sum-capacity")
+        workflow = (
+            root / ".github/workflows/project-openrouter.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("default: openrouter-research-v3", workflow)
+        problem_input = workflow.split("      problem:\n", 1)[1].split(
+            "      resume_run_id:\n", 1
+        )[0]
+        self.assertNotIn("default:", problem_input)
 
     def test_credit_workflow_rechecks_canonical_and_projection_state(self) -> None:
         root = Path(__file__).parents[1]
