@@ -1,17 +1,24 @@
 from __future__ import annotations
 
+import copy
 import json
 import re
 from pathlib import Path
 
 from .artifacts import ArtifactBundle, load_manifest, read_verified_artifact, sha256_bytes
+from .attestations import objective_attestation_status
 from .errors import MathFlowError
 from .hierarchical import _assistant_content, _provider_run, _request, _structured_content
 from .judges import artifact_evidence, load_judge_spec, load_source
 from .openrouter import OpenRouterTransport, send_chat_completion
 from .repository import is_ancestor, read_at, sha256_json
 from .runs import run_envelope
-from .validity import build_dependency_packet, validate_dependency_packet
+from .validity import (
+    build_dependency_packet,
+    build_evidence_packet_v3,
+    validate_dependency_packet,
+    validate_evidence_packet_v3,
+)
 
 
 CLAIM_KEY = re.compile(r"^[a-z0-9][a-z0-9/_-]*$")
@@ -27,6 +34,7 @@ RECONCILIATION_OUTCOMES = {
 PRIMARY_JUDGMENT_IMPLEMENTATIONS = {
     "openrouter-markdown-judgment-v1",
     "openrouter-validity-judgment-v2",
+    "openrouter-validity-judgment-v3",
 }
 VALIDITY_STATUSES = {"valid", "invalid", "indeterminate"}
 PREMISE_STATUSES = {"satisfied", "missing", "disputed", "not-required"}
@@ -403,6 +411,119 @@ def _validate_assessments(
     return [by_key[key] for key in claim_keys]
 
 
+def _validity_v3_schema(
+    claims: list[dict[str, object]], reference_ids: list[str]
+) -> dict[str, object]:
+    claim_keys = [str(claim["claimKey"]) for claim in claims]
+    schema = _validity_schema(claim_keys, reference_ids)
+    assessments = schema["properties"]["assessments"]
+    template = assessments["items"]
+    variants: list[dict[str, object]] = []
+    for claim in claims:
+        assessment = copy.deepcopy(template)
+        claim_key = str(claim["claimKey"])
+        claim_references = list(claim["declaredReferenceTransactionIds"])
+        assessment["properties"]["claimKey"]["enum"] = [claim_key]
+        evidence = assessment["properties"]["evidenceTransactionIds"]
+        evidence["items"] = {
+            "type": "string",
+            **({"enum": claim_references} if claim_references else {}),
+        }
+        if not claim_references:
+            evidence["maxItems"] = 0
+        assessment["properties"]["requiredDependencyTransactionIds"] = {
+            "type": "array",
+            "items": {
+                "type": "string",
+                **({"enum": claim_references} if claim_references else {}),
+            },
+            **({"maxItems": 0} if not claim_references else {}),
+        }
+        assessment["required"].append("requiredDependencyTransactionIds")
+        variants.append(assessment)
+    assessments["items"] = {"anyOf": variants}
+    return schema
+
+
+def _validate_assessments_v3(
+    value: object,
+    claims: list[dict[str, object]],
+    reference_ids: set[str],
+) -> list[dict[str, object]]:
+    if not isinstance(value, dict) or not isinstance(value.get("assessments"), list):
+        raise MathFlowError("validity-v3 extractor returned an invalid assessments envelope")
+    references_by_claim = {
+        str(claim["claimKey"]): set(claim["declaredReferenceTransactionIds"])
+        for claim in claims
+    }
+    stripped: list[dict[str, object]] = []
+    required_by_key: dict[str, list[str]] = {}
+    for assessment in value["assessments"]:
+        if not isinstance(assessment, dict):
+            raise MathFlowError("validity-v3 extractor returned an invalid assessment")
+        required = assessment.get("requiredDependencyTransactionIds")
+        claim_key = assessment.get("claimKey")
+        if (
+            not isinstance(required, list)
+            or any(not isinstance(item, str) for item in required)
+            or len(required) != len(set(required))
+            or not isinstance(claim_key, str)
+            or claim_key not in references_by_claim
+            or not set(required) <= references_by_claim[claim_key]
+        ):
+            raise MathFlowError(
+                "validity-v3 assessment has invalid per-claim required dependencies"
+            )
+        evidence = assessment.get("evidenceTransactionIds")
+        if (
+            not isinstance(evidence, list)
+            or not set(evidence) <= references_by_claim[claim_key]
+            or not set(required) <= set(evidence)
+        ):
+            raise MathFlowError(
+                "validity-v3 evidence and required dependencies must belong to the same claim"
+            )
+        status = assessment.get("status")
+        premise_status = assessment.get("premiseStatus")
+        if status == "valid" and (
+            premise_status not in {"satisfied", "not-required"}
+            or (required and premise_status != "satisfied")
+        ):
+            raise MathFlowError(
+                "validity-v3 valid assessment has inconsistent premise status"
+            )
+        required_by_key[claim_key] = list(required)
+        stripped.append(
+            {
+                key: item
+                for key, item in assessment.items()
+                if key != "requiredDependencyTransactionIds"
+            }
+        )
+    v2_claims = [
+        {
+            "claimKey": claim["claimKey"],
+            "statement": claim["statement"],
+            "dependencyTransactionIds": claim[
+                "declaredReferenceTransactionIds"
+            ],
+        }
+        for claim in claims
+    ]
+    validated = _validate_assessments(
+        {"assessments": stripped}, v2_claims, reference_ids
+    )
+    return [
+        {
+            **assessment,
+            "requiredDependencyTransactionIds": required_by_key[
+                str(assessment["claimKey"])
+            ],
+        }
+        for assessment in validated
+    ]
+
+
 def _run_validity_primary_judgment_bundle(
     root: Path,
     problem: str,
@@ -417,14 +538,19 @@ def _run_validity_primary_judgment_bundle(
 ) -> dict[str, object]:
     root = root.resolve()
     spec = load_judge_spec(judge_path)
-    if spec["implementation"] != "openrouter-validity-judgment-v2":
-        raise MathFlowError("judgment command requires a v2 validity judgment spec")
+    implementation = str(spec["implementation"])
+    if implementation not in {
+        "openrouter-validity-judgment-v2",
+        "openrouter-validity-judgment-v3",
+    }:
+        raise MathFlowError("judgment command requires a validity judgment spec")
+    is_v3 = implementation == "openrouter-validity-judgment-v3"
     requested = list(dict.fromkeys(subject_transaction_ids))
     if len(requested) != 1:
         raise MathFlowError("a validity judgment assesses exactly one subject transaction")
     if context_transaction_ids:
         raise MathFlowError(
-            "v2 validity judgments derive dependencies from the contribution; --evidence is not allowed"
+            "validity judgments derive references from the contribution; --evidence is not allowed"
         )
     source = load_source(root, problem, head)
     by_id = {
@@ -437,20 +563,39 @@ def _run_validity_primary_judgment_bundle(
     context_projection = spec.get("contextProjection")
     if context_projection is not None and not isinstance(context_projection, str):
         raise MathFlowError("validity judge contextProjection must be a projection ID")
-    packet = build_dependency_packet(
-        root,
-        projection_root,
-        problem,
-        source,
-        head,
-        subject_id,
-        context_projection,
-        research_state_run,
+    packet = (
+        build_evidence_packet_v3(
+            root,
+            projection_root,
+            problem,
+            source,
+            head,
+            subject_id,
+            context_projection,
+            research_state_run,
+        )
+        if is_v3
+        else build_dependency_packet(
+            root,
+            projection_root,
+            problem,
+            source,
+            head,
+            subject_id,
+            context_projection,
+            research_state_run,
+        )
     )
-    validate_dependency_packet(packet)
+    (validate_evidence_packet_v3 if is_v3 else validate_dependency_packet)(packet)
     claims = list(packet["claims"])
-    dependency_ids = list(packet["dependencyTransactionIds"])
-    dependency_transactions = [by_id[item] for item in dependency_ids]
+    reference_ids = list(
+        packet[
+            "declaredReferenceTransactionIds"
+            if is_v3
+            else "dependencyTransactionIds"
+        ]
+    )
+    dependency_transactions = [by_id[item] for item in reference_ids]
     subject_source = {**source, "transactions": [subject]}
     dependency_source = {**source, "transactions": dependency_transactions}
     resolved_head = "WORKTREE" if head == "WORKTREE" else str(source["ledgerHead"])
@@ -464,15 +609,28 @@ def _run_validity_primary_judgment_bundle(
     send = transport or send_chat_completion
     report_prompt = "\n\n".join(
         [
-            "Perform a rigorous, adversarial mathematical correctness audit of each declared claim using the supplied subject and its explicitly declared premises. The dominant objective is to prevent false acceptance: mark a claim valid only after affirmatively verifying its exact statement and every material proof obligation.",
+            (
+                "Perform a rigorous, adversarial mathematical correctness audit of each declared claim using the supplied subject and declared reference evidence."
+                if is_v3
+                else "Perform a rigorous, adversarial mathematical correctness audit of each declared claim using the supplied subject and its explicitly declared premises."
+            )
+            + " The dominant objective is to prevent false acceptance: mark a claim valid only after affirmatively verifying its exact statement and every material proof obligation.",
             "Check all logical inferences, lemma applications, assumptions, quantifiers, domains, edge and degenerate cases, calculations, and dependency hypotheses. Actively look for counterexamples and hidden gaps. Never repair an omitted step or give the submission the benefit of the doubt. Use invalid for a decisive defect and indeterminate whenever any material obligation remains unresolved.",
+            *(
+                [
+                    "Treat cited transactions as declared references, not automatically as logical premises. For each claim, identify as required dependencies only references whose mathematical content is actually necessary to establish the claim from the supplied record. A historical/provenance citation, a target being corrected, or a result whose complete needed argument is independently restated is not a required dependency. Preserve such citations as references, but do not make accepted-state formation depend on them.",
+                    "If the packet contains a terminal objective attestation, audit exactly what its pinned command and bytes establish and whether that encoded predicate matches the mathematical claim. The attestation is trusted execution evidence, not an automatic validity verdict. If a verification request exists, the scheduler will not invoke you until its terminal attestation is present.",
+                ]
+                if is_v3
+                else []
+            ),
             "The declared claim keys organize the final verdicts; they do not constrain the analysis. Within each claim's Markdown section, decompose the proof into as many intermediate obligations and discuss as many defects as rigorous verification requires. Keep those obligations, missing premises, evidence defects, and scope qualifications attached to the corresponding declared claim rather than promoting them to new top-level claim identities.",
             "Do not build global knowledge state, assess novelty or priority, organize research programs, or assign credit.",
             f"Rubric:\n{json.dumps(spec['rubric'], indent=2, ensure_ascii=False)}",
             f"Problem:\n{problem_statement}",
             f"Dependency packet:\n{json.dumps(packet, indent=2, ensure_ascii=False)}",
             f"Subject evidence:\n{subject_evidence}",
-            f"Explicit dependency evidence:\n{dependency_evidence}",
+            f"Declared reference evidence:\n{dependency_evidence}",
         ]
     )
     report_request = _request(
@@ -491,8 +649,15 @@ def _run_validity_primary_judgment_bundle(
         [
             "Create one structured validity record for each declared claim key. This is an indexing rule for the already-completed rigorous audit, not a limit on the report's mathematical decomposition. Do not create, split, merge, or rename the declared claim identities. Preserve every material proof defect, unresolved obligation, and qualification within its claim record.",
             "valid means the supplied argument establishes the claim under satisfied premises; invalid means a decisive error or counterexample defeats it; indeterminate means the bounded record does not decide it.",
+            *(
+                [
+                    "For requiredDependencyTransactionIds, include exactly this claim's declared references whose mathematical content is logically necessary to establish this claim. evidenceTransactionIds is also claim-local: do not borrow a reference declared only by another claim. Every required dependency must appear in evidenceTransactionIds. A valid claim with required dependencies must report premiseStatus satisfied; a valid claim without them may report satisfied or not-required. Do not include provenance-only citations, corrected or criticized submissions, or a reference whose needed argument is fully established within the subject itself.",
+                ]
+                if is_v3
+                else []
+            ),
             f"Declared claims:\n{json.dumps(claims, indent=2, ensure_ascii=False)}",
-            f"Allowed dependency evidence IDs:\n{json.dumps(dependency_ids, indent=2)}",
+            f"Allowed reference evidence IDs:\n{json.dumps(reference_ids, indent=2)}",
             f"Report:\n<report>\n{report}</report>",
         ]
     )
@@ -506,12 +671,19 @@ def _run_validity_primary_judgment_bundle(
             },
             {"role": "user", "content": extract_prompt},
         ],
-        _validity_schema(claim_keys, dependency_ids),
+        (
+            _validity_v3_schema(claims, reference_ids)
+            if is_v3
+            else _validity_schema(claim_keys, reference_ids)
+        ),
     )
     extract_response = send(extract_request)
     _reject_truncated_response(extract_response, "extract")
-    assessments = _validate_assessments(
-        _structured_content(extract_response, "extract"), claims, set(dependency_ids)
+    structured = _structured_content(extract_response, "extract")
+    assessments = (
+        _validate_assessments_v3(structured, claims, set(reference_ids))
+        if is_v3
+        else _validate_assessments(structured, claims, set(reference_ids))
     )
     stance = {"valid": "supports", "invalid": "refutes", "indeterminate": "uncertain"}
     findings = [
@@ -526,7 +698,7 @@ def _run_validity_primary_judgment_bundle(
     ]
     report_digest = sha256_bytes(report.encode("utf-8"))
     judgment_core: dict[str, object] = {
-        "schemaVersion": 2,
+        "schemaVersion": 3 if is_v3 else 2,
         "judgmentKind": "primary",
         "problemId": problem,
         "ledgerHead": source["ledgerHead"],
@@ -568,8 +740,23 @@ def _run_validity_primary_judgment_bundle(
         run_kind="judgment",
         inputs={
             "subjectTransactionIds": [subject_id],
-            "dependencyTransactionIds": dependency_ids,
+            (
+                "declaredReferenceTransactionIds"
+                if is_v3
+                else "dependencyTransactionIds"
+            ): reference_ids,
             "dependencyPacketDigest": packet["packetDigest"],
+            **(
+                {
+                    "objectiveAttestationRunDigest": (
+                        packet["objectiveAttestation"]["runDigest"]
+                        if isinstance(packet.get("objectiveAttestation"), dict)
+                        else None
+                    )
+                }
+                if is_v3
+                else {}
+            ),
             "knowledgeContext": (
                 None
                 if packet["knowledgeContext"] is None
@@ -603,7 +790,10 @@ def run_primary_judgment_bundle(
     research_state_run: Path | None = None,
 ) -> dict[str, object]:
     spec = load_judge_spec(judge_path)
-    if spec["implementation"] == "openrouter-validity-judgment-v2":
+    if spec["implementation"] in {
+        "openrouter-validity-judgment-v2",
+        "openrouter-validity-judgment-v3",
+    }:
         return _run_validity_primary_judgment_bundle(
             root,
             problem,
@@ -850,7 +1040,11 @@ def load_judgment_bundle(bundle_dir: Path) -> tuple[dict[str, object], dict[str,
     if (
         manifest.get("runKind") != "judgment"
         or output_profile
-        not in {"math-flow/judgment-markdown-v1", "math-flow/validity-judgment-v2"}
+        not in {
+            "math-flow/judgment-markdown-v1",
+            "math-flow/validity-judgment-v2",
+            "math-flow/validity-judgment-v3",
+        }
     ):
         raise MathFlowError(f"bundle is not an immutable judgment: {bundle_dir}")
     try:
@@ -872,14 +1066,18 @@ def load_judgment_bundle(bundle_dir: Path) -> tuple[dict[str, object], dict[str,
         "reportDigest",
     }
     kind = judgment.get("judgmentKind")
-    is_validity = output_profile == "math-flow/validity-judgment-v2"
+    validity_version = {
+        "math-flow/validity-judgment-v2": 2,
+        "math-flow/validity-judgment-v3": 3,
+    }.get(str(output_profile))
+    is_validity = validity_version is not None
     allowed = required | (
         {"assessments", "dependencyPacketDigest"}
         if is_validity
         else ({"reconciliation"} if kind == "reconciliation" else set())
     )
     if (
-        judgment.get("schemaVersion") != (2 if is_validity else 1)
+        judgment.get("schemaVersion") != (validity_version if is_validity else 1)
         or kind not in ({"primary"} if is_validity else {"primary", "reconciliation"})
         or set(judgment) != allowed
         or judgment.get("problemId") != manifest.get("problemId")
@@ -924,7 +1122,11 @@ def load_judgment_bundle(bundle_dir: Path) -> tuple[dict[str, object], dict[str,
             )
         except json.JSONDecodeError as exc:
             raise MathFlowError("judgment dependency packet is not valid JSON") from exc
-        packet = validate_dependency_packet(packet)
+        packet = (
+            validate_evidence_packet_v3(packet)
+            if validity_version == 3
+            else validate_dependency_packet(packet)
+        )
         if (
             packet.get("problemId") != judgment.get("problemId")
             or packet.get("subjectTransactionId") not in subject_ids
@@ -932,13 +1134,25 @@ def load_judgment_bundle(bundle_dir: Path) -> tuple[dict[str, object], dict[str,
         ):
             raise MathFlowError("validity judgment does not match its dependency packet")
         claims = packet.get("claims")
-        dependency_ids = packet.get("dependencyTransactionIds")
+        dependency_ids = packet.get(
+            "declaredReferenceTransactionIds"
+            if validity_version == 3
+            else "dependencyTransactionIds"
+        )
         if not isinstance(claims, list) or not isinstance(dependency_ids, list):
             raise MathFlowError("validity dependency packet has invalid claim data")
-        assessments = _validate_assessments(
-            {"assessments": judgment.get("assessments")},
-            claims,
-            {str(item) for item in dependency_ids},
+        assessments = (
+            _validate_assessments_v3(
+                {"assessments": judgment.get("assessments")},
+                claims,
+                {str(item) for item in dependency_ids},
+            )
+            if validity_version == 3
+            else _validate_assessments(
+                {"assessments": judgment.get("assessments")},
+                claims,
+                {str(item) for item in dependency_ids},
+            )
         )
         stance = {
             "valid": "supports",
@@ -1124,6 +1338,38 @@ def _published_primary_judgment_bundles(
     return source, spec, bundles
 
 
+def _partition_attestation_ready_transactions(
+    root: Path,
+    projection_root: Path,
+    problem: str,
+    head: str,
+    transactions: list[dict[str, object]],
+) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+    ready: list[dict[str, object]] = []
+    deferred: list[dict[str, object]] = []
+    for transaction in transactions:
+        transaction_id = str(transaction["transactionId"])
+        status = objective_attestation_status(
+            root, projection_root, problem, transaction_id, head
+        )
+        item = {
+            "transactionId": transaction_id,
+            "ordinal": int(transaction["ordinal"]),
+            "contributionId": str(transaction["contributionId"]),
+        }
+        if status["requested"] and not status["terminal"]:
+            deferred.append(
+                {
+                    **item,
+                    "reasonCode": "objective-attestation-pending",
+                    "requestDigest": status["requestDigest"],
+                }
+            )
+        else:
+            ready.append(item)
+    return ready, deferred
+
+
 def plan_primary_judgment_coverage(
     root: Path,
     projection_root: Path,
@@ -1146,7 +1392,7 @@ def plan_primary_judgment_coverage(
         for subject_id in bundle["subjectTransactionIds"]
     }
 
-    missing = [
+    missing_candidates = [
         {
             "transactionId": str(transaction["transactionId"]),
             "ordinal": int(transaction["ordinal"]),
@@ -1155,7 +1401,14 @@ def plan_primary_judgment_coverage(
         for transaction in transactions
         if transaction["transactionId"] not in covered
     ]
-    return {
+    deferred: list[dict[str, object]] = []
+    if spec["implementation"] == "openrouter-validity-judgment-v3":
+        missing, deferred = _partition_attestation_ready_transactions(
+            root, projection_root, problem, head, missing_candidates
+        )
+    else:
+        missing = missing_candidates
+    result = {
         "schemaVersion": 1,
         "problemId": problem,
         "ledgerHead": source["ledgerHead"],
@@ -1173,6 +1426,9 @@ def plan_primary_judgment_coverage(
             ]
         },
     }
+    if spec["implementation"] == "openrouter-validity-judgment-v3":
+        result["deferredTransactions"] = deferred
+    return result
 
 
 def plan_primary_judgment_inputs(
@@ -1257,11 +1513,26 @@ def plan_primary_judgment_inputs(
     ledger_ids = {str(item["transactionId"]) for item in source["transactions"]}
     combined_subjects = published_subjects | additional_subjects
     missing = ledger_ids - combined_subjects
-    if missing:
+    deferred: list[dict[str, object]] = []
+    if missing and spec["implementation"] == "openrouter-validity-judgment-v3":
+        missing_transactions = [
+            transaction
+            for transaction in source["transactions"]
+            if transaction["transactionId"] in missing
+        ]
+        ready, deferred = _partition_attestation_ready_transactions(
+            root, projection_root, problem, head, missing_transactions
+        )
+        if ready:
+            raise MathFlowError(
+                "formation judgment inputs omit an attestation-ready subject: "
+                f"{ready[0]['transactionId']}"
+            )
+    elif missing:
         raise MathFlowError(
             f"formation judgment inputs do not cover the current ledger: {sorted(missing)[0]}"
         )
-    return {
+    result = {
         "schemaVersion": 1,
         "problemId": problem,
         "ledgerHead": source["ledgerHead"],
@@ -1279,6 +1550,9 @@ def plan_primary_judgment_inputs(
         ),
         "bundles": combined,
     }
+    if spec["implementation"] == "openrouter-validity-judgment-v3":
+        result["deferredTransactions"] = deferred
+    return result
 
 
 def verify_primary_judgment_artifacts(

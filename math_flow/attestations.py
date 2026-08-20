@@ -679,6 +679,107 @@ def plan_verifier_attestation(
     }
 
 
+def objective_attestation_status(
+    root: Path,
+    projection_root: Path,
+    problem: str,
+    transaction: str,
+    head: str = "HEAD",
+) -> dict[str, object]:
+    """Resolve the terminal objective evidence required by one contribution.
+
+    This is deliberately a projection-transport lookup, not a claim about the
+    mathematics.  A returned terminal record has been verified against the
+    canonical contribution, its pinned verifier, and the content-addressed
+    published bundle.  Callers may therefore bind it into another immutable
+    input without executing participant code.
+    """
+
+    root = root.resolve()
+    projection_root = projection_root.resolve()
+    source, item = _transaction(root, problem, head, transaction)
+    transaction_id = str(item["transactionId"])
+    prefix = str(item["path"])
+    request_path = f"{prefix}/{VERIFICATION_REQUEST}"
+    if request_path not in list_files_at(root, transaction_id, prefix):
+        return {
+            "schemaVersion": 1,
+            "problemId": problem,
+            "transactionId": transaction_id,
+            "requested": False,
+            "terminal": True,
+            "requestDigest": None,
+            "runDigest": None,
+            "evidence": None,
+        }
+
+    plan = plan_verifier_attestation(
+        root, projection_root, problem, transaction_id, str(source["ledgerHead"])
+    )
+    request_digest = str(plan["requestDigest"])
+    run_digest = plan.get("publishedRunDigest")
+    if not isinstance(run_digest, str):
+        return {
+            "schemaVersion": 1,
+            "problemId": problem,
+            "transactionId": transaction_id,
+            "requested": True,
+            "terminal": False,
+            "requestDigest": request_digest,
+            "runDigest": None,
+            "evidence": None,
+        }
+
+    exact = [
+        entry
+        for entry in _published_attestation_entries(projection_root, problem)
+        if entry["transactionId"] == transaction_id
+        and entry["requestDigest"] == request_digest
+        and entry["runDigest"] == run_digest
+    ]
+    if len(exact) != 1:
+        raise MathFlowError(
+            "objective verification request has no unique terminal attestation"
+        )
+    bundle = Path(str(exact[0]["path"]))
+    details = verifier_attestation_details(
+        root, bundle, str(source["ledgerHead"])
+    )
+    manifest, verified_run_digest = verify_bundle(bundle)
+    artifacts = {
+        str(artifact["role"]): {
+            "digest": artifact["digest"],
+            "bytes": artifact["bytes"],
+        }
+        for artifact in manifest["artifacts"]
+        if isinstance(artifact, dict)
+        and isinstance(artifact.get("role"), str)
+    }
+    evidence = {
+        "schemaVersion": 1,
+        "requestDigest": request_digest,
+        "runDigest": verified_run_digest,
+        "attestationId": details["attestationId"],
+        "status": details["status"],
+        "verifier": details["verifier"],
+        "environmentDigest": details["environmentDigest"],
+        "result": details["result"],
+        "artifacts": artifacts,
+        "stdout": details["stdout"],
+        "stderr": details["stderr"],
+    }
+    return {
+        "schemaVersion": 1,
+        "problemId": problem,
+        "transactionId": transaction_id,
+        "requested": True,
+        "terminal": True,
+        "requestDigest": request_digest,
+        "runDigest": verified_run_digest,
+        "evidence": evidence,
+    }
+
+
 def assert_attestation_publication_unique(
     projection_root: Path, bundle_dir: Path
 ) -> dict[str, str]:

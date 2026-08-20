@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 from .artifacts import read_verified_artifact, verify_bundle
+from .attestations import objective_attestation_status
 from .claims import CLAIM_KEY, validate_claim_manifest
 from .coordination import load_scheduler
 from .errors import MathFlowError
@@ -413,6 +414,84 @@ def build_dependency_packet(
     return {**core, "packetDigest": f"sha256:{sha256_json(core)}"}
 
 
+def build_evidence_packet_v3(
+    root: Path,
+    projection_root: Path | None,
+    problem: str,
+    source: dict[str, object],
+    head: str,
+    subject_transaction_id: str,
+    context_projection: str | None,
+    research_state_run: Path | None = None,
+) -> dict[str, object]:
+    """Build the v3 validity packet with references and terminal attestations.
+
+    V2 treated every transaction mentioned by the legacy claim extractor as a
+    formation dependency.  V3 deliberately calls these *declared references*;
+    the validity assessment separately records which of them are actually
+    required premises.  This preserves citation provenance without importing a
+    rejected referenced submission into accepted research state.
+    """
+
+    v2_packet = build_dependency_packet(
+        root,
+        projection_root,
+        problem,
+        source,
+        head,
+        subject_transaction_id,
+        context_projection,
+        research_state_run,
+    )
+    references = list(v2_packet["dependencyTransactionIds"])
+    claims = [
+        {
+            "claimKey": claim["claimKey"],
+            "statement": claim["statement"],
+            "declaredReferenceTransactionIds": list(
+                claim["dependencyTransactionIds"]
+            ),
+        }
+        for claim in v2_packet["claims"]
+    ]
+    if projection_root is None:
+        transactions = {
+            str(item["transactionId"]): item for item in source["transactions"]
+        }
+        subject = transactions[subject_transaction_id]
+        prefix = str(subject["path"])
+        files = set(list_files_at(root, subject_transaction_id, prefix))
+        if f"{prefix}/verification.json" in files:
+            raise MathFlowError(
+                "validity-v3 judgment requires projection state for objective attestation evidence"
+            )
+        attestation = None
+    else:
+        status = objective_attestation_status(
+            root,
+            projection_root,
+            problem,
+            subject_transaction_id,
+            head,
+        )
+        if status["requested"] and not status["terminal"]:
+            raise MathFlowError(
+                "validity-v3 judgment is deferred until objective attestation is terminal"
+            )
+        attestation = status["evidence"]
+    core = {
+        "schemaVersion": 2,
+        "problemId": problem,
+        "subjectTransactionId": subject_transaction_id,
+        "subjectLedgerPosition": v2_packet["subjectLedgerPosition"],
+        "claims": claims,
+        "declaredReferenceTransactionIds": references,
+        "knowledgeContext": v2_packet["knowledgeContext"],
+        "objectiveAttestation": attestation,
+    }
+    return {**core, "packetDigest": f"sha256:{sha256_json(core)}"}
+
+
 def validate_dependency_packet(value: object) -> dict[str, object]:
     required = {
         "schemaVersion",
@@ -505,3 +584,165 @@ def validate_dependency_packet(value: object) -> dict[str, object]:
         ):
             raise MathFlowError("validity dependency packet has invalid knowledge context")
     return value
+
+
+def validate_evidence_packet_v3(value: object) -> dict[str, object]:
+    required = {
+        "schemaVersion",
+        "problemId",
+        "subjectTransactionId",
+        "subjectLedgerPosition",
+        "claims",
+        "declaredReferenceTransactionIds",
+        "knowledgeContext",
+        "objectiveAttestation",
+        "packetDigest",
+    }
+    if not isinstance(value, dict) or set(value) != required:
+        raise MathFlowError("validity-v3 evidence packet has an invalid envelope")
+    core = {key: value[key] for key in required if key != "packetDigest"}
+    references = value.get("declaredReferenceTransactionIds")
+    if (
+        value.get("schemaVersion") != 2
+        or not isinstance(value.get("problemId"), str)
+        or not isinstance(value.get("subjectTransactionId"), str)
+        or not re.fullmatch(r"[0-9a-f]{40}", str(value.get("subjectTransactionId")))
+        or not isinstance(value.get("subjectLedgerPosition"), int)
+        or not isinstance(references, list)
+        or any(
+            not isinstance(item, str) or not re.fullmatch(r"[0-9a-f]{40}", item)
+            for item in references
+        )
+        or len(references) != len(set(references))
+        or value.get("packetDigest") != f"sha256:{sha256_json(core)}"
+    ):
+        raise MathFlowError("validity-v3 evidence packet digest is invalid")
+    claims = value.get("claims")
+    if not isinstance(claims, list) or not claims:
+        raise MathFlowError("validity-v3 evidence packet has no claims")
+    declared: set[str] = set()
+    claim_keys: set[str] = set()
+    for claim in claims:
+        if (
+            not isinstance(claim, dict)
+            or set(claim)
+            != {
+                "claimKey",
+                "statement",
+                "declaredReferenceTransactionIds",
+            }
+            or not isinstance(claim.get("claimKey"), str)
+            or not CLAIM_KEY.fullmatch(str(claim.get("claimKey")))
+            or not isinstance(claim.get("statement"), str)
+            or not str(claim.get("statement")).strip()
+            or not isinstance(claim.get("declaredReferenceTransactionIds"), list)
+            or any(
+                not isinstance(item, str) or item not in references
+                for item in claim.get("declaredReferenceTransactionIds", [])
+            )
+            or len(claim.get("declaredReferenceTransactionIds", []))
+            != len(set(claim.get("declaredReferenceTransactionIds", [])))
+        ):
+            raise MathFlowError("validity-v3 evidence packet contains an invalid claim")
+        claim_key = str(claim["claimKey"])
+        if claim_key in claim_keys:
+            raise MathFlowError("validity-v3 evidence packet repeats a claim key")
+        claim_keys.add(claim_key)
+        declared.update(claim["declaredReferenceTransactionIds"])
+    if declared != set(references):
+        raise MathFlowError(
+            "validity-v3 evidence packet contains undeclared references"
+        )
+    # Reuse the v2 context shape validator without changing its published
+    # packet semantics.
+    context = value.get("knowledgeContext")
+    if context is not None:
+        synthetic = {
+            "schemaVersion": 1,
+            "problemId": value["problemId"],
+            "subjectTransactionId": value["subjectTransactionId"],
+            "subjectLedgerPosition": value["subjectLedgerPosition"],
+            "claims": [
+                {
+                    "claimKey": claim["claimKey"],
+                    "statement": claim["statement"],
+                    "dependencyTransactionIds": claim[
+                        "declaredReferenceTransactionIds"
+                    ],
+                }
+                for claim in claims
+            ],
+            "dependencyTransactionIds": references,
+            "knowledgeContext": context,
+        }
+        synthetic["packetDigest"] = f"sha256:{sha256_json(synthetic)}"
+        validate_dependency_packet(synthetic)
+    attestation = value.get("objectiveAttestation")
+    if attestation is not None:
+        expected_fields = {
+            "schemaVersion",
+            "requestDigest",
+            "runDigest",
+            "attestationId",
+            "status",
+            "verifier",
+            "environmentDigest",
+            "result",
+            "artifacts",
+            "stdout",
+            "stderr",
+        }
+        if (
+            not isinstance(attestation, dict)
+            or set(attestation) != expected_fields
+            or attestation.get("schemaVersion") != 1
+            or attestation.get("status") not in {"passed", "failed", "error"}
+            or any(
+                not isinstance(attestation.get(field), str)
+                or not re.fullmatch(r"sha256:[0-9a-f]{64}", str(attestation[field]))
+                for field in (
+                    "requestDigest",
+                    "runDigest",
+                    "attestationId",
+                    "environmentDigest",
+                )
+            )
+            or not isinstance(attestation.get("verifier"), dict)
+            or not isinstance(attestation.get("result"), dict)
+            or not isinstance(attestation.get("artifacts"), dict)
+            or not isinstance(attestation.get("stdout"), dict)
+            or not isinstance(attestation.get("stderr"), dict)
+        ):
+            raise MathFlowError(
+                "validity-v3 evidence packet has an invalid objective attestation"
+            )
+    return value
+
+
+def formation_dependency_transaction_ids(
+    judgment: dict[str, object], packet: dict[str, object]
+) -> list[str]:
+    """Return only transaction prerequisites for accepted-state formation."""
+
+    if packet.get("schemaVersion") == 1:
+        dependencies = packet.get("dependencyTransactionIds")
+        if not isinstance(dependencies, list) or any(
+            not isinstance(item, str) for item in dependencies
+        ):
+            raise MathFlowError("validity dependency packet is invalid")
+        return list(dict.fromkeys(dependencies))
+    validate_evidence_packet_v3(packet)
+    assessments = judgment.get("assessments")
+    if not isinstance(assessments, list):
+        raise MathFlowError("validity-v3 judgment has invalid assessments")
+    dependencies: list[str] = []
+    for assessment in assessments:
+        if not isinstance(assessment, dict) or assessment.get("status") != "valid":
+            continue
+        required = assessment.get("requiredDependencyTransactionIds")
+        if not isinstance(required, list) or any(
+            not isinstance(item, str) for item in required
+        ):
+            raise MathFlowError("validity-v3 assessment dependencies are invalid")
+        dependencies.extend(required)
+    return list(dict.fromkeys(dependencies))

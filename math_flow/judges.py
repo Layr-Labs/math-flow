@@ -22,6 +22,7 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-hierarchical-markdown-v2",
     "openrouter-markdown-judgment-v1",
     "openrouter-validity-judgment-v2",
+    "openrouter-validity-judgment-v3",
     "openrouter-markdown-reconciliation-v1",
     "openrouter-knowledge-builder-v1",
     "openrouter-knowledge-builder-v2",
@@ -30,17 +31,20 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-credit-assignment-v2",
     "openrouter-hierarchical-research-v1",
     "openrouter-hierarchical-research-builder-v2",
+    "openrouter-hierarchical-research-builder-v3",
     "openrouter-hierarchical-research-credit-v2",
 }
 SUPPORTED_INPUT_BUILDERS = {
     "ledger-index-v1",
     "ledger-text-artifacts-v1",
     "claim-dependency-packet-v2",
+    "claim-evidence-packet-v3",
     "judgment-batch-v1",
     "locked-knowledge-ledger-v1",
     "locked-knowledge-ledger-directions-v2",
     "accepted-validity-program-state-v1",
     "accepted-validity-batch-program-state-v2",
+    "accepted-validity-batch-program-state-v3",
     "locked-research-history-v2",
 }
 SUPPORTED_INVOCATION_ADAPTERS = {"local-v1", "openrouter-chat-completions-v1"}
@@ -50,12 +54,14 @@ SUPPORTED_OUTPUT_PROFILES = {
     "math-flow/hierarchical-markdown-v2",
     "math-flow/judgment-markdown-v1",
     "math-flow/validity-judgment-v2",
+    "math-flow/validity-judgment-v3",
     "math-flow/knowledge-build-markdown-v1",
     "math-flow/knowledge-build-markdown-v2",
     "math-flow/credit-assignment-markdown-v1",
     "math-flow/credit-assignment-markdown-v2",
     "math-flow/hierarchical-research-v1",
     "math-flow/hierarchical-research-v2",
+    "math-flow/hierarchical-research-v3",
     "math-flow/hierarchical-research-credit-v2",
 }
 SUPPORTED_OUTPUT_ADAPTERS = {
@@ -65,6 +71,7 @@ SUPPORTED_OUTPUT_ADAPTERS = {
     "select-report-extract-revisions-v2",
     "report-extract-findings-v1",
     "report-extract-validity-v2",
+    "report-extract-validity-v3",
     "report-extract-reconciliation-v1",
     "select-form-extract-revisions-v1",
     "select-form-extract-knowledge-revisions-v2",
@@ -72,6 +79,7 @@ SUPPORTED_OUTPUT_ADAPTERS = {
     "report-extract-credit-v2",
     "structured-research-update-v1",
     "structured-research-batch-v2",
+    "structured-research-batch-v3",
     "structured-hierarchical-credit-v2",
 }
 SUPPORTED_REDUCERS = {
@@ -81,6 +89,7 @@ SUPPORTED_REDUCERS = {
     "hierarchical-knowledge-revisions-v3",
     "serialized-research-credit-v1",
     "batched-research-state-v2",
+    "batched-research-state-v3",
     "hierarchical-credit-allocation-v2",
 }
 TEXT_ARTIFACT_SUFFIXES = {
@@ -162,6 +171,12 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputAdapter": "report-extract-validity-v2",
             "reducer": None,
         },
+        "openrouter-validity-judgment-v3": {
+            "inputBuilder": "claim-evidence-packet-v3",
+            "outputProfile": "math-flow/validity-judgment-v3",
+            "outputAdapter": "report-extract-validity-v3",
+            "reducer": None,
+        },
         "openrouter-markdown-reconciliation-v1": {
             "outputProfile": "math-flow/judgment-markdown-v1",
             "outputAdapter": "report-extract-reconciliation-v1",
@@ -209,6 +224,12 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputAdapter": "structured-research-batch-v2",
             "reducer": "batched-research-state-v2",
         },
+        "openrouter-hierarchical-research-builder-v3": {
+            "inputBuilder": "accepted-validity-batch-program-state-v3",
+            "outputProfile": "math-flow/hierarchical-research-v3",
+            "outputAdapter": "structured-research-batch-v3",
+            "reducer": "batched-research-state-v3",
+        },
         "openrouter-hierarchical-research-credit-v2": {
             "inputBuilder": "locked-research-history-v2",
             "outputProfile": "math-flow/hierarchical-research-credit-v2",
@@ -223,7 +244,10 @@ def load_judge_spec(path: Path) -> dict[str, object]:
                 raise MathFlowError(
                     f"judge {field} is incompatible with {spec['implementation']}: {spec[field]}"
                 )
-    if spec["implementation"] == "openrouter-validity-judgment-v2":
+    if spec["implementation"] in {
+        "openrouter-validity-judgment-v2",
+        "openrouter-validity-judgment-v3",
+    }:
         context_projection = spec.get("contextProjection")
         if context_projection is not None and (
             not isinstance(context_projection, str)
@@ -251,6 +275,7 @@ def load_judge_spec(path: Path) -> dict[str, object]:
         "openrouter-hierarchical-markdown-v2",
         "openrouter-markdown-judgment-v1",
         "openrouter-validity-judgment-v2",
+        "openrouter-validity-judgment-v3",
         "openrouter-markdown-reconciliation-v1",
         "openrouter-knowledge-builder-v1",
         "openrouter-knowledge-builder-v2",
@@ -259,6 +284,7 @@ def load_judge_spec(path: Path) -> dict[str, object]:
         "openrouter-credit-assignment-v2",
         "openrouter-hierarchical-research-v1",
         "openrouter-hierarchical-research-builder-v2",
+        "openrouter-hierarchical-research-builder-v3",
     }:
         for field in ("model", "systemPrompt", "rubric", "parameters", "provider"):
             if field not in spec:

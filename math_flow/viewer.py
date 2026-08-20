@@ -17,6 +17,12 @@ from .repository import ledger, read_at
 from .research_state import validate_research_program_state
 
 
+HIERARCHICAL_RESEARCH_OUTPUT_PROFILES = {
+    "math-flow/hierarchical-research-v2",
+    "math-flow/hierarchical-research-v3",
+}
+
+
 def _projection_catalog_sort_key(item: dict[str, object]) -> tuple[object, ...]:
     return (
         str(item["problemId"]),
@@ -326,10 +332,11 @@ def _export_research_viewer_data(
         manifest, manifest_digest = load_manifest(bundle)
         if (
             manifest.get("problemId") != problem
-            or manifest.get("outputProfile") != "math-flow/hierarchical-research-v2"
+            or manifest.get("outputProfile")
+            not in HIERARCHICAL_RESEARCH_OUTPUT_PROFILES
         ):
             raise MathFlowError(
-                f"viewer run is not a hierarchical research v2 build: {bundle}"
+                f"viewer run is not a supported hierarchical research build: {bundle}"
             )
         if previous_digest is not None and manifest.get("baseRun") != previous_digest:
             raise MathFlowError(f"viewer research runs do not form a base-run chain: {bundle}")
@@ -695,7 +702,7 @@ def export_viewer_data(
         raise MathFlowError("viewer export requires at least one judge run")
     root = root.resolve()
     first_manifest, first_manifest_digest = load_manifest(run_dirs[0].resolve())
-    if first_manifest.get("outputProfile") == "math-flow/hierarchical-research-v2":
+    if first_manifest.get("outputProfile") in HIERARCHICAL_RESEARCH_OUTPUT_PROFILES:
         return _export_research_viewer_data(
             root, problem, head, run_dirs, judgment_dirs
         )
@@ -1033,7 +1040,7 @@ def export_viewer_catalog(
             "math-flow/hierarchical-markdown-v2",
             "math-flow/knowledge-build-markdown-v1",
             "math-flow/knowledge-build-markdown-v2",
-            "math-flow/hierarchical-research-v2",
+            *HIERARCHICAL_RESEARCH_OUTPUT_PROFILES,
         }
     }
     published_judgments = _projection_judgment_index(published_objects)

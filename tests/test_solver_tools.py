@@ -60,6 +60,16 @@ class SolverToolTests(unittest.TestCase):
             "outputAdapter": "report-extract-credit-v2",
             "rubric": {"priority": "Use exact register-event references."},
         }
+        self.research_v2 = {
+            **self.v1,
+            "id": "credit-research",
+            "implementation": "openrouter-hierarchical-research-credit-v2",
+            "description": "Hierarchical research credit.",
+            "inputBuilder": "locked-research-history-v2",
+            "outputProfile": "math-flow/hierarchical-research-credit-v2",
+            "outputAdapter": "structured-hierarchical-credit-v2",
+            "reducer": "hierarchical-credit-allocation-v2",
+        }
         write(
             self.root / "protocol/judges/credit-v1.json",
             json.dumps(self.v1) + "\n",
@@ -67,6 +77,10 @@ class SolverToolTests(unittest.TestCase):
         write(
             self.root / "protocol/judges/credit-v2.json",
             json.dumps(self.v2) + "\n",
+        )
+        write(
+            self.root / "protocol/judges/credit-research.json",
+            json.dumps(self.research_v2) + "\n",
         )
         git(self.root, "add", ".")
         git(self.root, "commit", "-qm", "Create fixture")
@@ -83,11 +97,15 @@ class SolverToolTests(unittest.TestCase):
     def _active(self, overlays: list[str]) -> dict[str, object]:
         projections = []
         for version in overlays:
-            spec = self.v1 if version == "v1" else self.v2
+            spec = {
+                "v1": self.v1,
+                "v2": self.v2,
+                "research": self.research_v2,
+            }[version]
             projections.append(
                 {
                     "schemaVersion": 1,
-                    "projectionId": f"credit-{version}",
+                    "projectionId": str(spec["id"]),
                     "projectionSpecDigest": "sha256:" + version * 32,
                     "problemId": "demo",
                     "canonicalHead": self.head,
@@ -103,7 +121,7 @@ class SolverToolTests(unittest.TestCase):
                     "scheduling": {"minimumIntervalSeconds": 3600},
                     "runner": {
                         "implementation": spec["implementation"],
-                        "spec": f"protocol/judges/credit-{version}.json",
+                        "spec": f"protocol/judges/{spec['id']}.json",
                     },
                 }
             )
@@ -140,6 +158,25 @@ class SolverToolTests(unittest.TestCase):
         self.assertFalse(result["registrationAffectsActiveCreditPolicy"])
         self.assertEqual(result["activeCreditOverlays"], [])
         self.assertIn("No active credit overlay", result["message"])
+
+    @patch("math_flow.solver_tools.list_active_projections")
+    def test_credit_status_describes_hierarchical_research_inputs(
+        self, active_mock
+    ) -> None:
+        active_mock.return_value = self._active(["research"])
+        result = credit_status(self.root, "demo", self.head)
+        overlay = result["activeCreditOverlays"][0]
+        self.assertEqual(
+            overlay["inputCapabilities"],
+            [
+                "research-program-state",
+                "accepted-submission-content",
+                "validity-records",
+                "serialized-research-state-history",
+            ],
+        )
+        self.assertFalse(overlay["consumesResearchDirectionEvents"])
+        self.assertFalse(result["registrationAffectsActiveCreditPolicy"])
 
     def test_register_direction_scaffolds_only_the_atomic_event(self) -> None:
         result = register_direction(

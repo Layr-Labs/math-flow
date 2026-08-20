@@ -8,11 +8,12 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from math_flow.artifacts import sha256_bytes, verify_bundle
+from math_flow.artifacts import read_verified_artifact, sha256_bytes, verify_bundle
 from math_flow.attestations import (
     ExecutionResult,
     _run_bounded_process,
     docker_oci_executor,
+    objective_attestation_status,
     plan_verifier_attestation,
     run_verifier_attestation_bundle,
     verifier_spec_digest,
@@ -20,6 +21,12 @@ from math_flow.attestations import (
 )
 from math_flow.coordination import publish_batch
 from math_flow.errors import MathFlowError
+from math_flow.judgments import (
+    load_judgment_bundle,
+    plan_primary_judgment_inputs,
+    plan_primary_judgment_coverage,
+    run_primary_judgment_bundle,
+)
 from math_flow.repository import validate_pr, validate_tree
 from math_flow.viewer import _viewer_objective_attestations
 
@@ -191,6 +198,12 @@ class ObjectiveAttestationTests(unittest.TestCase):
             self.root, projections, "demo", transaction, "HEAD"
         )
         self.assertTrue(pending["eligible"])
+        pending_status = objective_attestation_status(
+            self.root, projections, "demo", transaction, "HEAD"
+        )
+        self.assertTrue(pending_status["requested"])
+        self.assertFalse(pending_status["terminal"])
+        self.assertIsNone(pending_status["evidence"])
         batch = publish_batch(projections, [first])
         self.assertEqual(batch["objects"][0]["runKind"], "verifier-attestation")
         self.assertTrue(
@@ -206,6 +219,19 @@ class ObjectiveAttestationTests(unittest.TestCase):
         self.assertFalse(published["eligible"])
         self.assertEqual(
             published["publishedRunDigest"], batch["objects"][0]["runDigest"]
+        )
+        terminal_status = objective_attestation_status(
+            self.root, projections, "demo", transaction, "HEAD"
+        )
+        self.assertTrue(terminal_status["terminal"])
+        self.assertEqual(
+            terminal_status["evidence"]["runDigest"],
+            batch["objects"][0]["runDigest"],
+        )
+        self.assertEqual(terminal_status["evidence"]["status"], "passed")
+        self.assertEqual(
+            terminal_status["evidence"]["stdout"]["text"],
+            "certificate: valid\n",
         )
 
         conflicting = Path(second_parent.name) / "conflicting"
@@ -253,6 +279,168 @@ class ObjectiveAttestationTests(unittest.TestCase):
         self.assertEqual(verified["transactionId"], transaction)
         with self.assertRaisesRegex(MathFlowError, "not an ancestor"):
             verify_verifier_attestation_bundle(self.root, output, self.base)
+
+    def test_validity_v3_defers_only_until_terminal_attestation_and_binds_it(self) -> None:
+        transaction = self.add_contribution()
+        judge_value = json.loads(
+            (
+                Path(__file__).parents[1]
+                / "protocol/judges/openrouter-validity-judgment-v3.json"
+            ).read_text(encoding="utf-8")
+        )
+        judge_value.pop("contextProjection")
+        judge = self.root / "validity-v3.json"
+        write(judge, json.dumps(judge_value, indent=2) + "\n")
+        projections = self.root / "projection-state"
+
+        pending = plan_primary_judgment_coverage(
+            self.root, projections, "demo", judge, "HEAD"
+        )
+        self.assertEqual(pending["missingTransactions"], [])
+        self.assertEqual(
+            [item["transactionId"] for item in pending["deferredTransactions"]],
+            [transaction],
+        )
+        partial_inputs = plan_primary_judgment_inputs(
+            self.root, projections, "demo", judge, "HEAD"
+        )
+        self.assertEqual(partial_inputs["bundles"], [])
+        self.assertEqual(
+            [
+                item["transactionId"]
+                for item in partial_inputs["deferredTransactions"]
+            ],
+            [transaction],
+        )
+        with self.assertRaisesRegex(MathFlowError, "deferred until objective attestation"):
+            run_primary_judgment_bundle(
+                self.root,
+                "demo",
+                judge,
+                "HEAD",
+                [transaction],
+                self.root / "premature-judgment",
+                projection_root=projections,
+                transport=lambda _: {},
+            )
+
+        attestation = self.root / "attestation-run"
+        run_verifier_attestation_bundle(
+            self.root,
+            "demo",
+            transaction,
+            "HEAD",
+            attestation,
+            executor=self.passing_executor,
+        )
+        published_attestation = publish_batch(projections, [attestation])["objects"][0]
+        ready = plan_primary_judgment_coverage(
+            self.root, projections, "demo", judge, "HEAD"
+        )
+        self.assertEqual(ready["deferredTransactions"], [])
+        self.assertEqual(
+            [item["transactionId"] for item in ready["missingTransactions"]],
+            [transaction],
+        )
+
+        responses = iter(
+            [
+                {
+                    "id": "report",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "finish_reason": "stop",
+                            "message": {
+                                "content": "The pinned execution passes and its exact predicate matches the bounded certificate claim."
+                            },
+                        }
+                    ],
+                },
+                {
+                    "id": "extract",
+                    "model": "openai/gpt-5.6-sol",
+                    "choices": [
+                        {
+                            "finish_reason": "stop",
+                            "message": {
+                                "content": json.dumps(
+                                    {
+                                        "assessments": [
+                                            {
+                                                "claimKey": "demo/certificate",
+                                                "status": "valid",
+                                                "premiseStatus": "not-required",
+                                                "summary": "The exact pinned check establishes the bounded claim.",
+                                                "scopeQualifications": [],
+                                                "evidenceIssues": [],
+                                                "evidenceTransactionIds": [],
+                                                "requiredDependencyTransactionIds": [],
+                                            }
+                                        ]
+                                    }
+                                )
+                            },
+                        }
+                    ],
+                },
+            ]
+        )
+        judgment_dir = self.root / "validity-v3-run"
+        manifest = run_primary_judgment_bundle(
+            self.root,
+            "demo",
+            judge,
+            "HEAD",
+            [transaction],
+            judgment_dir,
+            projection_root=projections,
+            transport=lambda _: next(responses),
+        )
+        packet = json.loads(
+            read_verified_artifact(
+                judgment_dir, manifest, "judgment-dependency-packet"
+            )
+        )
+        self.assertEqual(packet["schemaVersion"], 2)
+        self.assertEqual(
+            packet["objectiveAttestation"]["runDigest"],
+            published_attestation["runDigest"],
+        )
+        self.assertEqual(
+            manifest["inputs"]["objectiveAttestationRunDigest"],
+            published_attestation["runDigest"],
+        )
+        _, judgment, _ = load_judgment_bundle(judgment_dir)
+        self.assertEqual(judgment["schemaVersion"], 3)
+
+    def test_validity_v3_coverage_keeps_independent_subject_ready(self) -> None:
+        attestation_subject = self.add_contribution()
+        plain = self.root / "problems/demo/contributions/plain-proof"
+        write(plain / "README.md", "# Plain proof\n\n## Claim\n\nA separate claim.\n")
+        git(self.root, "add", ".")
+        git(self.root, "commit", "-qm", "Add independent proof")
+        plain_subject = git(self.root, "rev-parse", "HEAD")
+        judge_value = json.loads(
+            (
+                Path(__file__).parents[1]
+                / "protocol/judges/openrouter-validity-judgment-v3.json"
+            ).read_text(encoding="utf-8")
+        )
+        judge_value.pop("contextProjection")
+        judge = self.root / "validity-v3.json"
+        write(judge, json.dumps(judge_value, indent=2) + "\n")
+        coverage = plan_primary_judgment_coverage(
+            self.root, self.root / "projection-state", "demo", judge, "HEAD"
+        )
+        self.assertEqual(
+            [item["transactionId"] for item in coverage["missingTransactions"]],
+            [plain_subject],
+        )
+        self.assertEqual(
+            [item["transactionId"] for item in coverage["deferredTransactions"]],
+            [attestation_subject],
+        )
 
     def test_forged_environment_is_rejected_even_when_digests_are_rewritten(self) -> None:
         transaction = self.add_contribution()

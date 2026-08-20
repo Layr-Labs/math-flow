@@ -19,6 +19,12 @@ CREDIT_INPUT_CAPABILITIES = {
         "knowledge-state",
         "research-direction-events",
     ],
+    "locked-research-history-v2": [
+        "research-program-state",
+        "accepted-submission-content",
+        "validity-records",
+        "serialized-research-state-history",
+    ],
 }
 
 

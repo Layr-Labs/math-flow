@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-12 (`fb88b78`).
+Last reconciled with `main`: 2026-08-19 (`25b8bf8`).
 
 ## Product thesis
 
@@ -115,9 +115,20 @@ automatic squash merge to main
 - A primary judgment is immutable, content-addressed, and has no mutable base
   knowledge state. Independent judgments must remain parallelizable. A bounded
   validity judge may receive a content-addressed pre-subject dependency packet:
-  declared claims, explicitly cited prior transactions, and only historical
-  knowledge nodes grounded in those dependencies. It must never receive the
-  current post-subject state or an automatically embedded preceding ledger.
+  declared claims, explicitly cited prior transactions, an exact terminal
+  objective attestation when requested, and only historical knowledge nodes
+  grounded in those references. It must never receive the current post-subject
+  state or an automatically embedded preceding ledger.
+- In validity v3, cited transactions are declared provenance, not automatic
+  logical dependencies. The judge selects the exact subset required as premises
+  for each valid claim. Formation uses only that subset; invalid and
+  indeterminate submissions remain wholly excluded. The broader declared
+  reference set stays in immutable history for later credit assignment.
+- Objective verification is a subject-local gate in validity v3. Only the
+  requesting subject waits for a verified terminal attestation; unrelated
+  subjects remain eligible for parallel primary judgment. Terminal publication
+  redispatches active v3 streams, and packet/judgment identity binds the exact
+  attestation evidence.
 - Primary-judgment completion order must not determine knowledge-state order or
   credit context. A later transaction may finish judgment before an earlier
   independent transaction without being discarded or forcing either judgment to
@@ -242,10 +253,10 @@ preference.
 | Generic run/artifact envelope | Implemented | `math_flow/runs.py`, `math_flow/artifacts.py` |
 | Approved projection registry | Implemented | `math_flow/governance.py`, `protocol/projections/` |
 | Permissioned governed admission | Implemented; native reviews or exact `/approve-admission <full-head-SHA>` comments | `math_flow/governance.py`, `.github/workflows/admission-control.yml` |
-| Parallel primary judgments | Implemented | `math_flow/judgments.py` |
+| Parallel primary judgments | Implemented; validity v3 adds subject-local terminal-attestation deferral without serializing independent subjects | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
 | Conflict detection and reconciliation | Implemented for legacy projections; the default validity-v2 path omits this stage | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
 | Coalescing, leased formation lanes | Implemented, including atomic submission-dependency components | `math_flow/coordination.py` |
-| Batched hierarchical research state | Implemented for the default validity-v2 projection; invalid and indeterminate claims are excluded | `math_flow/research_projection.py`, `math_flow/research_state.py` |
+| Batched hierarchical research state | v2 implemented and active; additive v3 runtime implemented pending separate governed projection admission, with judge-selected premise edges and complete exclusion of invalid/indeterminate submissions | `math_flow/research_projection.py`, `math_flow/research_state.py`, `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V3.md` |
 | Holistic hierarchical state and revisions | Implemented | `math_flow/formation.py`, `math_flow/knowledge.py` |
 | Content-addressed projection publisher | Implemented, including optimistic cross-problem merge/retry and bounded GitHub commits | `math_flow/coordination.py`, `math_flow/projection_queue.py`, `math_flow/github_projection.py` |
 | Provider-free congestion probe | Implemented; models concurrent problems, solvers, judge streams, projection lanes, atomic reconciliations, throttling, failure recovery, optimistic publication, chunking, catalog export, and agent context with zero provider calls | `math_flow/scale_probe.py`, `tests/test_scale_probe.py` |
@@ -256,7 +267,7 @@ preference.
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Governed local/hosted runner, provider-free eligibility planner, bounded semantic retries, rolling coalescing, catch-up over closed UTC periods, predecessor-chain terminals, and independent `credit-assignment` bundles implemented | `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
 | Research direction registration | Implemented and merged in PR #28: append-only schema/reducer, atomic validation and auto-merge, provider-free CLI/context/catalog refresh, solver skill, viewer, and registration-aware credit v2 | `math_flow/directions.py`, `protocol/schemas/research-direction-event.schema.json`, `viewer/` |
-| Objective verifier attestations | Additive v1 recipe, bounded pinned OCI runner, durable bundle, uniqueness/semantic validation, automatic hosted execution and signed publication, replay, context, and viewer presentation implemented | `math_flow/attestations.py`, `.github/workflows/project-attestation.yml`, `docs/OBJECTIVE_ATTESTATIONS.md` |
+| Objective verifier attestations | Additive v1 recipe, bounded pinned OCI runner, durable bundle, uniqueness/semantic validation, automatic hosted execution and signed publication, replay, context, viewer presentation, and validity-v3 subject-local deferral/redispatch implemented | `math_flow/attestations.py`, `.github/workflows/project-attestation.yml`, `docs/OBJECTIVE_ATTESTATIONS.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
 
 The approved hosted projections are:
@@ -276,6 +287,11 @@ The approved hosted projections are:
   dependency and a one-hour rolling minimum interval. It is active; repository
   evidence, its locked knowledge dependency, and the direction-event ledger are
   approved inputs to its OpenRouter runner.
+
+The v3 validity and hierarchical-research components are versioned runtime
+surfaces, not yet an approved hosted projection at this snapshot. Admit them
+only through a separate one-file `openrouter-research-v2` projection PR after
+the runtime change merges; see `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V3.md`.
 
 The `openrouter-credit-assignment-v2` runner/profile embeds the verified
 direction-event ledger and lets assignments cite exact prior canonical
@@ -486,10 +502,16 @@ The ordinary solver path is fully automatic:
    event dispatches only the provider-free viewer-catalog refresh because it has
    no mathematical judgment effect.
 5. OpenRouter coverage planning fans out one primary judgment for each
-   transaction not covered by the active judge-spec digest.
+   transaction not covered by the active judge-spec digest. On validity v3, a
+   transaction requesting objective verification is listed as deferred until
+   its terminal attestation exists; unrelated transactions stay in the matrix
+   and continue in parallel. Terminal attestation publication redispatches each
+   applicable active v3 judge stream.
 6. The default validity-v2 path reconstructs the complete verified primary set
    and derives the submission dependency graph directly from immutable validity
-   packets. Legacy projections additionally derive current conflicts, reuse
+   packets. Validity v3 instead derives formation edges from the exact required
+   premises selected by the primary judge, while retaining broader declared
+   references only as provenance. Legacy projections additionally derive current conflicts, reuse
    matching published reconciliations, and fan out missing reconciliation calls.
 7. Completed judgments are claimed dependency-atomically into one batched
    knowledge build, then published with the updated scheduler, indexes, and
@@ -724,6 +746,8 @@ upgrade path.
 - `docs/MVP.md` — architecture, phased roadmap, and deferred decisions.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V2.md` — current default validity-only,
   dependency-safe batched research-state formation architecture.
+- `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V3.md` — pending versioned validity and
+  formation boundary, objective-attestation gate, and governed rollout.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V1.md` — serialized replay and
   hierarchical-credit reference path.
 - `docs/PROJECTION_PROTOCOL.md` — run envelopes, profiles, revisions, and

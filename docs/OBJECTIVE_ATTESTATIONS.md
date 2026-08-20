@@ -159,6 +159,13 @@ main and the projection branch, and publishes through the GitHub-signed orphan
 projection transport. The viewer and `math-flow context` show pending and
 published outcomes separately from judgments and credit.
 
+For the validity-v3 path, pending objective verification is a subject-local
+dispatch gate. Coverage defers only the requesting transaction; unrelated
+primary judgments continue in parallel. After either a passing or failing
+terminal bundle is published, the trusted workflow redispatches the active v3
+projection streams for that problem. The next coverage plan includes the
+formerly deferred subject and reuses all independently completed judgments.
+
 ## Use by judges and knowledge builders
 
 An objective attestation is evidence, not an automatic adjudication. Judgment
@@ -168,3 +175,9 @@ what the exact checker establishes, whether the encoded statement matches the
 mathematical claim, and what assumptions remain. That separation is important:
 a successful program run can verify its encoded predicate without proving that
 the encoding answers the intended research question.
+
+The validity-v3 dependency packet embeds the verified terminal request digest,
+run digest, attestation ID, environment and artifact identities, result, and
+bounded output. Its packet digest and resulting judgment identity therefore bind
+the exact evidence. A request without a terminal published bundle cannot produce
+a v3 primary judgment.

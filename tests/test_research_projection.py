@@ -16,7 +16,12 @@ from math_flow.coordination import (
 )
 from math_flow.credit import run_credit_assignment_bundle
 from math_flow.credit_context import build_credit_context
-from math_flow.judgments import load_judgment_bundle, run_primary_judgment_bundle
+from math_flow.judgments import (
+    _validate_assessments_v3,
+    _validity_v3_schema,
+    load_judgment_bundle,
+    run_primary_judgment_bundle,
+)
 from math_flow.errors import MathFlowError
 from math_flow.judges import load_judge_spec, load_source
 from math_flow.governance import resolve_projection
@@ -34,7 +39,10 @@ from math_flow.research_projection import (
     run_research_credit_refresh_bundle,
     run_research_update_bundle,
 )
-from math_flow.validity import research_state_dependency_context
+from math_flow.validity import (
+    research_state_dependency_context,
+    validate_evidence_packet_v3,
+)
 from math_flow.viewer import export_viewer_catalog, export_viewer_data
 
 
@@ -257,6 +265,84 @@ class ResearchProjectionTests(unittest.TestCase):
         )
         return output
 
+    def _validity_v3_bundle(
+        self,
+        directory: Path,
+        problem: str,
+        transaction_id: str,
+        *,
+        status: str,
+        required_dependencies: list[str],
+        evidence_transaction_ids: list[str],
+        repository: Path = ROOT,
+    ) -> Path:
+        directory.mkdir(parents=True, exist_ok=True)
+        spec = json.loads(
+            (
+                repository
+                / "protocol/judges/openrouter-validity-judgment-v3.json"
+            ).read_text(encoding="utf-8")
+        )
+        spec.pop("contextProjection")
+        judge = directory / "validity-v3-spec.json"
+        judge.write_text(json.dumps(spec), encoding="utf-8")
+        calls = 0
+
+        def fake_transport(request: dict[str, object]) -> dict[str, object]:
+            nonlocal calls
+            calls += 1
+            schema = (
+                request.get("response_format", {})
+                .get("json_schema", {})
+                .get("schema")
+            )
+            if schema is None:
+                return response("# Audit\n\nFixture validity-v3 audit.", calls)
+            assessment_items = schema["properties"]["assessments"]["items"]
+            claim_keys = [
+                variant["properties"]["claimKey"]["enum"][0]
+                for variant in assessment_items["anyOf"]
+            ]
+            return response(
+                json.dumps(
+                    {
+                        "assessments": [
+                            {
+                                "claimKey": key,
+                                "status": status,
+                                "premiseStatus": (
+                                    "not-required"
+                                    if not required_dependencies
+                                    else "satisfied"
+                                ),
+                                "summary": f"Fixture validity-v3 assessment: {status}.",
+                                "scopeQualifications": [],
+                                "evidenceIssues": (
+                                    [] if status == "valid" else ["Fixture defect."]
+                                ),
+                                "evidenceTransactionIds": evidence_transaction_ids,
+                                "requiredDependencyTransactionIds": required_dependencies,
+                            }
+                            for key in claim_keys
+                        ]
+                    }
+                ),
+                calls,
+            )
+
+        output = directory / f"validity-v3-{transaction_id[:12]}"
+        run_primary_judgment_bundle(
+            repository,
+            problem,
+            judge,
+            transaction_id,
+            [transaction_id],
+            output,
+            projection_root=None,
+            transport=fake_transport,
+        )
+        return output
+
     @staticmethod
     def _batch_transport(request: dict[str, object]) -> dict[str, object]:
         schema = request["response_format"]["json_schema"]["schema"]
@@ -430,6 +516,357 @@ class ResearchProjectionTests(unittest.TestCase):
             )
             _, state, _ = load_research_build_bundle(output)
             self.assertEqual(set(state["contributions"]), {TRANSACTIONS[0]})
+
+    def test_validity_v3_assessment_dependencies_are_claim_local_and_consistent(
+        self,
+    ) -> None:
+        first_reference = "a" * 40
+        second_reference = "b" * 40
+        claims = [
+            {
+                "claimKey": "claim/first",
+                "statement": "First claim.",
+                "declaredReferenceTransactionIds": [first_reference],
+            },
+            {
+                "claimKey": "claim/second",
+                "statement": "Second claim.",
+                "declaredReferenceTransactionIds": [second_reference],
+            },
+        ]
+        schema = _validity_v3_schema(
+            claims, [first_reference, second_reference]
+        )
+        variants = schema["properties"]["assessments"]["items"]["anyOf"]
+        by_key = {
+            variant["properties"]["claimKey"]["enum"][0]: variant
+            for variant in variants
+        }
+        self.assertEqual(
+            by_key["claim/first"]["properties"]["evidenceTransactionIds"][
+                "items"
+            ]["enum"],
+            [first_reference],
+        )
+        self.assertEqual(
+            by_key["claim/second"]["properties"][
+                "requiredDependencyTransactionIds"
+            ]["items"]["enum"],
+            [second_reference],
+        )
+
+        def assessment(
+            claim_key: str,
+            *,
+            evidence: list[str],
+            required: list[str],
+            premise_status: str = "not-required",
+        ) -> dict[str, object]:
+            return {
+                "claimKey": claim_key,
+                "status": "valid",
+                "premiseStatus": premise_status,
+                "summary": "Fixture assessment.",
+                "scopeQualifications": [],
+                "evidenceIssues": [],
+                "evidenceTransactionIds": evidence,
+                "requiredDependencyTransactionIds": required,
+            }
+
+        second = assessment(
+            "claim/second", evidence=[], required=[]
+        )
+        with self.assertRaisesRegex(MathFlowError, "per-claim required"):
+            _validate_assessments_v3(
+                {
+                    "assessments": [
+                        assessment(
+                            "claim/first",
+                            evidence=[second_reference],
+                            required=[second_reference],
+                            premise_status="satisfied",
+                        ),
+                        second,
+                    ]
+                },
+                claims,
+                {first_reference, second_reference},
+            )
+        with self.assertRaisesRegex(MathFlowError, "same claim"):
+            _validate_assessments_v3(
+                {
+                    "assessments": [
+                        assessment(
+                            "claim/first",
+                            evidence=[second_reference],
+                            required=[],
+                        ),
+                        second,
+                    ]
+                },
+                claims,
+                {first_reference, second_reference},
+            )
+        for required, premise_status in [
+            ([first_reference], "not-required"),
+            ([], "missing"),
+            ([], "disputed"),
+        ]:
+            with self.subTest(required=required, premise_status=premise_status):
+                with self.assertRaisesRegex(MathFlowError, "premise status"):
+                    _validate_assessments_v3(
+                        {
+                            "assessments": [
+                                assessment(
+                                    "claim/first",
+                                    evidence=required,
+                                    required=required,
+                                    premise_status=premise_status,
+                                ),
+                                second,
+                            ]
+                        },
+                        claims,
+                        {first_reference, second_reference},
+                    )
+
+    def test_validity_v3_packet_rejects_duplicate_per_claim_references(self) -> None:
+        reference = "a" * 40
+        core = {
+            "schemaVersion": 2,
+            "problemId": "demo",
+            "subjectTransactionId": "c" * 40,
+            "subjectLedgerPosition": 2,
+            "claims": [
+                {
+                    "claimKey": "claim/duplicate",
+                    "statement": "A claim with malformed provenance.",
+                    "declaredReferenceTransactionIds": [reference, reference],
+                }
+            ],
+            "declaredReferenceTransactionIds": [reference],
+            "knowledgeContext": None,
+            "objectiveAttestation": None,
+        }
+        packet = {
+            **core,
+            "packetDigest": f"sha256:{sha256_json(core)}",
+        }
+        with self.assertRaisesRegex(MathFlowError, "invalid claim"):
+            validate_evidence_packet_v3(packet)
+
+    def test_validity_v3_reference_to_invalid_no_three_submission_is_not_a_dependency(
+        self,
+    ) -> None:
+        problem = "no-three-in-line-77"
+        invalid_transaction = "c98dd877ad81611a9a469b1bd790cd909b56b1ce"
+        self_contained_transaction = "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            invalid = self._validity_v3_bundle(
+                root,
+                problem,
+                invalid_transaction,
+                status="invalid",
+                required_dependencies=[],
+                evidence_transaction_ids=[],
+            )
+            self_contained = self._validity_v3_bundle(
+                root,
+                problem,
+                self_contained_transaction,
+                status="valid",
+                required_dependencies=[],
+                evidence_transaction_ids=[invalid_transaction],
+            )
+            self_contained_manifest, self_contained_judgment, _ = (
+                load_judgment_bundle(self_contained)
+            )
+            packet = json.loads(
+                read_verified_artifact(
+                    self_contained,
+                    self_contained_manifest,
+                    "judgment-dependency-packet",
+                )
+            )
+            self.assertEqual(
+                packet["declaredReferenceTransactionIds"],
+                [invalid_transaction],
+            )
+            self.assertEqual(
+                self_contained_judgment["assessments"][0][
+                    "requiredDependencyTransactionIds"
+                ],
+                [],
+            )
+
+            projection_root = root / "published"
+            scheduler = projection_root / "coordination" / "scheduler.json"
+            lane_output = root / "lane-v3.json"
+            status = main(
+                [
+                    "--root",
+                    str(ROOT),
+                    "knowledge-trigger",
+                    "--scheduler-file",
+                    str(scheduler),
+                    "--problem",
+                    problem,
+                    "--head",
+                    self_contained_transaction,
+                    "--builder",
+                    str(
+                        ROOT
+                        / "protocol/judges/openrouter-hierarchical-research-builder-v3.json"
+                    ),
+                    "--minimum-interval",
+                    "0",
+                    "--judgment-dir",
+                    str(self_contained),
+                    "--judgment-dir",
+                    str(invalid),
+                    "--now",
+                    "1",
+                    "--output",
+                    str(lane_output),
+                ]
+            )
+            self.assertEqual(status, 0)
+            lane = json.loads(lane_output.read_text(encoding="utf-8"))
+            claim = claim_due_build(scheduler, str(lane["laneId"]), 1, 500)
+            self.assertIsNotNone(claim)
+            output = root / "research-build-v3"
+
+            def atomic_builder_transport(
+                request: dict[str, object]
+            ) -> dict[str, object]:
+                prompt = request["messages"][1]["content"]
+                self.assertIn(
+                    "Never promote an assertion, lemma, corollary",
+                    prompt,
+                )
+                return self._batch_transport(request)
+
+            run_research_build_bundle(
+                ROOT,
+                problem,
+                ROOT
+                / "protocol/judges/openrouter-hierarchical-research-builder-v3.json",
+                self_contained_transaction,
+                claim,
+                [self_contained, invalid],
+                None,
+                output,
+                transport=atomic_builder_transport,
+            )
+            manifest, state, build_digest = load_research_build_bundle(output)
+            self.assertEqual(
+                manifest["outputProfile"], "math-flow/hierarchical-research-v3"
+            )
+            self.assertNotIn(invalid_transaction, state["contributions"])
+            self.assertEqual(
+                state["contributions"][self_contained_transaction][
+                    "dependencyTransactionIds"
+                ],
+                [],
+            )
+            viewer = export_viewer_data(
+                ROOT,
+                problem,
+                self_contained_transaction,
+                [output],
+                judgment_dirs=[self_contained, invalid],
+            )
+            self.assertEqual(
+                viewer["runs"][0]["judgeSpec"]["id"],
+                "openrouter-hierarchical-research-builder-v3",
+            )
+            publish_batch(projection_root, [self_contained, invalid, output])
+            complete_build(
+                scheduler,
+                str(lane["laneId"]),
+                str(claim["buildToken"]),
+                build_digest,
+                2,
+            )
+            catalog = export_viewer_catalog(
+                ROOT,
+                projection_root,
+                "Layr-Labs/math-flow",
+                canonical_ref=self_contained_transaction,
+                projection_ref="projections",
+            )
+            selected = next(
+                item
+                for item in catalog["projections"]
+                if item["problemId"] == problem
+            )
+            self.assertEqual(
+                selected["data"]["runs"][0]["judgeSpec"]["id"],
+                "openrouter-hierarchical-research-builder-v3",
+            )
+
+    def test_validity_v3_required_invalid_dependency_remains_excluded(self) -> None:
+        problem = "no-three-in-line-77"
+        invalid_transaction = "c98dd877ad81611a9a469b1bd790cd909b56b1ce"
+        dependent_transaction = "29ccbd396781fd36d436ed2e6d0952a4730361b9"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            invalid = self._validity_v3_bundle(
+                root,
+                problem,
+                invalid_transaction,
+                status="invalid",
+                required_dependencies=[],
+                evidence_transaction_ids=[],
+            )
+            dependent = self._validity_v3_bundle(
+                root,
+                problem,
+                dependent_transaction,
+                status="valid",
+                required_dependencies=[invalid_transaction],
+                evidence_transaction_ids=[invalid_transaction],
+            )
+            builder = load_judge_spec(
+                ROOT
+                / "protocol/judges/openrouter-hierarchical-research-builder-v3.json"
+            )
+            judgment_ids = [
+                load_judgment_bundle(bundle)[1]["judgmentId"]
+                for bundle in (invalid, dependent)
+            ]
+            scheduler = root / "scheduler-required.json"
+            lane = record_completed_inputs(
+                scheduler,
+                problem,
+                f"sha256:{sha256_json(builder)}",
+                judgment_ids,
+                [],
+                0,
+                1,
+                judgment_dependencies={
+                    judgment_ids[0]: [],
+                    judgment_ids[1]: [judgment_ids[0]],
+                },
+            )
+            claim = claim_due_build(scheduler, str(lane["laneId"]), 1, 500)
+            self.assertIsNotNone(claim)
+            with self.assertRaisesRegex(
+                MathFlowError, "submission excluded from research state"
+            ):
+                run_research_build_bundle(
+                    ROOT,
+                    problem,
+                    ROOT
+                    / "protocol/judges/openrouter-hierarchical-research-builder-v3.json",
+                    dependent_transaction,
+                    claim,
+                    [invalid, dependent],
+                    None,
+                    root / "required-build",
+                    transport=self._batch_transport,
+                )
 
     def test_all_invalid_batch_advances_scheduler_without_provider_call(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -825,6 +1262,7 @@ class ResearchProjectionTests(unittest.TestCase):
                 ROOT / "protocol/judges/openrouter-validity-judgment-v2.json",
                 ROOT / "protocol/judges/openrouter-hierarchical-research-v1.json",
                 Path(directory) / "replay",
+                head=TRANSACTIONS[-1],
                 transport=fake_transport,
             )
 
