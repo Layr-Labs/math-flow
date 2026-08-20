@@ -70,22 +70,22 @@ The CLI uses only the Python standard library (Python 3.11+):
 ```bash
 python -m math_flow validate-tree
 python -m math_flow run \
-  --problem triangle-midpoints \
+  --problem bssc-sum-capacity \
   --judge protocol/judges/baseline-v1.json \
   --head WORKTREE \
-  --output-dir projections/baseline-v1/triangle-midpoints/worktree
+  --output-dir projections/baseline-v1/bssc-sum-capacity/worktree
 ```
 
 After this repository is committed, use a Git commit instead:
 
 ```bash
-python -m math_flow ledger --problem triangle-midpoints --head HEAD
-python -m math_flow directions --problem triangle-midpoints --head HEAD
+python -m math_flow ledger --problem bssc-sum-capacity --head HEAD
+python -m math_flow directions --problem bssc-sum-capacity --head HEAD
 python -m math_flow run \
-  --problem triangle-midpoints \
+  --problem bssc-sum-capacity \
   --judge protocol/judges/baseline-v1.json \
   --head HEAD \
-  --output-dir projections/baseline-v1/triangle-midpoints/first-run
+  --output-dir projections/baseline-v1/bssc-sum-capacity/first-run
 ```
 
 ### OpenRouter judges
@@ -95,7 +95,7 @@ exact request without making a network call:
 
 ```bash
 python -m math_flow render-request \
-  --problem triangle-midpoints \
+  --problem bssc-sum-capacity \
   --judge protocol/judges/openrouter-math-review-v1.json \
   --head WORKTREE \
   --output /tmp/math-flow-openrouter-request.json
@@ -130,10 +130,10 @@ API key and run it against a commit-addressed ledger:
 ```bash
 export OPENROUTER_API_KEY="..."
 python -m math_flow run \
-  --problem triangle-midpoints \
+  --problem bssc-sum-capacity \
   --judge protocol/judges/openrouter-hierarchical-markdown-v2.json \
   --head HEAD \
-  --output-dir projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-1
+  --output-dir projections/openrouter-hierarchical-markdown-v2/bssc-sum-capacity/run-1
 ```
 
 Its bundle contains a small `run.json`, `report.md`, the node selection and delta,
@@ -143,11 +143,11 @@ revise a past adjudication in light of new evidence:
 
 ```bash
 python -m math_flow run \
-  --problem triangle-midpoints \
+  --problem bssc-sum-capacity \
   --judge protocol/judges/openrouter-hierarchical-markdown-v2.json \
   --head HEAD \
-  --base-run projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-1 \
-  --output-dir projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-2
+  --base-run projections/openrouter-hierarchical-markdown-v2/bssc-sum-capacity/run-1 \
+  --output-dir projections/openrouter-hierarchical-markdown-v2/bssc-sum-capacity/run-2
 ```
 
 The judge sends the problem statement and supported text artifacts (`.md`,
@@ -157,27 +157,37 @@ to an endpoint that supports all requested parameters.
 
 ### Parallel judgments and serialized knowledge formation
 
-The v0.5 execution path separates immutable primary and reconciliation judgments
-from rate-limited knowledge formation. Judgments have no mutable base run and can execute
-concurrently; opposed findings create explicit conflict records for targeted
-reconciliation. Completed judgments coalesce in a single-writer knowledge-builder
-lane instead of immediately rebuilding state.
+The historical v0.5 execution path separates immutable primary and
+reconciliation judgments from rate-limited knowledge formation. Judgments have
+no mutable base run and can execute concurrently; opposed findings create
+explicit conflict records for targeted reconciliation. Completed judgments
+coalesce in a single-writer knowledge-builder lane instead of immediately
+rebuilding state.
 
-The additive v2 primary-judge path narrows that first stage to rigorous
-mathematical correctness verification against an immutable packet of explicit
-prior dependencies and dependency-linked, pre-subject knowledge. Preventing
-false acceptance is its overriding priority: it may decompose and audit the
-proof as deeply as needed, while one structured record per declared claim keeps
-output identity stable. It does not decide novelty or global placement; the
-serialized knowledge builder retains responsibility for the holistic knowledge
-state. Existing v1 projections and contributions remain valid.
+The admitted `openrouter-research-v3` replacement path narrows the first stage
+to rigorous validity-v4 verification against an immutable, claim-bounded
+packet. The packet contains the subject, its declared-reference union, bounded
+pre-subject knowledge, and terminal objective evidence for requesting
+transactions in that scope. The judge selects the references that are actually
+required premises; the serialized v4 builder then forms accepted knowledge
+without promoting invalid or indeterminate claims. The retained active problems
+are `bssc-sum-capacity` and `no-three-in-line-77`. Earlier projection bundles
+remain replayable history. The v1/v2 comparison lanes remain temporarily active
+during the sequenced retirement, so agents must select v3 explicitly until that
+retirement is complete.
 
-The included knowledge builder consumes one exact scheduler claim. It is
-deliberately non-adjudicative: it may organize primary findings and supplied
-reconciliation outcomes, but an unreconciled or unresolved conflict must become
-an active dispute node. A deterministic reducer then applies the sparse update
-to the one serialized state chain. This three-stage OpenRouter builder remains
-an example profile rather than a core protocol requirement.
+The matching `openrouter-research-credit-v3` overlay is admitted with an exact
+dependency on research-v3 for those two problems. Its runtime fix is deployed
+and its governed status is active again. Its first assignments are current for
+both retained problems; the v2 credit consumer remains temporarily active until
+the governed retirement sequence removes it.
+
+Every knowledge builder consumes one exact scheduler claim and remains
+non-adjudicative. Research-v3 organizes accepted validity findings and their
+required-premise components. Historical builders may also receive supplied
+reconciliation outcomes, but an unreconciled or unresolved legacy conflict must
+become an active dispute node. A deterministic reducer then applies the sparse
+update to the serialized state chain.
 
 See [docs/PARALLEL_JUDGMENTS.md](docs/PARALLEL_JUDGMENTS.md) for the command flow,
 scheduler semantics, and content-addressed batch publisher. The existing `run`
@@ -263,26 +273,25 @@ judgments, every knowledge-state chain, credit overlays, and the immutable
 adjudication revisions behind them. Its
 server endpoint reads `viewer/catalog.json` directly from the orphan
 `projections` branch; the browser refreshes that endpoint every 30 seconds and
-offers problem and projection selectors. A checked-in deterministic export is
-used only for local development or when repository state is unavailable.
+offers problem and projection selectors. The viewer embeds no problem snapshot:
+if the governed catalog is unavailable, it shows an explicit empty state rather
+than presenting an archived or stale problem as live research.
 Private repositories configure the viewer's server-only
 `MATH_FLOW_GITHUB_TOKEN` binding with a fine-grained, read-only Contents token;
 the credential is never sent to the browser.
 
 Every validated atomic participant event is squash-merged by the trusted
-auto-merge workflow. Contribution events dispatch the baseline and approved
-OpenRouter projection for their problem; research-direction events do not. The
-OpenRouter workflow resolves its logical
-projection from `protocol/projections/` at canonical `main`, plans judgment
-coverage for every ledger transaction under its judge spec, and fans out all
-missing primary judgments concurrently. It then deterministically derives
-conflicts from the complete verified primary set, reuses published
-reconciliations, fans out any missing reconciliations, and coalesces the
-dependency-complete results into one serialized knowledge build. It publishes
-the content-addressed batch and scheduler state to `projections` and regenerates
-the catalog. Manual dispatch remains
-available for repair and replay, and redispatching is idempotent when coverage
-is complete.
+auto-merge workflow. Contribution events dispatch the baseline and every active
+OpenRouter knowledge projection for their problem and exact merged transaction;
+research-direction events do not. Automatic OpenRouter runs plan only that
+subject, while different subjects remain concurrent and duplicate same-subject
+triggers queue and replan. Each verified primary result is published immutably
+before serialized formation. A projection/problem lock then spans formation
+through final v4 knowledge-state and scheduler publication. The scheduled wake
+recomputes research-v3 coverage and dispatches each ready missing primary as an
+exact subject, using a subjectless run only for formation or recovery when no
+ready primary gap remains. Manual batch dispatch remains available for repair
+and replay.
 
 Problem namespaces and projection definitions require a configured administrator
 approval before admission, while ordinary contribution PRs retain the atomic
@@ -290,26 +299,8 @@ transaction validator without this extra gate. See
 [docs/GOVERNANCE.md](docs/GOVERNANCE.md) for the registry, approval workflow, and
 required branch-protection settings.
 
-For an offline fixture, generate the single-projection data file by listing runs
-from oldest to newest:
-
-```bash
-python -m math_flow export-viewer \
-  --problem triangle-midpoints \
-  --head HEAD \
-  --run-dir projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-live-1 \
-  --run-dir projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-live-2 \
-  --run-dir projections/openrouter-hierarchical-markdown-v2/triangle-midpoints/run-live-3 \
-  --judgment-dir projections/staging/hosted-run-31361558280/judgment \
-  --output viewer/app/math-flow-data.json
-
-cd viewer
-npm install
-npm run dev
-```
-
-Open the URL printed by the development server. Select a state version to
-time-travel across cumulative knowledge builds. Selecting a transaction keeps
+Open the viewer with a reachable repository catalog and select a state version
+to time-travel across cumulative knowledge builds. Selecting a transaction keeps
 the complete state visible, highlights its provenance connections, and offers
 only Submission and Judgment details; its coverage label distinguishes a
 primary judgment from an evidence-only mention. Selecting a node clears that
@@ -333,14 +324,14 @@ python3 -m math_flow list-problems \
   --projection-dir /path/to/projection-worktree
 
 python3 -m math_flow context \
-  --problem triangle-midpoints \
+  --problem bssc-sum-capacity \
   --projection-dir /path/to/projection-worktree \
   --projection openrouter-research-v3 \
   --head origin/main \
   --output-dir /tmp/math-flow-context
 
 python3 -m math_flow credit-status \
-  --problem triangle-midpoints \
+  --problem bssc-sum-capacity \
   --head origin/main
 ```
 
@@ -351,6 +342,13 @@ from the projection branch alone. Archived admissions retain their complete
 canonical ledger but are hidden from ordinary discovery and projection
 scheduling. Add `--include-archived` to audit them; they then use
 `stage: archived`. The optional `--stage` filter may be repeated.
+
+Once retirement leaves exactly one active registered knowledge lane,
+`--projection` may be omitted and `context` selects that lane even when older
+published history remains. During the current comparison window omission fails
+closed because v1, v2, and v3 are all registered active; use the explicit v3 ID
+shown above. An explicit disabled ID also remains available for an intentional
+historical audit.
 
 The context command writes the complete exact `state.json`, machine-readable
 freshness and coverage metadata in `context.json`, and a concise `context.md`. Repeated

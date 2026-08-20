@@ -730,7 +730,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     context_parser.add_argument(
         "--projection",
-        help="projection ID; required when the problem has multiple projections",
+        help=(
+            "projection ID; when omitted, the sole active registered knowledge "
+            "projection is selected"
+        ),
     )
     context_parser.add_argument(
         "--credit-projection",

@@ -85,10 +85,13 @@ primary-judgment completion order.
 The hierarchical credit runner keeps its existing common-horizon,
 counterfactual-hindsight, and local-program semantics. Its serialized history
 loader accepts v4 research builds and reconstructs accepted claims from their
-v4 packets. A credit overlay should target the v4 producer only after both
-retained problem states are current.
+v4 packets. The admitted `openrouter-research-credit-v3` overlay targets this
+producer for the two retained problems, `bssc-sum-capacity` and
+`no-three-in-line-77`. Its required runtime fix is deployed and its governed
+status is active again. Its first assignment is current for each retained
+problem.
 
-## Versioned components and rollout
+## Versioned components and deployed rollout
 
 The runtime introduces new immutable identities:
 
@@ -98,10 +101,24 @@ The runtime introduces new immutable identities:
 - `protocol/profiles/hierarchical-research-v4.json`; and
 - the v4 evidence-packet and judgment schemas.
 
-The admitted validity-v3 judge, builder, profiles, and `openrouter-research-v2`
-projection are not edited. After the runtime merges, a separate governed
-one-file admission may add `openrouter-research-v3`, pairing the v4 judge and
+The earlier validity-v3 judge, builder, profiles, and
+`openrouter-research-v2` projection were not edited. A separate governed
+one-file admission added `openrouter-research-v3`, pairing the v4 judge and
 builder with no reconciliation stage and the existing parallel/batched
-scheduling limits. Replay both retained problems to current v3 producer state
-before admitting credit over it. Only then may the held credit-v3 overlay be
-retargeted to `openrouter-research-v3` and admitted.
+scheduling limits. Both retained problems were replayed to current v3 producer
+state before a later one-file governed admission added the matching credit-v3
+overlay with an exact producer dependency. A follow-up governed status change
+temporarily disabled that overlay before it produced current runs. After the
+required runtime fix deployed, a second governed status change re-enabled the
+overlay. Current assignment publication has now completed for both retained
+problems.
+
+The v1/v2 producer lanes and v2 credit consumer remain temporarily active for
+comparison. Credit-v3 is current for both retained problems, so disabling those
+superseded specifications now leaves `openrouter-research-v3` as the sole active
+registered knowledge lane. Agent context will then select it when `--projection`
+is omitted, while an explicit historical projection ID remains auditable.
+Disabled specifications and their published bundles keep their original
+identities and are never rewritten. Because retirement alone publishes no
+mathematical run, operators must dispatch `refresh-viewer-catalog.yml` after the
+retirement PRs merge so the live catalog reflects the governed active set.

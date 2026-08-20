@@ -11,9 +11,10 @@ a fine-grained token scoped only to this repository with read-only Contents
 permission. Set the optional `MATH_FLOW_CATALOG_URL` worker binding to point at
 another catalog endpoint.
 
-The checked-in `app/math-flow-data.json` is only a deterministic development and
-outage fallback. Refresh it from the repository root with
-`python -m math_flow export-viewer`; see the root README for the full command.
+The viewer does not embed a problem snapshot. While the governed repository
+catalog is unavailable it shows an explicit empty state, so an archived problem
+cannot reappear as outage data. Local development therefore needs a reachable
+catalog endpoint (or the ordinary repository binding) to display research state.
 
 ```bash
 npm install
@@ -28,7 +29,9 @@ knowledge-build report review. Validity-v2 judgments foreground claim status,
 premise sufficiency, scope qualifications, and evidence issues.
 Validity-v3 assessments additionally separate submission-declared references
 and provenance from the narrower set of premises the judge found logically
-required; validity-v2 presentation remains unchanged. Serialized
+required. Validity-v4 packets also bind terminal objective evidence for the
+subject and requesting transactions in its declared-reference union;
+validity-v2/v3 presentation remains readable. Serialized
 research-program states distinguish programs, local work threads, and accepted
 results or methods, while the hierarchical two-term credit overlay exposes both
 direct and obviated work, local and overall allocation shares, counterfactuals,
