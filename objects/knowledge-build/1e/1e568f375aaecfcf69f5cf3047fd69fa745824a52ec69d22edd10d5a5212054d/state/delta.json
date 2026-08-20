@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "entityKind": "thread",
+      "entityId": "root/finite-grid-q0-foundations",
+      "baseDigest": null,
+      "value": {
+        "id": "root/finite-grid-q0-foundations",
+        "programId": "root",
+        "title": "Finite-grid receiver reduction and exact Q0 foundations",
+        "summary": "Develop exact finite-posterior-grid receiver reductions, solve the Q0 sampled optimization, and derive midpoint coercivity conditions within the accepted conditional Theorem 9 private-message framework, without asserting continuum cardinality, limit interchange, full-functional reflected optimality, or an unconditional capacity converse.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [
+          "Conditional on the accepted private-message 30-row outer-bound premise and definitions of transaction e3c1036ca607539a5ebcddf3058e6014ac5c1cd9."
+        ],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/result/finite-grid-q0-foundations",
+      "baseDigest": null,
+      "value": {
+        "id": "root/result/finite-grid-q0-foundations",
+        "programId": "root",
+        "type": "result",
+        "title": "Finite-grid receiver reduction, exact Q0 infima, and midpoint coercivity",
+        "summary": "Accepted statement (exact): Using the accepted private-message 30-row definitions and optimization order of transaction e3c1036ca607539a5ebcddf3058e6014ac5c1cd9, let Q be any N-point posterior grid containing {0,1/2,1}. Every finite-output binary-input receiver has an at-most-N-output replacement with the same mutual-information samples on Q, so inf_{G,K finite} V_Q(G,K) = inf_{|G|,|K|<=N} V_Q(G,K); when Q is reflection closed, inf_{m finite} V_Q(m,m^circ) = inf_{|supp(m)|<=N} V_Q(m,m^circ). For Q0={0,1/2,1} and c=h_2(1/4)-1/2, inf_{G,K finite} V_{Q0}(G,K) = inf_{m finite} V_{Q0}(m,m^circ) = c. Moreover, for every finite-output input-only pair G,K with g=J_G(1/2), k=J_K(1/2), B(G,K) >= V_0(g,k) >= max{F(g),F(k)}, where F(x)=2c max{c,x}/(c+x); consequently, if c <= U < 2c and B(G,K) <= U, then 2c^2/U-c <= g,k <= Uc/(2c-U). These are finite-grid and necessary-coercivity statements only, with no continuum cardinality, limit interchange, or full-functional reflected-optimality assertion.\n\nScope qualifications (exact):\n- Validity is conditional on the accepted private-message 30-row outer-bound premise and definitions in the cited transaction.\n- The receiver reductions apply to finite-output, binary-input, input-only receivers and finite grids Q containing {0,1/2,1}.\n- The reflected reduction applies only when Q is reflection closed and only within the class (m,m^circ); it does not establish arbitrary-pair symmetrization or full-functional reflected optimality.\n- The Q0 conclusions are sampled finite-grid statements and do not establish continuum cardinality bounds, limit interchange, or an unconditional capacity converse.\n- The coercivity bounds are necessary conditions derived from B(G,K) <= U, not sufficient conditions or a benchmark improvement.",
+        "claimRefs": [
+          {
+            "transactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+            "claimKey": "bssc-sum-capacity/finite-grid-q0-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+        ],
+        "dependencyItemIds": [
+          "root/result/theorem9-cited-premise-private-message-foundations",
+          "root/proof/finite-grid-q0-reduction-and-coercivity"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/proof/finite-grid-q0-reduction-and-coercivity",
+      "baseDigest": null,
+      "value": {
+        "id": "root/proof/finite-grid-q0-reduction-and-coercivity",
+        "programId": "root",
+        "type": "proof",
+        "title": "Proof of finite-grid reduction, exact Q0 infima, and coercive midpoint bounds",
+        "summary": "The proof first applies the posterior-measure sampled-curve method to replace each finite-output receiver by an at-most-N-output receiver while preserving all receiver terms in the accepted 30-row system on Q; reflection of posterior measures preserves an already reflected pair when Q is reflection closed. On Q0, each auxiliary block is parameterized by three nonnegative quantities (A,U,V), and every row depends on the four receivers only through (c,g,k,c). Three explicit feasible witness families H, L, and X cover the high, low, and straddling cases and establish V_0(g,k) >= max{F(g),F(k)}. A reflection-invariant three-output revealing-erasure receiver with midpoint value c, together with the SL(1,U) row when all four sampled curves agree, gives both Q0 infima at c. Solving F(g),F(k) <= U on their two scalar branches yields the stated necessary midpoint window. The argument remains conditional on the accepted 30-row foundation and makes no continuum or unconditional converse claim.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+        ],
+        "dependencyItemIds": [
+          "root/result/theorem9-cited-premise-private-message-foundations",
+          "root/method/posterior-measure-finite-grid-reduction"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/method/posterior-measure-finite-grid-reduction",
+      "baseDigest": null,
+      "value": {
+        "id": "root/method/posterior-measure-finite-grid-reduction",
+        "programId": "root",
+        "type": "method",
+        "title": "Posterior-measure sampled-curve reduction for finite grids",
+        "summary": "Represent a finite-output binary-input receiver under the fair prior by a finite posterior measure of mean 1/2 and express its mutual-information curve J_A(q) as an integral of the sampled posterior kernel. For an N-point grid containing 0, 1/2, and 1, apply Caratheodory's convex-hull theorem to the posterior coordinate and the N−2 nonendpoint curve samples, obtaining at most N posterior atoms with the same mean and all the same samples on Q. Posterior-conditioning identities express every receiver term in the accepted 30-row audit through these samples, so the replacement preserves the restricted optimization exactly. Reflection is handled by pushing the posterior measure forward under rho -> 1-rho, which preserves an already reflected pair on a reflection-closed grid. This method is only a fixed-finite-grid reduction and supplies no continuum receiver-cardinality theorem.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+        ],
+        "dependencyItemIds": [
+          "root/result/theorem9-cited-premise-private-message-foundations",
+          "root/method/theorem9-row-and-output-term-audit"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/tool/finite-grid-q0-exact-verifier",
+      "baseDigest": null,
+      "value": {
+        "id": "root/tool/finite-grid-q0-exact-verifier",
+        "programId": "root",
+        "type": "tool",
+        "title": "Exact symbolic verifier for the finite-grid Q0 foundations",
+        "summary": "The standard-library Python verifier checks that the contribution declares exactly the accepted 30-row foundation dependency, independently rebuilds the 30 path rows, and compares their canonical signature with the reviewed dependency signature. Using exact rational-polynomial arithmetic and no floating point or optimizer, it verifies all 30 row slacks and all 15 block-box slacks for each H, L, and X witness family, checks the relevant skew symmetry, and confirms that SL(1,U) has constant coefficient one when all four Q0 sampled curves agree. The checker is a local deterministic audit and does not authenticate the dependency transaction, prove continuum reduction, or establish an unconditional capacity bound.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+        ],
+        "dependencyItemIds": [
+          "root/result/finite-grid-q0-foundations",
+          "root/proof/finite-grid-q0-reduction-and-coercivity",
+          "root/method/posterior-measure-finite-grid-reduction"
+        ]
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+      "claimKeys": [
+        "bssc-sum-capacity/finite-grid-q0-foundations"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/finite-grid-q0-foundations"
+      ],
+      "itemIds": [
+        "root/result/finite-grid-q0-foundations",
+        "root/proof/finite-grid-q0-reduction-and-coercivity",
+        "root/method/posterior-measure-finite-grid-reduction",
+        "root/tool/finite-grid-q0-exact-verifier"
+      ]
+    }
+  ]
+}
