@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 3,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+  "problemLedgerDigest": "sha256:93861b5be5b000bcc4874d7036a31b95ff60696f51e16e4995eb5fc9c39c1655",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v3",
+    "digest": "sha256:cf5263db9eafaccb98bca221a921209e8b76ca3c63c410f409bca2751719adf7"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+      "ledgerPosition": 9
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations",
+      "status": "valid",
+      "premiseStatus": "not-required",
+      "summary": "Valid as a conditional claim. Assuming exactly the encoded and displayed Theorem 9 outer-bound premise, setting R0=0 and expanding each minimum and both interval side conditions yields exactly 30 scalar rows: 18 from six three-branch constraints, 4 from (19k)–(19l), 4 from (19m)–(19p), and 4 from the two interval conditions. The audited rows contain receiver terms involving only one of Y, G, K, or Z at a time, so replacing the auxiliary-receiver law by the product of its input-only G- and K-marginals preserves every joint marginal needed by every mutual-information term and hence preserves the full system. The resulting fixed-receiver optimization gives R1+R2 <= V(q;G,K) <= B(G,K) for every finite-output binary-input pair, implying the stated infimum upper bound on physical-BSSC sum capacity without interchanging supremum and infimum. Restricting to Q-supported hierarchies gives V_Q(G,K) <= V(1/2;G,K) <= B(G,K), including under sup(empty set)=-infinity. For Q0={0,1/2,1}, the endpoint information functions vanish, so all audited terms depend on each receiver only through its value at input prior 1/2; for the physical receivers these values are both c, yielding dependence only on (c,g,k,c). A concrete zero-rate Q0-supported hierarchy establishes nonemptiness, while individual-rate rows bound each rate by 1, so V_0(g,k) is finite and realization-independent on the realizable domain.",
+      "scopeQualifications": [
+        "The result is conditional on the explicitly assumed Theorem 9 premise; it does not prove that theorem or authenticate its cited manuscript source.",
+        "No PDF-origin, source-fidelity, rendering, or visual-semantic assertion is established.",
+        "The capacity conclusion is an upper-bound formula, not an unconditional numerical evaluation of that infimum.",
+        "The well-definedness and finiteness of V_0(g,k) apply on the realizable (g,k)-domain."
+      ],
+      "evidenceIssues": [],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations",
+      "stance": "supports",
+      "summary": "Valid as a conditional claim. Assuming exactly the encoded and displayed Theorem 9 outer-bound premise, setting R0=0 and expanding each minimum and both interval side conditions yields exactly 30 scalar rows: 18 from six three-branch constraints, 4 from (19k)–(19l), 4 from (19m)–(19p), and 4 from the two interval conditions. The audited rows contain receiver terms involving only one of Y, G, K, or Z at a time, so replacing the auxiliary-receiver law by the product of its input-only G- and K-marginals preserves every joint marginal needed by every mutual-information term and hence preserves the full system. The resulting fixed-receiver optimization gives R1+R2 <= V(q;G,K) <= B(G,K) for every finite-output binary-input pair, implying the stated infimum upper bound on physical-BSSC sum capacity without interchanging supremum and infimum. Restricting to Q-supported hierarchies gives V_Q(G,K) <= V(1/2;G,K) <= B(G,K), including under sup(empty set)=-infinity. For Q0={0,1/2,1}, the endpoint information functions vanish, so all audited terms depend on each receiver only through its value at input prior 1/2; for the physical receivers these values are both c, yielding dependence only on (c,g,k,c). A concrete zero-rate Q0-supported hierarchy establishes nonemptiness, while individual-rate rows bound each rate by 1, so V_0(g,k) is finite and realization-independent on the realizable domain.",
+      "subjectTransactionIds": [
+        "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:747c464a911c09400125ac853b30979009440e1ab02e5abfd08a7bfebcd4ca70",
+  "reportDigest": "sha256:affc7ab3aa229eb2f574f05134081a6c98e10df83a9729c5258304b9905886d5",
+  "judgmentId": "sha256:0bf7e29234c9a3d2d098ec9273e5baa0152a347cbf845b3f89b88acf3c0e56c5"
+}

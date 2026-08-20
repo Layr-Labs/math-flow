@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:67de17d075e45f1b9b5de9365b47114cd1b4014221465cbd88b58ea8ea9a3644",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "status": "active",
+        "parentThreadIds": [],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "root/theorem9-private-message-foundations",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-private-message-foundations",
+        "programId": "root",
+        "title": "Theorem 9 private-message specialization foundations",
+        "summary": "Organize accepted conditional consequences of the exactly encoded Gohari--Liu--Nair Theorem 9 premise, including private-message row expansion, auxiliary-receiver marginalization, the resulting receiver-infimum upper-bound formula, and finite-support local reductions.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/result/theorem9-cited-premise-foundations",
+      "baseDigest": null,
+      "value": {
+        "id": "root/result/theorem9-cited-premise-foundations",
+        "programId": "root",
+        "type": "result",
+        "title": "Theorem 9 cited-premise private-message foundations",
+        "summary": "Assume the cited Gohari--Liu--Nair Theorem 9 outer-bound premise exactly as encoded in theorem9_spec.json and displayed for review in SOURCE_TRANSCRIPTION.md: for every finite auxiliary-receiver law T_{G,K|X,Y,Z}, achievable rates obey the stated factorization, equations (19a)-(19p), and both side conditions. Then setting R0=0 and exhaustively expanding the displayed minima and interval conditions gives exactly the independently generated local 30-row system; the exhaustive single-output term audit proves that replacing G,K by their input-only product marginals preserves the entire system, and hence for the physical BSSC C_sum <= inf_{finite-output binary-input T_{G|X},T_{K|X}} B(G,K). With the explicit extended-real local definitions (including sup(empty set)=-infinity), V_Q(G,K) <= V(1/2;G,K) <= B(G,K), and every Q0-supported row depends on the receiver channels only through (c,g,k,c), making V_0(g,k) finite and well defined on its realizable (g,k)-domain. No PDF-origin, source-fidelity, rendering, or visual-semantic assertion is part of this claim.\n\nScope qualifications:\n- The result is conditional on the explicitly assumed Theorem 9 premise; it does not prove that theorem or authenticate its cited manuscript source.\n- No PDF-origin, source-fidelity, rendering, or visual-semantic assertion is established.\n- The capacity conclusion is an upper-bound formula, not an unconditional numerical evaluation of that infimum.\n- The well-definedness and finiteness of V_0(g,k) apply on the realizable (g,k)-domain.",
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/proof/theorem9-cited-premise-foundations",
+      "baseDigest": null,
+      "value": {
+        "id": "root/proof/theorem9-cited-premise-foundations",
+        "programId": "root",
+        "type": "proof",
+        "title": "Proof of the conditional Theorem 9 private-message foundations",
+        "summary": "Under the exact encoded Theorem 9 premise, the accepted proof sets R0=0, expands all minimum branches and both interval side conditions into 30 scalar rows, and compares them term by term with an independently generated L=3 path system using only the displayed chain-rule normalizations. An exhaustive audit shows that every output-bearing mutual-information term contains only one of Y, G, K, or Z, so replacing G and K by their input-only product marginals preserves every required marginal and every row. The proof then applies the specialized system at fixed q,G,K to obtain the stated receiver-infimum capacity upper-bound formula without interchanging optimization orders. Posterior identities expressed through J_A(t), together with J_A(0)=J_A(1)=0, establish the Q0 midpoint-value reduction; an explicit zero-rate hierarchy and individual-rate rows establish finiteness on the realizable domain. The argument proves only the accepted conditional claim and does not prove or authenticate the assumed Theorem 9 premise or numerically evaluate the receiver infimum.",
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/tool/theorem9-specialization-audit",
+      "baseDigest": null,
+      "value": {
+        "id": "root/tool/theorem9-specialization-audit",
+        "programId": "root",
+        "type": "tool",
+        "title": "Exact Theorem 9 specialization and single-output-term audit",
+        "summary": "The supplied standard-library verifier reads the exact structured premise, expands its private-message branches and side conditions, independently constructs the L=3 path rows, normalizes only by I(U,W;A)=I(W;A)+I(U;A|W) and its V analogue, and compares all 30 rows exactly. It also checks the exhaustive 3/12/12/3 single-output term audit used in the product-marginal reduction. The tool establishes only the audited downstream specialization; it performs no PDF authentication, source-fidelity verification, numerical optimization, or proof of the assumed Theorem 9 premise.",
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": []
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+      "claimKeys": [
+        "bssc-sum-capacity/theorem9-cited-premise-foundations"
+      ],
+      "directProgramId": "root",
+      "directThreadIds": [
+        "root/theorem9-private-message-foundations"
+      ],
+      "itemIds": [
+        "root/result/theorem9-cited-premise-foundations",
+        "root/proof/theorem9-cited-premise-foundations",
+        "root/tool/theorem9-specialization-audit"
+      ]
+    }
+  ]
+}
