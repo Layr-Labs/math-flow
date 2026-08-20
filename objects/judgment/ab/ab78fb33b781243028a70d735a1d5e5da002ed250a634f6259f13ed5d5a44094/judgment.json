@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 2,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "f093396fe03f8920f9905c385ef34b1335792d5e",
+  "problemLedgerDigest": "sha256:fb1def69cc555436a5bccda8d8d9a1899123ea52def6f298e992ea948e86c554",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v2",
+    "digest": "sha256:79aebb8a021911d81d1bdbd400a606efdc47dface128d9d90bc77c73b2c5bcd5"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "f093396fe03f8920f9905c385ef34b1335792d5e",
+      "ledgerPosition": 6
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-private-row-audit",
+      "status": "indeterminate",
+      "premiseStatus": "missing",
+      "summary": "The local algebra conditionally supports the 30-row private-message specialization, single-output product marginalization, the inequalities among the value functions when the relevant suprema are defined, and the Q0 reduction to channel parameters (c,g,k,c). However, the conjunctive claim is not established because no primary-source evidence permits verification that the bounded transcription faithfully reproduces Theorem 9's factorization, equations (19a)–(19p), and side conditions. In addition, V_Q may have an empty feasible set, and no convention for suprema over the empty set is stated.",
+      "scopeQualifications": [
+        "The 30-row equivalence is established only between the two supplied local encodings: 26 rate/nonnegativity rows plus four rows obtained by splitting two interval side conditions.",
+        "The product-marginalization proof is sound only conditional on the local transcription's term list being accurate and exhaustive; every listed information term uses a single receiver output.",
+        "V_Q(G,K) <= V(1/2;G,K) <= B(G,K) holds when the suprema are defined, or under an explicit extended-real convention such as sup(empty set) = -infinity.",
+        "The V_0(g,k) well-definedness argument is supported for Q0={0,1/2,1}: all relevant channel dependence reduces to midpoint values, yielding (c,g,k,c), and a Q0-supported feasible hierarchy is exhibited."
+      ],
+      "evidenceIssues": [
+        "No permitted reference evidence, source PDF, authenticated mathematical extract, or other source contents are supplied to verify transcription fidelity.",
+        "The verifier's optional PDF check authenticates only byte size and digest; it does not compare the PDF's mathematical statement with the transcription or JSON specification.",
+        "The no-argument verifier compares two local encodings and therefore cannot establish that either matches the primary source.",
+        "The general V_Q definition omits an empty-feasible-set convention. For Q={1/2} and noiseless G=X, the Y,G side condition fails because c=h_2(1/4)-1/2<1, so the restricted feasible set is empty."
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-private-row-audit",
+      "stance": "uncertain",
+      "summary": "The local algebra conditionally supports the 30-row private-message specialization, single-output product marginalization, the inequalities among the value functions when the relevant suprema are defined, and the Q0 reduction to channel parameters (c,g,k,c). However, the conjunctive claim is not established because no primary-source evidence permits verification that the bounded transcription faithfully reproduces Theorem 9's factorization, equations (19a)–(19p), and side conditions. In addition, V_Q may have an empty feasible set, and no convention for suprema over the empty set is stated.",
+      "subjectTransactionIds": [
+        "f093396fe03f8920f9905c385ef34b1335792d5e"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:61ae734ff914c2fca65f1f9b6142475c3dc4266573f21298e1f439f9edeac727",
+  "reportDigest": "sha256:491e9e5922338fc187198d239d7be0d0351f5ff84519366bb4c77cd417204cd9",
+  "judgmentId": "sha256:d842a45db43ec87ce176322874d5cb40b9edc7062975cbb4f099ccea9b33c426"
+}

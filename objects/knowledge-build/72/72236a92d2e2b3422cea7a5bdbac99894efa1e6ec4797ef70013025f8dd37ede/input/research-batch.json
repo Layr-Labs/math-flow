@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "baseProgramStateDigest": "sha256:fd8d3103d470e9d90dfa9ccea8e8b177cc0ff0362dfad8d4a2d97050bed63461",
+  "judgments": [
+    {
+      "judgmentId": "sha256:d842a45db43ec87ce176322874d5cb40b9edc7062975cbb4f099ccea9b33c426",
+      "runDigest": "sha256:ab78fb33b781243028a70d735a1d5e5da002ed250a634f6259f13ed5d5a44094",
+      "subjectTransactionId": "f093396fe03f8920f9905c385ef34b1335792d5e",
+      "acceptedClaimKeys": [],
+      "excludedAssessments": [
+        {
+          "claimKey": "bssc-sum-capacity/theorem9-private-row-audit",
+          "status": "indeterminate",
+          "premiseStatus": "missing",
+          "summary": "The local algebra conditionally supports the 30-row private-message specialization, single-output product marginalization, the inequalities among the value functions when the relevant suprema are defined, and the Q0 reduction to channel parameters (c,g,k,c). However, the conjunctive claim is not established because no primary-source evidence permits verification that the bounded transcription faithfully reproduces Theorem 9's factorization, equations (19a)–(19p), and side conditions. In addition, V_Q may have an empty feasible set, and no convention for suprema over the empty set is stated.",
+          "scopeQualifications": [
+            "The 30-row equivalence is established only between the two supplied local encodings: 26 rate/nonnegativity rows plus four rows obtained by splitting two interval side conditions.",
+            "The product-marginalization proof is sound only conditional on the local transcription's term list being accurate and exhaustive; every listed information term uses a single receiver output.",
+            "V_Q(G,K) <= V(1/2;G,K) <= B(G,K) holds when the suprema are defined, or under an explicit extended-real convention such as sup(empty set) = -infinity.",
+            "The V_0(g,k) well-definedness argument is supported for Q0={0,1/2,1}: all relevant channel dependence reduces to midpoint values, yielding (c,g,k,c), and a Q0-supported feasible hierarchy is exhibited."
+          ],
+          "evidenceIssues": [
+            "No permitted reference evidence, source PDF, authenticated mathematical extract, or other source contents are supplied to verify transcription fidelity.",
+            "The verifier's optional PDF check authenticates only byte size and digest; it does not compare the PDF's mathematical statement with the transcription or JSON specification.",
+            "The no-argument verifier compares two local encodings and therefore cannot establish that either matches the primary source.",
+            "The general V_Q definition omits an empty-feasible-set convention. For Q={1/2} and noiseless G=X, the Y,G side condition fails because c=h_2(1/4)-1/2<1, so the restricted feasible set is empty."
+          ],
+          "evidenceTransactionIds": []
+        }
+      ]
+    }
+  ]
+}
