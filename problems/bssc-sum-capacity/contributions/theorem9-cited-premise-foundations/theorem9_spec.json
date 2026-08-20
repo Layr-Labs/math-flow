@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "title": "A Two Auxiliary Receiver Outer Bound to the Capacity Region of a Two-Receiver Discrete Memoryless Broadcast Channel",
+    "authors": [
+      "Amin Gohari",
+      "Yi Liu",
+      "Chandra Nair"
+    ],
+    "url": "https://chandra.ie.cuhk.edu.hk/pub/papers/BC/GK-outer.pdf",
+    "premiseBoundary": "The factorization, equations (19a)-(19p), and both side conditions encoded here are the explicit cited Theorem 9 premise; their source fidelity and bibliographic provenance are not verifier results.",
+    "pdfSha256": "24c4153530008f7ae339ac19ca8cb90fb8ea574ea8fbcd6a36c2221722d651fa",
+    "location": "Appendix B, Theorem 9, PDF pages 14-15, equations (19a)-(19p) and the two unnumbered side conditions"
+  },
+  "factorization": {
+    "variables": ["Ua", "Va", "Wa", "Ub", "Vb", "Wb", "Uc", "Vc", "Wc", "X", "Y", "Z", "G", "K"],
+    "factors": ["pX", "pUa,Va,Wa|X", "pUb,Vb,Wb|X", "pUc,Vc,Wc|X", "TY,Z|X", "TG,K|X,Y,Z"]
+  },
+  "termEncoding": [
+    "integer coefficient",
+    "group a, b, or c",
+    "one of W, U|W, V|W, UW, VW, X|UW, X|VW",
+    "one of Y, G, K, or Z"
+  ],
+  "privateMessageSpecialization": "R0=0",
+  "constraints": [
+    {
+      "sourceLabels": ["19a"],
+      "minimumPosition": "suffix",
+      "rateCoefficients": [0, 0],
+      "base": [[1, "a", "W", "Y"]],
+      "branches": [
+        {"row": "N_Y(0)", "terms": []},
+        {"row": "N_Y(1)", "terms": [[1, "b", "W", "G"], [-1, "a", "W", "G"]]},
+        {"row": "N_Y(2)", "terms": [[1, "b", "W", "G"], [-1, "a", "W", "G"], [1, "c", "W", "K"], [-1, "b", "W", "K"]]}
+      ]
+    },
+    {
+      "sourceLabels": ["19b"],
+      "minimumPosition": "suffix",
+      "rateCoefficients": [0, 0],
+      "base": [[1, "c", "W", "Z"]],
+      "branches": [
+        {"row": "N_Z(0)", "terms": []},
+        {"row": "N_Z(1)", "terms": [[1, "b", "W", "K"], [-1, "c", "W", "K"]]},
+        {"row": "N_Z(2)", "terms": [[1, "b", "W", "K"], [-1, "c", "W", "K"], [1, "a", "W", "G"], [-1, "b", "W", "G"]]}
+      ]
+    },
+    {
+      "sourceLabels": ["19c", "19d"],
+      "minimumPosition": "suffix",
+      "rateCoefficients": [1, 0],
+      "base": [[1, "a", "W", "Y"], [1, "a", "U|W", "Y"]],
+      "branches": [
+        {"row": "R1T(0)", "terms": []},
+        {"row": "R1T(1)", "terms": [[1, "b", "UW", "G"], [-1, "a", "UW", "G"]]},
+        {"row": "R1T(2)", "terms": [[1, "b", "UW", "G"], [-1, "a", "UW", "G"], [1, "c", "UW", "K"], [-1, "b", "UW", "K"]]}
+      ]
+    },
+    {
+      "sourceLabels": ["19e", "19f"],
+      "minimumPosition": "suffix",
+      "rateCoefficients": [1, 0],
+      "base": [[1, "c", "W", "Z"], [1, "a", "U|W", "Y"], [1, "a", "W", "G"], [-1, "b", "W", "G"], [1, "b", "W", "K"], [-1, "c", "W", "K"]],
+      "branches": [
+        {"row": "R1A(0)", "terms": []},
+        {"row": "R1A(1)", "terms": [[1, "b", "UW", "G"], [-1, "a", "UW", "G"]]},
+        {"row": "R1A(2)", "terms": [[1, "b", "UW", "G"], [-1, "a", "UW", "G"], [1, "c", "UW", "K"], [-1, "b", "UW", "K"]]}
+      ]
+    },
+    {
+      "sourceLabels": ["19g", "19h"],
+      "minimumPosition": "suffix",
+      "rateCoefficients": [0, 1],
+      "base": [[1, "a", "W", "Y"], [1, "c", "V|W", "Z"], [1, "c", "W", "K"], [-1, "b", "W", "K"], [1, "b", "W", "G"], [-1, "a", "W", "G"]],
+      "branches": [
+        {"row": "R2A(0)", "terms": []},
+        {"row": "R2A(1)", "terms": [[1, "b", "VW", "K"], [-1, "c", "VW", "K"]]},
+        {"row": "R2A(2)", "terms": [[1, "b", "VW", "K"], [-1, "c", "VW", "K"], [1, "a", "VW", "G"], [-1, "b", "VW", "G"]]}
+      ]
+    },
+    {
+      "sourceLabels": ["19i", "19j"],
+      "minimumPosition": "suffix",
+      "rateCoefficients": [0, 1],
+      "base": [[1, "c", "W", "Z"], [1, "c", "V|W", "Z"]],
+      "branches": [
+        {"row": "R2T(0)", "terms": []},
+        {"row": "R2T(1)", "terms": [[1, "b", "VW", "K"], [-1, "c", "VW", "K"]]},
+        {"row": "R2T(2)", "terms": [[1, "b", "VW", "K"], [-1, "c", "VW", "K"], [1, "a", "VW", "G"], [-1, "b", "VW", "G"]]}
+      ]
+    },
+    {
+      "sourceLabels": ["19k"],
+      "minimumPosition": "prefix",
+      "rateCoefficients": [1, 1],
+      "base": [[1, "c", "UW", "K"], [-1, "b", "UW", "K"], [1, "b", "UW", "G"], [-1, "a", "UW", "G"], [1, "a", "U|W", "Y"], [1, "c", "X|UW", "Z"]],
+      "branches": [
+        {"row": "SL(3,U)", "terms": [[1, "a", "W", "Y"]]},
+        {"row": "SL(3,C)", "terms": [[1, "c", "W", "Z"], [1, "a", "W", "G"], [-1, "b", "W", "G"], [1, "b", "W", "K"], [-1, "c", "W", "K"]]}
+      ]
+    },
+    {
+      "sourceLabels": ["19l"],
+      "minimumPosition": "prefix",
+      "rateCoefficients": [1, 1],
+      "base": [[1, "a", "VW", "G"], [-1, "b", "VW", "G"], [1, "b", "VW", "K"], [-1, "c", "VW", "K"], [1, "c", "V|W", "Z"], [1, "a", "X|VW", "Y"]],
+      "branches": [
+        {"row": "SR(1,C)", "terms": [[1, "a", "W", "Y"], [1, "c", "W", "K"], [-1, "b", "W", "K"], [1, "b", "W", "G"], [-1, "a", "W", "G"]]},
+        {"row": "SR(1,U)", "terms": [[1, "c", "W", "Z"]]}
+      ]
+    },
+    {
+      "sourceLabels": ["19m"],
+      "rateCoefficients": [1, 1],
+      "base": [[1, "a", "W", "Y"], [1, "a", "U|W", "Y"], [1, "c", "V|W", "Z"], [1, "b", "UW", "G"], [-1, "a", "UW", "G"], [-1, "c", "V|W", "K"], [1, "b", "X|UW", "K"]],
+      "branches": [
+        {"row": "SL(2,U)", "terms": []}
+      ]
+    },
+    {
+      "sourceLabels": ["19n"],
+      "rateCoefficients": [1, 1],
+      "base": [[1, "a", "W", "Y"], [1, "a", "U|W", "Y"], [1, "c", "V|W", "Z"], [1, "b", "V|W", "K"], [-1, "c", "V|W", "K"], [-1, "b", "V|W", "G"], [1, "a", "X|UW", "G"]],
+      "branches": [
+        {"row": "SL(1,U)", "terms": []}
+      ]
+    },
+    {
+      "sourceLabels": ["19o"],
+      "rateCoefficients": [1, 1],
+      "base": [[1, "c", "W", "Z"], [1, "a", "U|W", "Y"], [1, "c", "V|W", "Z"], [1, "b", "VW", "K"], [-1, "c", "VW", "K"], [-1, "a", "U|W", "G"], [1, "b", "X|VW", "G"]],
+      "branches": [
+        {"row": "SR(2,U)", "terms": []}
+      ]
+    },
+    {
+      "sourceLabels": ["19p"],
+      "rateCoefficients": [1, 1],
+      "base": [[1, "c", "W", "Z"], [1, "a", "U|W", "Y"], [1, "c", "V|W", "Z"], [1, "b", "U|W", "G"], [-1, "a", "U|W", "G"], [-1, "b", "U|W", "K"], [1, "c", "X|VW", "K"]],
+      "branches": [
+        {"row": "SR(3,U)", "terms": []}
+      ]
+    }
+  ],
+  "sideConditions": [
+    {
+      "name": "Z-K side condition",
+      "left": [[1, "c", "X|UW", "Z"], [-1, "c", "X|UW", "K"]],
+      "right": [[1, "c", "V|W", "Z"], [-1, "c", "V|W", "K"]],
+      "rows": [
+        {"row": "F_Z_left", "operation": "left"},
+        {"row": "F_Z_right_minus_left", "operation": "right-minus-left"}
+      ]
+    },
+    {
+      "name": "Y-G side condition",
+      "left": [[1, "a", "X|VW", "Y"], [-1, "a", "X|VW", "G"]],
+      "right": [[1, "a", "U|W", "Y"], [-1, "a", "U|W", "G"]],
+      "rows": [
+        {"row": "F_Y_left", "operation": "left"},
+        {"row": "F_Y_right_minus_left", "operation": "right-minus-left"}
+      ]
+    }
+  ]
+}
