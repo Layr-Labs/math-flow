@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "54ace2045150d21f8ac4c06b3dde8d109fc82e0f",
+  "problemLedgerDigest": "sha256:dd6920770481c1ca12a7206fba559bc23712e5ef3a97a8f4592a2abbb0529e3d",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "54ace2045150d21f8ac4c06b3dde8d109fc82e0f",
+      "ledgerPosition": 8
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-render-complete-audit",
+      "status": "indeterminate",
+      "premiseStatus": "satisfied",
+      "summary": "Conditional on the structured transcription faithfully representing the visible theorem, the audit establishes the R0=0 specialization and exact 30-row equivalence, the input-only product marginalization of G and K, the extended-real inequalities V_Q(G,K) <= V(1/2;G,K) <= B(G,K), and the finite well-definedness of V_0(g,k) on its realizable domain. However, the declared all-or-nothing claim also requires a fail-closed, render-complete audit of the visible PDF, and the supplied checker does not validate actual Type1 glyph outlines or fully establish visual legibility and non-occlusion. With no counterexample to the pinned PDF, this unresolved source-fidelity obligation makes the claim indeterminate rather than invalid.",
+      "scopeQualifications": [
+        "Gohari–Liu–Nair Theorem 9 is taken as a premise and is not independently re-proved.",
+        "The R0=0 specialization yields 26 inequality rows plus four side-condition rows; the chain-rule normalization used to compare them is valid.",
+        "Marginalization is established conditional on completeness of the audited term list: the system has no joint (G,K)-output term and no term conditioning one receiver output on another.",
+        "The convention sup(empty set)=-infinity makes the optimization inequalities meaningful for empty support-restricted feasible sets.",
+        "For Q0={0,1/2,1}, receiver-channel dependence is only through (J_Y(1/2),J_G(1/2),J_K(1/2),J_Z(1/2))=(c,g,k,c); feasibility is nonempty and zero-branch rate bounds give 0 <= V_0(g,k) <= 2 on the realizable (g,k)-domain.",
+        "The terminal attestation authenticates the pinned PDF and verifies its catalog, page structure, content operators, decoded glyph records, structured text comparison, 30 generated rows, and output-term whitelist, but it does not itself prove the theorem’s converse or execute the prose marginalization and optimization arguments; those arguments are separately mathematically sound conditional on transcription fidelity."
+      ],
+      "evidenceIssues": [
+        "The checker inventories Type1 CharStrings and authenticates whole font programs by hard-coded digests, but it does not execute or geometrically validate the CharStrings.",
+        "Glyph names and ToUnicode mappings do not alone establish that the painted glyph outlines visibly represent the asserted characters; no independently auditable certificate connects the pinned font digests to the claimed outlines.",
+        "The geometry checks cover declared font bounding boxes, start positions, page containment, and limited same-baseline monotonicity, but do not establish non-occlusion or semantic legibility of the actual glyph outlines.",
+        "Matching a preselected geometry digest authenticates layout data but does not prove the omitted visual predicates required by the claim’s characterization of the audit as render-complete."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/theorem9-render-complete-audit",
+      "stance": "uncertain",
+      "summary": "Conditional on the structured transcription faithfully representing the visible theorem, the audit establishes the R0=0 specialization and exact 30-row equivalence, the input-only product marginalization of G and K, the extended-real inequalities V_Q(G,K) <= V(1/2;G,K) <= B(G,K), and the finite well-definedness of V_0(g,k) on its realizable domain. However, the declared all-or-nothing claim also requires a fail-closed, render-complete audit of the visible PDF, and the supplied checker does not validate actual Type1 glyph outlines or fully establish visual legibility and non-occlusion. With no counterexample to the pinned PDF, this unresolved source-fidelity obligation makes the claim indeterminate rather than invalid.",
+      "subjectTransactionIds": [
+        "54ace2045150d21f8ac4c06b3dde8d109fc82e0f"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:cde99d83cfd63b6b0b687cfdc49b5ca25e3856507c45c9bdde9c1257fc57234c",
+  "reportDigest": "sha256:e24c588cb3b70ec66803442f07fa0c61e2b979f6847609a58f444c1e4fffe06e",
+  "judgmentId": "sha256:3f28a90ce4edc5bfaae525b210ed84a84f36f6bb8ddfe254b0aa34302b759f67"
+}
