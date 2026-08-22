@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+  "problemLedgerDigest": "sha256:d13ce4b47df28ee706bc52c4c199e36f974743f8f9b223244ad18ec4004c1c4c",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+      "ledgerPosition": 15
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/conditional-product-marton-no-gain",
+      "status": "valid",
+      "premiseStatus": "not-required",
+      "summary": "The analytic entropy argument establishes that receiver-skew symmetry gives M_T=L_{1/2,T}; conditional coordinate independence then makes the satellite terms additive and bounds the common terms by coordinate sums, yielding an upper bound nM_T. Independent epsilon-optimal one-letter copies give the reverse bound without requiring attainment. For arbitrary tuple laws over the product channel, direct entropy expansion establishes the stated total-correlation residual identity and makes positivity of the residual—and hence inequality (13)—necessary for any strict gain.",
+      "scopeQualifications": [
+        "The theorem applies to finite receiver-skew two-receiver broadcast channels and to the specified conditional-product factorization with a common W that may induce unconditional coordinate correlation.",
+        "A strict-gain law must fail the conditional-product factorization for every exact chosen coordinate-packet decomposition to which the theorem applies.",
+        "For arbitrary tuple laws, the residual ledger and correlation-balance condition are relative to the chosen aggregate coordinate decomposition; they are noncanonical.",
+        "Inequality (13) is only a necessary condition for strict gain, not a sufficient condition.",
+        "Constant padding supplies a tuple representation, but does not make the ledger canonical or necessarily useful for pruning.",
+        "The result does not establish unrestricted Marton additivity, binary-input tightness, a capacity bound, or the exact half-skew BSSC capacity."
+      ],
+      "evidenceIssues": [
+        "The reported fixed-seed floating-point computations test only finitely many examples and do not certify the universal theorem, arbitrary alphabets, or an 'exact ledger'; this is nonfatal because the analytic entropy proof independently establishes the claims."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/conditional-product-marton-no-gain",
+      "stance": "supports",
+      "summary": "The analytic entropy argument establishes that receiver-skew symmetry gives M_T=L_{1/2,T}; conditional coordinate independence then makes the satellite terms additive and bounds the common terms by coordinate sums, yielding an upper bound nM_T. Independent epsilon-optimal one-letter copies give the reverse bound without requiring attainment. For arbitrary tuple laws over the product channel, direct entropy expansion establishes the stated total-correlation residual identity and makes positivity of the residual—and hence inequality (13)—necessary for any strict gain.",
+      "subjectTransactionIds": [
+        "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:4ec61e16e9bf19db917cb4e01b641955a9a1cf80232ce5fc0e703e4e10f3aff0",
+  "reportDigest": "sha256:7cd75a3ea9a57b051047ba9265cfa234cf598730865dce379e27fec2e697745b",
+  "judgmentId": "sha256:fb042c476afdbb03551bcf3dcb05c4cc1ab3d2eeeee845e1d5031ebfb44d1c65"
+}

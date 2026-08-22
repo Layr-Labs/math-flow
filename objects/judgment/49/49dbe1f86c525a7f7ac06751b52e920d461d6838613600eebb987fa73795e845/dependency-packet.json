@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 3,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+  "subjectLedgerPosition": 15,
+  "claims": [
+    {
+      "claimKey": "bssc-sum-capacity/conditional-product-marton-no-gain",
+      "statement": "Let T be any finite receiver-skew two-receiver broadcast channel, and let M_T be its one-letter private-message Marton sum-rate. For every n >= 1, the supremum of the n-letter Marton functional over laws P(w,u^n,v^n,x^n)=P(w) product_i P_i(u_i,v_i,x_i|w), with aggregate U=(U_i) and V=(V_i), equals n M_T. The common W is arbitrary and may correlate coordinates unconditionally. Consequently, any strict two-letter gain for the half-skew BSSC must use a law outside this conditional-product class: every chosen coordinate-packet decomposition under which the factorization could be tested must fail it. For the broader class of arbitrary finite tuple laws P(w,u^n,v^n,x^n), with a chosen aggregate U=(U_i), V=(V_i) and the product channel, the exact total-correlation residual identity in README equation (11) holds, so any strict gain must satisfy the correlation-balance inequality (13) for that decomposition. Trivial constant padding always supplies a tuple representation, but the ledger and its pruning usefulness depend on the noncanonical decomposition. These results do not establish unrestricted Marton additivity, binary-input tightness, a capacity bound, or the exact BSSC capacity.",
+      "declaredReferenceTransactionIds": []
+    }
+  ],
+  "declaredReferenceTransactionIds": [],
+  "knowledgeContext": null,
+  "objectiveAttestations": [
+    {
+      "transactionId": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+      "relation": "subject",
+      "attestation": {
+        "schemaVersion": 1,
+        "requestDigest": "sha256:736b127cb3036344f0022e13e908c1b47aab9e2386bb7ac8ead90e519824ed94",
+        "runDigest": "sha256:2e25bcde59c35c2b0b950b711b354091f837b7e1dc13f6be656f1b6141482fcd",
+        "attestationId": "sha256:af1332e75c06dd80ae927ecd38b91ba57fa193ebd2028277d812a36b64be816d",
+        "status": "passed",
+        "verifier": {
+          "id": "python-stdlib-3-13-v1",
+          "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+          "implementation": "oci-command-v1"
+        },
+        "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+        "result": {
+          "status": "passed",
+          "exitCode": 0,
+          "timedOut": false
+        },
+        "artifacts": {
+          "verifier-attestation": {
+            "digest": "sha256:d88a0632e8beeebf021557acd26d0ff682d0624f47c307fb29c4cd3e9c3a76ee",
+            "bytes": 2546
+          },
+          "verifier-stderr": {
+            "digest": "sha256:f0acba4a50ab4265563f0b165fabfab1ff30676f561443a1148e2875353e2e3e",
+            "bytes": 948
+          },
+          "verifier-stdout": {
+            "digest": "sha256:50983f0aa80968bd82e89f1de74899352820cf4444cc6829191370204dc23d57",
+            "bytes": 211
+          }
+        },
+        "stdout": {
+          "text": "PASS: exact BSSC receiver-skew relabeling\nPASS: conditional-product entropy identities and common-term bounds\nPASS: exact total-correlation ledger on correlated tuple laws\nPASS: independent-copy Marton equality\n",
+          "truncated": false,
+          "bytes": 211,
+          "digest": "sha256:50983f0aa80968bd82e89f1de74899352820cf4444cc6829191370204dc23d57"
+        },
+        "stderr": {
+          "text": "Unable to find image 'python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689' locally\ndocker.io/library/python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689: Pulling from library/python\n8c7716127147: Pulling fs layer\n31fd2a94d723: Pulling fs layer\n66b685f2f76b: Pulling fs layer\n7d456e82f89b: Pulling fs layer\n7d456e82f89b: Waiting\n31fd2a94d723: Verifying Checksum\n31fd2a94d723: Download complete\n66b685f2f76b: Verifying Checksum\n66b685f2f76b: Download complete\n7d456e82f89b: Verifying Checksum\n7d456e82f89b: Download complete\n8c7716127147: Verifying Checksum\n8c7716127147: Download complete\n8c7716127147: Pull complete\n31fd2a94d723: Pull complete\n66b685f2f76b: Pull complete\n7d456e82f89b: Pull complete\nDigest: sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nStatus: Downloaded newer image for python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\n",
+          "truncated": false,
+          "bytes": 948,
+          "digest": "sha256:f0acba4a50ab4265563f0b165fabfab1ff30676f561443a1148e2875353e2e3e"
+        }
+      }
+    }
+  ],
+  "packetDigest": "sha256:4ec61e16e9bf19db917cb4e01b641955a9a1cf80232ce5fc0e703e4e10f3aff0"
+}
