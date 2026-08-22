@@ -1,0 +1,320 @@
+{
+  "schemaVersion": 3,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+  "subjectLedgerPosition": 21,
+  "claims": [
+    {
+      "claimKey": "bssc-sum-capacity/two-letter-output-covariance-curvature",
+      "statement": "For every input law on the governed half-skew BSSC product channel P^{otimes 2}, let c_in=P(X_1X_2=11)-Pr[X_1=1]Pr[X_2=1] and C_out=I(Y_1;Y_2)+I(Z_1;Z_2). A paired-receiver binary-table curvature argument proves the unconditional inequality C_out >= 31 c_in^2/(20 ln 2). Canonical transaction 9bb22afe5abd3e1d9f419c1717bd61bb33a958ff supplies the necessary inequality C_out < 7/160 for any finite two-letter Marton law whose unnormalized value exceeds twice the optimal one-letter randomized-time-division value. Consequently every such gain forces |c_in| < sqrt(7 ln 2/248) < 7/50. This is a necessary condition only; it does not construct a Marton gain, rule one out, tensorize Marton's functional, or give a capacity converse.",
+      "declaredReferenceTransactionIds": [
+        "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+      ]
+    }
+  ],
+  "declaredReferenceTransactionIds": [
+    "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+  ],
+  "knowledgeContext": {
+    "sourceKind": "research-program-state",
+    "runDigest": "sha256:35e76b3cc2e37326f471df94ae88a935301d41dd2929c6e6d5efafaeae535138",
+    "stateDigest": "sha256:56003d4e60d8230e9d70e97be447ebefd63dc181b150bba15de1a0aa5f23ad0c",
+    "stateArtifactDigest": "sha256:475a1151d8bb5765f0761cb8f3ee31ab91811179bf4cdd082677fff2d5a0b92b",
+    "problemLedgerHead": "fdbb2d1e94e5106feda2dc473464c95d8622f896",
+    "selectedPrograms": {
+      "program/multiletter-marton-achievability": {
+        "id": "program/multiletter-marton-achievability",
+        "parentId": "root",
+        "title": "Multiletter Marton achievability",
+        "objective": "Determine whether finite-letter Marton coding can improve half-skew BSSC achievable sum rates and rigorously characterize structural restrictions on candidate multiletter witnesses.",
+        "status": "active",
+        "parentThreadIds": [
+          "root/multiletter-marton-achievability"
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+        ],
+        "digest": "sha256:56a33491374c09ff22b66b5146f0dda7d662939a91adf9cffbbfd17a5ee1df43"
+      },
+      "root": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "status": "active",
+        "parentThreadIds": [],
+        "sourceTransactionIds": [],
+        "digest": "sha256:4bc4e85d0ca6e4224902591c71cf9cb813718dfe5961d8be774384d474797c99"
+      }
+    },
+    "selectedThreads": {
+      "program/multiletter-marton-achievability/marginal-correlation-pruning": {
+        "id": "program/multiletter-marton-achievability/marginal-correlation-pruning",
+        "programId": "program/multiletter-marton-achievability",
+        "title": "Two-letter marginal and correlation pruning",
+        "summary": "Develop necessary marginal-balance, output-decorrelation, input-covariance, and symmetry-family restrictions on candidate two-letter Marton improvements.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [
+          "Requires the accepted two-letter Marton-to-input bounds in transaction 33a5944dca980bf94cc869c6c7dee2d04385ff58.",
+          "Requires the accepted exact directed randomized-time-division threshold in transaction 88a1004f309460f3ec1cacdae88d30f88559f9bc."
+        ],
+        "sourceTransactionIds": [
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+        ],
+        "digest": "sha256:2e50097a54529b8e9f4b5865f831d8c4a746e2c40b190a2d19af897b576268e3"
+      }
+    },
+    "selectedItems": {
+      "item/marton-multiletter-finite-foundation-repair-proof": {
+        "id": "item/marton-multiletter-finite-foundation-repair-proof",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Finite-super-symbol, superadditivity, and RTD calculus proof",
+        "summary": "Proof used to establish the linked accepted claim. It bounds each finite-auxiliary Marton functional by binary output entropies, concatenates independent finite laws using the minimum-term inequality to prove superadditivity, applies Fekete's lemma, and proves exact scaling for repeated selected laws. Under (H-Marton), it converts an epsilon-optimal finite law into a finite super-channel Marton rate pair and flattens the resulting code to the original channel. Separately, receiver-skew symmetrization reduces randomized time division to a scalar difference curve, whose derivative identifies q_-=(15-sqrt(105))/30 and yields the accepted closed form. The proof preserves all stated conditional hypotheses and does not establish a fixed-blocklength capacity converse.",
+        "claimRefs": [
+          {
+            "transactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+            "claimKey": "bssc-sum-capacity/marton-multiletter-finite-foundation-repair"
+          }
+        ],
+        "sourceTransactionIds": [
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+        ],
+        "dependencyItemIds": [
+          "item/marton-multiletter-finite-foundation-repair-result"
+        ],
+        "digest": "sha256:55b67b348e7d8e4ba994122c0c255b658ccc90d0593bc82d7ebe4aa33d5725da"
+      },
+      "item/marton-multiletter-finite-foundation-repair-result": {
+        "id": "item/marton-multiletter-finite-foundation-repair-result",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Finite-auxiliary Marton multiletter foundation and directed RTD threshold",
+        "summary": "Accepted statement:\n\nFor the governed half-skew BSSC P and every n >= 1, define M_n^fin(P) as the supremum of the displayed private-message Marton functional over finite auxiliary alphabets U,V,W and finite laws (U,V,W)-X^n-(Y^n,Z^n). Unconditionally, 0 <= M_n^fin(P) <= 2n, M_{m+n}^fin(P) >= M_m^fin(P)+M_n^fin(P), and Fekete's lemma gives lim_n M_n^fin(P)/n = sup_n M_n^fin(P)/n; k independent copies of a selected n-letter law of value S_n have value exactly k S_n. Assume (H-Marton), the exact finite-DMBC private-message Marton achievability theorem stated in the README. Then C_sum(P) >= M_n^fin(P)/n for every n and hence C_sum(P) is at least the displayed Fekete limit. For the exact BSSC randomized-time-division value L_RTD, the README's symmetrization and calculus proof gives the stated closed form at q_-=(15-sqrt(105))/30, and the directed standard-library certificate proves the strict intervals 0.3616428844219546156634415781505870072079810107238605552037137298028007 < L_RTD < 0.3616428844219546156634415781505870072079810107238605552037137298028008 and 0.7232857688439092313268831563011740144159620214477211104074274596056014 < 2 L_RTD < 0.7232857688439092313268831563011740144159620214477211104074274596056016. Assume additionally (H-binary), the exact binary-input Marton-equals-randomized-time-division theorem stated in the README; then M_1^fin(P)=L_RTD. Under (H-Marton), a selected finite n-letter law strictly improves the governed RTD achievable lower bound through super-symbol normalization iff S_n > n L_RTD; under both hypotheses this is equivalently a strict improvement over the complete one-letter Marton sum optimum. This append-only claim repairs only the finite-auxiliary scope, conditional super-symbol conclusion, conditional one-letter identification, and decimal certification of transaction f6ea30479b9ca461294ba89a8a1a31c06ce59d08; that transaction is a corrective/provenance reference rather than a mathematical premise. No fixed-n equality is a capacity converse.\n\nScope qualifications (verbatim):\n- The capacity lower bound C_sum(P) >= M_n^fin(P)/n and the resulting Fekete-limit lower bound are conditional on (H-Marton).\n- The identity M_1^fin(P)=L_RTD is conditional on (H-binary).\n- Equivalence between improvement over RTD and improvement over the complete one-letter Marton optimum requires both (H-Marton) and (H-binary).\n- All optimizations defining M_n^fin(P) are restricted to finite auxiliary alphabets; no optimizer or cardinality theorem is assumed.\n- No fixed-n equality is asserted or used as a capacity converse.\n- The declared transaction is corrective/provenance material only and is not a mathematical dependency.",
+        "claimRefs": [
+          {
+            "transactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+            "claimKey": "bssc-sum-capacity/marton-multiletter-finite-foundation-repair"
+          }
+        ],
+        "sourceTransactionIds": [
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+        ],
+        "dependencyItemIds": [],
+        "digest": "sha256:43078fc80a5fe2710750ee633d7792f759b4bf37a4a313315d21b100d596e07a"
+      },
+      "item/marton-rtd-directed-interval-certificate": {
+        "id": "item/marton-rtd-directed-interval-certificate",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "computation",
+        "title": "Directed RTD threshold interval certificate",
+        "summary": "Computation used for the certified numerical portion of the linked accepted claim. It brackets sqrt(105) by exact rational square comparisons, propagates directed 120-digit decimal intervals through the accepted closed form for L_RTD, expands correctly rounded logarithms outward, and verifies that the resulting enclosures lie strictly inside the stated intervals for L_RTD and 2L_RTD. It certifies only those intervals and the associated finite-scope structural audit; it does not prove (H-Marton), (H-binary), or any capacity converse.",
+        "claimRefs": [
+          {
+            "transactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+            "claimKey": "bssc-sum-capacity/marton-multiletter-finite-foundation-repair"
+          }
+        ],
+        "sourceTransactionIds": [
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+        ],
+        "dependencyItemIds": [
+          "item/marton-multiletter-finite-foundation-repair-result",
+          "item/marton-multiletter-finite-foundation-repair-proof"
+        ],
+        "digest": "sha256:628fa1e6a54c337683084d36469c7523cc19becacbbf62e6822c67fa104176ee"
+      },
+      "item/two-letter-marton-full-support-necessity-result": {
+        "id": "item/two-letter-marton-full-support-necessity-result",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Full-support and mass-floor necessity for a two-letter Marton gain",
+        "summary": "Accepted statement:\n\nFor the half-skew BSSC product channel P^{otimes 2}, every finite Marton law whose induced super-input X_1X_2 is supported on at most three of {00,01,10,11} has unnormalized Marton sum value strictly below 0.695 bits. A fair one-letter randomized-time-division schedule with reflected rational conditional priors 1/6 and 5/6, repeated independently twice, has exact unnormalized value B_{1/6}=2h_2(1/4)+h_2(1/12)-h_2(5/12)-1/3>0.7231 bits. Therefore every strict two-letter Marton improvement over twice the optimal one-letter randomized-time-division value must assign positive mass to all four super-input symbols. Quantitatively, every such improving witness must assign mass greater than 1/180 to each of 00 and 11 and mass greater than 1/325 to each of 01 and 10. This is a support-pruning theorem for the two-letter Marton functional, not a full-support no-gain theorem or an unrestricted capacity converse.\n\nScope qualifications (verbatim):\n- The result concerns the unnormalized two-letter Marton functional for the half-skew BSSC product channel.\n- It is a support-pruning theorem only; it does not prove that full-support Marton laws cannot yield a gain.\n- It is not a converse for unrestricted broadcast coding or a determination of unrestricted sum capacity.\n- The numerical attestation supports the finite algebraic and numerical inequalities, while the universal Marton reduction and calculus steps are established in the written proof.",
+        "claimRefs": [
+          {
+            "transactionId": "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-full-support-necessity"
+          }
+        ],
+        "sourceTransactionIds": [
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58"
+        ],
+        "dependencyItemIds": [],
+        "digest": "sha256:c9df846fe42237c0021e4a78c05e66eb6cb32a5e58370942ab9873734d356407"
+      },
+      "item/two-letter-marton-marginal-correlation-pruning-audit-tool": {
+        "id": "item/two-letter-marton-marginal-correlation-pruning-audit-tool",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "tool",
+        "title": "Directed marginal and output-correlation pruning audit",
+        "summary": "Tool used for the computationally audited portion of the linked accepted claim. Using exact rational checks and outward-rounded standard-library decimal intervals, it reconstructs the required directed RTD threshold and verifies the coordinate, correlation, covariance, sum-marginal, and reflected-family endpoint comparisons supporting the accepted rational cutoffs. It does not replace the analytic information-theoretic identities, concavity arguments, or Pinsker derivation and does not establish a gain, a no-gain theorem, or a capacity converse.",
+        "claimRefs": [
+          {
+            "transactionId": "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-marginal-correlation-pruning"
+          }
+        ],
+        "sourceTransactionIds": [
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+        ],
+        "dependencyItemIds": [
+          "item/two-letter-marton-full-support-necessity-result",
+          "item/marton-rtd-directed-interval-certificate",
+          "item/two-letter-marton-marginal-correlation-pruning-result",
+          "item/two-letter-marton-marginal-correlation-pruning-proof"
+        ],
+        "digest": "sha256:892822ccd47602481e470d1867f0527db6853f3030b9ac0732338281f3770cc0"
+      },
+      "item/two-letter-marton-marginal-correlation-pruning-proof": {
+        "id": "item/two-letter-marton-marginal-correlation-pruning-proof",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Output-correlation decomposition and concave-envelope pruning proof",
+        "summary": "Proof used to establish the linked accepted claim. It combines the required Marton-to-input rows with the exact decomposition of the averaged product-channel input mutual information into two coordinate terms minus one half of the within-receiver output correlation. Coordinatewise and sum-marginal concave envelopes, together with the required directed threshold, give the accepted marginal restrictions and output-correlation bound. The affine BSSC output laws and a Pinsker argument give the accepted input-covariance bound, while monotonicity on the reflected/transposed one-parameter family gives the stated alpha window. This proof item establishes only the necessary conditions in the linked claim.",
+        "claimRefs": [
+          {
+            "transactionId": "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-marginal-correlation-pruning"
+          }
+        ],
+        "sourceTransactionIds": [
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+        ],
+        "dependencyItemIds": [
+          "item/two-letter-marton-full-support-necessity-result",
+          "item/marton-multiletter-finite-foundation-repair-result",
+          "item/two-letter-marton-marginal-correlation-pruning-result"
+        ],
+        "digest": "sha256:ad8a3ec455c2917ac170e3266dd82396a14395cabfbb38d08552383a27ff39cb"
+      },
+      "item/two-letter-marton-marginal-correlation-pruning-result": {
+        "id": "item/two-letter-marton-marginal-correlation-pruning-result",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Marginal-balance and correlation necessities for a two-letter Marton gain",
+        "summary": "Accepted statement:\n\nFor the governed half-skew BSSC product channel P^{otimes 2}, let M be the unnormalized finite-auxiliary Marton sum value of any law (W,U,V)-X_1X_2-(Y^2,Z^2), let q_i=Pr[X_i=1], Q=q_1+q_2, let C_out=I(Y_1;Y_2)+I(Z_1;Z_2), and let c_in=P(X_1X_2=11)-q_1q_2. Canonical transaction 33a5944dca980bf94cc869c6c7dee2d04385ff58 supplies the two pre-averaging Marton-to-input rows and their universal average M <= G(P_{X_1X_2})+2r, while canonical transaction 88a1004f309460f3ec1cacdae88d30f88559f9bc supplies the exact directed threshold T=2L_RTD. The exact identity G=F(q_1)+F(q_2)-C_out/2 and the coordinatewise concave row envelopes imply that M>T forces q_1,q_2 in (3/8,5/8), hence in (7/20,13/20), together with 17/20<Q<23/20, C_out<7/160=0.04375<0.044 bits, and |c_in|<7/40. On the reflected/transposed family P(00)=P(11)=alpha and P(01)=P(10)=1/2-alpha, a gain additionally forces 1/8<alpha<5/13. These are necessary conditions only; they do not establish a two-letter gain, rule one out, or give a capacity converse.\n\nScope qualifications (verbatim):\n- Applies to the governed half-skew BSSC product channel P^{otimes 2}.\n- Applies to the unnormalized finite-auxiliary Marton sum value.\n- The conclusions are necessary conditions conditional on M>T.\n- It neither constructs nor proves a two-letter gain.\n- It does not rule out a two-letter gain.\n- It is not a capacity converse.\n- From the threshold reference, only the unconditional RTD calculus and interval certificate are needed; neither (H-Marton) nor (H-binary) is used.",
+        "claimRefs": [
+          {
+            "transactionId": "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-marginal-correlation-pruning"
+          }
+        ],
+        "sourceTransactionIds": [
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+        ],
+        "dependencyItemIds": [
+          "item/two-letter-marton-full-support-necessity-result",
+          "item/marton-multiletter-finite-foundation-repair-result"
+        ],
+        "digest": "sha256:7281e40cd6caf4d47394ed73588a194cc48a7ebb7f715ce1eb751fbb060d141f"
+      }
+    },
+    "unresolvedDependencyTransactionIds": []
+  },
+  "objectiveAttestations": [
+    {
+      "transactionId": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+      "relation": "subject",
+      "attestation": {
+        "schemaVersion": 1,
+        "requestDigest": "sha256:98ae53a762d548fdf98e8e0ef4950608675eca615366fa9057680812228c9ae0",
+        "runDigest": "sha256:470d3656c4c99535b095d38ac813fba7eb243aaeedfeaa65a778ec39c8fd0192",
+        "attestationId": "sha256:b6f5ddf46db8d3af735b4d997f0aa53e30b12750661d54116c75c28a9ca14e90",
+        "status": "passed",
+        "verifier": {
+          "id": "python-stdlib-3-13-v1",
+          "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+          "implementation": "oci-command-v1"
+        },
+        "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+        "result": {
+          "status": "passed",
+          "exitCode": 0,
+          "timedOut": false
+        },
+        "artifacts": {
+          "verifier-attestation": {
+            "digest": "sha256:2fe3313e613667cc82d872a3b1bd4863ea15c3d9e1ff0d82b99d3fd33525c351",
+            "bytes": 2511
+          },
+          "verifier-stderr": {
+            "digest": "sha256:a5afdd02855dd64005bc2df2ab78b76ffc38283fa7805cadd67d84c646cca830",
+            "bytes": 948
+          },
+          "verifier-stdout": {
+            "digest": "sha256:3ab810e0aee6b9e39363d20131a4e34195ad627f26224233bc494f53b06abf26",
+            "bytes": 612
+          }
+        },
+        "stdout": {
+          "text": "ln(2) enclosure: [0.6931471805599453094172321214581765680755001343602552541206800094933936219696947156058633269964186874, 0.6931471805599453094172321214581765680755001343602552541206800094933936219696947156058633269964186876]\npaired covariance-square upper: 0.01956463816096619824967993891212595151826008443758784991469661317118449739430589923081065842328601135\npaired covariance radius (orientation): 0.1398736507029333178749703376347577200289927210530058697268932731754635835155299850777496857357736944\ncertified rational radius: 7/50 = 0.14\nPASS: paired-output KL curvature and covariance-pruning certificate\n",
+          "truncated": false,
+          "bytes": 612,
+          "digest": "sha256:3ab810e0aee6b9e39363d20131a4e34195ad627f26224233bc494f53b06abf26"
+        },
+        "stderr": {
+          "text": "Unable to find image 'python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689' locally\ndocker.io/library/python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689: Pulling from library/python\n8c7716127147: Pulling fs layer\n31fd2a94d723: Pulling fs layer\n66b685f2f76b: Pulling fs layer\n7d456e82f89b: Pulling fs layer\n7d456e82f89b: Waiting\n31fd2a94d723: Verifying Checksum\n31fd2a94d723: Download complete\n66b685f2f76b: Verifying Checksum\n66b685f2f76b: Download complete\n8c7716127147: Verifying Checksum\n8c7716127147: Download complete\n7d456e82f89b: Verifying Checksum\n7d456e82f89b: Download complete\n8c7716127147: Pull complete\n31fd2a94d723: Pull complete\n66b685f2f76b: Pull complete\n7d456e82f89b: Pull complete\nDigest: sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nStatus: Downloaded newer image for python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\n",
+          "truncated": false,
+          "bytes": 948,
+          "digest": "sha256:a5afdd02855dd64005bc2df2ab78b76ffc38283fa7805cadd67d84c646cca830"
+        }
+      }
+    },
+    {
+      "transactionId": "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+      "relation": "declared-reference",
+      "attestation": {
+        "schemaVersion": 1,
+        "requestDigest": "sha256:cca67fc3e526c1f743c3a186e7b4f6e96cc74314a5d073e69c555a52fb9be8bd",
+        "runDigest": "sha256:ad445de914face6396fb93e0df420ec59db52c47a394783cc38491ecad86ea37",
+        "attestationId": "sha256:bca93267c6708161113b03656a5f882512338901eee6f47e081c38f6679e5283",
+        "status": "passed",
+        "verifier": {
+          "id": "python-stdlib-3-13-v1",
+          "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+          "implementation": "oci-command-v1"
+        },
+        "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+        "result": {
+          "status": "passed",
+          "exitCode": 0,
+          "timedOut": false
+        },
+        "artifacts": {
+          "verifier-attestation": {
+            "digest": "sha256:3eb3bb196ee1c23b7d30842e893bb3f78eb8ca0eebb880fdb99381ce1ec67060",
+            "bytes": 2531
+          },
+          "verifier-stderr": {
+            "digest": "sha256:3791645c869c075e3bb4a2fe531bfca27d34fefc58689df7ca16f150c3ec3616",
+            "bytes": 926
+          },
+          "verifier-stdout": {
+            "digest": "sha256:ad3f8cf1524bfd3b418f60db9a6cf8cd32b62891d11b759bc943632f3f9e78d1",
+            "bytes": 2302
+          }
+        },
+        "stdout": {
+          "text": "q_- = [0.158434974468013387225965377315964933642165577884838902348600716670321733809821530902425612387381775434666666666666666666, 0.158434974468013387225965377315964933642165577884838902348600716670321733809821530902425612387381775435000000000000000001]\n2 L_RTD = [0.723285768843909231326883156301174014415962021447721110407427459605601470900298413463910171491945789270687879798713275364, 0.723285768843909231326883156301174014415962021447721110407427459605601470900298413463910171491945789273285306691175423884]\ncoordinate envelope at 3/8 = [0.722031402889971393491654738587276392197857304475180229892859537501349434782823364975577434480061227499641698763234583338, 0.722031402889971393491654738587276392197857304475180229892859537501349434782823364975577434480061227499641698763234583428]\ncoordinate cutoff bracket = (0.379109, 0.379110)\ncorrelation cap = [0.04365345798524444862380002371075291860918951094967141645062915354220769143325179793849680750757896890754541176729414811, 0.04365345798524444862380002371075291860918951094967141645062915354220769143325179793849680750757896891274026555221844531]\ninput-covariance square cap = [0.0303251891494976072870039053137952248533031308782611673677797504153359709611741438077565205560933175799625647946499675008, 0.0303251891494976072870039053137952248533031308782611673677797504153359709611741438077565205560933175799625647946499675010]\nsum envelope at 17/20 = [0.721879481113190993936460767507384711211174667920690753685914042436907280273643795797553161160710083648809670732274091847, 0.721879481113190993936460767507384711211174667920690753685914042436907280273643795797553161160710083648809670732274091927]\nsum cutoff bracket = (0.856393, 0.856394)\nsymmetric endpoint correlations = [0.04447732346542067092045145722045705741842656213430198548489442584910110023418662318471404835358425099458811747156153108, 0.04447732346542067092045145722045705741842656213430198548489442584910110023418662318471404835358425099458811747156153126] and [0.04383791141703725839675127202351246836152431697935530244658584482703591760684849436941122819330557735367307329147662626, 0.04383791141703725839675127202351246836152431697935530244658584482703591760684849436941122819330557735367307329147662648]\nPASS: directed marginal and output-correlation pruning certificates\n",
+          "truncated": false,
+          "bytes": 2302,
+          "digest": "sha256:ad3f8cf1524bfd3b418f60db9a6cf8cd32b62891d11b759bc943632f3f9e78d1"
+        },
+        "stderr": {
+          "text": "Unable to find image 'python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689' locally\ndocker.io/library/python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689: Pulling from library/python\n8c7716127147: Pulling fs layer\n31fd2a94d723: Pulling fs layer\n66b685f2f76b: Pulling fs layer\n7d456e82f89b: Pulling fs layer\n31fd2a94d723: Verifying Checksum\n31fd2a94d723: Download complete\n66b685f2f76b: Verifying Checksum\n66b685f2f76b: Download complete\n8c7716127147: Verifying Checksum\n8c7716127147: Download complete\n7d456e82f89b: Verifying Checksum\n7d456e82f89b: Download complete\n8c7716127147: Pull complete\n31fd2a94d723: Pull complete\n66b685f2f76b: Pull complete\n7d456e82f89b: Pull complete\nDigest: sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nStatus: Downloaded newer image for python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\n",
+          "truncated": false,
+          "bytes": 926,
+          "digest": "sha256:3791645c869c075e3bb4a2fe531bfca27d34fefc58689df7ca16f150c3ec3616"
+        }
+      }
+    }
+  ],
+  "packetDigest": "sha256:a4f019d6a9bd26192fc229a9439933b9eff39fcb103e35e519ad6d8e1c1b3561"
+}

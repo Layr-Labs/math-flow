@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+  "problemLedgerDigest": "sha256:671c216742fb506d83ba9c530cbb03eef940c20a7711a50be041b06a04fc9898",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+      "ledgerPosition": 21
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/two-letter-output-covariance-curvature",
+      "status": "valid",
+      "premiseStatus": "satisfied",
+      "summary": "The paired binary-output-table argument establishes the unconditional bound C_out >= 31 c_in^2/(20 ln 2), including the boundary cases. The declared reference establishes that any finite two-letter Marton law exceeding twice the optimal one-letter randomized-time-division value has C_out < 7/160. Combining the bounds gives |c_in| < sqrt(7 ln 2/248) < 7/50. This remains only a necessary condition and does not construct or exclude a Marton gain, prove tensorization, or yield a capacity converse.",
+      "scopeQualifications": [
+        "The reference is required only for the Marton-gain implication C_out < 7/160; the curvature inequality is proved within the subject.",
+        "The conclusion applies to finite two-letter Marton laws whose unnormalized value exceeds twice the optimal one-letter randomized-time-division value.",
+        "The result is solely a necessary covariance condition; it neither constructs nor rules out a gain, tensorizes Marton's functional, nor proves a capacity converse."
+      ],
+      "evidenceIssues": [],
+      "evidenceTransactionIds": [
+        "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+      ],
+      "requiredDependencyTransactionIds": [
+        "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/two-letter-output-covariance-curvature",
+      "stance": "supports",
+      "summary": "The paired binary-output-table argument establishes the unconditional bound C_out >= 31 c_in^2/(20 ln 2), including the boundary cases. The declared reference establishes that any finite two-letter Marton law exceeding twice the optimal one-letter randomized-time-division value has C_out < 7/160. Combining the bounds gives |c_in| < sqrt(7 ln 2/248) < 7/50. This remains only a necessary condition and does not construct or exclude a Marton gain, prove tensorization, or yield a capacity converse.",
+      "subjectTransactionIds": [
+        "906894532b971ecf8c4ac6fcdd3f7380e00549b2"
+      ],
+      "evidenceTransactionIds": [
+        "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+      ]
+    }
+  ],
+  "dependencyPacketDigest": "sha256:a4f019d6a9bd26192fc229a9439933b9eff39fcb103e35e519ad6d8e1c1b3561",
+  "reportDigest": "sha256:a09a1cc31b84a958f52c2a3e9e109149244ce9e90ccfb7704cc6966f9c57b022",
+  "judgmentId": "sha256:141c4c2658e3662b874c8df5bd25eedffebed7155677cc2181a64c9bddda36af"
+}
