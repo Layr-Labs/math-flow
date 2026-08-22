@@ -1,0 +1,52 @@
+{
+  "protocolVersion": 1,
+  "runKind": "verifier-attestation",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "fdbb2d1e94e5106feda2dc473464c95d8622f896",
+  "problemLedgerHead": "fdbb2d1e94e5106feda2dc473464c95d8622f896",
+  "problemLedgerDigest": "sha256:c7d27ba328188da844fb15afc0f9d37a5a30968bfca90ff143b40b954f0939fb",
+  "runner": {
+    "implementation": "math-flow-oci-attestation-producer-v1",
+    "mathFlowVersion": "0.6.0"
+  },
+  "verifier": {
+    "id": "python-stdlib-3-13-v1",
+    "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "implementation": "oci-command-v1"
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/verifier-attestation-v1",
+  "requestDigests": [
+    "sha256:09aaa86c73218d7c5a79943aeed9fdb35e34f6eaaf5911ae90ad3289afd0362c"
+  ],
+  "providerRuns": [],
+  "inputs": {
+    "transactionId": "fdbb2d1e94e5106feda2dc473464c95d8622f896",
+    "contributionId": "two-letter-marton-computational-nonfinding",
+    "verifierSpecDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94"
+  },
+  "artifacts": [
+    {
+      "path": "attestation.json",
+      "role": "verifier-attestation",
+      "mediaType": "application/json",
+      "digest": "sha256:0c3ffd254b15f5d9136682e7d7d6a8e92dfdf8839c4f65d391dd80ef8ed016f4",
+      "bytes": 4074
+    },
+    {
+      "path": "stderr.log",
+      "role": "verifier-stderr",
+      "mediaType": "application/octet-stream",
+      "digest": "sha256:a5afdd02855dd64005bc2df2ab78b76ffc38283fa7805cadd67d84c646cca830",
+      "bytes": 948
+    },
+    {
+      "path": "stdout.log",
+      "role": "verifier-stdout",
+      "mediaType": "application/octet-stream",
+      "digest": "sha256:c5944d63304f56d7a7931e01ac22d7ea1f24862f34d5d3092318adcddcf3dcce",
+      "bytes": 939
+    }
+  ]
+}
