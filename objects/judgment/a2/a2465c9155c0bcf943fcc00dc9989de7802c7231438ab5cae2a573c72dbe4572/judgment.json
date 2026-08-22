@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+  "problemLedgerDigest": "sha256:e0b56a9f675a519a94536ec5d9d8f099d71e91fa33a89fee146db74464fe8989",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+      "ledgerPosition": 16
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/two-letter-padding-correlation-tests",
+      "status": "valid",
+      "premiseStatus": "satisfied",
+      "summary": "The argument establishes the claim. Using the referenced receiver-skew midpoint identity and exact total-correlation residual, any two-letter Marton value strictly above 2M_T forces a strictly positive residual for each of the four constant-padding choices. The residual specializes to A_a+B_b−1{a≠b}D−C, yielding all four strict necessary inequalities. Adding the crossed inequalities and applying the stated chain-rule identities gives README equation (12). The padding constructions apply to arbitrary finite two-letter auxiliaries, including the half-skew BSSC, without assuming tuple structure.",
+      "scopeQualifications": [
+        "The inequalities are necessary only; they do not prove additivity, exhibit a gaining law, establish sufficiency, or determine capacity.",
+        "The summed crossed condition is weaker than retaining the two crossed inequalities separately.",
+        "The result concerns finite receiver-skew broadcast channels and finite auxiliary alphabets.",
+        "Numerical checker attestations are corroborative only; the universal conclusion rests on the analytic entropy identities."
+      ],
+      "evidenceIssues": [],
+      "evidenceTransactionIds": [
+        "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+      ],
+      "requiredDependencyTransactionIds": [
+        "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/two-letter-padding-correlation-tests",
+      "stance": "supports",
+      "summary": "The argument establishes the claim. Using the referenced receiver-skew midpoint identity and exact total-correlation residual, any two-letter Marton value strictly above 2M_T forces a strictly positive residual for each of the four constant-padding choices. The residual specializes to A_a+B_b−1{a≠b}D−C, yielding all four strict necessary inequalities. Adding the crossed inequalities and applying the stated chain-rule identities gives README equation (12). The padding constructions apply to arbitrary finite two-letter auxiliaries, including the half-skew BSSC, without assuming tuple structure.",
+      "subjectTransactionIds": [
+        "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+      ],
+      "evidenceTransactionIds": [
+        "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+      ]
+    }
+  ],
+  "dependencyPacketDigest": "sha256:2fb0427234afe443845ec3e04e8b618afdb2a2f634d6063539963f48ba9e1b19",
+  "reportDigest": "sha256:89946f9ae3ce028696d804fab495cf8233bbc7fb7cba9b81a53a293f2b14d512",
+  "judgmentId": "sha256:ba0c9b4179bf97fe8ad6aafb6c6ddf8b1b1f6d90c161f29bf6e2a63af03e4b60"
+}

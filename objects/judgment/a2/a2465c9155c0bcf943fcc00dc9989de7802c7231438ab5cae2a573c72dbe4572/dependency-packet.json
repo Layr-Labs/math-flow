@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 3,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+  "subjectLedgerPosition": 16,
+  "claims": [
+    {
+      "claimKey": "bssc-sum-capacity/two-letter-padding-correlation-tests",
+      "statement": "Assume canonical transaction 5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6 and its exact tuple-law total-correlation residual. For any finite receiver-skew broadcast channel T and any arbitrary finite two-letter Marton law P(W,U,V,X_1,X_2), define A_1=I(Y_2;Y_1,U|W), A_2=I(Y_1;Y_2,U|W), B_1=I(Z_2;Z_1,V|W), B_2=I(Z_1;Z_2,V|W), D=I(U;V|W), and C=(I(Y_1;Y_2|W)+I(Y_1;Y_2)+I(Z_1;Z_2|W)+I(Z_1;Z_2))/2. If this law has Marton value strictly above 2M_T, then A_a+B_b>C+1{a!=b}D for all four (a,b) in {1,2}^2. Hence failure of any one inequality rules out a gain. Adding the crossed tests gives the combined necessary inequality in README equation (12). Applied to the half-skew BSSC, these tests cover every abstract two-letter auxiliary law without assuming an a priori tuple structure. They are necessary only and do not prove additivity, exhibit a gain, or determine capacity.",
+      "declaredReferenceTransactionIds": [
+        "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+      ]
+    }
+  ],
+  "declaredReferenceTransactionIds": [
+    "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+  ],
+  "knowledgeContext": {
+    "sourceKind": "research-program-state",
+    "runDigest": "sha256:2b12e1b571bba2e700c538ce51d7e9025b1b3cbbcb62ae5e772671ad39e3aca8",
+    "stateDigest": "sha256:c82cc17b52a93efe95cbc3b972bb88a430979fa576a86a60611a36c6e18e2e48",
+    "stateArtifactDigest": "sha256:24761f69faa14f75106df62c8dd31d526fd480d023c0f3608ef0ebc4d6641845",
+    "problemLedgerHead": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+    "selectedPrograms": {
+      "program/multiletter-marton-achievability": {
+        "id": "program/multiletter-marton-achievability",
+        "parentId": "root",
+        "title": "Multiletter Marton achievability",
+        "objective": "Determine whether finite-letter Marton coding can improve half-skew BSSC achievable sum rates and rigorously characterize structural restrictions on candidate multiletter witnesses.",
+        "status": "active",
+        "parentThreadIds": [
+          "root/multiletter-marton-achievability"
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+        ],
+        "digest": "sha256:65d11b8733481514269aa1adff62925be832a86c061ba49ba025c4e2a1462760"
+      },
+      "root": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "status": "active",
+        "parentThreadIds": [],
+        "sourceTransactionIds": [],
+        "digest": "sha256:4bc4e85d0ca6e4224902591c71cf9cb813718dfe5961d8be774384d474797c99"
+      }
+    },
+    "selectedThreads": {
+      "program/multiletter-marton-achievability/conditional-product-no-gain": {
+        "id": "program/multiletter-marton-achievability/conditional-product-no-gain",
+        "programId": "program/multiletter-marton-achievability",
+        "title": "Conditional-product no-gain structure",
+        "summary": "Characterize conditional-product Marton architectures that cannot yield multiletter gains and develop decomposition-relative correlation tests for remaining coupled candidates.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+        ],
+        "digest": "sha256:f3995b078d548f2fa54510b337b787f5a058ba4b086d11f5cf50a4272de72daf"
+      }
+    },
+    "selectedItems": {
+      "item/conditional-product-marton-no-gain-proof": {
+        "id": "item/conditional-product-marton-no-gain-proof",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Receiver-skew symmetrization and entropy-ledger proof",
+        "summary": "Proof used to establish the linked accepted claim. Receiver-skew reflection followed by fair-selector symmetrization identifies the one-letter Marton supremum with its midpoint affine functional without assuming attainment. Under the stated conditional-product factorization, the satellite mutual-information terms add exactly coordinatewise, while the common-output terms are subadditive; applying the one-letter bound to each coordinate gives the upper bound n M_T. Independent epsilon-optimal one-letter copies give the reverse inequality. For arbitrary tuple laws over the product channel, direct entropy expansion yields the accepted total-correlation residual identity and makes the stated correlation-balance inequality necessary for any strict gain. This proof item is limited to the linked accepted claim and does not establish unrestricted Marton additivity, binary-input tightness, a capacity bound, or exact BSSC capacity.",
+        "claimRefs": [
+          {
+            "transactionId": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+            "claimKey": "bssc-sum-capacity/conditional-product-marton-no-gain"
+          }
+        ],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+        ],
+        "dependencyItemIds": [
+          "item/conditional-product-marton-no-gain-result"
+        ],
+        "digest": "sha256:ecff10c36fa286e1834131dde6548811a015e67f811af134ca8940c321a84255"
+      },
+      "item/conditional-product-marton-no-gain-result": {
+        "id": "item/conditional-product-marton-no-gain-result",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Conditional-product Marton no-gain theorem and correlation ledger",
+        "summary": "Accepted statement:\n\nLet T be any finite receiver-skew two-receiver broadcast channel, and let M_T be its one-letter private-message Marton sum-rate. For every n >= 1, the supremum of the n-letter Marton functional over laws P(w,u^n,v^n,x^n)=P(w) product_i P_i(u_i,v_i,x_i|w), with aggregate U=(U_i) and V=(V_i), equals n M_T. The common W is arbitrary and may correlate coordinates unconditionally. Consequently, any strict two-letter gain for the half-skew BSSC must use a law outside this conditional-product class: every chosen coordinate-packet decomposition under which the factorization could be tested must fail it. For the broader class of arbitrary finite tuple laws P(w,u^n,v^n,x^n), with a chosen aggregate U=(U_i), V=(V_i) and the product channel, the exact total-correlation residual identity in README equation (11) holds, so any strict gain must satisfy the correlation-balance inequality (13) for that decomposition. Trivial constant padding always supplies a tuple representation, but the ledger and its pruning usefulness depend on the noncanonical decomposition. These results do not establish unrestricted Marton additivity, binary-input tightness, a capacity bound, or the exact BSSC capacity.\n\nThe equations expressly incorporated by that accepted statement are, for the chosen tuple decomposition,\n\n\\[\n\\begin{aligned}\n&L_{1/2,T^{\\otimes n}}(P)-\\sum_iL_{1/2,T}(P^{(i)})\\\\\n&\\quad=\\operatorname{TC}(U^n\\mid W)+G_{UY}+G_{VZ}-G_{UV}\\\\\n&\\qquad\\quad-\\tfrac12\\big[\\operatorname{TC}(Y^n\\mid W)+\\operatorname{TC}(Y^n)+\\operatorname{TC}(Z^n\\mid W)+\\operatorname{TC}(Z^n)\\big],\n\\end{aligned}\n\\]\n\nand any strict gain forces\n\n\\[\n\\operatorname{TC}(U^n\\mid W)+G_{UY}+G_{VZ}-G_{UV}\n>\\tfrac12\\big[\\operatorname{TC}(Y^n\\mid W)+\\operatorname{TC}(Y^n)+\\operatorname{TC}(Z^n\\mid W)+\\operatorname{TC}(Z^n)\\big].\n\\]\n\nHere \\(\\operatorname{TC}(A^n\\mid C)=\\sum_iH(A_i\\mid C)-H(A^n\\mid C)\\), \\(\\operatorname{TC}(A^n)=\\sum_iH(A_i)-H(A^n)\\), and\n\\[\n\\begin{aligned}\nG_{UY}&=\\sum_iH(Y_i\\mid U_i,W)-H(Y^n\\mid U^n,W),\\\\\nG_{VZ}&=\\sum_iH(Z_i\\mid V_i,W)-H(Z^n\\mid V^n,W),\\\\\nG_{UV}&=\\sum_iH(U_i\\mid V_i,W)-H(U^n\\mid V^n,W).\n\\end{aligned}\n\\]\n\nScope qualifications (verbatim):\n- The theorem applies to finite receiver-skew two-receiver broadcast channels and to the specified conditional-product factorization with a common W that may induce unconditional coordinate correlation.\n- A strict-gain law must fail the conditional-product factorization for every exact chosen coordinate-packet decomposition to which the theorem applies.\n- For arbitrary tuple laws, the residual ledger and correlation-balance condition are relative to the chosen aggregate coordinate decomposition; they are noncanonical.\n- Inequality (13) is only a necessary condition for strict gain, not a sufficient condition.\n- Constant padding supplies a tuple representation, but does not make the ledger canonical or necessarily useful for pruning.\n- The result does not establish unrestricted Marton additivity, binary-input tightness, a capacity bound, or the exact half-skew BSSC capacity.",
+        "claimRefs": [
+          {
+            "transactionId": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+            "claimKey": "bssc-sum-capacity/conditional-product-marton-no-gain"
+          }
+        ],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+        ],
+        "dependencyItemIds": [],
+        "digest": "sha256:38e6384c6eba1f67bc03aee9aff2c393ba21fc7551ca6659605d5ccfb9011d46"
+      }
+    },
+    "unresolvedDependencyTransactionIds": []
+  },
+  "objectiveAttestations": [
+    {
+      "transactionId": "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+      "relation": "subject",
+      "attestation": {
+        "schemaVersion": 1,
+        "requestDigest": "sha256:034814897500c5b522b32bf4594ba77c3cc51eae0c025cca10ae97351c662f1d",
+        "runDigest": "sha256:0f5bc40dc6e0cf445460f3e4630f2a579d7f6d2b51121b690ee0e088a132a39e",
+        "attestationId": "sha256:ca02b4f5af7ca532a97c7cc7aebe57c718aa51ad931e31e40316dd06534710c5",
+        "status": "passed",
+        "verifier": {
+          "id": "python-stdlib-3-13-v1",
+          "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+          "implementation": "oci-command-v1"
+        },
+        "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+        "result": {
+          "status": "passed",
+          "exitCode": 0,
+          "timedOut": false
+        },
+        "artifacts": {
+          "verifier-attestation": {
+            "digest": "sha256:4e55890ca632712f19f28821a449225733e8d0f980c4838ff133e470bcd4d6b3",
+            "bytes": 2536
+          },
+          "verifier-stderr": {
+            "digest": "sha256:dab391d85f0641e996a959586e4320674bff4ac030752df4a2fe18d3b473bdcd",
+            "bytes": 915
+          },
+          "verifier-stdout": {
+            "digest": "sha256:8e0cbb3ccee33f414345e3d182f7c2dcea0b168ebc3f394e2d05dcba5c2385f0",
+            "bytes": 261
+          }
+        },
+        "stdout": {
+          "text": "PASS: four constant-padding residual identities\nPASS: crossed-test chain-rule identity\npadding (1, 1): residual=0.008129370595147\npadding (1, 2): residual=-0.037237901490995\npadding (2, 1): residual=-0.036998421649274\npadding (2, 2): residual=0.010605175921478\n",
+          "truncated": false,
+          "bytes": 261,
+          "digest": "sha256:8e0cbb3ccee33f414345e3d182f7c2dcea0b168ebc3f394e2d05dcba5c2385f0"
+        },
+        "stderr": {
+          "text": "Unable to find image 'python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689' locally\ndocker.io/library/python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689: Pulling from library/python\n8c7716127147: Pulling fs layer\n31fd2a94d723: Pulling fs layer\n66b685f2f76b: Pulling fs layer\n7d456e82f89b: Pulling fs layer\n7d456e82f89b: Waiting\n31fd2a94d723: Verifying Checksum\n31fd2a94d723: Download complete\n7d456e82f89b: Download complete\n66b685f2f76b: Verifying Checksum\n66b685f2f76b: Download complete\n8c7716127147: Verifying Checksum\n8c7716127147: Download complete\n8c7716127147: Pull complete\n31fd2a94d723: Pull complete\n66b685f2f76b: Pull complete\n7d456e82f89b: Pull complete\nDigest: sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nStatus: Downloaded newer image for python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\n",
+          "truncated": false,
+          "bytes": 915,
+          "digest": "sha256:dab391d85f0641e996a959586e4320674bff4ac030752df4a2fe18d3b473bdcd"
+        }
+      }
+    },
+    {
+      "transactionId": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+      "relation": "declared-reference",
+      "attestation": {
+        "schemaVersion": 1,
+        "requestDigest": "sha256:736b127cb3036344f0022e13e908c1b47aab9e2386bb7ac8ead90e519824ed94",
+        "runDigest": "sha256:2e25bcde59c35c2b0b950b711b354091f837b7e1dc13f6be656f1b6141482fcd",
+        "attestationId": "sha256:af1332e75c06dd80ae927ecd38b91ba57fa193ebd2028277d812a36b64be816d",
+        "status": "passed",
+        "verifier": {
+          "id": "python-stdlib-3-13-v1",
+          "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+          "implementation": "oci-command-v1"
+        },
+        "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+        "result": {
+          "status": "passed",
+          "exitCode": 0,
+          "timedOut": false
+        },
+        "artifacts": {
+          "verifier-attestation": {
+            "digest": "sha256:d88a0632e8beeebf021557acd26d0ff682d0624f47c307fb29c4cd3e9c3a76ee",
+            "bytes": 2546
+          },
+          "verifier-stderr": {
+            "digest": "sha256:f0acba4a50ab4265563f0b165fabfab1ff30676f561443a1148e2875353e2e3e",
+            "bytes": 948
+          },
+          "verifier-stdout": {
+            "digest": "sha256:50983f0aa80968bd82e89f1de74899352820cf4444cc6829191370204dc23d57",
+            "bytes": 211
+          }
+        },
+        "stdout": {
+          "text": "PASS: exact BSSC receiver-skew relabeling\nPASS: conditional-product entropy identities and common-term bounds\nPASS: exact total-correlation ledger on correlated tuple laws\nPASS: independent-copy Marton equality\n",
+          "truncated": false,
+          "bytes": 211,
+          "digest": "sha256:50983f0aa80968bd82e89f1de74899352820cf4444cc6829191370204dc23d57"
+        },
+        "stderr": {
+          "text": "Unable to find image 'python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689' locally\ndocker.io/library/python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689: Pulling from library/python\n8c7716127147: Pulling fs layer\n31fd2a94d723: Pulling fs layer\n66b685f2f76b: Pulling fs layer\n7d456e82f89b: Pulling fs layer\n7d456e82f89b: Waiting\n31fd2a94d723: Verifying Checksum\n31fd2a94d723: Download complete\n66b685f2f76b: Verifying Checksum\n66b685f2f76b: Download complete\n7d456e82f89b: Verifying Checksum\n7d456e82f89b: Download complete\n8c7716127147: Verifying Checksum\n8c7716127147: Download complete\n8c7716127147: Pull complete\n31fd2a94d723: Pull complete\n66b685f2f76b: Pull complete\n7d456e82f89b: Pull complete\nDigest: sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nStatus: Downloaded newer image for python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\n",
+          "truncated": false,
+          "bytes": 948,
+          "digest": "sha256:f0acba4a50ab4265563f0b165fabfab1ff30676f561443a1148e2875353e2e3e"
+        }
+      }
+    }
+  ],
+  "packetDigest": "sha256:2fb0427234afe443845ec3e04e8b618afdb2a2f634d6063539963f48ba9e1b19"
+}
