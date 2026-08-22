@@ -1,0 +1,52 @@
+{
+  "protocolVersion": 1,
+  "runKind": "verifier-attestation",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+  "problemLedgerHead": "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+  "problemLedgerDigest": "sha256:aed1411129f9d70c20b789517787036240d34d1d94688b8762bf7b0dec67a199",
+  "runner": {
+    "implementation": "math-flow-oci-attestation-producer-v1",
+    "mathFlowVersion": "0.6.0"
+  },
+  "verifier": {
+    "id": "python-stdlib-3-13-v1",
+    "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "implementation": "oci-command-v1"
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/verifier-attestation-v1",
+  "requestDigests": [
+    "sha256:f56fcc8561f9757c95c9bd1ea89400c9de201767d4543bee19369995541d5f75"
+  ],
+  "providerRuns": [],
+  "inputs": {
+    "transactionId": "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+    "contributionId": "two-letter-marton-two-symbol-pruning",
+    "verifierSpecDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94"
+  },
+  "artifacts": [
+    {
+      "path": "attestation.json",
+      "role": "verifier-attestation",
+      "mediaType": "application/json",
+      "digest": "sha256:49cd3e71f7eccdd5d39d92886017da3735e09064f7ff1b9e2d25ff09846a60e4",
+      "bytes": 2507
+    },
+    {
+      "path": "stderr.log",
+      "role": "verifier-stderr",
+      "mediaType": "application/octet-stream",
+      "digest": "sha256:e23d3859084a40f8476fe3a7c65ed8ed9a0cb7c6997915ed1a0b603c9781b5e9",
+      "bytes": 882
+    },
+    {
+      "path": "stdout.log",
+      "role": "verifier-stdout",
+      "mediaType": "application/octet-stream",
+      "digest": "sha256:447c5c984471ac5183b5883c3212b8ce23463381daa666c28fa9bae5c7490c82",
+      "bytes": 876
+    }
+  ]
+}
