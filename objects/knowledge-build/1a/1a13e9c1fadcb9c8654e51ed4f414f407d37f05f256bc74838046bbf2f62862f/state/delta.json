@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 2,
+  "operations": [
+    {
+      "entityKind": "thread",
+      "entityId": "root/multiletter-marton-achievability",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability",
+        "programId": "root",
+        "title": "Multiletter Marton achievability",
+        "summary": "Investigate finite-letter Marton coding for the half-skew BSSC and develop rigorous structural restrictions on candidate multiletter improvements.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ]
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "program/multiletter-marton-achievability",
+      "baseDigest": null,
+      "value": {
+        "id": "program/multiletter-marton-achievability",
+        "parentId": "root",
+        "title": "Multiletter Marton achievability",
+        "objective": "Determine whether finite-letter Marton coding can improve half-skew BSSC achievable sum rates and rigorously characterize structural restrictions on candidate multiletter witnesses.",
+        "status": "active",
+        "parentThreadIds": [
+          "root/multiletter-marton-achievability"
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "program/multiletter-marton-achievability/unstructured-search",
+      "baseDigest": null,
+      "value": {
+        "id": "program/multiletter-marton-achievability/unstructured-search",
+        "programId": "program/multiletter-marton-achievability",
+        "title": "Unstructured search and overhead",
+        "summary": "Future work on multiletter Marton achievability not yet assigned to a specific research thread.",
+        "kind": "unstructured",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "program/multiletter-marton-achievability/two-letter-support-pruning",
+      "baseDigest": null,
+      "value": {
+        "id": "program/multiletter-marton-achievability/two-letter-support-pruning",
+        "programId": "program/multiletter-marton-achievability",
+        "title": "Two-letter support pruning",
+        "summary": "Establish rigorously scoped restrictions on the super-input support of candidate two-letter Marton improvements.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [
+          "The accepted pruning result is conditional on the explicitly assumed Geng--Jog--Nair--Wang binary-input Marton sum-rate theorem."
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-marton-two-symbol-pruning-result",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-marton-two-symbol-pruning-result",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Two-letter Marton two-symbol support pruning",
+        "summary": "Accepted statement:\n\nAssume the Geng--Jog--Nair--Wang theorem that Marton's private-message sum-rate for every binary-input broadcast channel equals randomized time division. For the half-skew BSSC product channel P^{otimes 2}, every finite Marton law whose induced super-input X_1X_2 is supported on at most two of {00,01,10,11} has sum-rate strictly below 0.615 bits. Consequently, because the product randomized-time-division value is greater than 0.7232857688439092 bits, every strict two-letter Marton improvement over the current BSSC achievable rate must use at least three super-input symbols. This is only a support-pruning result and does not rule out a gain on three- or four-symbol support.\n\nScope qualifications (verbatim):\n- Validity is conditional on the Geng–Jog–Nair–Wang theorem explicitly assumed in the claim.\n- The numerical product RTD benchmark is treated as supplied problem data; the execution attestation does not independently prove it.\n- The result only excludes supports of cardinality at most two and makes no assertion against gains using three- or four-symbol support.",
+        "claimRefs": [
+          {
+            "transactionId": "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-two-symbol-pruning"
+          }
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-marton-two-symbol-pruning-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-marton-two-symbol-pruning-proof",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Support-orbit, cooperation, and repetition-subchannel proof",
+        "summary": "Proof used to establish the linked accepted claim. It exhausts singleton and two-symbol super-input supports through the adjacent, antirepetition, and repetition symmetry classes; applies cooperative binary-erasure bounds to the first two classes; and, conditional on the explicitly assumed binary-input Marton theorem, reduces the repetition class to randomized time division. Concavity, reflection symmetry, and a global tangent bound then give the strict 0.615-bit threshold. This proof item is limited to the linked support-pruning claim and does not address three- or four-symbol support.",
+        "claimRefs": [
+          {
+            "transactionId": "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-two-symbol-pruning"
+          }
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ],
+        "dependencyItemIds": [
+          "item/two-letter-marton-two-symbol-pruning-result"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-marton-pruning-audit-tool",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-marton-pruning-audit-tool",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "tool",
+        "title": "Exact support-orbit and directed-interval audit tool",
+        "summary": "Tool used for the computationally audited portion of the linked accepted claim. It uses exact rational arithmetic to construct the product receiver marginals, classify all six two-symbol supports, and verify the transition structures used by the proof. It also uses directed high-precision decimal intervals to check the repetition-orbit tangent certificate and the strict separation below 0.615. The tool does not independently prove the supplied product randomized-time-division benchmark or the assumed Geng--Jog--Nair--Wang theorem.",
+        "claimRefs": [
+          {
+            "transactionId": "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-two-symbol-pruning"
+          }
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ],
+        "dependencyItemIds": [
+          "item/two-letter-marton-two-symbol-pruning-result",
+          "item/two-letter-marton-two-symbol-pruning-proof"
+        ]
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+      "claimKeys": [
+        "bssc-sum-capacity/two-letter-marton-two-symbol-pruning"
+      ],
+      "directProgramId": "program/multiletter-marton-achievability",
+      "directThreadIds": [
+        "program/multiletter-marton-achievability/two-letter-support-pruning"
+      ],
+      "itemIds": [
+        "item/two-letter-marton-two-symbol-pruning-result",
+        "item/two-letter-marton-two-symbol-pruning-proof",
+        "item/two-letter-marton-pruning-audit-tool"
+      ]
+    }
+  ],
+  "placementAudits": [
+    {
+      "transactionId": "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+      "basis": "local-objective",
+      "rationale": "The accepted claim is a structural restriction on candidate two-letter Marton achievable-rate improvements, so its narrowest coherent placement is the non-root multiletter Marton achievability program rather than any existing converse program.",
+      "relatedProgramIds": [
+        "program/multiletter-marton-achievability"
+      ]
+    }
+  ]
+}
