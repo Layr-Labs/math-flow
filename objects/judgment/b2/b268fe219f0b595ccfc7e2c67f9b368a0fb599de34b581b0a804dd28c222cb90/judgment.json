@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "fdbb2d1e94e5106feda2dc473464c95d8622f896",
+  "problemLedgerDigest": "sha256:c7d27ba328188da844fb15afc0f9d37a5a30968bfca90ff143b40b954f0939fb",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "fdbb2d1e94e5106feda2dc473464c95d8622f896",
+      "ledgerPosition": 20
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/two-letter-marton-computational-nonfinding",
+      "status": "indeterminate",
+      "premiseStatus": "missing",
+      "summary": "The code structure, nominal campaign counts, Marton half-weight implementation, threshold certificate, and frozen aggregate comparisons are internally consistent. The recorded maximum exceeds the certified directed lower endpoint by only about 2.77×10^-15 bits, and the stated escape value and margin are consistent. However, the supplied verifier checks hashes, count arithmetic, and ledger aggregates without rerunning or otherwise attesting the discovery campaign. Thus the record does not establish that the claimed evaluations and searches occurred, that the aggregates faithfully summarize every run, or that the stated basin/support properties hold. These evidentiary gaps are not counterexamples, so the empirical claim is indeterminate rather than invalid.",
+      "scopeQualifications": [
+        "The result is only a finite numerical non-finding, not a proof of Marton additivity, an upper bound on the unrestricted two-letter Marton functional, or a BSSC capacity converse.",
+        "The validation-only three-symbol-face program tests a minimum-endpoint inequality rather than recording the Marton half-weight for every tested law; therefore its inclusion in the global half-weight assertion is not verified.",
+        "The near-threshold objective values alone do not establish that the corresponding outputs lie in the product-RTD basin."
+      ],
+      "evidenceIssues": [
+        "No complete run logs, per-run ledger, saved candidate laws, or terminal attestations for the expensive discovery commands were supplied.",
+        "The terminal attestation ran only verify.py, which does not rerun the 524,288 transplant evaluations or the local-search campaigns.",
+        "The evidence does not establish that all claimed runs were executed in the specified Python/NumPy environment or that each run's objective was bounded by its recorded campaign maximum.",
+        "The evidence does not establish that the externally hashed source file was present and actually scanned.",
+        "Full input support for every claimed escape candidate is not independently evidenced.",
+        "Transaction f6ea30479b9ca461294ba89a8a1a31c06ce59d08 is provenance/context only and does not repair the missing execution evidence."
+      ],
+      "evidenceTransactionIds": [
+        "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+      ],
+      "requiredDependencyTransactionIds": [
+        "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/two-letter-marton-computational-nonfinding",
+      "stance": "uncertain",
+      "summary": "The code structure, nominal campaign counts, Marton half-weight implementation, threshold certificate, and frozen aggregate comparisons are internally consistent. The recorded maximum exceeds the certified directed lower endpoint by only about 2.77×10^-15 bits, and the stated escape value and margin are consistent. However, the supplied verifier checks hashes, count arithmetic, and ledger aggregates without rerunning or otherwise attesting the discovery campaign. Thus the record does not establish that the claimed evaluations and searches occurred, that the aggregates faithfully summarize every run, or that the stated basin/support properties hold. These evidentiary gaps are not counterexamples, so the empirical claim is indeterminate rather than invalid.",
+      "subjectTransactionIds": [
+        "fdbb2d1e94e5106feda2dc473464c95d8622f896"
+      ],
+      "evidenceTransactionIds": [
+        "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+      ]
+    }
+  ],
+  "dependencyPacketDigest": "sha256:e58dcb404231f83f6dbd4f6f92c72c2715ea2c5ff21fc49b6db612170c9f9eb2",
+  "reportDigest": "sha256:daa25855bc3edc052e00db4abb8f798a0d0cc4864bc83a98cc28e860cd3b4bf9",
+  "judgmentId": "sha256:6eaaddbcbcb59bbc8604e48e003962c56eb217b73414cf2284de7c84b7c9744a"
+}
