@@ -1,0 +1,52 @@
+{
+  "protocolVersion": 1,
+  "runKind": "verifier-attestation",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+  "problemLedgerHead": "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+  "problemLedgerDigest": "sha256:0bf10f82cab3d74ca66a9e634d59f76e72077c2069c5a5396b3e4c63634838db",
+  "runner": {
+    "implementation": "math-flow-oci-attestation-producer-v1",
+    "mathFlowVersion": "0.6.0"
+  },
+  "verifier": {
+    "id": "python-stdlib-3-13-v1",
+    "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "implementation": "oci-command-v1"
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/verifier-attestation-v1",
+  "requestDigests": [
+    "sha256:687cb79ceca0eb25c6e4a08e31633dfae7730ee94f327add24a51dc5f8a77210"
+  ],
+  "providerRuns": [],
+  "inputs": {
+    "transactionId": "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+    "contributionId": "uniform-receiver-curve-continuum-bridge",
+    "verifierSpecDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94"
+  },
+  "artifacts": [
+    {
+      "path": "attestation.json",
+      "role": "verifier-attestation",
+      "mediaType": "application/json",
+      "digest": "sha256:70633807f713a981108001ff7ddfda4d61b45097fc4087b7b2b483fd1a742d52",
+      "bytes": 2536
+    },
+    {
+      "path": "stderr.log",
+      "role": "verifier-stderr",
+      "mediaType": "application/octet-stream",
+      "digest": "sha256:fb02ef70822ffa9f90e27e7893fe14a543b2bf3cbadedab67cd4195946d4587f",
+      "bytes": 915
+    },
+    {
+      "path": "stdout.log",
+      "role": "verifier-stdout",
+      "mediaType": "application/octet-stream",
+      "digest": "sha256:79e30363678195cc0a5428ff60f29a978cff0bd9ac7fea607e35569dde178b8d",
+      "bytes": 1161
+    }
+  ]
+}
