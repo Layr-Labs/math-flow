@@ -1,0 +1,133 @@
+{
+  "protocolVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+  "problemLedgerHead": "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+  "problemLedgerDigest": "sha256:84baf23a1daa5212500ac691e6b15de628290120035443d7184ed4643ce115ca",
+  "judgeSpec": {
+    "id": "openrouter-hierarchical-research-credit-v2",
+    "digest": "sha256:af3770d5ab45a2fcaaf3ee31d9a0198b5f10c835ed53a71f275f7fda464f135b"
+  },
+  "runner": {
+    "implementation": "openrouter-hierarchical-research-credit-v2",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "locked-research-history-v2",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "structured-hierarchical-credit-v2",
+    "reducer": "hierarchical-credit-allocation-v2"
+  },
+  "baseRun": null,
+  "outputProfile": "math-flow/hierarchical-research-credit-v2",
+  "requestDigests": [
+    "sha256:9b26e706423a7fb7c1dd9f3d6c61768e363de616498bc1c132e09ad6a61ec083"
+  ],
+  "providerRuns": [
+    {
+      "provider": "openrouter",
+      "stage": "credit",
+      "requestedModel": "openai/gpt-5.6-sol",
+      "resolvedModel": "openai/gpt-5.6-sol",
+      "responseId": "gen-1787385892-quDuM6ejwKaXcVmlUPkp",
+      "usage": {
+        "prompt_tokens": 239945,
+        "completion_tokens": 8889,
+        "total_tokens": 248834,
+        "cost": 0.688751,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 239942,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.688751,
+          "upstream_inference_prompt_cost": 0.599861,
+          "upstream_inference_completions_cost": 0.08889
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2421,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  ],
+  "runKind": "credit-assignment",
+  "inputs": {
+    "projectionId": "openrouter-research-credit-v3",
+    "projectionSpecDigest": "sha256:8ceb069ac04b284681f1a690fdcd923ea9c744aa30209a3364c23445a07241ba",
+    "dependencyLockDigest": "sha256:b8459eddec9196661abe7b5b90bf60853ca42885c7afaa85b66674f274b16f0a",
+    "dependencyRunDigests": [
+      "sha256:6bf529e53bd74a14ef333b89a153111f74dd0aea8120c726c8917d65cd941cc2"
+    ],
+    "schedule": {
+      "schemaVersion": 1,
+      "mode": "rolling",
+      "evaluatedAt": 1787385874,
+      "minimumIntervalSeconds": 3600,
+      "allocationWindow": null,
+      "previousRunDigest": "sha256:b68991bc6ac23fdb690f50641c43d93ec6fc3e385c8f1d27c755de4ab608aa75"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "control/dependencies.json",
+      "role": "dependency-lock",
+      "mediaType": "application/json",
+      "digest": "sha256:ccc22029079aa716d9ab834708c47f6d063b9276e0701950330cda5b813426f0",
+      "bytes": 1497
+    },
+    {
+      "path": "control/input.json",
+      "role": "hierarchical-credit-input",
+      "mediaType": "application/json",
+      "digest": "sha256:b3d8e6fa6ed1f2b4d0ecae92a3f147e67e8d905e3c332bb761377095e16695c5",
+      "bytes": 2066
+    },
+    {
+      "path": "credit/delta.json",
+      "role": "hierarchical-credit-delta",
+      "mediaType": "application/json",
+      "digest": "sha256:e08ef61e2a88e2c37e6d7c740909de2128940a2ca3c4fc4a47d46be001eb7c27",
+      "bytes": 28495
+    },
+    {
+      "path": "credit/state.json",
+      "role": "hierarchical-credit-state",
+      "mediaType": "application/json",
+      "digest": "sha256:be79793356310f17a277968f7c01f5fda1419849fe78cc003a40572877e3e851",
+      "bytes": 91851
+    },
+    {
+      "path": "input/context.json",
+      "role": "hierarchical-credit-context",
+      "mediaType": "application/json",
+      "digest": "sha256:786a8b0c77174c958c468cfa18fc10841b16167bc01af73c675ae017ed3afc98",
+      "bytes": 248113
+    },
+    {
+      "path": "input/history.json",
+      "role": "research-history-trace",
+      "mediaType": "application/json",
+      "digest": "sha256:c52f91fd78bee10afdff32af2ef32b24b28fac31f410ff4da3c8f699777e8d9c",
+      "bytes": 166329
+    },
+    {
+      "path": "input/submissions.md",
+      "role": "accepted-submission-evidence",
+      "mediaType": "text/markdown",
+      "digest": "sha256:e9121024f461b1d8d323400972a5de86a90752feba8f6ddeae00ba44fe77e11f",
+      "bytes": 308510
+    },
+    {
+      "path": "state/research.json",
+      "role": "research-program-state",
+      "mediaType": "application/json",
+      "digest": "sha256:fdb2064b2151f5a68681f335c78ba2f9366818791be35e7b961499a83833dc56",
+      "bytes": 87215
+    }
+  ]
+}
