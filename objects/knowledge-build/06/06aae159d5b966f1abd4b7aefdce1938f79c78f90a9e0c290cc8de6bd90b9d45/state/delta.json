@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 2,
+  "operations": [
+    {
+      "entityKind": "program",
+      "entityId": "program/multiletter-marton-achievability",
+      "baseDigest": "sha256:7901696df34a25cc07a859936be834a9eb24db341e3346439ee450a72827bf80",
+      "value": {
+        "id": "program/multiletter-marton-achievability",
+        "parentId": "root",
+        "title": "Multiletter Marton achievability",
+        "objective": "Determine whether finite-letter Marton coding can improve half-skew BSSC achievable sum rates and rigorously characterize structural restrictions on candidate multiletter witnesses.",
+        "status": "active",
+        "parentThreadIds": [
+          "root/multiletter-marton-achievability"
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "program/multiletter-marton-achievability/marginal-correlation-pruning",
+      "baseDigest": null,
+      "value": {
+        "id": "program/multiletter-marton-achievability/marginal-correlation-pruning",
+        "programId": "program/multiletter-marton-achievability",
+        "title": "Two-letter marginal and correlation pruning",
+        "summary": "Develop necessary marginal-balance, output-decorrelation, input-covariance, and symmetry-family restrictions on candidate two-letter Marton improvements.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [
+          "Requires the accepted two-letter Marton-to-input bounds in transaction 33a5944dca980bf94cc869c6c7dee2d04385ff58.",
+          "Requires the accepted exact directed randomized-time-division threshold in transaction 88a1004f309460f3ec1cacdae88d30f88559f9bc."
+        ],
+        "sourceTransactionIds": [
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-marton-marginal-correlation-pruning-result",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-marton-marginal-correlation-pruning-result",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Marginal-balance and correlation necessities for a two-letter Marton gain",
+        "summary": "Accepted statement:\n\nFor the governed half-skew BSSC product channel P^{otimes 2}, let M be the unnormalized finite-auxiliary Marton sum value of any law (W,U,V)-X_1X_2-(Y^2,Z^2), let q_i=Pr[X_i=1], Q=q_1+q_2, let C_out=I(Y_1;Y_2)+I(Z_1;Z_2), and let c_in=P(X_1X_2=11)-q_1q_2. Canonical transaction 33a5944dca980bf94cc869c6c7dee2d04385ff58 supplies the two pre-averaging Marton-to-input rows and their universal average M <= G(P_{X_1X_2})+2r, while canonical transaction 88a1004f309460f3ec1cacdae88d30f88559f9bc supplies the exact directed threshold T=2L_RTD. The exact identity G=F(q_1)+F(q_2)-C_out/2 and the coordinatewise concave row envelopes imply that M>T forces q_1,q_2 in (3/8,5/8), hence in (7/20,13/20), together with 17/20<Q<23/20, C_out<7/160=0.04375<0.044 bits, and |c_in|<7/40. On the reflected/transposed family P(00)=P(11)=alpha and P(01)=P(10)=1/2-alpha, a gain additionally forces 1/8<alpha<5/13. These are necessary conditions only; they do not establish a two-letter gain, rule one out, or give a capacity converse.\n\nScope qualifications (verbatim):\n- Applies to the governed half-skew BSSC product channel P^{otimes 2}.\n- Applies to the unnormalized finite-auxiliary Marton sum value.\n- The conclusions are necessary conditions conditional on M>T.\n- It neither constructs nor proves a two-letter gain.\n- It does not rule out a two-letter gain.\n- It is not a capacity converse.\n- From the threshold reference, only the unconditional RTD calculus and interval certificate are needed; neither (H-Marton) nor (H-binary) is used.",
+        "claimRefs": [
+          {
+            "transactionId": "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-marginal-correlation-pruning"
+          }
+        ],
+        "sourceTransactionIds": [
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+        ],
+        "dependencyItemIds": [
+          "item/two-letter-marton-full-support-necessity-result",
+          "item/marton-multiletter-finite-foundation-repair-result"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-marton-marginal-correlation-pruning-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-marton-marginal-correlation-pruning-proof",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Output-correlation decomposition and concave-envelope pruning proof",
+        "summary": "Proof used to establish the linked accepted claim. It combines the required Marton-to-input rows with the exact decomposition of the averaged product-channel input mutual information into two coordinate terms minus one half of the within-receiver output correlation. Coordinatewise and sum-marginal concave envelopes, together with the required directed threshold, give the accepted marginal restrictions and output-correlation bound. The affine BSSC output laws and a Pinsker argument give the accepted input-covariance bound, while monotonicity on the reflected/transposed one-parameter family gives the stated alpha window. This proof item establishes only the necessary conditions in the linked claim.",
+        "claimRefs": [
+          {
+            "transactionId": "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-marginal-correlation-pruning"
+          }
+        ],
+        "sourceTransactionIds": [
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+        ],
+        "dependencyItemIds": [
+          "item/two-letter-marton-full-support-necessity-result",
+          "item/marton-multiletter-finite-foundation-repair-result",
+          "item/two-letter-marton-marginal-correlation-pruning-result"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-marton-marginal-correlation-pruning-audit-tool",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-marton-marginal-correlation-pruning-audit-tool",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "tool",
+        "title": "Directed marginal and output-correlation pruning audit",
+        "summary": "Tool used for the computationally audited portion of the linked accepted claim. Using exact rational checks and outward-rounded standard-library decimal intervals, it reconstructs the required directed RTD threshold and verifies the coordinate, correlation, covariance, sum-marginal, and reflected-family endpoint comparisons supporting the accepted rational cutoffs. It does not replace the analytic information-theoretic identities, concavity arguments, or Pinsker derivation and does not establish a gain, a no-gain theorem, or a capacity converse.",
+        "claimRefs": [
+          {
+            "transactionId": "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-marginal-correlation-pruning"
+          }
+        ],
+        "sourceTransactionIds": [
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+        ],
+        "dependencyItemIds": [
+          "item/two-letter-marton-full-support-necessity-result",
+          "item/marton-rtd-directed-interval-certificate",
+          "item/two-letter-marton-marginal-correlation-pruning-result",
+          "item/two-letter-marton-marginal-correlation-pruning-proof"
+        ]
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+      "claimKeys": [
+        "bssc-sum-capacity/two-letter-marton-marginal-correlation-pruning"
+      ],
+      "directProgramId": "program/multiletter-marton-achievability",
+      "directThreadIds": [
+        "program/multiletter-marton-achievability/marginal-correlation-pruning"
+      ],
+      "itemIds": [
+        "item/two-letter-marton-marginal-correlation-pruning-result",
+        "item/two-letter-marton-marginal-correlation-pruning-proof",
+        "item/two-letter-marton-marginal-correlation-pruning-audit-tool"
+      ]
+    }
+  ],
+  "placementAudits": [
+    {
+      "transactionId": "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+      "basis": "local-objective",
+      "rationale": "The accepted claim gives structural necessary conditions for candidate two-letter finite-auxiliary Marton improvements, placing it directly in the existing multiletter Marton achievability program and its dedicated marginal-correlation pruning thread.",
+      "relatedProgramIds": [
+        "program/multiletter-marton-achievability"
+      ]
+    }
+  ]
+}
