@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "evidenceBoundary": "These are local replay observations for the linked repository. They do not independently prove the papers' analytic theorems.",
+  "repository": {
+    "url": "https://github.com/yanxiaoliu-mike/Suboptimality_Marton",
+    "pinnedCommit": "cc33e854cb1c5e99cb18fe500f60a529fce136f8",
+    "immutableTreeUrl": "https://github.com/yanxiaoliu-mike/Suboptimality_Marton/tree/cc33e854cb1c5e99cb18fe500f60a529fce136f8",
+    "commitCountAtAudit": 1,
+    "commitTimestamp": "2026-08-20T00:05:06+01:00"
+  },
+  "inspection": "README, PROVENANCE, wrappers, Python verifier sources, and the C++/MPFR verifier were inspected before execution; no external code was executed before that inspection.",
+  "environment": {
+    "python": "3.12.3",
+    "mpmath": "1.4.1",
+    "numpy": "2.5.2",
+    "gmpy2": "2.3.1",
+    "localMpfrRuntime": "4.2.1"
+  },
+  "runs": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 src/portable/verify_saved_certificate_manifest.py",
+      "result": "PASS",
+      "observations": {
+        "hashedComponentFiles": 8,
+        "savedOneLetterComponents": 7,
+        "deterministicMapsCovered": 81,
+        "oneSidedBranchesCovered": ["U=X", "V=X"],
+        "processedBoxes": 4729704,
+        "storedFixedInputMargin": "0.0000028275379442755598"
+      }
+    },
+    {
+      "command": "PYTHONPATH=/tmp/marton-repro-deps-wemcba PYTHONDONTWRITEBYTECODE=1 python3 src/portable/quick_audit.py",
+      "result": "PASS",
+      "observations": {
+        "fixedInputOneLetterDirectedUpperNats": "0.09165088339135547467098108460975118973982894389287409548754407181145768",
+        "twoLetterDirectedLowerNats": "0.18330459432065522490176725833842921046527195224088005637577862665",
+        "fixedInputCertifiedGapNats": "0.00000282753794427555980508911892683098561406445513186540069",
+        "explicitLiftCentralAuditGapNats": "0.000001882125632718549195972847619011665423793833605687361717"
+      }
+    },
+    {
+      "command": "PYTHONPATH=/tmp/marton-repro-deps-wemcba PYTHONDONTWRITEBYTECODE=1 python3 src/certificate/verify_fixed_input_bundle.py",
+      "result": "PASS",
+      "observations": {
+        "arithmetic": "exact rational input data with directed MPFR entropy bounds",
+        "coverage": "81 deterministic maps plus 2 one-sided branches",
+        "processedBoxes": 4729704
+      }
+    },
+    {
+      "command": "bash scripts/run_lift_mpfr.sh",
+      "result": "PASS",
+      "observations": {
+        "precisionBits": 320,
+        "oneLetterUpperIntervalNats": [
+          "0.30084186609915442",
+          "0.30084186609915448"
+        ],
+        "twoLetterLowerIntervalNats": [
+          "0.60168561432394163",
+          "0.60168561432394174"
+        ],
+        "gapIntervalNats": [
+          "0.000001882125632718549",
+          "0.0000018821256327554852"
+        ]
+      }
+    }
+  ],
+  "repositoryCaveat": {
+    "cleanCheckoutManifestCommand": "sha256sum -c SHA256SUMS",
+    "cleanCheckoutResult": "nonzero because exactly three manifest-listed paths are absent; every present path reports OK",
+    "absentManifestPaths": [
+      ".gitignore",
+      "paper/main.tex",
+      "paper/paper.pdf"
+    ],
+    "quickScriptConsequence": "scripts/run_quick.sh first invokes src/portable/check_paper_transcription.py, which reads absent paper/main.tex, so the advertised top-level ALL QUICK CHECKS PASSED path cannot complete from the pinned Git tree as checked in.",
+    "replayMutation": "scripts/run_lift_mpfr.sh overwrites results/unconstrained_lift_mpfr.txt; the local MPFR 4.2.1 version line then differs from the committed MPFR 4.2.2 transcript and causes an additional checksum mismatch in the dirty replay checkout.",
+    "validitySeparation": "The missing paper files and transcript drift limit repository-level replay completeness. They are not evidence against the arXiv theorem statements, which remain declared external results rather than independently reproved claims here."
+  }
+}
