@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 3,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "f6ea30479b9ca461294ba89a8a1a31c06ce59d08",
+  "subjectLedgerPosition": 13,
+  "claims": [
+    {
+      "claimKey": "bssc-sum-capacity/marton-multiletter-frontier-audit-2026",
+      "statement": "For the governed half-skew BSSC P, let M_n(P) be the unnormalized private-message Marton sum functional of the n-fold product channel P^{\\otimes n}, in bits per n-use super-symbol. Applying Marton's one-letter coding theorem to that super-channel and normalizing the resulting blocklength proves C_sum(P) >= M_n(P)/n for every n >= 1. Independent concatenation proves M_{m+n}(P) >= M_m(P)+M_n(P); since 0 <= M_n(P) <= 2n bits, Fekete's lemma gives C_sum(P) >= lim_{n->infinity} M_n(P)/n = sup_{n>=1} M_n(P)/n. If L_RTD denotes the exact randomized-time-division value, equivalently the established one-letter binary-input Marton value M_1(P), then a certified n-letter Marton witness of value S_n strictly improves the one-letter Marton lower bound through this super-symbol normalization if and only if S_n > n L_RTD, and k independent copies propagate that gain to blocklength kn with value k S_n. At n=2 the exact threshold is 2 L_RTD, whose governed 33-decimal display begins 0.723285768843909231326883156301174. Equality M_n(P)=n L_RTD at any fixed n is not a capacity converse. The displayed decimal is a prefix, so a rigorous strict comparison must use the exact variational definition of L_RTD or a directed upper enclosure rather than treating the prefix as an exact upper bound.",
+      "declaredReferenceTransactionIds": []
+    }
+  ],
+  "declaredReferenceTransactionIds": [],
+  "knowledgeContext": null,
+  "objectiveAttestations": [
+    {
+      "transactionId": "f6ea30479b9ca461294ba89a8a1a31c06ce59d08",
+      "relation": "subject",
+      "attestation": {
+        "schemaVersion": 1,
+        "requestDigest": "sha256:163ab0730ccab92ab75deee284fdd96327655e6493284c7fb4bc7c026ca6a21c",
+        "runDigest": "sha256:0020f0c16738ed5bf72df0a6b7b93acbd58a720e7c972ea523d65a52e8157986",
+        "attestationId": "sha256:b381d944a621f65991d142a2a2cba41147f24109f21a77ec373473b08ec88bba",
+        "status": "passed",
+        "verifier": {
+          "id": "python-stdlib-3-13-v1",
+          "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+          "implementation": "oci-command-v1"
+        },
+        "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+        "result": {
+          "status": "passed",
+          "exitCode": 0,
+          "timedOut": false
+        },
+        "artifacts": {
+          "verifier-attestation": {
+            "digest": "sha256:7aad6b200429f4512fd4c538f00501898b4ea3837f01083a64a55b4577d07fb9",
+            "bytes": 3011
+          },
+          "verifier-stderr": {
+            "digest": "sha256:f0acba4a50ab4265563f0b165fabfab1ff30676f561443a1148e2875353e2e3e",
+            "bytes": 948
+          },
+          "verifier-stdout": {
+            "digest": "sha256:e65a73bc5bb285a2de1e8ec76c4024a3507b293dc93c1f158dcce89f6f80b6e5",
+            "bytes": 483
+          }
+        },
+        "stdout": {
+          "text": "claims.json: sha256:2efc63c74c2b3b770252901d4d186680be53ba12dad9ccaeef012716c9f9b3d8\nthreshold_spec.json: sha256:de68578ca4a013301952ea578db7623c52be2eabe0e95529f4a4d5eed6148320\nsource_manifest.json: sha256:0726aeec1537e32be82a30b9546d6fc78fa3dc38b4962b97a9cb03af4eea38aa\nreplay_evidence.json: sha256:1c8dc681a4c58deba63bf066b30139fac69f742257651604e200eb476c6b209a\nPASS: BSSC multiletter structure, exact threshold, source-scope, and replay-boundary audit is internally consistent.\n",
+          "truncated": false,
+          "bytes": 483,
+          "digest": "sha256:e65a73bc5bb285a2de1e8ec76c4024a3507b293dc93c1f158dcce89f6f80b6e5"
+        },
+        "stderr": {
+          "text": "Unable to find image 'python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689' locally\ndocker.io/library/python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689: Pulling from library/python\n8c7716127147: Pulling fs layer\n31fd2a94d723: Pulling fs layer\n66b685f2f76b: Pulling fs layer\n7d456e82f89b: Pulling fs layer\n7d456e82f89b: Waiting\n31fd2a94d723: Verifying Checksum\n31fd2a94d723: Download complete\n66b685f2f76b: Verifying Checksum\n66b685f2f76b: Download complete\n7d456e82f89b: Verifying Checksum\n7d456e82f89b: Download complete\n8c7716127147: Verifying Checksum\n8c7716127147: Download complete\n8c7716127147: Pull complete\n31fd2a94d723: Pull complete\n66b685f2f76b: Pull complete\n7d456e82f89b: Pull complete\nDigest: sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\nStatus: Downloaded newer image for python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689\n",
+          "truncated": false,
+          "bytes": 948,
+          "digest": "sha256:f0acba4a50ab4265563f0b165fabfab1ff30676f561443a1148e2875353e2e3e"
+        }
+      }
+    }
+  ],
+  "packetDigest": "sha256:fd479dfd9b9e9ea0bad4dbb112a141b077470f1250e36e2fafdca45584ed7eb3"
+}

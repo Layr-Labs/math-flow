@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "f6ea30479b9ca461294ba89a8a1a31c06ce59d08",
+  "problemLedgerDigest": "sha256:1a35def9675e546966619198093cdfcbfad88d0078e9a7160ef7d091ad8e1ee9",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "f6ea30479b9ca461294ba89a8a1a31c06ce59d08",
+      "ledgerPosition": 13
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/marton-multiletter-frontier-audit-2026",
+      "status": "indeterminate",
+      "premiseStatus": "missing",
+      "summary": "The elementary multiletter analysis is largely correct: independent concatenation makes M_n superadditive; 0 <= M_n <= 2n; Fekete's lemma gives the normalized limit/supremum; an exact witness S_n improves the one-letter benchmark exactly when S_n > nL_RTD and propagates to kS_n; and fixed-n equality is not a capacity converse. However, the capacity lower bound requires the applicable private-message Marton coding theorem, and identifying L_RTD with the full one-letter optimum M_1(P) requires a separate binary-input Marton evaluation. Neither necessary theorem is proved or supplied as admissible declared-reference evidence. There is also an unresolved finite-auxiliary scope issue if M_n permits arbitrary auxiliary spaces. Finally, the computation reported for the 33-decimal prefix lacks interval or rounding-error certification, although the warning not to treat a prefix as an exact upper bound is correct. Thus the bounded record does not establish the full claim.",
+      "scopeQualifications": [
+        "The witness 'if and only if' concerns whether that witness's directly normalized value S_n/n exceeds L_RTD; failure of a numerical certificate does not show that the law's exact objective cannot exceed the threshold.",
+        "Super-symbol normalization is correct conditional on an applicable Marton theorem for the exact private-message and average-error conventions.",
+        "The definition of M_n must either restrict U,V,W to finite alphabets or be supplemented by a finite-approximation/cardinality argument.",
+        "The stated decimal is only computationally reproduced, not rigorously enclosed.",
+        "Equality M_n=nL_RTD at a fixed n supplies neither a capacity upper bound nor exclusion of improvements at other blocklengths or by other coding schemes."
+      ],
+      "evidenceIssues": [
+        "No declared reference establishes Marton's applicable private-message coding theorem.",
+        "No declared reference establishes M_1(P)=L_RTD for the governed binary-input channel.",
+        "Finite-auxiliary sufficiency is not established if arbitrary auxiliary spaces are admitted by the displayed definition.",
+        "The high-precision decimal calculation uses no certified interval arithmetic or proved rounding-error bound."
+      ],
+      "evidenceTransactionIds": [],
+      "requiredDependencyTransactionIds": []
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/marton-multiletter-frontier-audit-2026",
+      "stance": "uncertain",
+      "summary": "The elementary multiletter analysis is largely correct: independent concatenation makes M_n superadditive; 0 <= M_n <= 2n; Fekete's lemma gives the normalized limit/supremum; an exact witness S_n improves the one-letter benchmark exactly when S_n > nL_RTD and propagates to kS_n; and fixed-n equality is not a capacity converse. However, the capacity lower bound requires the applicable private-message Marton coding theorem, and identifying L_RTD with the full one-letter optimum M_1(P) requires a separate binary-input Marton evaluation. Neither necessary theorem is proved or supplied as admissible declared-reference evidence. There is also an unresolved finite-auxiliary scope issue if M_n permits arbitrary auxiliary spaces. Finally, the computation reported for the 33-decimal prefix lacks interval or rounding-error certification, although the warning not to treat a prefix as an exact upper bound is correct. Thus the bounded record does not establish the full claim.",
+      "subjectTransactionIds": [
+        "f6ea30479b9ca461294ba89a8a1a31c06ce59d08"
+      ],
+      "evidenceTransactionIds": []
+    }
+  ],
+  "dependencyPacketDigest": "sha256:fd479dfd9b9e9ea0bad4dbb112a141b077470f1250e36e2fafdca45584ed7eb3",
+  "reportDigest": "sha256:bc9da22cf3f2253e2e021d40ba1d2cd55f8a94b6e7fb68ab8a1c788cc9a34a51",
+  "judgmentId": "sha256:9bbc630bb3d15c5fb9fded5c0fb69a19ffd0bf9a7bb4f65620a65bb3250c0da4"
+}
