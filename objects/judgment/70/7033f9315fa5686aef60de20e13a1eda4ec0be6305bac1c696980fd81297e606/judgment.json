@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 4,
+  "judgmentKind": "primary",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "1075dd02e8f83427a17b3f9f1391dfbb9e6d0a82",
+  "problemLedgerDigest": "sha256:cb61b57355831695cf6f24fb2ffa755426556f6ffc22eec99095cf2e4450030f",
+  "judgeSpec": {
+    "id": "openrouter-validity-judgment-v4",
+    "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+  },
+  "subjects": [
+    {
+      "kind": "transaction",
+      "id": "1075dd02e8f83427a17b3f9f1391dfbb9e6d0a82",
+      "ledgerPosition": 23
+    }
+  ],
+  "assessments": [
+    {
+      "claimKey": "bssc-sum-capacity/two-letter-marton-exhaustive-transplant-certificate",
+      "status": "indeterminate",
+      "premiseStatus": "satisfied",
+      "summary": "The exhaustive finite-family result is supported: both exact auxiliary laws and all 524,288 law-map pairs are checked; outward entropy intervals certify the maximum in [0.5451904011322205365, 0.5451904011322206215] bits; row 7 and map ID 243761 yield the lower endpoint; and the upper bound is strictly below the certified 2 L_RTD threshold. However, the additional claimed independent 100-digit evaluation is not established, so the claim's full conjunction remains indeterminate.",
+      "scopeQualifications": [
+        "The certificate applies only to the two fixed vendored rational auxiliary laws and deterministic maps from nine source labels to four two-use half-skew BSSC super-inputs.",
+        "It excludes stochastic relabelings, changes to the auxiliary laws, mixtures or continuations, local-search campaigns, unrestricted Marton additivity, and any capacity converse.",
+        "The Huang--Liu--Liu provenance is not a mathematical dependency because the vendored rational tables are directly checked."
+      ],
+      "evidenceIssues": [
+        "The verifier hard-codes the asserted high-precision decimal and checks only that it lies inside the substantially wider certified interval.",
+        "The certified interval establishes leading digits only through approximately 0.545190401132220 and does not certify the subsequent asserted prefix 579101772556649110872.",
+        "No independent high-precision computation, sufficiently narrow interval, or terminal attestation establishes the declared 100-digit evaluation."
+      ],
+      "evidenceTransactionIds": [
+        "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+      ],
+      "requiredDependencyTransactionIds": [
+        "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "claimKey": "bssc-sum-capacity/two-letter-marton-exhaustive-transplant-certificate",
+      "stance": "uncertain",
+      "summary": "The exhaustive finite-family result is supported: both exact auxiliary laws and all 524,288 law-map pairs are checked; outward entropy intervals certify the maximum in [0.5451904011322205365, 0.5451904011322206215] bits; row 7 and map ID 243761 yield the lower endpoint; and the upper bound is strictly below the certified 2 L_RTD threshold. However, the additional claimed independent 100-digit evaluation is not established, so the claim's full conjunction remains indeterminate.",
+      "subjectTransactionIds": [
+        "1075dd02e8f83427a17b3f9f1391dfbb9e6d0a82"
+      ],
+      "evidenceTransactionIds": [
+        "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+      ]
+    }
+  ],
+  "dependencyPacketDigest": "sha256:d7616f9210b7f756da61aa12366f970e5e7944b3b83dbc0e5c749d56ec78e6f5",
+  "reportDigest": "sha256:4b1401d2f00a672166a8a0a0ede3fc7e4c7840c667827731aebe7796a55dcefd",
+  "judgmentId": "sha256:4f75d510a3f080724aafefb35accddd481e6a02b32c24e10414c341c9b62eddf"
+}
