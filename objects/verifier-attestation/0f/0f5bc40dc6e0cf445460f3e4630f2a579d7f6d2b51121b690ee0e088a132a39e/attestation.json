@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "subject": {
+    "transactionId": "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+    "contributionId": "two-letter-padding-correlation-tests",
+    "path": "problems/bssc-sum-capacity/contributions/two-letter-padding-correlation-tests"
+  },
+  "verifier": {
+    "id": "python-stdlib-3-13-v1",
+    "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "implementation": "oci-command-v1"
+  },
+  "environment": {
+    "kind": "oci",
+    "image": "python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689",
+    "platform": "linux/amd64",
+    "network": "none",
+    "readOnlyRoot": true,
+    "user": "65534:65534",
+    "capabilities": [],
+    "noNewPrivileges": true,
+    "memoryBytes": 536870912,
+    "cpuCount": 1,
+    "pidsLimit": 128,
+    "tmpfsBytes": 67108864
+  },
+  "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+  "requestDigest": "sha256:034814897500c5b522b32bf4594ba77c3cc51eae0c025cca10ae97351c662f1d",
+  "inputs": [
+    {
+      "path": "README.md",
+      "digest": "sha256:6f23cea84ff7605de4a13653f471fc7e8af723d8a4a162afa3cefecfc9b24b3e",
+      "bytes": 5461
+    },
+    {
+      "path": "claims.json",
+      "digest": "sha256:2e9a8a2e2c66aeae6a1c7246e2c053a1190ed41a551c829e4c276123a6b88eca",
+      "bytes": 1119
+    },
+    {
+      "path": "verification.json",
+      "digest": "sha256:81b26b524a4a997f55ec6e7548959958607ad70a72031b64cf01463a2e891b8c",
+      "bytes": 235
+    },
+    {
+      "path": "verify_padding_tests.py",
+      "digest": "sha256:29f28038e06506636c154c69ec04458783986832dc038ab72a200cd7976a541a",
+      "bytes": 5015
+    }
+  ],
+  "invocation": {
+    "executable": "python3",
+    "fixedArguments": [
+      "-I",
+      "-B"
+    ],
+    "entrypoint": "verify_padding_tests.py",
+    "arguments": [],
+    "timeoutSeconds": 300,
+    "maximumOutputBytes": 262144,
+    "successExitCodes": [
+      0
+    ]
+  },
+  "result": {
+    "status": "passed",
+    "exitCode": 0,
+    "timedOut": false
+  },
+  "outputs": {
+    "stdout": {
+      "digest": "sha256:8e0cbb3ccee33f414345e3d182f7c2dcea0b168ebc3f394e2d05dcba5c2385f0",
+      "bytes": 261
+    },
+    "stderr": {
+      "digest": "sha256:dab391d85f0641e996a959586e4320674bff4ac030752df4a2fe18d3b473bdcd",
+      "bytes": 915
+    }
+  },
+  "producer": {
+    "implementation": "math-flow-oci-attestation-producer-v1",
+    "mathFlowVersion": "0.6.0"
+  },
+  "attestationId": "sha256:ca02b4f5af7ca532a97c7cc7aebe57c718aa51ad931e31e40316dd06534710c5"
+}
