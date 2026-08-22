@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "auditDateUtc": "2026-08-22",
+  "sources": [
+    {
+      "arxivId": "2608.19869",
+      "version": "v1",
+      "submittedAtUtc": "2026-08-20T10:27:59Z",
+      "title": "Sub-optimality of Marton's Inner Bound for the Two-Receiver Broadcast Channel",
+      "authors": ["Mian Huang", "Yanxiao Liu", "Yi Liu"],
+      "abstractUrl": "https://arxiv.org/abs/2608.19869v1",
+      "htmlUrl": "https://arxiv.org/html/2608.19869v1",
+      "pdfUrl": "https://arxiv.org/pdf/2608.19869v1",
+      "downloadedPdf": {
+        "bytes": 285442,
+        "sha256": "0c67e0b283be1b61c72cfff3c1870cf73f06233ea33bafeb5c6fc5b2a4f1ceca"
+      },
+      "declaredTheoremScope": [
+        {
+          "number": 4,
+          "name": "Constraint removal",
+          "summary": "For a finite broadcast channel T and a finite concave f upper-bounding the fixed-input Marton functional, a prescribed p* and two-letter witness whose two coordinate marginals average to p* and whose value is strictly greater than 2 f(p*) imply existence of a finite unconstrained channel T' with M(T' tensor 2)>2M(T')."
+        },
+        {
+          "number": 5,
+          "name": "Sub-optimality of Marton's inner bound",
+          "summary": "There exists a finite two-receiver discrete memoryless broadcast channel T tilde with M(T tilde tensor 2)>2M(T tilde), so its complete one-letter Marton region is strictly contained in its capacity region."
+        }
+      ],
+      "inputAlphabetScope": {
+        "certifiedBaseExample": "ternary input {0,1,2}",
+        "explicitUnconstrainedLift": "{0,1,2} x [N], with N=2^M and M=2000000",
+        "explicitLiftCardinality": "3*2^2000000",
+        "binaryInputStatus": "not proved; the paper says counterexamples appear to require nonbinary input and concludes that binary-input tightness remains open"
+      },
+      "reportedExplicitLiftGapNats": {
+        "strictLowerBound": "0.0000018821256327185490",
+        "intervalReplay": [
+          "0.000001882125632718549",
+          "0.0000018821256327554852"
+        ]
+      },
+      "statusInThisContribution": "external theorem statements and assumptions audited against arXiv v1; not independently reproved"
+    },
+    {
+      "arxivId": "2608.13170",
+      "version": "v1",
+      "submittedAtUtc": "2026-08-13T12:39:09Z",
+      "title": "Counterexamples to the Markovity Conjecture for the Two-Receiver Broadcast Channel",
+      "authors": ["Yanxiao Liu", "Mian Huang"],
+      "abstractUrl": "https://arxiv.org/abs/2608.13170v1",
+      "htmlUrl": "https://arxiv.org/html/2608.13170v1",
+      "pdfUrl": "https://arxiv.org/pdf/2608.13170v1",
+      "downloadedPdf": {
+        "bytes": 324615,
+        "sha256": "313c49fab92c69efb108d706101a3357276e88097e378083272c573a37f11c92"
+      },
+      "declaredTheoremScope": [
+        {
+          "number": 1,
+          "name": "Markov class cardinality reduction",
+          "summary": "For finite input alphabet size m, every finite-alphabet U-X-V law has a same-input-marginal Markov replacement with |U'|,|V'| at most m and no smaller G_alpha value; consequently the literal Markov-class supremum is attained."
+        },
+        {
+          "number": 2,
+          "name": "Markov/rectangular equivalence",
+          "summary": "For a finite-input channel with strictly positive receiver marginals and no duplicate pair of receiver-marginal rows, fixed potential c, and 0<alpha<1, a Markov unrestricted global optimizer exists if and only if some unrestricted global optimizer is a deterministic rectangular encoder."
+        }
+      ],
+      "counterexampleScope": {
+        "input": "ternary",
+        "outputs": "ternary",
+        "transitionProbabilities": "strictly positive",
+        "auxiliaryPattern": "nonrectangular 2x2",
+        "secondCertifiedSeparationNatsAtLeast": "0.00000000002711224394247",
+        "additivityStatus": "not resolved",
+        "martonRegionStatus": "not invalidated by this paper alone"
+      },
+      "statusInThisContribution": "external theorem statements and assumptions audited against arXiv v1; not independently reproved"
+    }
+  ]
+}

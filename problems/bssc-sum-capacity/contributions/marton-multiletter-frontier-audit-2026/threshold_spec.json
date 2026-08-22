@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "units": "bits",
+  "directionAlignment": {
+    "directionId": "bssc-multiletter-marton-frontier",
+    "registrationTransactionId": "7e1e52fe42fde37ba1964ef9ae5062daf8bb55f8",
+    "role": "research-program alignment only; not a logical claim dependency"
+  },
+  "bssc": {
+    "inputAlphabet": [0, 1],
+    "receiverY": [
+      ["1/2", "1/2"],
+      ["0", "1"]
+    ],
+    "receiverZ": [
+      ["1", "0"],
+      ["1/2", "1/2"]
+    ],
+    "reflectionRule": "P_Z(z|x)=P_Y(1-z|1-x)"
+  },
+  "randomizedTimeDivision": {
+    "binaryEntropy": "h_2(t)=-t log_2(t)-(1-t) log_2(1-t)",
+    "receiverCurve": "J(q)=h_2(q/2)-q",
+    "differenceCurve": "D(q)=J(q)-J(1-q)",
+    "derivative": "D'(q)=(1/2) log_2(((2-q)(1+q))/(q(1-q)))-2",
+    "stationaryPolynomial": "15q^2-15q+2=0",
+    "globalMaximizer": "q_-=(15-sqrt(105))/30",
+    "exactDefinition": "L_RTD=J(1/2)+(1/2) max_{0<=q<=1} {J(q)-J(1-q)}",
+    "exactClosedForm": "L_RTD=h_2(1/4)-1/2+(1/2)[h_2(q_-/2)-h_2((1-q_-)/2)+1-2q_-]",
+    "oneLetterIdentification": "M_1(P)=L_RTD",
+    "canonicalDecimalPrefix": "0.361642884421954615663441578150587",
+    "prefixStatus": "displayed decimal prefix only; not a directed upper enclosure"
+  },
+  "martonProductFunctional": {
+    "definition": "M_n(P)=sup [min{I(W;Y^n),I(W;Z^n)}+I(U;Y^n|W)+I(V;Z^n|W)-I(U;V|W)]",
+    "markovCondition": "(U,V,W)-X^n-(Y^n,Z^n)",
+    "normalization": "M_n(P) is per n-use super-symbol; M_n(P)/n is per original channel use"
+  },
+  "multiletterStructure": {
+    "superadditivity": "M_{m+n}(P)>=M_m(P)+M_n(P)",
+    "binaryOutputLinearBound": "0<=M_n(P)<=2n bits",
+    "feketeLimit": "lim_{n->infinity} M_n(P)/n=sup_{n>=1} M_n(P)/n",
+    "capacityLowerBound": "C_sum(P)>=lim_{n->infinity} M_n(P)/n",
+    "witnessPropagation": "an n-letter witness of value S_n yields a kn-letter witness of value k S_n"
+  },
+  "improvementThreshold": {
+    "general": "S_n>n L_RTD",
+    "twoLetterExact": "S_2>2 L_RTD",
+    "twoLetterDecimalPrefix": "0.723285768843909231326883156301174",
+    "strictComparisonRequirement": "compare with the exact variational definition or a directed upper enclosure"
+  }
+}
