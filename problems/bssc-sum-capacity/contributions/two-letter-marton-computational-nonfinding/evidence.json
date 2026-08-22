@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "evidenceBoundary": "Deterministic binary64 discovery evidence only. No entry is a directed enclosure or a proof of global optimality.",
+  "environment": {
+    "python": "3.13.1",
+    "numpy": "2.4.3",
+    "rateUnit": "bits per two BSSC uses",
+    "entropyLogUnit": "nats internally"
+  },
+  "threshold": {
+    "exactDisplayPrefixBits": "0.723285768843909231326883156301174",
+    "directedLowerBits": "0.7232857688439092313268831563011740144159620214477211104074274596056014",
+    "directedUpperBits": "0.7232857688439092313268831563011740144159620214477211104074274596056016",
+    "certificateTransactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+    "binary64ComparisonBits": "0.7232857688439093",
+    "declaredNoFindingToleranceBits": "1e-12"
+  },
+  "sourceData": {
+    "repository": "https://github.com/yanxiaoliu-mike/Suboptimality_Marton",
+    "pinnedCommit": "cc33e854cb1c5e99cb18fe500f60a529fce136f8",
+    "provenanceTransactionId": "f6ea30479b9ca461294ba89a8a1a31c06ce59d08",
+    "path": "data/certificates/fixed_input/cc_certificate_e5e-7.json",
+    "sha256": "45502b2e7a694ae2d1beaee3e19249d63d9efe39b6405daa42ada0e1cbb846d6"
+  },
+  "searchSourceSha256": {
+    "scratch_stochastic_marton.py": "a67db32fd335de73f3ab1ab3a91240c9c429e5fec90182457b96f8069973ee87",
+    "scratch_transplant_scan.py": "7db2ce7b4883e31730c2e51a5f9e5f7297292bf1f47841870f238c9bda1f1348",
+    "scratch_transplant_audit.py": "4b0e367bc43db5f4dc4152db3954d8aab3b31fc45c551238535e66907da3b347",
+    "scratch_transplant_opt.py": "84ec18f737166719fe928230573e52f35778418e090826edc208877507f13db8",
+    "scratch_homotopy.py": "d8a2b777bebb5fc581b6ddf54dbf6badfdb361fd43e982130dc8e3b78d2f0b62",
+    "scratch_jump_escape.py": "83cebb26c4abf2bb77e9957b41c0faf0162e5f800273b0c55f1964523f6d6d57",
+    "scratch_fixed_input_search.py": "a794e8ea7fa43a56a1a0e7b9f407f57bd6f1e794380cbd23574091ec4a184f9f",
+    "scratch_three_face_bound.py": "2ac48781d1498553e4b2973bccf395ea21d5e3b48e82beaa2a30ef6a88062b3e"
+  },
+  "independentChecks": {
+    "analyticGradientFiniteDifferenceResidualNats": "4.586475643719723e-11",
+    "maximumEndpointVsEntropyObjectiveResidualNats": "8.881784197001252e-16",
+    "maximumSimplexResidual": "4.440892098500626e-16"
+  },
+  "transplant": {
+    "componentLaws": 2,
+    "sourceShapePerLaw": [2, 4, 4, 9],
+    "mapsPerLaw": 262144,
+    "totalLawMapEvaluations": 524288,
+    "bestSourceRow": 7,
+    "bestMapId": 243761,
+    "bestMap": [1, 0, 3, 0, 0, 2, 3, 2, 3],
+    "bestLHalfBits": "0.5451904011322217",
+    "bestEndpointsBits": [
+      "0.5465257842796067",
+      "0.5438550179848367"
+    ],
+    "maximumSeparableEitherOrientationBits": "0.46858123463677875",
+    "separableOrientationMaximaBySourceRow": [
+      {
+        "sourceRow": 6,
+        "firstBitRowSecondBitColumnBits": "0.4684740866886777",
+        "firstBitColumnSecondBitRowBits": "0.4684740866886777"
+      },
+      {
+        "sourceRow": 7,
+        "firstBitRowSecondBitColumnBits": "0.46858123463677875",
+        "firstBitColumnSecondBitRowBits": "0.4685812346367781"
+      }
+    ],
+    "row7MaximaByImageSizeBits": [
+      "-0.013359000186186187",
+      "0.4872419126848573",
+      "0.5025068963908965",
+      "0.5451904011322217"
+    ],
+    "fairReflectedBalancedEndpointBits": "0.653605122467966689225950638221927866",
+    "rawIUVGivenWXBits": "0.20194721159977405",
+    "rawCrossUseConditionalMIBits": "1.1262659950891738"
+  },
+  "exactTransplantAudit": {
+    "arithmetic": "exact Fraction masses with 100-digit Decimal logarithms",
+    "raw": {
+      "yEndpointBits": "0.546525784279605207250945323672001290387190235227857315561583218760711125016",
+      "zEndpointBits": "0.543855017984835950952599789626220453004708158006376311691176783072885335980",
+      "lHalfBits": "0.545190401132220579101772556649110871695949196617116813626380000916798230498",
+      "residualLeftBits": "0.350903397111423894537025260768407150451802148684273705873808009253697997997",
+      "residualRightBits": "0.00227393737300614966626446244994963141211972707814580771347693298817135973253",
+      "residualDeltaBits": "0.348629459738417744870760798318457519039682421606127898160331076265526638264",
+      "identityResidualBits": "-5e-100",
+      "paddingSlacksBits": [
+        "0.289292772433769993461499335265030940622570192551860405986983044979031080181",
+        "0.532698599021859973624698467353357682090773473672281249309843178476371683042",
+        "-0.00772526452650419197060186177070569589110164970736419859283291847826581539094",
+        "0.262398562433959481325226771552559970707513210505803979776142367206907807287"
+      ]
+    },
+    "fairReflected": {
+      "yEndpointBits": "0.653605122467966689225950638221927866359661182570594113905659220280480129912",
+      "zEndpointBits": "0.653605122467966689225950638221927866359661182570594113905659220280480129912",
+      "lHalfBits": "0.653605122467966689225950638221927866359661182570594113905659220280480129912",
+      "residualLeftBits": "0.350903397111423894537025260768407150451802148684273705873808009253697997997",
+      "residualRightBits": "0.00202237095642608731656412554110455191992929227851389470152833814788253911282",
+      "residualDeltaBits": "0.348881026154997807220461135227302598531872856405759811172279671105815458884",
+      "identityResidualBits": "0e-99",
+      "paddingSlacksBits": [
+        "0.289544338850350055811199672173876020114760627351492318998931639819319900800",
+        "0.262738233664257953176748639700171072592026346782090438370453724839341754445",
+        "0.262738233664257953176748639700171072592026346782090438370453724839341754445",
+        "0.262650128850539543674927108461405050199703645305435892788090962047196627907"
+      ]
+    }
+  },
+  "fullJointW4": {
+    "shape": [4, 4, 4, 4],
+    "starts": 48,
+    "iterationsPerStart": 20000,
+    "seedFormula": {
+      "base": 2026082201,
+      "stride": 104729,
+      "indices": [0, 47]
+    },
+    "bestBits": "0.7232857688438281",
+    "productSeedBits": "0.723285768843912",
+    "bestSeed": 2026082201,
+    "bestInput": [
+      "0.2499999921178366",
+      "0.2500000002230777",
+      "0.24999999976830525",
+      "0.25000000789078"
+    ],
+    "activeCells": 36,
+    "activeGradientSpreadNats": "4.063416270128073e-8",
+    "inactiveGradientExcessNats": "9.457698680392923e-5",
+    "bestInteriorBits": "0.7191671066492605",
+    "bestInteriorSeed": 2029433529
+  },
+  "fullJointW8": {
+    "shape": [8, 4, 4, 4],
+    "starts": 24,
+    "iterationsPerStart": 30000,
+    "initialLearningRate": "0.07",
+    "seedFormula": {
+      "base": 2026082201,
+      "stride": 104729,
+      "indices": [0, 23]
+    },
+    "bestBits": "0.7232857688438825",
+    "productSeedBits": "0.723285768843912",
+    "bestSeed": 2026082201,
+    "bestInteriorBits": "0.7232857670813002",
+    "bestInteriorSeed": 2028072052
+  },
+  "transplantContinuation": {
+    "runsPerFamily": 24,
+    "families": ["raw", "fair-reflected"],
+    "iterationsPerRun": 30000,
+    "seedFormula": {
+      "base": 2026082251,
+      "stride": 130363,
+      "indices": [0, 23]
+    },
+    "bestRawBits": "0.6798006361040297",
+    "bestRawSeed": 2027255518,
+    "bestReflectedBits": "0.7131610038323559",
+    "bestReflectedSeed": 2029080600,
+    "bestReflectedInput": [
+      "0.2108453",
+      "0.3047181",
+      "0.3047178",
+      "0.1797188"
+    ]
+  },
+  "homotopy": {
+    "weights": [
+      "0.0", "0.1", "0.2", "0.3", "0.4", "0.5",
+      "0.6", "0.7", "0.8", "0.9", "1.0"
+    ],
+    "iterationsPerRun": 15000,
+    "alignmentAffinity": "0.4622976013230229",
+    "alignedTotalVariation": "0.6481544978162777",
+    "chordBits": [
+      "0.7131610040386854",
+      "0.7136985323925342",
+      "0.7191669580098499",
+      "0.7222570984201898",
+      "0.7191669248724112",
+      "0.719166938949209",
+      "0.7191669703660527",
+      "0.72328551219728",
+      "0.7232855488804313",
+      "0.7232856164067136",
+      "0.7232857688438992"
+    ],
+    "forwardBits": [
+      "0.7131610040386854",
+      "0.7131608253004559",
+      "0.719167253839279",
+      "0.7191672582997326",
+      "0.7232857539422267",
+      "0.723285768843789",
+      "0.7232857688438883",
+      "0.7232857688438626",
+      "0.7232857688438947",
+      "0.7232857688438947",
+      "0.7232857688438992"
+    ],
+    "reverseBits": [
+      "0.7131610040386854",
+      "0.7191669472218684",
+      "0.7232855016825464",
+      "0.7232855245303554",
+      "0.7232855458844176",
+      "0.7232855649709299",
+      "0.7232855798840271",
+      "0.7232855924829081",
+      "0.7232856044779554",
+      "0.7232856164201078",
+      "0.7232857688438992"
+    ]
+  },
+  "fixedInput": {
+    "law": "p00=p11=a; p01=p10=1/2-a",
+    "startsPerA": 6,
+    "iterationsPerStart": 20000,
+    "aValues": [
+      "0.02", "0.05", "0.10", "0.15", "0.20",
+      "0.23", "0.24", "0.25", "0.26", "0.27",
+      "0.30", "0.35", "0.40", "0.45", "0.48"
+    ],
+    "bestBits": [
+      "0.5722936261871883",
+      "0.6314893879548185",
+      "0.6863285206089188",
+      "0.7094325078521857",
+      "0.7199702245624882",
+      "0.7227663848539786",
+      "0.7231567481962728",
+      "0.7232857688439037",
+      "0.7231582689738996",
+      "0.7227785727755288",
+      "0.7201630798059712",
+      "0.7110502003764932",
+      "0.6939787194723969",
+      "0.6612857890473625",
+      "0.6343824812943744"
+    ],
+    "bestStart": [
+      "reflected_conditional",
+      "reflected_conditional",
+      "reflected_conditional",
+      "product_conditional",
+      "product_conditional",
+      "product_conditional",
+      "product_conditional",
+      "product_conditional",
+      "product_conditional",
+      "product_conditional",
+      "product_conditional",
+      "product_conditional",
+      "product_conditional",
+      "product_conditional",
+      "product_conditional"
+    ],
+    "maximumA": "0.25",
+    "maximumBits": "0.7232857688439037"
+  },
+  "escape": {
+    "weights": ["0.25", "0.30", "0.35", "0.40", "0.45", "0.50"],
+    "baseRunsPerWeight": 1,
+    "orthogonalRunsPerWeight": 6,
+    "mapMutationRunsPerWeight": 3,
+    "w8RunsPerWeight": 3,
+    "totalRuns": 78,
+    "w4Iterations": 18000,
+    "w8Iterations": 24000,
+    "orthogonalSeedFormula": "2026082801 + 100003*weight_index + 1009*mutation_index",
+    "mapSeedFormula": "2026082901 + 100003*weight_index + 1009*mutation_index",
+    "w8SeedFormula": "2026083001 + 100003*weight_index + 1009*mutation_index",
+    "bestFamily": "W8_map_mutation_0.75",
+    "bestWeight": "0.40",
+    "bestSeed": 2026385028,
+    "bestBits": "0.7232857353779031",
+    "bestMarginVsBinary64ComparisonBits": "-3.34660062416488e-8",
+    "bestEndpointsBits": [
+      "0.7232856516789663",
+      "0.7232858190768404"
+    ],
+    "bestInput": [
+      "0.2500004133109376",
+      "0.24999853769565314",
+      "0.25000143682450543",
+      "0.24999961216890318"
+    ],
+    "minimumInputMassAcrossBatch": "0.17566030256827508"
+  },
+  "threeFaceStress": {
+    "faces": 4,
+    "randomLawsPerFace": 5000,
+    "localStartsPerFace": 12,
+    "iterationsPerLocalStart": 15000,
+    "maximumGradientCheckResidualNats": "5.20e-8",
+    "maximumViolationBits": "-0.026075082275836367",
+    "maximizingFace": [0, 1, 2],
+    "maximizingSeed": 2026387555,
+    "martonBits": "0.4504597343",
+    "gBits": "0.3539785677",
+    "rhsBits": "0.4765348166",
+    "faceInput": [
+      "0.7122026046",
+      "0.1438986580",
+      "0.1438987374"
+    ]
+  }
+}
