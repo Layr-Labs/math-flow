@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "subject": {
+    "transactionId": "f6ea30479b9ca461294ba89a8a1a31c06ce59d08",
+    "contributionId": "marton-multiletter-frontier-audit-2026",
+    "path": "problems/bssc-sum-capacity/contributions/marton-multiletter-frontier-audit-2026"
+  },
+  "verifier": {
+    "id": "python-stdlib-3-13-v1",
+    "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "implementation": "oci-command-v1"
+  },
+  "environment": {
+    "kind": "oci",
+    "image": "python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689",
+    "platform": "linux/amd64",
+    "network": "none",
+    "readOnlyRoot": true,
+    "user": "65534:65534",
+    "capabilities": [],
+    "noNewPrivileges": true,
+    "memoryBytes": 536870912,
+    "cpuCount": 1,
+    "pidsLimit": 128,
+    "tmpfsBytes": 67108864
+  },
+  "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+  "requestDigest": "sha256:163ab0730ccab92ab75deee284fdd96327655e6493284c7fb4bc7c026ca6a21c",
+  "inputs": [
+    {
+      "path": "README.md",
+      "digest": "sha256:9d97cc426f238c71fba9eb6a707d960f7e5f6800c66e754c4d12c596152533bb",
+      "bytes": 14798
+    },
+    {
+      "path": "claims.json",
+      "digest": "sha256:2efc63c74c2b3b770252901d4d186680be53ba12dad9ccaeef012716c9f9b3d8",
+      "bytes": 1483
+    },
+    {
+      "path": "replay_evidence.json",
+      "digest": "sha256:1c8dc681a4c58deba63bf066b30139fac69f742257651604e200eb476c6b209a",
+      "bytes": 3958
+    },
+    {
+      "path": "source_manifest.json",
+      "digest": "sha256:0726aeec1537e32be82a30b9546d6fc78fa3dc38b4962b97a9cb03af4eea38aa",
+      "bytes": 4095
+    },
+    {
+      "path": "threshold_spec.json",
+      "digest": "sha256:de68578ca4a013301952ea578db7623c52be2eabe0e95529f4a4d5eed6148320",
+      "bytes": 2124
+    },
+    {
+      "path": "verification.json",
+      "digest": "sha256:085328633cd01a08d096b648c7df204422273a84c0e531b4d575b5222d786f24",
+      "bytes": 227
+    },
+    {
+      "path": "verify_audit.py",
+      "digest": "sha256:d4de2f71f1a2ba56ec058db12374e5460ae8849e33873448252cc09c6879026a",
+      "bytes": 12758
+    }
+  ],
+  "invocation": {
+    "executable": "python3",
+    "fixedArguments": [
+      "-I",
+      "-B"
+    ],
+    "entrypoint": "verify_audit.py",
+    "arguments": [],
+    "timeoutSeconds": 300,
+    "maximumOutputBytes": 262144,
+    "successExitCodes": [
+      0
+    ]
+  },
+  "result": {
+    "status": "passed",
+    "exitCode": 0,
+    "timedOut": false
+  },
+  "outputs": {
+    "stdout": {
+      "digest": "sha256:e65a73bc5bb285a2de1e8ec76c4024a3507b293dc93c1f158dcce89f6f80b6e5",
+      "bytes": 483
+    },
+    "stderr": {
+      "digest": "sha256:f0acba4a50ab4265563f0b165fabfab1ff30676f561443a1148e2875353e2e3e",
+      "bytes": 948
+    }
+  },
+  "producer": {
+    "implementation": "math-flow-oci-attestation-producer-v1",
+    "mathFlowVersion": "0.6.0"
+  },
+  "attestationId": "sha256:b381d944a621f65991d142a2a2cba41147f24109f21a77ec373473b08ec88bba"
+}
