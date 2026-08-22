@@ -5,7 +5,9 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-20 (`20361ef`).
+Last reconciled with `main`: 2026-08-22 (`9ff49a7`).
+Published-state claims below were checked against `origin/projections` at
+`ebe7a32`.
 
 ## Product thesis
 
@@ -41,20 +43,20 @@ solver participant-event PR
         ▼
 automatic squash merge to main
         │
-        ├── contribution ── baseline + approved OpenRouter projections
+        ├── contribution ── active OpenRouter research projection
         │             └── declared verification ── pinned objective attestation
         └── direction event ── provider-free direction ledger
                     │
-                    ├── parallel primary judgments
-                    ├── deterministic conflict detection
-                    ├── reuse published reconciliations
-                    ├── parallel missing reconciliations
+                    ├── parallel, exact-subject validity-v4 judgments
+                    │       └── bounded declared references and attestations
                     ▼
-              coalesced builder claim
+       dependency-ready accepted judgment bundles
                     │
                     ▼
-      serialized formation per knowledge profile
+      serialized, coalesced builder-v5 formation
                     │
+                    ├── results separated from proofs/methods/tools
+                    └── strict-tree local-objective programs
                     ▼
     GitHub-signed commit on orphan projections branch
                     │
@@ -64,12 +66,29 @@ automatic squash merge to main
                     └── exact state dependency lock
                                       │
                                       ▼
-                  independent qualitative or hierarchical
-                            credit overlay
+                 independent common-horizon two-term
+                     hierarchical credit overlay
                                  │
                                  ▼
                     repository-backed research atlas
 ```
+
+This diagram is the active `openrouter-research-v3` path. Reconciliation code
+and historical reconciled objects remain replayable, but no active research
+projection currently has a reconciliation judge.
+
+### Active stage boundaries
+
+| Stage | Governed responsibility | Context it receives | Output and ordering |
+| --- | --- | --- | --- |
+| Primary validity v4 | Decide whether each declared mathematical claim is rigorously established and identify its exact required premises | Problem statement, current canonical submission, the claims' declared-reference union with each claim restricted to its own declarations, selected pre-subject knowledge grounded in those references, and exact terminal objective attestations for the subject/reference union | One immutable assessment per declared claim. Exact subjects run in parallel; completion order has no knowledge or credit meaning. |
+| Hierarchical builder v5 | Import valid declared claims, separate results from materially supporting proofs/methods/computations/tools, and organize accepted work into strict-tree local-objective programs | Current serialized program state, a dependency-ready batch of immutable validity outcomes, original submissions for accepted transactions, and bounded provenance/reference history | One atomic post-state and placement audit for the batch. Formation is coalesced and single-writer per problem/projection. Invalid and indeterminate material is excluded. |
+| Hierarchical credit v3 | Estimate local causal work reduction at every immediate program edge using the two-term policy | Exact locked builder-v5 terminal, complete accepted state-transition history, accepted canonical submission text, validity records, dependencies/provenance, and historical local thread ledgers | Direct-work, obviated-work, confidence, evidence, and residual assessments; deterministic validation/share propagation. Runs only after an eligible exact knowledge terminal exists. |
+
+The primary judge therefore does not construct or receive an unrestricted
+global post-subject knowledge state. The builder does receive and update global
+program state. Credit sees the broader accepted hindsight history because its
+counterfactual question is explicitly ex post.
 
 `main` and `projections` have different meanings:
 
@@ -119,22 +138,23 @@ automatic squash merge to main
   objective attestation when requested, and only historical knowledge nodes
   grounded in those references. It must never receive the current post-subject
   state or an automatically embedded preceding ledger.
-- In validity v3, cited transactions are declared provenance, not automatic
+- In historical validity v3, cited transactions are declared provenance, not automatic
   logical dependencies. The judge selects the exact subset required as premises
   for each valid claim. Formation uses only that subset; invalid and
   indeterminate submissions remain wholly excluded. The broader declared
   reference set stays in immutable history for later credit assignment.
-- Objective verification is a subject-local gate in validity v3. Only the
+- Objective verification is a subject-local gate in historical validity v3. Only the
   requesting subject waits for a verified terminal attestation; unrelated
   subjects remain eligible for parallel primary judgment. Terminal publication
-  redispatches active v3 streams, and packet/judgment identity binds the exact
+  redispatches applicable v3 streams, and packet/judgment identity binds the exact
   attestation evidence.
 - Validity v4 extends that gate to exactly the transactions declared by the
   subject's claims. A pending request on a declared reference defers only
   subjects that cite it; references with no request and unrelated subjects do
   not wait. Terminal passed, failed, and error evidence is bound by transaction
   ID. The packet never expands to unrelated attested ledger entries, and
-  publication redispatches active v3 and v4 streams.
+  publication redispatches applicable v3 and v4 streams; the current active
+  research stream uses v4.
 - Primary-judgment completion order must not determine knowledge-state order or
   credit context. A later transaction may finish judgment before an earlier
   independent transaction without being discarded or forcing either judgment to
@@ -171,12 +191,28 @@ automatic squash merge to main
 
 - Knowledge state is a holistic current account, not a list of event-shaped
   deltas. Deltas and immutable revisions live in the transaction/build history.
-- Knowledge formation consumes completed judgments and reconciliation outcomes;
-  it does not independently adjudicate the mathematics again.
-- Primary judgments run concurrently. After their complete verified set is
-  available, missing reconciliation judgments for independent conflicts also
-  run concurrently. Construction of a given `(problem, projection)` knowledge
-  chain is single-writer and serialized.
+- Knowledge formation consumes completed judgments and, for historical specs
+  that declare it, reconciliation outcomes; it does not independently
+  adjudicate the mathematics again.
+- In the active validity-v4 lane the builder receives the original submission
+  together with its immutable judgment. It may inspect submission text only to
+  separate a valid declared result from the proof, method, computation, or tool
+  that establishes it. It must not promote an unjudged assertion from elsewhere
+  in the submission.
+- Invalid and indeterminate claims, their arguments, and their uncertainty are
+  excluded completely. The builder does not preserve a rejected submission as
+  tentative knowledge and does not repair or relitigate the primary verdict.
+- The builder receives the current serialized program state because it owns the
+  cumulative organization of accepted work. The primary judge does not receive
+  that unrestricted current state: it receives only pre-subject nodes grounded
+  in the subject's declared references, plus the referenced canonical artifacts
+  and bounded attestation evidence.
+- Primary judgments run concurrently. The active validity-v4 lane feeds
+  dependency-ready outcomes directly to formation and has no reconciliation
+  stage. Historical lanes that declare reconciliation may fan out their missing
+  conflict judgments after the verified primary set is available. Construction
+  of a given `(problem, projection)` knowledge chain is single-writer and
+  serialized.
 - Single-writer formation does not imply one provider call or one authored
   post-state per submission. A formation claim may freeze and consume a
   deterministic batch of dependency-ready judgments, producing one atomic
@@ -185,8 +221,8 @@ automatic squash merge to main
   implementation; do not treat its per-transaction loop as an architectural
   requirement for hosted execution.
 - Formation may be triggered by completed judgments but should coalesce work and
-  obey a configurable minimum interval. The admitted `openrouter-research-v3`
-  replacement uses a five-minute minimum interval; a newly created lane can run
+  obey a configurable minimum interval. The active `openrouter-research-v3`
+  producer uses a five-minute minimum interval; a newly created lane can run
   immediately, while later inputs arriving inside the interval are coalesced.
 - Retroactive changes append `issue`, `revise`, `retract`, or `reinstate`
   revisions with base digest/revision guards. Old runs remain reproducible.
@@ -227,7 +263,7 @@ The neutral knowledge-builder v3 taxonomy supports move, reparent, split, and
 merge operations in its revision-based state representation. The separate
 hierarchical research builders v2-v4 did not port that behavior: they can create
 programs, but preserve every existing program parent, thread owner/kind, and
-item program/type. The v4 production lane therefore did not guarantee a useful
+item program/type. The former v4 builder lane therefore did not guarantee a useful
 initial hierarchy and could validly remain flat at root.
 
 The additive hierarchical builder v5 corrects initial formation without
@@ -245,6 +281,35 @@ Do not duplicate a mathematical node merely because multiple programs depend on
 it. A dispute follows the claim it disputes. Taxonomy changes must never be based
 only on contributor identity, transaction boundaries, chronology, or display
 preference.
+
+### Hierarchical credit assignment
+
+- Programs are credit contexts, not exclusive intellectual-ownership
+  containers. The strict tree supplies one immediate-parent comparison at each
+  level. Cross-program mathematical use is represented by dependencies and
+  evidence rather than by duplicating a node or giving it several parents.
+- `openrouter-research-credit-v3` is an independent consumer of the exact locked
+  `openrouter-research-v3` terminal. Its common-horizon evaluator receives the
+  current program state, complete accepted transition history, accepted
+  canonical submission text, validity records, provenance/dependency links,
+  and local program threads. Rejected submission bodies are not credit inputs.
+- Credit is ex post and counterfactual. Given everything known at the common
+  horizon, remove one immediate child and information uniquely inherited from
+  it, hold the realized underlying problem fixed, retain independently available
+  information, and let a competent solver adapt optimally.
+- The local score has exactly two non-negative components: direct work avoided
+  on the child's own local line and work obviated on other threads that existed
+  in the child's historical local reference ledger. It is not the observed
+  change between pre- and post-submission estimates of remaining work; useful
+  bad news can reveal a harder problem while still reducing counterfactual work.
+- Evaluate only immediate-parent effects. A child program receives credit at its
+  parent edge; that program's immediate children divide value inside the local
+  program context. Do not repeat descendant value at ancestors. Preserve
+  uncertain local value as a non-negative unattributed residual rather than
+  forcing exhaustive or falsely precise allocation.
+- The model returns governed local causal-work assessments. Deterministic code
+  validates the assessments, computes local shares, and propagates them through
+  the hierarchy. Credit never changes validity or knowledge state.
 
 ### Projection protocol and publication
 
@@ -269,52 +334,56 @@ preference.
 | Approved projection registry | Implemented | `math_flow/governance.py`, `protocol/projections/` |
 | Permissioned governed admission | Implemented; native reviews or exact `/approve-admission <full-head-SHA>` comments | `math_flow/governance.py`, `.github/workflows/admission-control.yml` |
 | Parallel primary judgments | Implemented with exact-subject automatic dispatch, same-subject queue/replan deduplication, and distinct-subject concurrency; validity v4 adds subject-and-declared-reference terminal-attestation deferral | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
-| Conflict detection and reconciliation | Implemented for legacy projections; the research-v3 validity-v4 replacement has no reconciliation stage | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
+| Conflict detection and reconciliation | Retained for replay and governed historical specs; no active research projection declares a reconciliation judge | `math_flow/judgments.py`, `.github/workflows/project-openrouter.yml` |
 | Coalescing, leased formation lanes | Implemented, including atomic submission-dependency components and one hosted lock spanning formation through final state publication | `math_flow/coordination.py`, `.github/workflows/project-openrouter.yml` |
-| Batched hierarchical research state | `openrouter-research-v3` is active with validity/builder v4 and current retained-problem states. Additive builder-v5 runtime support supplies audited sibling/nested initial formation and must be selected only by a later one-file governed projection edit. | `math_flow/research_projection.py`, `math_flow/research_state.py`, `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md`, `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V5.md` |
+| Batched hierarchical research state | `openrouter-research-v3` is active with validity v4 and audited builder v5; it forms sibling/nested local-objective programs, enforces placement audits, and keeps existing topology fixed | `math_flow/research_projection.py`, `math_flow/research_state.py`, `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V5.md` |
 | Holistic hierarchical state and revisions | Implemented | `math_flow/formation.py`, `math_flow/knowledge.py` |
 | Content-addressed projection publisher | Implemented, including optimistic cross-problem merge/retry and bounded GitHub commits | `math_flow/coordination.py`, `math_flow/projection_queue.py`, `math_flow/github_projection.py` |
 | Provider-free congestion probe | Implemented; models concurrent problems, solvers, judge streams, projection lanes, atomic reconciliations, throttling, failure recovery, optimistic publication, chunking, catalog export, and agent context with zero provider calls | `math_flow/scale_probe.py`, `tests/test_scale_probe.py` |
 | Repository-backed viewer | Implemented and deployed through ChatGPT Sites | `viewer/` |
 | Non-UI agent discovery and context commands | Implemented; canonical problem discovery includes admitted problems with no projection, omitted context selection resolves exactly one active registered knowledge lane while explicit IDs preserve historical access, `credit-status` reads governed policy without a run, and `register-direction` scaffolds a policy-neutral initial event | `math_flow/discovery.py`, `math_flow/context.py`, `math_flow/credit_context.py`, `math_flow/solver_tools.py` |
-| Solver-facing repository skill | Implemented; requires repository tools and explains qualitative scoring semantics and exact-reference inspection | `.agents/skills/math-flow-solver/` |
+| Solver-facing repository skill | Implemented; requires repository tools and exact-reference inspection | `.agents/skills/math-flow-solver/` |
 | Builder-facing repository skill | Implemented; routes protocol and repository maintenance away from solver participation and requires isolated worktrees for parallel agents | `.agents/skills/math-flow-builder/` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
-| Credit overlay runner, profile, cadence, and publication transport | Governed local/hosted runner, provider-free eligibility planner, bounded semantic retries, rolling coalescing, catch-up over closed UTC periods, predecessor-chain terminals, and independent `credit-assignment` bundles implemented | `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
-| Research direction registration | Implemented and merged in PR #28: append-only schema/reducer, atomic validation and auto-merge, provider-free CLI/context/catalog refresh, solver skill, viewer, and registration-aware credit v2 | `math_flow/directions.py`, `protocol/schemas/research-direction-event.schema.json`, `viewer/` |
+| Credit overlay runner, profile, cadence, and publication transport | Active credit-v3 uses the two-term common-horizon hierarchical evaluator over locked research-v3 state/history; governed local/hosted execution, provider-free eligibility, bounded semantic retries, rolling coalescing, predecessor-chain terminals, and independent bundles are implemented | `math_flow/research_credit.py`, `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
+| Research direction registration | Implemented: append-only schema/reducer, atomic validation and auto-merge, provider-free CLI/context/catalog refresh, solver skill, viewer, and historical registration-aware qualitative credit-v2 artifacts | `math_flow/directions.py`, `protocol/schemas/research-direction-event.schema.json`, `viewer/` |
 | Objective verifier attestations | Additive v1 recipe, bounded pinned OCI runner, durable bundle, uniqueness/semantic validation, automatic hosted execution and signed publication, replay, context, viewer presentation, v3 subject-local deferral, and v4 declared-reference deferral/redispatch implemented | `math_flow/attestations.py`, `.github/workflows/project-attestation.yml`, `docs/OBJECTIVE_ATTESTATIONS.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
 
-The admitted replacement and retirement target are intentionally small:
+The active production path is intentionally small:
 
-- `openrouter-research-v3` is the preferred production replacement. It uses
-  parallel validity-v4 judgments, no reconciliation stage, the batched
-  hierarchical research-state v4 builder, and a five-minute formation interval.
-  Its bounded packet includes terminal objective evidence for the subject and
-  requesting transactions in the subject's declared-reference union. Formation
+- `openrouter-research-v3` uses parallel validity-v4 judgments, no
+  reconciliation stage, audited hierarchical builder v5, and a five-minute
+  formation interval. Its bounded validity packet includes terminal objective
+  evidence for the subject and requesting transactions in the subject's
+  declared-reference union. Formation imports only valid declared claims and
   follows only judge-selected required premises.
-- `openrouter-research-credit-v3` is admitted with an exact lock on that v3
-  producer and an allowlist containing the same two retained problems. Its
-  required runtime fix is deployed and its governed status is active again.
-  Its first assignments are current: `sha256:cb7bba2e...` for BSSC and
-  `sha256:c7f7b05e...` for no-three-in-line, each locked to that problem's
-  current research-v3 state.
+- `openrouter-research-credit-v3` has an exact dependency on that logical v3
+  producer and is allowlisted for `bssc-sum-capacity` and
+  `no-three-in-line-77`. It uses the common-horizon two-term policy and the
+  hierarchical credit-v2 runner; both current assignments are locked to the
+  exact current builder-v5 terminal for their problem.
 
-The v3 producer is a wildcard specification, but ordinary scheduling reaches
-only the two retained active problems: `bssc-sum-capacity` and
-`no-three-in-line-77`. Its state is current for both. The v1/v2 wildcard lanes
-and v2 credit consumer remain temporarily active for comparison; specialized
-no-three lanes are already disabled. Because credit-v3 is current for both
-retained problems, the remaining superseded lanes can now be disabled in
-dependency order. Their content-addressed objects remain valid explicit history.
+The research-v3 producer is a wildcard specification, while the scheduled
+wake-up is deliberately targeted to the two retained active problems. The
+research-v1, research-v2, and research-credit-v2 governed specs are disabled,
+as are the specialized no-three comparison lanes. Their content-addressed
+objects remain valid explicit history and may be inspected by exact ID, but
+ordinary dispatch, default context selection, and live follow-head behavior use
+the active v3 lanes.
 
-The active judges and builders are pinned to `openai/gpt-5.6-sol` with high
-reasoning through OpenRouter. The registry allows at most 16 parallel judgments
-and 500 dependency-connected judgments in one formation batch. Both retained
-problems have published research-v3 state carrying the governed v3 projection
-identity. Projection retirement will not itself publish a new mathematical run,
-so operators must dispatch `refresh-viewer-catalog.yml` after the retirement PRs
-merge; see `docs/GOVERNANCE.md`.
+The active judge, builder, and credit evaluator are pinned to
+`openai/gpt-5.6-sol` with high reasoning through OpenRouter. The registry allows
+at most 16 parallel judgments and 500 dependency-connected judgments in one
+formation batch. At the published head checked above:
+
+- BSSC research-v3 is current at `9ff49a7`, with four active non-root sibling
+  programs for code-induced converse structure, relaxed UV functionals,
+  auxiliary-receiver converses, and multiletter Marton achievability.
+- No-three-in-line research-v3 is current at its unchanged problem ledger head,
+  with sibling certified-configuration and rotational-symmetry programs and the
+  nested `rotational-symmetry/rct4` program.
+- Credit-v3 is current and non-stale for both exact research terminals.
 
 The public Sites viewer at
 `https://math-flow-research-atlas.appromoximate.chatgpt.site` reads the
@@ -363,16 +432,17 @@ repository:
   objective attestations.
 - **Q0 exact-subject handoff:** canonical BSSC contribution `e2bbc1e` has passed
   objective-attestation receipt `sha256:6dfb1921...`. Exact-subject research-v3
-  run `32407861386` published current knowledge terminal
-  `sha256:08b406e1...` at that exact problem-ledger head.
+  run `32407861386` published historical knowledge terminal
+  `sha256:08b406e1...` at that exact problem-ledger head, proving the handoff
+  before the later builder-v5 replay.
 - **Queue handoff:** the objective run exposed a missing repository binding in
   the checkout-free successor dispatcher. PR #19 fixed it. Run `31570610937`
-  then completed the current projection and successfully dispatched run
-  `31570656849`, which reused the existing primary judgment and brought the
-  second knowledge projection current. The cadence wake-up subsequently
-  dispatched both credit overlays; registration-aware run `31570861867`
-  published the current five-contribution terminal.
-- **Viewer and dependency chain:** public Sites version 15 is deployed at the
+  then completed the then-current projection and successfully dispatched run
+  `31570656849`, which reused the existing primary judgment and brought a second
+  knowledge projection current. The cadence wake-up subsequently dispatched the
+  then-active credit overlays; registration-aware run `31570861867` published a
+  historical five-contribution terminal.
+- **Viewer and dependency chain:** public Sites version 18 is deployed at the
   canonical research-atlas URL with objective-verification presentation and
   follow-head semantics. The exact merged viewer build, nine rendered tests,
   lint, and npm audit pass; the default
@@ -383,11 +453,11 @@ Non-UI agents resolve the verified research-v3 predecessor-chain terminal
 through `math_flow context`; that command never invokes a judge or credit model.
 When `--projection` is omitted it selects exactly one published lane carrying an
 active governed projection identity, and fails if none or more than one exists.
-Because v1/v2 remain temporarily active, agents must currently pass
-`--projection openrouter-research-v3`; omission becomes the ordinary v3 path
-after retirement. An explicit ID remains available for historical inspection.
-The governed cadence layer wakes every five minutes, plans without a provider,
-and dispatches only eligible overlays.
+With the superseded lanes disabled, omission is the ordinary
+`openrouter-research-v3` path for the retained problems. An explicit logical or
+content-addressed ID remains available for historical inspection. The governed
+cadence layer wakes every five minutes, plans without a provider, and dispatches
+only eligible overlays.
 
 Automatic credit retries are keyed to the exact rolling dependency state or UTC
 allocation window. Active duplicates are suppressed and five consecutive
@@ -441,14 +511,12 @@ For each new problem:
    judgment, knowledge formation, or credit run, and it will not have a
    selectable knowledge state in the atlas until a contribution is merged and a
    projection is published.
-5. The preferred `openrouter-research-v3` replacement has
-   `allowedProblems: ["*"]`, uses validity/builder v4, and has a five-minute
-   formation interval, so no projection admission is required for the baseline
-   scale pilot. While v1/v2 remain active comparisons, the first valid
-   contribution also dispatches those governed lanes; do not interpret that
-   temporary fan-out as multiple defaults. A specialized knowledge or credit
-   policy is a separate one-file governed projection PR and should be added only
-   when the experiment calls for it.
+5. The active `openrouter-research-v3` producer has `allowedProblems: ["*"]`,
+   uses validity v4 and builder v5, and has a five-minute formation interval, so
+   no knowledge-projection admission is required for the baseline scale pilot.
+   Superseded comparison lanes are disabled. Credit-v3 remains explicitly
+   allowlisted to the two retained problems; extending credit or introducing a
+   specialized knowledge policy requires a separate governed projection edit.
 6. After admission, hand the exact problem ID to solver agents and require them
    to follow `.agents/skills/math-flow-solver/SKILL.md`. Each solver must create
    its own worktree and submit exactly one contribution or direction event per
@@ -481,40 +549,38 @@ The ordinary solver path is fully automatic:
    succeeded, it is squash-merged at the exact validated head SHA.
 4. For a contribution, the auto-merger explicitly dispatches the baseline and
    every active OpenRouter knowledge projection for only the affected problem
-   and exact merged transaction. Research-v3 is the preferred replacement while
-   v1/v2 remain comparison lanes. If the merged
-   transaction contains `verification.json`, it also dispatches the trusted,
-   provider-free objective-attestation workflow for that exact squash SHA. A direction
-   event dispatches only the provider-free viewer-catalog refresh because it has
-   no mathematical judgment effect.
+   and exact merged transaction. The only active OpenRouter research producer is
+   research-v3. If the merged transaction contains `verification.json`, the
+   auto-merger also dispatches the trusted, provider-free objective-attestation
+   workflow for that exact squash SHA. A direction event dispatches only the
+   provider-free viewer-catalog refresh because it has no mathematical judgment
+   effect.
 5. Automatic OpenRouter coverage planning targets the dispatched transaction
    and emits a one-item or empty matrix according to the active judge-spec
    digest. Different subjects retain independent concurrency; duplicate
    same-subject triggers wait and replan to zero after successful publication.
-   On validity v3, a
-   transaction requesting objective verification is listed as deferred until
-   its terminal attestation exists; unrelated transactions stay in the matrix
-   and continue in parallel. Validity v4 applies the same subject-local rule to
-   pending requests on the exact declared-reference union, without scanning the
-   preceding ledger. Terminal attestation publication diffs pre/post coverage
-   and redispatches each exact newly-ready subject in every applicable active v3
-   or v4 judge stream, including subjects unblocked through a declared reference.
+   Validity v4 defers a transaction requesting objective verification, or one
+   citing a reference with a pending requested verification, until the exact
+   terminal attestation exists; unrelated subjects stay in the matrix and
+   continue in parallel. It scans only the subject and the claim-declared
+   reference union, never the preceding ledger. Terminal attestation publication
+   diffs pre/post coverage and redispatches each exact newly-ready subject in the
+   active validity-v4 judge stream.
 6. Each paid primary result is verified and published as an immutable object
    before reconciliation or formation and without touching the scheduler. One
    projection/problem lock then spans formation through final knowledge-state
-   and scheduler publication. Reconciliation-free validity v3/v4 lanes may
+   and scheduler publication. The reconciliation-free validity-v4 lane may
    integrate ready independent judgments while another primary is pending;
    `knowledge-trigger` withholds any claim whose required-premise judgment is
-   absent. Legacy reconciliation lanes retain complete ready-primary coverage.
+   absent. Historical reconciliation behavior remains available only to replay a
+   governed spec that declares it.
    Durable recovery treats reusable published judgments absent from the lane's
    observed IDs as fresh work even when the problem ledger is unchanged.
-7. The validity-v2 path reconstructs the complete verified primary set
-   and derives the submission dependency graph directly from immutable validity
-   packets. Validity v3 instead derives formation edges from the exact required
-   premises selected by the primary judge, while retaining broader declared
-   references only as provenance. Validity v4 preserves that formation rule and
-   adds bounded reference-attestation evidence to the immutable packet. Legacy projections additionally derive current conflicts, reuse
-   matching published reconciliations, and fan out missing reconciliation calls.
+7. Validity v4 derives formation edges from the exact required premises selected
+   by the primary judge, retains broader declared references only as provenance,
+   and binds bounded reference-attestation evidence to the immutable packet. The
+   validity-v2/v3 dependency and reconciliation paths remain historical replay
+   behavior, not active production fan-out.
 8. Completed judgments are claimed dependency-atomically into one batched
    knowledge build, then published with the updated scheduler, indexes, and
    viewer catalog. Later knowledge projections using the same judge identities
@@ -557,25 +623,27 @@ do not rerun paid judgments. After fixing the downstream defect, dispatch
 `resume_run_id` to the failed run. The workflow downloads and re-verifies the
 retained judgment artifacts and skips the judgment matrix.
 
-If one primary or reconciliation matrix job itself fails, its publisher first
-verifies and durably publishes every successful sibling artifact that is a
-nonempty subset of the frozen plan, then leaves the run failed. Use GitHub
-Actions' **rerun failed jobs** operation on that original run. This regenerates
-only the missing item and then reruns the dependent formation and publication
-jobs. A subjectless `resume_run_id` can preserve an already-produced in-plan
-subset while excluding and reporting whole out-of-plan bundles, but it cannot
+If one primary matrix job itself fails, its publisher first verifies and durably
+publishes every successful sibling artifact that is a nonempty subset of the
+frozen plan, then leaves the run failed. The same mechanism applies when
+replaying a historical spec with a reconciliation matrix. Use GitHub Actions'
+**rerun failed jobs** operation on that original run. This regenerates only the
+missing item and then reruns the dependent formation and publication jobs. A
+subjectless `resume_run_id` can preserve an already-produced in-plan subset
+while excluding and reporting whole out-of-plan bundles, but it cannot
 regenerate missing work and is not a partial-matrix repair mechanism.
 
 Formation caches successful provider stages by exact request digest. Empty
 assistant messages are retried up to three times and are never checkpointed;
 length-truncated responses are also non-cacheable.
 
-Hosted reconciliation remains implemented and fail-closed for legacy
-projections. Deterministic and fake-provider tests cover opposed primaries,
-conflict derivation, reconciliation reuse, dependency-atomic formation, and
-rejection of missing conflict inputs. The research-v3 validity-v4 builder
-consumes validity outcomes directly and refuses dependencies excluded from
-accepted research state.
+Hosted reconciliation remains implemented and fail-closed for replay of legacy
+projection specs, but no active projection invokes it. Deterministic and
+fake-provider tests cover opposed primaries, conflict derivation,
+reconciliation reuse, dependency-atomic formation, and rejection of missing
+conflict inputs. The research-v3 validity-v4/builder-v5 path consumes validity
+outcomes directly and refuses dependencies excluded from accepted research
+state.
 
 ## Agent roles and working conventions
 
@@ -583,11 +651,12 @@ accepted research state.
 
 Read and follow `.agents/skills/math-flow-solver/SKILL.md`. Use
 `python3 -m math_flow context` to materialize a verified latest state, inspect
-provenance and qualitative credit, select an open direction, and submit exactly
+provenance and current governed credit, select an open direction, and submit exactly
 one atomic participant event per PR. Inspect `directions.json`, `credit.json`,
 and the optional raw
-`credit-report.md` rather than the UI; credit is non-zero-sum attribution and
-does not alter mathematical validity. A direction registration may precede
+`credit-report.md` rather than the UI; active hierarchical credit is
+counterfactual causal-work attribution and does not alter mathematical validity.
+A direction registration may precede
 substantial work, but it is optional and non-exclusive; complete it in a later
 atomic event referencing the canonical contribution transaction. The viewer has
 no embedded fallback problem; its catalog-unavailable screen is deliberately
@@ -668,21 +737,21 @@ the task requires an end-to-end check.
 The scale-readiness P0s above are complete. These are the most important next
 experiments and product gaps as of this document's reconciliation date:
 
-1. **Run the hosted scale pilot.** The provider-free congestion probe now covers
+1. **Evaluate builder-v5 program quality.** The first fresh v5 states now prove
+   that sibling and nested local-objective programs can be formed. Audit whether
+   their boundaries remain useful as accepted work accumulates, then design the
+   governed topology-evolution version that can move, reparent, split, merge,
+   retire, and refresh affected local credit without rewriting history.
+2. **Calibrate hierarchical credit.** Compare common-horizon direct/obviated
+   assessments across repeated runs and growing accepted histories. Test whether
+   local thread ledgers, counterfactual evidence, residuals, and hierarchical
+   propagation are stable enough for the intended credit semantics before
+   introducing a finite award pool or time-bucketed allocation profile.
+3. **Run the hosted scale pilot.** The provider-free congestion probe covers
    scheduler, retry, merge, chunking, viewer, and context invariants locally.
    Admit several real problems with simultaneous solver contributions to
    measure GitHub runner/API congestion and confirm the same behavior on the
    organization repository without changing the protocol under load.
-2. **Exercise natural reconciliation.** The controlled paid smoke run succeeded
-   without publication. The remaining operational proof is a real opposed
-   primary set flowing through automatic reconciliation, formation, publication,
-   viewer discovery, and agent context without special fixture inputs.
-3. **Add a numerical/time-bucketed award profile if desired.** Hosted cadence,
-   exact UTC transaction windows, and predecessor-chain terminals are now
-   implemented, while the admitted example remains qualitative and non-zero-sum.
-   A future runner can allocate a finite hourly/daily award without changing
-   the scheduling envelope. Strict boundary-time knowledge would additionally
-   require historical dependency resolution.
 4. **Improve GitHub identity and contributor UX.** A GitHub App can record stable
    user identity, add richer PR summaries and projection links, and scaffold
    valid contribution directories.
@@ -700,6 +769,11 @@ resulting objects **Research directions**. Existing
 published credit-v1 artifacts that use `reservationTransactionIds` remain
 immutable and readable, while credit v2 uses
 `directionRegistrationTransactionIds`.
+
+That registration-aware credit-v2 profile belongs to the superseded qualitative
+credit lane. The active hierarchical credit-v3 evaluator does not currently
+ingest direction events; adding direction-priority evidence to its causal-work
+policy would require an explicit governed design change.
 
 The MVP supports these immutable events:
 
@@ -737,9 +811,10 @@ Implemented surfaces are:
    list and optionally register before beginning substantial work.
 3. A repository-backed viewer surface for research directions without
    folding them into holistic mathematical knowledge.
-4. A new credit-v2 profile that receives verified direction events as typed
-   inputs and cites their canonical transaction IDs. Keep the existing credit-v1
-   profile compatible rather than changing the meaning of published bundles.
+4. A registration-aware qualitative credit-v2 profile that receives verified
+   direction events as typed inputs and cites their canonical transaction IDs.
+   Its published bundles and the earlier credit-v1 bundles remain immutable
+   historical artifacts.
 
 Automatic merge accepts a valid one-event direction PR using the same trusted
 revalidation pattern as solver contributions. It refreshes the repository-backed
@@ -747,8 +822,8 @@ catalog without dispatching a mathematical or paid projection. Direction
 registration introduces no locks, exclusive claims, or requirement to register
 before submitting mathematics.
 
-The first complete hosted lifecycle is now canonical: registration `a9552d14`,
-proof contribution `29ccbd39`, and completion event `bbf27430`. The current
+The first complete hosted lifecycle remains canonical: registration `a9552d14`,
+proof contribution `29ccbd39`, and completion event `bbf27430`. Its historical
 registration-aware credit-v2 run links the proof's assignment back to that exact
 prior registration, while the mathematical knowledge projection remains
 independent of the credit result.
@@ -763,10 +838,11 @@ upgrade path.
 
 - `README.md` — repository overview and common commands.
 - `docs/MVP.md` — architecture, phased roadmap, and deferred decisions.
-- `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md` — current research-v3 validity,
-  reference-attestation, and dependency-safe formation architecture.
-- `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V5.md` — additive audited initial
-  sibling/nested program formation and rollout boundary.
+- `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V5.md` — current audited initial
+  sibling/nested program formation, fixed-topology boundary, and rollout.
+- `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md` — validity-v4,
+  reference-attestation, dependency-safe batching, and the superseded v4 builder
+  baseline retained for replay.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V2.md` — superseded historical
   validity-v2/builder-v2 architecture retained for replay.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V3.md` — superseded validity-v3 and
@@ -775,6 +851,12 @@ upgrade path.
   hierarchical-credit reference path.
 - `docs/PROJECTION_PROTOCOL.md` — run envelopes, profiles, revisions, and
   builder flexibility.
+- `protocol/projections/openrouter-research-v3.json` — active validity-v4 and
+  builder-v5 producer registration.
+- `protocol/projections/openrouter-research-credit-v3.json` — active hierarchical
+  credit consumer and exact research dependency.
+- `protocol/policies/two-term-hierarchical-research-credit-v1.md` — current
+  common-horizon direct-work plus obviated-work credit semantics.
 - `docs/PARALLEL_JUDGMENTS.md` — judgment/reconciliation/formation command flow.
 - `docs/GOVERNANCE.md` — problem and projection admission policy.
 - `docs/REMOTE_TESTING.md` — hosted workflow testing and recovery.
