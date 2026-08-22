@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 2,
+  "operations": [
+    {
+      "entityKind": "program",
+      "entityId": "program/multiletter-marton-achievability",
+      "baseDigest": "sha256:eb2eba24b101fc1b74855cc825b739ef0330852597c70f1a8128d1895fcc23f8",
+      "value": {
+        "id": "program/multiletter-marton-achievability",
+        "parentId": "root",
+        "title": "Multiletter Marton achievability",
+        "objective": "Determine whether finite-letter Marton coding can improve half-skew BSSC achievable sum rates and rigorously characterize structural restrictions on candidate multiletter witnesses.",
+        "status": "active",
+        "parentThreadIds": [
+          "root/multiletter-marton-achievability"
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "program/multiletter-marton-achievability/finite-auxiliary-foundations",
+      "baseDigest": null,
+      "value": {
+        "id": "program/multiletter-marton-achievability/finite-auxiliary-foundations",
+        "programId": "program/multiletter-marton-achievability",
+        "title": "Finite-auxiliary Marton foundations and RTD threshold",
+        "summary": "Develop finite-auxiliary multiletter Marton normalization, superadditive-limit foundations, and rigorously certified randomized-time-division comparison thresholds within their exact conditional scope.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [
+          "The capacity lower bound and resulting Fekete-limit lower bound are conditional on the explicitly stated hypothesis (H-Marton).",
+          "The one-letter identity with randomized time division is conditional on the explicitly stated hypothesis (H-binary)."
+        ],
+        "sourceTransactionIds": [
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "program/multiletter-marton-achievability/two-letter-support-pruning",
+      "baseDigest": "sha256:1bda93ba6bda973b7af2972362f7cdf892eb5ff0d99489767286072b786ccbb5",
+      "value": {
+        "id": "program/multiletter-marton-achievability/two-letter-support-pruning",
+        "programId": "program/multiletter-marton-achievability",
+        "title": "Two-letter support pruning",
+        "summary": "Establish rigorously scoped restrictions, including quantitative support-mass requirements, on the super-input support of candidate two-letter Marton improvements.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [
+          "The two-symbol pruning result from transaction b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05 is conditional on the explicitly assumed Geng--Jog--Nair--Wang binary-input Marton sum-rate theorem."
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/marton-multiletter-finite-foundation-repair-result",
+      "baseDigest": null,
+      "value": {
+        "id": "item/marton-multiletter-finite-foundation-repair-result",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Finite-auxiliary Marton multiletter foundation and directed RTD threshold",
+        "summary": "Accepted statement:\n\nFor the governed half-skew BSSC P and every n >= 1, define M_n^fin(P) as the supremum of the displayed private-message Marton functional over finite auxiliary alphabets U,V,W and finite laws (U,V,W)-X^n-(Y^n,Z^n). Unconditionally, 0 <= M_n^fin(P) <= 2n, M_{m+n}^fin(P) >= M_m^fin(P)+M_n^fin(P), and Fekete's lemma gives lim_n M_n^fin(P)/n = sup_n M_n^fin(P)/n; k independent copies of a selected n-letter law of value S_n have value exactly k S_n. Assume (H-Marton), the exact finite-DMBC private-message Marton achievability theorem stated in the README. Then C_sum(P) >= M_n^fin(P)/n for every n and hence C_sum(P) is at least the displayed Fekete limit. For the exact BSSC randomized-time-division value L_RTD, the README's symmetrization and calculus proof gives the stated closed form at q_-=(15-sqrt(105))/30, and the directed standard-library certificate proves the strict intervals 0.3616428844219546156634415781505870072079810107238605552037137298028007 < L_RTD < 0.3616428844219546156634415781505870072079810107238605552037137298028008 and 0.7232857688439092313268831563011740144159620214477211104074274596056014 < 2 L_RTD < 0.7232857688439092313268831563011740144159620214477211104074274596056016. Assume additionally (H-binary), the exact binary-input Marton-equals-randomized-time-division theorem stated in the README; then M_1^fin(P)=L_RTD. Under (H-Marton), a selected finite n-letter law strictly improves the governed RTD achievable lower bound through super-symbol normalization iff S_n > n L_RTD; under both hypotheses this is equivalently a strict improvement over the complete one-letter Marton sum optimum. This append-only claim repairs only the finite-auxiliary scope, conditional super-symbol conclusion, conditional one-letter identification, and decimal certification of transaction f6ea30479b9ca461294ba89a8a1a31c06ce59d08; that transaction is a corrective/provenance reference rather than a mathematical premise. No fixed-n equality is a capacity converse.\n\nScope qualifications (verbatim):\n- The capacity lower bound C_sum(P) >= M_n^fin(P)/n and the resulting Fekete-limit lower bound are conditional on (H-Marton).\n- The identity M_1^fin(P)=L_RTD is conditional on (H-binary).\n- Equivalence between improvement over RTD and improvement over the complete one-letter Marton optimum requires both (H-Marton) and (H-binary).\n- All optimizations defining M_n^fin(P) are restricted to finite auxiliary alphabets; no optimizer or cardinality theorem is assumed.\n- No fixed-n equality is asserted or used as a capacity converse.\n- The declared transaction is corrective/provenance material only and is not a mathematical dependency.",
+        "claimRefs": [
+          {
+            "transactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+            "claimKey": "bssc-sum-capacity/marton-multiletter-finite-foundation-repair"
+          }
+        ],
+        "sourceTransactionIds": [
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/marton-multiletter-finite-foundation-repair-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "item/marton-multiletter-finite-foundation-repair-proof",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Finite-super-symbol, superadditivity, and RTD calculus proof",
+        "summary": "Proof used to establish the linked accepted claim. It bounds each finite-auxiliary Marton functional by binary output entropies, concatenates independent finite laws using the minimum-term inequality to prove superadditivity, applies Fekete's lemma, and proves exact scaling for repeated selected laws. Under (H-Marton), it converts an epsilon-optimal finite law into a finite super-channel Marton rate pair and flattens the resulting code to the original channel. Separately, receiver-skew symmetrization reduces randomized time division to a scalar difference curve, whose derivative identifies q_-=(15-sqrt(105))/30 and yields the accepted closed form. The proof preserves all stated conditional hypotheses and does not establish a fixed-blocklength capacity converse.",
+        "claimRefs": [
+          {
+            "transactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+            "claimKey": "bssc-sum-capacity/marton-multiletter-finite-foundation-repair"
+          }
+        ],
+        "sourceTransactionIds": [
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+        ],
+        "dependencyItemIds": [
+          "item/marton-multiletter-finite-foundation-repair-result"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/marton-rtd-directed-interval-certificate",
+      "baseDigest": null,
+      "value": {
+        "id": "item/marton-rtd-directed-interval-certificate",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "computation",
+        "title": "Directed RTD threshold interval certificate",
+        "summary": "Computation used for the certified numerical portion of the linked accepted claim. It brackets sqrt(105) by exact rational square comparisons, propagates directed 120-digit decimal intervals through the accepted closed form for L_RTD, expands correctly rounded logarithms outward, and verifies that the resulting enclosures lie strictly inside the stated intervals for L_RTD and 2L_RTD. It certifies only those intervals and the associated finite-scope structural audit; it does not prove (H-Marton), (H-binary), or any capacity converse.",
+        "claimRefs": [
+          {
+            "transactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+            "claimKey": "bssc-sum-capacity/marton-multiletter-finite-foundation-repair"
+          }
+        ],
+        "sourceTransactionIds": [
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+        ],
+        "dependencyItemIds": [
+          "item/marton-multiletter-finite-foundation-repair-result",
+          "item/marton-multiletter-finite-foundation-repair-proof"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-marton-full-support-necessity-result",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-marton-full-support-necessity-result",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Full-support and mass-floor necessity for a two-letter Marton gain",
+        "summary": "Accepted statement:\n\nFor the half-skew BSSC product channel P^{otimes 2}, every finite Marton law whose induced super-input X_1X_2 is supported on at most three of {00,01,10,11} has unnormalized Marton sum value strictly below 0.695 bits. A fair one-letter randomized-time-division schedule with reflected rational conditional priors 1/6 and 5/6, repeated independently twice, has exact unnormalized value B_{1/6}=2h_2(1/4)+h_2(1/12)-h_2(5/12)-1/3>0.7231 bits. Therefore every strict two-letter Marton improvement over twice the optimal one-letter randomized-time-division value must assign positive mass to all four super-input symbols. Quantitatively, every such improving witness must assign mass greater than 1/180 to each of 00 and 11 and mass greater than 1/325 to each of 01 and 10. This is a support-pruning theorem for the two-letter Marton functional, not a full-support no-gain theorem or an unrestricted capacity converse.\n\nScope qualifications (verbatim):\n- The result concerns the unnormalized two-letter Marton functional for the half-skew BSSC product channel.\n- It is a support-pruning theorem only; it does not prove that full-support Marton laws cannot yield a gain.\n- It is not a converse for unrestricted broadcast coding or a determination of unrestricted sum capacity.\n- The numerical attestation supports the finite algebraic and numerical inequalities, while the universal Marton reduction and calculus steps are established in the written proof.",
+        "claimRefs": [
+          {
+            "transactionId": "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-full-support-necessity"
+          }
+        ],
+        "sourceTransactionIds": [
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-marton-full-support-necessity-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-marton-full-support-necessity-proof",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Support-line, face-orbit, and mass-floor proof",
+        "summary": "Proof used to establish the linked accepted claim. It derives one-letter BSSC support lines by calculus, lifts them through an exact two-factor chain-rule identity, and obtains two direct UV-style bounds reducing every two-letter Marton value to G(P_S)+2r. Channel symmetries split the four three-symbol faces into two orbits; concavity and explicit one-variable maximization or a rational tangent bound give the strict 0.695-bit ceiling. A finite independently repeated rational randomized-time-division law supplies the accepted comparison value. Finally, indicator decomposition relative to each omitted symbol and monotonicity of the resulting entropy bound yield the four strict mass floors. The proof is limited to the accepted support-pruning claim and does not rule out a gain from full-support laws.",
+        "claimRefs": [
+          {
+            "transactionId": "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-full-support-necessity"
+          }
+        ],
+        "sourceTransactionIds": [
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58"
+        ],
+        "dependencyItemIds": [
+          "item/two-letter-marton-full-support-necessity-result"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-marton-full-support-audit-tool",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-marton-full-support-audit-tool",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "tool",
+        "title": "Exact face-orbit and directed mass-floor audit tool",
+        "summary": "Tool used for the computationally audited portion of the linked accepted claim. It constructs the product BSSC receiver matrices in exact rational arithmetic; verifies coordinate-transposition and receiver-skew symmetries, the two face orbits, and the affine output laws; and uses outward interval arithmetic to check the face bounds, rational-tangent sign, explicit q=1/6 repeated randomized-time-division value, strict separation below 0.695, and the stated mass-floor inequalities. It does not replace the analytic Marton reduction, chain identity, support-line calculus, or concavity arguments.",
+        "claimRefs": [
+          {
+            "transactionId": "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-full-support-necessity"
+          }
+        ],
+        "sourceTransactionIds": [
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58"
+        ],
+        "dependencyItemIds": [
+          "item/two-letter-marton-full-support-necessity-result",
+          "item/two-letter-marton-full-support-necessity-proof"
+        ]
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+      "claimKeys": [
+        "bssc-sum-capacity/marton-multiletter-finite-foundation-repair"
+      ],
+      "directProgramId": "program/multiletter-marton-achievability",
+      "directThreadIds": [
+        "program/multiletter-marton-achievability/finite-auxiliary-foundations"
+      ],
+      "itemIds": [
+        "item/marton-multiletter-finite-foundation-repair-result",
+        "item/marton-multiletter-finite-foundation-repair-proof",
+        "item/marton-rtd-directed-interval-certificate"
+      ]
+    },
+    {
+      "transactionId": "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+      "claimKeys": [
+        "bssc-sum-capacity/two-letter-marton-full-support-necessity"
+      ],
+      "directProgramId": "program/multiletter-marton-achievability",
+      "directThreadIds": [
+        "program/multiletter-marton-achievability/two-letter-support-pruning"
+      ],
+      "itemIds": [
+        "item/two-letter-marton-full-support-necessity-result",
+        "item/two-letter-marton-full-support-necessity-proof",
+        "item/two-letter-marton-full-support-audit-tool"
+      ]
+    }
+  ],
+  "placementAudits": [
+    {
+      "transactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+      "basis": "local-objective",
+      "rationale": "The accepted claim develops finite-auxiliary Marton multiletter foundations and randomized-time-division thresholds specifically for evaluating achievable multiletter Marton improvements, so the existing non-root multiletter Marton achievability program is the narrowest coherent local objective.",
+      "relatedProgramIds": [
+        "program/multiletter-marton-achievability"
+      ]
+    },
+    {
+      "transactionId": "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+      "basis": "local-objective",
+      "rationale": "The accepted claim is a two-letter Marton super-input support-pruning theorem with quantitative mass requirements, fitting directly within the existing multiletter Marton achievability program and its two-letter support-pruning thread.",
+      "relatedProgramIds": [
+        "program/multiletter-marton-achievability"
+      ]
+    }
+  ]
+}
