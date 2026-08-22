@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 2,
+  "operations": [
+    {
+      "entityKind": "program",
+      "entityId": "program/multiletter-marton-achievability",
+      "baseDigest": "sha256:ccb3025f95ebb9b6527eda00d1ad24831ca005bb12b4d61ff257a82b575f87ed",
+      "value": {
+        "id": "program/multiletter-marton-achievability",
+        "parentId": "root",
+        "title": "Multiletter Marton achievability",
+        "objective": "Determine whether finite-letter Marton coding can improve half-skew BSSC achievable sum rates and rigorously characterize structural restrictions on candidate multiletter witnesses.",
+        "status": "active",
+        "parentThreadIds": [
+          "root/multiletter-marton-achievability"
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+          "43fcf08a3272a3995158951de8d8ca2a666a0792",
+          "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "program/multiletter-marton-achievability/product-code-quotient-local-geometry",
+      "baseDigest": null,
+      "value": {
+        "id": "program/multiletter-marton-achievability/product-code-quotient-local-geometry",
+        "programId": "program/multiletter-marton-achievability",
+        "title": "Product-code quotient local geometry",
+        "summary": "Analyze exact local optimality and curvature of randomized-time-division tensor points within precisely specified finite-dimensional two-letter Marton architectures.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [
+          "Identification of the tensor point and its value with the exact one-use randomized-time-division optimizer requires the accepted result in transaction 88a1004f309460f3ec1cacdae88d30f88559f9bc."
+        ],
+        "sourceTransactionIds": [
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-marton-product-code-quotient-local-maximum-result",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-marton-product-code-quotient-local-maximum-result",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Strict local maximum in the two-letter product-code quotient",
+        "summary": "Accepted statement:\n\nFor the governed two-use half-skew BSSC, fix W and X^2 to four symbols and the four deterministic product-code orientations (U,V)=(X^2,0),(2X_1,X_2),(X_2,2X_1),(0,X^2), and vary only the 16 positive masses q(W,X^2). At the tensor product of the exact one-use RTD optimizer, whose 4x4 mass matrix has entries (11-sqrt(105))/120, 1/30, and (11+sqrt(105))/120 in the displayed symmetry pattern, the half-weight Marton functional L_{1/2} has constant gradient and a negative-definite Hessian on the full 15-dimensional simplex tangent space. A standard-library checker works exactly in Q(sqrt(105)), verifies all 15 gradient log-product identities, and gives an exact LDL^T decomposition with 15 strictly negative pivots and exact reconstruction. Hence this tensor point is a strict local maximum in the stated fixed-map quotient; its value is 2 L_RTD, and every distinct sufficiently close law in this quotient has selected-law Marton value below 2 L_RTD because min(E_Y,E_Z) <= L_{1/2}. This local theorem does not rule out distant points, directions activating other (W,U,V,X^2) atoms, stochastic or different maps, larger auxiliaries, a two-letter Marton gain in another architecture, Marton additivity, or a capacity converse.\n\nScope qualifications (verbatim):\n- The result applies only to the open 16-cell quotient with the four specified deterministic product-code maps and variation solely of the positive masses q(W,X^2).\n- It does not establish global optimality even within that quotient.\n- It does not address distant points, activation of other atoms, stochastic or different maps, larger auxiliaries, other two-letter architectures, Marton additivity, or a capacity converse.",
+        "claimRefs": [
+          {
+            "transactionId": "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-product-code-quotient-local-maximum"
+          }
+        ],
+        "sourceTransactionIds": [
+          "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383"
+        ],
+        "dependencyItemIds": [
+          "item/marton-multiletter-finite-foundation-repair-result"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-marton-product-code-quotient-local-maximum-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-marton-product-code-quotient-local-maximum-proof",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Exact stationarity and tangent-Hessian proof",
+        "summary": "Proof used to establish the linked accepted claim. At the interior tensor point, entropy differentiation and the one-use stationary relation establish a constant gradient across the 16 cells. The seven entropy marginal maps give the exact Hessian in Q(sqrt(105)); restriction to the 15-dimensional simplex tangent space followed by an exact LDL^T decomposition with 15 negative pivots proves negative definiteness and hence strict local maximality. The required accepted one-use randomized-time-division result identifies the tensor point's value as 2 L_RTD. Continuity and min(E_Y,E_Z) <= L_{1/2} then give the claimed strict inequality for distinct sufficiently close laws in this fixed-map quotient. This proof item has only the local and architectural scope of the linked accepted claim.",
+        "claimRefs": [
+          {
+            "transactionId": "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-product-code-quotient-local-maximum"
+          }
+        ],
+        "sourceTransactionIds": [
+          "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383"
+        ],
+        "dependencyItemIds": [
+          "item/marton-multiletter-finite-foundation-repair-result",
+          "item/two-letter-marton-product-code-quotient-local-maximum-result"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-marton-product-code-quotient-local-maximum-tool",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-marton-product-code-quotient-local-maximum-tool",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "tool",
+        "title": "Exact quadratic-field stationarity and LDL audit tool",
+        "summary": "Standard-library checker used for the exact audit of the linked accepted claim. It works in Q(sqrt(105)), verifies the specified product-code orientations and interior tensor point, constructs all seven entropy marginal maps, checks all 15 tangent gradient log-product identities exactly, forms the full 16-by-16 Hessian, and verifies exact reconstruction of a tangent-space LDL^T decomposition with 15 strictly negative pivots. It certifies only the stated fixed-map local theorem and does not test global optimality, other atoms or maps, larger auxiliaries, Marton additivity, or capacity.",
+        "claimRefs": [
+          {
+            "transactionId": "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-product-code-quotient-local-maximum"
+          }
+        ],
+        "sourceTransactionIds": [
+          "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383"
+        ],
+        "dependencyItemIds": [
+          "item/marton-multiletter-finite-foundation-repair-result",
+          "item/two-letter-marton-product-code-quotient-local-maximum-result",
+          "item/two-letter-marton-product-code-quotient-local-maximum-proof"
+        ]
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383",
+      "claimKeys": [
+        "bssc-sum-capacity/two-letter-marton-product-code-quotient-local-maximum"
+      ],
+      "directProgramId": "program/multiletter-marton-achievability",
+      "directThreadIds": [
+        "program/multiletter-marton-achievability/product-code-quotient-local-geometry"
+      ],
+      "itemIds": [
+        "item/two-letter-marton-product-code-quotient-local-maximum-result",
+        "item/two-letter-marton-product-code-quotient-local-maximum-proof",
+        "item/two-letter-marton-product-code-quotient-local-maximum-tool"
+      ]
+    }
+  ],
+  "placementAudits": [
+    {
+      "transactionId": "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383",
+      "basis": "local-objective",
+      "rationale": "The accepted claim is a narrowly scoped local-optimality theorem for a fixed two-letter Marton product-code architecture, so it belongs directly in the existing multiletter Marton achievability program rather than at the canonical root or in a converse program.",
+      "relatedProgramIds": [
+        "program/multiletter-marton-achievability"
+      ]
+    }
+  ]
+}
