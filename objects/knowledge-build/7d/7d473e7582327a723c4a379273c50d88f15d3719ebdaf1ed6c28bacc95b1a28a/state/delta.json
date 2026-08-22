@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 2,
+  "operations": [
+    {
+      "entityKind": "program",
+      "entityId": "program/multiletter-marton-achievability",
+      "baseDigest": "sha256:65d11b8733481514269aa1adff62925be832a86c061ba49ba025c4e2a1462760",
+      "value": {
+        "id": "program/multiletter-marton-achievability",
+        "parentId": "root",
+        "title": "Multiletter Marton achievability",
+        "objective": "Determine whether finite-letter Marton coding can improve half-skew BSSC achievable sum rates and rigorously characterize structural restrictions on candidate multiletter witnesses.",
+        "status": "active",
+        "parentThreadIds": [
+          "root/multiletter-marton-achievability"
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "program/multiletter-marton-achievability/conditional-product-no-gain",
+      "baseDigest": "sha256:f3995b078d548f2fa54510b337b787f5a058ba4b086d11f5cf50a4272de72daf",
+      "value": {
+        "id": "program/multiletter-marton-achievability/conditional-product-no-gain",
+        "programId": "program/multiletter-marton-achievability",
+        "title": "Conditional-product no-gain structure",
+        "summary": "Characterize conditional-product Marton architectures that cannot yield multiletter gains and develop decomposition-relative correlation tests for remaining coupled candidates.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-padding-correlation-tests-result",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-padding-correlation-tests-result",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Four padding-correlation tests for a two-letter Marton gain",
+        "summary": "Accepted statement:\n\nAssume canonical transaction 5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6 and its exact tuple-law total-correlation residual. For any finite receiver-skew broadcast channel T and any arbitrary finite two-letter Marton law P(W,U,V,X_1,X_2), define A_1=I(Y_2;Y_1,U|W), A_2=I(Y_1;Y_2,U|W), B_1=I(Z_2;Z_1,V|W), B_2=I(Z_1;Z_2,V|W), D=I(U;V|W), and C=(I(Y_1;Y_2|W)+I(Y_1;Y_2)+I(Z_1;Z_2|W)+I(Z_1;Z_2))/2. If this law has Marton value strictly above 2M_T, then A_a+B_b>C+1{a!=b}D for all four (a,b) in {1,2}^2. Hence failure of any one inequality rules out a gain. Adding the crossed tests gives the combined necessary inequality in README equation (12). Applied to the half-skew BSSC, these tests cover every abstract two-letter auxiliary law without assuming an a priori tuple structure. They are necessary only and do not prove additivity, exhibit a gain, or determine capacity.\n\nThe combined necessary inequality expressly referenced as README equation (12) is\n\n\\[\n\\begin{aligned}\n&I(Y_1;Y_2\\mid W)+I(Z_1;Z_2\\mid W)\n-I(Y_1;Y_2)-I(Z_1;Z_2)\\\\\n&\\quad+I(U;Y_2\\mid Y_1,W)+I(U;Y_1\\mid Y_2,W)\\\\\n&\\quad+I(V;Z_2\\mid Z_1,W)+I(V;Z_1\\mid Z_2,W)\n>2I(U;V\\mid W).\n\\end{aligned}\n\\]\n\nScope qualifications (verbatim):\n- The inequalities are necessary only; they do not prove additivity, exhibit a gaining law, establish sufficiency, or determine capacity.\n- The summed crossed condition is weaker than retaining the two crossed inequalities separately.\n- The result concerns finite receiver-skew broadcast channels and finite auxiliary alphabets.\n- Numerical checker attestations are corroborative only; the universal conclusion rests on the analytic entropy identities.",
+        "claimRefs": [
+          {
+            "transactionId": "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+            "claimKey": "bssc-sum-capacity/two-letter-padding-correlation-tests"
+          }
+        ],
+        "sourceTransactionIds": [
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ],
+        "dependencyItemIds": [
+          "item/conditional-product-marton-no-gain-result"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-padding-correlation-tests-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-padding-correlation-tests-proof",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Four constant-padding residual proof",
+        "summary": "Proof used to establish the linked accepted claim. For each of the four choices of coordinates, it places the abstract auxiliary U in one coordinate and V in one coordinate while padding the other components by constants. Applying the required exact tuple-law total-correlation residual identifies the resulting residual as A_a+B_b-1{a!=b}D-C. A strict two-letter gain forces each residual to be positive, yielding all four tests. Adding the two crossed tests and applying the displayed chain-rule identities gives the combined necessary inequality. This proof item is limited to the linked necessary conditions and does not establish sufficiency, additivity, a gaining law, or capacity.",
+        "claimRefs": [
+          {
+            "transactionId": "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+            "claimKey": "bssc-sum-capacity/two-letter-padding-correlation-tests"
+          }
+        ],
+        "sourceTransactionIds": [
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ],
+        "dependencyItemIds": [
+          "item/conditional-product-marton-no-gain-result",
+          "item/two-letter-padding-correlation-tests-result"
+        ]
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+      "claimKeys": [
+        "bssc-sum-capacity/two-letter-padding-correlation-tests"
+      ],
+      "directProgramId": "program/multiletter-marton-achievability",
+      "directThreadIds": [
+        "program/multiletter-marton-achievability/conditional-product-no-gain"
+      ],
+      "itemIds": [
+        "item/two-letter-padding-correlation-tests-result",
+        "item/two-letter-padding-correlation-tests-proof"
+      ]
+    }
+  ],
+  "placementAudits": [
+    {
+      "transactionId": "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+      "basis": "local-objective",
+      "rationale": "The accepted contribution gives necessary correlation tests for candidate two-letter Marton gains by specializing the existing conditional-product residual framework, so the multiletter Marton achievability program and its conditional-product no-gain thread are the narrowest coherent local objective and thread.",
+      "relatedProgramIds": [
+        "program/multiletter-marton-achievability"
+      ]
+    }
+  ]
+}
