@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 2,
+  "operations": [
+    {
+      "entityKind": "program",
+      "entityId": "program/multiletter-marton-achievability",
+      "baseDigest": "sha256:6c7718000113daa0ad7b1767bd542a91bfb79716eb0171bcc337d5a3d7d13aa1",
+      "value": {
+        "id": "program/multiletter-marton-achievability",
+        "parentId": "root",
+        "title": "Multiletter Marton achievability",
+        "objective": "Determine whether finite-letter Marton coding can improve half-skew BSSC achievable sum rates and rigorously characterize structural restrictions on candidate multiletter witnesses.",
+        "status": "active",
+        "parentThreadIds": [
+          "root/multiletter-marton-achievability"
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "program/multiletter-marton-achievability/conditional-product-no-gain",
+      "baseDigest": null,
+      "value": {
+        "id": "program/multiletter-marton-achievability/conditional-product-no-gain",
+        "programId": "program/multiletter-marton-achievability",
+        "title": "Conditional-product no-gain structure",
+        "summary": "Characterize conditional-product Marton architectures that cannot yield multiletter gains and develop decomposition-relative correlation tests for remaining coupled candidates.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/conditional-product-marton-no-gain-result",
+      "baseDigest": null,
+      "value": {
+        "id": "item/conditional-product-marton-no-gain-result",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Conditional-product Marton no-gain theorem and correlation ledger",
+        "summary": "Accepted statement:\n\nLet T be any finite receiver-skew two-receiver broadcast channel, and let M_T be its one-letter private-message Marton sum-rate. For every n >= 1, the supremum of the n-letter Marton functional over laws P(w,u^n,v^n,x^n)=P(w) product_i P_i(u_i,v_i,x_i|w), with aggregate U=(U_i) and V=(V_i), equals n M_T. The common W is arbitrary and may correlate coordinates unconditionally. Consequently, any strict two-letter gain for the half-skew BSSC must use a law outside this conditional-product class: every chosen coordinate-packet decomposition under which the factorization could be tested must fail it. For the broader class of arbitrary finite tuple laws P(w,u^n,v^n,x^n), with a chosen aggregate U=(U_i), V=(V_i) and the product channel, the exact total-correlation residual identity in README equation (11) holds, so any strict gain must satisfy the correlation-balance inequality (13) for that decomposition. Trivial constant padding always supplies a tuple representation, but the ledger and its pruning usefulness depend on the noncanonical decomposition. These results do not establish unrestricted Marton additivity, binary-input tightness, a capacity bound, or the exact BSSC capacity.\n\nThe equations expressly incorporated by that accepted statement are, for the chosen tuple decomposition,\n\n\\[\n\\begin{aligned}\n&L_{1/2,T^{\\otimes n}}(P)-\\sum_iL_{1/2,T}(P^{(i)})\\\\\n&\\quad=\\operatorname{TC}(U^n\\mid W)+G_{UY}+G_{VZ}-G_{UV}\\\\\n&\\qquad\\quad-\\tfrac12\\big[\\operatorname{TC}(Y^n\\mid W)+\\operatorname{TC}(Y^n)+\\operatorname{TC}(Z^n\\mid W)+\\operatorname{TC}(Z^n)\\big],\n\\end{aligned}\n\\]\n\nand any strict gain forces\n\n\\[\n\\operatorname{TC}(U^n\\mid W)+G_{UY}+G_{VZ}-G_{UV}\n>\\tfrac12\\big[\\operatorname{TC}(Y^n\\mid W)+\\operatorname{TC}(Y^n)+\\operatorname{TC}(Z^n\\mid W)+\\operatorname{TC}(Z^n)\\big].\n\\]\n\nHere \\(\\operatorname{TC}(A^n\\mid C)=\\sum_iH(A_i\\mid C)-H(A^n\\mid C)\\), \\(\\operatorname{TC}(A^n)=\\sum_iH(A_i)-H(A^n)\\), and\n\\[\n\\begin{aligned}\nG_{UY}&=\\sum_iH(Y_i\\mid U_i,W)-H(Y^n\\mid U^n,W),\\\\\nG_{VZ}&=\\sum_iH(Z_i\\mid V_i,W)-H(Z^n\\mid V^n,W),\\\\\nG_{UV}&=\\sum_iH(U_i\\mid V_i,W)-H(U^n\\mid V^n,W).\n\\end{aligned}\n\\]\n\nScope qualifications (verbatim):\n- The theorem applies to finite receiver-skew two-receiver broadcast channels and to the specified conditional-product factorization with a common W that may induce unconditional coordinate correlation.\n- A strict-gain law must fail the conditional-product factorization for every exact chosen coordinate-packet decomposition to which the theorem applies.\n- For arbitrary tuple laws, the residual ledger and correlation-balance condition are relative to the chosen aggregate coordinate decomposition; they are noncanonical.\n- Inequality (13) is only a necessary condition for strict gain, not a sufficient condition.\n- Constant padding supplies a tuple representation, but does not make the ledger canonical or necessarily useful for pruning.\n- The result does not establish unrestricted Marton additivity, binary-input tightness, a capacity bound, or the exact half-skew BSSC capacity.",
+        "claimRefs": [
+          {
+            "transactionId": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+            "claimKey": "bssc-sum-capacity/conditional-product-marton-no-gain"
+          }
+        ],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/conditional-product-marton-no-gain-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "item/conditional-product-marton-no-gain-proof",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Receiver-skew symmetrization and entropy-ledger proof",
+        "summary": "Proof used to establish the linked accepted claim. Receiver-skew reflection followed by fair-selector symmetrization identifies the one-letter Marton supremum with its midpoint affine functional without assuming attainment. Under the stated conditional-product factorization, the satellite mutual-information terms add exactly coordinatewise, while the common-output terms are subadditive; applying the one-letter bound to each coordinate gives the upper bound n M_T. Independent epsilon-optimal one-letter copies give the reverse inequality. For arbitrary tuple laws over the product channel, direct entropy expansion yields the accepted total-correlation residual identity and makes the stated correlation-balance inequality necessary for any strict gain. This proof item is limited to the linked accepted claim and does not establish unrestricted Marton additivity, binary-input tightness, a capacity bound, or exact BSSC capacity.",
+        "claimRefs": [
+          {
+            "transactionId": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+            "claimKey": "bssc-sum-capacity/conditional-product-marton-no-gain"
+          }
+        ],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+        ],
+        "dependencyItemIds": [
+          "item/conditional-product-marton-no-gain-result"
+        ]
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+      "claimKeys": [
+        "bssc-sum-capacity/conditional-product-marton-no-gain"
+      ],
+      "directProgramId": "program/multiletter-marton-achievability",
+      "directThreadIds": [
+        "program/multiletter-marton-achievability/conditional-product-no-gain"
+      ],
+      "itemIds": [
+        "item/conditional-product-marton-no-gain-result",
+        "item/conditional-product-marton-no-gain-proof"
+      ]
+    }
+  ],
+  "placementAudits": [
+    {
+      "transactionId": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+      "basis": "local-objective",
+      "rationale": "The accepted theorem directly restricts multiletter Marton architectures and supplies a decomposition-relative pruning condition for coupled candidate witnesses, so the existing multiletter Marton achievability program is the narrowest coherent local objective.",
+      "relatedProgramIds": [
+        "program/multiletter-marton-achievability"
+      ]
+    }
+  ]
+}
