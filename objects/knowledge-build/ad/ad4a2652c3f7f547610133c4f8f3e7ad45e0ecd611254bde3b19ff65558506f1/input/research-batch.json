@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 3,
+  "problemId": "bssc-sum-capacity",
+  "baseProgramStateDigest": "sha256:b734fdf09cad20af435f80996326cd0726b28838b2dd7a579e048a02fb1936b1",
+  "judgments": [
+    {
+      "judgmentId": "sha256:661b04e86cee9f7bc8c049a711a48208664e5b79a0509fbae1c24d24a7da1652",
+      "runDigest": "sha256:31e2918e0dcc7e660af4e1ea431a83593af8835ca3109a1afc2f56b316e0d212",
+      "subjectTransactionId": "0734a4dff6bdc22e30e66e3607e66adda722639c",
+      "acceptedClaimKeys": [],
+      "excludedAssessments": [
+        {
+          "claimKey": "bssc-sum-capacity/two-letter-marton-four-run-execution-attestation",
+          "status": "indeterminate",
+          "premiseStatus": "satisfied",
+          "summary": "The frozen-artifact verifier establishes internal hash consistency, four records with the claimed cases, shapes and metadata, complete hexadecimal binary64 candidate arrays, START/RESULT/END transcripts, admissible recorded best-iteration fields, and independent objective recomputation. The stored primary values are numerically below the directed lower endpoint certified by the declared reference. However, the attested command executed only verify.py against pre-existing artifacts; it did not run the optimizer. Thus it does not establish that four searches were freshly replayed, that 30,000 Adam updates actually occurred in each, that the persisted arrays were genuinely the best encountered during those runs, or that exactly those and no other relevant fresh executions occurred. This provenance gap is not a counterexample, so the claim remains indeterminate.",
+          "scopeQualifications": [
+            "The four claimed decimals are supported as stored primary binary64 values; independent recomputation produced 0.7232857688438705, 0.7135420139310601, 0.7232857688438556, and 0.7191672502956984, differing within the verifier's 2×10^-14-nat agreement tolerance.",
+            "The artifact concerns only four U=V=6 runs: seed indices 0 and 12 for W=4 and W=8. It supplies no evidence for the 44 unreplayed runs, any U=V=8 run, or a broader campaign.",
+            "The results are negative binary64 evidence only, not directed objective enclosures, optimizer-completeness evidence, KKT or global-optimality certificates, an additivity theorem, an unrestricted upper bound, or a capacity converse.",
+            "Some binary64 arrays have nonzero exact simplex residuals; absent normalization and directed evaluation, the close comparisons do not certify that the exact real objective of a normalized probability law lies below the threshold."
+          ],
+          "evidenceIssues": [
+            "verify.py consumed pre-existing run records, transcripts, metadata, and candidate arrays but did not invoke run_case.py, import or execute NumPy, or replay Adam optimization.",
+            "Hashes and cross-file consistency establish artifact integrity and internal consistency, not the historical occurrence of the asserted executions.",
+            "The 30,000-step and best-encountered assertions are metadata assertions not independently witnessed by execution.",
+            "The evidence does not establish the exclusivity assertion that exactly these four relevant fresh executions occurred.",
+            "Independent recomputed values are not bit-for-bit identical to the stored primary values, although all discrepancies satisfy the verifier's stated tolerance."
+          ],
+          "evidenceTransactionIds": [
+            "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+          ],
+          "requiredDependencyTransactionIds": [
+            "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+          ]
+        }
+      ]
+    }
+  ]
+}
