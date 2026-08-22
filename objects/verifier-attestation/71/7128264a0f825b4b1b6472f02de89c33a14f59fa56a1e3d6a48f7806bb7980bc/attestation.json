@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "subject": {
+    "transactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+    "contributionId": "marton-multiletter-foundation-repair",
+    "path": "problems/bssc-sum-capacity/contributions/marton-multiletter-foundation-repair"
+  },
+  "verifier": {
+    "id": "python-stdlib-3-13-v1",
+    "specDigest": "sha256:fc7ed06b77396fabc1da84694b4d8a08800843f41ad8ca4b9cd666b67ba60884",
+    "implementation": "oci-command-v1"
+  },
+  "environment": {
+    "kind": "oci",
+    "image": "python@sha256:5f55cdf0c5d9dc1a415637a5ccc4a9e18663ad203673173b8cda8f8dcacef689",
+    "platform": "linux/amd64",
+    "network": "none",
+    "readOnlyRoot": true,
+    "user": "65534:65534",
+    "capabilities": [],
+    "noNewPrivileges": true,
+    "memoryBytes": 536870912,
+    "cpuCount": 1,
+    "pidsLimit": 128,
+    "tmpfsBytes": 67108864
+  },
+  "environmentDigest": "sha256:706bbc3e9afe2e838ceb1436a3246054d028cbdb86b33c8a21f5609584ca1e94",
+  "requestDigest": "sha256:6d003cd966e84cab34b7865be86c7b6beed9b80be84fe6b2488940f4de49f23d",
+  "inputs": [
+    {
+      "path": "README.md",
+      "digest": "sha256:6be5c69775f5316ae9f3bb4c3fb5ee03ecf84d3b411948e15dc40cee4c1455fc",
+      "bytes": 11386
+    },
+    {
+      "path": "claims.json",
+      "digest": "sha256:a742ff0834934235afd4b0fab555a9fbc603eff3c76861b4d123b40141586449",
+      "bytes": 2243
+    },
+    {
+      "path": "interval_certificate.json",
+      "digest": "sha256:cc42ffacba86122ce7c47250b36e545500a2e57263c8a5ae3dfd18b6691c5d4a",
+      "bytes": 1489
+    },
+    {
+      "path": "premises.json",
+      "digest": "sha256:d75ec8ff5d9a0a1d1a448be222042022e78627a1d9b009fc3a7cf4e6efc1c22e",
+      "bytes": 2796
+    },
+    {
+      "path": "verification.json",
+      "digest": "sha256:fb439106f26e3c02e2cb16997c4919e2518c022124161761db27037d919af564",
+      "bytes": 228
+    },
+    {
+      "path": "verify_repair.py",
+      "digest": "sha256:b98d1815d3edd7d6b7b25ed02757bea8684b03333b8de5e6dec099a10a9f872f",
+      "bytes": 9012
+    }
+  ],
+  "invocation": {
+    "executable": "python3",
+    "fixedArguments": [
+      "-I",
+      "-B"
+    ],
+    "entrypoint": "verify_repair.py",
+    "arguments": [],
+    "timeoutSeconds": 300,
+    "maximumOutputBytes": 262144,
+    "successExitCodes": [
+      0
+    ]
+  },
+  "result": {
+    "status": "passed",
+    "exitCode": 0,
+    "timedOut": false
+  },
+  "outputs": {
+    "stdout": {
+      "digest": "sha256:8c7377c339f5389657b9c709c20fbcb2c6c0d82c05ee91ab5e27620cd6fce3c0",
+      "bytes": 1134
+    },
+    "stderr": {
+      "digest": "sha256:fcae9d4981f79f9c493419a05163e6d4fef256c3bb1d5697eaf484f0b34257d1",
+      "bytes": 882
+    }
+  },
+  "producer": {
+    "implementation": "math-flow-oci-attestation-producer-v1",
+    "mathFlowVersion": "0.6.0"
+  },
+  "attestationId": "sha256:d9850a63cde19175b798d1bbe47751a78003b40858c11fd719564a0abe6386e9"
+}
