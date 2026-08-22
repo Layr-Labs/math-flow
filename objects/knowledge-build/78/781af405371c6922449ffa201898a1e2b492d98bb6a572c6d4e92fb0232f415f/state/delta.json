@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 2,
+  "operations": [
+    {
+      "entityKind": "thread",
+      "entityId": "program/auxiliary-receiver-converses/uniform-receiver-curve-continuum-bridge",
+      "baseDigest": null,
+      "value": {
+        "id": "program/auxiliary-receiver-converses/uniform-receiver-curve-continuum-bridge",
+        "programId": "program/auxiliary-receiver-converses",
+        "title": "Uniform receiver-curve continuum bridge",
+        "summary": "Develop compact uniform receiver-curve approximations and quantified stability of the accepted 30-row auxiliary-receiver system, within the exact relaxed-system and strict-feasibility scope.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [
+          "Requires the accepted premise-bound 30-row system in transaction e3c1036ca607539a5ebcddf3058e6014ac5c1cd9.",
+          "Requires the accepted finite-grid posterior-measure reduction in transaction e2bbc1e210e496b3c834e658820fc90287f3b2c0."
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "1be513bb3d8f67f54e299ea0085cd2ef05144711"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/uniform-receiver-curve-continuum-bridge-result",
+      "baseDigest": null,
+      "value": {
+        "id": "item/uniform-receiver-curve-continuum-bridge-result",
+        "programId": "program/auxiliary-receiver-converses",
+        "type": "result",
+        "title": "Uniform receiver-curve continuum bridge and 30-row stability",
+        "summary": "Accepted statement:\n\nUsing the accepted premise-bound 30-row system and finite-grid posterior-measure reduction of transactions e3c1036ca607539a5ebcddf3058e6014ac5c1cd9 and e2bbc1e210e496b3c834e658820fc90287f3b2c0, respectively: (i) every binary-input receiver curve obeys |J_A(p)-J_A(p')| <= 2 h_2(|p-p'|); (ii) the generalized mean-one-half posterior-measure receiver curves form a compact subset of C([0,1]) whose finite-output curves are uniformly dense, and for every N-point grid Q containing {0,1/2,1} there is an at-most-N-output exact grid match with sup-norm error at most min{1,4 h_2(Delta_Q)}, preserving an already reflected pair on reflection-closed Q; and (iii) replacing G,K by curves within epsilon_G,epsilon_K changes every one of the accepted 30 row right sides by at most a_r epsilon_G+b_r epsilon_K with the displayed audited coefficients, universally at most 4 epsilon_G+4 epsilon_K. Hence the same hierarchy is feasible under those explicit row relaxations, and strictly feasible witnesses persist under sufficiently fine approximations. No unrelaxed optimized-value convergence, exact full-functional cardinality, reflected optimality, minimax interchange, numerical capacity improvement, or exact sum-capacity is asserted.\n\nScope qualifications (verbatim):\n- Validity is premise-bound to the accepted 30-row system from e3c1036ca607539a5ebcddf3058e6014ac5c1cd9, including its external theorem premise.\n- The approximation result preserves an already reflected receiver pair on a reflection-closed grid; it does not symmetrize arbitrary pairs or establish reflected optimality.\n- Feasibility is established under explicit row relaxations; no unrelaxed optimized-value convergence is proved.\n- No exact full-functional cardinality bound, minimax interchange, numerical capacity improvement, or exact sum-capacity is established.\n- Computational attestations check the encoded dependency list, 30-row coefficient algebra, global coefficient bound, and tested grid formulas; the entropy, compactness, Carathéodory, and arbitrary-grid arguments are established mathematically rather than by those computations.",
+        "claimRefs": [
+          {
+            "transactionId": "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+            "claimKey": "bssc-sum-capacity/uniform-receiver-curve-continuum-bridge"
+          }
+        ],
+        "sourceTransactionIds": [
+          "1be513bb3d8f67f54e299ea0085cd2ef05144711"
+        ],
+        "dependencyItemIds": [
+          "item/theorem9-cited-premise-foundations-result",
+          "item/finite-grid-q0-foundations-result"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/uniform-receiver-curve-continuum-bridge-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "item/uniform-receiver-curve-continuum-bridge-proof",
+        "programId": "program/auxiliary-receiver-converses",
+        "type": "proof",
+        "title": "Receiver-curve continuity, compactness, approximation, and stability proof",
+        "summary": "Proof used to establish the linked accepted claim. It uses a common-mixture entropy argument for the alphabet-independent binary-input modulus; the mean-one-half posterior-measure representation, weak compactness, and the common modulus for compactness in the uniform norm; Carathéodory exact matching on finite grids followed by the modulus for the stated full-curve error; and posterior-conditioning identities together with the accepted receiver-term audit to bound perturbations of all 30 row right sides. The final step transfers feasible hierarchies to explicitly row-relaxed systems and preserves witnesses having sufficient strict slack. This proof item is limited to the linked claim and does not establish any excluded unrelaxed convergence, cardinality, reflected-optimality, minimax, numerical-capacity, or exact-capacity conclusion.",
+        "claimRefs": [
+          {
+            "transactionId": "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+            "claimKey": "bssc-sum-capacity/uniform-receiver-curve-continuum-bridge"
+          }
+        ],
+        "sourceTransactionIds": [
+          "1be513bb3d8f67f54e299ea0085cd2ef05144711"
+        ],
+        "dependencyItemIds": [
+          "item/theorem9-cited-premise-foundations-result",
+          "item/finite-grid-q0-foundations-result",
+          "item/uniform-receiver-curve-continuum-bridge-result"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/uniform-receiver-curve-stability-audit-tool",
+      "baseDigest": null,
+      "value": {
+        "id": "item/uniform-receiver-curve-stability-audit-tool",
+        "programId": "program/auxiliary-receiver-converses",
+        "type": "tool",
+        "title": "Deterministic 30-row receiver-curve stability audit",
+        "summary": "Tool used for the computationally audited portion of the linked accepted claim. It checks the exact required-dependency list, independently rebuilds the accepted generic 30-row path system, combines identical signed receiver terms, verifies every displayed rowwise stability-coefficient pair and the universal (4,4) coefficient bound, and checks the tested reflected uniform-grid support and mesh formulas. It does not computationally prove the entropy-continuity, compactness, Carathéodory, or arbitrary-grid arguments.",
+        "claimRefs": [
+          {
+            "transactionId": "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+            "claimKey": "bssc-sum-capacity/uniform-receiver-curve-continuum-bridge"
+          }
+        ],
+        "sourceTransactionIds": [
+          "1be513bb3d8f67f54e299ea0085cd2ef05144711"
+        ],
+        "dependencyItemIds": [
+          "item/theorem9-cited-premise-foundations-result",
+          "item/finite-grid-q0-foundations-result",
+          "item/uniform-receiver-curve-continuum-bridge-result"
+        ]
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+      "claimKeys": [
+        "bssc-sum-capacity/uniform-receiver-curve-continuum-bridge"
+      ],
+      "directProgramId": "program/auxiliary-receiver-converses",
+      "directThreadIds": [
+        "program/auxiliary-receiver-converses/uniform-receiver-curve-continuum-bridge"
+      ],
+      "itemIds": [
+        "item/uniform-receiver-curve-continuum-bridge-result",
+        "item/uniform-receiver-curve-continuum-bridge-proof",
+        "item/uniform-receiver-curve-stability-audit-tool"
+      ]
+    }
+  ],
+  "placementAudits": [
+    {
+      "transactionId": "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+      "basis": "local-objective",
+      "rationale": "The accepted claim directly advances the existing auxiliary-receiver converse objective by connecting its finite-grid posterior representation to compact uniform receiver curves and by quantifying stability of the accepted 30-row system. Its scope does not directly span the incomparable code-induced-converse or relaxed-UV-functional programs.",
+      "relatedProgramIds": [
+        "program/auxiliary-receiver-converses"
+      ]
+    }
+  ]
+}
