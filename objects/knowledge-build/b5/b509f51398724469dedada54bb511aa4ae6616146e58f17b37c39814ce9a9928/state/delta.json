@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 2,
+  "operations": [
+    {
+      "entityKind": "program",
+      "entityId": "program/multiletter-marton-achievability",
+      "baseDigest": "sha256:56a33491374c09ff22b66b5146f0dda7d662939a91adf9cffbbfd17a5ee1df43",
+      "value": {
+        "id": "program/multiletter-marton-achievability",
+        "parentId": "root",
+        "title": "Multiletter Marton achievability",
+        "objective": "Determine whether finite-letter Marton coding can improve half-skew BSSC achievable sum rates and rigorously characterize structural restrictions on candidate multiletter witnesses.",
+        "status": "active",
+        "parentThreadIds": [
+          "root/multiletter-marton-achievability"
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "program/multiletter-marton-achievability/marginal-correlation-pruning",
+      "baseDigest": "sha256:2e50097a54529b8e9f4b5865f831d8c4a746e2c40b190a2d19af897b576268e3",
+      "value": {
+        "id": "program/multiletter-marton-achievability/marginal-correlation-pruning",
+        "programId": "program/multiletter-marton-achievability",
+        "title": "Two-letter marginal and correlation pruning",
+        "summary": "Develop necessary marginal-balance, output-decorrelation, input-covariance, and symmetry-family restrictions on candidate two-letter Marton improvements.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [
+          "Requires the accepted two-letter Marton-to-input bounds in transaction 33a5944dca980bf94cc869c6c7dee2d04385ff58.",
+          "Requires the accepted exact directed randomized-time-division threshold in transaction 88a1004f309460f3ec1cacdae88d30f88559f9bc."
+        ],
+        "sourceTransactionIds": [
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-output-covariance-curvature-result",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-output-covariance-curvature-result",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Paired-output covariance curvature and sharpened input-covariance necessity",
+        "summary": "Accepted statement:\n\nFor every input law on the governed half-skew BSSC product channel P^{otimes 2}, let c_in=P(X_1X_2=11)-Pr[X_1=1]Pr[X_2=1] and C_out=I(Y_1;Y_2)+I(Z_1;Z_2). A paired-receiver binary-table curvature argument proves the unconditional inequality C_out >= 31 c_in^2/(20 ln 2). Canonical transaction 9bb22afe5abd3e1d9f419c1717bd61bb33a958ff supplies the necessary inequality C_out < 7/160 for any finite two-letter Marton law whose unnormalized value exceeds twice the optimal one-letter randomized-time-division value. Consequently every such gain forces |c_in| < sqrt(7 ln 2/248) < 7/50. This is a necessary condition only; it does not construct a Marton gain, rule one out, tensorize Marton's functional, or give a capacity converse.\n\nScope qualifications (verbatim):\n- The reference is required only for the Marton-gain implication C_out < 7/160; the curvature inequality is proved within the subject.\n- The conclusion applies to finite two-letter Marton laws whose unnormalized value exceeds twice the optimal one-letter randomized-time-division value.\n- The result is solely a necessary covariance condition; it neither constructs nor rules out a gain, tensorizes Marton's functional, nor proves a capacity converse.",
+        "claimRefs": [
+          {
+            "transactionId": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+            "claimKey": "bssc-sum-capacity/two-letter-output-covariance-curvature"
+          }
+        ],
+        "sourceTransactionIds": [
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2"
+        ],
+        "dependencyItemIds": [
+          "item/two-letter-marton-marginal-correlation-pruning-result"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-output-covariance-curvature-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-output-covariance-curvature-proof",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Paired binary-output-table curvature proof",
+        "summary": "Proof used to establish the linked accepted claim. It parametrizes each receiver's binary joint output table along its fixed-marginal covariance segment, pairs the eight reciprocal cell terms using the BSSC marginal identities, and proves a uniform reciprocal-curvature lower bound through an exact cubic positivity argument. Memorylessness identifies both output covariances as c_in/4; integrating the resulting KL curvature twice from independence yields C_out >= 31 c_in^2/(20 ln 2), including boundary cases by continuity. Combining this with the required accepted implication C_out < 7/160 gives the stated strict covariance condition. This proof item is limited to the linked necessary condition and establishes none of the expressly excluded gain, no-gain, tensorization, or capacity conclusions.",
+        "claimRefs": [
+          {
+            "transactionId": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+            "claimKey": "bssc-sum-capacity/two-letter-output-covariance-curvature"
+          }
+        ],
+        "sourceTransactionIds": [
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2"
+        ],
+        "dependencyItemIds": [
+          "item/two-letter-marton-marginal-correlation-pruning-result",
+          "item/two-letter-output-covariance-curvature-result"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "item/two-letter-output-covariance-curvature-audit-tool",
+      "baseDigest": null,
+      "value": {
+        "id": "item/two-letter-output-covariance-curvature-audit-tool",
+        "programId": "program/multiletter-marton-achievability",
+        "type": "tool",
+        "title": "Exact reciprocal-curvature and directed covariance audit",
+        "summary": "Tool used for the computationally audited portion of the linked accepted claim. It verifies the exact required dependency and claim metadata, the rational identities and derivative bracket underlying the paired reciprocal-cell lemma, the curvature rescaling to 31/20, and directed logarithmic comparison proving sqrt(7 ln 2/248) < 7/50. It corroborates these mechanical steps only; the information-theoretic reduction and twice-integrated curvature argument are supplied by the linked proof.",
+        "claimRefs": [
+          {
+            "transactionId": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+            "claimKey": "bssc-sum-capacity/two-letter-output-covariance-curvature"
+          }
+        ],
+        "sourceTransactionIds": [
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2"
+        ],
+        "dependencyItemIds": [
+          "item/two-letter-marton-marginal-correlation-pruning-result",
+          "item/two-letter-output-covariance-curvature-result",
+          "item/two-letter-output-covariance-curvature-proof"
+        ]
+      }
+    }
+  ],
+  "contributions": [
+    {
+      "transactionId": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+      "claimKeys": [
+        "bssc-sum-capacity/two-letter-output-covariance-curvature"
+      ],
+      "directProgramId": "program/multiletter-marton-achievability",
+      "directThreadIds": [
+        "program/multiletter-marton-achievability/marginal-correlation-pruning"
+      ],
+      "itemIds": [
+        "item/two-letter-output-covariance-curvature-result",
+        "item/two-letter-output-covariance-curvature-proof",
+        "item/two-letter-output-covariance-curvature-audit-tool"
+      ]
+    }
+  ],
+  "placementAudits": [
+    {
+      "transactionId": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+      "basis": "local-objective",
+      "rationale": "The accepted result sharpens a necessary input-covariance restriction for candidate two-letter Marton improvements, so the existing multiletter Marton achievability program and its marginal-correlation-pruning thread are the narrowest coherent local objective and credit context.",
+      "relatedProgramIds": [
+        "program/multiletter-marton-achievability"
+      ]
+    }
+  ]
+}
