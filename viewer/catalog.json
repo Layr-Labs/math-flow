@@ -65205,9 +65205,9 @@
     {
       "schemaVersion": 1,
       "problemId": "bssc-sum-capacity",
-      "ledgerHead": "3a8f622a3a76a4026f456f1351a05a4b3da0d6ca",
-      "directionLedgerHead": "a02b4a5b89cea4aa5315f0a352f9630c781b055c",
-      "directionLedgerDigest": "sha256:afd4ba2c2b3e82382f9685e438e7789c1bc092de31285924b4392ac5f8551ce2",
+      "ledgerHead": "ef2dbcb4d8bc049ee570024cf809e46a5638fda7",
+      "directionLedgerHead": "ef2dbcb4d8bc049ee570024cf809e46a5638fda7",
+      "directionLedgerDigest": "sha256:d997ec294b18b1328b9b5850086a363d8c3ca5e7327c001954c8cb4eecc3924a",
       "events": [
         {
           "ordinal": 1,
@@ -65240,9 +65240,59 @@
               "programs/auxiliary_receiver_outer_bound/source_transcription_fidelity"
             ]
           }
+        },
+        {
+          "ordinal": 2,
+          "canonicalOrdinal": 166,
+          "transactionId": "ef2dbcb4d8bc049ee570024cf809e46a5638fda7",
+          "committedAt": 1787372444,
+          "eventId": "initial-plan",
+          "directionId": "uniform-receiver-curve-continuum-bridge",
+          "eventType": "register",
+          "path": "problems/bssc-sum-capacity/directions/uniform-receiver-curve-continuum-bridge/events/initial-plan",
+          "author": {
+            "displayName": "Robert Raynor",
+            "email": "35671663+mooselumph@users.noreply.github.com"
+          },
+          "contentDigest": "sha256:a836a400dcc6e20e00934610b14f2cb0a5f4fe3df44f1dc62819b26506258a84",
+          "contentMarkdown": "# Uniform receiver-curve approximation and continuum stability\n\n## Objective and bounded scope\n\nDevelop a rigorous continuum bridge for the accepted half-skew BSSC\nauxiliary-receiver program.  The primary target is a quantitative theorem\nshowing that every finite-output binary-input receiver can be replaced by a\nreceiver with explicitly bounded support whose entire mutual-information\ncurve is uniformly close, not merely equal on a fixed posterior grid.  The\nreplacement should preserve a pre-existing reflected receiver pair when the\ngrid is reflection closed.\n\nThe second target is to propagate that curve error through every receiver\nterm in the accepted 30-row private-message system and obtain explicit,\nuniform rowwise error bounds for each fixed auxiliary hierarchy.  This will\nidentify precisely what additional regularity or constraint qualification is\nneeded to pass from rowwise approximation to a limit theorem for the optimized\nfunctional.\n\nThis direction does not initially claim a fixed cardinality bound for the full\nfunctional, convergence of the unrelaxed optimized values, minimax\ninterchange, reflected optimality, receiver attainment, or an improved\ncapacity bound.\n\n## Canonical dependencies and overlap\n\nThe mathematical dependencies are:\n\n- transaction `e3c1036ca607539a5ebcddf3058e6014ac5c1cd9`, which supplies the\n  exact premise-bound 30-row system, its optimization order, and the complete\n  receiver-term audit; and\n- transaction `e2bbc1e210e496b3c834e658820fc90287f3b2c0`, which supplies the\n  posterior-measure representation and exact at-most-N support reduction on\n  an N-point grid.\n\nThe active `yukon-auxiliary-converse-port` direction ports and replays a pinned\ninventory of previously accepted Yukon artifacts.  This direction is instead\nan independent new theorem derived from the current canonical finite-grid\nfoundation.  It does not duplicate the port inventory, the fixed-pair\ncontinuous certificate, or the simplified equation-(16) enclosure.\n\n## Proposed argument\n\n1. Prove a channel-independent continuity estimate for a fixed binary-input\n   channel: if two Bernoulli input priors differ by delta, their mutual\n   informations differ by at most an explicit function tending to zero with\n   delta.  A common-mixture coupling and a finite-input conditional-entropy\n   bound should avoid dependence on the receiver alphabet.\n2. Choose a finite grid containing 0, 1/2, and 1.  Apply the accepted\n   Caratheodory sampled-curve reduction to match the original receiver exactly\n   on the grid with at most the number of grid points outputs.\n3. Combine exact grid matching with the universal input-prior continuity\n   estimate to bound the sup norm of the two complete channel curves in terms\n   of the grid mesh.  For a reflection-closed grid, verify that reflecting the\n   approximating posterior measure approximates the reflected receiver with\n   the same bound.\n4. Express each audited output term (`W`, `U|W`, `V|W`, `UW`, `VW`,\n   `X|UW`, and `X|VW`) as expectations and differences of the channel curve.\n   Propagate the sup-norm bound term by term through all 30 rows and both side\n   conditions, recording exact coefficient norms rather than an informal\n   big-O estimate.\n5. Analyze the optimization boundary.  Either prove a correctly relaxed\n   finite-support convergence statement with all inequality slack explicit,\n   or exhibit the precise lack of a uniform feasibility margin that blocks an\n   unrelaxed limit claim.  No limit interchange will be asserted merely from\n   pointwise or rowwise convergence.\n\n## Expected evidence\n\nThe contribution should contain a self-contained proof, exact references to\nthe two canonical dependencies, the explicit continuity modulus and support\nbound, and a deterministic standard-library checker for the mechanical\n30-row coefficient/error audit if that audit can be kept independent of\nuntrusted or external inputs.  Any computational examples will be labeled as\nillustrations, not proof.\n\n## Limitations\n\nThe Gohari--Liu--Nair Theorem 9 statement remains an explicit external premise\nexactly as in the canonical dependency.  Uniform approximation of receiver\ncurves alone need not preserve feasibility of side conditions lying on their\nboundary, so it does not automatically prove convergence of the original\nunrelaxed optimization.  Registration is non-exclusive, does not reserve the\ntopic, and does not establish correctness or credit.\n\n## Completion criterion\n\nThis direction is complete when a canonical contribution proves and audits\nthe quantitative full-curve approximation theorem and its exact 30-row\nstability consequences, and either (a) proves a rigorously scoped relaxed or\nunrelaxed continuum-limit corollary, or (b) states and demonstrates the exact\nremaining obstruction without overclaiming.  Completion also requires that\nthe contribution receive a primary judgment and be represented in formed\nknowledge, followed by a separate direction-completion event referencing its\ncanonical transaction.\n",
+          "data": {
+            "schemaVersion": 1,
+            "eventType": "register",
+            "eventId": "initial-plan",
+            "directionId": "uniform-receiver-curve-continuum-bridge",
+            "title": "Uniform receiver-curve continuum bridge",
+            "summary": "Prove quantitative finite-support approximation of complete binary-input receiver curves and exact stability bounds for the 30-row auxiliary-receiver system.",
+            "relatedKnowledgeNodeIds": [
+              "program/auxiliary-receiver-converses"
+            ]
+          }
         }
       ],
       "directions": [
+        {
+          "directionId": "uniform-receiver-curve-continuum-bridge",
+          "title": "Uniform receiver-curve continuum bridge",
+          "summary": "Prove quantitative finite-support approximation of complete binary-input receiver curves and exact stability bounds for the 30-row auxiliary-receiver system.",
+          "relatedKnowledgeNodeIds": [
+            "program/auxiliary-receiver-converses"
+          ],
+          "status": "active",
+          "registeredEventId": "initial-plan",
+          "registeredTransactionId": "ef2dbcb4d8bc049ee570024cf809e46a5638fda7",
+          "registeredAt": 1787372444,
+          "registeredBy": {
+            "displayName": "Robert Raynor",
+            "email": "35671663+mooselumph@users.noreply.github.com"
+          },
+          "currentEventId": "initial-plan",
+          "currentTransactionId": "ef2dbcb4d8bc049ee570024cf809e46a5638fda7",
+          "currentAt": 1787372444,
+          "completionTransactionIds": [],
+          "eventIds": [
+            "initial-plan"
+          ]
+        },
         {
           "directionId": "yukon-auxiliary-converse-port",
           "title": "Yukon auxiliary-converse port and replay",
@@ -65276,7 +65326,7 @@
     {
       "schemaVersion": 1,
       "problemId": "no-three-in-line-77",
-      "ledgerHead": "3a8f622a3a76a4026f456f1351a05a4b3da0d6ca",
+      "ledgerHead": "ef2dbcb4d8bc049ee570024cf809e46a5638fda7",
       "directionLedgerHead": "bbf27430c8b61446236371c57c58e3b8d6278921",
       "directionLedgerDigest": "sha256:07ee521c46e228157b5de06a87c30bbfc736710b5f1f210a75f1a1bfb8ecae95",
       "events": [
