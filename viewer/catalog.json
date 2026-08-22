@@ -67429,9 +67429,9 @@
     {
       "schemaVersion": 1,
       "problemId": "bssc-sum-capacity",
-      "ledgerHead": "b11b83c7b0b8e4131011239edb5db3fa3a0018eb",
-      "directionLedgerHead": "b11b83c7b0b8e4131011239edb5db3fa3a0018eb",
-      "directionLedgerDigest": "sha256:e39a6b195624cd75f3f000ee43edf483e65721bafcc51387ecdece09b97527c9",
+      "ledgerHead": "7e1e52fe42fde37ba1964ef9ae5062daf8bb55f8",
+      "directionLedgerHead": "7e1e52fe42fde37ba1964ef9ae5062daf8bb55f8",
+      "directionLedgerDigest": "sha256:b5df701d6fba62b5b53667043bf6db79e436c0ba029a053f209674f739cde8f6",
       "events": [
         {
           "ordinal": 1,
@@ -67518,9 +67518,59 @@
               "1be513bb3d8f67f54e299ea0085cd2ef05144711"
             ]
           }
+        },
+        {
+          "ordinal": 4,
+          "canonicalOrdinal": 169,
+          "transactionId": "7e1e52fe42fde37ba1964ef9ae5062daf8bb55f8",
+          "committedAt": 1787378681,
+          "eventId": "initial-plan",
+          "directionId": "bssc-multiletter-marton-frontier",
+          "eventType": "register",
+          "path": "problems/bssc-sum-capacity/directions/bssc-multiletter-marton-frontier/events/initial-plan",
+          "author": {
+            "displayName": "Robert Raynor",
+            "email": "35671663+mooselumph@users.noreply.github.com"
+          },
+          "contentDigest": "sha256:8b042c89809c29a97cda2b196d5b8369cc396b61257dbde6c489c044dde65b36",
+          "contentMarkdown": "# BSSC multiletter Marton frontier after the August 2026 counterexamples\n\n## Objective and bounded scope\n\nDetermine whether a finite-block Marton construction for the half-skew BSSC\nstrictly improves the exact one-letter randomized-time-division value.  For\nthe BSSC `P`, write `M_n(P)` for the ordinary private-message Marton\nsum functional evaluated on the super-symbol channel `P^{\\otimes n}`, in\nbits per `n`-symbol super-use.  The first computational target is the exact\ntwo-letter threshold\n\n\\[\nM_2(P)>2(0.361642884421954615663441578150587\\ldots).\n\\]\n\nA certified witness above that threshold gives a new achievable BSSC sum\nrate.  A no-gain result will be claimed only for the exact family actually\ncovered; equality at one fixed blocklength is not a capacity converse.\n\n## New public context and canonical overlap\n\nTwo August 2026 primary sources change the general landscape without settling\nthe binary-input problem:\n\n- Huang--Liu--Liu, arXiv:2608.19869v1, proves that a finite broadcast channel\n  can satisfy `M_2(T)>2M_1(T)`.  Its certified base channel has three input\n  symbols, and its explicit unconstrained lift enlarges that alphabet.  The\n  paper explicitly leaves binary-input tightness open.\n- Liu--Huang, arXiv:2608.13170v1, gives ternary-input counterexamples to the\n  proposed Markovity structure of Marton optimizers.  It therefore prevents\n  use of that structure as an unqualified general theorem, but does not decide\n  the BSSC or its two-letter product.\n\nThe governed BSSC problem statement already records the exact one-letter\nrandomized-time-division lower endpoint.  Canonical transactions\n`14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9` and\n`f2360175f6f93f9dfa7e92feeb0674c3f6e1fc4a` concern separately relaxed UV\nscalar tensorization.  They provide useful comparison values but explicitly\ndo not tensorize the common joint-`(U,V,W)` Marton functional, so they do not\npreclude the present objective.  The active\n`yukon-auxiliary-converse-port` direction concerns converse artifacts and does\nnot overlap this achievability program.\n\n## Staged method\n\n1. **Immutable source audit.** Pin both August 2026 arXiv versions, their PDF\n   digests, and the authors' public reproduction commit.  Separate theorem\n   statements, reproducible numerical evidence, and limitations.  Record the\n   exact BSSC consequence: a finite super-symbol witness can improve the lower\n   endpoint, while neither recent counterexample currently supplies one.\n2. **Structural pruning.** Prove no-gain results for substantial BSSC\n   multiletter families before searching the remaining space.  The first\n   target is the class whose satellite laws factor across uses conditional on\n   an arbitrary common auxiliary `W`.  Track exactly where receiver-skew\n   symmetry, conditional independence, and the Marton max--min identity enter.\n3. **Finite witness interface.** Encode the `P^{\\otimes2}` marginals,\n   deterministic input maps, auxiliary laws, both common-information branches,\n   and the penalty `I(U;V\\mid W)` in an independently auditable evaluator.\n   Preserve exact rational probabilities and use outward-rounded evaluation\n   before treating a positive margin as a theorem.\n4. **Nonlocal search.** Search only architectures not excluded by the proved\n   factorization results.  Enumerate mapping types allowed by the known finite\n   Marton cardinality reductions, include nonrectangular and boundary maps,\n   use deterministic seeds, and retain complete witness data rather than only\n   objective decimals.  The 2020 local-tensorization theorem indicates that a\n   gain, if present, need not be an infinitesimal perturbation of a product\n   optimizer, so include genuinely nonlocal starts.\n5. **Certification or scoped non-finding.** If a candidate exceeds the exact\n   threshold, replace floating-point evidence by rational data and a directed\n   interval certificate for every information term.  Otherwise submit only a\n   reproducible, explicitly non-exhaustive non-finding or a proved restricted\n   no-gain theorem, never a global claim inferred from numerical search.\n\n## Expected evidence\n\nEach contribution will be atomic and will state the exact law family, channel\ncoupling assumptions (only the receiver marginals may affect the private\nmessage objective), logarithm base, cardinalities, normalization, thresholds,\nand trust boundary.  Preferred evidence is a self-contained analytic proof,\nexact rational witness tables, standard-library identity audits, and\noutward-rounded interval enclosures with deterministic coverage records.\nExternal source code will be inspected before execution and pinned by commit.\n\n## Limitations\n\nRegistration is non-exclusive and establishes neither correctness nor credit.\nThe August 2026 general counterexamples do not imply a BSSC gain.  Failure of\nthe general Markovity conjecture does not prove failure of any binary-specific\nrestriction.  A finite-grid, local, fixed-map, conditionally product, or\nfloating-point no-gain result does not establish `M_n(P)=nM_1(P)` outside\nits declared scope.  Even exact equality for every Marton blocklength would\nidentify the multiletter Marton rate, not by itself furnish a capacity\nconverse.\n\n## Completion criterion\n\nThis direction is complete when the recent-source audit and exact BSSC\nthreshold are canonically recorded, the conditional-product multiletter class\nis settled, and the remaining two-letter nonlocal search has produced either\n(a) a rigorously certified BSSC lower-bound improvement or (b) a reproducible\ncoverage artifact plus a mathematically explicit residual class.  Completion\nalso requires primary judgments and formed provenance for the contributions,\nfollowed by a separate direction-completion event referencing their canonical\ntransactions.\n",
+          "data": {
+            "schemaVersion": 1,
+            "eventType": "register",
+            "eventId": "initial-plan",
+            "directionId": "bssc-multiletter-marton-frontier",
+            "title": "BSSC multiletter Marton frontier",
+            "summary": "Audit the August 2026 Marton counterexamples, prove BSSC-specific multiletter no-gain structure, and search for a certified nonlocal two-letter improvement.",
+            "relatedKnowledgeNodeIds": [
+              "root"
+            ]
+          }
         }
       ],
       "directions": [
+        {
+          "directionId": "bssc-multiletter-marton-frontier",
+          "title": "BSSC multiletter Marton frontier",
+          "summary": "Audit the August 2026 Marton counterexamples, prove BSSC-specific multiletter no-gain structure, and search for a certified nonlocal two-letter improvement.",
+          "relatedKnowledgeNodeIds": [
+            "root"
+          ],
+          "status": "active",
+          "registeredEventId": "initial-plan",
+          "registeredTransactionId": "7e1e52fe42fde37ba1964ef9ae5062daf8bb55f8",
+          "registeredAt": 1787378681,
+          "registeredBy": {
+            "displayName": "Robert Raynor",
+            "email": "35671663+mooselumph@users.noreply.github.com"
+          },
+          "currentEventId": "initial-plan",
+          "currentTransactionId": "7e1e52fe42fde37ba1964ef9ae5062daf8bb55f8",
+          "currentAt": 1787378681,
+          "completionTransactionIds": [],
+          "eventIds": [
+            "initial-plan"
+          ]
+        },
         {
           "directionId": "uniform-receiver-curve-continuum-bridge",
           "title": "Uniform receiver-curve continuum bridge",
@@ -67580,7 +67630,7 @@
     {
       "schemaVersion": 1,
       "problemId": "no-three-in-line-77",
-      "ledgerHead": "b11b83c7b0b8e4131011239edb5db3fa3a0018eb",
+      "ledgerHead": "7e1e52fe42fde37ba1964ef9ae5062daf8bb55f8",
       "directionLedgerHead": "bbf27430c8b61446236371c57c58e3b8d6278921",
       "directionLedgerDigest": "sha256:07ee521c46e228157b5de06a87c30bbfc736710b5f1f210a75f1a1bfb8ecae95",
       "events": [
