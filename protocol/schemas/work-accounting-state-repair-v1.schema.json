@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/work-accounting-state-repair-v1.schema.json",
+  "title": "Prospective Work-Accounting State Repair V1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "projectionId",
+    "projectionSpecDigest",
+    "rootContractDigest",
+    "reasonKind",
+    "baseAccountingStateDigest",
+    "repairedAccountingStateDigest",
+    "knowledgeStateDigest",
+    "affectedHistory",
+    "evidenceRefs",
+    "suffixReplay",
+    "repairEventDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "$ref": "#/$defs/id" },
+    "projectionId": { "$ref": "#/$defs/id" },
+    "projectionSpecDigest": { "$ref": "#/$defs/digest" },
+    "rootContractDigest": { "$ref": "#/$defs/digest" },
+    "reasonKind": {
+      "enum": [
+        "validity-reversal",
+        "evidence-defect",
+        "implementation-defect",
+        "topology-lineage-defect"
+      ]
+    },
+    "baseAccountingStateDigest": { "$ref": "#/$defs/digest" },
+    "repairedAccountingStateDigest": { "$ref": "#/$defs/digest" },
+    "knowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "affectedHistory": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/historyFlag" }
+    },
+    "evidenceRefs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "suffixReplay": { "const": false },
+    "repairEventDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "nullableDigest": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/digest" }]
+    },
+    "historyFlag": {
+      "type": "object",
+      "required": ["subjectTransactionId", "evaluationDigest"],
+      "properties": {
+        "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+        "evaluationDigest": { "$ref": "#/$defs/nullableDigest" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

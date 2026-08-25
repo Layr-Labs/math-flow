@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/work-accounting-schedule-v1.schema.json",
+  "title": "Canonical Per-Submission Work-Accounting Schedule V1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "projectionId",
+    "projectionSpecDigest",
+    "rootContractDigest",
+    "problemLedgerDigest",
+    "canonicalTransactionIds",
+    "resolvedSubmissionIds",
+    "retryPolicy",
+    "observedKnowledgeStateDigest",
+    "observedKnowledgeLedgerHead",
+    "initialAccountingStateDigest",
+    "terminalAccountingStateDigest",
+    "terminalKnowledgeStateDigest",
+    "subjects",
+    "repairEventDigests",
+    "scheduleDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "$ref": "#/$defs/id" },
+    "projectionId": { "$ref": "#/$defs/id" },
+    "projectionSpecDigest": { "$ref": "#/$defs/digest" },
+    "rootContractDigest": { "$ref": "#/$defs/digest" },
+    "problemLedgerDigest": { "$ref": "#/$defs/digest" },
+    "canonicalTransactionIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/transaction" }
+    },
+    "resolvedSubmissionIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/transaction" }
+    },
+    "retryPolicy": { "$ref": "#/$defs/retryPolicy" },
+    "observedKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "observedKnowledgeLedgerHead": { "$ref": "#/$defs/nullableTransaction" },
+    "initialAccountingStateDigest": { "$ref": "#/$defs/digest" },
+    "terminalAccountingStateDigest": { "$ref": "#/$defs/digest" },
+    "terminalKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "subjects": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/subject" }
+    },
+    "repairEventDigests": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/digest" }
+    },
+    "scheduleDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "nullableTransaction": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/transaction" }]
+    },
+    "nullableDigest": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/digest" }]
+    },
+    "positiveInteger": { "type": "integer", "minimum": 1 },
+    "nonnegativeInteger": { "type": "integer", "minimum": 0 },
+    "retryPolicy": {
+      "type": "object",
+      "required": ["maximumAttempts", "baseRetrySeconds"],
+      "properties": {
+        "maximumAttempts": { "$ref": "#/$defs/positiveInteger" },
+        "baseRetrySeconds": { "$ref": "#/$defs/positiveInteger" }
+      },
+      "additionalProperties": false
+    },
+    "failure": {
+      "type": "object",
+      "required": [
+        "failureKind",
+        "claimDigest",
+        "attemptNumber",
+        "evidenceDigest",
+        "failedAt",
+        "retryNotBefore",
+        "exhausted",
+        "failureDigest"
+      ],
+      "properties": {
+        "failureKind": {
+          "enum": [
+            "provider-invalid",
+            "nonpositive-work-value",
+            "counterfactual-invalid",
+            "publication-invalid"
+          ]
+        },
+        "claimDigest": { "$ref": "#/$defs/digest" },
+        "attemptNumber": { "$ref": "#/$defs/positiveInteger" },
+        "evidenceDigest": { "$ref": "#/$defs/digest" },
+        "failedAt": { "$ref": "#/$defs/nonnegativeInteger" },
+        "retryNotBefore": {
+          "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/nonnegativeInteger" }]
+        },
+        "exhausted": { "type": "boolean" },
+        "failureDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "completion": {
+      "type": "object",
+      "required": [
+        "kind",
+        "attemptNumber",
+        "evaluationDigest",
+        "committedAccountingStateDigest",
+        "publicationManifestDigest"
+      ],
+      "properties": {
+        "kind": { "enum": ["bootstrap", "evaluated"] },
+        "attemptNumber": { "$ref": "#/$defs/nonnegativeInteger" },
+        "evaluationDigest": { "$ref": "#/$defs/nullableDigest" },
+        "committedAccountingStateDigest": { "$ref": "#/$defs/nullableDigest" },
+        "publicationManifestDigest": { "$ref": "#/$defs/nullableDigest" }
+      },
+      "additionalProperties": false
+    },
+    "subject": {
+      "type": "object",
+      "required": [
+        "transactionId",
+        "ledgerOrdinal",
+        "postKnowledgeStateDigest",
+        "postKnowledgeLedgerHead",
+        "status",
+        "blockReason",
+        "blockedByTransactionId",
+        "attemptCount",
+        "failureHistory",
+        "completion",
+        "affectedByRepairDigests",
+        "recordDigest"
+      ],
+      "properties": {
+        "transactionId": { "$ref": "#/$defs/transaction" },
+        "ledgerOrdinal": { "$ref": "#/$defs/positiveInteger" },
+        "postKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+        "postKnowledgeLedgerHead": { "$ref": "#/$defs/nullableTransaction" },
+        "status": { "enum": ["pending", "blocked", "failed", "processed"] },
+        "blockReason": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "enum": [
+                "earlier-canonical-submission-unresolved",
+                "predecessor-submission-unprocessed"
+              ]
+            }
+          ]
+        },
+        "blockedByTransactionId": { "$ref": "#/$defs/nullableTransaction" },
+        "attemptCount": { "$ref": "#/$defs/nonnegativeInteger" },
+        "failureHistory": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/failure" }
+        },
+        "completion": {
+          "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/completion" }]
+        },
+        "affectedByRepairDigests": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/digest" }
+        },
+        "recordDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
