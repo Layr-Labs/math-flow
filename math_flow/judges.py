@@ -35,6 +35,7 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-hierarchical-research-builder-v3",
     "openrouter-hierarchical-research-builder-v4",
     "openrouter-hierarchical-research-builder-v5",
+    "openrouter-hierarchical-research-builder-v6",
     "openrouter-hierarchical-research-credit-v2",
 }
 SUPPORTED_INPUT_BUILDERS = {
@@ -51,6 +52,7 @@ SUPPORTED_INPUT_BUILDERS = {
     "accepted-validity-batch-program-state-v3",
     "accepted-validity-batch-program-state-v4",
     "accepted-validity-batch-program-state-v5",
+    "accepted-validity-submission-program-state-v6",
     "locked-research-history-v2",
 }
 SUPPORTED_INVOCATION_ADAPTERS = {"local-v1", "openrouter-chat-completions-v1"}
@@ -71,6 +73,7 @@ SUPPORTED_OUTPUT_PROFILES = {
     "math-flow/hierarchical-research-v3",
     "math-flow/hierarchical-research-v4",
     "math-flow/hierarchical-research-v5",
+    "math-flow/hierarchical-research-v6",
     "math-flow/hierarchical-research-credit-v2",
 }
 SUPPORTED_OUTPUT_ADAPTERS = {
@@ -92,6 +95,7 @@ SUPPORTED_OUTPUT_ADAPTERS = {
     "structured-research-batch-v3",
     "structured-research-batch-v4",
     "structured-research-batch-v5",
+    "structured-research-submission-v6",
     "structured-hierarchical-credit-v2",
 }
 SUPPORTED_REDUCERS = {
@@ -104,6 +108,7 @@ SUPPORTED_REDUCERS = {
     "batched-research-state-v3",
     "batched-research-state-v4",
     "batched-research-state-v5",
+    "sequential-research-state-v6",
     "hierarchical-credit-allocation-v2",
 }
 TEXT_ARTIFACT_SUFFIXES = {
@@ -262,6 +267,12 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputAdapter": "structured-research-batch-v5",
             "reducer": "batched-research-state-v5",
         },
+        "openrouter-hierarchical-research-builder-v6": {
+            "inputBuilder": "accepted-validity-submission-program-state-v6",
+            "outputProfile": "math-flow/hierarchical-research-v6",
+            "outputAdapter": "structured-research-submission-v6",
+            "reducer": "sequential-research-state-v6",
+        },
         "openrouter-hierarchical-research-credit-v2": {
             "inputBuilder": "locked-research-history-v2",
             "outputProfile": "math-flow/hierarchical-research-credit-v2",
@@ -321,6 +332,7 @@ def load_judge_spec(path: Path) -> dict[str, object]:
         "openrouter-hierarchical-research-builder-v3",
         "openrouter-hierarchical-research-builder-v4",
         "openrouter-hierarchical-research-builder-v5",
+        "openrouter-hierarchical-research-builder-v6",
     }:
         for field in ("model", "systemPrompt", "rubric", "parameters", "provider"):
             if field not in spec:

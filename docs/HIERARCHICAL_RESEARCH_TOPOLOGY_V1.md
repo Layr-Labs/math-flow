@@ -128,9 +128,9 @@ accounting submission transition can bind this alignment digest independently.
 
 ## Integration seam
 
-The active builder-v5 runner and reducer remain untouched. A future inactive
-builder version should add state-v2 content operations and topology operations
-to one atomic builder delta, then:
+The active builder-v5 runner and reducer remain untouched. The inactive
+provider-free builder-v6 foundation now composes state-v2 content operations
+and topology operations into one accepted-submission transition, then:
 
 1. bind all operations to the exact published state-v2 base;
 2. integrate every accepted claim and immutable contribution mapping;
@@ -143,10 +143,12 @@ to one atomic builder delta, then:
 8. expose the alignment digest to downstream work accounting.
 
 The standalone `apply_research_topology_transition` function intentionally
-handles topology-only adjacent v2 states. Runner integration must compose the
-accepted-content and topology reducers atomically rather than publish an
-intermediate topology state. Runtime support should merge before any separate
-governed judge/profile/projection admission points at the new reducer.
+handles topology-only adjacent v2 states. The provider-free
+`apply_research_builder_v6_transition` adapter validates the accepted-content
+intermediate, invokes that reducer, and rebinds the final composite state
+directly to the published predecessor; it never publishes the intermediate.
+See `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V6.md` for the remaining provider,
+bundle, governance, and projection-activation seam.
 
 No provider call, active projection admission, scheduler behavior, workflow,
 viewer, or credit policy is part of this foundation.

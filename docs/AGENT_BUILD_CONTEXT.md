@@ -276,6 +276,14 @@ successor/retirement lineage, and deterministic credit invalidation or refresh
 for every affected local program edge. Preserve this evolution path when
 simplifying or replacing the experimental builder.
 
+The inactive provider-free builder-v6 foundation implements that next reducer
+boundary over state v2. It materializes one exact adjacent post-state per
+accepted canonical submission, composes accepted content with stable moves,
+retirement, split, and merge operations, derives rather than accepts topology
+alignment, and emits an exact same-world accounting handoff. Its judge/profile
+identities are not allowed by projection governance and no active runner or
+projection uses them; activation remains a separate governed change.
+
 Cross-program claims belong at root or another genuinely shared active scope.
 Do not duplicate a mathematical node merely because multiple programs depend on
 it. A dispute follows the claim it disputes. Taxonomy changes must never be based
@@ -843,6 +851,8 @@ upgrade path.
 - `docs/MVP.md` — architecture, phased roadmap, and deferred decisions.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V5.md` — current audited initial
   sibling/nested program formation, fixed-topology boundary, and rollout.
+- `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V6.md` — inactive provider-free
+  per-submission state-v2 topology evolution and same-world handoff contract.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md` — validity-v4,
   reference-attestation, dependency-safe batching, and the superseded v4 builder
   baseline retained for replay.
