@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/work-projection-request-v1.schema.json",
+  "title": "Provider-Neutral Work Projection Request V1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "profile",
+    "stage",
+    "problemId",
+    "subjectTransactionId",
+    "bindings",
+    "rootContract",
+    "baseAccountingState",
+    "topologyAlignmentRef",
+    "requiredPrimitiveUpdates",
+    "stageInput",
+    "requestDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "profile": { "const": "math-flow/work-accounting-transition-v1" },
+    "stage": { "enum": ["safe-facts", "no-access", "with-access"] },
+    "problemId": { "$ref": "#/$defs/id" },
+    "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+    "bindings": {
+      "type": "object",
+      "required": [
+        "rootContractDigest",
+        "baseAccountingStateDigest",
+        "baseKnowledgeStateDigest",
+        "targetKnowledgeStateDigest",
+        "topologyAlignmentDigest",
+        "submissionEvidenceManifestDigest",
+        "submissionDigest",
+        "acceptedClaimRefsDigest"
+      ],
+      "properties": {
+        "rootContractDigest": { "$ref": "#/$defs/digest" },
+        "baseAccountingStateDigest": { "$ref": "#/$defs/digest" },
+        "baseKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+        "targetKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+        "topologyAlignmentDigest": { "$ref": "#/$defs/digest" },
+        "submissionEvidenceManifestDigest": { "$ref": "#/$defs/digest" },
+        "submissionDigest": { "$ref": "#/$defs/digest" },
+        "acceptedClaimRefsDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "rootContract": { "$ref": "work-accounting-root-contract-v1.schema.json" },
+    "baseAccountingState": { "$ref": "work-accounting-state-v1.schema.json" },
+    "topologyAlignmentRef": {
+      "type": "object",
+      "required": [
+        "alignmentDigest",
+        "beforeKnowledgeStateDigest",
+        "afterKnowledgeStateDigest"
+      ],
+      "properties": {
+        "alignmentDigest": { "$ref": "#/$defs/digest" },
+        "beforeKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+        "afterKnowledgeStateDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "requiredPrimitiveUpdates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["nodeRef", "requiredChanges", "reasons"],
+        "properties": {
+          "nodeRef": { "$ref": "#/$defs/nodeRef" },
+          "requiredChanges": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "enum": ["directWorkHours", "conditionalIncidence"] }
+          },
+          "reasons": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "enum": ["created", "reparented", "inactive-zeroing"] }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "stageInput": {
+      "oneOf": [
+        { "$ref": "#/$defs/safeFactsInput" },
+        { "$ref": "no-access-stage-input-v1.schema.json" },
+        { "$ref": "with-access-stage-input-v1.schema.json" }
+      ]
+    },
+    "requestDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "nodeRef": {
+      "type": "object",
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": { "enum": ["program", "thread"] },
+        "id": { "$ref": "#/$defs/id" }
+      },
+      "additionalProperties": false
+    },
+    "acceptedClaimRef": {
+      "type": "object",
+      "required": ["transactionId", "claimKey", "judgmentId", "assessmentDigest"],
+      "properties": {
+        "transactionId": { "$ref": "#/$defs/transaction" },
+        "claimKey": { "$ref": "#/$defs/id" },
+        "judgmentId": { "$ref": "#/$defs/digest" },
+        "assessmentDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "safeFactsInput": {
+      "type": "object",
+      "required": [
+        "acceptedClaimRefs",
+        "knowledgeStateDigest",
+        "evidenceManifest",
+        "verifiedChunkDigests"
+      ],
+      "properties": {
+        "acceptedClaimRefs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/acceptedClaimRef" }
+        },
+        "knowledgeStateDigest": { "$ref": "#/$defs/digest" },
+        "evidenceManifest": { "$ref": "submission-evidence-manifest-v1.schema.json" },
+        "verifiedChunkDigests": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/digest" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

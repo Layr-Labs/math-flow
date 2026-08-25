@@ -8,7 +8,7 @@ from pathlib import Path, PurePosixPath
 from .artifacts import sha256_bytes
 from .errors import MathFlowError
 from .repository import list_files_at, read_bytes_at, sha256_json
-from .research_state import validate_research_program_state
+from .research_topology import validate_research_program_state_versioned
 
 
 GIT_SHA = re.compile(r"^[0-9a-f]{40}$")
@@ -497,7 +497,9 @@ def _node_ref_key(value: Mapping[str, str]) -> tuple[str, str]:
 def _state_bindings(
     research_state: object, problem_id: str | None = None
 ) -> tuple[dict[str, object], set[tuple[str, str]]]:
-    state = validate_research_program_state(research_state, problem=problem_id)
+    state = validate_research_program_state_versioned(
+        research_state, problem=problem_id
+    )
     refs = {("program", str(node_id)) for node_id in state["programs"]}
     refs.update(("thread", str(node_id)) for node_id in state["threads"])
     return state, refs
