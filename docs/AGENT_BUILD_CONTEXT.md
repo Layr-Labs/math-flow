@@ -837,6 +837,9 @@ upgrade path.
 ## Detailed references
 
 - `README.md` — repository overview and common commands.
+- `docs/BSSC_KNOWLEDGE_CREDIT_AUDIT.md` — non-normative BSSC formation/credit
+  audit and the settled design record for the proposed hierarchical
+  work-remaining successor.
 - `docs/MVP.md` — architecture, phased roadmap, and deferred decisions.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V5.md` — current audited initial
   sibling/nested program formation, fixed-topology boundary, and rollout.
