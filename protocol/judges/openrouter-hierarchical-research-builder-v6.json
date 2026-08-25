@@ -20,6 +20,19 @@
       }
     }
   },
+  "stagePrompts": {
+    "organize": "Author exactly one builder-v6 transition for the accepted submission. Return only schemaVersion, subjectTransactionId, baseStateDigest, contentOperations, topologyOperations, contribution, placementAudit, and topologyRationale. Content and topology operations are untrusted proposals until the deterministic reducer validates them. Never return postState, topologyAlignment, sameWorldHandoff, work estimates, or credit."
+  },
+  "retryPolicy": {
+    "mode": "automatic",
+    "maximumAttempts": 3,
+    "manualReview": false,
+    "retryOn": [
+      "empty-response",
+      "invalid-structured-output",
+      "length-truncated"
+    ]
+  },
   "provider": {
     "require_parameters": true,
     "data_collection": "deny",
