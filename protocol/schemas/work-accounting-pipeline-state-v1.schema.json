@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/work-accounting-pipeline-state-v1.schema.json",
+  "title": "Inactive Work-Accounting Pipeline State V1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "projectionId",
+    "projectionSpecDigest",
+    "rootContractDigest",
+    "phase",
+    "formedKnowledgeStateDigest",
+    "accountingStateDigest",
+    "scheduleDigest",
+    "completedTransitions",
+    "pendingTransition",
+    "pipelineStateDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "$ref": "#/$defs/id" },
+    "projectionId": { "$ref": "#/$defs/id" },
+    "projectionSpecDigest": { "$ref": "#/$defs/digest" },
+    "rootContractDigest": { "$ref": "#/$defs/digest" },
+    "phase": { "enum": ["ready", "awaiting-work", "publication-prepared"] },
+    "formedKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "accountingStateDigest": { "$ref": "#/$defs/digest" },
+    "scheduleDigest": { "$ref": "#/$defs/digest" },
+    "completedTransitions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/completedTransition" }
+    },
+    "pendingTransition": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/pendingTransition" }]
+    },
+    "pipelineStateDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "nullableDigest": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/digest" }]
+    },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "positiveInteger": { "type": "integer", "minimum": 1 },
+    "completedTransition": {
+      "type": "object",
+      "required": [
+        "subjectTransactionId",
+        "ledgerOrdinal",
+        "submissionInputDigest",
+        "builderResultDigest",
+        "builderHandoffDigest",
+        "topologyAlignmentDigest",
+        "workBundleDigest",
+        "publicationManifestDigest",
+        "accountingStateDigest"
+      ],
+      "properties": {
+        "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+        "ledgerOrdinal": { "$ref": "#/$defs/positiveInteger" },
+        "submissionInputDigest": { "$ref": "#/$defs/digest" },
+        "builderResultDigest": { "$ref": "#/$defs/digest" },
+        "builderHandoffDigest": { "$ref": "#/$defs/digest" },
+        "topologyAlignmentDigest": { "$ref": "#/$defs/digest" },
+        "workBundleDigest": { "$ref": "#/$defs/digest" },
+        "publicationManifestDigest": { "$ref": "#/$defs/digest" },
+        "accountingStateDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "pendingTransition": {
+      "type": "object",
+      "required": [
+        "stage",
+        "subjectTransactionId",
+        "ledgerOrdinal",
+        "submissionInputDigest",
+        "builderResultDigest",
+        "builderHandoffDigest",
+        "topologyAlignmentDigest",
+        "beforeKnowledgeStateDigest",
+        "afterKnowledgeStateDigest",
+        "claimDigest",
+        "workBundleDigest",
+        "publicationManifestDigest",
+        "nextAccountingStateDigest",
+        "nextScheduleDigest"
+      ],
+      "properties": {
+        "stage": { "enum": ["awaiting-work", "publication-prepared"] },
+        "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+        "ledgerOrdinal": { "$ref": "#/$defs/positiveInteger" },
+        "submissionInputDigest": { "$ref": "#/$defs/digest" },
+        "builderResultDigest": { "$ref": "#/$defs/digest" },
+        "builderHandoffDigest": { "$ref": "#/$defs/digest" },
+        "topologyAlignmentDigest": { "$ref": "#/$defs/digest" },
+        "beforeKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+        "afterKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+        "claimDigest": { "$ref": "#/$defs/nullableDigest" },
+        "workBundleDigest": { "$ref": "#/$defs/nullableDigest" },
+        "publicationManifestDigest": { "$ref": "#/$defs/nullableDigest" },
+        "nextAccountingStateDigest": { "$ref": "#/$defs/nullableDigest" },
+        "nextScheduleDigest": { "$ref": "#/$defs/nullableDigest" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
