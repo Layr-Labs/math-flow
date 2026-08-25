@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/with-access-stage-input-v1.schema.json",
+  "title": "With-Access Counterfactual Stage Input v1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "evaluationMode",
+    "problemId",
+    "subjectTransactionId",
+    "acceptedClaimRefs",
+    "knowledgeStateDigest",
+    "safeFactsDigest",
+    "safeFactsEvidenceManifestDigest",
+    "impactContext",
+    "evidenceManifest",
+    "verifiedChunkDigests",
+    "verifiedFileCount",
+    "verifiedTotalBytes",
+    "visibilityPolicy",
+    "inputDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "evaluationMode": { "const": "with-access" },
+    "problemId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+    "acceptedClaimRefs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/acceptedClaimRef" } },
+    "knowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "safeFactsDigest": { "$ref": "#/$defs/digest" },
+    "safeFactsEvidenceManifestDigest": { "$ref": "#/$defs/digest" },
+    "impactContext": { "$ref": "work-impact-context-v1.schema.json" },
+    "evidenceManifest": { "$ref": "submission-evidence-manifest-v1.schema.json" },
+    "verifiedChunkDigests": { "type": "array", "items": { "$ref": "#/$defs/digest" } },
+    "verifiedFileCount": { "type": "integer", "minimum": 1 },
+    "verifiedTotalBytes": { "type": "integer", "minimum": 1 },
+    "visibilityPolicy": {
+      "type": "object",
+      "required": ["contributionAvailableToEvaluator", "contributionAvailableToActors"],
+      "properties": {
+        "contributionAvailableToEvaluator": { "const": true },
+        "contributionAvailableToActors": { "const": true }
+      },
+      "additionalProperties": false
+    },
+    "inputDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "acceptedClaimRef": {
+      "type": "object",
+      "required": ["transactionId", "claimKey", "judgmentId", "assessmentDigest"],
+      "properties": {
+        "transactionId": { "$ref": "#/$defs/transaction" },
+        "claimKey": { "$ref": "#/$defs/id" },
+        "judgmentId": { "$ref": "#/$defs/digest" },
+        "assessmentDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

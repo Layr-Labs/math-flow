@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/work-impact-context-v1.schema.json",
+  "title": "Builder-Owned Work Impact Context v1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "subjectTransactionId",
+    "acceptedClaimRefs",
+    "knowledgeStateDigest",
+    "seedNodeRefs",
+    "descendantDepth",
+    "includedNodes",
+    "boundarySummaries",
+    "semanticItemRefs",
+    "expansionPolicy",
+    "contextDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "$ref": "#/$defs/slug" },
+    "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+    "acceptedClaimRefs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/acceptedClaimRef" }
+    },
+    "knowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "seedNodeRefs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/nodeRef" }
+    },
+    "descendantDepth": { "type": "integer", "minimum": 0, "maximum": 4 },
+    "includedNodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/includedNode" }
+    },
+    "boundarySummaries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/boundary" }
+    },
+    "semanticItemRefs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/semanticItem" }
+    },
+    "expansionPolicy": {
+      "type": "object",
+      "required": ["allowedKinds", "maximumDescendantDepth", "requiresExactBuilderNode"],
+      "properties": {
+        "allowedKinds": { "const": ["program", "thread"] },
+        "maximumDescendantDepth": { "const": 4 },
+        "requiresExactBuilderNode": { "const": true }
+      },
+      "additionalProperties": false
+    },
+    "contextDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "nodeRef": {
+      "type": "object",
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": { "enum": ["program", "thread"] },
+        "id": { "$ref": "#/$defs/id" }
+      },
+      "additionalProperties": false
+    },
+    "acceptedClaimRef": {
+      "type": "object",
+      "required": ["transactionId", "claimKey", "judgmentId", "assessmentDigest"],
+      "properties": {
+        "transactionId": { "$ref": "#/$defs/transaction" },
+        "claimKey": { "$ref": "#/$defs/id" },
+        "judgmentId": { "$ref": "#/$defs/digest" },
+        "assessmentDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "includedNode": {
+      "type": "object",
+      "required": ["ref", "parentRef", "status", "roles", "recordDigest"],
+      "properties": {
+        "ref": { "$ref": "#/$defs/nodeRef" },
+        "parentRef": {
+          "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/nodeRef" }]
+        },
+        "status": { "type": "string", "minLength": 1 },
+        "roles": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "recordDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "boundary": {
+      "type": "object",
+      "required": ["nodeRef", "parentRef", "relationship", "programCount", "threadCount", "itemCount", "recordDigest"],
+      "properties": {
+        "nodeRef": { "$ref": "#/$defs/nodeRef" },
+        "parentRef": { "$ref": "#/$defs/nodeRef" },
+        "relationship": { "const": "collapsed-descendant-subtree" },
+        "programCount": { "type": "integer", "minimum": 1 },
+        "threadCount": { "type": "integer", "minimum": 0 },
+        "itemCount": { "type": "integer", "minimum": 0 },
+        "recordDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "claimRef": {
+      "type": "object",
+      "required": ["transactionId", "claimKey"],
+      "properties": {
+        "transactionId": { "$ref": "#/$defs/transaction" },
+        "claimKey": { "$ref": "#/$defs/id" }
+      },
+      "additionalProperties": false
+    },
+    "semanticItem": {
+      "type": "object",
+      "required": ["itemId", "programRef", "itemType", "claimRefs", "dependencyItemIds", "recordDigest"],
+      "properties": {
+        "itemId": { "$ref": "#/$defs/id" },
+        "programRef": { "$ref": "#/$defs/nodeRef" },
+        "itemType": { "enum": ["result", "proof", "method", "computation", "tool", "question"] },
+        "claimRefs": { "type": "array", "items": { "$ref": "#/$defs/claimRef" } },
+        "dependencyItemIds": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "recordDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
