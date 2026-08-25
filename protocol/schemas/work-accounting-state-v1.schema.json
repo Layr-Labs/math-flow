@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/work-accounting-state-v1.schema.json",
+  "title": "Hierarchical Work-Accounting State V1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "rootContractDigest",
+    "knowledgeStateDigest",
+    "knowledgeLedgerHead",
+    "predecessorStateDigest",
+    "evaluationMode",
+    "subjectTransactionId",
+    "processedSubmissionIds",
+    "rootNodeRef",
+    "annotations",
+    "derived",
+    "totalWorkHours",
+    "stateDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "$ref": "#/$defs/id" },
+    "rootContractDigest": { "$ref": "#/$defs/digest" },
+    "knowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "knowledgeLedgerHead": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/transaction" }]
+    },
+    "predecessorStateDigest": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/digest" }]
+    },
+    "evaluationMode": { "enum": ["baseline", "no-access", "with-access"] },
+    "subjectTransactionId": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/transaction" }]
+    },
+    "processedSubmissionIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/transaction" }
+    },
+    "rootNodeRef": { "$ref": "#/$defs/nodeRef" },
+    "annotations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/annotation" }
+    },
+    "derived": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/derived" }
+    },
+    "totalWorkHours": { "$ref": "#/$defs/decimal" },
+    "stateDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "decimal": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]*[1-9])?$"
+    },
+    "probability": {
+      "allOf": [
+        { "$ref": "#/$defs/decimal" },
+        { "pattern": "^(?:0(?:\\.[0-9]*[1-9])?|1)$" }
+      ]
+    },
+    "nodeRef": {
+      "type": "object",
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": { "enum": ["program", "thread"] },
+        "id": { "$ref": "#/$defs/id" }
+      },
+      "additionalProperties": false
+    },
+    "annotation": {
+      "type": "object",
+      "required": [
+        "nodeRef",
+        "knowledgeNodeDigest",
+        "directWorkHours",
+        "conditionalIncidence",
+        "annotationDigest"
+      ],
+      "properties": {
+        "nodeRef": { "$ref": "#/$defs/nodeRef" },
+        "knowledgeNodeDigest": { "$ref": "#/$defs/digest" },
+        "directWorkHours": { "$ref": "#/$defs/decimal" },
+        "conditionalIncidence": {
+          "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/probability" }]
+        },
+        "annotationDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "derived": {
+      "type": "object",
+      "required": [
+        "nodeRef",
+        "globalReach",
+        "conditionalSubtreeWork",
+        "expectedDirectWork"
+      ],
+      "properties": {
+        "nodeRef": { "$ref": "#/$defs/nodeRef" },
+        "globalReach": { "$ref": "#/$defs/probability" },
+        "conditionalSubtreeWork": { "$ref": "#/$defs/decimal" },
+        "expectedDirectWork": { "$ref": "#/$defs/decimal" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
