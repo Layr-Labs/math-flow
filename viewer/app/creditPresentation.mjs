@@ -1,18 +1,21 @@
+import { isWorkAccountingProjection, isWorkAccountingRun } from "./workAccountingPresentation.mjs";
+
 export function isHierarchicalCreditProjection(projection) {
-  return Array.isArray(projection?.researchProjectionIds);
+  return !isWorkAccountingProjection(projection) && Array.isArray(projection?.researchProjectionIds);
 }
 
 export function allCreditProjections(catalog) {
   return [
     ...(catalog?.creditProjections ?? []),
     ...(catalog?.hierarchicalCreditProjections ?? []),
+    ...(catalog?.workAccountingProjections ?? []),
   ];
 }
 
 export function compatibleCreditProjections(catalog, problemId, researchProjectionId) {
   return allCreditProjections(catalog).filter((projection) => {
     if (projection.problemId !== problemId) return false;
-    const dependencyIds = isHierarchicalCreditProjection(projection)
+    const dependencyIds = isHierarchicalCreditProjection(projection) || isWorkAccountingProjection(projection)
       ? projection.researchProjectionIds
       : projection.knowledgeProjectionIds;
     return dependencyIds.includes(researchProjectionId);
@@ -24,7 +27,9 @@ export function isHierarchicalCreditRun(run) {
 }
 
 export function creditRunAssignmentCount(run) {
-  return isHierarchicalCreditRun(run)
+  return isWorkAccountingRun(run)
+    ? (run?.evaluations?.length ?? 0)
+    : isHierarchicalCreditRun(run)
     ? Object.keys(run.creditState.allocations ?? {}).length
     : (run?.assignments?.length ?? 0);
 }

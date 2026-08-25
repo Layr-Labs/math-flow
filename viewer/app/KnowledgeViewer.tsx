@@ -11,6 +11,7 @@ import { createViewerReferenceResolver } from "./referenceLinks.mjs";
 import { preferredTransactionDetailMode, resolveTransactionDetailMode } from "./transactionDetailMode.mjs";
 import { validityReferenceGroups } from "./validityPresentation.mjs";
 import { applyViewerStateToSearch, parseViewerState } from "./viewerState.mjs";
+import { addCanonicalDecimals, formatWorkShare, isWorkAccountingProjection, isWorkAccountingRun, validWorkAccountingRun, workAccountingForNode, workAccountingForTransaction } from "./workAccountingPresentation.mjs";
 
 type Ref = {
   kind: string;
@@ -278,7 +279,59 @@ type HierarchicalCreditRun = Omit<CreditRun, "assignments" | "reportMarkdown"> &
   };
 };
 
-type AnyCreditRun = CreditRun | HierarchicalCreditRun;
+type WorkAccountingNodeAnnotation = {
+  nodeRef: { kind: "program" | "thread"; id: string };
+  knowledgeNodeDigest: string;
+  directWorkHours: string;
+  conditionalIncidence: string | null;
+  globalReach: string;
+  conditionalSubtreeWorkHours: string;
+  expectedDirectWorkHours: string;
+};
+
+type WorkAccountingEvaluation = {
+  subjectTransactionId: string;
+  canonicalOrdinal: number;
+  evaluationDigest: string;
+  publicationManifestDigest: string;
+  committedAccountingStateDigest: string;
+  exAnteWorkHours: string;
+  exPostWorkHours: string;
+  workReductionHours: string;
+  nodeAnnotations: WorkAccountingNodeAnnotation[];
+  prospectiveCorrection: boolean;
+  affectedHistory: boolean;
+  affectedByRepairDigests: string[];
+  evaluation: Record<string, unknown>;
+};
+
+type WorkAccountingRun = {
+  id: string;
+  runDigest: string;
+  problemId: string;
+  projectionId: string;
+  projectionSpecDigest: string;
+  rootContractDigest: string;
+  problemLedgerDigest: string;
+  terminalKnowledgeStateDigest: string;
+  terminalAccountingStateDigest: string;
+  scheduleDigest: string;
+  inputStatus: "exact-committed";
+  viewerDigest: string;
+  unit: {
+    id: "competent-human-researcher-hour";
+    label: "competent human researcher hours";
+    storedValues: "canonical-decimal-hours";
+    displayShares: "derived-from-exact-values";
+  };
+  evaluations: WorkAccountingEvaluation[];
+  repairs: Array<Record<string, unknown>>;
+  terminalAccountingState: Record<string, unknown>;
+  stale: false;
+  staleReasons: [];
+};
+
+type AnyCreditRun = CreditRun | HierarchicalCreditRun | WorkAccountingRun;
 
 export type ViewerData = {
   problem: { id: string; title: string; statementMarkdown: string };
@@ -323,7 +376,19 @@ type RepositoryHierarchicalCreditProjection = {
   runs: HierarchicalCreditRun[];
 };
 
-type AnyCreditProjection = RepositoryCreditProjection | RepositoryHierarchicalCreditProjection;
+type RepositoryWorkAccountingProjection = {
+  id: string;
+  problemId: string;
+  label: string;
+  researchProjectionIds: string[];
+  latestRunDigest: string;
+  selectionStatus: "current";
+  runCount: 1;
+  runs: WorkAccountingRun[];
+  workAccounting: WorkAccountingRun["unit"];
+};
+
+type AnyCreditProjection = RepositoryCreditProjection | RepositoryHierarchicalCreditProjection | RepositoryWorkAccountingProjection;
 
 type ObjectiveAttestation = {
   problemId: string;
@@ -353,6 +418,7 @@ export type ViewerCatalog = {
   projections: RepositoryProjection[];
   creditProjections?: RepositoryCreditProjection[];
   hierarchicalCreditProjections?: RepositoryHierarchicalCreditProjection[];
+  workAccountingProjections?: RepositoryWorkAccountingProjection[];
   researchDirections?: ResearchDirectionLedger[];
   objectiveAttestations?: ObjectiveAttestation[];
   defaultProjectionId: string | null;
@@ -466,6 +532,22 @@ function isViewerCatalog(value: unknown): value is ViewerCatalog {
       ),
     )
   );
+  const validWorkAccounting = catalog.workAccountingProjections === undefined || (
+    Array.isArray(catalog.workAccountingProjections) &&
+    catalog.workAccountingProjections.every((projection) =>
+      typeof projection?.id === "string" &&
+      typeof projection?.problemId === "string" &&
+      Array.isArray(projection?.researchProjectionIds) &&
+      projection.researchProjectionIds.length > 0 &&
+      projection.researchProjectionIds.join("\n") === [...new Set(projection.researchProjectionIds)].sort().join("\n") &&
+      projection?.workAccounting?.id === "competent-human-researcher-hour" &&
+      Array.isArray(projection?.runs) &&
+      projection.runs.length === projection.runCount &&
+      typeof projection.latestRunDigest === "string" &&
+      projection.runs.some((run) => run.runDigest === projection.latestRunDigest) &&
+      projection.runs.every((run) => validWorkAccountingRun(run)),
+    )
+  );
   const validDirections = catalog.researchDirections === undefined || (
     Array.isArray(catalog.researchDirections) &&
     catalog.researchDirections.every((item) =>
@@ -493,7 +575,7 @@ function isViewerCatalog(value: unknown): value is ViewerCatalog {
   return catalog.schemaVersion === 1 &&
     !!catalog.repository &&
     validKnowledgeProjectionIndex(catalog.projections) &&
-    validCredits && validHierarchicalCredits && validDirections && validAttestations;
+    validCredits && validHierarchicalCredits && validWorkAccounting && validDirections && validAttestations;
 }
 
 const unavailableCatalog: ViewerCatalog = {
@@ -778,7 +860,7 @@ export function RepositoryKnowledgeViewer() {
               {!compatibleCreditProjections.length && <option value="">No credit projection</option>}
               {compatibleCreditProjections.map((item) => (
                 <option value={item.id} key={item.id}>
-                  {item.label} · {isHierarchicalCreditProjection(item) ? "hierarchical two-term" : "qualitative"} · {item.latestRunDigest
+                  {item.label} · {isWorkAccountingProjection(item) ? "work remaining · researcher hours" : isHierarchicalCreditProjection(item) ? "hierarchical two-term" : "qualitative"} · {item.latestRunDigest
                     ? short(item.latestRunDigest)
                     : item.runCount
                       ? `${item.runCount} runs · choose`
@@ -799,12 +881,12 @@ export function RepositoryKnowledgeViewer() {
               {creditProjection?.runs.length && !creditRun && <option value="" disabled>Choose an assessment</option>}
               {creditProjection?.runs.map((item, index) => (
                 <option value={item.runDigest} key={item.runDigest}>
-                  {isHierarchicalCreditProjection(creditProjection) ? "Allocation" : "Assessment"} {String(index + 1).padStart(2, "0")} · {short(item.runDigest)} · {item.runDigest === creditProjection.latestRunDigest ? "current" : "historical"}
+                  {isWorkAccountingProjection(creditProjection) ? "Accounting state" : isHierarchicalCreditProjection(creditProjection) ? "Allocation" : "Assessment"} {String(index + 1).padStart(2, "0")} · {short(item.runDigest)} · {item.runDigest === creditProjection.latestRunDigest ? "current" : "historical"}
                 </option>
               ))}
             </select>
             <small>{creditRun
-              ? `${creditRun.runDigest === creditProjection?.latestRunDigest ? "Current state" : "Historical state"} · ${creditRun.stale ? "stale inputs" : "current inputs"} · ${creditRunAssignmentCount(creditRun)} allocations`
+              ? `${creditRun.runDigest === creditProjection?.latestRunDigest ? "Current state" : "Historical state"} · ${isWorkAccountingRun(creditRun) ? "exact committed inputs" : creditRun.stale ? "stale inputs" : "current inputs"} · ${creditRunAssignmentCount(creditRun)} ${isWorkAccountingRun(creditRun) ? "submission evaluations" : "allocations"}`
               : creditProjection?.runs.length
                 ? "No credit terminal selected"
                 : "Waiting for the first verified run"}</small>
@@ -966,10 +1048,13 @@ export function KnowledgeViewer({
   ) ?? creditProjection?.runs.find(
     (item) => item.runDigest === creditProjection.latestRunDigest,
   ) as AnyCreditRun | undefined;
-  const hierarchicalCreditRun = creditRun && isHierarchicalCreditRun(creditRun)
+  const workAccountingRun = creditRun && isWorkAccountingRun(creditRun)
+    ? creditRun as WorkAccountingRun
+    : undefined;
+  const hierarchicalCreditRun = creditRun && !workAccountingRun && isHierarchicalCreditRun(creditRun)
     ? creditRun as HierarchicalCreditRun
     : undefined;
-  const qualitativeCreditRun = creditRun && !isHierarchicalCreditRun(creditRun)
+  const qualitativeCreditRun = creditRun && !workAccountingRun && !isHierarchicalCreditRun(creditRun)
     ? creditRun as CreditRun
     : undefined;
   const runLedgerPosition = data.transactions.find(
@@ -1043,6 +1128,15 @@ export function KnowledgeViewer({
   const selectedProgramCredit = selectedNode.type === "program"
     ? hierarchicalCreditRun?.creditState.evaluations[selectedNode.id]
     : undefined;
+  const nodeWorkAccounting = useMemo(
+    () => workAccountingRun
+      ? workAccountingForNode(workAccountingRun, selectedNode) as Array<{
+        evaluation: WorkAccountingEvaluation;
+        annotation: WorkAccountingNodeAnnotation;
+      }>
+      : [],
+    [selectedNode, workAccountingRun],
+  );
 
   const children = useMemo(() => {
     const result: Record<string, string[]> = {};
@@ -1096,6 +1190,9 @@ export function KnowledgeViewer({
       evaluation: HierarchicalCreditEvaluation;
     } | null
     : null;
+  const selectedWorkAccounting = workAccountingRun
+    ? workAccountingForTransaction(workAccountingRun, transactionId) as WorkAccountingEvaluation | null
+    : null;
   const selectedAttestation = objectiveAttestations?.find(
     (item) => item.transactionId === transactionId,
   );
@@ -1109,7 +1206,7 @@ export function KnowledgeViewer({
     ? resolveTransactionDetailMode(viewerState.detailMode, {
       hasJudgment: transactionJudgments.length > 0,
       hasVerification: Boolean(selectedAttestation),
-      hasCredit: Boolean(selectedCreditAssignment || selectedHierarchicalCredit),
+      hasCredit: Boolean(selectedCreditAssignment || selectedHierarchicalCredit || selectedWorkAccounting),
     })
     : viewerState.detailMode === "report" ? "report" : "node";
 
@@ -1169,7 +1266,7 @@ export function KnowledgeViewer({
 
   function openCreditKnowledgeRef(reference: CreditKnowledgeRef) {
     const dependencyRun = data.runs.find(
-      (item) => item.runDigest === creditRun?.dependency.runDigest,
+      (item) => item.runDigest === qualitativeCreditRun?.dependency.runDigest,
     );
     const targetRun = dependencyRun?.state.nodes[reference.nodeId]
       ? dependencyRun
@@ -1339,6 +1436,12 @@ export function KnowledgeViewer({
                   transaction.transactionId,
                 )
                 : null;
+              const workAccounting = workAccountingRun
+                ? workAccountingForTransaction(
+                  workAccountingRun,
+                  transaction.transactionId,
+                ) as WorkAccountingEvaluation | null
+                : null;
               const validity = transactionValiditySummary(primaryJudgments);
               const attestation = objectiveAttestations?.find(
                 (item) => item.transactionId === transaction.transactionId,
@@ -1378,6 +1481,11 @@ export function KnowledgeViewer({
                     {hierarchicalCredit && (
                       <small className="credit-badge hierarchical-credit-badge">
                         credit · {formatCreditFraction(hierarchicalCredit.allocation)} overall
+                      </small>
+                    )}
+                    {workAccounting && (
+                      <small className="credit-badge work-accounting-badge">
+                        work credit · {workAccounting.workReductionHours} researcher h
                       </small>
                     )}
                     {attestation && (
@@ -1438,7 +1546,7 @@ export function KnowledgeViewer({
               <button role="tab" aria-selected={detailMode === "transaction"} onClick={() => onViewerStateChange({ detailMode: "transaction" })}>Submission</button>
               <button role="tab" aria-selected={detailMode === "judgment"} disabled={!transactionJudgments.length} onClick={() => onViewerStateChange({ detailMode: "judgment" })}>Judgment</button>
               <button role="tab" aria-selected={detailMode === "verification"} disabled={!selectedAttestation} onClick={() => onViewerStateChange({ detailMode: "verification" })}>Verification</button>
-              <button role="tab" aria-selected={detailMode === "credit"} disabled={!selectedCreditAssignment && !selectedHierarchicalCredit} onClick={() => onViewerStateChange({ detailMode: "credit" })}>Credit</button>
+              <button role="tab" aria-selected={detailMode === "credit"} disabled={!selectedCreditAssignment && !selectedHierarchicalCredit && !selectedWorkAccounting} onClick={() => onViewerStateChange({ detailMode: "credit" })}>Credit</button>
             </div>
           ) : (
             <div className="detail-tabs detail-tabs-node" role="tablist" aria-label="Knowledge node details">
@@ -1587,6 +1695,30 @@ export function KnowledgeViewer({
                     <strong>{formatCreditFraction(selectedProgramCredit.unattributedShare)}</strong>
                     <small>{selectedProgramCredit.unattributedWork} work units</small>
                   </div>
+                </section>
+              )}
+              {workAccountingRun && (selectedNode.type === "program" || selectedNode.id.startsWith("thread:")) && (
+                <section className="node-work-accounting">
+                  <div className="section-label"><h3>Submission accounting annotations</h3><span>{nodeWorkAccounting.length}</span></div>
+                  <p className="muted">These are program/thread annotations inside each submission evaluation. Credit belongs to the submission; semantic result and method items carry no numeric accounting.</p>
+                  <div className="node-work-accounting-list">
+                    {nodeWorkAccounting.map(({ evaluation, annotation }) => {
+                      const transaction = data.transactions.find(
+                        (item) => item.transactionId === evaluation.subjectTransactionId,
+                      );
+                      return (
+                        <button key={evaluation.evaluationDigest} onClick={() => openTransaction(evaluation.subjectTransactionId)}>
+                          <span className="ordinal">{String(evaluation.canonicalOrdinal).padStart(2, "0")}</span>
+                          <span>
+                            <strong>{transaction ? label(transaction.contributionId) : short(evaluation.subjectTransactionId)}</strong>
+                            <small>direct {annotation.directWorkHours} h · expected direct {annotation.expectedDirectWorkHours} h · reach {annotation.globalReach}</small>
+                          </span>
+                          <span className="credit-share">D {evaluation.workReductionHours} h</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {!nodeWorkAccounting.length && <p className="muted">No submission evaluation in this committed accounting state affected this node.</p>}
                 </section>
               )}
               {qualitativeCreditRun && (
@@ -1829,6 +1961,55 @@ export function KnowledgeViewer({
               ) : (
                 <p className="muted">The canonical request is waiting for its first trusted hosted execution.</p>
               )}
+            </section>
+          ) : detailMode === "credit" && selectedWorkAccounting && workAccountingRun && selectedTransaction ? (
+            <section className="artifact-detail credit-detail work-accounting-detail">
+              <span className="eyebrow">Hierarchical work credit · separate committed overlay</span>
+              <h2>{label(selectedTransaction.contributionId)}</h2>
+              <article className="work-accounting-unit-note">
+                <strong>Unit: competent human researcher hours</strong>
+                <span>Raw hours are stable canonical-decimal accounting values. The displayed portfolio share is derived now from exact submission values and is not stored.</span>
+              </article>
+              <div className="hierarchical-credit-summary work-accounting-summary">
+                <div><span>Canonical ordinal</span><strong>{selectedWorkAccounting.canonicalOrdinal}</strong></div>
+                <div><span>Portfolio share</span><strong>{formatWorkShare(selectedWorkAccounting.workReductionHours, workAccountingRun.evaluations.map((item) => item.workReductionHours))}</strong></div>
+                <div><span>Credited D total</span><strong>{addCanonicalDecimals(workAccountingRun.evaluations.map((item) => item.workReductionHours))} h</strong></div>
+                <div><span>Ex-ante R</span><strong>{selectedWorkAccounting.exAnteWorkHours} h</strong></div>
+                <div><span>Ex-post C</span><strong>{selectedWorkAccounting.exPostWorkHours} h</strong></div>
+                <div><span>D = R − C</span><strong>{selectedWorkAccounting.workReductionHours} h</strong></div>
+                <div><span>Committed state</span><code>{short(selectedWorkAccounting.committedAccountingStateDigest, 12)}</code></div>
+              </div>
+              <article className={`credit-lock-card ${selectedWorkAccounting.prospectiveCorrection ? "stale" : "current"}`}>
+                <strong>{selectedWorkAccounting.prospectiveCorrection ? "Prospective correction affects this history" : "Exact committed submission evaluation"}</strong>
+                <span>{selectedWorkAccounting.affectedHistory
+                  ? "The stored historical D is not replayed; later accounting state repairs flag this evaluation as affected history."
+                  : "The publication manifest and schedule bind this evaluation to its exact committed post-state."}</span>
+                {selectedWorkAccounting.affectedByRepairDigests.map((digest) => <small key={digest}>repair · {short(digest, 12)}</small>)}
+              </article>
+              <section className="credit-effect-list">
+                <div className="section-label"><h3>Program/thread annotations</h3><span>{selectedWorkAccounting.nodeAnnotations.length}</span></div>
+                <p className="muted">Credit is assigned to this submission. The figures below annotate affected accounting nodes within this evaluation; semantic items are intentionally excluded.</p>
+                {selectedWorkAccounting.nodeAnnotations.map((annotation) => {
+                  const nodeId = annotation.nodeRef.kind === "thread"
+                    ? `thread:${annotation.nodeRef.id}`
+                    : annotation.nodeRef.id;
+                  return (
+                    <button key={`${annotation.nodeRef.kind}:${annotation.nodeRef.id}`} onClick={() => onViewerStateChange({ nodeId, transactionId: undefined, judgmentId: undefined, detailMode: "node" })}>
+                      <span>{annotation.nodeRef.kind}</span>
+                      <strong>{nodes[nodeId]?.title ?? label(annotation.nodeRef.id)}</strong>
+                      <small>direct {annotation.directWorkHours} h · subtree {annotation.conditionalSubtreeWorkHours} h · expected direct {annotation.expectedDirectWorkHours} h</small>
+                    </button>
+                  );
+                })}
+              </section>
+              <details className="raw-artifact structured-record">
+                <summary>Exact submission work evaluation</summary>
+                <pre>{JSON.stringify(selectedWorkAccounting.evaluation, null, 2)}</pre>
+              </details>
+              <details className="raw-artifact structured-record">
+                <summary>Exact terminal accounting state</summary>
+                <pre>{JSON.stringify(workAccountingRun.terminalAccountingState, null, 2)}</pre>
+              </details>
             </section>
           ) : detailMode === "credit" && selectedHierarchicalCredit && hierarchicalCreditRun && selectedTransaction ? (
             <section className="artifact-detail credit-detail hierarchical-credit-detail">

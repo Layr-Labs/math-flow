@@ -11,6 +11,7 @@ import { preferredTransactionDetailMode, resolveTransactionDetailMode } from "..
 import { validityReferenceGroups } from "../app/validityPresentation.mjs";
 import { creditRunSelectionPatch, historicalOverlaySelection, knowledgeRunSelectionPatch, latestOverlaySelectionPatch, projectionByIdentity, publishedHeadSelectionPatch } from "../app/projectionHeadState.mjs";
 import { applyViewerStateToSearch, parseViewerState } from "../app/viewerState.mjs";
+import { addCanonicalDecimals, formatWorkShare, isWorkAccountingProjection, isWorkAccountingRun, subtractCanonicalDecimals, validWorkAccountingRun, workAccountingForNode, workAccountingForTransaction } from "../app/workAccountingPresentation.mjs";
 
 const templateRoot = new URL("../", import.meta.url);
 
@@ -88,6 +89,13 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /No published credit yet/);
   assert.match(viewer, /Qualitative credit · separate overlay/);
   assert.match(viewer, /Two-term hierarchical credit · separate overlay/);
+  assert.match(viewer, /Hierarchical work credit · separate committed overlay/);
+  assert.match(viewer, /Unit: competent human researcher hours/);
+  assert.match(viewer, /Raw hours are stable canonical-decimal accounting values/);
+  assert.match(viewer, /D = R − C/);
+  assert.match(viewer, /Prospective correction affects this history/);
+  assert.match(viewer, /Credit is assigned to this submission/);
+  assert.match(viewer, /semantic items are intentionally excluded/);
   assert.match(viewer, /Validity assessments/);
   assert.match(viewer, /Declared references \/ provenance/);
   assert.match(viewer, /Required premises/);
@@ -144,6 +152,44 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
     throw error;
   });
   assert.deepEqual(previewAssets, []);
+});
+
+test("derives work-accounting shares exactly without floating point", async () => {
+  const fixture = JSON.parse(await readFile(
+    new URL("fixtures/work-accounting-overlay-v1.json", import.meta.url),
+    "utf8",
+  ));
+  const run = fixture.runs[0];
+  const values = run.evaluations.map((item) => item.workReductionHours);
+
+  assert.equal(isWorkAccountingProjection(fixture), true);
+  assert.equal(isHierarchicalCreditProjection(fixture), false);
+  assert.equal(isWorkAccountingRun(run), true);
+  assert.equal(validWorkAccountingRun(run), true);
+  assert.equal(addCanonicalDecimals(values), "0.9");
+  assert.equal(formatWorkShare("0.3", values), "33.3%");
+  assert.equal(formatWorkShare("0.6", values), "66.7%");
+  assert.equal(
+    subtractCanonicalDecimals(
+      "100000000000000000000000000000000000000.2",
+      "99999999999999999999999999999999999999.9",
+    ),
+    "0.3",
+  );
+  assert.equal(
+    workAccountingForTransaction(run, "1111111111111111111111111111111111111111")?.canonicalOrdinal,
+    18,
+  );
+  assert.equal(workAccountingForNode(run, { type: "result", id: "item:root/result" }).length, 0);
+  assert.equal(workAccountingForNode(run, { type: "question", id: "thread:root/direct-line" }).length, 1);
+  assert.deepEqual(
+    allCreditProjections({ workAccountingProjections: [fixture] }),
+    [fixture],
+  );
+  assert.equal(validWorkAccountingRun({
+    ...run,
+    evaluations: [{ ...run.evaluations[0], workReductionHours: "0.4" }],
+  }), false, "R-C tampering fails catalog validation");
 });
 
 test("separates validity-v3 declared references from judge-selected premises", () => {

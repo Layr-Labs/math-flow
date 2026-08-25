@@ -239,6 +239,7 @@ h1, h2, h3, h4, p { margin-top: 0; }
 .transaction-copy .validity-indeterminate, .transaction-copy .validity-mixed { color: #795910; }
 .transaction-copy .credit-badge { color: #795910; text-transform: uppercase; }
 .transaction-copy .hierarchical-credit-badge { color: #5b5e91; }
+.transaction-copy .work-accounting-badge { color: #376b5b; }
 .transaction-copy .verification-badge { color: #315b75; text-transform: uppercase; }
 .transaction-copy .verification-passed { color: var(--teal); }
 .transaction-copy .verification-failed,
@@ -354,6 +355,14 @@ h1, h2, h3, h4, p { margin-top: 0; }
 .program-credit-residual span { font-size: 9px; font-weight: 700; }
 .program-credit-residual strong { color: #5b5e91; font: 750 11px var(--font-geist-mono); }
 .program-credit-residual small { grid-column: 1 / -1; color: var(--ink-soft); font: 8px var(--font-geist-mono); }
+.node-work-accounting { margin: 0 20px 18px; padding: 12px; border: 1px solid rgba(55, 107, 91, 0.24); border-radius: 12px; background: #eff7f3; }
+.node-work-accounting > p { margin: 0 0 10px; font-size: 9px; line-height: 1.5; }
+.node-work-accounting-list { display: grid; gap: 6px; }
+.node-work-accounting-list > button { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 7px; align-items: center; padding: 9px; border: 1px solid rgba(55, 107, 91, 0.2); border-radius: 9px; background: #fff; cursor: pointer; text-align: left; }
+.node-work-accounting-list > button:hover { border-color: #376b5b; }
+.node-work-accounting-list > button span:nth-child(2) { display: grid; gap: 3px; min-width: 0; }
+.node-work-accounting-list strong { overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.node-work-accounting-list small { color: var(--ink-soft); font: 8px var(--font-geist-mono); }
 .revision-section { padding: 18px 20px; border-top: 1px solid var(--line); }
 .section-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .section-label h3 { margin: 0; font-size: 11px; }
@@ -447,6 +456,11 @@ h1, h2, h3, h4, p { margin-top: 0; }
 .hierarchical-credit-summary > div { display: flex; flex-direction: column; gap: 4px; padding: 10px; border-radius: 10px; background: #f3f2fa; }
 .hierarchical-credit-summary span { color: var(--ink-soft); font: 8px var(--font-geist-mono); text-transform: uppercase; }
 .hierarchical-credit-summary strong { color: #5b5e91; font: 750 15px var(--font-geist-mono); }
+.work-accounting-unit-note { display: grid; gap: 5px; margin-bottom: 14px; padding: 11px; border: 1px solid rgba(55, 107, 91, 0.28); border-radius: 10px; background: #eff7f3; }
+.work-accounting-unit-note strong { color: #285548; font-size: 10px; }
+.work-accounting-unit-note span { color: var(--ink-soft); font-size: 9px; line-height: 1.5; }
+.work-accounting-summary > div { background: #eff7f3; }
+.work-accounting-summary strong { color: #376b5b; }
 .counterfactual-card { margin-bottom: 20px; padding: 12px; border-left: 3px solid #5b5e91; border-radius: 9px; background: #f3f2fa; }
 .counterfactual-card p { margin: 8px 0 0; color: var(--ink-soft); font-size: 10px; line-height: 1.55; }
 .credit-effect-list { margin-bottom: 20px; }
@@ -455,6 +469,10 @@ h1, h2, h3, h4, p { margin-top: 0; }
 .credit-effect-list strong { font-size: 10px; }
 .credit-effect-list code { color: #5b5e91; font-size: 9px; }
 .credit-effect-list p { margin: 6px 0 0; color: var(--ink-soft); font-size: 9px; line-height: 1.5; }
+.credit-effect-list > button { display: grid; width: 100%; grid-template-columns: auto minmax(0, 1fr); gap: 4px 9px; margin-top: 7px; padding: 10px; border: 1px solid var(--line); border-radius: 9px; background: #fffdf9; cursor: pointer; text-align: left; }
+.credit-effect-list > button:hover { border-color: #376b5b; }
+.credit-effect-list > button span { color: #376b5b; font: 8px var(--font-geist-mono); text-transform: uppercase; }
+.credit-effect-list > button small { grid-column: 2; color: var(--ink-soft); font: 8px var(--font-geist-mono); }
 .direction-status-row { display: flex; align-items: center; gap: 8px; margin: -8px 0 14px; }
 .direction-status-row code { color: var(--ink-soft); font-size: 9px; }
 .direction-status { padding: 4px 7px; border-radius: 12px; color: var(--teal); background: var(--teal-soft); font: 700 8px var(--font-geist-mono); text-transform: uppercase; }

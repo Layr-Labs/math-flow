@@ -72,6 +72,7 @@ Invalid checkpoint data fails closed.
 
 V1 deliberately does not implement provider-specific prompting or transport,
 scheduling, retry policy, projection admission, publication, CLI commands,
-workflow jobs, viewer changes, historical corrections, or accounting-policy
-upgrades. Those layers can call the provider-neutral interface after their own
-governance and concurrency rules are specified.
+workflow jobs, or accounting-policy upgrades. An inactive, provider-free viewer
+adapter is documented in `docs/WORK_ACCOUNTING_VIEWER_V1.md`; it has no catalog
+admission path. Other layers can call the provider-neutral interfaces after
+their governance and concurrency rules are specified.
