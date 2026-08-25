@@ -790,10 +790,10 @@ def _sorted_identity_entries(entries: Iterable[dict[str, object]]) -> list[dict[
 def derive_research_topology_alignment(
     before_state: dict[str, object], after_state: dict[str, object]
 ) -> dict[str, object]:
-    """Derive the canonical identity alignment between adjacent state-v2 snapshots."""
+    """Derive the canonical identity alignment between adjacent research states."""
 
-    validate_research_program_state_v2(before_state)
-    validate_research_program_state_v2(after_state)
+    validate_research_program_state_versioned(before_state)
+    validate_research_program_state_versioned(after_state)
     if before_state.get("problemId") != after_state.get("problemId"):
         raise MathFlowError("research topology alignment crosses problems")
     if after_state.get("baseStateDigest") != before_state.get("stateDigest"):

@@ -94,7 +94,10 @@ entities, rewrite content under the guise of a move, or move the root.
 
 ## Deterministic alignment
 
-The reducer derives, rather than accepts, one subjectless alignment artifact:
+The reducer derives, rather than accepts, one subjectless alignment artifact.
+The alignment validator accepts adjacent replayable state-v1 snapshots as well
+as evolvable state-v2 snapshots, so accounting never falls back to a
+digest-correct but semantically forged alignment during migration:
 
 ```text
 schemaVersion

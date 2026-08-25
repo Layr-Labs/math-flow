@@ -784,16 +784,9 @@ def _validate_alignment_binding(
         raise MathFlowError("topology alignment digest does not match the patch")
     if expected_digest != _content_digest(alignment, "alignmentDigest"):
         raise MathFlowError("topology alignment digest mismatch")
-    if before_state.get("schemaVersion") == 2 or after_state.get("schemaVersion") == 2:
-        try:
-            from .research_topology import validate_research_topology_alignment
-        except ModuleNotFoundError as exc:
-            if exc.name != f"{__package__}.research_topology":
-                raise
-            raise MathFlowError(
-                "knowledge-state v2 topology alignment requires the versioned topology reducer"
-            ) from exc
-        validate_research_topology_alignment(alignment, before_state, after_state)
+    from .research_topology import validate_research_topology_alignment
+
+    validate_research_topology_alignment(alignment, before_state, after_state)
 
 
 def apply_work_accounting_patch(

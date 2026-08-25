@@ -428,19 +428,11 @@ class WorkAccountingTests(unittest.TestCase):
             ("thread", "root/approach/direct-line", "8", "0.8"),
             ("thread", "root/approach/unstructured-search", "3", "1"),
         ]
-        alignment: dict[str, object] = {
-            "schemaVersion": 1,
-            "problemId": "demo",
-            "beforeKnowledgeStateDigest": base_knowledge["stateDigest"],
-            "afterKnowledgeStateDigest": target_knowledge["stateDigest"],
-            "preserved": [],
-            "moved": [],
-            "splits": [],
-            "merges": [],
-            "created": [],
-            "retired": [],
-        }
-        alignment["alignmentDigest"] = "sha256:" + sha256_json(alignment)
+        from math_flow.research_topology import derive_research_topology_alignment
+
+        alignment = derive_research_topology_alignment(
+            base_knowledge, target_knowledge
+        )
         unbound = make_work_accounting_patch(
             problem_id="demo",
             subject_transaction_id=TX,
@@ -481,6 +473,31 @@ class WorkAccountingTests(unittest.TestCase):
                 root_contract=root_contract,
                 base_knowledge_state=base_knowledge,
                 target_knowledge_state=target_knowledge,
+            )
+        forged_alignment = copy.deepcopy(alignment)
+        forged_alignment["created"] = []
+        content = {
+            key: value
+            for key, value in forged_alignment.items()
+            if key != "alignmentDigest"
+        }
+        forged_alignment["alignmentDigest"] = "sha256:" + sha256_json(content)
+        forged_delta = copy.deepcopy(delta)
+        forged_delta["topologyAlignmentDigest"] = forged_alignment[
+            "alignmentDigest"
+        ]
+        content = {
+            key: value for key, value in forged_delta.items() if key != "patchDigest"
+        }
+        forged_delta["patchDigest"] = "sha256:" + sha256_json(content)
+        with self.assertRaisesRegex(MathFlowError, "deterministic state alignment"):
+            apply_work_accounting_patch(
+                base_state,
+                forged_delta,
+                root_contract=root_contract,
+                base_knowledge_state=base_knowledge,
+                target_knowledge_state=target_knowledge,
+                topology_alignment=forged_alignment,
             )
         result = apply_work_accounting_patch(
             base_state,
