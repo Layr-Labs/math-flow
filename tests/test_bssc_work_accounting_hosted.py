@@ -126,15 +126,15 @@ class BsscHostedAccountingTests(unittest.TestCase):
             )
         )
 
-    def test_hosted_workflow_template_is_inactive_and_has_narrow_secret_steps(self) -> None:
+    def test_active_hosted_workflow_has_narrow_secret_steps(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        path = (
-            root
-            / ".github/workflows/project-bssc-work-accounting-v1.yml.inactive"
-        )
+        path = root / ".github/workflows/project-bssc-work-accounting-v1.yml"
         self.assertTrue(path.is_file())
         self.assertFalse(
-            (root / ".github/workflows/project-bssc-work-accounting-v1.yml").exists()
+            (
+                root
+                / ".github/workflows/project-bssc-work-accounting-v1.yml.inactive"
+            ).exists()
         )
         workflow = path.read_text(encoding="utf-8")
         self.assertIn('cron: "*/5 * * * *"', workflow)

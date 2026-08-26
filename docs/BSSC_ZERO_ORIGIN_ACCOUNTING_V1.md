@@ -1,8 +1,9 @@
 # BSSC Zero-Origin Knowledge and Work-Accounting Lane V1
 
-Status: inactive implementation and review record. Nothing here admits or
-activates a governed projection, calls a provider, or publishes knowledge or
-credit artifacts.
+Status: active deployment record. The two governed projections are admitted,
+the 16-transition knowledge lane has been published and replay-verified, and
+the work-accounting workflow is enabled to publish one accepted subject per
+state transition.
 
 ## Root-contract review boundary
 
