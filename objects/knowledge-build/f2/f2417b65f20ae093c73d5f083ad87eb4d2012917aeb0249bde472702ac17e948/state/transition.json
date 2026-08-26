@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+  "baseStateDigest": "sha256:38948e69ea259630786b4688beb93d0acaa5581a65fb63cb80210945be08affe",
+  "contentOperations": [
+    {
+      "entityKind": "thread",
+      "entityId": "root/multiletter-marton-achievability/conditional-product-and-correlation-pruning",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/conditional-product-and-correlation-pruning",
+        "programId": "root/multiletter-marton-achievability",
+        "title": "Conditional-product and correlation-structure pruning",
+        "summary": "Determine which coordinate-packet factorizations preclude multiletter Marton gains and derive decomposition-relative correlation constraints that any remaining nonproduct witness must satisfy.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/receiver-skew-marton-midpoint-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/receiver-skew-marton-midpoint-proof",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Receiver-skew Marton midpoint identity",
+        "summary": "Reflecting a Marton law exchanges the two receivers and the U,V roles, making the associated affine supremum symmetric about weight one half. A tagged mixture of a law and its reflection proves directly, without an attainment or minimax assumption, that the private-message Marton supremum equals the half-weight affine supremum for every finite receiver-skew channel.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/conditional-product-tensorization-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/conditional-product-tensorization-proof",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Conditional-product Marton tensorization proof",
+        "summary": "Conditioning on the arbitrary common auxiliary makes the coordinate satellite-input packets independent. The three conditional Marton terms then add exactly, while each common-receiver information term is subadditive across coordinates. The receiver-skew midpoint identity bounds every coordinate marginal by the one-letter Marton value; independent epsilon-optimal copies give the reverse inequality, proving exact n-fold scaling without an attainment assumption.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/receiver-skew-marton-midpoint-proof"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/tuple-correlation-residual-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/tuple-correlation-residual-proof",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Tuple-decomposition correlation residual identity",
+        "summary": "For an arbitrary finite tuple law followed by the product channel, entropy expansion expresses the difference between the aggregate half-weight Marton functional and the sum of its coordinate marginals as an exact combination of conditional total correlations and cross-conditioning gaps. Combining this identity with the receiver-skew midpoint bound yields the strict correlation-balance inequality required by any strict multiletter gain for the chosen decomposition. Constant padding ensures a tuple representation exists, but the ledger is decomposition dependent.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/receiver-skew-marton-midpoint-proof"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/conditional-product-ledger-verifier",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/conditional-product-ledger-verifier",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "tool",
+        "title": "Conditional-product and correlation-ledger verifier",
+        "summary": "A deterministic standard-library script checks the exact half-skew BSSC receiver relabeling and, on fixed-seed finite examples, corroborates conditional-product entropy additivity, common-term subadditivity, independent-copy Marton equality, the exact correlated-tuple residual identity, nonnegativity of its displayed components, and the symmetric forms of the penalty term. These finite checks support but do not replace the universal analytic proofs.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/conditional-product-tensorization-proof",
+          "root/multiletter-marton-achievability/tuple-correlation-residual-proof"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/conditional-product-marton-no-gain",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/conditional-product-marton-no-gain",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Conditional-product Marton no-gain theorem",
+        "summary": "For every finite receiver-skew two-receiver broadcast channel and every n≥1, the n-letter Marton supremum restricted to coordinate satellite-input packets that are independent conditional on an arbitrary common W equals n times the one-letter private-message Marton value. Thus any strict two-letter half-skew BSSC gain must fail every tested conditional-product packet decomposition. For arbitrary tuple laws, the exact decomposition-relative total-correlation residual identity holds and any strict gain must satisfy its strict correlation-balance inequality. This establishes neither unrestricted Marton additivity nor a capacity bound or exact BSSC capacity.",
+        "claimRefs": [
+          {
+            "transactionId": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+            "claimKey": "bssc-sum-capacity/conditional-product-marton-no-gain"
+          }
+        ],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/conditional-product-tensorization-proof",
+          "root/multiletter-marton-achievability/tuple-correlation-residual-proof",
+          "root/multiletter-marton-achievability/conditional-product-ledger-verifier"
+        ]
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/conditional-product-marton-no-gain"
+    ],
+    "directProgramId": "root/multiletter-marton-achievability",
+    "directThreadIds": [
+      "root/multiletter-marton-achievability/conditional-product-and-correlation-pruning"
+    ],
+    "itemIds": [
+      "root/multiletter-marton-achievability/receiver-skew-marton-midpoint-proof",
+      "root/multiletter-marton-achievability/conditional-product-tensorization-proof",
+      "root/multiletter-marton-achievability/tuple-correlation-residual-proof",
+      "root/multiletter-marton-achievability/conditional-product-ledger-verifier",
+      "root/multiletter-marton-achievability/conditional-product-marton-no-gain"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted theorem directly advances the active multiletter Marton objective by excluding a broad conditional-product architecture and supplying correlation-based pruning conditions for the remaining nonproduct search.",
+    "relatedProgramIds": [
+      "root/multiletter-marton-achievability"
+    ]
+  },
+  "topologyRationale": null
+}
