@@ -680,17 +680,27 @@ def apply_research_topology_transition(
         existing = collection.get(entity_id)
         base_digest = operation.get("baseDigest")
         if action == "create":
-            if existing is not None or base_digest is not None:
+            if existing is not None:
                 raise MathFlowError(
-                    "research topology create must use a new ID and null baseDigest"
+                    "research topology create requires a new ID, but the entity "
+                    f"already exists: {kind} {entity_id}"
+                )
+            if base_digest is not None:
+                raise MathFlowError(
+                    "research topology create requires null baseDigest: "
+                    f"{kind} {entity_id}"
                 )
         else:
             if not isinstance(existing, dict):
                 raise MathFlowError(
-                    "research topology operation requires an existing entity"
+                    "research topology operation requires an existing entity: "
+                    f"{action} {kind} {entity_id}"
                 )
             if base_digest != existing.get("digest"):
-                raise MathFlowError("research topology operation baseDigest mismatch")
+                raise MathFlowError(
+                    "research topology operation baseDigest mismatch: "
+                    f"{action} {kind} {entity_id} expected {existing.get('digest')}"
+                )
 
         normalized = _normalize_entity_value(
             str(kind), entity_id, operation.get("value")
