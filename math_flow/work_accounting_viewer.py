@@ -1,14 +1,10 @@
-"""Deterministic, inactive viewer export for committed work accounting V1.
-
-This module is deliberately not discovered or admitted by the published
-projection catalog. It is the provider-free boundary between the accounting
-scheduler/published bundle artifacts and an explicit future viewer admission
-path.
-"""
+"""Deterministic viewer export for committed work-accounting V1 lanes."""
 
 from __future__ import annotations
 
 import copy
+import json
+import tempfile
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
@@ -24,6 +20,13 @@ from .work_accounting_schedule import (
     validate_work_accounting_publication_manifest,
     validate_work_accounting_schedule,
     validate_work_accounting_state_repair,
+)
+from .work_accounting_pipeline import (
+    materialize_stored_work_projection_bundle,
+)
+from .work_accounting_projection_store import (
+    ProjectionBranchWorkAccountingStore,
+    work_accounting_lane_scope_digest,
 )
 from .work_projection import load_work_projection_bundle
 
@@ -440,3 +443,203 @@ def load_work_accounting_viewer_projection(
         loaded_evaluation_bundles=loaded,
         **kwargs,
     )
+
+
+def _stored_json(
+    store: ProjectionBranchWorkAccountingStore, key: str, label: str
+) -> dict[str, object]:
+    stored = store.get(key)
+    if stored is None:
+        raise MathFlowError(f"published work-accounting {label} is missing")
+    try:
+        value = json.loads(stored.value)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise MathFlowError(
+            f"published work-accounting {label} is not valid JSON"
+        ) from exc
+    if not isinstance(value, dict):
+        raise MathFlowError(f"published work-accounting {label} must be an object")
+    return value
+
+
+def _digest_key(kind: str, digest: str) -> str:
+    return f"objects/{kind}/{digest.removeprefix('sha256:')}.json"
+
+
+def load_published_work_accounting_viewer_projection(
+    store: ProjectionBranchWorkAccountingStore,
+    *,
+    label: str,
+    research_projection_ids: Sequence[str],
+) -> dict[str, object]:
+    """Reconstruct a viewer projection solely from one verified published CAS lane."""
+
+    snapshot = store.load_published_snapshot()
+    if snapshot is None:
+        raise MathFlowError("published work-accounting lane has no publication marker")
+    pipeline = snapshot["pipeline"]
+    completed = pipeline["completedTransitions"]
+    if not completed:
+        raise MathFlowError("published work-accounting lane has no evaluated submissions")
+    schedule = validate_work_accounting_schedule(
+        _stored_json(
+            store,
+            _digest_key("schedules", str(pipeline["scheduleDigest"])),
+            "schedule",
+        )
+    )
+    if schedule["repairEventDigests"]:
+        raise MathFlowError(
+            "published work-accounting repair export requires explicit repair artifacts"
+        )
+    contract = validate_root_contract(
+        _stored_json(
+            store,
+            _digest_key("root-contracts", str(pipeline["rootContractDigest"])),
+            "root contract",
+        ),
+        str(pipeline["problemId"]),
+    )
+    terminal_knowledge = validate_research_program_state_versioned(
+        _stored_json(
+            store,
+            _digest_key(
+                "knowledge-states", str(schedule["terminalKnowledgeStateDigest"])
+            ),
+            "terminal knowledge state",
+        ),
+        str(pipeline["problemId"]),
+    )
+    terminal_accounting = validate_work_accounting_state(
+        _stored_json(
+            store,
+            _digest_key(
+                "accounting-states", str(schedule["terminalAccountingStateDigest"])
+            ),
+            "terminal accounting state",
+        ),
+        terminal_knowledge,
+        contract,
+    )
+    publications = [
+        validate_work_accounting_publication_manifest(
+            _stored_json(
+                store,
+                _digest_key(
+                    "publication-manifests",
+                    str(item["publicationManifestDigest"]),
+                ),
+                "submission publication manifest",
+            )
+        )
+        for item in completed
+    ]
+    with tempfile.TemporaryDirectory() as temporary:
+        bundle_root = Path(temporary)
+        loaded_bundles = [
+            materialize_stored_work_projection_bundle(
+                store,
+                bundle_digest=str(item["workBundleDigest"]),
+                output_dir=bundle_root / f"bundle-{index:06d}",
+            )
+            for index, item in enumerate(completed, start=1)
+        ]
+        return build_work_accounting_viewer_projection(
+            projection_id=store.projection_id,
+            label=label,
+            research_projection_ids=research_projection_ids,
+            schedule=schedule,
+            loaded_evaluation_bundles=loaded_bundles,
+            publication_manifests=publications,
+            terminal_accounting_state=terminal_accounting,
+            terminal_knowledge_state=terminal_knowledge,
+            root_contract=contract,
+        )
+
+
+def discover_published_work_accounting_viewer_projections(
+    projection_root: Path,
+    *,
+    projection_specs: Mapping[str, Mapping[str, object]],
+    problem_ids: Sequence[str],
+) -> list[dict[str, object]]:
+    """Discover only active governed lanes with an exact published marker."""
+
+    results: list[dict[str, object]] = []
+    for projection_digest, spec in sorted(projection_specs.items()):
+        runner = spec.get("runner")
+        dependencies = spec.get("dependencies")
+        handoffs = (
+            [
+                item
+                for item in dependencies
+                if isinstance(item, dict)
+                and item.get("artifactRole") == "research-builder-handoff"
+            ]
+            if isinstance(dependencies, list)
+            else []
+        )
+        if (
+            spec.get("engine") != "overlay-repository-v1"
+            or not isinstance(runner, dict)
+            or runner.get("implementation") != "openrouter-work-accounting-v1"
+            or len(handoffs) != 1
+        ):
+            continue
+        allowed = spec.get("allowedProblems")
+        if not isinstance(allowed, list):
+            raise MathFlowError("governed work-accounting problem allowlist is invalid")
+        projection_id = str(spec["id"])
+        for problem in sorted(set(problem_ids)):
+            if "*" not in allowed and problem not in allowed:
+                continue
+            scope = work_accounting_lane_scope_digest(
+                problem=problem,
+                projection_id=projection_id,
+                projection_spec_digest=projection_digest,
+            ).removeprefix("sha256:")
+            marker = (
+                projection_root.resolve()
+                / "indexes"
+                / "problems"
+                / problem
+                / "work-accounting-v1"
+                / scope
+                / "publication.json"
+            )
+            if not marker.exists():
+                continue
+            if marker.is_symlink() or not marker.is_file():
+                raise MathFlowError(
+                    "published work-accounting marker is not a regular file"
+                )
+            store = ProjectionBranchWorkAccountingStore(
+                projection_root,
+                problem=problem,
+                projection_id=projection_id,
+                projection_spec_digest=projection_digest,
+                create=False,
+            )
+            snapshot = store.load_published_snapshot()
+            if snapshot is None or not snapshot["pipeline"]["completedTransitions"]:
+                continue
+            results.append(
+                load_published_work_accounting_viewer_projection(
+                    store,
+                    label=projection_id,
+                    research_projection_ids=[str(handoffs[0]["projectionId"])],
+                )
+            )
+    results.sort(
+        key=lambda item: (
+            str(item["problemId"]),
+            str(item["label"]),
+            str(item["id"]),
+        )
+    )
+    identities = [(str(item["problemId"]), str(item["id"])) for item in results]
+    if len(identities) != len(set(identities)):
+        raise MathFlowError(
+            "published work-accounting lanes repeat a problem/projection identity"
+        )
+    return results

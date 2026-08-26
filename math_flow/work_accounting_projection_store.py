@@ -99,6 +99,26 @@ class ProjectionPublisher(Protocol):
     ) -> dict[str, object]: ...
 
 
+def work_accounting_lane_scope_digest(
+    *, problem: str, projection_id: str, projection_spec_digest: str
+) -> str:
+    """Return the exact governed scope for one work-accounting projection lane."""
+
+    if not isinstance(problem, str):
+        raise MathFlowError("work-accounting problem ID is invalid")
+    validate_slug(problem, "work-accounting problem ID")
+    if not isinstance(projection_id, str) or not IDENTIFIER.fullmatch(projection_id):
+        raise MathFlowError("work-accounting projection ID is invalid")
+    spec = _require_digest(projection_spec_digest, "projection spec digest")
+    scope = {
+        "schemaVersion": 1,
+        "problemId": problem,
+        "projectionId": projection_id,
+        "projectionSpecDigest": spec,
+    }
+    return f"sha256:{sha256_json(scope)}"
+
+
 def _git(worktree: Path, *arguments: str) -> str:
     try:
         result = subprocess.run(
@@ -310,6 +330,7 @@ class ProjectionBranchWorkAccountingStore(CASObjectStore):
         maximum_lane_objects: int = DEFAULT_MAXIMUM_LANE_OBJECTS,
         maximum_manifest_bytes: int = DEFAULT_MAXIMUM_MANIFEST_BYTES,
         maximum_transport_chunk_bytes: int = DEFAULT_MAXIMUM_TRANSPORT_CHUNK_BYTES,
+        create: bool = True,
     ) -> None:
         if not projection_root.is_dir() or projection_root.is_symlink():
             raise MathFlowError("projection worktree must be a non-symlink directory")
@@ -344,7 +365,11 @@ class ProjectionBranchWorkAccountingStore(CASObjectStore):
             "projectionId": projection_id,
             "projectionSpecDigest": spec,
         }
-        self.lane_scope_digest = f"sha256:{sha256_json(scope_core)}"
+        self.lane_scope_digest = work_accounting_lane_scope_digest(
+            problem=self.problem,
+            projection_id=self.projection_id,
+            projection_spec_digest=self.projection_spec_digest,
+        )
         self.scope_hex = self.lane_scope_digest.removeprefix("sha256:")
         self.object_root = (
             self.root
@@ -384,9 +409,14 @@ class ProjectionBranchWorkAccountingStore(CASObjectStore):
             / "math-flow-work-accounting-projection-locks"
             / lock_identity
         )
-        self.lock_root.mkdir(parents=True, exist_ok=True)
-        with self._locked("lane-identity"):
-            self._ensure_identity(scope_core)
+        if not isinstance(create, bool):
+            raise MathFlowError("work-accounting store create flag must be boolean")
+        if create:
+            self.lock_root.mkdir(parents=True, exist_ok=True)
+            with self._locked("lane-identity"):
+                self._ensure_identity(scope_core)
+        else:
+            self._validate_identity(scope_core)
         self._validate_lane_limits()
 
     def _relative(self, path: Path) -> str:
@@ -454,6 +484,21 @@ class ProjectionBranchWorkAccountingStore(CASObjectStore):
                 )
             return
         self._write(self.identity_path, content)
+
+    def _validate_identity(self, scope_core: Mapping[str, object]) -> None:
+        identity = {
+            **copy.deepcopy(dict(scope_core)),
+            "laneScopeDigest": self.lane_scope_digest,
+        }
+        content = _canonical_bytes(identity)
+        if (
+            not self.identity_path.is_file()
+            or self.identity_path.is_symlink()
+            or self.identity_path.read_bytes() != content
+        ):
+            raise MathFlowError(
+                "published work-accounting lane identity is missing or mismatched"
+            )
 
     def _iter_data_files(self) -> list[Path]:
         if not self.data_root.exists():
@@ -631,6 +676,45 @@ class ProjectionBranchWorkAccountingStore(CASObjectStore):
         ):
             raise MathFlowError("work-accounting publication manifest scope mismatch")
         return manifest
+
+    def load_published_snapshot(self) -> dict[str, object] | None:
+        """Read and verify the exact immutable objects selected by the lane marker."""
+
+        marker = self._load_marker()
+        if marker is None:
+            return None
+        manifest = self.load_publication_manifest(
+            str(marker["publicationManifestDigest"])
+        )
+        head = self.get(self.pipeline_lane_key)
+        if head is None:
+            raise MathFlowError("published work-accounting lane marker has no head")
+        pipeline = validate_work_accounting_pipeline_state(
+            _json_object(head.value, "published work-accounting pipeline head")
+        )
+        if head.value != _canonical_bytes(pipeline):
+            raise MathFlowError("published work-accounting pipeline head is not canonical")
+        if (
+            pipeline["problemId"] != self.problem
+            or pipeline["projectionId"] != self.projection_id
+            or pipeline["projectionSpecDigest"] != self.projection_spec_digest
+            or marker["pipelineStateDigest"] != pipeline["pipelineStateDigest"]
+            or marker["laneHeadVersion"] != head.version
+            or manifest["pipelineStateDigest"] != pipeline["pipelineStateDigest"]
+            or manifest["laneHeadVersion"] != head.version
+            or manifest["publicationManifestDigest"]
+            != marker["publicationManifestDigest"]
+            or manifest["identityObject"] != self._identity_record()
+        ):
+            raise MathFlowError("published work-accounting snapshot bindings disagree")
+        for record in [manifest["identityObject"], *manifest["retainedObjects"]]:
+            self._verify_retained_record(record)
+        return {
+            "marker": marker,
+            "manifest": manifest,
+            "pipeline": pipeline,
+            "laneHeadVersion": head.version,
+        }
 
     def _verify_retained_record(self, record: Mapping[str, object]) -> None:
         path = _safe_relative(record["path"], "retained projection object path")

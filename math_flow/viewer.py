@@ -20,6 +20,8 @@ from .research_state import (
     validate_research_program_v5_batch_binding,
     validate_research_program_v5_transition_shape,
 )
+from .research_topology import empty_research_program_state_v2
+from .work_accounting_research_v6 import load_published_research_v6_transition
 
 
 HIERARCHICAL_RESEARCH_OUTPUT_PROFILES = {
@@ -27,6 +29,7 @@ HIERARCHICAL_RESEARCH_OUTPUT_PROFILES = {
     "math-flow/hierarchical-research-v3",
     "math-flow/hierarchical-research-v4",
     "math-flow/hierarchical-research-v5",
+    "math-flow/hierarchical-research-v6",
 }
 
 
@@ -334,26 +337,54 @@ def _export_research_viewer_data(
     runs: list[dict[str, object]] = []
     previous_digest: str | None = None
     previous_nodes: dict[str, dict[str, object]] = {}
-    previous_program_state: dict[str, object] | None = empty_research_program_state(
-        problem
-    )
+    previous_program_state: dict[str, object] | None = None
+    previous_profile: str | None = None
     for ordinal, raw_bundle in enumerate(run_dirs, start=1):
         bundle = raw_bundle.resolve()
         manifest, manifest_digest = load_manifest(bundle)
+        profile = manifest.get("outputProfile")
         if (
             manifest.get("problemId") != problem
-            or manifest.get("outputProfile")
-            not in HIERARCHICAL_RESEARCH_OUTPUT_PROFILES
+            or profile not in HIERARCHICAL_RESEARCH_OUTPUT_PROFILES
         ):
             raise MathFlowError(
                 f"viewer run is not a supported hierarchical research build: {bundle}"
             )
         if previous_digest is not None and manifest.get("baseRun") != previous_digest:
             raise MathFlowError(f"viewer research runs do not form a base-run chain: {bundle}")
-        state = _json_artifact(bundle, manifest, "research-program-state")
-        validate_research_program_state(state, problem)
-        delta = _json_artifact(bundle, manifest, "research-program-delta")
-        if manifest.get("outputProfile") == "math-flow/hierarchical-research-v5":
+        if previous_profile is not None and profile != previous_profile:
+            raise MathFlowError("viewer research chain changes output profile")
+        topology_alignment = None
+        same_world_handoff = None
+        if profile == "math-flow/hierarchical-research-v6":
+            loaded_v6 = load_published_research_v6_transition(
+                bundle,
+                expected_bundle_digest=manifest_digest,
+                expected_problem=problem,
+            )
+            state = loaded_v6.target_knowledge_state
+            delta = loaded_v6.transition
+            topology_alignment = loaded_v6.topology_alignment
+            same_world_handoff = loaded_v6.same_world_handoff
+            if ordinal == 1 and manifest.get("baseRun") is None:
+                if loaded_v6.base_knowledge_state != empty_research_program_state_v2(
+                    problem
+                ):
+                    raise MathFlowError(
+                        "viewer research-v6 origin does not use the empty state"
+                    )
+            elif (
+                previous_program_state is not None
+                and loaded_v6.base_knowledge_state != previous_program_state
+            ):
+                raise MathFlowError(
+                    "viewer research-v6 base state differs from its predecessor"
+                )
+        else:
+            state = _json_artifact(bundle, manifest, "research-program-state")
+            validate_research_program_state(state, problem)
+            delta = _json_artifact(bundle, manifest, "research-program-delta")
+        if profile == "math-flow/hierarchical-research-v5":
             batch_input = _json_artifact(bundle, manifest, "research-batch-input")
             problem_ledger_head = manifest.get("problemLedgerHead")
             if not isinstance(problem_ledger_head, str):
@@ -369,6 +400,8 @@ def _export_research_viewer_data(
             )
             if ordinal == 1 and manifest.get("baseRun") is not None:
                 previous_program_state = None
+            elif ordinal == 1:
+                previous_program_state = empty_research_program_state(problem)
             if previous_program_state is not None:
                 validate_research_program_v5_transition_shape(
                     previous_program_state, delta, state
@@ -386,38 +419,41 @@ def _export_research_viewer_data(
             and isinstance(provider_run.get("usage"), dict)
             and isinstance(provider_run["usage"].get("cost", 0), (int, float))
         )
-        runs.append(
-            {
-                "id": bundle.name,
-                "ordinal": ordinal,
-                "ledgerHead": manifest["ledgerHead"],
-                "problemLedgerHead": manifest.get(
-                    "problemLedgerHead", manifest["ledgerHead"]
-                ),
-                "runDigest": manifest_digest,
-                "baseRun": manifest.get("baseRun"),
-                "runKind": manifest.get("runKind"),
-                "inputs": manifest.get("inputs"),
-                "judgeSpec": manifest["judgeSpec"],
-                "runner": manifest["runner"],
-                "cost": cost,
-                "selection": {
-                    "selectedNodeIds": sorted(changed_node_ids),
-                    "rationale": "Nodes changed by the accepted validity batch.",
-                },
-                "normalizations": [],
-                "delta": delta,
-                "state": {"nodes": nodes, "stateDigest": state["stateDigest"]},
-                "revisionIds": [],
-                "addedRevisionIds": [],
-                "changedNodeIds": sorted(changed_node_ids),
-                "reportDigest": state["stateDigest"],
-                "revisionSemantics": "neutral-knowledge",
-            }
-        )
+        run = {
+            "id": bundle.name,
+            "ordinal": ordinal,
+            "ledgerHead": manifest["ledgerHead"],
+            "problemLedgerHead": manifest.get(
+                "problemLedgerHead", manifest["ledgerHead"]
+            ),
+            "runDigest": manifest_digest,
+            "baseRun": manifest.get("baseRun"),
+            "runKind": manifest.get("runKind"),
+            "inputs": manifest.get("inputs"),
+            "judgeSpec": manifest["judgeSpec"],
+            "runner": manifest["runner"],
+            "cost": cost,
+            "selection": {
+                "selectedNodeIds": sorted(changed_node_ids),
+                "rationale": "Nodes changed by the accepted validity batch.",
+            },
+            "normalizations": [],
+            "delta": delta,
+            "state": {"nodes": nodes, "stateDigest": state["stateDigest"]},
+            "revisionIds": [],
+            "addedRevisionIds": [],
+            "changedNodeIds": sorted(changed_node_ids),
+            "reportDigest": state["stateDigest"],
+            "revisionSemantics": "neutral-knowledge",
+        }
+        if topology_alignment is not None and same_world_handoff is not None:
+            run["topologyAlignment"] = topology_alignment
+            run["sameWorldHandoff"] = same_world_handoff
+        runs.append(run)
         previous_digest = manifest_digest
         previous_nodes = nodes
         previous_program_state = state
+        previous_profile = str(profile)
 
     judgments_by_id: dict[str, dict[str, object]] = {}
     for judgment_dir in judgment_dirs or []:
@@ -1124,9 +1160,9 @@ def export_viewer_catalog(
 ) -> dict[str, object]:
     """Build a deterministic, repository-backed catalog of published projections.
 
-    ``work_accounting_sources`` is an explicit inactive seam for already
-    governed source locations. Ordinary catalog export does not discover or
-    admit work-accounting artifacts.
+    Active governed work-accounting lanes are discovered by their exact
+    projection-spec digest and publication marker. ``work_accounting_sources``
+    remains an explicit replay seam for tests and historical artifacts.
     """
 
     root = root.resolve()
@@ -1641,21 +1677,40 @@ def export_viewer_catalog(
         "objectiveAttestations": objective_attestations,
         "defaultProjectionId": projections[0]["id"] if projections else None,
     }
-    if work_accounting_sources is not None:
-        from .work_accounting_viewer import load_work_accounting_viewer_projection
+    from .work_accounting_viewer import (
+        discover_published_work_accounting_viewer_projections,
+        load_work_accounting_viewer_projection,
+    )
 
-        work_accounting_projections = []
+    work_accounting_projections = (
+        discover_published_work_accounting_viewer_projections(
+            projection_root,
+            projection_specs=projection_specs,
+            problem_ids=sorted(active_problems),
+        )
+    )
+    if work_accounting_sources is not None:
         for source in work_accounting_sources:
             if not isinstance(source, dict):
                 raise MathFlowError(
                     "work-accounting viewer source configuration must be an object"
                 )
             work_projection = load_work_accounting_viewer_projection(**source)
+            work_accounting_projections.append(work_projection)
+    if work_accounting_projections:
+        for work_projection in work_accounting_projections:
             compatible = [
                 projection
                 for projection in projections
                 if projection["problemId"] == work_projection["problemId"]
-                and projection["id"] in work_projection["researchProjectionIds"]
+                and (
+                    projection["id"] in work_projection["researchProjectionIds"]
+                    or (
+                        isinstance(projection.get("projectionSpec"), dict)
+                        and projection["projectionSpec"].get("id")
+                        in work_projection["researchProjectionIds"]
+                    )
+                )
             ]
             terminal_digest = work_projection["runs"][0][
                 "terminalKnowledgeStateDigest"
@@ -1670,7 +1725,6 @@ def export_viewer_catalog(
                 raise MathFlowError(
                     "work-accounting viewer source has no exact research-state dependency"
                 )
-            work_accounting_projections.append(work_projection)
         work_accounting_projections.sort(
             key=lambda item: (
                 str(item["problemId"]),
