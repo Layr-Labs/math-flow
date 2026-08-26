@@ -140,6 +140,7 @@ class WorkAccountingViewerTests(unittest.TestCase):
                 self.fixture.root,
                 Path(temporary),
                 "example/math-flow",
+                canonical_ref="HEAD",
             )
         self.assertNotIn("workAccountingProjections", catalog)
 
