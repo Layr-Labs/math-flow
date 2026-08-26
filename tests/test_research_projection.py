@@ -613,8 +613,16 @@ class ResearchProjectionTests(unittest.TestCase):
             claim = claim_due_build(scheduler, str(lane["laneId"]), 1, 1)
             assert claim is not None
 
+            calls = 0
+
             def v6_transport(request: dict[str, object]) -> dict[str, object]:
-                content = str(request["messages"][-1]["content"])
+                nonlocal calls
+                calls += 1
+                content = next(
+                    str(message["content"])
+                    for message in request["messages"]
+                    if "<math-flow-input>" in str(message["content"])
+                )
                 payload = json.loads(
                     content.split("<math-flow-input>\n", 1)[1].split(
                         "\n</math-flow-input>", 1
@@ -624,72 +632,81 @@ class ResearchProjectionTests(unittest.TestCase):
                 claims = payload["acceptedClaims"]
                 thread_id = "root/v6-fixture-line"
                 item_id = "root/v6-fixture-result"
-                return response(
-                    json.dumps(
+                transition = {
+                    "schemaVersion": 1,
+                    "subjectTransactionId": subject,
+                    "baseStateDigest": payload["baseState"]["stateDigest"],
+                    "contentOperations": [
                         {
-                            "schemaVersion": 1,
-                            "subjectTransactionId": subject,
-                            "baseStateDigest": payload["baseState"]["stateDigest"],
-                            "contentOperations": [
-                                {
-                                    "entityKind": "thread",
-                                    "entityId": thread_id,
-                                    "baseDigest": None,
-                                    "value": {
-                                        "id": thread_id,
-                                        "programId": "root",
-                                        "title": "Fixture line",
-                                        "summary": "Track the accepted fixture result.",
-                                        "kind": "research",
-                                        "status": "active",
-                                        "expectedExposure": "1",
-                                        "conditions": [],
-                                        "sourceTransactionIds": [subject],
-                                    },
-                                },
-                                {
-                                    "entityKind": "item",
-                                    "entityId": item_id,
-                                    "baseDigest": None,
-                                    "value": {
-                                        "id": item_id,
-                                        "programId": "root",
-                                        "type": "result",
-                                        "title": "Fixture result",
-                                        "summary": "Represent the accepted fixture claims.",
-                                        "claimRefs": [
-                                            {
-                                                "transactionId": subject,
-                                                "claimKey": item["claimKey"],
-                                            }
-                                            for item in claims
-                                        ],
-                                        "sourceTransactionIds": [subject],
-                                        "dependencyItemIds": [],
-                                    },
-                                },
-                            ],
-                            "topologyOperations": [],
-                            "contribution": {
-                                "claimKeys": sorted(
-                                    str(item["claimKey"]) for item in claims
-                                ),
-                                "directProgramId": "root",
-                                "directThreadIds": [thread_id],
-                                "itemIds": [item_id],
+                            "entityKind": "thread",
+                            "entityId": thread_id,
+                            "baseDigest": None,
+                            "value": {
+                                "id": thread_id,
+                                "programId": "root",
+                                "title": "Fixture line",
+                                "summary": "Track the accepted fixture result.",
+                                "kind": "research",
+                                "status": "active",
+                                "expectedExposure": "1",
+                                "conditions": [],
+                                "sourceTransactionIds": [subject],
                             },
-                            "placementAudit": {
-                                "basis": "canonical-objective",
-                                "rationale": "The fixture result is problem-global.",
-                                "relatedProgramIds": [],
+                        },
+                        {
+                            "entityKind": "item",
+                            "entityId": item_id,
+                            "baseDigest": None,
+                            "value": {
+                                "id": item_id,
+                                "programId": "root",
+                                "type": "result",
+                                "title": "Fixture result",
+                                "summary": "Represent the accepted fixture claims.",
+                                "claimRefs": [
+                                    {
+                                        "transactionId": subject,
+                                        "claimKey": item["claimKey"],
+                                    }
+                                    for item in claims
+                                ],
+                                "sourceTransactionIds": [subject],
+                                "dependencyItemIds": [],
                             },
-                            "topologyRationale": None,
-                        }
-                    ),
-                    1,
+                        },
+                    ],
+                    "topologyOperations": [],
+                    "contribution": {
+                        "claimKeys": sorted(
+                            str(item["claimKey"]) for item in claims
+                        ),
+                        "directProgramId": "root",
+                        "directThreadIds": [thread_id],
+                        "itemIds": [item_id],
+                    },
+                    "placementAudit": {
+                        "basis": "canonical-objective",
+                        "rationale": "The fixture result is problem-global.",
+                        "relatedProgramIds": [],
+                    },
+                    "topologyRationale": None,
+                }
+                if calls == 1:
+                    transition["contentOperations"][-1]["value"][
+                        "programId"
+                    ] = "missing-program"
+                else:
+                    self.assertIn(
+                        "root/v6-fixture-result has missing program: missing-program",
+                        str(request["messages"][-1]["content"]),
+                    )
+                return response(
+                    json.dumps(transition),
+                    calls,
                 )
 
             output = directory / "builder-v6"
+            checkpoint_dir = directory / "builder-v6-checkpoints"
             run_research_build_bundle(
                 ROOT,
                 PROBLEM,
@@ -700,7 +717,10 @@ class ResearchProjectionTests(unittest.TestCase):
                 None,
                 output,
                 transport=v6_transport,
+                checkpoint_dir=checkpoint_dir,
             )
+            self.assertEqual(calls, 2)
+            self.assertEqual(len(list(checkpoint_dir.glob("*.json"))), 1)
             manifest, state, _ = load_research_build_bundle(output)
             self.assertEqual(
                 manifest["outputProfile"], "math-flow/hierarchical-research-v6"
@@ -708,6 +728,50 @@ class ResearchProjectionTests(unittest.TestCase):
             self.assertEqual(state["schemaVersion"], 2)
             self.assertEqual(state["ledgerHead"], TX)
             self.assertEqual(set(state["contributions"]), {TX})
+            self.assertEqual(len(manifest["requestDigests"]), 2)
+            self.assertNotEqual(
+                manifest["requestDigests"][0], manifest["requestDigests"][1]
+            )
+            rejected_checkpoint = checkpoint_dir / (
+                manifest["requestDigests"][0].removeprefix("sha256:") + ".json"
+            )
+            accepted_checkpoint = checkpoint_dir / (
+                manifest["requestDigests"][1].removeprefix("sha256:") + ".json"
+            )
+            self.assertFalse(rejected_checkpoint.exists())
+            self.assertTrue(accepted_checkpoint.is_file())
+            provider_run = manifest["providerRuns"][0]
+            self.assertEqual(provider_run["attempts"], 2)
+            self.assertEqual(
+                [
+                    attempt["outcome"]
+                    for attempt in provider_run["attemptRecords"]
+                ],
+                ["validation-rejected", "accepted"],
+            )
+            provider_core = {
+                key: value
+                for key, value in provider_run.items()
+                if key != "invocationDigest"
+            }
+            self.assertEqual(
+                provider_run["invocationDigest"],
+                f"sha256:{sha256_json(provider_core)}",
+            )
+            journal_path = (
+                checkpoint_dir / "diagnostics" / "organize-attempts.json"
+            )
+            journal = json.loads(journal_path.read_text(encoding="utf-8"))
+            journal_core = {
+                key: value for key, value in journal.items() if key != "journalDigest"
+            }
+            self.assertEqual(
+                journal["journalDigest"],
+                f"sha256:{sha256_json(journal_core)}",
+            )
+            self.assertEqual(
+                provider_run["attemptJournalDigest"], journal["journalDigest"]
+            )
             self.assertEqual(
                 {item["role"] for item in manifest["artifacts"]},
                 {

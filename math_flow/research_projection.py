@@ -94,6 +94,20 @@ class _ReplayCheckpointTransport:
             self._last_checkpoint.unlink(missing_ok=True)
             self._last_checkpoint = None
 
+    def write_attempt_journal(self, journal: dict[str, object]) -> None:
+        stage = journal.get("stage")
+        if not isinstance(stage, str) or not re.fullmatch(r"[a-z][a-z0-9-]*", stage):
+            raise MathFlowError("provider attempt journal has an invalid stage")
+        diagnostics = self.checkpoint_dir / "diagnostics"
+        diagnostics.mkdir(parents=True, exist_ok=True)
+        target = diagnostics / f"{stage}-attempts.json"
+        temporary = target.with_suffix(".tmp")
+        temporary.write_text(
+            json.dumps(journal, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        temporary.replace(target)
+
     @staticmethod
     def _validate_response(
         request: dict[str, object], response: object
@@ -1126,11 +1140,25 @@ def _run_research_build_bundle_v6(
     )
 
     send = transport or send_chat_completion
+    checkpoint_transport: _ReplayCheckpointTransport | None = None
     if checkpoint_dir is not None:
         checkpoint_transport = _ReplayCheckpointTransport(checkpoint_dir, send)
         checkpoint_transport.begin_stage()
         send = checkpoint_transport
-    provider = OpenRouterResearchBuilderV6Provider(spec, transport=send)
+    provider = OpenRouterResearchBuilderV6Provider(
+        spec,
+        transport=send,
+        invalidate_last_response=(
+            checkpoint_transport.invalidate_last
+            if checkpoint_transport is not None
+            else None
+        ),
+        attempt_journal_writer=(
+            checkpoint_transport.write_attempt_journal
+            if checkpoint_transport is not None
+            else None
+        ),
+    )
     transition = provider.run(
         problem_id=problem,
         subject_transaction_id=subject,
@@ -1186,7 +1214,11 @@ def _run_research_build_bundle_v6(
         source,
         spec,
         base_run_digest,
-        [str(item["requestDigest"]) for item in provider.invocation_records],
+        [
+            str(attempt["requestDigest"])
+            for invocation in provider.invocation_records
+            for attempt in invocation["attemptRecords"]
+        ],
         provider.invocation_records,
         run_kind="knowledge-build",
         inputs={

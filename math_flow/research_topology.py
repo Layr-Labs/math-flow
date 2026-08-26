@@ -392,7 +392,9 @@ def validate_research_program_state_v2(
         owner_id = record.get("programId")
         owner = programs.get(owner_id)
         if not isinstance(owner, dict):
-            raise MathFlowError(f"research thread v2 has missing program: {thread_id}")
+            raise MathFlowError(
+                f"research thread v2 {thread_id} has missing program: {owner_id}"
+            )
         if owner.get("status") == "retired" and record.get("status") not in {
             "completed",
             "retired",
@@ -420,7 +422,9 @@ def validate_research_program_state_v2(
         owner_id = record.get("programId")
         owner = programs.get(owner_id)
         if not isinstance(owner, dict):
-            raise MathFlowError(f"research item v2 has missing program: {item_id}")
+            raise MathFlowError(
+                f"research item v2 {item_id} has missing program: {owner_id}"
+            )
         if owner.get("status") == "retired":
             raise MathFlowError(
                 f"research item remains in a retired program: {item_id}"

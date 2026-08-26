@@ -362,6 +362,8 @@ class BSSCResearchV4ProducerTests(unittest.TestCase):
         self.assertIn("--maximum-judgments 1", workflow)
         self.assertIn('--head "$subject"', workflow)
         self.assertIn("bssc-research-v4-frontier", workflow)
+        self.assertIn("Upload builder-v6 attempt diagnostics after a failure", workflow)
+        self.assertIn("checkpoints/diagnostics", workflow)
         self.assertIn("research-builder-submission-input", (
             ROOT / "math_flow/research_projection.py"
         ).read_text(encoding="utf-8"))
