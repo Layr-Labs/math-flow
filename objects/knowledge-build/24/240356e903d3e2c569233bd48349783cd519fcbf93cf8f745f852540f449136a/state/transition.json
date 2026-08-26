@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+  "baseStateDigest": "sha256:6790bf618ff33d6171ec1d7d54fb0e9f1827ed28d743935afba31a8c591c4d00",
+  "contentOperations": [
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/paired-output-covariance-curvature-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/paired-output-covariance-curvature-proof",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Paired-output binary-table curvature proof",
+        "summary": "For an arbitrary input law on the two-letter half-skew BSSC, memorylessness maps the input covariance c_in to covariance c_in/4 in each receiver's binary output table. Along each fixed-marginal covariance segment, differentiating binary relative entropy twice and pairing the two receiver tables yields a uniform reciprocal-curvature lower bound. Integrating twice from independence proves I(Y_1;Y_2)+I(Z_1;Z_2) >= 31 c_in^2/(20 ln 2), including boundary and degenerate cases by continuity.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/paired-output-covariance-curvature-verifier",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/paired-output-covariance-curvature-verifier",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "tool",
+        "title": "Directed paired-output curvature verifier",
+        "summary": "A dependency-free Python standard-library checker verifies the exact paired-table reciprocal identities, the polynomial positivity and minimum bracket underlying the curvature constant, the rescaling from output covariance to input covariance, and directed logarithmic comparisons establishing sqrt(7 ln 2/248)<7/50. It corroborates but does not replace the analytic curvature proof.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/paired-output-covariance-curvature-proof"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/two-letter-output-covariance-curvature",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/two-letter-output-covariance-curvature",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Output curvature sharpens covariance pruning for a two-letter Marton gain",
+        "summary": "Every input law on the half-skew BSSC product channel satisfies C_out=I(Y_1;Y_2)+I(Z_1;Z_2) >= 31 c_in^2/(20 ln 2), where c_in=P(X_1X_2=11)-P(X_1=1)P(X_2=1). Combining this unconditional curvature inequality with the accepted bound C_out<7/160 for any finite two-letter Marton law exceeding twice the optimal one-letter randomized-time-division value shows that every such gain requires |c_in|<sqrt(7 ln 2/248)<7/50. This necessary condition neither constructs nor rules out a gain, tensorizes Marton's functional, nor supplies a capacity converse.",
+        "claimRefs": [
+          {
+            "transactionId": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+            "claimKey": "bssc-sum-capacity/two-letter-output-covariance-curvature"
+          }
+        ],
+        "sourceTransactionIds": [
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/paired-output-covariance-curvature-proof",
+          "root/multiletter-marton-achievability/paired-output-covariance-curvature-verifier",
+          "root/multiletter-marton-achievability/two-letter-marton-marginal-correlation-pruning"
+        ]
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/two-letter-output-covariance-curvature"
+    ],
+    "directProgramId": "root/multiletter-marton-achievability",
+    "directThreadIds": [
+      "root/multiletter-marton-achievability/conditional-product-and-correlation-pruning"
+    ],
+    "itemIds": [
+      "root/multiletter-marton-achievability/paired-output-covariance-curvature-proof",
+      "root/multiletter-marton-achievability/paired-output-covariance-curvature-verifier",
+      "root/multiletter-marton-achievability/two-letter-output-covariance-curvature"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted result strengthens the covariance constraints required of any two-letter Marton gain, directly advancing the active non-root program's correlation-structure pruning objective.",
+    "relatedProgramIds": [
+      "root/multiletter-marton-achievability"
+    ]
+  },
+  "topologyRationale": null
+}
