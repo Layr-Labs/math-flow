@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+  "acceptedClaimRefs": [
+    {
+      "transactionId": "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+      "claimKey": "bssc-sum-capacity/fixed-pair-upper-bound-attested",
+      "judgmentId": "sha256:5046c2345351f57ac7f82aecf1cf537fbd64cd92dad1e3694282ae6ec9f1f2bc",
+      "assessmentDigest": "sha256:3702862098bd9d7f915070b94eaf5a9adfb3b173f48b1e85b21eaed784f41bba"
+    }
+  ],
+  "knowledgeStateDigest": "sha256:5feb4c65a56314a89dc7c2394fa99a7d680a1d256170a7b9c1e34aed105e2242",
+  "subjectEvidenceManifestDigest": "sha256:0bcafc9342cd8764e843a80c0c022f07e015381a5a60db0fb52cf586cd0ac633",
+  "facts": [
+    {
+      "id": "fact-fixed-binary-auxiliary-certificate",
+      "condition": "A concrete pair of binary auxiliary channels admits a checkable dual witness within the portfolio’s accepted auxiliary-receiver converse, thereby furnishing a rigorous numerical ceiling on the canonical sum rate.",
+      "actorVisibility": "withheld-until-independent-discovery",
+      "affectedNodeRefs": [
+        {
+          "kind": "program",
+          "id": "root/theorem9-auxiliary-receiver-converse"
+        },
+        {
+          "kind": "thread",
+          "id": "root/theorem9-auxiliary-receiver-converse/r0-specialization-and-receiver-reduction"
+        }
+      ],
+      "acceptedClaimKeys": [
+        "bssc-sum-capacity/fixed-pair-upper-bound-attested"
+      ]
+    }
+  ],
+  "assumptions": [
+    "No optimality of the chosen auxiliary channels and no matching achievable rate are assumed.",
+    "The manifested certificate is interpreted under the exact-arithmetic and directed-rounding semantics used by its accepted judgment.",
+    "The previously accepted auxiliary-receiver converse interface is valid for the canonical half-skew channel."
+  ],
+  "safeFactsDigest": "sha256:d7518b070fd8a7993fa85a7febd8591dbbfe570c1b4fbd6686d38e6996c6d2c2"
+}
