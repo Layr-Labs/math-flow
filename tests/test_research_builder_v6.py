@@ -229,7 +229,7 @@ class ResearchBuilderV6Tests(unittest.TestCase):
             judgment_id=JUDGMENT_A,
         )
 
-    def test_inactive_spec_loads_without_projection_admission(self) -> None:
+    def test_spec_loads_before_and_after_exact_projection_admission(self) -> None:
         spec = load_judge_spec(
             ROOT
             / "protocol"
@@ -243,7 +243,22 @@ class ResearchBuilderV6Tests(unittest.TestCase):
             path.read_text(encoding="utf-8")
             for path in (ROOT / "protocol" / "projections").glob("*.json")
         )
-        self.assertNotIn("openrouter-hierarchical-research-builder-v6", projection_text)
+        admission = ROOT / "protocol/projections/openrouter-research-v4.json"
+        if admission.exists():
+            self.assertEqual(
+                admission.read_bytes(),
+                (
+                    ROOT
+                    / "protocol/runtime/openrouter-research-v4-projection.json"
+                ).read_bytes(),
+            )
+            self.assertIn(
+                "openrouter-hierarchical-research-builder-v6", projection_text
+            )
+        else:
+            self.assertNotIn(
+                "openrouter-hierarchical-research-builder-v6", projection_text
+            )
 
     def test_one_submission_produces_exact_state_alignment_and_handoff(self) -> None:
         result = self._first_result()
