@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "id": "bssc-work-accounting-hosted-v1",
+  "status": "active",
+  "problemId": "bssc-sum-capacity",
+  "projectionId": "openrouter-work-accounting-v1",
+  "knowledgeProjectionId": "openrouter-research-v4",
+  "projectionSpec": {
+    "path": "protocol/runtime/active-openrouter-work-accounting-v1-projection.json",
+    "id": "openrouter-work-accounting-v1",
+    "digest": "sha256:194039000c88208dfd3424ac8e0d4092a0c53a7dd5dc2d81a685527afa598410"
+  },
+  "knowledgeProjectionSpec": {
+    "path": "protocol/runtime/openrouter-research-v4-projection.json",
+    "id": "openrouter-research-v4",
+    "digest": "sha256:8bcab1fa785b4c5d757668ef2ff9ce1ef3046a54828c71ed846f84e6b33cf31a"
+  },
+  "rootContract": {
+    "path": "protocol/runtime/bssc-work-accounting-root-contract-v1.json",
+    "digest": "sha256:01d52a695e88694768973f3590c0c13eb5acd8070fbed32de8ad01e460c41135"
+  },
+  "validitySource": {
+    "path": "protocol/runtime/bssc-work-accounting-source-v1.json",
+    "digest": "sha256:d59e031a6c2e2a2b752522326bfc3244378d0e5c6521b5b21b753354954efe77"
+  },
+  "builderSpec": {
+    "path": "protocol/judges/openrouter-hierarchical-research-builder-v6.json",
+    "id": "openrouter-hierarchical-research-builder-v6",
+    "implementation": "openrouter-hierarchical-research-builder-v6",
+    "digest": "sha256:04bfe92aebb7c144d4f969cc7a744781212069a32b62258cd00744ff95531e30"
+  },
+  "workProviderSpec": {
+    "path": "protocol/judges/openrouter-work-accounting-v1.json",
+    "id": "openrouter-work-accounting-v1",
+    "implementation": "openrouter-work-accounting-v1",
+    "digest": "sha256:c160a3e9840f02c7e44fc922c3bcd2fcd31837f37c31fb38b0c1757729736668"
+  },
+  "transport": {
+    "implementation": "openrouter-chat-completions-v1",
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "digest": "sha256:0b5ef303cbe83668ce8dfb9fe6c5dec811a949794a2a8b177a8262431e4cba59"
+  },
+  "hostedRunner": {
+    "implementation": "bssc-work-accounting-hosted-v1",
+    "path": "math_flow/bssc_work_accounting_hosted.py",
+    "digest": "sha256:0b0d1f6a4e9e46ac94a1a9185aa7f0288c9a7bda3625a8c200676b8dfb94bace"
+  },
+  "runner": {
+    "implementation": "work-accounting-pipeline-v1",
+    "path": "math_flow/work_accounting_pipeline.py",
+    "digest": "sha256:c69d19aa3e1e9df2e3f7392368b60a1b47a17f370813415be87e7e858950ff10"
+  },
+  "retryPolicy": {
+    "mode": "automatic",
+    "manualReview": false,
+    "maximumAttempts": 5,
+    "baseRetrySeconds": 60,
+    "staleClaimSeconds": 3600
+  },
+  "hostedBatching": {
+    "maximumSubjectsPerRun": 1,
+    "semanticEffect": "none"
+  },
+  "runtimePolicyDigest": "sha256:c62d173d1d59f804b5adfbc69d483ea189229accf688e440c950f597df2a0976",
+  "configDigest": "sha256:c51d7f4a00748b13f23a1c2a0a48280f1d46b3fed99d10449b827a0c1b62dcfc"
+}

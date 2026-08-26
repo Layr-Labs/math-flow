@@ -13,6 +13,7 @@ from math_flow.bssc_work_accounting_hosted import (
     build_work_dispatch_history,
     build_bssc_work_disposition_snapshot,
     freeze_work_accounting_plan,
+    load_bssc_work_accounting_deployment,
     validate_frozen_work_accounting_plan,
 )
 from math_flow.errors import MathFlowError
@@ -81,6 +82,20 @@ def eligible_plan() -> dict[str, object]:
 
 
 class BsscHostedAccountingTests(unittest.TestCase):
+    def test_active_deployment_is_sealed_before_separate_admission(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        deployment = load_bssc_work_accounting_deployment(
+            root, require_admitted=False
+        )
+        self.assertEqual(
+            deployment["config"]["configDigest"],
+            "sha256:c51d7f4a00748b13f23a1c2a0a48280f1d46b3fed99d10449b827a0c1b62dcfc",
+        )
+        self.assertEqual(
+            deployment["contract"]["rootContractDigest"],
+            "sha256:01d52a695e88694768973f3590c0c13eb5acd8070fbed32de8ad01e460c41135",
+        )
+
     def test_pinned_validity_history_normalizes_to_16_accepted_9_indeterminate(self) -> None:
         root = Path(__file__).resolve().parents[1]
         deployment = {

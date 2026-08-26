@@ -143,16 +143,18 @@ No registered projection references builder v6.
 
 The BSSC deployment foundation adds
 `math_flow.bssc_research_v4_producer`, the immutable validity source at
-`protocol/runtime/bssc-research-v4-validity-source-v1.json`, and the inactive
-hosted template `.github/workflows/project-research-v4-serial.yml.inactive`.
+`protocol/runtime/bssc-research-v4-validity-source-v1.json`, and the
+manual-dispatch hosted caller `.github/workflows/project-research-v4-serial.yml`.
 The planner revalidates the exact historical validity-v4 bundle bytes, the
 canonical 16-subject accepted frontier, and the published v6 predecessor chain
 before allowing one next build. See `docs/BSSC_RESEARCH_V4_SERIAL_PRODUCER.md`.
 
 ## Activation seam
 
-Activation is a separate change. The inactive bundle runner now supplies the
-one-submission formation boundary. A complete activation should:
+The hosted caller and active runtime candidate now supply the one-submission
+formation boundary. Final activation requires the separate governed admission
+of the byte-identical projection, after which the caller may be dispatched.
+The deployment:
 
 1. schedule each accepted subject in canonical ledger order and invoke the v6
    runner once from its exact predecessor; excluded submissions produce no
@@ -161,10 +163,9 @@ one-submission formation boundary. A complete activation should:
    reducer-derived topology alignment, and same-world handoff atomically;
 3. teach downstream accounting transport to consume the exact published
    handoff/alignment artifacts instead of independently authoring topology;
-4. activate the supplied hosted serial resume/publication template and add
-   viewer support; and
+4. uses the hosted serial resume/publication caller and v6 viewer support; and
 5. admit the projection in the required separate one-file governed PR.
 
-Until those steps are present, builder v6 remains inactive and cannot be
-selected by a registered projection. Historical builders and active builder-v5
-behavior remain byte-for-byte replayable.
+Until the one-file admission is merged, the caller fails closed and builder v6
+cannot be selected by a registered projection. Historical builders and active
+builder-v5 behavior remain byte-for-byte replayable.

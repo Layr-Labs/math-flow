@@ -1,8 +1,8 @@
 name: Project serial BSSC research-v4 builder-v6 state
 
-# Inactive deployment template. Rename to a `.yml` workflow only after the
-# separately governed openrouter-research-v4 projection is admitted with bytes
-# identical to protocol/runtime/openrouter-research-v4-projection.json.
+# Manual dispatch fails closed until the separately governed
+# openrouter-research-v4 projection is admitted with bytes identical to the
+# approved runtime candidate.
 on:
   workflow_dispatch:
 
@@ -21,6 +21,7 @@ env:
 jobs:
   produce:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     permissions:
       actions: write
       contents: write

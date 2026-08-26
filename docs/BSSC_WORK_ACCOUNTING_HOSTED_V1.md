@@ -1,10 +1,11 @@
 # BSSC hosted work-accounting V1
 
 `math_flow.bssc_work_accounting_hosted` is the production-shaped, BSSC-only
-caller for the zero-origin builder-v6/work-accounting lane.  The implementation
-is committed without an active GitHub workflow or active runtime config.  Its
-inactive workflow template is
-`.github/workflows/project-bssc-work-accounting-v1.yml.inactive`.
+caller for the zero-origin builder-v6/work-accounting lane. The active runtime
+config is committed and fails closed until both governed projections are
+admitted byte-for-byte. Its scheduled workflow remains an inactive template at
+`.github/workflows/project-bssc-work-accounting-v1.yml.inactive` until those
+admissions are complete.
 
 ## Frozen execution contract
 
@@ -52,17 +53,14 @@ command.
 
 ## Activation seam
 
-Activation requires all of the following in one reviewed deployment change:
+Activation requires the following governed sequence:
 
-1. Add the exact active `openrouter-research-v4` candidate and its resealed BSSC
-   root contract supplied by the serial research-v4 producer.
-2. Copy both active projection candidates byte-for-byte into
-   `protocol/projections/<projection-id>.json`.  The hosted loader fails closed
-   if an admitted copy is missing or differs by one byte.
-3. Add and seal `protocol/runtime/bssc-work-accounting-hosted-v1.json`, binding
-   the active overlay, active knowledge projection, root contract, validity
-   source, judge specs, transport, pipeline runner, and hosted runner.
-4. Rename `project-bssc-work-accounting-v1.yml.inactive` to
+1. Admit each active projection candidate in its own required one-file PR by
+   copying it byte-for-byte to `protocol/projections/<projection-id>.json`. The
+   hosted loader fails closed if an admitted copy is missing or differs by one
+   byte.
+2. Run the serial knowledge producer through the accepted frontier.
+3. Rename `project-bssc-work-accounting-v1.yml.inactive` to
    `project-bssc-work-accounting-v1.yml`, configure `OPENROUTER_API_KEY`, and
    leave the workflow concurrency and permissions unchanged.
 

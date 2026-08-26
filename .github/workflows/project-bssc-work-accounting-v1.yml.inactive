@@ -60,12 +60,12 @@ jobs:
               continue
             fi
             artifact_name="bssc-work-accounting-plan-${prior_run_id}"
-            artifact_id="$(gh api --repo "$MATH_FLOW_REPOSITORY" \
-              "repos/{owner}/{repo}/actions/runs/${prior_run_id}/artifacts" \
+            artifact_id="$(gh api \
+              "repos/${MATH_FLOW_REPOSITORY}/actions/runs/${prior_run_id}/artifacts" \
               --jq ".artifacts | map(select(.name == \"${artifact_name}\" and .expired == false)) | if length == 1 then .[0].id else empty end")"
             if [[ "$artifact_id" =~ ^[1-9][0-9]*$ ]]; then
-              gh api --repo "$MATH_FLOW_REPOSITORY" \
-                "repos/{owner}/{repo}/actions/artifacts/${artifact_id}/zip" \
+              gh api \
+                "repos/${MATH_FLOW_REPOSITORY}/actions/artifacts/${artifact_id}/zip" \
                 >"${archive_root}/${prior_run_id}.zip"
             fi
           done < <(jq -r '.[].databaseId' "${history_root}/runs.json")

@@ -354,10 +354,10 @@ class BSSCResearchV4ProducerTests(unittest.TestCase):
             plan = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(plan["nextTransition"]["subjectTransactionId"], FIRST_SUBJECT)
 
-    def test_inactive_workflow_template_is_serial_and_has_no_accounting_lane(self) -> None:
+    def test_active_workflow_is_serial_and_has_no_accounting_lane(self) -> None:
         workflow = (
             ROOT
-            / ".github/workflows/project-research-v4-serial.yml.inactive"
+            / ".github/workflows/project-research-v4-serial.yml"
         ).read_text(encoding="utf-8")
         self.assertIn("--maximum-judgments 1", workflow)
         self.assertIn('--head "$subject"', workflow)
@@ -368,8 +368,8 @@ class BSSCResearchV4ProducerTests(unittest.TestCase):
         self.assertNotIn("work-accounting", workflow)
         self.assertNotIn("export-viewer-catalog", workflow)
         self.assertNotIn("project-openrouter.yml", workflow)
-        self.assertFalse(
-            (ROOT / ".github/workflows/project-research-v4-serial.yml").exists()
+        self.assertTrue(
+            (ROOT / ".github/workflows/project-research-v4-serial.yml").is_file()
         )
 
 

@@ -52,10 +52,9 @@ equal the separately admitted governed projection when
 
 ## Hosted serialization and recovery
 
-`.github/workflows/project-research-v4-serial.yml.inactive` is the complete
-hosted template. Renaming it to a `.yml` workflow is an activation step after
-the active runtime candidate exists and an identical projection has been
-admitted separately.
+`.github/workflows/project-research-v4-serial.yml` is the hosted caller. It is
+manual-dispatch only and fails closed until the active runtime candidate is
+admitted as an identical governed projection.
 
 One workflow run:
 
