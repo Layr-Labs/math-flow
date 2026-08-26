@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+  "acceptedClaimRefs": [
+    {
+      "transactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+      "claimKey": "bssc-sum-capacity/uv-relaxed-converse-tensorization",
+      "judgmentId": "sha256:34c5377dbd5c5d147acb250ac80640770b6176749e6c235d4a71ebc508b615c2",
+      "assessmentDigest": "sha256:2f9288bc1e1ee62ec02d6bc967ddfe961e693b1c3d15b2e42ec4a4dc421d0e47"
+    }
+  ],
+  "knowledgeStateDigest": "sha256:04d09ef748906bd0af20dfa0fa1f2749a940b911cdd2706a2cbcbb10bbe5a684",
+  "subjectEvidenceManifestDigest": "sha256:9479bc70dd16c058ed04a39990bbcd415e0d3da9eec64c3e1ee5d26edf59455f",
+  "facts": [
+    {
+      "id": "half-skew-tensor-power-specialization",
+      "condition": "For n uses of the canonical half-skew BSSC, each accepted scalar relaxation evaluates to n times the exact single-use quantity 2h_2(1/4)-5/4 bits. This result is confined to those separate scalar relaxations and does not establish tensorization of a joint UV optimization or determine sum-capacity.",
+      "actorVisibility": "withheld-until-independent-discovery",
+      "affectedNodeRefs": [
+        {
+          "kind": "program",
+          "id": "root/uv-scalar-converse"
+        },
+        {
+          "kind": "thread",
+          "id": "root/uv-scalar-converse-agenda"
+        },
+        {
+          "kind": "thread",
+          "id": "root/uv-scalar-converse/product-and-skew-symmetry"
+        }
+      ],
+      "acceptedClaimKeys": [
+        "bssc-sum-capacity/uv-relaxed-converse-tensorization"
+      ]
+    },
+    {
+      "id": "uv-scalar-product-law",
+      "condition": "For the accepted claim’s separately concavified scalar UV bounds, a product broadcast channel has an averaged optimum equal to the sum of the factor optima, even when candidate inputs and auxiliary decompositions correlate the factors. If receiver exchange is induced by an input involution, the branchwise and averaged optima coincide and symmetry-fixed input laws suffice.",
+      "actorVisibility": "withheld-until-independent-discovery",
+      "affectedNodeRefs": [
+        {
+          "kind": "program",
+          "id": "root/uv-scalar-converse"
+        },
+        {
+          "kind": "thread",
+          "id": "root/uv-scalar-converse/product-and-skew-symmetry"
+        }
+      ],
+      "acceptedClaimKeys": [
+        "bssc-sum-capacity/uv-relaxed-converse-tensorization"
+      ]
+    }
+  ],
+  "assumptions": [
+    "All product lengths are finite positive integers.",
+    "Channel products, concave envelopes, and binary entropy are interpreted using the canonical problem’s fixed definitions.",
+    "The half-skew specialization assumes the previously established sharp posterior-support inequality on which the accepted claim depends."
+  ],
+  "safeFactsDigest": "sha256:a8229ef945f58010f381c6119c0f2229906c124153b49a2da22fcf9b69c1bd55"
+}
