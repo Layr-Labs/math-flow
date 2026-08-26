@@ -576,6 +576,152 @@ def hierarchical_v5_response(
 
 
 class ResearchProjectionTests(unittest.TestCase):
+    def test_builder_v6_publishes_one_replayable_submission_bundle(self) -> None:
+        with tempfile.TemporaryDirectory() as directory_value:
+            directory = Path(directory_value)
+            validity = self._validity_v4_bundle(
+                directory,
+                PROBLEM,
+                TX,
+                status="valid",
+                required_dependencies=[],
+                evidence_transaction_ids=[],
+            )
+            _, judgment, _ = load_judgment_bundle(validity)
+            builder_path = (
+                ROOT
+                / "protocol/judges/openrouter-hierarchical-research-builder-v6.json"
+            )
+            builder = load_judge_spec(builder_path)
+            projection = json.loads(
+                (
+                    ROOT
+                    / "protocol/runtime/inactive-openrouter-research-v4-projection.json"
+                ).read_text(encoding="utf-8")
+            )
+            scheduler = directory / "scheduler.json"
+            lane = record_completed_inputs(
+                scheduler,
+                PROBLEM,
+                f"sha256:{sha256_json(builder)}",
+                [str(judgment["judgmentId"])],
+                [],
+                0,
+                1,
+                projection_spec_digest=f"sha256:{sha256_json(projection)}",
+            )
+            claim = claim_due_build(scheduler, str(lane["laneId"]), 1, 1)
+            assert claim is not None
+
+            def v6_transport(request: dict[str, object]) -> dict[str, object]:
+                content = str(request["messages"][-1]["content"])
+                payload = json.loads(
+                    content.split("<math-flow-input>\n", 1)[1].split(
+                        "\n</math-flow-input>", 1
+                    )[0]
+                )
+                subject = str(payload["subjectTransactionId"])
+                claims = payload["acceptedClaims"]
+                thread_id = "root/v6-fixture-line"
+                item_id = "root/v6-fixture-result"
+                return response(
+                    json.dumps(
+                        {
+                            "schemaVersion": 1,
+                            "subjectTransactionId": subject,
+                            "baseStateDigest": payload["baseState"]["stateDigest"],
+                            "contentOperations": [
+                                {
+                                    "entityKind": "thread",
+                                    "entityId": thread_id,
+                                    "baseDigest": None,
+                                    "value": {
+                                        "id": thread_id,
+                                        "programId": "root",
+                                        "title": "Fixture line",
+                                        "summary": "Track the accepted fixture result.",
+                                        "kind": "research",
+                                        "status": "active",
+                                        "expectedExposure": "1",
+                                        "conditions": [],
+                                        "sourceTransactionIds": [subject],
+                                    },
+                                },
+                                {
+                                    "entityKind": "item",
+                                    "entityId": item_id,
+                                    "baseDigest": None,
+                                    "value": {
+                                        "id": item_id,
+                                        "programId": "root",
+                                        "type": "result",
+                                        "title": "Fixture result",
+                                        "summary": "Represent the accepted fixture claims.",
+                                        "claimRefs": [
+                                            {
+                                                "transactionId": subject,
+                                                "claimKey": item["claimKey"],
+                                            }
+                                            for item in claims
+                                        ],
+                                        "sourceTransactionIds": [subject],
+                                        "dependencyItemIds": [],
+                                    },
+                                },
+                            ],
+                            "topologyOperations": [],
+                            "contribution": {
+                                "claimKeys": sorted(
+                                    str(item["claimKey"]) for item in claims
+                                ),
+                                "directProgramId": "root",
+                                "directThreadIds": [thread_id],
+                                "itemIds": [item_id],
+                            },
+                            "placementAudit": {
+                                "basis": "canonical-objective",
+                                "rationale": "The fixture result is problem-global.",
+                                "relatedProgramIds": [],
+                            },
+                            "topologyRationale": None,
+                        }
+                    ),
+                    1,
+                )
+
+            output = directory / "builder-v6"
+            run_research_build_bundle(
+                ROOT,
+                PROBLEM,
+                builder_path,
+                TX,
+                claim,
+                [validity],
+                None,
+                output,
+                transport=v6_transport,
+            )
+            manifest, state, _ = load_research_build_bundle(output)
+            self.assertEqual(
+                manifest["outputProfile"], "math-flow/hierarchical-research-v6"
+            )
+            self.assertEqual(state["schemaVersion"], 2)
+            self.assertEqual(state["ledgerHead"], TX)
+            self.assertEqual(set(state["contributions"]), {TX})
+            self.assertEqual(
+                {item["role"] for item in manifest["artifacts"]},
+                {
+                    "knowledge-build-input",
+                    "research-builder-submission-input",
+                    "submission-evidence-manifest",
+                    "research-program-base-state",
+                    "research-program-transition",
+                    "research-program-state",
+                    "research-topology-alignment",
+                    "research-builder-handoff",
+                },
+            )
+
     def _validity_bundle(
         self,
         directory: Path,

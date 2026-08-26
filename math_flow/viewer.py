@@ -1119,8 +1119,15 @@ def export_viewer_catalog(
     repository: str,
     canonical_ref: str = "main",
     projection_ref: str = "projections",
+    *,
+    work_accounting_sources: list[dict[str, object]] | None = None,
 ) -> dict[str, object]:
-    """Build a deterministic, repository-backed catalog of published projections."""
+    """Build a deterministic, repository-backed catalog of published projections.
+
+    ``work_accounting_sources`` is an explicit inactive seam for already
+    governed source locations. Ordinary catalog export does not discover or
+    admit work-accounting artifacts.
+    """
 
     root = root.resolve()
     projection_root = projection_root.resolve()
@@ -1620,7 +1627,7 @@ def export_viewer_catalog(
         sorted({str(projection["problemId"]) for projection in projections}),
         canonical_ref,
     )
-    return {
+    result: dict[str, object] = {
         "schemaVersion": 1,
         "repository": {
             "slug": repository,
@@ -1634,3 +1641,50 @@ def export_viewer_catalog(
         "objectiveAttestations": objective_attestations,
         "defaultProjectionId": projections[0]["id"] if projections else None,
     }
+    if work_accounting_sources is not None:
+        from .work_accounting_viewer import load_work_accounting_viewer_projection
+
+        work_accounting_projections = []
+        for source in work_accounting_sources:
+            if not isinstance(source, dict):
+                raise MathFlowError(
+                    "work-accounting viewer source configuration must be an object"
+                )
+            work_projection = load_work_accounting_viewer_projection(**source)
+            compatible = [
+                projection
+                for projection in projections
+                if projection["problemId"] == work_projection["problemId"]
+                and projection["id"] in work_projection["researchProjectionIds"]
+            ]
+            terminal_digest = work_projection["runs"][0][
+                "terminalKnowledgeStateDigest"
+            ]
+            if not compatible or not any(
+                any(
+                    run["state"]["stateDigest"] == terminal_digest
+                    for run in projection["data"]["runs"]
+                )
+                for projection in compatible
+            ):
+                raise MathFlowError(
+                    "work-accounting viewer source has no exact research-state dependency"
+                )
+            work_accounting_projections.append(work_projection)
+        work_accounting_projections.sort(
+            key=lambda item: (
+                str(item["problemId"]),
+                str(item["label"]),
+                str(item["id"]),
+            )
+        )
+        identities = [
+            (str(item["problemId"]), str(item["id"]))
+            for item in work_accounting_projections
+        ]
+        if len(identities) != len(set(identities)):
+            raise MathFlowError(
+                "work-accounting viewer projections repeat a problem/projection identity"
+            )
+        result["workAccountingProjections"] = work_accounting_projections
+    return result

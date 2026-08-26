@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/work-accounting-transition-claim-v1.schema.json",
+  "title": "Work-Accounting Transition Claim V1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "projectionId",
+    "projectionSpecDigest",
+    "rootContractDigest",
+    "subjectTransactionId",
+    "ledgerOrdinal",
+    "attemptNumber",
+    "subjectRecordDigest",
+    "predecessorAccountingStateDigest",
+    "predecessorKnowledgeStateDigest",
+    "postKnowledgeStateDigest",
+    "postKnowledgeLedgerHead",
+    "previousAttemptClaimDigest",
+    "automaticRetryKey",
+    "claimDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "$ref": "#/$defs/id" },
+    "projectionId": { "$ref": "#/$defs/id" },
+    "projectionSpecDigest": { "$ref": "#/$defs/digest" },
+    "rootContractDigest": { "$ref": "#/$defs/digest" },
+    "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+    "ledgerOrdinal": { "type": "integer", "minimum": 1 },
+    "attemptNumber": { "type": "integer", "minimum": 1 },
+    "subjectRecordDigest": { "$ref": "#/$defs/digest" },
+    "predecessorAccountingStateDigest": { "$ref": "#/$defs/digest" },
+    "predecessorKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "postKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "postKnowledgeLedgerHead": { "$ref": "#/$defs/nullableTransaction" },
+    "previousAttemptClaimDigest": { "$ref": "#/$defs/nullableDigest" },
+    "automaticRetryKey": { "$ref": "#/$defs/digest" },
+    "claimDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "nullableTransaction": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/transaction" }]
+    },
+    "nullableDigest": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/digest" }]
+    }
+  }
+}

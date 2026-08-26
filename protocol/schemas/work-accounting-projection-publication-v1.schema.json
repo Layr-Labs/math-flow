@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/work-accounting-projection-publication-v1.schema.json",
+  "title": "Work-Accounting Projection Publication V1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "projectionId",
+    "projectionSpecDigest",
+    "laneScopeDigest",
+    "pipelineStateDigest",
+    "laneHeadVersion",
+    "previousPublicationManifestDigest",
+    "identityObject",
+    "retainedObjects",
+    "publicationManifestDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "$ref": "#/$defs/slug" },
+    "projectionId": { "$ref": "#/$defs/identifier" },
+    "projectionSpecDigest": { "$ref": "#/$defs/digest" },
+    "laneScopeDigest": { "$ref": "#/$defs/digest" },
+    "pipelineStateDigest": { "$ref": "#/$defs/digest" },
+    "laneHeadVersion": { "$ref": "#/$defs/digest" },
+    "previousPublicationManifestDigest": { "$ref": "#/$defs/nullableDigest" },
+    "identityObject": { "$ref": "#/$defs/object" },
+    "retainedObjects": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/object" }
+    },
+    "publicationManifestDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "identifier": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "nullableDigest": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/digest" }]
+    },
+    "path": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$"
+    },
+    "object": {
+      "type": "object",
+      "required": ["logicalKey", "path", "digest", "bytes"],
+      "properties": {
+        "logicalKey": { "type": "string", "minLength": 1 },
+        "path": { "$ref": "#/$defs/path" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "bytes": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

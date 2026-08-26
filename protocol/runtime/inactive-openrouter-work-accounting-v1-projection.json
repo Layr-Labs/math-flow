@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 2,
+  "id": "openrouter-work-accounting-v1",
+  "description": "An inactive BSSC-only per-submission same-world work-accounting overlay over the sequential builder-v6 knowledge lane.",
+  "status": "disabled",
+  "engine": "overlay-repository-v1",
+  "allowedProblems": ["bssc-sum-capacity"],
+  "runner": {
+    "implementation": "openrouter-work-accounting-v1",
+    "spec": "protocol/judges/openrouter-work-accounting-v1.json"
+  },
+  "dependencies": [
+    {
+      "name": "knowledge",
+      "projectionId": "openrouter-research-v4",
+      "artifactRole": "research-builder-handoff"
+    }
+  ],
+  "scheduling": {
+    "minimumIntervalSeconds": 300
+  }
+}

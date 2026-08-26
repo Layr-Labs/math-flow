@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/work-accounting-root-contract-v1.schema.json",
+  "title": "Work-Accounting Root Contract V1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "knowledgeProjectionId",
+    "knowledgeProjectionSpecDigest",
+    "objective",
+    "terminalCondition",
+    "workUnit",
+    "referenceCommunity",
+    "rootContractDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "$ref": "#/$defs/id" },
+    "knowledgeProjectionId": { "$ref": "#/$defs/id" },
+    "knowledgeProjectionSpecDigest": { "$ref": "#/$defs/digest" },
+    "objective": { "type": "string", "minLength": 1 },
+    "terminalCondition": { "type": "string", "minLength": 1 },
+    "workUnit": {
+      "type": "object",
+      "required": ["id", "definition", "toolBaseline"],
+      "properties": {
+        "id": { "const": "competent-human-researcher-hour" },
+        "definition": {
+          "const": "One focused person-hour of research by a researcher qualified for the relevant work package, using the fixed conventional tool baseline named by this contract."
+        },
+        "toolBaseline": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "referenceCommunity": {
+      "type": "object",
+      "required": ["portfolioAuthority", "description", "researcherQualification"],
+      "properties": {
+        "portfolioAuthority": { "const": "math-flow-knowledge-state-builder" },
+        "description": { "type": "string", "minLength": 1 },
+        "researcherQualification": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "rootContractDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+  }
+}

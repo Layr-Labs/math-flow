@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/work-accounting-viewer-projection-v1.schema.json",
+  "title": "Inactive Work-Accounting Viewer Projection V1",
+  "type": "object",
+  "required": [
+    "id",
+    "problemId",
+    "label",
+    "researchProjectionIds",
+    "latestRunDigest",
+    "selectionStatus",
+    "runCount",
+    "runs",
+    "workAccounting"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "problemId": { "$ref": "#/$defs/id" },
+    "label": { "type": "string", "minLength": 1 },
+    "researchProjectionIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "latestRunDigest": { "$ref": "#/$defs/digest" },
+    "selectionStatus": { "const": "current" },
+    "runCount": { "const": 1 },
+    "runs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": { "$ref": "#/$defs/run" }
+    },
+    "workAccounting": { "$ref": "#/$defs/unit" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "decimal": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]*[1-9])?$"
+    },
+    "nodeRef": {
+      "type": "object",
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": { "enum": ["program", "thread"] },
+        "id": { "$ref": "#/$defs/id" }
+      },
+      "additionalProperties": false
+    },
+    "unit": {
+      "type": "object",
+      "required": ["id", "label", "storedValues", "displayShares"],
+      "properties": {
+        "id": { "const": "competent-human-researcher-hour" },
+        "label": { "const": "competent human researcher hours" },
+        "storedValues": { "const": "canonical-decimal-hours" },
+        "displayShares": { "const": "derived-from-exact-values" }
+      },
+      "additionalProperties": false
+    },
+    "annotation": {
+      "type": "object",
+      "required": [
+        "nodeRef",
+        "knowledgeNodeDigest",
+        "directWorkHours",
+        "conditionalIncidence",
+        "globalReach",
+        "conditionalSubtreeWorkHours",
+        "expectedDirectWorkHours"
+      ],
+      "properties": {
+        "nodeRef": { "$ref": "#/$defs/nodeRef" },
+        "knowledgeNodeDigest": { "$ref": "#/$defs/digest" },
+        "directWorkHours": { "$ref": "#/$defs/decimal" },
+        "conditionalIncidence": {
+          "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/decimal" }]
+        },
+        "globalReach": { "$ref": "#/$defs/decimal" },
+        "conditionalSubtreeWorkHours": { "$ref": "#/$defs/decimal" },
+        "expectedDirectWorkHours": { "$ref": "#/$defs/decimal" }
+      },
+      "additionalProperties": false
+    },
+    "evaluation": {
+      "type": "object",
+      "required": [
+        "subjectTransactionId",
+        "canonicalOrdinal",
+        "evaluationDigest",
+        "publicationManifestDigest",
+        "committedAccountingStateDigest",
+        "exAnteWorkHours",
+        "exPostWorkHours",
+        "workReductionHours",
+        "nodeAnnotations",
+        "prospectiveCorrection",
+        "affectedHistory",
+        "affectedByRepairDigests",
+        "evaluation"
+      ],
+      "properties": {
+        "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+        "canonicalOrdinal": { "type": "integer", "minimum": 1 },
+        "evaluationDigest": { "$ref": "#/$defs/digest" },
+        "publicationManifestDigest": { "$ref": "#/$defs/digest" },
+        "committedAccountingStateDigest": { "$ref": "#/$defs/digest" },
+        "exAnteWorkHours": { "$ref": "#/$defs/decimal" },
+        "exPostWorkHours": { "$ref": "#/$defs/decimal" },
+        "workReductionHours": { "$ref": "#/$defs/decimal" },
+        "nodeAnnotations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/annotation" }
+        },
+        "prospectiveCorrection": { "type": "boolean" },
+        "affectedHistory": { "type": "boolean" },
+        "affectedByRepairDigests": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/digest" }
+        },
+        "evaluation": {
+          "$ref": "submission-work-value-v1.schema.json"
+        }
+      },
+      "additionalProperties": false
+    },
+    "run": {
+      "type": "object",
+      "required": [
+        "id",
+        "runDigest",
+        "problemId",
+        "projectionId",
+        "projectionSpecDigest",
+        "rootContractDigest",
+        "problemLedgerDigest",
+        "terminalKnowledgeStateDigest",
+        "terminalAccountingStateDigest",
+        "unit",
+        "evaluations",
+        "repairs",
+        "terminalAccountingState",
+        "scheduleDigest",
+        "inputStatus",
+        "stale",
+        "staleReasons",
+        "viewerDigest"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/digest" },
+        "runDigest": { "$ref": "#/$defs/digest" },
+        "problemId": { "$ref": "#/$defs/id" },
+        "projectionId": { "$ref": "#/$defs/id" },
+        "projectionSpecDigest": { "$ref": "#/$defs/digest" },
+        "rootContractDigest": { "$ref": "#/$defs/digest" },
+        "problemLedgerDigest": { "$ref": "#/$defs/digest" },
+        "terminalKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+        "terminalAccountingStateDigest": { "$ref": "#/$defs/digest" },
+        "unit": { "$ref": "#/$defs/unit" },
+        "evaluations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evaluation" }
+        },
+        "repairs": {
+          "type": "array",
+          "items": { "$ref": "work-accounting-state-repair-v1.schema.json" }
+        },
+        "terminalAccountingState": {
+          "$ref": "work-accounting-state-v1.schema.json"
+        },
+        "scheduleDigest": { "$ref": "#/$defs/digest" },
+        "inputStatus": { "const": "exact-committed" },
+        "stale": { "const": false },
+        "staleReasons": { "const": [] },
+        "viewerDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

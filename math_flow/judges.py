@@ -35,7 +35,9 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-hierarchical-research-builder-v3",
     "openrouter-hierarchical-research-builder-v4",
     "openrouter-hierarchical-research-builder-v5",
+    "openrouter-hierarchical-research-builder-v6",
     "openrouter-hierarchical-research-credit-v2",
+    "openrouter-work-accounting-v1",
 }
 SUPPORTED_INPUT_BUILDERS = {
     "ledger-index-v1",
@@ -51,6 +53,8 @@ SUPPORTED_INPUT_BUILDERS = {
     "accepted-validity-batch-program-state-v3",
     "accepted-validity-batch-program-state-v4",
     "accepted-validity-batch-program-state-v5",
+    "accepted-validity-submission-program-state-v6",
+    "counterfactual-work-transition-v1",
     "locked-research-history-v2",
 }
 SUPPORTED_INVOCATION_ADAPTERS = {"local-v1", "openrouter-chat-completions-v1"}
@@ -71,7 +75,9 @@ SUPPORTED_OUTPUT_PROFILES = {
     "math-flow/hierarchical-research-v3",
     "math-flow/hierarchical-research-v4",
     "math-flow/hierarchical-research-v5",
+    "math-flow/hierarchical-research-v6",
     "math-flow/hierarchical-research-credit-v2",
+    "math-flow/work-accounting-transition-v1",
 }
 SUPPORTED_OUTPUT_ADAPTERS = {
     "flat-json-v1",
@@ -92,7 +98,9 @@ SUPPORTED_OUTPUT_ADAPTERS = {
     "structured-research-batch-v3",
     "structured-research-batch-v4",
     "structured-research-batch-v5",
+    "structured-research-submission-v6",
     "structured-hierarchical-credit-v2",
+    "structured-work-estimation-v1",
 }
 SUPPORTED_REDUCERS = {
     None,
@@ -104,7 +112,9 @@ SUPPORTED_REDUCERS = {
     "batched-research-state-v3",
     "batched-research-state-v4",
     "batched-research-state-v5",
+    "sequential-research-state-v6",
     "hierarchical-credit-allocation-v2",
+    "per-submission-work-accounting-v1",
 }
 TEXT_ARTIFACT_SUFFIXES = {
     ".c",
@@ -262,11 +272,23 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputAdapter": "structured-research-batch-v5",
             "reducer": "batched-research-state-v5",
         },
+        "openrouter-hierarchical-research-builder-v6": {
+            "inputBuilder": "accepted-validity-submission-program-state-v6",
+            "outputProfile": "math-flow/hierarchical-research-v6",
+            "outputAdapter": "structured-research-submission-v6",
+            "reducer": "sequential-research-state-v6",
+        },
         "openrouter-hierarchical-research-credit-v2": {
             "inputBuilder": "locked-research-history-v2",
             "outputProfile": "math-flow/hierarchical-research-credit-v2",
             "outputAdapter": "structured-hierarchical-credit-v2",
             "reducer": "hierarchical-credit-allocation-v2",
+        },
+        "openrouter-work-accounting-v1": {
+            "inputBuilder": "counterfactual-work-transition-v1",
+            "outputProfile": "math-flow/work-accounting-transition-v1",
+            "outputAdapter": "structured-work-estimation-v1",
+            "reducer": "per-submission-work-accounting-v1",
         },
     }
     expected_components = hierarchical_components.get(str(spec["implementation"]))
@@ -321,6 +343,8 @@ def load_judge_spec(path: Path) -> dict[str, object]:
         "openrouter-hierarchical-research-builder-v3",
         "openrouter-hierarchical-research-builder-v4",
         "openrouter-hierarchical-research-builder-v5",
+        "openrouter-hierarchical-research-builder-v6",
+        "openrouter-work-accounting-v1",
     }:
         for field in ("model", "systemPrompt", "rubric", "parameters", "provider"):
             if field not in spec:
@@ -353,6 +377,9 @@ def load_judge_spec(path: Path) -> dict[str, object]:
                 "extract",
                 "organize",
                 "credit",
+                "safe-facts",
+                "no-access",
+                "with-access",
             }:
                 raise MathFlowError(
                     "OpenRouter judge stages contain an unsupported stage"
@@ -364,6 +391,57 @@ def load_judge_spec(path: Path) -> dict[str, object]:
                     raise MathFlowError(f"OpenRouter stage model must be non-empty: {stage_name}")
                 if "parameters" in stage and not isinstance(stage["parameters"], dict):
                     raise MathFlowError(f"OpenRouter stage parameters must be an object: {stage_name}")
+    if spec["implementation"] in {
+        "openrouter-hierarchical-research-builder-v6",
+        "openrouter-work-accounting-v1",
+    }:
+        retry = spec.get("retryPolicy")
+        if (
+            not isinstance(retry, dict)
+            or set(retry)
+            != {"mode", "maximumAttempts", "manualReview", "retryOn"}
+            or retry.get("mode") != "automatic"
+            or retry.get("manualReview") is not False
+            or not isinstance(retry.get("maximumAttempts"), int)
+            or isinstance(retry.get("maximumAttempts"), bool)
+            or not 1 <= retry["maximumAttempts"] <= 5
+            or retry.get("retryOn")
+            != [
+                "empty-response",
+                "invalid-structured-output",
+                "length-truncated",
+            ]
+        ):
+            raise MathFlowError(
+                "governed judge needs the canonical automatic retry policy"
+            )
+        expected_prompts = (
+            {"organize"}
+            if spec["implementation"]
+            == "openrouter-hierarchical-research-builder-v6"
+            else {"safe-facts", "no-access", "with-access"}
+        )
+        prompts = spec.get("stagePrompts")
+        if (
+            not isinstance(prompts, dict)
+            or set(prompts) != expected_prompts
+            or any(
+                not isinstance(prompt, str) or not prompt.strip()
+                for prompt in prompts.values()
+            )
+        ):
+            raise MathFlowError("governed judge has invalid role-specific prompts")
+    if spec["implementation"] == "openrouter-work-accounting-v1":
+        if set(spec.get("stages", {})) != {"safe-facts", "no-access", "with-access"}:
+            raise MathFlowError("work-accounting judge must configure all three roles")
+        if spec.get("accountingPolicy") != {
+            "unit": "competent-human-researcher-hour",
+            "referenceRule": "same-world-post-topology",
+            "estimateForm": "point-estimate",
+            "subject": "exactly-one-accepted-submission",
+            "positiveReduction": "enforced-by-trusted-reducer-without-clamping",
+        }:
+            raise MathFlowError("work-accounting judge has an invalid accounting policy")
     return spec
 
 

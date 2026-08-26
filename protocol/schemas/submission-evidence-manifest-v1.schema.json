@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/submission-evidence-manifest-v1.schema.json",
+  "title": "Complete Content-Addressed Submission Evidence Manifest v1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "subjectTransactionId",
+    "sourceRevision",
+    "contributionPath",
+    "chunkSizeBytes",
+    "totalBytes",
+    "submissionDigest",
+    "files",
+    "manifestDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "$ref": "#/$defs/slug" },
+    "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+    "sourceRevision": { "$ref": "#/$defs/transaction" },
+    "contributionPath": { "$ref": "#/$defs/repositoryPath" },
+    "chunkSizeBytes": { "type": "integer", "minimum": 1, "maximum": 1048576 },
+    "totalBytes": { "type": "integer", "minimum": 1 },
+    "submissionDigest": { "$ref": "#/$defs/digest" },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/file" }
+    },
+    "manifestDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "repositoryPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\).+$"
+    },
+    "chunk": {
+      "type": "object",
+      "required": ["ordinal", "offset", "bytes", "digest"],
+      "properties": {
+        "ordinal": { "type": "integer", "minimum": 0 },
+        "offset": { "type": "integer", "minimum": 0 },
+        "bytes": { "type": "integer", "minimum": 1, "maximum": 1048576 },
+        "digest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "file": {
+      "type": "object",
+      "required": ["path", "bytes", "digest", "chunks"],
+      "properties": {
+        "path": { "$ref": "#/$defs/repositoryPath" },
+        "bytes": { "type": "integer", "minimum": 0 },
+        "digest": { "$ref": "#/$defs/digest" },
+        "chunks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/chunk" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

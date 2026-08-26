@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/submission-work-value-v1.schema.json",
+  "title": "Submission Work Value V1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "subjectTransactionId",
+    "rootContractDigest",
+    "baseAccountingStateDigest",
+    "baseKnowledgeStateDigest",
+    "targetKnowledgeStateDigest",
+    "topologyAlignmentDigest",
+    "noAccessPatchDigest",
+    "withAccessPatchDigest",
+    "noAccessStateDigest",
+    "withAccessStateDigest",
+    "noAccessWorkHours",
+    "withAccessWorkHours",
+    "workValueHours",
+    "affectedNodeRefs",
+    "evaluationDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "$ref": "#/$defs/id" },
+    "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+    "rootContractDigest": { "$ref": "#/$defs/digest" },
+    "baseAccountingStateDigest": { "$ref": "#/$defs/digest" },
+    "baseKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "targetKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "topologyAlignmentDigest": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/digest" }]
+    },
+    "noAccessPatchDigest": { "$ref": "#/$defs/digest" },
+    "withAccessPatchDigest": { "$ref": "#/$defs/digest" },
+    "noAccessStateDigest": { "$ref": "#/$defs/digest" },
+    "withAccessStateDigest": { "$ref": "#/$defs/digest" },
+    "noAccessWorkHours": { "$ref": "#/$defs/decimal" },
+    "withAccessWorkHours": { "$ref": "#/$defs/decimal" },
+    "workValueHours": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^(?:0\\.[0-9]*[1-9]|[1-9][0-9]*(?:\\.[0-9]*[1-9])?)$"
+    },
+    "affectedNodeRefs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/nodeRef" }
+    },
+    "evaluationDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "decimal": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]*[1-9])?$"
+    },
+    "nodeRef": {
+      "type": "object",
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": { "enum": ["program", "thread"] },
+        "id": { "$ref": "#/$defs/id" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "inactive-work-accounting-hosted-v1",
+  "status": "inactive",
+  "projectionId": "openrouter-work-accounting-v1",
+  "knowledgeProjectionId": "openrouter-research-v4",
+  "builderSpec": {
+    "path": "protocol/judges/openrouter-hierarchical-research-builder-v6.json",
+    "id": "openrouter-hierarchical-research-builder-v6",
+    "implementation": "openrouter-hierarchical-research-builder-v6",
+    "digest": "sha256:04bfe92aebb7c144d4f969cc7a744781212069a32b62258cd00744ff95531e30"
+  },
+  "workProviderSpec": {
+    "path": "protocol/judges/openrouter-work-accounting-v1.json",
+    "id": "openrouter-work-accounting-v1",
+    "implementation": "openrouter-work-accounting-v1",
+    "digest": "sha256:c160a3e9840f02c7e44fc922c3bcd2fcd31837f37c31fb38b0c1757729736668"
+  },
+  "transport": {
+    "implementation": "openrouter-chat-completions-v1",
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "digest": "sha256:0b5ef303cbe83668ce8dfb9fe6c5dec811a949794a2a8b177a8262431e4cba59"
+  },
+  "runner": {
+    "implementation": "work-accounting-pipeline-v1",
+    "path": "math_flow/work_accounting_pipeline.py",
+    "digest": "sha256:1624ed8ca6769b33d8c355b666f08ddb0cc460f74d4b7f80f2d7ef454649b5e6"
+  },
+  "retryPolicy": {
+    "mode": "automatic",
+    "maximumAttempts": 5,
+    "baseRetrySeconds": 60,
+    "staleClaimSeconds": 3600,
+    "manualReview": false
+  },
+  "hostedBatching": {
+    "maximumSubjectsPerRun": 8,
+    "semanticEffect": "none"
+  },
+  "runtimePolicyDigest": "sha256:1bde202604ed940918606fcb4827e85bb6196b6f315e5900f2f72dd96b92a5f6",
+  "configDigest": "sha256:f545bf0c8f0d9b894679b788655776f95ece0c758dd59fa758707d6a75205eb6"
+}

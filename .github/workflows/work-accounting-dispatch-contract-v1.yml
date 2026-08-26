@@ -1,0 +1,223 @@
+name: Inactive work-accounting dispatch contract V1
+
+# This file is intentionally non-triggering. It has no schedule, push,
+# workflow_dispatch, provider secret, or publication permission. A separately
+# governed caller is the one-file hosted activation seam.
+on:
+  workflow_call:
+    inputs:
+      operation:
+        description: plan or prepublish
+        required: true
+        type: string
+      canonical_head:
+        description: Exact current canonical main commit
+        required: true
+        type: string
+      projection_head:
+        description: Exact current projections commit
+        required: true
+        type: string
+      projection_state_digest:
+        description: Exact current governed projection-state digest
+        required: true
+        type: string
+      subject_transaction:
+        description: Exact accepted submission transaction
+        required: true
+        type: string
+      as_of:
+        description: Automatic retry/recovery evaluation epoch
+        required: true
+        type: number
+      pipeline_state_json:
+        description: Verified current accounting pipeline state
+        required: true
+        type: string
+      schedule_json:
+        description: Verified current accounting schedule
+        required: true
+        type: string
+      dispositions_json:
+        description: Complete canonical validity-disposition snapshot
+        required: true
+        type: string
+      run_history_json:
+        description: Canonically ordered hosted run history (plan only)
+        required: false
+        default: ""
+        type: string
+      original_plan_json:
+        description: Original eligible dispatch plan (prepublish only)
+        required: false
+        default: ""
+        type: string
+    outputs:
+      eligible:
+        description: Whether the exact subject is currently authorized
+        value: ${{ jobs.contract.outputs.eligible }}
+      reason_code:
+        description: Machine-readable authorization result
+        value: ${{ jobs.contract.outputs.reason_code }}
+      semantic_dispatch_key:
+        description: Exact idempotency/recovery identity, when eligible
+        value: ${{ jobs.contract.outputs.semantic_dispatch_key }}
+      result_artifact_name:
+        description: Artifact containing the complete validated result
+        value: ${{ jobs.contract.outputs.result_artifact_name }}
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    outputs:
+      eligible: ${{ steps.result.outputs.eligible }}
+      reason_code: ${{ steps.result.outputs.reason_code }}
+      semantic_dispatch_key: ${{ steps.result.outputs.semantic_dispatch_key }}
+      result_artifact_name: ${{ steps.result.outputs.artifact_name }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          ref: main
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Recheck exact canonical and projection heads
+        env:
+          MATH_FLOW_CANONICAL_HEAD: "${{ inputs.canonical_head }}"
+          MATH_FLOW_PROJECTION_HEAD: "${{ inputs.projection_head }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$MATH_FLOW_CANONICAL_HEAD" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "canonical_head must be an exact commit" >&2
+            exit 1
+          fi
+          if [[ ! "$MATH_FLOW_PROJECTION_HEAD" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "projection_head must be an exact commit" >&2
+            exit 1
+          fi
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          git fetch --no-tags origin +refs/heads/projections:refs/remotes/origin/projections
+          current_main="$(git rev-parse refs/remotes/origin/main)"
+          current_projection="$(git rev-parse refs/remotes/origin/projections)"
+          if [[ "$current_main" != "$MATH_FLOW_CANONICAL_HEAD" ]]; then
+            echo "canonical main moved before hosted work" >&2
+            exit 1
+          fi
+          if [[ "$current_projection" != "$MATH_FLOW_PROJECTION_HEAD" ]]; then
+            echo "projection state moved before hosted work" >&2
+            exit 1
+          fi
+
+      - id: result
+        name: Materialize validated dispatch or prepublication check
+        env:
+          MATH_FLOW_OPERATION: "${{ inputs.operation }}"
+          MATH_FLOW_CANONICAL_HEAD: "${{ inputs.canonical_head }}"
+          MATH_FLOW_PROJECTION_HEAD: "${{ inputs.projection_head }}"
+          MATH_FLOW_PROJECTION_STATE_DIGEST: "${{ inputs.projection_state_digest }}"
+          MATH_FLOW_SUBJECT: "${{ inputs.subject_transaction }}"
+          MATH_FLOW_AS_OF: "${{ inputs.as_of }}"
+          MATH_FLOW_PIPELINE_STATE_JSON: "${{ inputs.pipeline_state_json }}"
+          MATH_FLOW_SCHEDULE_JSON: "${{ inputs.schedule_json }}"
+          MATH_FLOW_DISPOSITIONS_JSON: "${{ inputs.dispositions_json }}"
+          MATH_FLOW_RUN_HISTORY_JSON: "${{ inputs.run_history_json }}"
+          MATH_FLOW_ORIGINAL_PLAN_JSON: "${{ inputs.original_plan_json }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$MATH_FLOW_OPERATION" != "plan" && "$MATH_FLOW_OPERATION" != "prepublish" ]]; then
+            echo "operation must be plan or prepublish" >&2
+            exit 1
+          fi
+          if [[ ! "$MATH_FLOW_SUBJECT" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "subject_transaction must be an exact transaction" >&2
+            exit 1
+          fi
+          if [[ ! "$MATH_FLOW_PROJECTION_STATE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "projection_state_digest must be exact" >&2
+            exit 1
+          fi
+          if [[ ! "$MATH_FLOW_AS_OF" =~ ^[0-9]+$ ]]; then
+            echo "as_of must be a non-negative epoch" >&2
+            exit 1
+          fi
+
+          pipeline_path="${RUNNER_TEMP}/work-pipeline.json"
+          schedule_path="${RUNNER_TEMP}/work-schedule.json"
+          dispositions_path="${RUNNER_TEMP}/work-dispositions.json"
+          history_path="${RUNNER_TEMP}/work-run-history.json"
+          original_path="${RUNNER_TEMP}/work-original-plan.json"
+          result_path="${RUNNER_TEMP}/work-dispatch-result.json"
+          printf '%s' "$MATH_FLOW_PIPELINE_STATE_JSON" >"$pipeline_path"
+          printf '%s' "$MATH_FLOW_SCHEDULE_JSON" >"$schedule_path"
+          printf '%s' "$MATH_FLOW_DISPOSITIONS_JSON" >"$dispositions_path"
+
+          config_path="protocol/runtime/inactive-work-accounting-hosted-v1.json"
+          if [[ "$MATH_FLOW_OPERATION" == "plan" ]]; then
+            if [[ -z "$MATH_FLOW_RUN_HISTORY_JSON" ]]; then
+              echo "run_history_json is required for planning" >&2
+              exit 1
+            fi
+            printf '%s' "$MATH_FLOW_RUN_HISTORY_JSON" >"$history_path"
+            python -m math_flow --root . work-accounting-dispatch-plan \
+              --config "$config_path" \
+              --pipeline-state "$pipeline_path" \
+              --schedule "$schedule_path" \
+              --dispositions "$dispositions_path" \
+              --run-history "$history_path" \
+              --canonical-head "$MATH_FLOW_CANONICAL_HEAD" \
+              --projection-head "$MATH_FLOW_PROJECTION_HEAD" \
+              --projection-state-digest "$MATH_FLOW_PROJECTION_STATE_DIGEST" \
+              --as-of "$MATH_FLOW_AS_OF" \
+              --subject "$MATH_FLOW_SUBJECT" \
+              --output "$result_path"
+          else
+            if [[ -z "$MATH_FLOW_ORIGINAL_PLAN_JSON" ]]; then
+              echo "original_plan_json is required for prepublication" >&2
+              exit 1
+            fi
+            printf '%s' "$MATH_FLOW_ORIGINAL_PLAN_JSON" >"$original_path"
+            python -m math_flow --root . work-accounting-prepublish-check \
+              --config "$config_path" \
+              --original-plan "$original_path" \
+              --pipeline-state "$pipeline_path" \
+              --schedule "$schedule_path" \
+              --dispositions "$dispositions_path" \
+              --canonical-head "$MATH_FLOW_CANONICAL_HEAD" \
+              --projection-head "$MATH_FLOW_PROJECTION_HEAD" \
+              --projection-state-digest "$MATH_FLOW_PROJECTION_STATE_DIGEST" \
+              --as-of "$MATH_FLOW_AS_OF" \
+              --subject "$MATH_FLOW_SUBJECT" \
+              --output "$result_path"
+          fi
+
+          result_dir="${RUNNER_TEMP}/work-dispatch-contract"
+          mkdir -p "$result_dir"
+          cp "$result_path" "${result_dir}/result.json"
+          eligible="$(python -c 'import json,sys; data=json.load(open(sys.argv[1], encoding="utf-8")); print(str(bool(data.get("eligible", data.get("publishable", False)))).lower())' "$result_path")"
+          reason="$(python -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["reasonCode"])' "$result_path")"
+          semantic="$(python -c 'import json,sys; data=json.load(open(sys.argv[1], encoding="utf-8")); print(data.get("semanticDispatchKey") or data.get("currentSemanticDispatchKey") or "")' "$result_path")"
+          artifact_name="inactive-work-accounting-contract-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          {
+            echo "eligible=$eligible"
+            echo "reason_code=$reason"
+            echo "semantic_dispatch_key=$semantic"
+            echo "artifact_name=$artifact_name"
+          } >>"$GITHUB_OUTPUT"
+          echo "MATH_FLOW_RESULT_DIR=$result_dir" >>"$GITHUB_ENV"
+          echo "MATH_FLOW_RESULT_ARTIFACT=$artifact_name" >>"$GITHUB_ENV"
+
+      - name: Upload validated contract result
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ${{ env.MATH_FLOW_RESULT_ARTIFACT }}
+          path: ${{ env.MATH_FLOW_RESULT_DIR }}
+          if-no-files-found: error
+          retention-days: 7

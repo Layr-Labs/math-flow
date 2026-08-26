@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/work-accounting-publication-manifest-v1.schema.json",
+  "title": "Per-Submission Work-Accounting Publication Manifest V1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "projectionId",
+    "projectionSpecDigest",
+    "rootContractDigest",
+    "subjectTransactionId",
+    "ledgerOrdinal",
+    "attemptNumber",
+    "claimDigest",
+    "automaticRetryKey",
+    "predecessorAccountingStateDigest",
+    "predecessorKnowledgeStateDigest",
+    "postKnowledgeStateDigest",
+    "evaluationDigest",
+    "noAccessPatchDigest",
+    "withAccessPatchDigest",
+    "noAccessStateDigest",
+    "committedAccountingStateDigest",
+    "workValueHours",
+    "publicationManifestDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "$ref": "#/$defs/id" },
+    "projectionId": { "$ref": "#/$defs/id" },
+    "projectionSpecDigest": { "$ref": "#/$defs/digest" },
+    "rootContractDigest": { "$ref": "#/$defs/digest" },
+    "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+    "ledgerOrdinal": { "type": "integer", "minimum": 1 },
+    "attemptNumber": { "type": "integer", "minimum": 1 },
+    "claimDigest": { "$ref": "#/$defs/digest" },
+    "automaticRetryKey": { "$ref": "#/$defs/digest" },
+    "predecessorAccountingStateDigest": { "$ref": "#/$defs/digest" },
+    "predecessorKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "postKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "evaluationDigest": { "$ref": "#/$defs/digest" },
+    "noAccessPatchDigest": { "$ref": "#/$defs/digest" },
+    "withAccessPatchDigest": { "$ref": "#/$defs/digest" },
+    "noAccessStateDigest": { "$ref": "#/$defs/digest" },
+    "committedAccountingStateDigest": { "$ref": "#/$defs/digest" },
+    "workValueHours": { "$ref": "#/$defs/positiveDecimal" },
+    "publicationManifestDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "positiveDecimal": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^(?:[1-9][0-9]*)(?:\\.[0-9]*[1-9])?$|^0\\.[0-9]*[1-9]$"
+    }
+  }
+}

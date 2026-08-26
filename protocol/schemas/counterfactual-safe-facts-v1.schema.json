@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/counterfactual-safe-facts-v1.schema.json",
+  "title": "Counterfactual-Safe Facts v1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "subjectTransactionId",
+    "acceptedClaimRefs",
+    "knowledgeStateDigest",
+    "subjectEvidenceManifestDigest",
+    "facts",
+    "assumptions",
+    "safeFactsDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "$ref": "#/$defs/slug" },
+    "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+    "acceptedClaimRefs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/acceptedClaimRef" }
+    },
+    "knowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "subjectEvidenceManifestDigest": { "$ref": "#/$defs/digest" },
+    "facts": {
+      "type": "array",
+      "maxItems": 128,
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/fact" }
+    },
+    "assumptions": {
+      "type": "array",
+      "maxItems": 128,
+      "items": { "type": "string", "minLength": 1, "maxLength": 8192 }
+    },
+    "safeFactsDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "nodeRef": {
+      "type": "object",
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": { "enum": ["program", "thread"] },
+        "id": { "$ref": "#/$defs/id" }
+      },
+      "additionalProperties": false
+    },
+    "acceptedClaimRef": {
+      "type": "object",
+      "required": ["transactionId", "claimKey", "judgmentId", "assessmentDigest"],
+      "properties": {
+        "transactionId": { "$ref": "#/$defs/transaction" },
+        "claimKey": { "$ref": "#/$defs/id" },
+        "judgmentId": { "$ref": "#/$defs/digest" },
+        "assessmentDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "fact": {
+      "type": "object",
+      "required": ["id", "condition", "actorVisibility", "affectedNodeRefs", "acceptedClaimKeys"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "condition": { "type": "string", "minLength": 1, "maxLength": 8192 },
+        "actorVisibility": { "const": "withheld-until-independent-discovery" },
+        "affectedNodeRefs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/nodeRef" }
+        },
+        "acceptedClaimKeys": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/id" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

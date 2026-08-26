@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/work-projection-bundle-v1.schema.json",
+  "title": "Immutable Per-Submission Work Projection Bundle V1",
+  "type": "object",
+  "required": [
+    "protocolVersion",
+    "runKind",
+    "outputProfile",
+    "problemId",
+    "subjectTransactionId",
+    "rootContractDigest",
+    "baseAccountingStateDigest",
+    "baseKnowledgeStateDigest",
+    "targetKnowledgeStateDigest",
+    "topologyAlignmentDigest",
+    "submissionEvidenceManifestDigest",
+    "submissionDigest",
+    "acceptedClaimRefsDigest",
+    "safeFactsDigest",
+    "impactContextDigest",
+    "requestDigests",
+    "responseDigests",
+    "noAccessPatchDigest",
+    "withAccessPatchDigest",
+    "noAccessStateDigest",
+    "withAccessStateDigest",
+    "evaluationDigest",
+    "artifacts"
+  ],
+  "properties": {
+    "protocolVersion": { "const": 1 },
+    "runKind": { "const": "work-accounting-evaluation" },
+    "outputProfile": { "const": "math-flow/work-accounting-transition-v1" },
+    "problemId": { "$ref": "#/$defs/id" },
+    "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+    "rootContractDigest": { "$ref": "#/$defs/digest" },
+    "baseAccountingStateDigest": { "$ref": "#/$defs/digest" },
+    "baseKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "targetKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "topologyAlignmentDigest": { "$ref": "#/$defs/digest" },
+    "submissionEvidenceManifestDigest": { "$ref": "#/$defs/digest" },
+    "submissionDigest": { "$ref": "#/$defs/digest" },
+    "acceptedClaimRefsDigest": { "$ref": "#/$defs/digest" },
+    "safeFactsDigest": { "$ref": "#/$defs/digest" },
+    "impactContextDigest": { "$ref": "#/$defs/digest" },
+    "requestDigests": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "$ref": "#/$defs/digest" }
+    },
+    "responseDigests": {
+      "type": "array",
+      "prefixItems": [
+        { "$ref": "#/$defs/safeResponse" },
+        { "$ref": "#/$defs/noResponse" },
+        { "$ref": "#/$defs/withResponse" }
+      ],
+      "items": false
+    },
+    "noAccessPatchDigest": { "$ref": "#/$defs/digest" },
+    "withAccessPatchDigest": { "$ref": "#/$defs/digest" },
+    "noAccessStateDigest": { "$ref": "#/$defs/digest" },
+    "withAccessStateDigest": { "$ref": "#/$defs/digest" },
+    "evaluationDigest": { "$ref": "#/$defs/digest" },
+    "artifacts": {
+      "type": "array",
+      "minItems": 21,
+      "items": { "$ref": "#/$defs/artifact" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "response": {
+      "type": "object",
+      "required": ["stage", "digest"],
+      "properties": {
+        "stage": { "enum": ["safe-facts", "no-access", "with-access"] },
+        "digest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "safeResponse": {
+      "allOf": [
+        { "$ref": "#/$defs/response" },
+        { "properties": { "stage": { "const": "safe-facts" } } }
+      ]
+    },
+    "noResponse": {
+      "allOf": [
+        { "$ref": "#/$defs/response" },
+        { "properties": { "stage": { "const": "no-access" } } }
+      ]
+    },
+    "withResponse": {
+      "allOf": [
+        { "$ref": "#/$defs/response" },
+        { "properties": { "stage": { "const": "with-access" } } }
+      ]
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["path", "role", "mediaType", "digest", "bytes"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "role": { "type": "string", "minLength": 1 },
+        "mediaType": { "type": "string", "minLength": 1 },
+        "digest": { "$ref": "#/$defs/digest" },
+        "bytes": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

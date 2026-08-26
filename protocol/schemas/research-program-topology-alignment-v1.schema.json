@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/research-program-topology-alignment-v1.schema.json",
+  "title": "Deterministic Research Program Topology Alignment v1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "beforeKnowledgeStateDigest",
+    "afterKnowledgeStateDigest",
+    "preserved",
+    "moved",
+    "splits",
+    "merges",
+    "created",
+    "retired",
+    "alignmentDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "problemId": { "$ref": "#/$defs/id" },
+    "beforeKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "afterKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "preserved": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/persistentIdentity" }
+    },
+    "moved": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/movedIdentity" }
+    },
+    "splits": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/split" }
+    },
+    "merges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/merge" }
+    },
+    "created": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/createdIdentity" }
+    },
+    "retired": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/persistentIdentity" }
+    },
+    "alignmentDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "entityKind": { "enum": ["program", "thread", "item"] },
+    "persistentIdentity": {
+      "type": "object",
+      "required": ["entityKind", "entityId", "beforeDigest", "afterDigest"],
+      "properties": {
+        "entityKind": { "$ref": "#/$defs/entityKind" },
+        "entityId": { "$ref": "#/$defs/id" },
+        "beforeDigest": { "$ref": "#/$defs/digest" },
+        "afterDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "createdIdentity": {
+      "type": "object",
+      "required": ["entityKind", "entityId", "afterDigest"],
+      "properties": {
+        "entityKind": { "$ref": "#/$defs/entityKind" },
+        "entityId": { "$ref": "#/$defs/id" },
+        "afterDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "movedIdentity": {
+      "type": "object",
+      "required": [
+        "entityKind",
+        "entityId",
+        "beforeDigest",
+        "afterDigest",
+        "fromParentId",
+        "toParentId",
+        "fromParentThreadIds",
+        "toParentThreadIds"
+      ],
+      "properties": {
+        "entityKind": { "$ref": "#/$defs/entityKind" },
+        "entityId": { "$ref": "#/$defs/id" },
+        "beforeDigest": { "$ref": "#/$defs/digest" },
+        "afterDigest": { "$ref": "#/$defs/digest" },
+        "fromParentId": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/id" }
+          ]
+        },
+        "toParentId": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/id" }
+          ]
+        },
+        "fromParentThreadIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "toParentThreadIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "split": {
+      "type": "object",
+      "required": ["predecessorProgramId", "successorProgramIds"],
+      "properties": {
+        "predecessorProgramId": { "$ref": "#/$defs/id" },
+        "successorProgramIds": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "merge": {
+      "type": "object",
+      "required": ["predecessorProgramIds", "successorProgramId"],
+      "properties": {
+        "predecessorProgramIds": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "successorProgramId": { "$ref": "#/$defs/id" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "math-flow/work-accounting-transition-v1",
+  "description": "Inactive per-submission three-role work-accounting estimation with an epistemic firewall and trusted deterministic reduction.",
+  "requiredArtifactRoles": [
+    "submission-evidence-manifest",
+    "counterfactual-safe-facts",
+    "work-impact-context",
+    "safe-facts-request",
+    "safe-facts-response",
+    "no-access-request",
+    "no-access-response",
+    "with-access-request",
+    "with-access-response",
+    "no-access-work-patch",
+    "with-access-work-patch",
+    "submission-work-evaluation"
+  ],
+  "schemas": [
+    "protocol/schemas/submission-evidence-manifest-v1.schema.json",
+    "protocol/schemas/counterfactual-safe-facts-v1.schema.json",
+    "protocol/schemas/work-impact-context-v1.schema.json",
+    "protocol/schemas/work-projection-request-v1.schema.json",
+    "protocol/schemas/work-accounting-patch-v1.schema.json",
+    "protocol/schemas/submission-work-value-v1.schema.json",
+    "protocol/schemas/work-projection-bundle-v1.schema.json"
+  ],
+  "reducer": "per-submission-work-accounting-v1",
+  "providerStages": ["safe-facts", "no-access", "with-access"],
+  "accountingUnit": "competent-human-researcher-hour",
+  "referenceRule": "same-world-post-topology",
+  "estimateForm": "point-estimate"
+}
