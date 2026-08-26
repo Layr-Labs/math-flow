@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+  "baseStateDigest": "sha256:1f1a5676bbe127e34400973749883573966aec2c7901b03fd3476d1d0f4823bc",
+  "contentOperations": [
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/marginal-output-correlation-pruning-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/marginal-output-correlation-pruning-proof",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Marginal-balance and output-correlation pruning proof",
+        "summary": "For an arbitrary correlated two-letter input law, memorylessness gives the exact decomposition G(P_{X_1X_2})=F(q_1)+F(q_2)-C_out/2. Combining this identity with the accepted pre-averaging Marton-to-input rows, their universal average, the exact threshold T=2L_RTD, strict concavity of the coordinate and sum envelopes, and a binary Pinsker bound proves the accepted necessary windows for q_1,q_2 and Q, the bound C_out<7/160, and |c_in|<7/40. Direct evaluation on the reflected/transposed one-parameter family gives the additional interval 1/8<alpha<5/13. The argument supplies necessary conditions only.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/three-symbol-face-marton-bound-proof",
+          "root/multiletter-marton-achievability/exact-rtd-symmetrization-calculus-proof",
+          "root/multiletter-marton-achievability/directed-rtd-interval-certificate"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/marginal-correlation-pruning-verifier",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/marginal-correlation-pruning-verifier",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "tool",
+        "title": "Directed marginal and correlation pruning verifier",
+        "summary": "A dependency-free Python standard-library checker reconstructs the exact directed RTD threshold, verifies the coordinate and sum envelope separations, checks the output-correlation and input-covariance rational bounds, and verifies the reflected/transposed-family endpoint comparisons using directed high-precision interval arithmetic. These checks corroborate but do not replace the analytic proof.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/marginal-output-correlation-pruning-proof"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/two-letter-marton-marginal-correlation-pruning",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/two-letter-marton-marginal-correlation-pruning",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Marginal and correlation pruning for a two-letter Marton gain",
+        "summary": "For the half-skew BSSC product channel, any finite-auxiliary two-letter Marton law with unnormalized value M>2L_RTD must satisfy q_1,q_2 in (3/8,5/8), and hence in (7/20,13/20), together with 17/20<q_1+q_2<23/20, I(Y_1;Y_2)+I(Z_1;Z_2)<7/160<0.044 bits, and |P(X_1X_2=11)-q_1q_2|<7/40. Within the reflected/transposed family with masses alpha on 00 and 11 and 1/2-alpha on 01 and 10, a gain additionally requires 1/8<alpha<5/13. These conditions neither establish nor rule out a gain and do not give a capacity converse.",
+        "claimRefs": [
+          {
+            "transactionId": "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-marginal-correlation-pruning"
+          }
+        ],
+        "sourceTransactionIds": [
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/marginal-output-correlation-pruning-proof",
+          "root/multiletter-marton-achievability/marginal-correlation-pruning-verifier"
+        ]
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/two-letter-marton-marginal-correlation-pruning"
+    ],
+    "directProgramId": "root/multiletter-marton-achievability",
+    "directThreadIds": [
+      "root/multiletter-marton-achievability/conditional-product-and-correlation-pruning"
+    ],
+    "itemIds": [
+      "root/multiletter-marton-achievability/marginal-output-correlation-pruning-proof",
+      "root/multiletter-marton-achievability/marginal-correlation-pruning-verifier",
+      "root/multiletter-marton-achievability/two-letter-marton-marginal-correlation-pruning"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted result derives necessary marginal and correlation constraints for any two-letter Marton improvement, directly advancing the existing multiletter Marton achievability program and its correlation-structure pruning thread.",
+    "relatedProgramIds": [
+      "root/multiletter-marton-achievability"
+    ]
+  },
+  "topologyRationale": null
+}
