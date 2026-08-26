@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "43fcf08a3272a3995158951de8d8ca2a666a0792",
+  "baseStateDigest": "sha256:a538e38923ffc39056053598a8c950230ae1a9b8c099b638402eb254e5c340c0",
+  "contentOperations": [
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/fixed-law-transplant-family-reduction",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/fixed-law-transplant-family-reduction",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "method",
+        "title": "Fixed-law deterministic-map transplant family",
+        "summary": "Fix the two exact rational 2x4x4x9 auxiliary laws from source rows 6 and 7 of the pinned certificate. For each law, map its nine source input labels deterministically to the four half-skew BSSC two-use super-inputs and evaluate the induced half-weight Marton functional. This defines exactly 2·4^9 finite candidates and does not include stochastic relabelings, altered auxiliary laws, mixtures, continuations, or reoptimization.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "43fcf08a3272a3995158951de8d8ca2a666a0792"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/two-law-transplant-certificate-verifier",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/two-law-transplant-certificate-verifier",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "tool",
+        "title": "Exhaustive fixed-law transplant certificate verifier",
+        "summary": "A dependency-free Python standard-library verifier pins the exact rational source certificate, constructs outward entropy intervals, and visits all 524,288 law-map pairs. It fail-closes on source drift, malformed probability tables, incomplete map coverage, interval inconsistencies, or failure of the strict directed RTD comparison.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "43fcf08a3272a3995158951de8d8ca2a666a0792"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/fixed-law-transplant-family-reduction"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/two-law-deterministic-map-exhaustive-scan",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/two-law-deterministic-map-exhaustive-scan",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "computation",
+        "title": "Exhaustive two-law deterministic-map enclosure",
+        "summary": "The exhaustive scan encloses the maximum half-weight Marton value over the two fixed-law deterministic-map families in [0.5451904011322205365, 0.5451904011322206215] bits per two uses. Source row 7 with base-four map ID 243761, decoded as (1,0,3,0,0,2,3,2,3), attains the certified lower endpoint. No interior value or additional decimal precision is asserted.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "43fcf08a3272a3995158951de8d8ca2a666a0792"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/two-law-transplant-certificate-verifier"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/two-letter-marton-exhaustive-transplant-certificate-repair",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/two-letter-marton-exhaustive-transplant-certificate-repair",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Exhaustive no-gain certificate for two fixed transplanted laws",
+        "summary": "For the two pinned exact rational auxiliary laws, every deterministic map of the nine source labels to the four half-skew BSSC two-use super-inputs has half-weight Marton value at most 0.5451904011322206215 bits, strictly below 2L_RTD. The result is confined to this finite fixed-law family and establishes neither unrestricted Marton additivity nor a capacity converse.",
+        "claimRefs": [
+          {
+            "transactionId": "43fcf08a3272a3995158951de8d8ca2a666a0792",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-exhaustive-transplant-certificate-repair"
+          }
+        ],
+        "sourceTransactionIds": [
+          "43fcf08a3272a3995158951de8d8ca2a666a0792"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/two-law-deterministic-map-exhaustive-scan",
+          "root/multiletter-marton-achievability/directed-rtd-interval-certificate"
+        ]
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/two-letter-marton-exhaustive-transplant-certificate-repair"
+    ],
+    "directProgramId": "root/multiletter-marton-achievability",
+    "directThreadIds": [
+      "root/multiletter-marton-achievability/conditional-product-and-correlation-pruning"
+    ],
+    "itemIds": [
+      "root/multiletter-marton-achievability/fixed-law-transplant-family-reduction",
+      "root/multiletter-marton-achievability/two-law-transplant-certificate-verifier",
+      "root/multiletter-marton-achievability/two-law-deterministic-map-exhaustive-scan",
+      "root/multiletter-marton-achievability/two-letter-marton-exhaustive-transplant-certificate-repair"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted result rules out a concrete finite auxiliary-law and deterministic-map family as a source of two-letter Marton gain, directly advancing the active multiletter Marton structure-pruning objective.",
+    "relatedProgramIds": [
+      "root/multiletter-marton-achievability"
+    ]
+  },
+  "topologyRationale": null
+}
