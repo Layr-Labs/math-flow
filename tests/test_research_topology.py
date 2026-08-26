@@ -428,8 +428,27 @@ class ResearchTopologyTests(unittest.TestCase):
             apply_research_topology_transition(state, stale_state)
         stale_entity = _transition(state, [copy.deepcopy(operation)])
         stale_entity["operations"][0]["baseDigest"] = "sha256:" + "0" * 64
-        with self.assertRaisesRegex(MathFlowError, "baseDigest mismatch"):
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "baseDigest mismatch: move program program/a expected "
+            + str(program["digest"]),
+        ):
             apply_research_topology_transition(state, stale_entity)
+
+        duplicate_create = _operation(
+            "create",
+            "program",
+            "program/a",
+            _value(program),
+            base=None,
+        )
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "create requires a new ID, but the entity already exists: program program/a",
+        ):
+            apply_research_topology_transition(
+                state, _transition(state, [duplicate_create])
+            )
 
     def test_atomic_split_is_complete_and_alignment_is_deterministic(self) -> None:
         state = _base_state()

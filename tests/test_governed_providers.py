@@ -607,16 +607,16 @@ class GovernedProviderTests(unittest.TestCase):
         self.assertIn("provider attempt 1", feedback_messages[0])
         self.assertIn("provider attempt 2", feedback_messages[1])
         self.assertIn(
-            "Every non-root program has at least one parentThreadId",
+            "Each non-root program names an existing parent thread",
             feedback_messages[0],
         )
         self.assertIn(
-            "a new entity ID uses baseDigest null; an existing entity ID copies",
+            "contentOperations: new ID => null baseDigest; existing ID =>",
             feedback_messages[0],
         )
-        self.assertIn("never baseState.stateDigest", feedback_messages[0])
+        self.assertIn("never stateDigest", feedback_messages[0])
         self.assertIn(
-            "A parent thread may be named by at most one active child program",
+            "No parent thread is shared by active child programs",
             feedback_messages[0],
         )
         self.assertIn("exactly one active unstructured thread", feedback_messages[0])
@@ -630,6 +630,14 @@ class GovernedProviderTests(unittest.TestCase):
         )
         self.assertIn(
             "cross-program requires directProgramId root and at least two incomparable",
+            feedback_messages[0],
+        )
+        self.assertIn(
+            "Create: ID absent from the intermediate state and null baseDigest",
+            feedback_messages[0],
+        )
+        self.assertIn(
+            "Move/retire: existing ID and its intermediate entity digest",
             feedback_messages[0],
         )
         journal = provider.latest_attempt_journal
