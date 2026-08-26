@@ -848,11 +848,15 @@ upgrade path.
 - `docs/BSSC_KNOWLEDGE_CREDIT_AUDIT.md` — non-normative BSSC formation/credit
   audit and the settled design record for the proposed hierarchical
   work-remaining successor.
+- `docs/BSSC_RESEARCH_V4_SERIAL_PRODUCER.md` — exact historical validity-v4
+  frontier, one-submission builder-v6 production, recovery, and activation
+  boundary for the BSSC K0-to-K16 chain.
 - `docs/MVP.md` — architecture, phased roadmap, and deferred decisions.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V5.md` — current audited initial
   sibling/nested program formation, fixed-topology boundary, and rollout.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V6.md` — inactive provider-free
-  per-submission state-v2 topology evolution and same-world handoff contract.
+  per-submission state-v2 topology evolution, same-world handoff contract, and
+  BSSC serial-producer foundation.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V4.md` — validity-v4,
   reference-attestation, dependency-safe batching, and the superseded v4 builder
   baseline retained for replay.

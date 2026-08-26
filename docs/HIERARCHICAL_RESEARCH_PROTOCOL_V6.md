@@ -1,8 +1,8 @@
 # Hierarchical research protocol v6 foundation
 
-Status: inactive, opt-in runtime contract with a bundle runner. No governed
-projection, hosted workflow, scheduler, active knowledge lane, or viewer uses
-this builder version.
+Status: inactive, opt-in runtime contract with a bundle runner and a
+provider-free BSSC serial-producer implementation. No governed projection,
+active hosted workflow, scheduler lane, or viewer uses this builder version.
 
 Builder v6 is the first hierarchical research-builder contract over
 `research-program-state-v2`. It joins accepted mathematical content to the
@@ -141,10 +141,20 @@ The judge loader and projection compatibility validator recognize these
 component identities, so an inactive candidate can be checked before admission.
 No registered projection references builder v6.
 
+The BSSC deployment foundation adds
+`math_flow.bssc_research_v4_producer`, the immutable validity source at
+`protocol/runtime/bssc-research-v4-validity-source-v1.json`, and the
+manual-dispatch hosted caller `.github/workflows/project-research-v4-serial.yml`.
+The planner revalidates the exact historical validity-v4 bundle bytes, the
+canonical 16-subject accepted frontier, and the published v6 predecessor chain
+before allowing one next build. See `docs/BSSC_RESEARCH_V4_SERIAL_PRODUCER.md`.
+
 ## Activation seam
 
-Activation is a separate change. The inactive bundle runner now supplies the
-one-submission formation boundary. A complete activation should:
+The hosted caller and active runtime candidate now supply the one-submission
+formation boundary. Final activation requires the separate governed admission
+of the byte-identical projection, after which the caller may be dispatched.
+The deployment:
 
 1. schedule each accepted subject in canonical ledger order and invoke the v6
    runner once from its exact predecessor; excluded submissions produce no
@@ -153,9 +163,9 @@ one-submission formation boundary. A complete activation should:
    reducer-derived topology alignment, and same-world handoff atomically;
 3. teach downstream accounting transport to consume the exact published
    handoff/alignment artifacts instead of independently authoring topology;
-4. add hosted resume/publication and viewer support; and
+4. uses the hosted serial resume/publication caller and v6 viewer support; and
 5. admit the projection in the required separate one-file governed PR.
 
-Until those steps are present, builder v6 remains inactive and cannot be
-selected by a registered projection. Historical builders and active builder-v5
-behavior remain byte-for-byte replayable.
+Until the one-file admission is merged, the caller fails closed and builder v6
+cannot be selected by a registered projection. Historical builders and active
+builder-v5 behavior remain byte-for-byte replayable.

@@ -504,9 +504,16 @@ def _seal_submission(value: Mapping[str, object]) -> dict[str, object]:
     return result
 
 
-def _normalize_submission(
+def normalize_work_accounting_submission(
     submission: AcceptedWorkSubmission, problem: str
 ) -> tuple[dict[str, object], dict[str, bytes]]:
+    """Normalize one accepted submission into the pipeline's exact CAS input.
+
+    Hosted callers use this provider-free boundary when constructing disposition
+    snapshots.  Returning the normalized evidence chunks alongside the sealed
+    record keeps the digest calculation identical to pipeline execution.
+    """
+
     transaction_id = _require_transaction(
         submission.transaction_id, "accepted pipeline submission"
     )
@@ -856,7 +863,9 @@ def _canonicalize_submissions(
         str(item["transactionId"]): int(item["ordinal"])
         for item in canonical["transactions"]
     }
-    records = [_normalize_submission(item, problem) for item in submissions]
+    records = [
+        normalize_work_accounting_submission(item, problem) for item in submissions
+    ]
     ids = [str(record[0]["transactionId"]) for record in records]
     if len(ids) != len(set(ids)):
         raise MathFlowError("pipeline accepted submissions repeat a transaction")

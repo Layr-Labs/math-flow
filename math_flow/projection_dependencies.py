@@ -11,7 +11,11 @@ from .projection_queue import validate_scheduler_state
 from .repository import ledger, read_at, sha256_json
 
 
-SUPPORTED_DEPENDENCY_ROLES = {"knowledge-state", "research-program-state"}
+SUPPORTED_DEPENDENCY_ROLES = {
+    "knowledge-state",
+    "research-program-state",
+    "research-builder-handoff",
+}
 DEPENDENCY_LOCK_FIELDS = {
     "schemaVersion",
     "consumer",
@@ -188,6 +192,26 @@ def _knowledge_state_dependency(
     ledger_head = manifest.get("ledgerHead")
     if not isinstance(problem_ledger_head, str) or not isinstance(ledger_head, str):
         raise MathFlowError("projection dependency run has invalid ledger provenance")
+
+    if dependency["artifactRole"] == "research-builder-handoff":
+        # A handoff is meaningful only as part of a fully replayable v6
+        # transition.  Verify the complete typed bundle rather than trusting a
+        # manifest entry whose bytes happen to use the requested role.
+        from .work_accounting_research_v6 import (
+            load_published_research_v6_transition,
+        )
+
+        loaded = load_published_research_v6_transition(
+            bundle,
+            expected_bundle_digest=run_digest,
+            expected_problem=problem,
+            expected_projection_spec_digest=projection_digest,
+            expected_builder_spec_digest=expected_builder_digest,
+        )
+        if loaded.manifest != manifest:
+            raise MathFlowError(
+                "projection dependency research-v6 manifest changed during validation"
+            )
 
     artifact = _artifact_for_role(manifest, str(dependency["artifactRole"]))
     return {

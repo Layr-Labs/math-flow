@@ -122,3 +122,6 @@ a trusted workflow that refetches the current orphan branch before every retry,
 credential and permission review, branch-retention monitoring, and hosted
 failure drills. Tests inject or mock transport and use no credentials or
 network.
+
+The provider-free research-v6 consumption and automatic catalog-read boundary
+are specified in `docs/WORK_ACCOUNTING_PUBLISHED_RESEARCH_V6_V1.md`.

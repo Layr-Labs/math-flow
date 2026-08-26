@@ -23,6 +23,15 @@ PROJECTION_PATH = (
 OVERLAY_PATH = (
     ROOT / "protocol/runtime/inactive-openrouter-work-accounting-v1-projection.json"
 )
+ACTIVE_CONTRACT_PATH = (
+    ROOT / "protocol/runtime/bssc-work-accounting-root-contract-v1.json"
+)
+ACTIVE_PROJECTION_PATH = (
+    ROOT / "protocol/runtime/openrouter-research-v4-projection.json"
+)
+ACTIVE_OVERLAY_PATH = (
+    ROOT / "protocol/runtime/active-openrouter-work-accounting-v1-projection.json"
+)
 
 
 class BSSCRootContractTests(unittest.TestCase):
@@ -42,10 +51,6 @@ class BSSCRootContractTests(unittest.TestCase):
         )
         self.assertEqual(projection["status"], "disabled")
         self.assertEqual(projection["allowedProblems"], ["bssc-sum-capacity"])
-        self.assertFalse(
-            (ROOT / "protocol/projections/openrouter-research-v4.json").exists()
-        )
-
         overlay = json.loads(OVERLAY_PATH.read_text(encoding="utf-8"))
         validate_projection_spec(overlay, "openrouter-work-accounting-v1", reader)
         self.assertEqual(
@@ -58,9 +63,42 @@ class BSSCRootContractTests(unittest.TestCase):
                 }
             ],
         )
-        self.assertFalse(
-            (ROOT / "protocol/projections/openrouter-work-accounting-v1.json").exists()
+
+    def test_active_root_contract_binds_exact_serial_candidate(self) -> None:
+        reader = lambda relative: (ROOT / relative).read_text(encoding="utf-8")
+        projection = json.loads(ACTIVE_PROJECTION_PATH.read_text(encoding="utf-8"))
+        validate_projection_spec(projection, "openrouter-research-v4", reader)
+        self.assertEqual(projection["status"], "active")
+        self.assertEqual(projection["scheduling"]["maximumJudgmentsPerBuild"], 1)
+        self.assertEqual(
+            f"sha256:{sha256_json(projection)}",
+            "sha256:8bcab1fa785b4c5d757668ef2ff9ce1ef3046a54828c71ed846f84e6b33cf31a",
         )
+
+        contract = validate_root_contract(
+            json.loads(ACTIVE_CONTRACT_PATH.read_text(encoding="utf-8")),
+            "bssc-sum-capacity",
+        )
+        self.assertEqual(
+            contract["knowledgeProjectionSpecDigest"],
+            f"sha256:{sha256_json(projection)}",
+        )
+        self.assertEqual(
+            contract["rootContractDigest"],
+            "sha256:01d52a695e88694768973f3590c0c13eb5acd8070fbed32de8ad01e460c41135",
+        )
+
+        overlay = json.loads(ACTIVE_OVERLAY_PATH.read_text(encoding="utf-8"))
+        validate_projection_spec(overlay, "openrouter-work-accounting-v1", reader)
+        self.assertEqual(overlay["status"], "active")
+
+        for projection_id, candidate in (
+            ("openrouter-research-v4", ACTIVE_PROJECTION_PATH),
+            ("openrouter-work-accounting-v1", ACTIVE_OVERLAY_PATH),
+        ):
+            admitted = ROOT / "protocol/projections" / f"{projection_id}.json"
+            if admitted.exists():
+                self.assertEqual(admitted.read_bytes(), candidate.read_bytes())
 
     def test_contract_has_a_deterministic_zero_origin(self) -> None:
         contract = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))

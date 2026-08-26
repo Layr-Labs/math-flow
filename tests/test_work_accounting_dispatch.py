@@ -88,6 +88,7 @@ class WorkAccountingDispatchTests(unittest.TestCase):
         for relative in (
             "protocol/judges/openrouter-hierarchical-research-builder-v6.json",
             "protocol/judges/openrouter-work-accounting-v1.json",
+            "protocol/runtime/inactive-openrouter-work-accounting-v1-projection.json",
             "math_flow/work_accounting_pipeline.py",
         ):
             target = self.root / relative
@@ -132,7 +133,7 @@ class WorkAccountingDispatchTests(unittest.TestCase):
             self.root,
             problem="demo",
             projection_id=str(self.config["projectionId"]),
-            projection_spec_digest=str(self.config["runtimePolicyDigest"]),
+            projection_spec_digest=str(self.config["projectionSpec"]["digest"]),
             root_contract=self.contract,
             initial_knowledge_state=self.knowledge,
             initial_accounting_state=self.accounting,

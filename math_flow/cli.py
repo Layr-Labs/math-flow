@@ -8,6 +8,10 @@ import time
 from pathlib import Path
 
 from .artifacts import read_verified_artifact, verify_bundle
+from .bssc_research_v4_producer import (
+    load_json_file as load_bssc_research_v4_json,
+    plan_bssc_research_v4_frontier,
+)
 from .attestations import (
     load_verifier_spec,
     plan_verifier_attestation,
@@ -623,6 +627,27 @@ def build_parser() -> argparse.ArgumentParser:
     fail_parser.add_argument("--build-token", required=True)
     fail_parser.add_argument("--problem-ledger-digest")
     fail_parser.add_argument("--now", type=int)
+
+    bssc_research_v4_parser = commands.add_parser(
+        "bssc-research-v4-frontier",
+        help="materialize the next exact accepted BSSC builder-v6 frontier",
+    )
+    bssc_research_v4_parser.add_argument("--source", required=True, type=Path)
+    bssc_research_v4_parser.add_argument("--projection", required=True, type=Path)
+    bssc_research_v4_parser.add_argument(
+        "--expected-projection-digest",
+        help="digest resolved from the separately admitted governed projection",
+    )
+    bssc_research_v4_parser.add_argument(
+        "--projection-dir", required=True, type=Path
+    )
+    bssc_research_v4_parser.add_argument(
+        "--scheduler-file", required=True, type=Path
+    )
+    bssc_research_v4_parser.add_argument(
+        "--materialization-dir", required=True, type=Path
+    )
+    bssc_research_v4_parser.add_argument("--output", type=Path)
 
     publish_parser = commands.add_parser(
         "publish-batch", help="stage verified run bundles in a projection worktree"
@@ -1348,6 +1373,7 @@ def main(argv: list[str] | None = None) -> int:
                     "openrouter-hierarchical-research-builder-v3",
                     "openrouter-hierarchical-research-builder-v4",
                     "openrouter-hierarchical-research-builder-v5",
+                    "openrouter-hierarchical-research-builder-v6",
                 }
             ):
                 result = run_research_build_bundle(
@@ -1397,6 +1423,22 @@ def main(argv: list[str] | None = None) -> int:
                 args.now if args.now is not None else int(time.time()),
                 args.problem_ledger_digest,
             )
+        elif args.command == "bssc-research-v4-frontier":
+            result = plan_bssc_research_v4_frontier(
+                root,
+                projection_root=args.projection_dir,
+                scheduler_file=args.scheduler_file,
+                materialization_root=args.materialization_dir,
+                replay_source=load_bssc_research_v4_json(
+                    args.source, "BSSC research-v4 source"
+                ),
+                projection=load_bssc_research_v4_json(
+                    args.projection, "BSSC research-v4 projection"
+                ),
+                expected_projection_digest=args.expected_projection_digest,
+            )
+            _write_json(result, str(args.output) if args.output else None)
+            return 0
         elif args.command == "publish-batch":
             result = publish_batch(args.projection_dir, args.bundles)
         elif args.command == "github-publish-projection":

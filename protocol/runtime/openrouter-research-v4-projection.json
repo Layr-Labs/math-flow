@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "openrouter-research-v4",
+  "description": "A BSSC-only producer that reuses the exact published validity-v4 judgments and emits one serial builder-v6 topology-aware transition per accepted submission.",
+  "status": "active",
+  "engine": "openrouter-repository-v1",
+  "allowedProblems": ["bssc-sum-capacity"],
+  "primaryJudge": "protocol/judges/openrouter-validity-judgment-v4.json",
+  "reconciliationJudge": null,
+  "knowledgeBuilder": "protocol/judges/openrouter-hierarchical-research-builder-v6.json",
+  "scheduling": {
+    "judgmentMaxParallel": 16,
+    "knowledgeMinimumIntervalSeconds": 0,
+    "maximumJudgmentsPerBuild": 1
+  }
+}
