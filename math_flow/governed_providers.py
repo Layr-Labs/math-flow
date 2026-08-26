@@ -830,6 +830,19 @@ class OpenRouterResearchBuilderV6Provider(_GovernedOpenRouterAdapter):
             raise MathFlowError("builder-v6 provider requires exact submission evidence")
         if base_state.get("problemId") != problem_id:
             raise MathFlowError("builder-v6 provider state belongs to another problem")
+        expected_base_digest = base_state.get("stateDigest")
+        if not isinstance(expected_base_digest, str):
+            raise MathFlowError("builder-v6 provider state has no state digest")
+        response_schema = _builder_transition_schema()
+        response_properties = response_schema["properties"]
+        assert isinstance(response_properties, dict)
+        for field, expected in (
+            ("subjectTransactionId", subject_transaction_id),
+            ("baseStateDigest", expected_base_digest),
+        ):
+            field_schema = response_properties[field]
+            assert isinstance(field_schema, dict)
+            field_schema["enum"] = [expected]
         user_data = {
             "schemaVersion": 1,
             "role": "builder-v6-content-and-topology-author",
@@ -849,6 +862,11 @@ class OpenRouterResearchBuilderV6Provider(_GovernedOpenRouterAdapter):
                 raise MathFlowError("builder-v6 provider must return only transition operations")
             if value.get("subjectTransactionId") != subject_transaction_id:
                 raise MathFlowError("builder-v6 provider returned another submission")
+            if value.get("baseStateDigest") != expected_base_digest:
+                raise MathFlowError(
+                    "builder-v6 provider returned stale baseStateDigest; expected "
+                    f"exact {expected_base_digest}"
+                )
             apply_research_builder_v6_transition(
                 copy.deepcopy(dict(base_state)),
                 value,
@@ -867,12 +885,17 @@ class OpenRouterResearchBuilderV6Provider(_GovernedOpenRouterAdapter):
                 + json.dumps(diagnostic, ensure_ascii=False)
                 + "\n</math-flow-validation-error>\n"
                 "Return a corrected complete transition for the original input. "
-                "Preserve its subjectTransactionId and baseStateDigest. Before "
+                "Copy its exact control fields without recomputing them: "
+                f"subjectTransactionId={subject_transaction_id}; "
+                f"baseStateDigest={expected_base_digest}. Before "
                 "returning, verify this reducer checklist:\n"
                 "- The complete content state is valid before topologyOperations.\n"
                 "- Every non-root program has at least one parentThreadId; every "
                 "named parent thread already exists and belongs to that program's "
                 "parentId.\n"
+                "- A parent thread may be named by at most one active child program; "
+                "a sibling program needs its own parent thread in their shared "
+                "parent program.\n"
                 "- Every active program has exactly one active unstructured thread.\n"
                 "- Every thread and item names a program in the content state.\n"
                 "- The contribution's direct program, threads, and items all exist, "
@@ -892,7 +915,7 @@ class OpenRouterResearchBuilderV6Provider(_GovernedOpenRouterAdapter):
         return self._invoke(
             stage="organize",
             user_data=user_data,
-            schema=_builder_transition_schema(),
+            schema=response_schema,
             validate=validate,
             retry_feedback=retry_feedback,
         )
