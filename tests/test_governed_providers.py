@@ -439,6 +439,62 @@ class GovernedProviderTests(unittest.TestCase):
         core = {key: value for key, value in record.items() if key != "invocationDigest"}
         self.assertEqual(record["invocationDigest"], f"sha256:{sha256_json(core)}")
 
+    def test_builder_adapter_recovers_live_placement_failure_sequence(self) -> None:
+        from math_flow.research_topology import empty_research_program_state_v2
+
+        base = empty_research_program_state_v2("handoff-fixture")
+        corrected = _first_transition(base)
+        missing_program = copy.deepcopy(corrected)
+        missing_program["contentOperations"][-1]["value"]["programId"] = (
+            "missing-program"
+        )
+        exceptional_non_root = copy.deepcopy(corrected)
+        exceptional_non_root["placementAudit"]["basis"] = "canonical-objective"
+        exceptional_non_root["placementAudit"]["relatedProgramIds"] = []
+        transport = SequentialTransport(
+            [
+                _response(missing_program, ordinal=1),
+                _response(exceptional_non_root, ordinal=2),
+                _response(corrected, ordinal=3),
+            ]
+        )
+        provider = OpenRouterResearchBuilderV6Provider(
+            load_judge_spec(BUILDER_SPEC), transport=transport
+        )
+        content = b"# Exact accepted submission\n"
+        evidence = (
+            SubmissionEvidenceFile(
+                path="problems/handoff-fixture/contributions/accepted/README.md",
+                digest=sha256_bytes(content),
+                content=content,
+            ),
+        )
+
+        self.assertEqual(
+            provider.run(
+                problem_id="handoff-fixture",
+                subject_transaction_id=TX_A,
+                base_state=base,
+                accepted_claims=_accepted_claim("claim-a"),
+                judgment_id=JUDGMENT_A,
+                evidence_files=evidence,
+            ),
+            corrected,
+        )
+        self.assertEqual(len(transport.requests), 3)
+        second_feedback = str(transport.requests[1]["messages"][-1]["content"])
+        third_feedback = str(transport.requests[2]["messages"][-1]["content"])
+        self.assertIn("has missing program: missing-program", second_feedback)
+        self.assertIn(
+            "exceptional placement applies only at root",
+            third_feedback,
+        )
+        self.assertIn(
+            "local-objective requires an active non-root directProgramId",
+            third_feedback,
+        )
+        self.assertEqual(provider.invocation_records[0]["attempts"], 3)
+
     def test_builder_terminal_retries_are_distinct_bounded_and_inspectable(self) -> None:
         from math_flow.research_topology import empty_research_program_state_v2
 
@@ -504,6 +560,18 @@ class GovernedProviderTests(unittest.TestCase):
             feedback_messages[0],
         )
         self.assertIn("exactly one active unstructured thread", feedback_messages[0])
+        self.assertIn(
+            "local-objective requires an active non-root directProgramId",
+            feedback_messages[0],
+        )
+        self.assertIn(
+            "canonical-objective requires directProgramId root and relatedProgramIds []",
+            feedback_messages[0],
+        )
+        self.assertIn(
+            "cross-program requires directProgramId root and at least two incomparable",
+            feedback_messages[0],
+        )
         journal = provider.latest_attempt_journal
         self.assertIsNotNone(journal)
         assert journal is not None
