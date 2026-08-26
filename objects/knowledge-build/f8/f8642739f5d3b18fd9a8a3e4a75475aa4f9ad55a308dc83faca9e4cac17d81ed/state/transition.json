@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+  "baseStateDigest": "sha256:6b0bfe02cc7057a02942c7010c98bfdb1a8391a1aca46b5e709c5c1c0c4a3369",
+  "contentOperations": [
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/four-padding-correlation-test-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/four-padding-correlation-test-proof",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Four constant-padding specializations of the tuple residual",
+        "summary": "For each (a,b) in {1,2}^2, represent arbitrary abstract auxiliaries U and V as coordinate tuples by placing U in coordinate a and V in coordinate b and padding the other coordinates with constants. Substitution into the accepted exact tuple-correlation residual gives the residual A_a+B_b-1{a!=b}D-C. The strict-gain implication therefore forces all four residuals to be positive. Adding the two crossed cases and applying the chain rule yields the combined necessary inequality in equation (12).",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/tuple-correlation-residual-proof"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/padding-correlation-test-verifier",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/padding-correlation-test-verifier",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "tool",
+        "title": "Two-letter padding-correlation identity verifier",
+        "summary": "A dependency-free standard-library checker constructs a strictly positive correlated rational law, passes it through the exact half-skew BSSC product marginals, and evaluates all relevant information quantities in two independent forms. It corroborates each of the four constant-padding residual identities and the crossed-test chain-rule identity; these finite numerical checks do not replace the universal entropy proof.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/four-padding-correlation-test-proof"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/two-letter-padding-correlation-tests",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/two-letter-padding-correlation-tests",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Four padding-correlation tests for a two-letter Marton gain",
+        "summary": "For any finite receiver-skew broadcast channel and arbitrary finite two-letter Marton law P(W,U,V,X_1,X_2), a Marton value strictly above twice the one-letter value requires A_a+B_b>C+1{a!=b}D for every (a,b) in {1,2}^2, with A_a, B_b, C, and D as defined in the claim. Failure of any test rules out a gain, and the crossed tests imply the combined equation (12). For the half-skew BSSC the tests cover arbitrary abstract two-letter auxiliaries without an assumed tuple structure. They are necessary only and establish neither additivity, a gain, nor capacity.",
+        "claimRefs": [
+          {
+            "transactionId": "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+            "claimKey": "bssc-sum-capacity/two-letter-padding-correlation-tests"
+          }
+        ],
+        "sourceTransactionIds": [
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/four-padding-correlation-test-proof",
+          "root/multiletter-marton-achievability/padding-correlation-test-verifier"
+        ]
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/two-letter-padding-correlation-tests"
+    ],
+    "directProgramId": "root/multiletter-marton-achievability",
+    "directThreadIds": [
+      "root/multiletter-marton-achievability/conditional-product-and-correlation-pruning"
+    ],
+    "itemIds": [
+      "root/multiletter-marton-achievability/four-padding-correlation-test-proof",
+      "root/multiletter-marton-achievability/padding-correlation-test-verifier",
+      "root/multiletter-marton-achievability/two-letter-padding-correlation-tests"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted result directly advances the active objective of pruning possible multiletter Marton gains by strengthening the existing tuple-correlation analysis into four necessary tests for arbitrary two-letter auxiliary laws.",
+    "relatedProgramIds": [
+      "root/multiletter-marton-achievability"
+    ]
+  },
+  "topologyRationale": null
+}
