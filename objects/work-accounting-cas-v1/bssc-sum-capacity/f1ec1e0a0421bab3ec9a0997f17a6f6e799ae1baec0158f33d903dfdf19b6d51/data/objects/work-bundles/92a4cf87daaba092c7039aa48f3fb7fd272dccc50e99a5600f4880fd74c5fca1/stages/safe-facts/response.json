@@ -1,0 +1,30 @@
+{
+  "facts": [
+    {
+      "id": "fact-uv-tensor-symmetry",
+      "condition": "For decoder-exchange-symmetric finite channels, the accepted UV scalar decomposes across channel factors; consequently, applying that scalar to multiple canonical BSSC uses cannot tighten its normalized one-use converse.",
+      "actorVisibility": "withheld-until-independent-discovery",
+      "affectedNodeRefs": [
+        {
+          "kind": "program",
+          "id": "root/code-structure-converse"
+        },
+        {
+          "kind": "thread",
+          "id": "root/code-structure-converse/dependence-balance-and-channel-refinement"
+        },
+        {
+          "kind": "thread",
+          "id": "root/code-structure-converse/unstructured-search"
+        }
+      ],
+      "acceptedClaimKeys": [
+        "bssc-sum-capacity/uv-product-branchwise-additivity"
+      ]
+    }
+  ],
+  "assumptions": [
+    "The UV scalar is interpreted only in the separately relaxed, decoder-symmetric scope accepted by the cited claim.",
+    "No conclusion is assumed for coupled auxiliary optimizations, nonsymmetric channels, richer converse systems, or the exact sum-capacity."
+  ]
+}

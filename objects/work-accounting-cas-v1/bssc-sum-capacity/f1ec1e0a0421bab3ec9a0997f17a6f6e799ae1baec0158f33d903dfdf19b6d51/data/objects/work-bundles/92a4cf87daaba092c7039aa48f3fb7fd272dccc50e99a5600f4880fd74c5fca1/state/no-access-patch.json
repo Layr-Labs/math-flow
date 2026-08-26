@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+  "evaluationMode": "no-access",
+  "rootContractDigest": "sha256:01d52a695e88694768973f3590c0c13eb5acd8070fbed32de8ad01e460c41135",
+  "baseAccountingStateDigest": "sha256:766aab95ae1d88a757afce0077e89038041fe98945db5785ea8b71d598333dd6",
+  "baseKnowledgeStateDigest": "sha256:64471ccdbed45510517f681d18b1a96102116fcd246b477b0e1a742b2e2c4be5",
+  "targetKnowledgeStateDigest": "sha256:0bbdeb3a10f50d634cff67c0606754eee1535272d269d01600a6e36007def3ff",
+  "topologyAlignmentDigest": "sha256:b895bca3caeec45f724932b4a38ee02847015ef8e51c9fb535287c849bd5c6dd",
+  "updates": [
+    {
+      "nodeRef": {
+        "kind": "program",
+        "id": "root/uv-scalar-converse"
+      },
+      "baseAnnotationDigest": null,
+      "changes": {
+        "directWorkHours": "0",
+        "conditionalIncidence": "1"
+      },
+      "rationale": "This active sibling program organizes a distinct scalar-converse route. Its research effort is assigned to its threads, while the route itself remains part of the no-access portfolio.",
+      "evidenceRefs": [
+        "safeFacts:fact-uv-tensor-symmetry",
+        "sha256:fcc703456c24e5b4761dfb3ffca9cee02cb267bebe124a36811b185069a0daec"
+      ]
+    },
+    {
+      "nodeRef": {
+        "kind": "thread",
+        "id": "root/uv-scalar-converse-agenda"
+      },
+      "baseAnnotationDigest": null,
+      "changes": {
+        "directWorkHours": "0",
+        "conditionalIncidence": "1"
+      },
+      "rationale": "This node functions as an active agenda marker rather than a separate technical work package; substantive discovery and fallback work are accounted on the program's technical threads.",
+      "evidenceRefs": [
+        "sha256:1ec5b7ce786e9f1df13aab296e9407b0ecb76bc59c6201f87f03e4b745fb5e18"
+      ]
+    },
+    {
+      "nodeRef": {
+        "kind": "thread",
+        "id": "root/uv-scalar-converse/product-and-skew-symmetry"
+      },
+      "baseAnnotationDigest": null,
+      "changes": {
+        "directWorkHours": "480",
+        "conditionalIncidence": "1"
+      },
+      "rationale": "Without access to the withheld contribution, researchers must independently formulate and prove the product-factorization and receiver-skew reductions, establish their scope, connect them to the canonical BSSC scalar bound, and audit hostile correlated-input cases. The multiple proof, computation, and certification components make this a sustained primary thread.",
+      "evidenceRefs": [
+        "root/uv-scalar-converse/bssc-uv-envelope-contact",
+        "root/uv-scalar-converse/correlated-input-envelope-factorization",
+        "root/uv-scalar-converse/receiver-skew-invariant-prior-reduction",
+        "root/uv-scalar-converse/uv-factorization-and-hostile-case-audits",
+        "safeFacts:fact-uv-tensor-symmetry"
+      ]
+    },
+    {
+      "nodeRef": {
+        "kind": "thread",
+        "id": "root/uv-scalar-converse/unstructured-search"
+      },
+      "baseAnnotationDigest": null,
+      "changes": {
+        "directWorkHours": "240",
+        "conditionalIncidence": "0.3"
+      },
+      "rationale": "A fallback search is conditionally pursued when the structured product-and-symmetry route stalls or exposes unresolved cases. Its scale follows the comparable unstructured converse-search package in the accounting base state.",
+      "evidenceRefs": [
+        "sha256:21542d60cc740c3de51655b277c1d05f68529005f8a3320e510f5e3b0dab75ef",
+        "sha256:e3cb2726702d8a286ee254ceafdd5251f4412e4222fc7678ffc1c59be356dd9e"
+      ]
+    }
+  ],
+  "patchDigest": "sha256:8563a396937a9eb0bdd59da9fac64e2cfeb28db0afc434b44641c1513aa59ad2"
+}

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+  "acceptedClaimRefs": [
+    {
+      "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+      "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity",
+      "judgmentId": "sha256:2c29fd881dec9aa923aa0713acc56df2c05d02f30ac544213f720af9158b7a41",
+      "assessmentDigest": "sha256:42a0f83e2459c5e69f7788df43b135f2f87dc8abc744b085e69353b360442b77"
+    }
+  ],
+  "knowledgeStateDigest": "sha256:0bbdeb3a10f50d634cff67c0606754eee1535272d269d01600a6e36007def3ff",
+  "subjectEvidenceManifestDigest": "sha256:a69dd143a2ee1a361b1bd65561e79ac9402b0fd71033213b1df43652f6d7150b",
+  "facts": [
+    {
+      "id": "fact-uv-tensor-symmetry",
+      "condition": "For decoder-exchange-symmetric finite channels, the accepted UV scalar decomposes across channel factors; consequently, applying that scalar to multiple canonical BSSC uses cannot tighten its normalized one-use converse.",
+      "actorVisibility": "withheld-until-independent-discovery",
+      "affectedNodeRefs": [
+        {
+          "kind": "program",
+          "id": "root/code-structure-converse"
+        },
+        {
+          "kind": "thread",
+          "id": "root/code-structure-converse/dependence-balance-and-channel-refinement"
+        },
+        {
+          "kind": "thread",
+          "id": "root/code-structure-converse/unstructured-search"
+        }
+      ],
+      "acceptedClaimKeys": [
+        "bssc-sum-capacity/uv-product-branchwise-additivity"
+      ]
+    }
+  ],
+  "assumptions": [
+    "No conclusion is assumed for coupled auxiliary optimizations, nonsymmetric channels, richer converse systems, or the exact sum-capacity.",
+    "The UV scalar is interpreted only in the separately relaxed, decoder-symmetric scope accepted by the cited claim."
+  ],
+  "safeFactsDigest": "sha256:4b79291b7771d20a8253bf3eaa4eca0f209c02a062622606ddb2af75ddd483da"
+}
