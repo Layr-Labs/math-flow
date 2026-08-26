@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+  "baseStateDigest": "sha256:04d09ef748906bd0af20dfa0fa1f2749a940b911cdd2706a2cbcbb10bbe5a684",
+  "contentOperations": [
+    {
+      "entityKind": "thread",
+      "entityId": "root/theorem9-auxiliary-receiver-converse-agenda",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse-agenda",
+        "programId": "root",
+        "title": "Theorem 9 auxiliary-receiver converse",
+        "summary": "Develop premise-bounded auxiliary-receiver outer bounds for the BSSC private-message sum capacity, including exact finite-row specializations and receiver-channel reductions.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ]
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "root/theorem9-auxiliary-receiver-converse",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse",
+        "parentId": "root",
+        "title": "Theorem 9 auxiliary-receiver converse",
+        "objective": "Derive, simplify, and optimize premise-bounded auxiliary-receiver outer bounds for the BSSC private-message sum capacity.",
+        "status": "active",
+        "parentThreadIds": [
+          "root/theorem9-auxiliary-receiver-converse-agenda"
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "root/theorem9-auxiliary-receiver-converse/r0-specialization-and-receiver-reduction",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse/r0-specialization-and-receiver-reduction",
+        "programId": "root/theorem9-auxiliary-receiver-converse",
+        "title": "Private-message specialization and receiver reduction",
+        "summary": "Specialize the encoded Theorem 9 premise to R0=0, audit the resulting scalar constraints, reduce auxiliary receivers to input-only product marginals, and study finite-support local values.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [
+          "The cited Theorem 9 outer-bound premise is assumed exactly as encoded in theorem9_spec.json."
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "root/theorem9-auxiliary-receiver-converse/unstructured-search",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse/unstructured-search",
+        "programId": "root/theorem9-auxiliary-receiver-converse",
+        "title": "Unstructured search and overhead",
+        "summary": "Future work on the Theorem 9 auxiliary-receiver converse not yet assigned to a more specific research thread.",
+        "kind": "unstructured",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/theorem9-auxiliary-receiver-converse/r0-thirty-row-specialization",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse/r0-thirty-row-specialization",
+        "programId": "root/theorem9-auxiliary-receiver-converse",
+        "type": "proof",
+        "title": "Exact R0=0 thirty-row specialization",
+        "summary": "Setting R0=0 in the encoded premise, expanding every displayed minimum, and splitting both interval side conditions produces 26 private-rate and nonnegativity rows plus four side-condition rows. Exact normalization shows that these 30 rows coincide term by term with the independently generated local length-three path system.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/theorem9-auxiliary-receiver-converse/input-only-product-marginal-reduction",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse/input-only-product-marginal-reduction",
+        "programId": "root/theorem9-auxiliary-receiver-converse",
+        "type": "proof",
+        "title": "Input-only product-marginal receiver reduction",
+        "summary": "An exhaustive audit of every output-bearing information term shows that replacing an arbitrary admitted joint auxiliary-receiver law by the product of its input-only G and K marginals preserves all 30 specialized rows and both directions of feasibility. Input-only product receiver pairs are therefore sufficient for the resulting infimum bound.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [
+          "root/theorem9-auxiliary-receiver-converse/r0-thirty-row-specialization"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/theorem9-auxiliary-receiver-converse/private-message-sum-capacity-bound",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse/private-message-sum-capacity-bound",
+        "programId": "root/theorem9-auxiliary-receiver-converse",
+        "type": "result",
+        "title": "Premise-bounded auxiliary-receiver sum-capacity converse",
+        "summary": "Conditional on the encoded cited Theorem 9 outer-bound premise, the physical BSSC private-message sum capacity satisfies C_sum ≤ inf B(G,K), where the infimum ranges over finite-output binary-input input-only receiver channels T_{G|X} and T_{K|X}, with B defined by first optimizing the specialized finite auxiliary hierarchy at fixed input prior and receivers and then taking the supremum over the prior.",
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [
+          "root/theorem9-auxiliary-receiver-converse/r0-thirty-row-specialization",
+          "root/theorem9-auxiliary-receiver-converse/input-only-product-marginal-reduction"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/theorem9-auxiliary-receiver-converse/q-supported-local-value-reduction",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse/q-supported-local-value-reduction",
+        "programId": "root/theorem9-auxiliary-receiver-converse",
+        "type": "result",
+        "title": "Finite-support local auxiliary-receiver values",
+        "summary": "With the explicit extended-real convention sup(empty set)=-∞, every finite posterior-support restriction Q containing 1/2 satisfies V_Q(G,K) ≤ V(1/2;G,K) ≤ B(G,K). For Q0={0,1/2,1}, all specialized rows depend on the receiver channels only through their midpoint information values (c,g,k,c), so V_0(g,k) is unambiguous and finite on the realizable (g,k)-domain.",
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [
+          "root/theorem9-auxiliary-receiver-converse/r0-thirty-row-specialization"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/theorem9-auxiliary-receiver-converse/exact-specialization-auditor",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse/exact-specialization-auditor",
+        "programId": "root/theorem9-auxiliary-receiver-converse",
+        "type": "tool",
+        "title": "Exact Theorem 9 specialization auditor",
+        "summary": "A dependency-free standard-library verifier checks the encoded factorization, all sixteen cited equation labels, both side conditions, exact agreement between the expanded and independently generated 30-row systems, and the exhaustive single-output term whitelist used for product-marginal reduction. It makes no PDF-origin, rendering, source-fidelity, or visual-semantic assertion.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "dependencyItemIds": [
+          "root/theorem9-auxiliary-receiver-converse/r0-thirty-row-specialization",
+          "root/theorem9-auxiliary-receiver-converse/input-only-product-marginal-reduction"
+        ]
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/theorem9-cited-premise-foundations"
+    ],
+    "directProgramId": "root/theorem9-auxiliary-receiver-converse",
+    "directThreadIds": [
+      "root/theorem9-auxiliary-receiver-converse/r0-specialization-and-receiver-reduction"
+    ],
+    "itemIds": [
+      "root/theorem9-auxiliary-receiver-converse/r0-thirty-row-specialization",
+      "root/theorem9-auxiliary-receiver-converse/input-only-product-marginal-reduction",
+      "root/theorem9-auxiliary-receiver-converse/private-message-sum-capacity-bound",
+      "root/theorem9-auxiliary-receiver-converse/q-supported-local-value-reduction",
+      "root/theorem9-auxiliary-receiver-converse/exact-specialization-auditor"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted conditional converse, its exact specialization, receiver reduction, and local-value consequences form a durable auxiliary-receiver objective distinct from the existing code-structure and UV-scalar tensorization programs.",
+    "relatedProgramIds": [
+      "root/theorem9-auxiliary-receiver-converse"
+    ]
+  },
+  "topologyRationale": null
+}
