@@ -1,0 +1,160 @@
+{
+  "protocolVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+  "problemLedgerHead": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+  "problemLedgerDigest": "sha256:f0b5a93ab08839f1d61f37b6147654bdf17b207e10612d5612aeb18f8a1327b5",
+  "judgeSpec": {
+    "id": "openrouter-hierarchical-research-builder-v6",
+    "digest": "sha256:04bfe92aebb7c144d4f969cc7a744781212069a32b62258cd00744ff95531e30"
+  },
+  "runner": {
+    "implementation": "openrouter-hierarchical-research-builder-v6",
+    "mathFlowVersion": "0.6.0"
+  },
+  "judgeBuilder": {
+    "inputBuilder": "accepted-validity-submission-program-state-v6",
+    "invocationAdapter": "openrouter-chat-completions-v1",
+    "outputAdapter": "structured-research-submission-v6",
+    "reducer": "sequential-research-state-v6"
+  },
+  "baseRun": "sha256:301b03c40cb0a0138068520a08ceb11d87a2f4167f2cd1c358afbda867f0c844",
+  "outputProfile": "math-flow/hierarchical-research-v6",
+  "requestDigests": [
+    "sha256:75e726e4897f48d3c5b8dcb2ecbea353f7757fc9230b35df34f5282f70062170",
+    "sha256:d088a9ae19dfa3d4423cf21ae76eccd8d61224d298340710862190f925af4717",
+    "sha256:1f9a1314264e9fb3e2a62a7dfcbfd437afb71eec28dd81990a05752af9231140"
+  ],
+  "providerRuns": [
+    {
+      "schemaVersion": 1,
+      "stage": "organize",
+      "judgeSpec": {
+        "id": "openrouter-hierarchical-research-builder-v6",
+        "digest": "sha256:04bfe92aebb7c144d4f969cc7a744781212069a32b62258cd00744ff95531e30"
+      },
+      "transport": {
+        "implementation": "openrouter-chat-completions-v1",
+        "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+        "digest": "sha256:0b5ef303cbe83668ce8dfb9fe6c5dec811a949794a2a8b177a8262431e4cba59"
+      },
+      "modelIdentity": {
+        "requestedModel": "openai/gpt-5.6-sol",
+        "resolvedModel": "openai/gpt-5.6-sol",
+        "judgeSpecDigest": "sha256:04bfe92aebb7c144d4f969cc7a744781212069a32b62258cd00744ff95531e30",
+        "transportDigest": "sha256:0b5ef303cbe83668ce8dfb9fe6c5dec811a949794a2a8b177a8262431e4cba59",
+        "digest": "sha256:e4600febed127c2286aaf53e739cc530ed4c8f01256e273b9eb1b3331102ce49"
+      },
+      "requestDigest": "sha256:1f9a1314264e9fb3e2a62a7dfcbfd437afb71eec28dd81990a05752af9231140",
+      "responseDigest": "sha256:c4e03282a63bb73de791a9f6c7cd45fa6815329f90d2ab805407538641d073ca",
+      "attempts": 3,
+      "attemptRecords": [
+        {
+          "attempt": 1,
+          "requestDigest": "sha256:75e726e4897f48d3c5b8dcb2ecbea353f7757fc9230b35df34f5282f70062170",
+          "outcome": "validation-rejected",
+          "errorSummary": "research builder v6 content operation baseDigest mismatch: program root/uv-scalar-converse expected sha256:fcc703456c24e5b4761dfb3ffca9cee02cb267bebe124a36811b185069a0daec",
+          "errorDigest": "sha256:ef87a956591ed79d4182699065e7afb56d4585986ba52a7322c3a80b2b42ad29",
+          "responseDigest": "sha256:74dfdde1fc0f2365cf2b21fd3cce58772addf03cc0c3f1d1691bcf30840e9578",
+          "providerResponseId": "gen-1787771822-2RS3qgUif30fH1jyNkQU",
+          "feedbackDigest": "sha256:ba0055e1afc35e8982ece4376c5d12c1b26feb1a7ef6a30244c54fadfac84f07"
+        },
+        {
+          "attempt": 2,
+          "requestDigest": "sha256:d088a9ae19dfa3d4423cf21ae76eccd8d61224d298340710862190f925af4717",
+          "outcome": "validation-rejected",
+          "errorSummary": "research builder v6 accepted claim is not represented by a durable item",
+          "errorDigest": "sha256:a4403fbb8345894a7085b7968b727f52b6ef78a85d30f902b5c4203d94d00cbb",
+          "responseDigest": "sha256:535dc07b49370a29f921a02febaedb6a284de5a8ac5af34251aded41aa740952",
+          "providerResponseId": "gen-1787771874-sYhugR6jrX0yjUexz64G",
+          "feedbackDigest": "sha256:008eee9c833dc636d46fa6341d6c9c2178d97f5e8f449a3c863446bd9c66871f"
+        },
+        {
+          "attempt": 3,
+          "requestDigest": "sha256:1f9a1314264e9fb3e2a62a7dfcbfd437afb71eec28dd81990a05752af9231140",
+          "responseDigest": "sha256:c4e03282a63bb73de791a9f6c7cd45fa6815329f90d2ab805407538641d073ca",
+          "outcome": "accepted",
+          "providerResponseId": "gen-1787771894-AkpfzkMD0lQCMylBLxuz"
+        }
+      ],
+      "attemptJournalDigest": "sha256:81ed0699d505cd21d3e931db5175a7e701b3a56e83d55d4a48d8ba11fd66baff",
+      "providerResponseId": "gen-1787771894-AkpfzkMD0lQCMylBLxuz",
+      "invocationDigest": "sha256:7eceecfd5d17556af4e8eb5d49c37aa905f9c5a93a0850c9a5b9e383a5ce378a"
+    }
+  ],
+  "runKind": "knowledge-build",
+  "inputs": {
+    "judgmentSetDigest": "sha256:b6581f9b2c48deb0c22a6660c6a6cc6931a8b499194df4dc978fbf066ff261df",
+    "laneId": "sha256:ec815411bee6bd8c4779c5353c584e3302c684ec8229b3a6acc087d3841a5bdc",
+    "builderSpecDigest": "sha256:04bfe92aebb7c144d4f969cc7a744781212069a32b62258cd00744ff95531e30",
+    "baseStateRun": "sha256:301b03c40cb0a0138068520a08ceb11d87a2f4167f2cd1c358afbda867f0c844",
+    "judgmentIds": [
+      "sha256:34c5377dbd5c5d147acb250ac80640770b6176749e6c235d4a71ebc508b615c2"
+    ],
+    "conflictIds": [],
+    "projectionSpecDigest": "sha256:8bcab1fa785b4c5d757668ef2ff9ce1ef3046a54828c71ed846f84e6b33cf31a",
+    "schemaVersion": 1,
+    "problemId": "bssc-sum-capacity",
+    "buildToken": "sha256:6c99ffce6f62a9d13cffe942d7ee345f881be2001a922801ec3a25bf61fc7f82",
+    "judgmentRunDigest": "sha256:cd8752f9eade1a095dd49c5b3d80463c89786ecf9e6587d57fb6f08c31ce86ec",
+    "submissionInputDigest": "sha256:0614a495eec05d7aa12a956e7de9a72db01b249ab539094b8215a4a8a2790c70"
+  },
+  "artifacts": [
+    {
+      "path": "control/build-input.json",
+      "role": "knowledge-build-input",
+      "mediaType": "application/json",
+      "digest": "sha256:6a85995f264d80039c0335f874a53d322fc948544c69d15b2ebe1c2b57e16dc8",
+      "bytes": 752
+    },
+    {
+      "path": "input/evidence-manifest.json",
+      "role": "submission-evidence-manifest",
+      "mediaType": "application/json",
+      "digest": "sha256:fb4e2e29ed1a76547fbfe896701c55529aec7923ddae238bf5ad37da27acc698",
+      "bytes": 2331
+    },
+    {
+      "path": "input/submission.json",
+      "role": "research-builder-submission-input",
+      "mediaType": "application/json",
+      "digest": "sha256:2e37712f7ad237d9e34e71681ce5e634fc31f030b950d8b5a99451b8710d9a0b",
+      "bytes": 1370
+    },
+    {
+      "path": "state/base-state.json",
+      "role": "research-program-base-state",
+      "mediaType": "application/json",
+      "digest": "sha256:ce08f9b1d7d259d0190cd6a02f3eee52be0d18e94c7169626fa1de8053828de0",
+      "bytes": 21464
+    },
+    {
+      "path": "state/same-world-handoff.json",
+      "role": "research-builder-handoff",
+      "mediaType": "application/json",
+      "digest": "sha256:1c6ca11aa0f90d107fd193c15203c847a8f3d07ba6a7b35bdf1437c119b20d26",
+      "bytes": 753
+    },
+    {
+      "path": "state/state.json",
+      "role": "research-program-state",
+      "mediaType": "application/json",
+      "digest": "sha256:1940d747ca0c35002b3ee46027fc724c2607bb1c35cc01f50cac8a8d6961b92e",
+      "bytes": 26746
+    },
+    {
+      "path": "state/topology-alignment.json",
+      "role": "research-topology-alignment",
+      "mediaType": "application/json",
+      "digest": "sha256:51ebeb3814c4143b8a8a8b3a031f261dbd10d6606061986a83ea8d99f6f8565d",
+      "bytes": 8008
+    },
+    {
+      "path": "state/transition.json",
+      "role": "research-program-transition",
+      "mediaType": "application/json",
+      "digest": "sha256:a29e8e25d3260b59986f16d378040edcd974d0a1521b7dc4fde7e7a6e3397ca0",
+      "bytes": 5545
+    }
+  ]
+}
