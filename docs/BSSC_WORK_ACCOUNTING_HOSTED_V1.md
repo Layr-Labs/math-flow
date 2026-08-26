@@ -2,10 +2,10 @@
 
 `math_flow.bssc_work_accounting_hosted` is the production-shaped, BSSC-only
 caller for the zero-origin builder-v6/work-accounting lane. The active runtime
-config is committed and fails closed until both governed projections are
-admitted byte-for-byte. Its scheduled workflow remains an inactive template at
-`.github/workflows/project-bssc-work-accounting-v1.yml.inactive` until those
-admissions are complete.
+config and both governed projections are admitted byte-for-byte. The scheduled
+workflow is active at
+`.github/workflows/project-bssc-work-accounting-v1.yml` after provider-free
+replay verification of the complete 16-transition research-v6 lane.
 
 ## Frozen execution contract
 
@@ -51,9 +51,9 @@ refresh boundaries.  Checkout credentials are not persisted.  No submission,
 model output, artifact path, or workflow input is interpolated into a shell
 command.
 
-## Activation seam
+## Activation record
 
-Activation requires the following governed sequence:
+Activation followed this governed sequence:
 
 1. Admit each active projection candidate in its own required one-file PR by
    copying it byte-for-byte to `protocol/projections/<projection-id>.json`. The
@@ -61,10 +61,10 @@ Activation requires the following governed sequence:
    byte.
 2. Run the serial knowledge producer through the accepted frontier.
 3. Rename `project-bssc-work-accounting-v1.yml.inactive` to
-   `project-bssc-work-accounting-v1.yml`, configure `OPENROUTER_API_KEY`, and
-   leave the workflow concurrency and permissions unchanged.
+   `project-bssc-work-accounting-v1.yml` after verifying `OPENROUTER_API_KEY`,
+   leaving the workflow concurrency and permissions unchanged.
 
-The template runs every five minutes and processes at most one subject.  After
+The workflow runs every five minutes and processes at most one subject.  After
 a signed publication it dispatches the existing viewer-catalog refresh.  The
 catalog itself remains governed by the existing projection consumer and is not
 modified by this hosted caller.
