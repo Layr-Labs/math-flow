@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+  "baseStateDigest": "sha256:5feb4c65a56314a89dc7c2394fa99a7d680a1d256170a7b9c1e34aed105e2242",
+  "contentOperations": [
+    {
+      "entityKind": "item",
+      "entityId": "root/theorem9-auxiliary-receiver-converse/finite-grid-receiver-cardinality-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse/finite-grid-receiver-cardinality-proof",
+        "programId": "root/theorem9-auxiliary-receiver-converse",
+        "type": "proof",
+        "title": "Posterior-measure proof of the finite-grid receiver reduction",
+        "summary": "Represent a finite-output binary-input receiver at the fair prior by its finite posterior measure of mean 1/2, expressing every sampled receiver-information value as an integral of a scalar posterior function. Applying the finite-dimensional Carathéodory theorem to the posterior coordinate and the nonendpoint samples on an N-point grid gives an at-most-N-atom measure preserving every sample on the grid. The receiver-information identities for the accepted 30-row system then preserve the complete restricted optimization. For reflection-closed grids, applying the reduction to one posterior measure and reflecting it preserves the reflected receiver class. This argument is only for fixed finite grids and does not furnish a continuum cardinality bound.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+        ],
+        "dependencyItemIds": [
+          "root/theorem9-auxiliary-receiver-converse/r0-thirty-row-specialization",
+          "root/theorem9-auxiliary-receiver-converse/q-supported-local-value-reduction"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/theorem9-auxiliary-receiver-converse/finite-grid-receiver-cardinality-reduction",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse/finite-grid-receiver-cardinality-reduction",
+        "programId": "root/theorem9-auxiliary-receiver-converse",
+        "type": "result",
+        "title": "Finite-grid auxiliary-receiver cardinality reduction",
+        "summary": "For every N-point posterior grid Q containing 0, 1/2, and 1, each finite-output binary-input receiver has an at-most-N-output replacement with identical mutual-information samples on Q. Consequently the unrestricted finite-receiver infimum of V_Q equals the infimum over receiver pairs with at most N outputs each. If Q is reflection closed, the analogous reflected-pair infimum equals the infimum over posterior measures with support size at most N. No continuum cardinality, attainment, or limit-interchange conclusion is asserted.",
+        "claimRefs": [
+          {
+            "transactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+            "claimKey": "bssc-sum-capacity/finite-grid-q0-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+        ],
+        "dependencyItemIds": [
+          "root/theorem9-auxiliary-receiver-converse/finite-grid-receiver-cardinality-proof"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/theorem9-auxiliary-receiver-converse/q0-witness-and-coercivity-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse/q0-witness-and-coercivity-proof",
+        "programId": "root/theorem9-auxiliary-receiver-converse",
+        "type": "proof",
+        "title": "Q0 primal witnesses and midpoint coercivity",
+        "summary": "On Q0={0,1/2,1}, parameterize each auxiliary hierarchy block by its endpoint and midpoint posterior masses. Three explicit feasible witness families covering the cases where the two midpoint receiver values are above, below, or on opposite sides of c=h_2(1/4)-1/2 establish V_0(g,k) at least max{F(g),F(k)}, where F(x)=2c max{c,x}/(c+x). Combining this with the accepted inequality B(G,K)≥V_0(g,k), and inverting the two branches of F, proves that c≤U<2c and B(G,K)≤U imply 2c^2/U-c≤g,k≤Uc/(2c-U). The window is necessary only.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+        ],
+        "dependencyItemIds": [
+          "root/theorem9-auxiliary-receiver-converse/r0-thirty-row-specialization",
+          "root/theorem9-auxiliary-receiver-converse/q-supported-local-value-reduction"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/theorem9-auxiliary-receiver-converse/q0-matching-reflected-receiver",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse/q0-matching-reflected-receiver",
+        "programId": "root/theorem9-auxiliary-receiver-converse",
+        "type": "computation",
+        "title": "Matching three-output reflected receiver on Q0",
+        "summary": "The reflection-invariant posterior measure placing mass c/2 at each endpoint and mass 1-c at the midpoint defines a three-output revealing-erasure receiver with sampled information curve (0,c,0) on Q0. Substitution into the accepted specialized rows gives a feasible reflected receiver pair with local value at most c, matching the universal Q0 lower bound. This is a finite-grid construction and does not establish reflected optimality for the full functional B.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+        ],
+        "dependencyItemIds": [
+          "root/theorem9-auxiliary-receiver-converse/r0-thirty-row-specialization",
+          "root/theorem9-auxiliary-receiver-converse/q-supported-local-value-reduction"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/theorem9-auxiliary-receiver-converse/q0-exact-infima-and-coercivity",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse/q0-exact-infima-and-coercivity",
+        "programId": "root/theorem9-auxiliary-receiver-converse",
+        "type": "result",
+        "title": "Exact Q0 receiver infima and coercive midpoint window",
+        "summary": "For Q0={0,1/2,1} and c=h_2(1/4)-1/2, both the unrestricted finite-receiver infimum and the reflected finite-receiver infimum of V_Q0 equal c. For every finite-output input-only receiver pair, with g=J_G(1/2) and k=J_K(1/2), B(G,K)≥V_0(g,k)≥max{F(g),F(k)} for F(x)=2c max{c,x}/(c+x). Hence c≤U<2c and B(G,K)≤U force 2c^2/U-c≤g,k≤Uc/(2c-U). These conclusions are confined to the finite Q0 rung and necessary coercivity; they do not assert a continuum limit, a limit interchange, or full-functional reflected optimality.",
+        "claimRefs": [
+          {
+            "transactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+            "claimKey": "bssc-sum-capacity/finite-grid-q0-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+        ],
+        "dependencyItemIds": [
+          "root/theorem9-auxiliary-receiver-converse/q0-witness-and-coercivity-proof",
+          "root/theorem9-auxiliary-receiver-converse/q0-matching-reflected-receiver"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/theorem9-auxiliary-receiver-converse/finite-grid-q0-verifier",
+      "baseDigest": null,
+      "value": {
+        "id": "root/theorem9-auxiliary-receiver-converse/finite-grid-q0-verifier",
+        "programId": "root/theorem9-auxiliary-receiver-converse",
+        "type": "tool",
+        "title": "Exact finite-grid Q0 witness verifier",
+        "summary": "A dependency-free standard-library Python verifier reconstructs the accepted 30-row path system, checks its normalized signature and receiver-skew symmetry, and verifies all row and block-box slacks for the three Q0 witness families using exact rational-polynomial arithmetic. It also checks the matching common-curve upper row. The verifier uses no floating-point optimization and explicitly does not re-prove the external Carathéodory theorem or authenticate the dependency transaction.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+        ],
+        "dependencyItemIds": [
+          "root/theorem9-auxiliary-receiver-converse/finite-grid-receiver-cardinality-proof",
+          "root/theorem9-auxiliary-receiver-converse/q0-witness-and-coercivity-proof",
+          "root/theorem9-auxiliary-receiver-converse/q0-matching-reflected-receiver"
+        ]
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/finite-grid-q0-foundations"
+    ],
+    "directProgramId": "root/theorem9-auxiliary-receiver-converse",
+    "directThreadIds": [
+      "root/theorem9-auxiliary-receiver-converse/r0-specialization-and-receiver-reduction"
+    ],
+    "itemIds": [
+      "root/theorem9-auxiliary-receiver-converse/finite-grid-receiver-cardinality-proof",
+      "root/theorem9-auxiliary-receiver-converse/finite-grid-receiver-cardinality-reduction",
+      "root/theorem9-auxiliary-receiver-converse/q0-witness-and-coercivity-proof",
+      "root/theorem9-auxiliary-receiver-converse/q0-matching-reflected-receiver",
+      "root/theorem9-auxiliary-receiver-converse/q0-exact-infima-and-coercivity",
+      "root/theorem9-auxiliary-receiver-converse/finite-grid-q0-verifier"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted results directly extend the existing finite-support local-value and auxiliary-receiver reduction agenda by adding finite-grid cardinality control, solving the Q0 rung, and deriving necessary midpoint coercivity. The existing program and specialization thread remain the durable accounting location; no split, merge, move, or new thread is needed.",
+    "relatedProgramIds": [
+      "root/theorem9-auxiliary-receiver-converse"
+    ]
+  },
+  "topologyRationale": null
+}
