@@ -341,6 +341,14 @@ class GovernedProviderTests(unittest.TestCase):
             "placementAudit", "topologyRationale",
         })
         schema = transport.requests[0]["response_format"]["json_schema"]["schema"]
+        self.assertEqual(
+            schema["properties"]["subjectTransactionId"]["enum"],
+            [TX_A],
+        )
+        self.assertEqual(
+            schema["properties"]["baseStateDigest"]["enum"],
+            [base["stateDigest"]],
+        )
         rendered = json.dumps(schema, sort_keys=True)
         for derived in ("postState", "topologyAlignment", "sameWorldHandoff"):
             self.assertNotIn(derived, rendered)
@@ -438,6 +446,49 @@ class GovernedProviderTests(unittest.TestCase):
         self.assertEqual(attempt_records[1]["providerResponseId"], "response-2")
         core = {key: value for key, value in record.items() if key != "invocationDigest"}
         self.assertEqual(record["invocationDigest"], f"sha256:{sha256_json(core)}")
+
+    def test_builder_adapter_retries_with_exact_current_base_digest(self) -> None:
+        from math_flow.research_topology import empty_research_program_state_v2
+
+        base = empty_research_program_state_v2("handoff-fixture")
+        corrected = _first_transition(base)
+        stale = copy.deepcopy(corrected)
+        stale["baseStateDigest"] = "sha256:" + "0" * 64
+        transport = SequentialTransport(
+            [_response(stale, ordinal=1), _response(corrected, ordinal=2)]
+        )
+        provider = OpenRouterResearchBuilderV6Provider(
+            load_judge_spec(BUILDER_SPEC), transport=transport
+        )
+        content = b"# Exact accepted submission\n"
+        evidence = (
+            SubmissionEvidenceFile(
+                path="problems/handoff-fixture/contributions/accepted/README.md",
+                digest=sha256_bytes(content),
+                content=content,
+            ),
+        )
+
+        self.assertEqual(
+            provider.run(
+                problem_id="handoff-fixture",
+                subject_transaction_id=TX_A,
+                base_state=base,
+                accepted_claims=_accepted_claim("claim-a"),
+                judgment_id=JUDGMENT_A,
+                evidence_files=evidence,
+            ),
+            corrected,
+        )
+        feedback = str(transport.requests[1]["messages"][-1]["content"])
+        self.assertIn(
+            f"stale baseStateDigest; expected exact {base['stateDigest']}",
+            feedback,
+        )
+        self.assertIn(
+            f"baseStateDigest={base['stateDigest']}",
+            feedback,
+        )
 
     def test_builder_adapter_recovers_live_placement_failure_sequence(self) -> None:
         from math_flow.research_topology import empty_research_program_state_v2
@@ -557,6 +608,10 @@ class GovernedProviderTests(unittest.TestCase):
         self.assertIn("provider attempt 2", feedback_messages[1])
         self.assertIn(
             "Every non-root program has at least one parentThreadId",
+            feedback_messages[0],
+        )
+        self.assertIn(
+            "A parent thread may be named by at most one active child program",
             feedback_messages[0],
         )
         self.assertIn("exactly one active unstructured thread", feedback_messages[0])
