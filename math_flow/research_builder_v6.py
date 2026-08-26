@@ -192,11 +192,14 @@ def _apply_content_operations(
         if existing is None:
             if base_digest is not None:
                 raise MathFlowError(
-                    "new research builder v6 content entity must use null baseDigest"
+                    "new research builder v6 content entity must use null baseDigest: "
+                    f"{kind} {entity_id}"
                 )
         elif not isinstance(existing, dict) or base_digest != existing.get("digest"):
+            expected = existing.get("digest") if isinstance(existing, dict) else None
             raise MathFlowError(
-                "research builder v6 content operation baseDigest mismatch"
+                "research builder v6 content operation baseDigest mismatch: "
+                f"{kind} {entity_id} expected {expected}"
             )
 
         normalized = _normalize_entity_value(
