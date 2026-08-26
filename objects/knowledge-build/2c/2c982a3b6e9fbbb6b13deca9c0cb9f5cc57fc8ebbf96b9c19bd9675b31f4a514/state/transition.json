@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383",
+  "baseStateDigest": "sha256:04ad4bb27447e3b61f9f96f90dd524a71463faaa6b79b1cdc5dd800e21fc57c7",
+  "contentOperations": [
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/product-code-quotient-local-curvature-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/product-code-quotient-local-curvature-proof",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Exact local-curvature proof for the fixed product-code quotient",
+        "summary": "For the two-use half-skew BSSC, restrict to the four deterministic product-code orientations and vary only the 16 positive masses q(W,X^2). At the tensor square of the exact one-use randomized-time-division optimizer, entropy differentiation gives a constant gradient on all cells. Restricting the exact Hessian to the 15-dimensional simplex tangent space and applying an exact LDL^T decomposition over Q(sqrt(105)) yields 15 strictly negative pivots. The interior second-derivative test therefore proves a strict local maximum of the half-weight Marton functional within this fixed-map quotient.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/exact-rtd-symmetrization-calculus-proof"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/exact-product-code-curvature-verifier",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/exact-product-code-curvature-verifier",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "tool",
+        "title": "Exact product-code quotient curvature verifier",
+        "summary": "A Python standard-library checker constructs the governed product channel, four fixed auxiliary orientations, tensor-product mass law, and seven entropy marginal maps. Working exactly in Q(sqrt(105)), it verifies the tensor law, all 15 tangent gradient log-product identities, Hessian symmetry, the 15 strictly negative LDL^T pivots, and exact matrix reconstruction without using floating-point arithmetic for the governing predicates.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/product-code-quotient-local-curvature-proof"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/two-letter-marton-product-code-quotient-local-maximum",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/two-letter-marton-product-code-quotient-local-maximum",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Strict local maximum in the two-letter product-code quotient",
+        "summary": "In the 15-dimensional quotient formed by fixing the four stated deterministic product-code orientations and varying only the positive masses q(W,X^2), the tensor product of the exact one-use randomized-time-division optimizer is a strict local maximum of L_{1/2}, with value 2L_RTD. Because the selected-law Marton value is at most L_{1/2}, every distinct sufficiently close law in this quotient has selected-law Marton value below 2L_RTD. This local result does not exclude distant points, activation of other atoms, stochastic or different maps, larger auxiliaries, gains in other architectures, unrestricted Marton nonadditivity, or a capacity improvement or converse.",
+        "claimRefs": [
+          {
+            "transactionId": "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-product-code-quotient-local-maximum"
+          }
+        ],
+        "sourceTransactionIds": [
+          "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/product-code-quotient-local-curvature-proof",
+          "root/multiletter-marton-achievability/exact-product-code-curvature-verifier",
+          "root/multiletter-marton-achievability/exact-rtd-symmetrization-calculus-proof"
+        ]
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/two-letter-marton-product-code-quotient-local-maximum"
+    ],
+    "directProgramId": "root/multiletter-marton-achievability",
+    "directThreadIds": [
+      "root/multiletter-marton-achievability/conditional-product-and-correlation-pruning"
+    ],
+    "itemIds": [
+      "root/multiletter-marton-achievability/product-code-quotient-local-curvature-proof",
+      "root/multiletter-marton-achievability/exact-product-code-curvature-verifier",
+      "root/multiletter-marton-achievability/two-letter-marton-product-code-quotient-local-maximum"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted theorem rigorously prunes the local geometry of a fixed two-letter Marton product-code architecture around repeated randomized time division. It directly advances the existing objective of identifying which product and correlation structures can or cannot yield a multiletter Marton gain, without changing the broader program hierarchy.",
+    "relatedProgramIds": [
+      "root/multiletter-marton-achievability"
+    ]
+  },
+  "topologyRationale": null
+}
