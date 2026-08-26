@@ -765,6 +765,7 @@ class WorkAccountingPipelineTests(unittest.TestCase):
         )
         self.assertEqual(len(recovered["completedTransitions"]), 1)
         self.assertEqual(recovered["phase"], "ready")
+        self.assertEqual(builder.calls, [])
 
     def test_failure_and_retry_commits_are_crash_recoverable(self) -> None:
         for boundary in ("failure-artifacts-stored", "failure-head-committed"):

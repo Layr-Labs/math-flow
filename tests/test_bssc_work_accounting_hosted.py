@@ -6,9 +6,11 @@ import tempfile
 import unittest
 import zipfile
 from pathlib import Path
+from types import SimpleNamespace
 
 from math_flow.bssc_work_accounting_hosted import (
     _load_plan_archives,
+    _research_transition_base_knowledge_state,
     _require_admitted_copy,
     build_work_dispatch_history,
     build_bssc_work_disposition_snapshot,
@@ -19,6 +21,7 @@ from math_flow.bssc_work_accounting_hosted import (
 from math_flow.errors import MathFlowError
 from math_flow.bssc_work_replay import load_bssc_replay_source
 from math_flow.repository import sha256_json
+from math_flow.research_topology import empty_research_program_state_v2
 from math_flow.work_accounting_dispatch import (
     load_work_accounting_hosted_config,
     validate_work_accounting_dispatch_plan,
@@ -82,6 +85,65 @@ def eligible_plan() -> dict[str, object]:
 
 
 class BsscHostedAccountingTests(unittest.TestCase):
+    def test_resume_reuses_pending_pretransition_knowledge_base(self) -> None:
+        base = empty_research_program_state_v2("bssc-sum-capacity")
+        stored = SimpleNamespace(
+            value=(json.dumps(base, sort_keys=True) + "\n").encode("utf-8")
+        )
+
+        class Store:
+            def get(self, key: str):
+                expected = (
+                    "objects/knowledge-states/"
+                    f"{str(base['stateDigest']).removeprefix('sha256:')}.json"
+                )
+                return stored if key == expected else None
+
+        for stage in ("awaiting-work", "publication-prepared"):
+            with self.subTest(stage=stage):
+                selected = _research_transition_base_knowledge_state(
+                    Store(),  # type: ignore[arg-type]
+                    {
+                        "formedKnowledgeStateDigest": DIGEST,
+                        "pendingTransition": {
+                            "stage": stage,
+                            "subjectTransactionId": TRANSACTION,
+                            "beforeKnowledgeStateDigest": base["stateDigest"],
+                        },
+                    },
+                    TRANSACTION,
+                    str(base["stateDigest"]),
+                )
+                self.assertEqual(selected, base)
+        with self.assertRaisesRegex(MathFlowError, "does not authorize"):
+            _research_transition_base_knowledge_state(
+                Store(),  # type: ignore[arg-type]
+                {
+                    "formedKnowledgeStateDigest": DIGEST,
+                    "pendingTransition": {
+                        "stage": "awaiting-work",
+                        "subjectTransactionId": TRANSACTION,
+                        "beforeKnowledgeStateDigest": base["stateDigest"],
+                    },
+                },
+                "2" * 40,
+                str(base["stateDigest"]),
+            )
+        with self.assertRaisesRegex(MathFlowError, "differs from"):
+            _research_transition_base_knowledge_state(
+                Store(),  # type: ignore[arg-type]
+                {
+                    "formedKnowledgeStateDigest": DIGEST,
+                    "pendingTransition": {
+                        "stage": "awaiting-work",
+                        "subjectTransactionId": TRANSACTION,
+                        "beforeKnowledgeStateDigest": base["stateDigest"],
+                    },
+                },
+                TRANSACTION,
+                DIGEST,
+            )
+
     def test_active_deployment_is_sealed_before_separate_admission(self) -> None:
         root = Path(__file__).resolve().parents[1]
         deployment = load_bssc_work_accounting_deployment(
@@ -89,7 +151,7 @@ class BsscHostedAccountingTests(unittest.TestCase):
         )
         self.assertEqual(
             deployment["config"]["configDigest"],
-            "sha256:c51d7f4a00748b13f23a1c2a0a48280f1d46b3fed99d10449b827a0c1b62dcfc",
+            "sha256:23bb9004f769c3a4f884fe7928dbb105018de41184ba0744b2c372778f07a6d4",
         )
         self.assertEqual(
             deployment["contract"]["rootContractDigest"],

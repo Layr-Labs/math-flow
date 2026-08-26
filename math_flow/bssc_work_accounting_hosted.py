@@ -466,18 +466,61 @@ def _formed_knowledge_state(
     store: ProjectionBranchWorkAccountingStore,
     pipeline: Mapping[str, object],
 ) -> dict[str, object]:
-    hexadecimal = str(pipeline["formedKnowledgeStateDigest"]).removeprefix("sha256:")
+    return _knowledge_state(
+        store,
+        str(pipeline["formedKnowledgeStateDigest"]),
+        "formed",
+    )
+
+
+def _knowledge_state(
+    store: ProjectionBranchWorkAccountingStore,
+    digest: str,
+    label: str,
+) -> dict[str, object]:
+    hexadecimal = digest.removeprefix("sha256:")
     stored = store.get(f"objects/knowledge-states/{hexadecimal}.json")
     if stored is None:
-        raise MathFlowError("BSSC formed knowledge-state object is missing")
+        raise MathFlowError(f"BSSC {label} knowledge-state object is missing")
     try:
         value = json.loads(stored.value)
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise MathFlowError("BSSC formed knowledge-state object is invalid JSON") from exc
+        raise MathFlowError(
+            f"BSSC {label} knowledge-state object is invalid JSON"
+        ) from exc
     state = validate_research_program_state_v2(value, PROBLEM)
-    if state["stateDigest"] != pipeline["formedKnowledgeStateDigest"]:
-        raise MathFlowError("BSSC formed knowledge-state digest binding mismatch")
+    if state["stateDigest"] != digest:
+        raise MathFlowError(f"BSSC {label} knowledge-state digest binding mismatch")
     return state
+
+
+def _research_transition_base_knowledge_state(
+    store: ProjectionBranchWorkAccountingStore,
+    pipeline: Mapping[str, object],
+    subject_transaction_id: str,
+    frozen_predecessor_digest: str,
+) -> dict[str, object]:
+    """Load the plan-bound K(i-1) for a new subject or pending recovery."""
+
+    pending = pipeline.get("pendingTransition")
+    if pending is None:
+        expected_digest = str(pipeline["formedKnowledgeStateDigest"])
+    else:
+        if (
+            not isinstance(pending, Mapping)
+            or pending.get("stage")
+            not in {"awaiting-work", "publication-prepared"}
+            or pending.get("subjectTransactionId") != subject_transaction_id
+        ):
+            raise MathFlowError(
+                "BSSC pending work subject does not authorize research transition lookup"
+            )
+        expected_digest = str(pending["beforeKnowledgeStateDigest"])
+    if frozen_predecessor_digest != expected_digest:
+        raise MathFlowError(
+            "frozen predecessor knowledge state differs from the current accounting lane"
+        )
+    return _knowledge_state(store, frozen_predecessor_digest, "frozen-predecessor")
 
 
 def discover_published_research_v6_transition_bundle(
@@ -686,7 +729,12 @@ def execute_bssc_work_accounting(
             raise MathFlowError("frozen subject is absent from accepted BSSC inputs")
         research_bundle_dir = discover_published_research_v6_transition_bundle(
             projection_root,
-            base_knowledge_state=_formed_knowledge_state(store, before),
+            base_knowledge_state=_research_transition_base_knowledge_state(
+                store,
+                before,
+                str(plan["subjectTransactionId"]),
+                str(plan["predecessorKnowledgeStateDigest"]),
+            ),
             submission=subject,
             knowledge_projection_spec_digest=str(
                 config["knowledgeProjectionSpec"]["digest"]
