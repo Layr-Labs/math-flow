@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+  "baseStateDigest": "sha256:c9458133e92111ac4df0542400598af0595ce964dd3c89b47efec0bf38b1d344",
+  "contentOperations": [
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/finite-auxiliary-marton-foundation-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/finite-auxiliary-marton-foundation-proof",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Finite-auxiliary Marton superadditivity and Fekete foundation",
+        "summary": "For the half-skew BSSC, finite auxiliary laws give 0≤M_n^fin(P)≤2n. Concatenating epsilon-optimal finite laws proves M_{m+n}^fin(P)≥M_m^fin(P)+M_n^fin(P), so Fekete's lemma yields lim_n M_n^fin(P)/n=sup_n M_n^fin(P)/n. For any selected finite n-letter law of value S_n, k independent copies have value exactly kS_n; this is an identity for the selected laws, not additivity of the suprema.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/finite-super-symbol-achievability-reduction",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/finite-super-symbol-achievability-reduction",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Conditional finite-super-symbol Marton reduction",
+        "summary": "Assuming the stated finite-DMBC private-message Marton achievability theorem (H-Marton), an epsilon-optimal finite n-letter Marton law can be used on the super-channel P^×n and flattened into an ordinary BSSC code. This proves C_sum(P)≥M_n^fin(P)/n for every n and hence the Fekete-limit lower bound. It supplies no fixed-blocklength capacity converse.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/finite-auxiliary-marton-foundation-proof"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/exact-rtd-symmetrization-calculus-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/exact-rtd-symmetrization-calculus-proof",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Exact BSSC randomized-time-division maximization",
+        "summary": "Symmetrization reduces the half-skew BSSC randomized-time-division value to J(1/2)+(1/2)max_q D(q), where J(q)=h_2(q/2)-q and D(q)=J(q)-J(1-q). Differentiation and the stationary polynomial 15q^2-15q+2 identify the global maximizer q_-=(15-sqrt(105))/30 and give the accepted closed form for L_RTD.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/directed-rtd-interval-certificate",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/directed-rtd-interval-certificate",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "tool",
+        "title": "Directed exact-RTD interval certificate",
+        "summary": "A dependency-free standard-library verifier brackets sqrt(105) by exact rational square comparisons and evaluates the closed form with outward-rounded high-precision Decimal arithmetic. It certifies 0.3616428844219546156634415781505870072079810107238605552037137298028007<L_RTD<0.3616428844219546156634415781505870072079810107238605552037137298028008 and the corresponding strict doubled interval ending in 56014 and 56016.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/exact-rtd-symmetrization-calculus-proof"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/marton-multiletter-finite-foundation-repair",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/marton-multiletter-finite-foundation-repair",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Finite-auxiliary multiletter Marton foundation and RTD threshold",
+        "summary": "The finite-auxiliary Marton sequence is bounded and superadditive and therefore has the stated Fekete limit, while independent repetition scales every selected law exactly. Under H-Marton, its normalized values are achievable BSSC sum-rate lower bounds. The exact RTD value is attained at q_-=(15-sqrt(105))/30 and has the certified strict intervals. Under H-binary, M_1^fin(P)=L_RTD. Under H-Marton, a selected finite n-letter law improves the governed RTD lower bound exactly when S_n>nL_RTD; under both hypotheses this is equivalently improvement over the complete one-letter Marton optimum. No fixed-n equality is asserted as a capacity converse.",
+        "claimRefs": [
+          {
+            "transactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+            "claimKey": "bssc-sum-capacity/marton-multiletter-finite-foundation-repair"
+          }
+        ],
+        "sourceTransactionIds": [
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/finite-auxiliary-marton-foundation-proof",
+          "root/multiletter-marton-achievability/finite-super-symbol-achievability-reduction",
+          "root/multiletter-marton-achievability/exact-rtd-symmetrization-calculus-proof",
+          "root/multiletter-marton-achievability/directed-rtd-interval-certificate"
+        ]
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/marton-multiletter-finite-foundation-repair"
+    ],
+    "directProgramId": "root/multiletter-marton-achievability",
+    "directThreadIds": [
+      "root/multiletter-marton-achievability/conditional-product-and-correlation-pruning"
+    ],
+    "itemIds": [
+      "root/multiletter-marton-achievability/finite-auxiliary-marton-foundation-proof",
+      "root/multiletter-marton-achievability/finite-super-symbol-achievability-reduction",
+      "root/multiletter-marton-achievability/exact-rtd-symmetrization-calculus-proof",
+      "root/multiletter-marton-achievability/directed-rtd-interval-certificate",
+      "root/multiletter-marton-achievability/marton-multiletter-finite-foundation-repair"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted result establishes finite-auxiliary foundations, super-symbol normalization, and the exact gain threshold for the continuing objective of determining whether multiletter Marton coding improves the BSSC achievable sum rate. Its independent-copy and correlation-structure implications fit the active conditional-product and correlation-pruning thread.",
+    "relatedProgramIds": [
+      "root/multiletter-marton-achievability"
+    ]
+  },
+  "topologyRationale": null
+}
