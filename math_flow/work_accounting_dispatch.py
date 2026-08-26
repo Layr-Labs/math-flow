@@ -11,6 +11,7 @@ from pathlib import Path, PurePosixPath
 from .artifacts import sha256_bytes
 from .errors import MathFlowError
 from .governed_providers import TRANSPORT_IDENTITY
+from .governance import validate_projection_spec
 from .judges import load_judge_spec
 from .repository import ledger, resolve_commit, sha256_json
 from .work_accounting_pipeline import validate_work_accounting_pipeline_state
@@ -27,6 +28,7 @@ CONFIG_FIELDS = {
     "status",
     "projectionId",
     "knowledgeProjectionId",
+    "projectionSpec",
     "builderSpec",
     "workProviderSpec",
     "transport",
@@ -36,7 +38,16 @@ CONFIG_FIELDS = {
     "runtimePolicyDigest",
     "configDigest",
 }
+PRODUCTION_CONFIG_FIELDS = CONFIG_FIELDS | {
+    "problemId",
+    "knowledgeProjectionSpec",
+    "rootContract",
+    "validitySource",
+    "hostedRunner",
+}
 SPEC_FIELDS = {"path", "id", "implementation", "digest"}
+PROJECTION_SPEC_FIELDS = {"path", "id", "digest"}
+FILE_BINDING_FIELDS = {"path", "digest"}
 TRANSPORT_FIELDS = {"implementation", "endpoint", "digest"}
 RUNNER_FIELDS = {"implementation", "path", "digest"}
 RETRY_FIELDS = {
@@ -186,13 +197,14 @@ def _repository_path(value: object, label: str) -> str:
 
 
 def _runtime_policy_core(config: Mapping[str, object]) -> dict[str, object]:
-    return {
+    result = {
         key: copy.deepcopy(config[key])
         for key in (
             "schemaVersion",
             "id",
             "projectionId",
             "knowledgeProjectionId",
+            "projectionSpec",
             "builderSpec",
             "workProviderSpec",
             "transport",
@@ -200,30 +212,145 @@ def _runtime_policy_core(config: Mapping[str, object]) -> dict[str, object]:
             "retryPolicy",
         )
     }
+    for key in (
+        "problemId",
+        "knowledgeProjectionSpec",
+        "rootContract",
+        "validitySource",
+        "hostedRunner",
+    ):
+        if key in config:
+            result[key] = copy.deepcopy(config[key])
+    return result
 
 
 def load_work_accounting_hosted_config(
     root: Path, path: Path
 ) -> dict[str, object]:
-    """Load one inactive config and verify every executable identity by content."""
+    """Load one governed config and verify every executable identity by content."""
 
     root = root.resolve()
     try:
         config = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise MathFlowError(f"could not read hosted work-accounting config: {exc}") from exc
-    if not isinstance(config, dict) or set(config) != CONFIG_FIELDS:
+    if not isinstance(config, dict) or frozenset(config) not in {
+        frozenset(CONFIG_FIELDS),
+        frozenset(PRODUCTION_CONFIG_FIELDS),
+    }:
         raise MathFlowError("hosted work-accounting config has an invalid envelope")
-    if (
-        config.get("schemaVersion") != 1
-        or config.get("status") != "inactive"
-        or config.get("id") != "inactive-work-accounting-hosted-v1"
-    ):
-        raise MathFlowError("hosted work-accounting config must remain inactive V1")
+    production = set(config) == PRODUCTION_CONFIG_FIELDS
+    expected_identity = (
+        ("active", "bssc-work-accounting-hosted-v1")
+        if production
+        else ("inactive", "inactive-work-accounting-hosted-v1")
+    )
+    if config.get("schemaVersion") != 1 or (
+        config.get("status"), config.get("id")
+    ) != expected_identity:
+        raise MathFlowError("hosted work-accounting config identity is invalid")
     _require_identifier(config.get("projectionId"), "hosted work projection ID")
     _require_identifier(
         config.get("knowledgeProjectionId"), "hosted knowledge projection ID"
     )
+
+    projection_binding = config.get("projectionSpec")
+    if (
+        not isinstance(projection_binding, dict)
+        or set(projection_binding) != PROJECTION_SPEC_FIELDS
+    ):
+        raise MathFlowError("hosted projection spec binding is invalid")
+    relative_projection = _repository_path(
+        projection_binding.get("path"), "hosted projection spec path"
+    )
+    try:
+        projection_value = json.loads(
+            (root / relative_projection).read_text(encoding="utf-8")
+        )
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise MathFlowError(f"could not read hosted projection spec: {exc}") from exc
+    projection = validate_projection_spec(
+        projection_value,
+        str(config["projectionId"]),
+        lambda relative: (root / relative).read_text(encoding="utf-8"),
+    )
+    if (
+        projection_binding.get("id") != config["projectionId"]
+        or projection.get("runner", {}).get("implementation")
+        != "openrouter-work-accounting-v1"
+        or projection.get("allowedProblems") != ["bssc-sum-capacity"]
+        or projection_binding.get("digest") != _digest(projection)
+        or projection.get("status") != ("active" if production else "disabled")
+    ):
+        raise MathFlowError("hosted projection spec identity binding mismatch")
+
+    if production:
+        if (
+            config.get("problemId") != "bssc-sum-capacity"
+            or config.get("knowledgeProjectionId") != "openrouter-research-v4"
+        ):
+            raise MathFlowError("production hosted config is not the exact BSSC lane")
+        knowledge_binding = config.get("knowledgeProjectionSpec")
+        if (
+            not isinstance(knowledge_binding, dict)
+            or set(knowledge_binding) != PROJECTION_SPEC_FIELDS
+            or knowledge_binding.get("id") != config["knowledgeProjectionId"]
+        ):
+            raise MathFlowError("hosted knowledge projection binding is invalid")
+        relative_knowledge = _repository_path(
+            knowledge_binding.get("path"), "hosted knowledge projection path"
+        )
+        try:
+            knowledge_value = json.loads(
+                (root / relative_knowledge).read_text(encoding="utf-8")
+            )
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise MathFlowError(
+                f"could not read hosted knowledge projection: {exc}"
+            ) from exc
+        knowledge = validate_projection_spec(
+            knowledge_value,
+            str(config["knowledgeProjectionId"]),
+            lambda relative: (root / relative).read_text(encoding="utf-8"),
+        )
+        if (
+            knowledge.get("status") != "active"
+            or knowledge.get("allowedProblems") != ["bssc-sum-capacity"]
+            or knowledge_binding.get("digest") != _digest(knowledge)
+        ):
+            raise MathFlowError("hosted knowledge projection identity binding mismatch")
+        for field in ("rootContract", "validitySource"):
+            binding = config.get(field)
+            if not isinstance(binding, dict) or set(binding) != FILE_BINDING_FIELDS:
+                raise MathFlowError(f"hosted {field} binding is invalid")
+            relative = _repository_path(binding.get("path"), f"hosted {field} path")
+            bound_path = root / relative
+            try:
+                bound_value = json.loads(bound_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise MathFlowError(f"could not read hosted {field}: {exc}") from exc
+            expected_digest = (
+                bound_value.get("rootContractDigest")
+                if field == "rootContract" and isinstance(bound_value, dict)
+                else _digest(bound_value)
+            )
+            if binding.get("digest") != expected_digest:
+                raise MathFlowError(f"hosted {field} content binding mismatch")
+        hosted_runner = config.get("hostedRunner")
+        if not isinstance(hosted_runner, dict) or set(hosted_runner) != RUNNER_FIELDS:
+            raise MathFlowError("hosted production runner binding is invalid")
+        relative_hosted_runner = _repository_path(
+            hosted_runner.get("path"), "hosted production runner path"
+        )
+        hosted_runner_path = root / relative_hosted_runner
+        if (
+            hosted_runner.get("implementation")
+            != "bssc-work-accounting-hosted-v1"
+            or not hosted_runner_path.is_file()
+            or hosted_runner.get("digest")
+            != sha256_bytes(hosted_runner_path.read_bytes())
+        ):
+            raise MathFlowError("hosted production runner identity binding mismatch")
 
     expected_specs = (
         (
@@ -418,8 +545,10 @@ def _validate_lane(
     if (
         pipeline["projectionId"] != config["projectionId"]
         or schedule["projectionId"] != config["projectionId"]
-        or pipeline["projectionSpecDigest"] != config["runtimePolicyDigest"]
-        or schedule["projectionSpecDigest"] != config["runtimePolicyDigest"]
+        or pipeline["projectionSpecDigest"]
+        != config["projectionSpec"]["digest"]  # type: ignore[index]
+        or schedule["projectionSpecDigest"]
+        != config["projectionSpec"]["digest"]  # type: ignore[index]
         or pipeline["scheduleDigest"] != schedule["scheduleDigest"]
         or pipeline["problemId"] != schedule["problemId"]
         or pipeline["rootContractDigest"] != schedule["rootContractDigest"]
@@ -637,12 +766,12 @@ def validate_work_accounting_dispatch_plan(value: object) -> dict[str, object]:
         "workProviderSpecDigest",
         "transportDigest",
         "runnerDigest",
+        "projectionSpecDigest",
     }:
         raise MathFlowError("dispatch plan configuration binding is invalid")
     for field in set(config) - {"id"}:
         _require_digest(config.get(field), f"dispatch plan configuration {field}")
-    if config.get("id") != "inactive-work-accounting-hosted-v1":
-        raise MathFlowError("dispatch plan configuration ID is invalid")
+    _require_identifier(config.get("id"), "dispatch plan configuration ID")
     if value.get("manualReview") is not False:
         raise MathFlowError("work-accounting dispatch may not use manual review")
     _positive_integer(
@@ -822,6 +951,7 @@ def plan_work_accounting_dispatch(
                 "workProviderSpecDigest": config["workProviderSpec"]["digest"],  # type: ignore[index]
                 "transportDigest": config["transport"]["digest"],  # type: ignore[index]
                 "runnerDigest": config["runner"]["digest"],  # type: ignore[index]
+                "projectionSpecDigest": config["projectionSpec"]["digest"],  # type: ignore[index]
             },
             "problemId": pipeline["problemId"],
             "projectionId": pipeline["projectionId"],
