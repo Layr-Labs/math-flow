@@ -318,7 +318,7 @@ class GovernedProviderTests(unittest.TestCase):
         self.assertEqual(len(transport.requests), 3)
         self.assertEqual(provider.invocation_records, [])
 
-    def test_governance_accepts_candidates_without_registry_admission(self) -> None:
+    def test_governance_accepts_candidates_and_optional_serial_admission(self) -> None:
         knowledge = {
             "schemaVersion": 1,
             "id": "candidate-research-v6",
@@ -362,14 +362,25 @@ class GovernedProviderTests(unittest.TestCase):
         self.assertEqual(
             validate_projection_spec(overlay, overlay["id"], reader), overlay
         )
+        serial_admission = (
+            ROOT / "protocol/projections/openrouter-research-v4.json"
+        )
         registry = validate_projection_registry(ROOT)
-        self.assertEqual(registry, {"projections": 9, "active": 2})
+        self.assertEqual(
+            registry,
+            {"projections": 10, "active": 3}
+            if serial_admission.exists()
+            else {"projections": 9, "active": 2},
+        )
         registered = "\n".join(
             path.read_text(encoding="utf-8")
             for path in (ROOT / "protocol/projections").glob("*.json")
         )
         self.assertNotIn("openrouter-work-accounting-v1", registered)
-        self.assertNotIn("openrouter-hierarchical-research-builder-v6", registered)
+        if serial_admission.exists():
+            self.assertIn("openrouter-hierarchical-research-builder-v6", registered)
+        else:
+            self.assertNotIn("openrouter-hierarchical-research-builder-v6", registered)
 
 
 if __name__ == "__main__":
