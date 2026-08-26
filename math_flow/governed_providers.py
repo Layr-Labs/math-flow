@@ -18,6 +18,8 @@ from .research_builder_v6 import (
     TRANSITION_FIELDS,
     apply_research_builder_v6_transition,
 )
+from .research_state import ITEM_TYPES, PROGRAM_STATUSES, THREAD_KINDS, THREAD_STATUSES
+from .research_topology import LINEAGE_RELATIONS
 from .work_projection import (
     PATCH_RESPONSE_FIELDS,
     PATCH_UPDATE_INPUT_FIELDS,
@@ -108,7 +110,7 @@ def _node_ref_schema() -> dict[str, object]:
     return {
         "type": "object",
         "properties": {
-            "kind": {"enum": ["program", "thread"]},
+            "kind": {"type": "string", "enum": ["program", "thread"]},
             "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$"},
         },
         "required": ["kind", "id"],
@@ -122,7 +124,10 @@ def _safe_facts_schema() -> dict[str, object]:
         "properties": {
             "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$"},
             "condition": {"type": "string", "minLength": 1, "maxLength": 8192},
-            "actorVisibility": {"const": "withheld-until-independent-discovery"},
+            "actorVisibility": {
+                "type": "string",
+                "const": "withheld-until-independent-discovery",
+            },
             "affectedNodeRefs": {
                 "type": "array",
                 "minItems": 1,
@@ -131,7 +136,6 @@ def _safe_facts_schema() -> dict[str, object]:
             "acceptedClaimKeys": {
                 "type": "array",
                 "minItems": 1,
-                "uniqueItems": True,
                 "items": {
                     "type": "string",
                     "pattern": "^[a-z0-9][a-z0-9/_-]*$",
@@ -173,24 +177,41 @@ def _primitive_patch_schema() -> dict[str, object]:
         "maxLength": 128,
         "pattern": "^(?:0(?:\\.[0-9]*[1-9])?|1)$",
     }
+    change_properties = {
+        "directWorkHours": decimal,
+        "conditionalIncidence": probability,
+    }
+    changes = {
+        "anyOf": [
+            {
+                "type": "object",
+                "properties": {"directWorkHours": decimal},
+                "required": ["directWorkHours"],
+                "additionalProperties": False,
+            },
+            {
+                "type": "object",
+                "properties": {"conditionalIncidence": probability},
+                "required": ["conditionalIncidence"],
+                "additionalProperties": False,
+            },
+            {
+                "type": "object",
+                "properties": change_properties,
+                "required": ["directWorkHours", "conditionalIncidence"],
+                "additionalProperties": False,
+            },
+        ]
+    }
     update = {
         "type": "object",
         "properties": {
             "nodeRef": _node_ref_schema(),
-            "changes": {
-                "type": "object",
-                "minProperties": 1,
-                "properties": {
-                    "directWorkHours": decimal,
-                    "conditionalIncidence": probability,
-                },
-                "additionalProperties": False,
-            },
+            "changes": changes,
             "rationale": {"type": "string", "minLength": 1},
             "evidenceRefs": {
                 "type": "array",
                 "minItems": 1,
-                "uniqueItems": True,
                 "items": {"type": "string", "minLength": 1},
             },
         },
@@ -207,31 +228,161 @@ def _primitive_patch_schema() -> dict[str, object]:
 
 def _builder_transition_schema() -> dict[str, object]:
     identifier = {"type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$"}
+    transaction = {"type": "string", "pattern": "^[0-9a-f]{40}$"}
     digest = {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
-    operation = {
+    digest_or_null = {"anyOf": [{"type": "null"}, digest]}
+    identifier_or_null = {"anyOf": [{"type": "null"}, identifier]}
+
+    def array(items: dict[str, object], *, min_items: int = 0) -> dict[str, object]:
+        return {"type": "array", "minItems": min_items, "items": items}
+
+    lineage = {
         "type": "object",
         "properties": {
-            "entityKind": {"enum": ["program", "thread", "item"]},
-            "entityId": identifier,
-            "baseDigest": {"oneOf": [{"type": "null"}, digest]},
-            "value": {"type": "object"},
+            "relation": {
+                "type": "string",
+                "enum": sorted(LINEAGE_RELATIONS),
+            },
+            "programId": identifier,
         },
-        "required": ["entityKind", "entityId", "baseDigest", "value"],
+        "required": ["relation", "programId"],
         "additionalProperties": False,
     }
-    topology_operation = {
+    program_value = {
         "type": "object",
-        "properties": {"action": {"enum": ["create", "move", "retire"]}, **operation["properties"]},
-        "required": ["action", *operation["required"]],
+        "properties": {
+            "id": identifier,
+            "parentId": identifier_or_null,
+            "title": {"type": "string", "minLength": 1},
+            "objective": {"type": "string", "minLength": 1},
+            "status": {"type": "string", "enum": sorted(PROGRAM_STATUSES)},
+            "parentThreadIds": array(identifier),
+            "sourceTransactionIds": array(transaction),
+            "lineage": array(lineage),
+        },
+        "required": [
+            "id",
+            "parentId",
+            "title",
+            "objective",
+            "status",
+            "parentThreadIds",
+            "sourceTransactionIds",
+            "lineage",
+        ],
         "additionalProperties": False,
+    }
+    thread_value = {
+        "type": "object",
+        "properties": {
+            "id": identifier,
+            "programId": identifier,
+            "title": {"type": "string", "minLength": 1},
+            "summary": {"type": "string", "minLength": 1},
+            "kind": {"type": "string", "enum": sorted(THREAD_KINDS)},
+            "status": {"type": "string", "enum": sorted(THREAD_STATUSES)},
+            "expectedExposure": {
+                "type": "string",
+                "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+            },
+            "conditions": array({"type": "string", "minLength": 1}),
+            "sourceTransactionIds": array(transaction),
+        },
+        "required": [
+            "id",
+            "programId",
+            "title",
+            "summary",
+            "kind",
+            "status",
+            "expectedExposure",
+            "conditions",
+            "sourceTransactionIds",
+        ],
+        "additionalProperties": False,
+    }
+    claim_ref = {
+        "type": "object",
+        "properties": {"transactionId": transaction, "claimKey": identifier},
+        "required": ["transactionId", "claimKey"],
+        "additionalProperties": False,
+    }
+    item_value = {
+        "type": "object",
+        "properties": {
+            "id": identifier,
+            "programId": identifier,
+            "type": {"type": "string", "enum": sorted(ITEM_TYPES)},
+            "title": {"type": "string", "minLength": 1},
+            "summary": {"type": "string", "minLength": 1},
+            "claimRefs": array(claim_ref),
+            "sourceTransactionIds": array(transaction, min_items=1),
+            "dependencyItemIds": array(identifier),
+        },
+        "required": [
+            "id",
+            "programId",
+            "type",
+            "title",
+            "summary",
+            "claimRefs",
+            "sourceTransactionIds",
+            "dependencyItemIds",
+        ],
+        "additionalProperties": False,
+    }
+
+    def operation(
+        kind: str,
+        value: dict[str, object],
+        *,
+        actions: list[str] | None = None,
+    ) -> dict[str, object]:
+        properties: dict[str, object] = {
+            "entityKind": {"type": "string", "const": kind},
+            "entityId": identifier,
+            "baseDigest": digest_or_null,
+            "value": value,
+        }
+        required = ["entityKind", "entityId", "baseDigest", "value"]
+        if actions is not None:
+            properties = {
+                "action": {"type": "string", "enum": actions},
+                **properties,
+            }
+            required = ["action", *required]
+        return {
+            "type": "object",
+            "properties": properties,
+            "required": required,
+            "additionalProperties": False,
+        }
+
+    content_operation = {
+        "anyOf": [
+            operation("program", program_value),
+            operation("thread", thread_value),
+            operation("item", item_value),
+        ]
+    }
+    topology_operation = {
+        "anyOf": [
+            operation(
+                "program", program_value, actions=["create", "move", "retire"]
+            ),
+            operation(
+                "thread", thread_value, actions=["create", "move", "retire"]
+            ),
+            operation("item", item_value, actions=["move"]),
+        ]
     }
     return {
         "type": "object",
         "properties": {
-            "schemaVersion": {"const": 1},
+            "schemaVersion": {"type": "integer", "const": 1},
             "subjectTransactionId": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
             "baseStateDigest": digest,
-            "contentOperations": {"type": "array", "items": operation},
+            "contentOperations": {"type": "array", "items": content_operation},
             "topologyOperations": {"type": "array", "items": topology_operation},
             "contribution": {
                 "type": "object",
@@ -239,20 +390,17 @@ def _builder_transition_schema() -> dict[str, object]:
                     "claimKeys": {
                         "type": "array",
                         "minItems": 1,
-                        "uniqueItems": True,
                         "items": identifier,
                     },
                     "directProgramId": identifier,
                     "directThreadIds": {
                         "type": "array",
                         "minItems": 1,
-                        "uniqueItems": True,
                         "items": identifier,
                     },
                     "itemIds": {
                         "type": "array",
                         "minItems": 1,
-                        "uniqueItems": True,
                         "items": identifier,
                     },
                 },
@@ -263,6 +411,7 @@ def _builder_transition_schema() -> dict[str, object]:
                 "type": "object",
                 "properties": {
                     "basis": {
+                        "type": "string",
                         "enum": [
                             "local-objective",
                             "cross-program",
@@ -270,13 +419,13 @@ def _builder_transition_schema() -> dict[str, object]:
                         ]
                     },
                     "rationale": {"type": "string", "minLength": 1},
-                    "relatedProgramIds": {"type": "array", "uniqueItems": True, "items": identifier},
+                    "relatedProgramIds": {"type": "array", "items": identifier},
                 },
                 "required": ["basis", "rationale", "relatedProgramIds"],
                 "additionalProperties": False,
             },
             "topologyRationale": {
-                "oneOf": [{"type": "null"}, {"type": "string", "minLength": 1}]
+                "anyOf": [{"type": "null"}, {"type": "string", "minLength": 1}]
             },
         },
         "required": sorted(TRANSITION_FIELDS),
@@ -422,6 +571,12 @@ def _validate_safe_response(value: object) -> dict[str, object]:
             or not isinstance(fact.get("acceptedClaimKeys"), list)
         ):
             raise MathFlowError("safe-facts response contains invalid primitive values")
+        claim_keys = fact["acceptedClaimKeys"]
+        if (
+            any(not isinstance(item, str) or not item for item in claim_keys)
+            or len(claim_keys) != len(set(claim_keys))
+        ):
+            raise MathFlowError("safe-facts response has invalid accepted claim keys")
     if any(not isinstance(item, str) or not item.strip() for item in value["assumptions"]):
         raise MathFlowError("safe-facts response contains an invalid assumption")
     return copy.deepcopy(value)
@@ -447,7 +602,13 @@ def _validate_primitive_patch_response(value: object) -> dict[str, object]:
             or not set(changes) <= {"directWorkHours", "conditionalIncidence"}
         ):
             raise MathFlowError("work response escapes primitive program/thread accounting")
-        if not isinstance(update.get("rationale"), str) or not isinstance(update.get("evidenceRefs"), list):
+        evidence_refs = update.get("evidenceRefs")
+        if (
+            not isinstance(update.get("rationale"), str)
+            or not isinstance(evidence_refs, list)
+            or any(not isinstance(item, str) or not item for item in evidence_refs)
+            or len(evidence_refs) != len(set(evidence_refs))
+        ):
             raise MathFlowError("work response audit fields are invalid")
         for field, raw in changes.items():
             pattern = DECIMAL if field == "directWorkHours" else PROBABILITY
