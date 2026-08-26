@@ -15,6 +15,11 @@ from math_flow.governance import validate_projection_registry, validate_projecti
 from math_flow.governed_providers import (
     OpenRouterResearchBuilderV6Provider,
     OpenRouterWorkProjectionProvider,
+    _builder_transition_schema,
+    _primitive_patch_schema,
+    _safe_facts_schema,
+    _validate_primitive_patch_response,
+    _validate_safe_response,
 )
 from math_flow.judges import load_judge_spec
 from math_flow.research_state import empty_research_program_state
@@ -87,6 +92,37 @@ def _patch(hours: str, stage: str) -> dict[str, object]:
     }
 
 
+def _assert_openai_strict_schema(schema: object) -> None:
+    stack = [schema]
+    while stack:
+        node = stack.pop()
+        if isinstance(node, dict):
+            for unsupported in ("oneOf", "uniqueItems", "minProperties"):
+                if unsupported in node:
+                    raise AssertionError(
+                        f"strict output schema uses unsupported {unsupported}"
+                    )
+            if "const" in node and "type" not in node:
+                raise AssertionError("strict-schema constants must declare their type")
+            if "enum" in node and "type" not in node:
+                raise AssertionError("strict-schema enums must declare their type")
+            if node.get("type") == "object":
+                properties = node.get("properties")
+                if not isinstance(properties, dict):
+                    raise AssertionError("strict-schema objects must declare properties")
+                if node.get("additionalProperties") is not False:
+                    raise AssertionError(
+                        "strict-schema objects must reject additional properties"
+                    )
+                if set(node.get("required", [])) != set(properties):
+                    raise AssertionError(
+                        "strict-schema objects must require every declared property"
+                    )
+            stack.extend(node.values())
+        elif isinstance(node, list):
+            stack.extend(node)
+
+
 class SequentialTransport:
     def __init__(self, responses: list[dict[str, object]]):
         self.responses = list(responses)
@@ -100,6 +136,28 @@ class SequentialTransport:
 
 
 class GovernedProviderTests(unittest.TestCase):
+    def test_response_schemas_fit_openai_strict_subset(self) -> None:
+        for schema in (
+            _safe_facts_schema(),
+            _primitive_patch_schema(),
+            _builder_transition_schema(),
+        ):
+            _assert_openai_strict_schema(schema)
+
+    def test_reducer_preserves_uniqueness_removed_from_provider_schema(self) -> None:
+        duplicate_claim = _safe_response()
+        duplicate_claim["facts"][0]["acceptedClaimKeys"] = ["main", "main"]
+        with self.assertRaisesRegex(MathFlowError, "invalid accepted claim keys"):
+            _validate_safe_response(duplicate_claim)
+
+        duplicate_evidence = _patch("8", "no-access")
+        duplicate_evidence["updates"][0]["evidenceRefs"] = [
+            "role:no-access",
+            "role:no-access",
+        ]
+        with self.assertRaisesRegex(MathFlowError, "audit fields"):
+            _validate_primitive_patch_response(duplicate_evidence)
+
     def _work_fixture(self) -> SimpleNamespace:
         base_knowledge = empty_research_program_state("demo")
         target_knowledge = _target_state(base_knowledge)
@@ -365,18 +423,36 @@ class GovernedProviderTests(unittest.TestCase):
         serial_admission = (
             ROOT / "protocol/projections/openrouter-research-v4.json"
         )
+        overlay_admission = (
+            ROOT / "protocol/projections/openrouter-work-accounting-v1.json"
+        )
         registry = validate_projection_registry(ROOT)
         self.assertEqual(
             registry,
-            {"projections": 10, "active": 3}
-            if serial_admission.exists()
-            else {"projections": 9, "active": 2},
+            {
+                "projections": 9
+                + int(serial_admission.exists())
+                + int(overlay_admission.exists()),
+                "active": 2
+                + int(serial_admission.exists())
+                + int(overlay_admission.exists()),
+            },
         )
         registered = "\n".join(
             path.read_text(encoding="utf-8")
             for path in (ROOT / "protocol/projections").glob("*.json")
         )
-        self.assertNotIn("openrouter-work-accounting-v1", registered)
+        if overlay_admission.exists():
+            self.assertEqual(
+                overlay_admission.read_bytes(),
+                (
+                    ROOT
+                    / "protocol/runtime/active-openrouter-work-accounting-v1-projection.json"
+                ).read_bytes(),
+            )
+            self.assertIn("openrouter-work-accounting-v1", registered)
+        else:
+            self.assertNotIn("openrouter-work-accounting-v1", registered)
         if serial_admission.exists():
             self.assertIn("openrouter-hierarchical-research-builder-v6", registered)
         else:
