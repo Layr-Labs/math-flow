@@ -611,6 +611,11 @@ class GovernedProviderTests(unittest.TestCase):
             feedback_messages[0],
         )
         self.assertIn(
+            "a new entity ID uses baseDigest null; an existing entity ID copies",
+            feedback_messages[0],
+        )
+        self.assertIn("never baseState.stateDigest", feedback_messages[0])
+        self.assertIn(
             "A parent thread may be named by at most one active child program",
             feedback_messages[0],
         )

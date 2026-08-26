@@ -588,6 +588,47 @@ class ResearchBuilderV6Tests(unittest.TestCase):
                 judgment_id=JUDGMENT_B,
             )
 
+    def test_content_guard_error_names_entity_and_exact_expected_digest(self) -> None:
+        first = self._first_result()
+        base = first["postState"]
+        existing_program = base["programs"]["program-a"]
+        transition = _transition(
+            base,
+            TX_B,
+            "claim-b",
+            program_id="program-a",
+            thread_id="program-a/unstructured",
+            item_id="program-a/result-b",
+            content_operations=[
+                _content_operation(
+                    "program",
+                    "program-a",
+                    {
+                        **_without_digest(existing_program),
+                        "sourceTransactionIds": [TX_A, TX_B],
+                    },
+                    "sha256:" + "0" * 64,
+                ),
+                _content_operation(
+                    "item",
+                    "program-a/result-b",
+                    _item("program-a/result-b", "program-a", TX_B, "claim-b"),
+                ),
+            ],
+        )
+
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "content operation baseDigest mismatch: program program-a expected "
+            + str(existing_program["digest"]),
+        ):
+            apply_research_builder_v6_transition(
+                base,
+                transition,
+                accepted_claims=_accepted_claim("claim-b"),
+                judgment_id=JUDGMENT_B,
+            )
+
     def test_new_contribution_must_be_coherently_placed_before_topology(self) -> None:
         transition = _first_transition(self.base)
         transition["contentOperations"][-1]["value"]["programId"] = "root"
