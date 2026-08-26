@@ -1,0 +1,257 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+  "baseStateDigest": "sha256:64471ccdbed45510517f681d18b1a96102116fcd246b477b0e1a742b2e2c4be5",
+  "contentOperations": [
+    {
+      "entityKind": "thread",
+      "entityId": "root/uv-scalar-converse-agenda",
+      "baseDigest": null,
+      "value": {
+        "id": "root/uv-scalar-converse-agenda",
+        "programId": "root",
+        "title": "UV scalar converse tensorization",
+        "summary": "Develop and delimit tensorization and symmetry results for scalar relaxations of the UV broadcast-channel converse.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ]
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "root/uv-scalar-converse",
+      "baseDigest": null,
+      "value": {
+        "id": "root/uv-scalar-converse",
+        "parentId": "root",
+        "title": "UV scalar converse tensorization",
+        "objective": "Determine which scalar UV converse functionals tensorize across product broadcast channels and when channel symmetry equates separately relaxed converse branches.",
+        "status": "active",
+        "parentThreadIds": [
+          "root/uv-scalar-converse-agenda"
+        ],
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "root/uv-scalar-converse/product-and-skew-symmetry",
+      "baseDigest": null,
+      "value": {
+        "id": "root/uv-scalar-converse/product-and-skew-symmetry",
+        "programId": "root/uv-scalar-converse",
+        "title": "Product factorization and receiver-skew symmetry",
+        "summary": "Establish exact product laws for separately relaxed UV scalar rows, analyze receiver-skew symmetrization, and identify the resulting finite-product BSSC limitations.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "root/uv-scalar-converse/unstructured-search",
+      "baseDigest": null,
+      "value": {
+        "id": "root/uv-scalar-converse/unstructured-search",
+        "programId": "root/uv-scalar-converse",
+        "title": "Unstructured search and overhead",
+        "summary": "Future work on UV scalar converse tensorization not yet assigned to a more specific research thread.",
+        "kind": "unstructured",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/uv-scalar-converse/correlated-input-envelope-factorization",
+      "baseDigest": null,
+      "value": {
+        "id": "root/uv-scalar-converse/correlated-input-envelope-factorization",
+        "programId": "root/uv-scalar-converse",
+        "type": "proof",
+        "title": "Correlated-input envelope factorization",
+        "summary": "A conditional chain-rule identity cancels the cross-factor correction terms for the receiver-information difference. Conditioning leaves valid one-factor auxiliaries, yielding upper-concave-envelope subadditivity even when the product input is correlated and the envelope auxiliary is joint across factors; product priors and product posterior decompositions provide the reverse inequality.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/uv-scalar-converse/averaged-uv-product-additivity",
+      "baseDigest": null,
+      "value": {
+        "id": "root/uv-scalar-converse/averaged-uv-product-additivity",
+        "programId": "root/uv-scalar-converse",
+        "type": "result",
+        "title": "Exact additivity of the averaged UV scalar",
+        "summary": "For arbitrary finite-alphabet discrete memoryless broadcast channels, the averaged scalar B_avg defined from the two separately relaxed UV rows satisfies B_avg(W1×W2)=B_avg(W1)+B_avg(W2). The theorem includes correlated product-channel priors and envelope auxiliaries joint across factors, but does not tensorize the complete UV region.",
+        "claimRefs": [
+          {
+            "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+            "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity"
+          }
+        ],
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "dependencyItemIds": [
+          "root/uv-scalar-converse/correlated-input-envelope-factorization"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/uv-scalar-converse/receiver-skew-invariant-prior-reduction",
+      "baseDigest": null,
+      "value": {
+        "id": "root/uv-scalar-converse/receiver-skew-invariant-prior-reduction",
+        "programId": "root/uv-scalar-converse",
+        "type": "proof",
+        "title": "Receiver-skew invariant-prior reduction",
+        "summary": "An involutive input relabeling that exchanges the receivers maps the information difference t to -t and swaps the two relaxed rows A and D. Concavity at the symmetrized input law shows that the branchwise minimum reaches the averaged value and permits restriction to invariant input laws.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/uv-scalar-converse/receiver-skew-branchwise-additivity",
+      "baseDigest": null,
+      "value": {
+        "id": "root/uv-scalar-converse/receiver-skew-branchwise-additivity",
+        "programId": "root/uv-scalar-converse",
+        "type": "result",
+        "title": "Branchwise UV additivity under receiver-skew symmetry",
+        "summary": "For a finite-alphabet receiver-skew-symmetric broadcast channel, B_br equals B_avg and an optimum can be sought among invariant input laws. Finite products preserve the symmetry, so both scalars are exactly additive on arbitrary finite products of channels in this class. No equality is asserted for nonsymmetric channels or for a common joint UV optimization.",
+        "claimRefs": [
+          {
+            "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+            "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity"
+          }
+        ],
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "dependencyItemIds": [
+          "root/uv-scalar-converse/averaged-uv-product-additivity",
+          "root/uv-scalar-converse/receiver-skew-invariant-prior-reduction"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/uv-scalar-converse/bssc-uv-envelope-contact",
+      "baseDigest": null,
+      "value": {
+        "id": "root/uv-scalar-converse/bssc-uv-envelope-contact",
+        "programId": "root/uv-scalar-converse",
+        "type": "computation",
+        "title": "Exact half-skew BSSC UV envelope contact",
+        "summary": "Using the sharp BSSC posterior support represented by the dependency transaction, the fair invariant prior and an exact posterior contact decomposition evaluate the one-letter scalar as 2h_2(1/4)-5/4.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "dependencyItemIds": [
+          "root/code-structure-converse/entropy-counterfeit-witness"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/uv-scalar-converse/bssc-uv-blocking-value",
+      "baseDigest": null,
+      "value": {
+        "id": "root/uv-scalar-converse/bssc-uv-blocking-value",
+        "programId": "root/uv-scalar-converse",
+        "type": "result",
+        "title": "All-blocklength branchwise UV value for the half-skew BSSC",
+        "summary": "For every finite n≥1, the half-skew BSSC P satisfies B_br(P^×n)=B_avg(P^×n)=n(2h_2(1/4)-5/4), with normalized value 0.3725562489182657… bits per channel use. This valid UV converse is weaker than the certified full-Theorem-9 upper bound 0.369296945969202842443 and therefore changes neither endpoint of the governed capacity interval.",
+        "claimRefs": [
+          {
+            "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+            "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity"
+          }
+        ],
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "dependencyItemIds": [
+          "root/uv-scalar-converse/receiver-skew-branchwise-additivity",
+          "root/uv-scalar-converse/bssc-uv-envelope-contact"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/uv-scalar-converse/uv-factorization-and-hostile-case-audits",
+      "baseDigest": null,
+      "value": {
+        "id": "root/uv-scalar-converse/uv-factorization-and-hostile-case-audits",
+        "programId": "root/uv-scalar-converse",
+        "type": "tool",
+        "title": "UV factorization and hostile-case audits",
+        "summary": "Dependency-free executable checks corroborate the conditional chain identities, mutual-information subadditivity, product posterior mixtures, receiver-skew identities, deterministic and zero-probability edge cases, and high-precision BSSC contact evaluation. These checks support but do not replace the analytic finite-alphabet proofs.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "dependencyItemIds": [
+          "root/uv-scalar-converse/correlated-input-envelope-factorization",
+          "root/uv-scalar-converse/receiver-skew-invariant-prior-reduction",
+          "root/uv-scalar-converse/bssc-uv-envelope-contact"
+        ]
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/uv-product-branchwise-additivity"
+    ],
+    "directProgramId": "root/uv-scalar-converse",
+    "directThreadIds": [
+      "root/uv-scalar-converse/product-and-skew-symmetry"
+    ],
+    "itemIds": [
+      "root/uv-scalar-converse/correlated-input-envelope-factorization",
+      "root/uv-scalar-converse/averaged-uv-product-additivity",
+      "root/uv-scalar-converse/receiver-skew-invariant-prior-reduction",
+      "root/uv-scalar-converse/receiver-skew-branchwise-additivity",
+      "root/uv-scalar-converse/bssc-uv-envelope-contact",
+      "root/uv-scalar-converse/bssc-uv-blocking-value",
+      "root/uv-scalar-converse/uv-factorization-and-hostile-case-audits"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted theorem chain directly advances the active non-root objective devoted to tensorization and symmetry of scalar UV converse functionals; its use of an existing BSSC support item is a semantic dependency rather than a second accounting placement.",
+    "relatedProgramIds": [
+      "root/uv-scalar-converse"
+    ]
+  },
+  "topologyRationale": null
+}
