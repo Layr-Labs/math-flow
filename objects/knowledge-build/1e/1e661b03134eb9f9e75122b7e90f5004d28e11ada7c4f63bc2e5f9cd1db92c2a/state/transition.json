@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+  "baseStateDigest": "sha256:82600b62e8c3e7f14be197a9577d402d73d41d205566ac4a8733b55ebb4e64e6",
+  "contentOperations": [
+    {
+      "entityKind": "thread",
+      "entityId": "root/multiletter-marton-achievability-agenda",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability-agenda",
+        "programId": "root",
+        "title": "Multiletter Marton achievability",
+        "summary": "Investigate whether product-channel Marton constructions improve the known BSSC private-message achievable sum rate, and characterize the support and auxiliary structures required for any improvement.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ]
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "root/multiletter-marton-achievability",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability",
+        "parentId": "root",
+        "title": "Multiletter Marton achievability",
+        "objective": "Determine whether multiletter Marton coding improves the known BSSC private-message achievable sum rate and identify the super-input support and auxiliary structures necessary for any gain.",
+        "status": "active",
+        "parentThreadIds": [
+          "root/multiletter-marton-achievability-agenda"
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "root/multiletter-marton-achievability/support-pruning",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/support-pruning",
+        "programId": "root/multiletter-marton-achievability",
+        "title": "Super-input support pruning",
+        "summary": "Classify restricted super-input supports for product BSSC Marton laws, bound their achievable sum rates, and focus the remaining search on support patterns not excluded by rigorous pruning results.",
+        "kind": "research",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [
+          "The Geng--Jog--Nair--Wang binary-input theorem equating Marton's private-message sum-rate with randomized time division is assumed."
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ]
+      }
+    },
+    {
+      "entityKind": "thread",
+      "entityId": "root/multiletter-marton-achievability/unstructured-search",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/unstructured-search",
+        "programId": "root/multiletter-marton-achievability",
+        "title": "Unstructured search and overhead",
+        "summary": "Future work on multiletter Marton achievability not yet assigned to a more specific research thread.",
+        "kind": "unstructured",
+        "status": "active",
+        "expectedExposure": "1",
+        "conditions": [],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/two-symbol-support-orbit-reduction",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/two-symbol-support-orbit-reduction",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "method",
+        "title": "Two-symbol super-input orbit reduction",
+        "summary": "The six unordered two-symbol supports in {00,01,10,11} reduce to four adjacent supports and two diagonal supports. The diagonal supports split into the antirepetition pair {01,10} and the repetition pair {00,11}; singleton supports convey no information. This exhausts all super-input supports of size at most two.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ],
+        "dependencyItemIds": []
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/two-symbol-support-rate-bound-proof",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/two-symbol-support-rate-bound-proof",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "proof",
+        "title": "Rate bounds for the two-symbol support classes",
+        "summary": "Adjacent supports discard an input-independent product coordinate and admit a cooperative binary-erasure upper bound of 1/2 bit; the antirepetition support likewise has binary-erasure receiver marginals and a 1/2-bit cooperative bound. For the repetition support, the assumed binary-input Marton theorem reduces the sum-rate to randomized time division. Concavity and reflection symmetry of its receiver-information curve, together with a tangent bound on the receiver-information difference, give a strict upper bound below 0.615 bit.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/two-symbol-support-orbit-reduction"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/two-symbol-support-certificate-verifier",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/two-symbol-support-certificate-verifier",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "tool",
+        "title": "Exact two-symbol orbit and tangent-certificate verifier",
+        "summary": "A Python standard-library checker constructs the product receiver marginals with exact rational arithmetic, verifies the six-support orbit classification and the adjacent, antirepetition, and repetition transition structures, and uses directed high-precision Decimal intervals to check the repetition-support tangent bound, the strict 0.615-bit endpoint, and its separation from 0.7232857688439092 bits.",
+        "claimRefs": [],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/two-symbol-support-orbit-reduction",
+          "root/multiletter-marton-achievability/two-symbol-support-rate-bound-proof"
+        ]
+      }
+    },
+    {
+      "entityKind": "item",
+      "entityId": "root/multiletter-marton-achievability/two-letter-marton-two-symbol-pruning",
+      "baseDigest": null,
+      "value": {
+        "id": "root/multiletter-marton-achievability/two-letter-marton-two-symbol-pruning",
+        "programId": "root/multiletter-marton-achievability",
+        "type": "result",
+        "title": "Two-letter Marton two-symbol support pruning",
+        "summary": "Assuming the Geng--Jog--Nair--Wang binary-input Marton theorem, every finite Marton law for the half-skew BSSC product channel whose induced super-input is supported on at most two of the four symbols has sum-rate strictly below 0.615 bit. Since product randomized time division exceeds 0.7232857688439092 bits, any strict two-letter Marton improvement over the current BSSC achievable rate must use at least three super-input symbols. The result does not exclude gains on three- or four-symbol support.",
+        "claimRefs": [
+          {
+            "transactionId": "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-two-symbol-pruning"
+          }
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ],
+        "dependencyItemIds": [
+          "root/multiletter-marton-achievability/two-symbol-support-rate-bound-proof",
+          "root/multiletter-marton-achievability/two-symbol-support-certificate-verifier"
+        ]
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/two-letter-marton-two-symbol-pruning"
+    ],
+    "directProgramId": "root/multiletter-marton-achievability",
+    "directThreadIds": [
+      "root/multiletter-marton-achievability/support-pruning"
+    ],
+    "itemIds": [
+      "root/multiletter-marton-achievability/two-symbol-support-orbit-reduction",
+      "root/multiletter-marton-achievability/two-symbol-support-rate-bound-proof",
+      "root/multiletter-marton-achievability/two-symbol-support-certificate-verifier",
+      "root/multiletter-marton-achievability/two-letter-marton-two-symbol-pruning"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted support-pruning theorem and its supporting reduction, proof, and verifier directly advance the durable non-root objective of determining the structures required for a multiletter Marton gain on the BSSC.",
+    "relatedProgramIds": [
+      "root/multiletter-marton-achievability"
+    ]
+  },
+  "topologyRationale": null
+}
