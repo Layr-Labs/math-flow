@@ -499,6 +499,11 @@ class GovernedProviderTests(unittest.TestCase):
         self.assertTrue(all(len(message) < 3000 for message in feedback_messages))
         self.assertIn("provider attempt 1", feedback_messages[0])
         self.assertIn("provider attempt 2", feedback_messages[1])
+        self.assertIn(
+            "Every non-root program has at least one parentThreadId",
+            feedback_messages[0],
+        )
+        self.assertIn("exactly one active unstructured thread", feedback_messages[0])
         journal = provider.latest_attempt_journal
         self.assertIsNotNone(journal)
         assert journal is not None
@@ -509,6 +514,18 @@ class GovernedProviderTests(unittest.TestCase):
         self.assertEqual(
             [record["outcome"] for record in journal["attemptRecords"]],
             ["validation-rejected"] * 3,
+        )
+        self.assertEqual(
+            [len(record["errorSummary"]) for record in journal["attemptRecords"]],
+            [500, 500, 500],
+        )
+        self.assertTrue(
+            all(
+                record["errorSummary"].startswith(
+                    "research item v2 program-a/result-a has missing program:"
+                )
+                for record in journal["attemptRecords"]
+            )
         )
         self.assertEqual(provider.invocation_records, [])
 
