@@ -345,6 +345,173 @@ class GovernedProviderTests(unittest.TestCase):
         for derived in ("postState", "topologyAlignment", "sameWorldHandoff"):
             self.assertNotIn(derived, rendered)
 
+    def test_builder_adapter_retries_with_deterministic_validation_feedback(self) -> None:
+        from math_flow.research_topology import empty_research_program_state_v2
+
+        base = empty_research_program_state_v2("handoff-fixture")
+        corrected = _first_transition(base)
+        rejected = copy.deepcopy(corrected)
+        rejected["contentOperations"][-1]["value"]["programId"] = "missing-program"
+        transport = SequentialTransport(
+            [_response(rejected, ordinal=1), _response(corrected, ordinal=2)]
+        )
+        invalidations = 0
+
+        def invalidate() -> None:
+            nonlocal invalidations
+            invalidations += 1
+
+        provider = OpenRouterResearchBuilderV6Provider(
+            load_judge_spec(BUILDER_SPEC),
+            transport=transport,
+            invalidate_last_response=invalidate,
+        )
+        content = b"# Exact accepted submission\n"
+        evidence = (
+            SubmissionEvidenceFile(
+                path="problems/handoff-fixture/contributions/accepted/README.md",
+                digest=sha256_bytes(content),
+                content=content,
+            ),
+        )
+        self.assertEqual(
+            provider.run(
+                problem_id="handoff-fixture",
+                subject_transaction_id=TX_A,
+                base_state=base,
+                accepted_claims=_accepted_claim("claim-a"),
+                judgment_id=JUDGMENT_A,
+                evidence_files=evidence,
+            ),
+            corrected,
+        )
+
+        self.assertEqual(invalidations, 1)
+        self.assertEqual(len(transport.requests), 2)
+        self.assertEqual(
+            transport.requests[0]["messages"][:3],
+            transport.requests[1]["messages"][:3],
+        )
+        feedback = transport.requests[1]["messages"][-1]
+        self.assertEqual(feedback["role"], "user")
+        self.assertIn(
+            "Trusted deterministic validation rejected provider attempt 1",
+            feedback["content"],
+        )
+        self.assertIn(
+            "research item v2 program-a/result-a has missing program: missing-program",
+            feedback["content"],
+        )
+        first_digest = f"sha256:{sha256_json(transport.requests[0])}"
+        second_digest = f"sha256:{sha256_json(transport.requests[1])}"
+        self.assertNotEqual(first_digest, second_digest)
+        self.assertEqual(
+            [request["seed"] for request in transport.requests],
+            [1729, 1729],
+        )
+        record = provider.invocation_records[0]
+        self.assertEqual(record["attempts"], 2)
+        self.assertEqual(record["requestDigest"], second_digest)
+        attempt_records = record["attemptRecords"]
+        self.assertEqual(
+            [attempt["outcome"] for attempt in attempt_records],
+            ["validation-rejected", "accepted"],
+        )
+        self.assertEqual(
+            [attempt["requestDigest"] for attempt in attempt_records],
+            [first_digest, second_digest],
+        )
+        self.assertEqual(
+            attempt_records[0]["responseDigest"],
+            f"sha256:{sha256_json(_response(rejected, ordinal=1))}",
+        )
+        self.assertEqual(attempt_records[0]["providerResponseId"], "response-1")
+        self.assertRegex(attempt_records[0]["errorDigest"], r"^sha256:[0-9a-f]{64}$")
+        self.assertEqual(
+            attempt_records[0]["feedbackDigest"],
+            sha256_bytes(feedback["content"].encode("utf-8")),
+        )
+        self.assertEqual(
+            attempt_records[1]["responseDigest"],
+            f"sha256:{sha256_json(_response(corrected, ordinal=2))}",
+        )
+        self.assertEqual(attempt_records[1]["providerResponseId"], "response-2")
+        core = {key: value for key, value in record.items() if key != "invocationDigest"}
+        self.assertEqual(record["invocationDigest"], f"sha256:{sha256_json(core)}")
+
+    def test_builder_terminal_retries_are_distinct_bounded_and_inspectable(self) -> None:
+        from math_flow.research_topology import empty_research_program_state_v2
+
+        base = empty_research_program_state_v2("handoff-fixture")
+        rejected = _first_transition(base)
+        rejected["contentOperations"][-1]["value"]["programId"] = "m" * 8000
+        transport = SequentialTransport(
+            [_response(rejected, ordinal=ordinal) for ordinal in range(1, 4)]
+        )
+        invalidations = 0
+
+        def invalidate() -> None:
+            nonlocal invalidations
+            invalidations += 1
+
+        provider = OpenRouterResearchBuilderV6Provider(
+            load_judge_spec(BUILDER_SPEC),
+            transport=transport,
+            invalidate_last_response=invalidate,
+        )
+        content = b"# Exact accepted submission\n"
+        evidence = (
+            SubmissionEvidenceFile(
+                path="problems/handoff-fixture/contributions/accepted/README.md",
+                digest=sha256_bytes(content),
+                content=content,
+            ),
+        )
+        with self.assertRaisesRegex(
+            MathFlowError,
+            r"failed after 3 automatic attempts; attempt journal sha256:[0-9a-f]{64}",
+        ):
+            provider.run(
+                problem_id="handoff-fixture",
+                subject_transaction_id=TX_A,
+                base_state=base,
+                accepted_claims=_accepted_claim("claim-a"),
+                judgment_id=JUDGMENT_A,
+                evidence_files=evidence,
+            )
+
+        self.assertEqual(invalidations, 3)
+        self.assertEqual(len(transport.requests), 3)
+        request_digests = [
+            f"sha256:{sha256_json(request)}" for request in transport.requests
+        ]
+        self.assertEqual(len(set(request_digests)), 3)
+        self.assertEqual(
+            [request["seed"] for request in transport.requests],
+            [1729, 1729, 1729],
+        )
+        feedback_messages = [
+            str(message["content"])
+            for request in transport.requests[1:]
+            for message in request["messages"][-1:]
+        ]
+        self.assertEqual(len(feedback_messages), 2)
+        self.assertTrue(all(len(message) < 3000 for message in feedback_messages))
+        self.assertIn("provider attempt 1", feedback_messages[0])
+        self.assertIn("provider attempt 2", feedback_messages[1])
+        journal = provider.latest_attempt_journal
+        self.assertIsNotNone(journal)
+        assert journal is not None
+        self.assertEqual(
+            [record["requestDigest"] for record in journal["attemptRecords"]],
+            request_digests,
+        )
+        self.assertEqual(
+            [record["outcome"] for record in journal["attemptRecords"]],
+            ["validation-rejected"] * 3,
+        )
+        self.assertEqual(provider.invocation_records, [])
+
     def test_builder_adapter_rejects_model_authored_alignment(self) -> None:
         from math_flow.research_topology import empty_research_program_state_v2
 
