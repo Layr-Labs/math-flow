@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+  "acceptedClaimRefs": [
+    {
+      "transactionId": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+      "claimKey": "bssc-sum-capacity/conditional-product-marton-no-gain",
+      "judgmentId": "sha256:fb042c476afdbb03551bcf3dcb05c4cc1ab3d2eeeee845e1d5031ebfb44d1c65",
+      "assessmentDigest": "sha256:d4d276f8ffcd9f5daaa760b9cfece276dce60c24e32629b6f9c3e33fc3bbc917"
+    }
+  ],
+  "knowledgeStateDigest": "sha256:6b0bfe02cc7057a02942c7010c98bfdb1a8391a1aca46b5e709c5c1c0c4a3369",
+  "subjectEvidenceManifestDigest": "sha256:059df67ceab76a406cf7dc16fe8f7a849342bc16ec3749c6d0e9f73b913fd512",
+  "facts": [
+    {
+      "id": "sf-conditional-separation-additivity",
+      "condition": "For a receiver-skew channel, whenever conditioning on the shared coordinating variable separates all use-indexed auxiliary/input packets, the optimal block Marton score equals the one-use optimum repeated once per channel use.",
+      "actorVisibility": "withheld-until-independent-discovery",
+      "affectedNodeRefs": [
+        {
+          "kind": "program",
+          "id": "root/multiletter-marton-achievability"
+        },
+        {
+          "kind": "thread",
+          "id": "root/multiletter-marton-achievability/support-pruning"
+        }
+      ],
+      "acceptedClaimKeys": [
+        "bssc-sum-capacity/conditional-product-marton-no-gain"
+      ]
+    },
+    {
+      "id": "sf-coupling-residual-test",
+      "condition": "After choosing a tuple representation for a cross-use-coupled candidate, its midpoint-score residual has an exact entropy-dependence decomposition; a positive residual requires the favorable dependence terms to strictly outweigh the associated conditioning penalties.",
+      "actorVisibility": "withheld-until-independent-discovery",
+      "affectedNodeRefs": [
+        {
+          "kind": "thread",
+          "id": "root/multiletter-marton-achievability/support-pruning"
+        },
+        {
+          "kind": "thread",
+          "id": "root/multiletter-marton-achievability/unstructured-search"
+        }
+      ],
+      "acceptedClaimKeys": [
+        "bssc-sum-capacity/conditional-product-marton-no-gain"
+      ]
+    }
+  ],
+  "assumptions": [
+    "All relevant alphabets are finite, and candidate auxiliaries obey the channel Markov constraint.",
+    "No conclusion is assumed for unrestricted cross-use coupling or for the root program's terminal capacity objective.",
+    "The block channel is memoryless across uses.",
+    "The midpoint score assigns equal weight to the two receiver-common terms."
+  ],
+  "safeFactsDigest": "sha256:26d6e99dfed46e0d9a3e72a52b4b8652e96c3911160aefc40b03bf7ee9dbb7d2"
+}

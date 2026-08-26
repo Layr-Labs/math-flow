@@ -1,0 +1,46 @@
+{
+  "facts": [
+    {
+      "id": "sf-conditional-separation-additivity",
+      "condition": "For a receiver-skew channel, whenever conditioning on the shared coordinating variable separates all use-indexed auxiliary/input packets, the optimal block Marton score equals the one-use optimum repeated once per channel use.",
+      "actorVisibility": "withheld-until-independent-discovery",
+      "affectedNodeRefs": [
+        {
+          "kind": "program",
+          "id": "root/multiletter-marton-achievability"
+        },
+        {
+          "kind": "thread",
+          "id": "root/multiletter-marton-achievability/support-pruning"
+        }
+      ],
+      "acceptedClaimKeys": [
+        "bssc-sum-capacity/conditional-product-marton-no-gain"
+      ]
+    },
+    {
+      "id": "sf-coupling-residual-test",
+      "condition": "After choosing a tuple representation for a cross-use-coupled candidate, its midpoint-score residual has an exact entropy-dependence decomposition; a positive residual requires the favorable dependence terms to strictly outweigh the associated conditioning penalties.",
+      "actorVisibility": "withheld-until-independent-discovery",
+      "affectedNodeRefs": [
+        {
+          "kind": "thread",
+          "id": "root/multiletter-marton-achievability/support-pruning"
+        },
+        {
+          "kind": "thread",
+          "id": "root/multiletter-marton-achievability/unstructured-search"
+        }
+      ],
+      "acceptedClaimKeys": [
+        "bssc-sum-capacity/conditional-product-marton-no-gain"
+      ]
+    }
+  ],
+  "assumptions": [
+    "All relevant alphabets are finite, and candidate auxiliaries obey the channel Markov constraint.",
+    "The block channel is memoryless across uses.",
+    "The midpoint score assigns equal weight to the two receiver-common terms.",
+    "No conclusion is assumed for unrestricted cross-use coupling or for the root program's terminal capacity objective."
+  ]
+}
