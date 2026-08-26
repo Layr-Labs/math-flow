@@ -70,6 +70,11 @@ from .scale_probe import run_provider_free_scale_probe
 from .solver_tools import credit_status, register_direction
 from .viewer import export_viewer_catalog, export_viewer_data
 from .validity import formation_dependency_transaction_ids
+from .work_accounting_dispatch import (
+    load_work_accounting_hosted_config,
+    plan_work_accounting_dispatch,
+    recheck_work_accounting_prepublication,
+)
 
 
 def _write_json(value: object, output: str | None) -> None:
@@ -752,6 +757,46 @@ def build_parser() -> argparse.ArgumentParser:
     )
     context_parser.add_argument("--output-dir", required=True, type=Path)
 
+    work_dispatch_parser = commands.add_parser(
+        "work-accounting-dispatch-plan",
+        help="plan one exact inactive hosted work-accounting dispatch",
+    )
+    work_dispatch_parser.add_argument("--config", required=True, type=Path)
+    work_dispatch_parser.add_argument("--pipeline-state", required=True, type=Path)
+    work_dispatch_parser.add_argument("--schedule", required=True, type=Path)
+    work_dispatch_parser.add_argument("--dispositions", required=True, type=Path)
+    work_dispatch_parser.add_argument("--run-history", required=True, type=Path)
+    work_dispatch_parser.add_argument("--canonical-head", required=True)
+    work_dispatch_parser.add_argument("--projection-head", required=True)
+    work_dispatch_parser.add_argument("--projection-state-digest", required=True)
+    work_dispatch_parser.add_argument("--as-of", required=True, type=int)
+    work_dispatch_parser.add_argument("--subject")
+    work_dispatch_parser.add_argument("--output")
+
+    work_prepublication_parser = commands.add_parser(
+        "work-accounting-prepublish-check",
+        help="recheck every exact dispatch binding before publication",
+    )
+    work_prepublication_parser.add_argument("--config", required=True, type=Path)
+    work_prepublication_parser.add_argument(
+        "--original-plan", required=True, type=Path
+    )
+    work_prepublication_parser.add_argument(
+        "--pipeline-state", required=True, type=Path
+    )
+    work_prepublication_parser.add_argument("--schedule", required=True, type=Path)
+    work_prepublication_parser.add_argument(
+        "--dispositions", required=True, type=Path
+    )
+    work_prepublication_parser.add_argument("--canonical-head", required=True)
+    work_prepublication_parser.add_argument("--projection-head", required=True)
+    work_prepublication_parser.add_argument(
+        "--projection-state-digest", required=True
+    )
+    work_prepublication_parser.add_argument("--subject", required=True)
+    work_prepublication_parser.add_argument("--as-of", required=True, type=int)
+    work_prepublication_parser.add_argument("--output")
+
     scale_parser = commands.add_parser(
         "provider-free-scale-probe",
         help="stress scheduling, publication, viewer, and context isolation without model calls",
@@ -778,6 +823,52 @@ def main(argv: list[str] | None = None) -> int:
                 solvers=args.solvers,
                 minimum_interval_seconds=args.minimum_interval,
                 maximum_judgments_per_build=args.maximum_judgments,
+            )
+            _write_json(result, args.output)
+            return 0
+        elif args.command == "work-accounting-dispatch-plan":
+            config = load_work_accounting_hosted_config(root, args.config)
+            result = plan_work_accounting_dispatch(
+                root,
+                config=config,
+                pipeline_state=json.loads(
+                    args.pipeline_state.read_text(encoding="utf-8")
+                ),
+                schedule=json.loads(args.schedule.read_text(encoding="utf-8")),
+                disposition_snapshot=json.loads(
+                    args.dispositions.read_text(encoding="utf-8")
+                ),
+                run_history=json.loads(
+                    args.run_history.read_text(encoding="utf-8")
+                ),
+                canonical_head=args.canonical_head,
+                projection_head=args.projection_head,
+                projection_state_digest=args.projection_state_digest,
+                as_of=args.as_of,
+                target_subject_transaction_id=args.subject,
+            )
+            _write_json(result, args.output)
+            return 0
+        elif args.command == "work-accounting-prepublish-check":
+            config = load_work_accounting_hosted_config(root, args.config)
+            result = recheck_work_accounting_prepublication(
+                root,
+                original_plan=json.loads(
+                    args.original_plan.read_text(encoding="utf-8")
+                ),
+                config=config,
+                pipeline_state=json.loads(
+                    args.pipeline_state.read_text(encoding="utf-8")
+                ),
+                schedule=json.loads(args.schedule.read_text(encoding="utf-8")),
+                disposition_snapshot=json.loads(
+                    args.dispositions.read_text(encoding="utf-8")
+                ),
+                canonical_head=args.canonical_head,
+                projection_head=args.projection_head,
+                projection_state_digest=args.projection_state_digest,
+                as_of=args.as_of,
+                target_subject_transaction_id=args.subject,
             )
             _write_json(result, args.output)
             return 0
