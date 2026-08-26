@@ -295,6 +295,63 @@ class GovernedProviderTests(unittest.TestCase):
         self.assertEqual(provider.invocation_records[0]["attempts"], 2)
         self.assertFalse(load_judge_spec(WORK_SPEC)["retryPolicy"]["manualReview"])
 
+    def test_work_safe_facts_retry_after_complete_firewall_validation(self) -> None:
+        copied = _safe_response()
+        copied["facts"][0]["condition"] = SECRET
+        transport = SequentialTransport(
+            [
+                _response(copied, ordinal=1),
+                _response(_safe_response(), ordinal=2),
+                _response(_patch("8", "no-access"), ordinal=3),
+                _response(_patch("2", "with-access"), ordinal=4),
+            ]
+        )
+        _, provider, _ = self._run_work(transport)
+        self.assertEqual(len(transport.requests), 4)
+        first = provider.invocation_records[0]
+        self.assertEqual(first["stage"], "safe-facts")
+        self.assertEqual(first["attempts"], 2)
+        self.assertEqual(
+            [item["outcome"] for item in first["attemptRecords"]],
+            ["validation-rejected", "accepted"],
+        )
+        feedback = transport.requests[1]["messages"][-1]["content"]
+        self.assertIn(
+            "counterfactual-safe facts copy a raw submission evidence span",
+            feedback,
+        )
+        self.assertIn("Do not quote or copy", feedback)
+        self.assertNotIn(SECRET, feedback)
+        self.assertNotEqual(
+            f"sha256:{sha256_json(transport.requests[0])}",
+            f"sha256:{sha256_json(transport.requests[1])}",
+        )
+        self.assertEqual(
+            [request["seed"] for request in transport.requests[:2]],
+            [1729, 1729],
+        )
+
+    def test_work_with_access_retries_until_reduction_is_positive(self) -> None:
+        transport = SequentialTransport(
+            [
+                _response(_safe_response(), ordinal=1),
+                _response(_patch("8", "no-access"), ordinal=2),
+                _response(_patch("8", "with-access"), ordinal=3),
+                _response(_patch("2", "with-access"), ordinal=4),
+            ]
+        )
+        _, provider, _ = self._run_work(transport)
+        with_record = provider.invocation_records[-1]
+        self.assertEqual(with_record["stage"], "with-access")
+        self.assertEqual(with_record["attempts"], 2)
+        self.assertEqual(
+            [item["outcome"] for item in with_record["attemptRecords"]],
+            ["validation-rejected", "accepted"],
+        )
+        feedback = transport.requests[3]["messages"][-1]["content"]
+        self.assertIn("strictly positive", feedback)
+        self.assertIn("strictly less work with access", feedback)
+
     def test_derived_work_or_credit_output_fails_closed(self) -> None:
         bad = {**_patch("8", "no-access"), "credit": "1"}
         transport = SequentialTransport(

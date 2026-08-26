@@ -6,7 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
-from typing import Protocol
+from typing import Callable, Protocol
 
 from .artifacts import ArtifactBundle, sha256_bytes, verify_bundle
 from .counterfactual_context import (
@@ -695,6 +695,22 @@ class WorkProjectionCheckpointStore:
         self.performed_calls += 1
         return copy.deepcopy(response)
 
+    def invalidate(
+        self,
+        *,
+        stage: str,
+        request: Mapping[str, object],
+    ) -> None:
+        """Remove a checkpoint rejected by downstream deterministic validation."""
+
+        validated_request = validate_work_projection_request(dict(request))
+        request_digest = str(validated_request["requestDigest"])
+        checkpoint = self.checkpoint_dir / f"{request_digest.removeprefix('sha256:')}.json"
+        if checkpoint.is_symlink():
+            raise MathFlowError("work projection provider checkpoint may not be a symlink")
+        if checkpoint.is_file():
+            checkpoint.unlink()
+
 
 def _invoke(
     provider: WorkProjectionProvider,
@@ -703,20 +719,57 @@ def _invoke(
     stage: str,
     request: Mapping[str, object],
     evidence_files: Sequence[SubmissionEvidenceFile],
+    semantic_validate: Callable[[object], object] | None = None,
 ) -> object:
-    if checkpoint_store is not None:
-        return checkpoint_store.call(
-            provider,
+    validated_call = getattr(provider, "call_with_semantic_validation", None)
+
+    def call_provider(
+        *,
+        stage: str,
+        request: Mapping[str, object],
+        evidence_files: Sequence[SubmissionEvidenceFile],
+    ) -> object:
+        if semantic_validate is not None and callable(validated_call):
+            return validated_call(
+                stage=stage,
+                request=request,
+                evidence_files=evidence_files,
+                validate=semantic_validate,
+            )
+        response = provider(
             stage=stage,
-            request=request,
-            evidence_files=evidence_files,
+            request=copy.deepcopy(request),
+            evidence_files=tuple(evidence_files),
         )
-    response = provider(
-        stage=stage,
-        request=copy.deepcopy(request),
-        evidence_files=tuple(evidence_files),
-    )
-    return _json_artifact(_json_bytes(response), "work projection provider response")
+        response = _json_artifact(
+            _json_bytes(response), "work projection provider response"
+        )
+        if semantic_validate is not None:
+            semantic_validate(response)
+        return response
+
+    try:
+        response = (
+            checkpoint_store.call(
+                call_provider,
+                stage=stage,
+                request=request,
+                evidence_files=evidence_files,
+            )
+            if checkpoint_store is not None
+            else call_provider(
+                stage=stage,
+                request=request,
+                evidence_files=evidence_files,
+            )
+        )
+        if semantic_validate is not None:
+            semantic_validate(response)
+        return response
+    except (MathFlowError, TypeError, ValueError):
+        if checkpoint_store is not None:
+            checkpoint_store.invalidate(stage=stage, request=request)
+        raise
 
 
 def _validate_patch_response(
@@ -975,22 +1028,36 @@ def run_work_projection_bundle(
             evidence_manifest=manifest,
         ),
     )
+    def validate_safe_response(response: object) -> dict[str, object]:
+        safe = build_counterfactual_safe_facts(
+            problem_id=str(contract["problemId"]),
+            subject_transaction_id=subject,
+            accepted_claim_refs=claims,
+            research_state=after,
+            evidence_manifest=manifest,
+            evidence_chunks=chunks,
+            extracted=response,
+        )
+        safe_context = build_impact_subgraph_context(
+            problem_id=str(contract["problemId"]),
+            subject_transaction_id=subject,
+            accepted_claim_refs=claims,
+            research_state=after,
+            seed_node_refs=_seed_refs_from_safe_facts(safe),
+            descendant_depth=descendant_depth,
+        )
+        _ensure_required_context_coverage(required_updates, safe_context)
+        return safe
+
     safe_response = _invoke(
         provider,
         checkpoint,
         stage="safe-facts",
         request=safe_request,
         evidence_files=verified_files,
+        semantic_validate=validate_safe_response,
     )
-    safe_facts = build_counterfactual_safe_facts(
-        problem_id=str(contract["problemId"]),
-        subject_transaction_id=subject,
-        accepted_claim_refs=claims,
-        research_state=after,
-        evidence_manifest=manifest,
-        evidence_chunks=chunks,
-        extracted=safe_response,
-    )
+    safe_facts = validate_safe_response(safe_response)
     context = build_impact_subgraph_context(
         problem_id=str(contract["problemId"]),
         subject_transaction_id=subject,
@@ -1018,23 +1085,27 @@ def run_work_projection_bundle(
         stage_input=no_input,
     )
     _assert_no_access_evidence_nonleakage(no_request, verified_files)
+    def validate_no_access_response(response: object) -> dict[str, object]:
+        return _patch_from_response(
+            response,
+            mode="no-access",
+            problem_id=str(contract["problemId"]),
+            subject_transaction_id=subject,
+            bindings=bindings,
+            base_accounting_state=base,
+            required_updates=required_updates,
+            impact_context=context,
+        )
+
     no_response = _invoke(
         provider,
         checkpoint,
         stage="no-access",
         request=no_request,
         evidence_files=(),
+        semantic_validate=validate_no_access_response,
     )
-    no_patch = _patch_from_response(
-        no_response,
-        mode="no-access",
-        problem_id=str(contract["problemId"]),
-        subject_transaction_id=subject,
-        bindings=bindings,
-        base_accounting_state=base,
-        required_updates=required_updates,
-        impact_context=context,
-    )
+    no_patch = validate_no_access_response(no_response)
 
     with_input = build_with_access_stage_input(
         safe_facts=safe_facts,
@@ -1064,23 +1135,37 @@ def run_work_projection_bundle(
         required_updates=required_updates,
         stage_input=with_input,
     )
+    def validate_with_access_response(response: object) -> dict[str, object]:
+        candidate = _patch_from_response(
+            response,
+            mode="with-access",
+            problem_id=str(contract["problemId"]),
+            subject_transaction_id=subject,
+            bindings=bindings,
+            base_accounting_state=base,
+            required_updates=required_updates,
+            impact_context=context,
+        )
+        materialize_submission_work_value(
+            base_state=base,
+            no_access_patch=no_patch,
+            with_access_patch=candidate,
+            root_contract=contract,
+            base_knowledge_state=before,
+            target_knowledge_state=after,
+            topology_alignment=alignment,
+        )
+        return candidate
+
     with_response = _invoke(
         provider,
         checkpoint,
         stage="with-access",
         request=with_request,
         evidence_files=with_files,
+        semantic_validate=validate_with_access_response,
     )
-    with_patch = _patch_from_response(
-        with_response,
-        mode="with-access",
-        problem_id=str(contract["problemId"]),
-        subject_transaction_id=subject,
-        bindings=bindings,
-        base_accounting_state=base,
-        required_updates=required_updates,
-        impact_context=context,
-    )
+    with_patch = validate_with_access_response(with_response)
     no_state, with_state, evaluation = materialize_submission_work_value(
         base_state=base,
         no_access_patch=no_patch,
