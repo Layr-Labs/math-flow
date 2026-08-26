@@ -16,6 +16,7 @@ from math_flow.work_accounting import (
     build_work_accounting_state,
     canonical_decimal,
     make_root_contract,
+    make_zero_work_accounting_state,
     make_work_accounting_patch,
     materialize_submission_work_value,
     validate_root_contract,
@@ -23,6 +24,7 @@ from math_flow.work_accounting import (
     validate_work_accounting_patch,
     validate_work_accounting_state,
 )
+from math_flow.research_topology import empty_research_program_state_v2
 
 
 TX = "a" * 40
@@ -220,6 +222,39 @@ def patch(
 
 
 class WorkAccountingTests(unittest.TestCase):
+    def test_zero_origin_is_structural_not_an_estimate(self) -> None:
+        knowledge = empty_research_program_state_v2("demo")
+        root_contract = contract()
+        state = make_zero_work_accounting_state(
+            root_contract=root_contract,
+            knowledge_state=knowledge,
+        )
+        self.assertEqual(state["totalWorkHours"], "0")
+        self.assertEqual(state["processedSubmissionIds"], [])
+        self.assertEqual(state["evaluationMode"], "baseline")
+        self.assertEqual(
+            [
+                (
+                    item["nodeRef"]["id"],
+                    item["directWorkHours"],
+                    item["conditionalIncidence"],
+                )
+                for item in state["annotations"]
+            ],
+            [
+                ("root", "0", None),
+                ("root/unstructured-search", "0", "1"),
+            ],
+        )
+        validate_work_accounting_state(state, knowledge, root_contract)
+
+    def test_zero_origin_rejects_a_formed_knowledge_state(self) -> None:
+        with self.assertRaisesRegex(MathFlowError, "unprocessed knowledge origin"):
+            make_zero_work_accounting_state(
+                root_contract=contract(),
+                knowledge_state=accepted_knowledge_state(),
+            )
+
     def test_exact_propagation_and_accounting_equality(self) -> None:
         knowledge, root_contract, state = baseline_state()
         validate_work_accounting_state(state, knowledge, root_contract)

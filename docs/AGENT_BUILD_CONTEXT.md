@@ -276,12 +276,12 @@ successor/retirement lineage, and deterministic credit invalidation or refresh
 for every affected local program edge. Preserve this evolution path when
 simplifying or replacing the experimental builder.
 
-The inactive provider-free builder-v6 foundation implements that next reducer
-boundary over state v2. It materializes one exact adjacent post-state per
+The inactive builder-v6 foundation and one-submission bundle runner implement
+that next reducer boundary over state v2. It materializes one exact adjacent post-state per
 accepted canonical submission, composes accepted content with stable moves,
 retirement, split, and merge operations, derives rather than accepts topology
 alignment, and emits an exact same-world accounting handoff. Its judge/profile
-identities are not allowed by projection governance and no active runner or
+identities are not used by any registered projection and no active workflow or
 projection uses them; activation remains a separate governed change.
 
 Cross-program claims belong at root or another genuinely shared active scope.

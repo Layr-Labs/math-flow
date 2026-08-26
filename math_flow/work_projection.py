@@ -207,7 +207,31 @@ def _assert_no_access_evidence_nonleakage(
     that later composition cannot accidentally reintroduce a raw evidence span.
     """
 
-    rendered = _json_bytes(request)
+    # Identity fields, the immutable root contract, claim keys, and builder node
+    # IDs are independently governed bindings and may legitimately be printed
+    # in the manifested submission. Scan only provider-authored prose. The same
+    # prose was checked when safe facts were built; this second check protects
+    # the later request-composition boundary.
+    stage_input = request.get("stageInput")
+    safe_facts = (
+        stage_input.get("safeFacts") if isinstance(stage_input, dict) else None
+    )
+    facts = safe_facts.get("facts") if isinstance(safe_facts, dict) else None
+    assumptions = (
+        safe_facts.get("assumptions") if isinstance(safe_facts, dict) else None
+    )
+    rendered = _json_bytes(
+        {
+            "factConditions": [
+                item.get("condition")
+                for item in facts
+                if isinstance(item, dict)
+            ]
+            if isinstance(facts, list)
+            else [],
+            "assumptions": assumptions if isinstance(assumptions, list) else [],
+        }
+    )
     window = 32
     rendered_windows = {
         rendered[offset : offset + window]

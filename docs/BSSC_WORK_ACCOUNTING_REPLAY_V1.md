@@ -1,5 +1,13 @@
 # BSSC Historical Work-Accounting Bootstrap and Replay V1
 
+Legacy fallback notice: this cutoff migration is no longer the planned BSSC
+activation path. The primary candidate starts from the empty builder-v6 origin
+and processes all 16 accepted submissions independently, as recorded in
+`docs/BSSC_ZERO_ORIGIN_ACCOUNTING_V1.md`. This document and its checked report
+remain useful evidence for an exact builder-v5 migration if that fallback is
+ever needed; they must not be used to mark the first 12 accepted submissions as
+already credited in the new lane.
+
 Status: provider-free readiness harness, inactive. This does not register or
 activate a projection, alter canonical or projection history, call a model, or
 write production CAS state.

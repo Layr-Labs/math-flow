@@ -535,6 +535,57 @@ def build_work_accounting_state(
     return validate_work_accounting_state(result, knowledge, contract)
 
 
+def make_zero_work_accounting_state(
+    *,
+    root_contract: object,
+    knowledge_state: object,
+) -> dict[str, object]:
+    """Create the deterministic structural accounting origin for a new lane.
+
+    This is not a provider-authored estimate.  It is valid only for an empty
+    builder-owned knowledge state before the first accepted submission.  Every
+    direct-work primitive is zero; active non-root nodes receive incidence one
+    so the seed topology remains reachable, while inactive nodes receive zero.
+    The first per-submission same-world evaluation replaces the relevant
+    primitives with actual no-access and with-access estimates.
+    """
+
+    contract = validate_root_contract(root_contract)
+    knowledge = _validate_knowledge_state(
+        knowledge_state, str(contract["problemId"])
+    )
+    if (
+        knowledge.get("ledgerHead") is not None
+        or knowledge.get("baseStateDigest") is not None
+        or knowledge.get("contributions") != {}
+    ):
+        raise MathFlowError(
+            "zero work-accounting state requires an unprocessed knowledge origin"
+        )
+    nodes, _, root = _knowledge_topology(knowledge)
+    annotations = []
+    for key in sorted(nodes):
+        record = nodes[key]
+        annotations.append(
+            {
+                "nodeRef": _node_ref_for(key),
+                "directWorkHours": "0",
+                "conditionalIncidence": (
+                    None
+                    if key == root
+                    else "0"
+                    if record.get("status") in {"completed", "retired"}
+                    else "1"
+                ),
+            }
+        )
+    return build_work_accounting_state(
+        root_contract=contract,
+        knowledge_state=knowledge,
+        annotations=annotations,
+    )
+
+
 def validate_work_accounting_state(
     value: object,
     knowledge_state: object,

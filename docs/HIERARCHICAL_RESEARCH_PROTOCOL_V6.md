@@ -1,7 +1,7 @@
 # Hierarchical research protocol v6 foundation
 
-Status: inactive, opt-in runtime contract. No governed projection, hosted
-workflow, scheduler, active knowledge lane, viewer, or accounting runner uses
+Status: inactive, opt-in runtime contract with a bundle runner. No governed
+projection, hosted workflow, scheduler, active knowledge lane, or viewer uses
 this builder version.
 
 Builder v6 is the first hierarchical research-builder contract over
@@ -10,9 +10,10 @@ revisable program/thread topology defined by
 `math_flow.research_topology`, without changing or migrating any published
 builder-v1 through builder-v5 artifact.
 
-The implementation in this version is deliberately provider-free. It is the
-trusted reduction and handoff boundary that a later provider adapter must call;
-it is not yet dispatched by `run_research_build_bundle`.
+The trusted reducer is provider-neutral. `run_research_build_bundle` now has an
+inactive v6 branch that calls the governed provider adapter and publishes one
+fully replayable bundle per accepted submission. Projection admission remains
+separate.
 
 ## Authority and entity roles
 
@@ -52,10 +53,11 @@ envelope rejects one.
 
 `apply_research_builder_v6_sequence` accepts caller-supplied canonical ledger
 ordinals and requires an exact one-to-one, same-order transition list. It
-materializes adjacent states sequentially. Judgment scheduling can still
-coalesce a ready batch, but completion order cannot select formation order and
-coalescing cannot collapse several accepted submissions into one accounting
-subject.
+materializes adjacent states sequentially. The bundle runner accepts exactly
+one validity judgment with at least one accepted claim. Scheduling can discover
+many ready judgments together, but it must publish one accepted submission at a
+time; completion order cannot select formation order or collapse several
+accepted submissions into one accounting subject.
 
 Excluded submissions have no v6 state transition. A submission with at least
 one accepted claim must have one transition and at least one durable item that
@@ -127,33 +129,33 @@ work estimate, probability, credit value, or allocation.
 - `protocol/profiles/hierarchical-research-v6.json` — inactive artifact profile;
 - `protocol/schemas/research-program-submission-transition-v6.schema.json` —
   one-submission transition;
+- `protocol/schemas/research-builder-submission-input-v1.schema.json` — the
+  accepted claims, judgment, ordinal, and manifested-evidence binding needed to
+  replay that transition;
 - `protocol/schemas/research-builder-same-world-handoff-v1.schema.json` — exact
   downstream handoff; and
 - the existing state-v2, topology-transition-v1, and topology-alignment-v1
   contracts.
 
-The judge loader recognizes these component identities so the inert spec is
-self-validating. Projection governance intentionally does not allow builder v6
-yet, and no projection spec references it.
+The judge loader and projection compatibility validator recognize these
+component identities, so an inactive candidate can be checked before admission.
+No registered projection references builder v6.
 
 ## Activation seam
 
-Activation is a separate change. It must not weaken the reducer to fit the
-current batched provider runner. A complete activation should:
+Activation is a separate change. The inactive bundle runner now supplies the
+one-submission formation boundary. A complete activation should:
 
-1. add a v6 branch to `run_research_build_bundle` and its bundle loader;
-2. retain scheduling/coalescing while ordering accepted subjects by canonical
-   ledger ordinal and invoking the v6 adapter once per accepted submission;
-3. persist every raw proposal, trusted transition, exact post-state, topology
-   alignment, and same-world handoff, rather than only one terminal batch state;
-4. have the trusted output adapter populate or verify intermediate topology
-   base digests and reject any model-authored alignment;
-5. extend governed compatibility only for validity-v4 plus builder-v6 with no
-   reconciliation stage;
-6. teach publication and downstream accounting transport to bind the exact
-   handoff/alignment artifacts; and
-7. admit or edit a projection in the required separate one-file governed PR.
+1. schedule each accepted subject in canonical ledger order and invoke the v6
+   runner once from its exact predecessor; excluded submissions produce no
+   knowledge bundle;
+2. publish the stored proposal/transition, predecessor and post-state,
+   reducer-derived topology alignment, and same-world handoff atomically;
+3. teach downstream accounting transport to consume the exact published
+   handoff/alignment artifacts instead of independently authoring topology;
+4. add hosted resume/publication and viewer support; and
+5. admit the projection in the required separate one-file governed PR.
 
-Until all seven steps are present, builder v6 remains provider-free and cannot
-be selected by a governed projection. Historical builders and active
-builder-v5 behavior remain byte-for-byte replayable.
+Until those steps are present, builder v6 remains inactive and cannot be
+selected by a registered projection. Historical builders and active builder-v5
+behavior remain byte-for-byte replayable.

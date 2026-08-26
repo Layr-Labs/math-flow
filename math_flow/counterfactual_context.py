@@ -649,7 +649,17 @@ def build_counterfactual_safe_facts(
         }
     )
     semantic_payload = {"facts": facts, "assumptions": assumptions}
-    _assert_no_raw_evidence_copy(semantic_payload, evidence)
+    # Claim keys and builder node IDs are mandatory identity bindings and may
+    # legitimately be printed in the manifested submission.  The epistemic
+    # boundary applies to provider-authored prose, so scan only fact conditions
+    # and assumptions for copied evidence spans.
+    _assert_no_raw_evidence_copy(
+        {
+            "factConditions": [fact["condition"] for fact in facts],
+            "assumptions": assumptions,
+        },
+        evidence,
+    )
     core: dict[str, object] = {
         "schemaVersion": 1,
         "problemId": problem,

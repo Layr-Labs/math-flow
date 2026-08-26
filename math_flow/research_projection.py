@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from .artifacts import (
@@ -8,6 +9,11 @@ from .artifacts import (
     read_verified_artifact,
     sha256_bytes,
     verify_bundle,
+)
+from .counterfactual_context import (
+    manifest_submission_at,
+    reconstruct_submission_evidence,
+    validate_submission_evidence_manifest,
 )
 from .errors import MathFlowError
 from .formation import validate_build_claim
@@ -21,6 +27,11 @@ from .judges import artifact_evidence, load_judge_spec, load_source
 from .judgments import load_judgment_bundle, run_primary_judgment_bundle
 from .openrouter import OpenRouterTransport, send_chat_completion
 from .repository import is_ancestor, read_at, sha256_json
+from .governed_providers import OpenRouterResearchBuilderV6Provider
+from .research_builder_v6 import (
+    apply_research_builder_v6_transition,
+    validate_research_builder_v6_handoff,
+)
 from .research_state import (
     affected_credit_targets,
     apply_research_program_delta,
@@ -34,6 +45,12 @@ from .research_state import (
     validate_research_program_v5_batch_binding,
 )
 from .runs import run_envelope
+from .research_topology import (
+    empty_research_program_state_v2,
+    validate_research_program_state_v2,
+    validate_research_topology_alignment,
+)
+from .work_projection import SubmissionEvidenceFile
 from .validity import (
     validate_dependency_packet,
     validate_evidence_packet_v3,
@@ -45,6 +62,17 @@ WORK_PATTERN = r"^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$"
 DIGEST_PATTERN = r"^sha256:[0-9a-f]{64}$"
 GIT_SHA_PATTERN = r"^[0-9a-f]{40}$"
 IDENTIFIER_PATTERN = r"^[a-z0-9][a-z0-9/_-]*$"
+
+V6_SUBMISSION_INPUT_FIELDS = {
+    "schemaVersion",
+    "problemId",
+    "subjectTransactionId",
+    "ledgerOrdinal",
+    "judgmentId",
+    "acceptedClaims",
+    "evidenceManifestDigest",
+    "submissionInputDigest",
+}
 
 
 class _ReplayCheckpointTransport:
@@ -728,6 +756,69 @@ def load_research_update_bundle(
     return manifest, program_state, credit_state, manifest_digest
 
 
+def _seal_v6_submission_input(value: dict[str, object]) -> dict[str, object]:
+    core = {
+        key: item for key, item in value.items() if key != "submissionInputDigest"
+    }
+    return validate_research_builder_v6_submission_input(
+        {**core, "submissionInputDigest": f"sha256:{sha256_json(core)}"}
+    )
+
+
+def validate_research_builder_v6_submission_input(
+    value: object,
+) -> dict[str, object]:
+    if not isinstance(value, dict) or set(value) != V6_SUBMISSION_INPUT_FIELDS:
+        raise MathFlowError("research builder v6 submission input has an invalid envelope")
+    subject = value.get("subjectTransactionId")
+    judgment = value.get("judgmentId")
+    if (
+        value.get("schemaVersion") != 1
+        or not isinstance(value.get("problemId"), str)
+        or not isinstance(subject, str)
+        or not re.fullmatch(GIT_SHA_PATTERN, subject)
+        or not isinstance(value.get("ledgerOrdinal"), int)
+        or isinstance(value.get("ledgerOrdinal"), bool)
+        or int(value["ledgerOrdinal"]) < 1
+        or not isinstance(judgment, str)
+        or not re.fullmatch(DIGEST_PATTERN, judgment)
+        or not isinstance(value.get("evidenceManifestDigest"), str)
+        or not re.fullmatch(
+            DIGEST_PATTERN, str(value["evidenceManifestDigest"])
+        )
+    ):
+        raise MathFlowError("research builder v6 submission input has invalid identity fields")
+    claims = value.get("acceptedClaims")
+    if not isinstance(claims, list) or not claims:
+        raise MathFlowError("research builder v6 submission input has no accepted claims")
+    keys: list[str] = []
+    for claim in claims:
+        dependencies = claim.get("dependencyTransactionIds") if isinstance(claim, dict) else None
+        if (
+            not isinstance(claim, dict)
+            or set(claim) != {"claimKey", "statement", "dependencyTransactionIds"}
+            or not isinstance(claim.get("claimKey"), str)
+            or not re.fullmatch(IDENTIFIER_PATTERN, str(claim["claimKey"]))
+            or not isinstance(claim.get("statement"), str)
+            or not str(claim["statement"]).strip()
+            or not isinstance(dependencies, list)
+            or dependencies != sorted(set(dependencies))
+            or any(
+                not isinstance(item, str)
+                or not re.fullmatch(GIT_SHA_PATTERN, item)
+                for item in dependencies
+            )
+        ):
+            raise MathFlowError("research builder v6 submission input has an invalid claim")
+        keys.append(str(claim["claimKey"]))
+    if keys != sorted(set(keys)):
+        raise MathFlowError("research builder v6 submission input claims are not canonical")
+    core = {key: item for key, item in value.items() if key != "submissionInputDigest"}
+    if value.get("submissionInputDigest") != f"sha256:{sha256_json(core)}":
+        raise MathFlowError("research builder v6 submission input digest mismatch")
+    return value
+
+
 def load_research_build_bundle(
     bundle_dir: Path,
 ) -> tuple[dict[str, object], dict[str, object], str]:
@@ -740,14 +831,49 @@ def load_research_build_bundle(
             "math-flow/hierarchical-research-v3",
             "math-flow/hierarchical-research-v4",
             "math-flow/hierarchical-research-v5",
+            "math-flow/hierarchical-research-v6",
         }
     ):
-        raise MathFlowError("bundle is not a batched hierarchical research build")
+        raise MathFlowError("bundle is not a hierarchical research build")
     try:
         program_state = json.loads(
             read_verified_artifact(bundle_dir, manifest, "research-program-state")
         )
-        if manifest.get("outputProfile") == "math-flow/hierarchical-research-v5":
+        if manifest.get("outputProfile") == "math-flow/hierarchical-research-v6":
+            base_state = json.loads(
+                read_verified_artifact(
+                    bundle_dir, manifest, "research-program-base-state"
+                )
+            )
+            build_input = json.loads(
+                read_verified_artifact(bundle_dir, manifest, "knowledge-build-input")
+            )
+            submission_input = json.loads(
+                read_verified_artifact(
+                    bundle_dir, manifest, "research-builder-submission-input"
+                )
+            )
+            evidence_manifest = json.loads(
+                read_verified_artifact(
+                    bundle_dir, manifest, "submission-evidence-manifest"
+                )
+            )
+            program_transition = json.loads(
+                read_verified_artifact(
+                    bundle_dir, manifest, "research-program-transition"
+                )
+            )
+            topology_alignment = json.loads(
+                read_verified_artifact(
+                    bundle_dir, manifest, "research-topology-alignment"
+                )
+            )
+            builder_handoff = json.loads(
+                read_verified_artifact(bundle_dir, manifest, "research-builder-handoff")
+            )
+            program_delta = None
+            batch_input = None
+        elif manifest.get("outputProfile") == "math-flow/hierarchical-research-v5":
             program_delta = json.loads(
                 read_verified_artifact(
                     bundle_dir, manifest, "research-program-delta"
@@ -761,7 +887,68 @@ def load_research_build_bundle(
             batch_input = None
     except json.JSONDecodeError as exc:
         raise MathFlowError("research build bundle contains invalid JSON") from exc
-    validate_research_program_state(program_state, str(manifest["problemId"]))
+    if manifest.get("outputProfile") == "math-flow/hierarchical-research-v6":
+        problem = str(manifest["problemId"])
+        validate_research_program_state_v2(base_state, problem)
+        validate_research_program_state_v2(program_state, problem)
+        submission = validate_research_builder_v6_submission_input(submission_input)
+        evidence = validate_submission_evidence_manifest(evidence_manifest)
+        judge = manifest.get("judgeSpec")
+        if not isinstance(judge, dict) or not isinstance(judge.get("digest"), str):
+            raise MathFlowError("hierarchical research v6 manifest has no builder digest")
+        # Serialized build inputs intentionally omit the claim's wall-clock
+        # field. It is excluded from the immutable token, so a neutral value is
+        # sufficient to revalidate the locked content.
+        claim = validate_build_claim(
+            {**build_input, "claimedAt": 0}, problem, str(judge["digest"])
+        )
+        subject = str(submission["subjectTransactionId"])
+        inputs = manifest.get("inputs")
+        if (
+            not isinstance(inputs, dict)
+            or set(inputs) != set(build_input) | {
+                "judgmentRunDigest",
+                "submissionInputDigest",
+            }
+            or any(inputs.get(key) != item for key, item in build_input.items())
+            or inputs.get("submissionInputDigest")
+            != submission.get("submissionInputDigest")
+            or not isinstance(inputs.get("judgmentRunDigest"), str)
+            or not re.fullmatch(DIGEST_PATTERN, str(inputs["judgmentRunDigest"]))
+            or claim.get("baseStateRun") != manifest.get("baseRun")
+            or claim.get("judgmentIds") != [submission["judgmentId"]]
+            or manifest.get("ledgerHead") != subject
+            or program_state.get("ledgerHead") != subject
+            or evidence.get("problemId") != problem
+            or evidence.get("subjectTransactionId") != subject
+            or evidence.get("manifestDigest")
+            != submission.get("evidenceManifestDigest")
+        ):
+            raise MathFlowError("hierarchical research v6 manifest input binding mismatch")
+        reduced = apply_research_builder_v6_transition(
+            base_state,
+            program_transition,
+            accepted_claims=submission["acceptedClaims"],
+            judgment_id=str(submission["judgmentId"]),
+        )
+        if reduced["postState"] != program_state:
+            raise MathFlowError("hierarchical research v6 post-state is not reducer-authored")
+        validate_research_topology_alignment(
+            topology_alignment, base_state, program_state
+        )
+        if reduced["topologyAlignment"] != topology_alignment:
+            raise MathFlowError("hierarchical research v6 alignment is not deterministic")
+        validate_research_builder_v6_handoff(
+            builder_handoff,
+            base_state,
+            program_state,
+            topology_alignment,
+            subject,
+        )
+        if reduced["sameWorldHandoff"] != builder_handoff:
+            raise MathFlowError("hierarchical research v6 handoff is not deterministic")
+    else:
+        validate_research_program_state(program_state, str(manifest["problemId"]))
     if program_delta is not None:
         problem_ledger_head = manifest.get("problemLedgerHead")
         if not isinstance(problem_ledger_head, str):
@@ -789,6 +976,228 @@ def _empty_conflict_input(path: Path | None) -> None:
         raise MathFlowError("hierarchical research formation does not accept conflicts")
 
 
+def _run_research_build_bundle_v6(
+    root: Path,
+    problem: str,
+    builder_path: Path,
+    head: str,
+    claim: object,
+    judgment_bundle_dirs: list[Path],
+    conflicts_path: Path | None,
+    output_dir: Path,
+    *,
+    base_run: Path | None,
+    transport: OpenRouterTransport | None,
+    checkpoint_dir: Path | None,
+) -> dict[str, object]:
+    """Publish one exact builder-v6 transition for one accepted submission."""
+
+    spec = load_judge_spec(builder_path)
+    builder_digest = f"sha256:{sha256_json(spec)}"
+    build_input = validate_build_claim(claim, problem, builder_digest)
+    if build_input["conflictIds"]:
+        raise MathFlowError("hierarchical research v6 does not use reconciliation")
+    _empty_conflict_input(conflicts_path)
+    if len(judgment_bundle_dirs) != 1:
+        raise MathFlowError(
+            "hierarchical research v6 requires one validity judgment per published run"
+        )
+    source = load_source(root, problem, head)
+    validity_manifest, judgment, judgment_run_digest = load_judgment_bundle(
+        judgment_bundle_dirs[0]
+    )
+    if (
+        validity_manifest.get("outputProfile") != "math-flow/validity-judgment-v4"
+        or judgment.get("problemId") != problem
+        or judgment.get("judgmentKind") != "primary"
+    ):
+        raise MathFlowError("hierarchical research v6 requires one validity-v4 primary judgment")
+    subjects = judgment.get("subjects")
+    if not isinstance(subjects, list) or len(subjects) != 1:
+        raise MathFlowError("hierarchical research v6 validity judgment needs one subject")
+    subject = str(subjects[0]["id"])
+    if source.get("ledgerHead") != subject:
+        raise MathFlowError(
+            "hierarchical research v6 must run at the accepted subject revision"
+        )
+    try:
+        packet = json.loads(
+            read_verified_artifact(
+                judgment_bundle_dirs[0],
+                validity_manifest,
+                "judgment-dependency-packet",
+            )
+        )
+    except json.JSONDecodeError as exc:
+        raise MathFlowError("hierarchical research v6 validity packet is invalid JSON") from exc
+    validate_evidence_packet_v4(packet)
+    if packet.get("subjectTransactionId") != subject:
+        raise MathFlowError("hierarchical research v6 validity packet names another subject")
+    raw_claims = _accepted_claims(judgment, packet)
+    if not raw_claims:
+        raise MathFlowError("hierarchical research v6 excludes submissions with no valid claims")
+    accepted_claims = sorted(
+        [
+            {
+                "claimKey": str(item["claimKey"]),
+                "statement": str(item["statement"]),
+                "dependencyTransactionIds": sorted(
+                    str(value) for value in item["dependencyTransactionIds"]
+                ),
+            }
+            for item in raw_claims
+        ],
+        key=lambda item: str(item["claimKey"]),
+    )
+
+    base_run_digest = None
+    if base_run is None:
+        base_state = empty_research_program_state_v2(problem)
+    else:
+        base_manifest, base_state, base_run_digest = load_research_build_bundle(base_run)
+        base_judge = base_manifest.get("judgeSpec")
+        if (
+            base_manifest.get("problemId") != problem
+            or base_manifest.get("outputProfile") != "math-flow/hierarchical-research-v6"
+            or not isinstance(base_judge, dict)
+            or base_judge.get("digest") != builder_digest
+        ):
+            raise MathFlowError("hierarchical research v6 base belongs to another lane")
+        base_head = base_state.get("ledgerHead")
+        if not isinstance(base_head, str) or not is_ancestor(root, base_head, subject):
+            raise MathFlowError("hierarchical research v6 base is outside subject history")
+    if build_input.get("baseStateRun") != base_run_digest:
+        raise MathFlowError("hierarchical research v6 base run does not match its claim")
+    judgment_id = str(judgment["judgmentId"])
+    if (
+        build_input.get("judgmentIds") != [judgment_id]
+        or build_input.get("projectionSpecDigest") is None
+    ):
+        raise MathFlowError(
+            "hierarchical research v6 claim must bind one judgment and a projection spec"
+        )
+    missing_dependencies = {
+        dependency
+        for accepted in accepted_claims
+        for dependency in accepted["dependencyTransactionIds"]
+        if dependency not in base_state["contributions"]
+    }
+    if missing_dependencies:
+        raise MathFlowError(
+            "hierarchical research v6 accepted dependency is absent from predecessor: "
+            f"{sorted(missing_dependencies)[0]}"
+        )
+
+    transaction = next(
+        (
+            item
+            for item in source["transactions"]
+            if item.get("transactionId") == subject
+        ),
+        None,
+    )
+    if not isinstance(transaction, dict):
+        raise MathFlowError("hierarchical research v6 subject is outside canonical ledger")
+    evidence_manifest, chunks = manifest_submission_at(
+        root,
+        problem_id=problem,
+        subject_transaction_id=subject,
+        contribution_path=str(transaction["path"]),
+    )
+    reconstructed = reconstruct_submission_evidence(evidence_manifest, chunks)
+    evidence_files = tuple(
+        SubmissionEvidenceFile(
+            path=path,
+            digest=sha256_bytes(content),
+            content=content,
+        )
+        for path, content in sorted(reconstructed.items())
+    )
+    submission_input = _seal_v6_submission_input(
+        {
+            "schemaVersion": 1,
+            "problemId": problem,
+            "subjectTransactionId": subject,
+            "ledgerOrdinal": transaction["ordinal"],
+            "judgmentId": judgment_id,
+            "acceptedClaims": accepted_claims,
+            "evidenceManifestDigest": evidence_manifest["manifestDigest"],
+        }
+    )
+
+    send = transport or send_chat_completion
+    if checkpoint_dir is not None:
+        checkpoint_transport = _ReplayCheckpointTransport(checkpoint_dir, send)
+        checkpoint_transport.begin_stage()
+        send = checkpoint_transport
+    provider = OpenRouterResearchBuilderV6Provider(spec, transport=send)
+    transition = provider.run(
+        problem_id=problem,
+        subject_transaction_id=subject,
+        base_state=base_state,
+        accepted_claims=accepted_claims,
+        judgment_id=judgment_id,
+        evidence_files=evidence_files,
+    )
+    reduced = apply_research_builder_v6_transition(
+        base_state,
+        transition,
+        accepted_claims=accepted_claims,
+        judgment_id=judgment_id,
+    )
+
+    bundle = ArtifactBundle(output_dir)
+    bundle.add_json("control/build-input.json", build_input, "knowledge-build-input")
+    bundle.add_json(
+        "input/submission.json",
+        submission_input,
+        "research-builder-submission-input",
+    )
+    bundle.add_json(
+        "input/evidence-manifest.json",
+        evidence_manifest,
+        "submission-evidence-manifest",
+    )
+    bundle.add_json(
+        "state/base-state.json",
+        base_state,
+        "research-program-base-state",
+    )
+    bundle.add_json(
+        "state/transition.json",
+        transition,
+        "research-program-transition",
+    )
+    bundle.add_json(
+        "state/state.json", reduced["postState"], "research-program-state"
+    )
+    bundle.add_json(
+        "state/topology-alignment.json",
+        reduced["topologyAlignment"],
+        "research-topology-alignment",
+    )
+    bundle.add_json(
+        "state/same-world-handoff.json",
+        reduced["sameWorldHandoff"],
+        "research-builder-handoff",
+    )
+    envelope = run_envelope(
+        problem,
+        source,
+        spec,
+        base_run_digest,
+        [str(item["requestDigest"]) for item in provider.invocation_records],
+        provider.invocation_records,
+        run_kind="knowledge-build",
+        inputs={
+            **build_input,
+            "judgmentRunDigest": judgment_run_digest,
+            "submissionInputDigest": submission_input["submissionInputDigest"],
+        },
+    )
+    return bundle.finalize(envelope)
+
+
 def run_research_build_bundle(
     root: Path,
     problem: str,
@@ -813,6 +1222,20 @@ def run_research_build_bundle(
     root = root.resolve()
     spec = load_judge_spec(builder_path)
     implementation = str(spec["implementation"])
+    if implementation == "openrouter-hierarchical-research-builder-v6":
+        return _run_research_build_bundle_v6(
+            root,
+            problem,
+            builder_path,
+            head,
+            claim,
+            judgment_bundle_dirs,
+            conflicts_path,
+            output_dir,
+            base_run=base_run,
+            transport=transport,
+            checkpoint_dir=checkpoint_dir,
+        )
     if implementation not in {
         "openrouter-hierarchical-research-builder-v2",
         "openrouter-hierarchical-research-builder-v3",
