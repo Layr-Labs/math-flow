@@ -55,6 +55,7 @@ OVERLAY_IMPLEMENTATIONS = {
     "openrouter-credit-assignment-v2",
     "openrouter-hierarchical-research-credit-v2",
     "openrouter-work-accounting-v1",
+    "openrouter-work-accounting-v2",
 }
 PROJECTION_DEPENDENCY_FIELDS = {"name", "projectionId", "artifactRole"}
 ARTIFACT_ROLE = re.compile(r"^[a-z0-9][a-z0-9-]*$")

@@ -21,6 +21,7 @@ from math_flow.work_accounting_pipeline import (
     materialize_stored_work_projection_bundle,
     read_work_accounting_pipeline_state,
 )
+from math_flow.work_projection import PROFILE_V2
 
 
 PROJECTION_SPEC = "sha256:" + "a" * 64
@@ -429,6 +430,61 @@ class FakeWorkProvider:
             }
         )
         by_ref = {(item["nodeRef"]["kind"], item["nodeRef"]["id"]): item for item in updates}
+        return {"updates": [by_ref[key] for key in sorted(by_ref)]}
+
+
+class FailingV2WorkProvider(FakeWorkProvider):
+    """Produces a valid frozen W+ followed by a nonpositive first W-."""
+
+    output_profile = PROFILE_V2
+
+    def __init__(self, subjects: list[str]) -> None:
+        super().__init__(subjects, reverse_work=True)
+
+
+class RecoveringNoAccessOnlyV2Provider:
+    """A fresh retry process that must consume the CAS-frozen W+ directly."""
+
+    output_profile = PROFILE_V2
+
+    def __init__(self) -> None:
+        self.calls: list[str] = []
+
+    def __call__(self, *, stage, request, evidence_files):
+        self.calls.append(stage)
+        if stage != "no-access" or evidence_files:
+            raise AssertionError("V2 retry regenerated or exposed the frozen W+ arm")
+        updates = []
+        for requirement in request["requiredPrimitiveUpdates"]:
+            changes = {
+                field: (
+                    "0"
+                    if "inactive-zeroing" in requirement["reasons"]
+                    else "20"
+                    if field == "directWorkHours"
+                    else "1"
+                )
+                for field in requirement["requiredChanges"]
+            }
+            updates.append(
+                {
+                    "nodeRef": copy.deepcopy(requirement["nodeRef"]),
+                    "changes": changes,
+                    "rationale": "Retry only the direct no-access W- estimate.",
+                    "evidenceRefs": ["stage:no-access"],
+                }
+            )
+        root_search = ("thread", "root/unstructured-search")
+        by_ref = {
+            (item["nodeRef"]["kind"], item["nodeRef"]["id"]): item
+            for item in updates
+        }
+        by_ref[root_search] = {
+            "nodeRef": {"kind": root_search[0], "id": root_search[1]},
+            "changes": {"directWorkHours": "30"},
+            "rationale": "The no-access world retains substantial search work.",
+            "evidenceRefs": ["stage:no-access"],
+        }
         return {"updates": [by_ref[key] for key in sorted(by_ref)]}
 
 
@@ -876,6 +932,55 @@ class WorkAccountingPipelineTests(unittest.TestCase):
         failure = schedule["subjects"][0]["failureHistory"][0]
         self.assertEqual(failure["failureKind"], "nonpositive-work-value")
         self.assertNotIn("workValueHours", failure)
+
+    def test_v2_outer_retry_reuses_cas_frozen_with_access_candidate(self) -> None:
+        store = LocalCASObjectStore(self.root / "store-v2-retry")
+        self._initialize(store)
+        first_provider = FailingV2WorkProvider(self.transaction_ids)
+        failed = advance_work_accounting_pipeline(
+            store,
+            self.root,
+            projection_id="work-accounting-v1",
+            problem="demo",
+            builder_provider=RecordingBuilder(),
+            work_provider=first_provider,
+            accepted_submissions=self.submissions[:1],
+            scratch_root=self.root / "scratch-v2-first-process",
+            as_of=100,
+            maximum_subjects=1,
+        )
+        self.assertEqual(failed["phase"], "awaiting-work")
+        self.assertIsNone(failed["pendingTransition"]["claimDigest"])
+        self.assertEqual(
+            [stage for _, stage in first_provider.calls],
+            ["safe-facts", "with-access", "no-access"],
+        )
+        frozen = list(
+            (self.root / "store-v2-retry/indexes/frozen-with-access-candidates").glob(
+                "*.json"
+            )
+        )
+        self.assertEqual(len(frozen), 1)
+        frozen_bytes = frozen[0].read_bytes()
+
+        retry_provider = RecoveringNoAccessOnlyV2Provider()
+        recovered = advance_work_accounting_pipeline(
+            store,
+            self.root,
+            projection_id="work-accounting-v1",
+            problem="demo",
+            builder_provider=RecordingBuilder(),
+            work_provider=retry_provider,
+            accepted_submissions=self.submissions[:1],
+            # A distinct scratch root models a fresh hosted process.  Only the
+            # immutable CAS candidate can carry W+ across this boundary.
+            scratch_root=self.root / "scratch-v2-second-process",
+            as_of=110,
+            maximum_subjects=1,
+        )
+        self.assertEqual(retry_provider.calls, ["no-access"])
+        self.assertEqual(len(recovered["completedTransitions"]), 1)
+        self.assertEqual(frozen[0].read_bytes(), frozen_bytes)
 
     def test_local_store_rejects_path_escape(self) -> None:
         store = LocalCASObjectStore(self.root / "safe-store")

@@ -23,6 +23,8 @@ from .research_topology import LINEAGE_RELATIONS
 from .work_projection import (
     PATCH_RESPONSE_FIELDS,
     PATCH_UPDATE_INPUT_FIELDS,
+    PROFILE,
+    PROFILE_V2,
     SubmissionEvidenceFile,
     validate_work_projection_request,
 )
@@ -33,6 +35,7 @@ TRANSPORT_IDENTITY = {
     "endpoint": "https://openrouter.ai/api/v1/chat/completions",
 }
 WORK_IMPLEMENTATION = "openrouter-work-accounting-v1"
+WORK_IMPLEMENTATION_V2 = "openrouter-work-accounting-v2"
 BUILDER_IMPLEMENTATION = "openrouter-hierarchical-research-builder-v6"
 WORK_STAGES = ("safe-facts", "no-access", "with-access")
 DECIMAL = re.compile(r"^(?:0|[1-9][0-9]*)(?:\.[0-9]*[1-9])?$")
@@ -738,7 +741,7 @@ def _manifest_file_bindings(request: Mapping[str, object]) -> dict[str, str]:
 
 
 class OpenRouterWorkProjectionProvider(_GovernedOpenRouterAdapter):
-    """Adapter for the governed safe-facts, R(x), and C(x) roles."""
+    """V1 adapter for governed safe-facts, no-access, and with-access roles."""
 
     def __init__(
         self,
@@ -751,6 +754,7 @@ class OpenRouterWorkProjectionProvider(_GovernedOpenRouterAdapter):
             expected_implementation=WORK_IMPLEMENTATION,
             transport=transport,
         )
+        self.output_profile = PROFILE
 
     def __call__(
         self,
@@ -760,7 +764,11 @@ class OpenRouterWorkProjectionProvider(_GovernedOpenRouterAdapter):
         evidence_files: Sequence[SubmissionEvidenceFile],
     ) -> object:
         validated = validate_work_projection_request(copy.deepcopy(dict(request)))
-        if stage not in WORK_STAGES or validated["stage"] != stage:
+        if (
+            stage not in WORK_STAGES
+            or validated["stage"] != stage
+            or validated["profile"] != self.output_profile
+        ):
             raise MathFlowError("work provider stage does not match its request")
         if stage == "no-access":
             if evidence_files:
@@ -877,6 +885,24 @@ class OpenRouterWorkProjectionProvider(_GovernedOpenRouterAdapter):
             validate=validate_complete,
             retry_feedback=retry_feedback,
         )
+
+
+class OpenRouterWorkProjectionProviderV2(OpenRouterWorkProjectionProvider):
+    """Additive A-first provider: with-access ``W+`` precedes no-access ``W-``."""
+
+    def __init__(
+        self,
+        spec: Mapping[str, object],
+        *,
+        transport: OpenRouterTransport = send_chat_completion,
+    ) -> None:
+        _GovernedOpenRouterAdapter.__init__(
+            self,
+            spec,
+            expected_implementation=WORK_IMPLEMENTATION_V2,
+            transport=transport,
+        )
+        self.output_profile = PROFILE_V2
 
 
 class OpenRouterResearchBuilderV6Provider(_GovernedOpenRouterAdapter):

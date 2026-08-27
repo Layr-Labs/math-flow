@@ -25,8 +25,10 @@ from math_flow.work_accounting import build_work_accounting_state, make_root_con
 from math_flow.work_projection import (
     _required_primitive_updates,
     PROFILE,
+    PROFILE_V2,
     SubmissionEvidenceFile,
     load_work_projection_bundle,
+    prepare_frozen_with_access_candidate_v2,
     run_work_projection_bundle,
     validate_work_projection_manifest,
 )
@@ -389,6 +391,30 @@ class WorkProjectionTests(unittest.TestCase):
             checkpoint_dir=checkpoint,
         )
 
+    def _run_v2(
+        self,
+        output: Path,
+        provider: FakeProvider,
+        checkpoint: Path | None = None,
+        frozen_candidate: object | None = None,
+    ):
+        return run_work_projection_bundle(
+            output_dir=output,
+            provider=provider,
+            subject_transaction_id=TX,
+            root_contract=self.contract,
+            base_knowledge_state=self.base_knowledge,
+            target_knowledge_state=self.target_knowledge,
+            base_accounting_state=self.base_accounting,
+            topology_alignment=self.alignment,
+            evidence_manifest=self.evidence_manifest,
+            evidence_chunks=self.evidence_chunks,
+            accepted_claim_refs=self.claims,
+            checkpoint_dir=checkpoint,
+            output_profile=PROFILE_V2,
+            frozen_with_access_candidate=frozen_candidate,
+        )
+
     def test_per_submission_pipeline_firewall_and_immutable_replay(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -439,6 +465,112 @@ class WorkProjectionTests(unittest.TestCase):
                 )["bundleDigest"],
                 loaded["bundleDigest"],
             )
+
+    def test_v2_freezes_with_access_before_direct_no_access_estimation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "bundle"
+            provider = FakeProvider()
+            manifest = self._run_v2(output, provider)
+            self.assertEqual(
+                [call[0] for call in provider.calls],
+                ["safe-facts", "with-access", "no-access"],
+            )
+            self.assertEqual(manifest["outputProfile"], PROFILE_V2)
+            no_request = provider.calls[2][1]
+            stage_input = no_request["stageInput"]
+            frozen = stage_input["frozenWithAccessState"]
+            self.assertEqual(
+                stage_input["frozenWithAccessStateDigest"], frozen["stateDigest"]
+            )
+            self.assertEqual(frozen["totalWorkHours"], "4")
+            self.assertEqual(frozen["processedSubmissionIds"], [TX])
+            self.assertEqual(frozen["predecessorStateDigest"], self.base_accounting["stateDigest"])
+            rendered_no_request = json.dumps(no_request, sort_keys=True)
+            self.assertNotIn(SECRET, rendered_no_request)
+            self.assertNotIn("evidenceManifest", rendered_no_request)
+            self.assertNotIn("withAccessPatch", rendered_no_request)
+            self.assertNotIn("rationale", json.dumps(frozen, sort_keys=True))
+            loaded = load_work_projection_bundle(output)
+            self.assertEqual(loaded["evaluation"]["workValueHours"], "6")
+            self.assertEqual(loaded["withAccessState"], frozen)
+            self.assertEqual(
+                manifest["responseDigests"][1]["stage"], "with-access"
+            )
+            self.assertEqual(manifest["responseDigests"][2]["stage"], "no-access")
+
+    def test_v2_nonpositive_retry_reuses_frozen_w_plus_and_only_recalls_w_minus(self) -> None:
+        class NoAccessRetryProvider(FakeProvider):
+            def __call__(self, *, stage, request, evidence_files):
+                if stage != "no-access":
+                    raise AssertionError("validated W+ must not be regenerated")
+                return super().__call__(
+                    stage=stage, request=request, evidence_files=evidence_files
+                )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            checkpoint = root / "checkpoints"
+            first = FakeProvider(no_work="2", with_work="8")
+            with self.assertRaisesRegex(MathFlowError, "strictly positive"):
+                self._run_v2(root / "first", first, checkpoint)
+            self.assertEqual(
+                [call[0] for call in first.calls],
+                ["safe-facts", "with-access", "no-access"],
+            )
+            retry = NoAccessRetryProvider(no_work="12", with_work="999")
+            self._run_v2(root / "second", retry, checkpoint)
+            self.assertEqual([call[0] for call in retry.calls], ["no-access"])
+            loaded = load_work_projection_bundle(root / "second")
+            self.assertEqual(loaded["withAccessState"]["totalWorkHours"], "10")
+            self.assertEqual(loaded["evaluation"]["workValueHours"], "4")
+
+    def test_v2_frozen_candidate_rejects_tampered_predecessor_and_processed_state(self) -> None:
+        provider = FakeProvider()
+        candidate = prepare_frozen_with_access_candidate_v2(
+            provider=provider,
+            subject_transaction_id=TX,
+            root_contract=self.contract,
+            base_knowledge_state=self.base_knowledge,
+            target_knowledge_state=self.target_knowledge,
+            base_accounting_state=self.base_accounting,
+            topology_alignment=self.alignment,
+            evidence_manifest=self.evidence_manifest,
+            evidence_chunks=self.evidence_chunks,
+            accepted_claim_refs=self.claims,
+        )
+        self.assertEqual([call[0] for call in provider.calls], ["safe-facts", "with-access"])
+
+        stale = copy.deepcopy(candidate)
+        state = stale["withAccessState"]
+        state["predecessorStateDigest"] = "sha256:" + "1" * 64
+        state_core = {key: value for key, value in state.items() if key != "stateDigest"}
+        state["stateDigest"] = "sha256:" + sha256_json(state_core)
+        stale_core = {key: value for key, value in stale.items() if key != "candidateDigest"}
+        stale["candidateDigest"] = "sha256:" + sha256_json(stale_core)
+        with tempfile.TemporaryDirectory() as temporary:
+            with self.assertRaisesRegex(MathFlowError, "stale live predecessor"):
+                self._run_v2(Path(temporary) / "stale", FakeProvider(), frozen_candidate=stale)
+
+        wrong_processed = copy.deepcopy(candidate)
+        wrong_state = wrong_processed["withAccessState"]
+        wrong_state["processedSubmissionIds"] = []
+        wrong_state_core = {
+            key: value for key, value in wrong_state.items() if key != "stateDigest"
+        }
+        wrong_state["stateDigest"] = "sha256:" + sha256_json(wrong_state_core)
+        wrong_core = {
+            key: value
+            for key, value in wrong_processed.items()
+            if key != "candidateDigest"
+        }
+        wrong_processed["candidateDigest"] = "sha256:" + sha256_json(wrong_core)
+        with tempfile.TemporaryDirectory() as temporary:
+            with self.assertRaisesRegex(MathFlowError, "append its subject"):
+                self._run_v2(
+                    Path(temporary) / "processed",
+                    FakeProvider(),
+                    frozen_candidate=wrong_processed,
+                )
 
     def test_same_world_estimation_handles_new_builder_nodes(self) -> None:
         target = _topology_target_state(self.base_knowledge)
@@ -599,6 +731,10 @@ class WorkProjectionTests(unittest.TestCase):
         for name in (
             "work-projection-request-v1.schema.json",
             "work-projection-bundle-v1.schema.json",
+            "work-projection-request-v2.schema.json",
+            "work-projection-bundle-v2.schema.json",
+            "no-access-stage-input-v2.schema.json",
+            "frozen-with-access-candidate-v2.schema.json",
         ):
             value = json.loads((root / "protocol/schemas" / name).read_text())
             self.assertEqual(value["$schema"], "https://json-schema.org/draft/2020-12/schema")

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/no-access-stage-input-v2.schema.json",
+  "title": "A-First No-Access Counterfactual Stage Input V2",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "evaluationMode",
+    "problemId",
+    "subjectTransactionId",
+    "acceptedClaimRefs",
+    "knowledgeStateDigest",
+    "safeFacts",
+    "impactContext",
+    "frozenWithAccessCandidateDigest",
+    "frozenWithAccessStateDigest",
+    "frozenWithAccessState",
+    "visibilityPolicy",
+    "inputDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "evaluationMode": { "const": "no-access" },
+    "problemId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+    "acceptedClaimRefs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/acceptedClaimRef" } },
+    "knowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "safeFacts": { "$ref": "counterfactual-safe-facts-v1.schema.json" },
+    "impactContext": { "$ref": "work-impact-context-v1.schema.json" },
+    "frozenWithAccessCandidateDigest": { "$ref": "#/$defs/digest" },
+    "frozenWithAccessStateDigest": { "$ref": "#/$defs/digest" },
+    "frozenWithAccessState": { "$ref": "work-accounting-state-v1.schema.json" },
+    "visibilityPolicy": {
+      "type": "object",
+      "required": [
+        "rawContributionAvailableToEvaluator",
+        "frozenWithAccessStateAvailableToEvaluator",
+        "contributionAvailableToActors",
+        "actorsMayUseOnlyPreexistingPolicyUntilIndependentDiscovery"
+      ],
+      "properties": {
+        "rawContributionAvailableToEvaluator": { "const": false },
+        "frozenWithAccessStateAvailableToEvaluator": { "const": true },
+        "contributionAvailableToActors": { "const": false },
+        "actorsMayUseOnlyPreexistingPolicyUntilIndependentDiscovery": { "const": true }
+      },
+      "additionalProperties": false
+    },
+    "inputDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "acceptedClaimRef": {
+      "type": "object",
+      "required": ["transactionId", "claimKey", "judgmentId", "assessmentDigest"],
+      "properties": {
+        "transactionId": { "$ref": "#/$defs/transaction" },
+        "claimKey": { "$ref": "#/$defs/id" },
+        "judgmentId": { "$ref": "#/$defs/digest" },
+        "assessmentDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

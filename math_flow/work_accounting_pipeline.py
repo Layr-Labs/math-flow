@@ -43,8 +43,11 @@ from .work_accounting_schedule import (
     validate_work_accounting_transition_claim,
 )
 from .work_projection import (
+    PROFILE as WORK_PROJECTION_PROFILE_V1,
+    PROFILE_V2 as WORK_PROJECTION_PROFILE_V2,
     WorkProjectionProvider,
     load_work_projection_bundle,
+    prepare_frozen_with_access_candidate_v2,
     run_work_projection_bundle,
 )
 
@@ -1178,6 +1181,16 @@ def _work_index_key(automatic_retry_key: str) -> str:
     )
 
 
+def _frozen_with_access_candidate_key(automatic_retry_key: str) -> str:
+    """Address one V2 ``W+`` candidate by retry-stable transition identity."""
+
+    _require_digest(automatic_retry_key, "automatic retry key")
+    return (
+        "indexes/frozen-with-access-candidates/"
+        f"{automatic_retry_key.removeprefix('sha256:')}.json"
+    )
+
+
 def _seal_work_index(value: Mapping[str, object]) -> dict[str, object]:
     result = {
         key: copy.deepcopy(item)
@@ -1247,6 +1260,14 @@ def _load_or_run_work_bundle(
     alignment: Mapping[str, object],
 ) -> dict[str, object]:
     retry_key = str(claim["automaticRetryKey"])
+    output_profile = getattr(
+        work_provider, "output_profile", WORK_PROJECTION_PROFILE_V1
+    )
+    if output_profile not in {
+        WORK_PROJECTION_PROFILE_V1,
+        WORK_PROJECTION_PROFILE_V2,
+    }:
+        raise MathFlowError("work provider uses an unsupported output profile")
     existing = store.get(_work_index_key(retry_key))
     scratch_root.mkdir(parents=True, exist_ok=True)
     if existing is not None:
@@ -1265,11 +1286,56 @@ def _load_or_run_work_bundle(
         )
         return loaded
 
-    checkpoint_dir = (
-        scratch_root
-        / "checkpoints"
-        / str(claim["claimDigest"]).removeprefix("sha256:")
-    )
+    frozen_candidate: object | None = None
+    if output_profile == WORK_PROJECTION_PROFILE_V2:
+        # The scheduler issues a new claim digest after a failed attempt, while
+        # automaticRetryKey remains bound to the same semantic transition.  W+
+        # must therefore be durable under the latter identity.  The local
+        # checkpoint is also retry-stable, but the immutable CAS candidate is
+        # authoritative when a later hosted attempt has a fresh scratch root.
+        checkpoint_dir = (
+            scratch_root
+            / "checkpoints"
+            / "work-accounting-v2"
+            / retry_key.removeprefix("sha256:")
+        )
+        candidate_key = _frozen_with_access_candidate_key(retry_key)
+        stored_candidate = store.get(candidate_key)
+        if stored_candidate is None:
+            proposed_candidate = prepare_frozen_with_access_candidate_v2(
+                provider=work_provider,
+                subject_transaction_id=str(claim["subjectTransactionId"]),
+                root_contract=root_contract,
+                base_knowledge_state=base_knowledge,
+                target_knowledge_state=target_knowledge,
+                base_accounting_state=base_accounting,
+                topology_alignment=alignment,
+                evidence_manifest=submission["evidenceManifest"],
+                evidence_chunks=evidence_chunks,
+                accepted_claim_refs=submission["acceptedClaimRefs"],
+                checkpoint_dir=checkpoint_dir,
+            )
+            try:
+                store.put_immutable(candidate_key, _json_bytes(proposed_candidate))
+                frozen_candidate = proposed_candidate
+            except ImmutableConflict:
+                winner = store.get(candidate_key)
+                if winner is None:  # pragma: no cover - immutable CAS contract
+                    raise MathFlowError("frozen W+ candidate winner disappeared")
+                frozen_candidate = _json_value(
+                    winner.value, "frozen with-access candidate"
+                )
+        else:
+            frozen_candidate = _json_value(
+                stored_candidate.value, "frozen with-access candidate"
+            )
+    else:
+        # Preserve the historical V1 claim-scoped checkpoint behavior exactly.
+        checkpoint_dir = (
+            scratch_root
+            / "checkpoints"
+            / str(claim["claimDigest"]).removeprefix("sha256:")
+        )
     with tempfile.TemporaryDirectory(dir=scratch_root) as temporary:
         bundle_dir = Path(temporary) / "bundle"
         run_work_projection_bundle(
@@ -1285,6 +1351,8 @@ def _load_or_run_work_bundle(
             evidence_chunks=evidence_chunks,
             accepted_claim_refs=submission["acceptedClaimRefs"],
             checkpoint_dir=checkpoint_dir,
+            output_profile=output_profile,
+            frozen_with_access_candidate=frozen_candidate,
         )
         loaded = _store_work_bundle(store, bundle_dir)
     _validate_loaded_work(

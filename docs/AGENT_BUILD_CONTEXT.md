@@ -354,6 +354,7 @@ preference.
 | Builder-facing repository skill | Implemented; routes protocol and repository maintenance away from solver participation and requires isolated worktrees for parallel agents | `.agents/skills/math-flow-builder/` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Active credit-v3 uses the two-term common-horizon hierarchical evaluator over locked research-v3 state/history; governed local/hosted execution, provider-free eligibility, bounded semantic retries, rolling coalescing, predecessor-chain terminals, and independent bundles are implemented | `math_flow/research_credit.py`, `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
+| A-first work accounting V2 | Additive, inactive provider/runner foundation freezes a validated with-access `W+` candidate in immutable CAS before estimating direct same-base no-access `W-`; V1 replay and active V1 semantics remain unchanged | `math_flow/work_projection.py`, `math_flow/work_accounting_pipeline.py`, `docs/WORK_PROJECTION_V2.md`, `protocol/judges/openrouter-work-accounting-v2.json` |
 | Research direction registration | Implemented: append-only schema/reducer, atomic validation and auto-merge, provider-free CLI/context/catalog refresh, solver skill, viewer, and historical registration-aware qualitative credit-v2 artifacts | `math_flow/directions.py`, `protocol/schemas/research-direction-event.schema.json`, `viewer/` |
 | Objective verifier attestations | Additive v1 recipe, bounded pinned OCI runner, durable bundle, uniqueness/semantic validation, automatic hosted execution and signed publication, replay, context, viewer presentation, v3 subject-local deferral, and v4 declared-reference deferral/redispatch implemented | `math_flow/attestations.py`, `.github/workflows/project-attestation.yml`, `docs/OBJECTIVE_ATTESTATIONS.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
@@ -851,6 +852,8 @@ upgrade path.
 - `docs/BSSC_RESEARCH_V4_SERIAL_PRODUCER.md` — exact historical validity-v4
   frontier, one-submission builder-v6 production, recovery, and activation
   boundary for the BSSC K0-to-K16 chain.
+- `docs/WORK_PROJECTION_V2.md` — inactive A-first work-accounting profile,
+  frozen-live-state boundary, epistemic policy, and retry-isolation contract.
 - `docs/MVP.md` — architecture, phased roadmap, and deferred decisions.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V5.md` — current audited initial
   sibling/nested program formation, fixed-topology boundary, and rollout.

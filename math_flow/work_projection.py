@@ -14,11 +14,13 @@ from .counterfactual_context import (
     build_counterfactual_safe_facts,
     build_impact_subgraph_context,
     build_no_access_stage_input,
+    build_no_access_stage_input_v2,
     build_with_access_stage_input,
     reconstruct_submission_evidence,
     validate_counterfactual_safe_facts,
     validate_impact_subgraph_context,
     validate_no_access_stage_input,
+    validate_no_access_stage_input_v2,
     validate_submission_evidence_manifest,
     validate_with_access_stage_input,
 )
@@ -30,6 +32,7 @@ from .research_topology import (
     validate_research_topology_alignment,
 )
 from .work_accounting import (
+    apply_work_accounting_patch,
     bind_patch_to_state,
     make_work_accounting_patch,
     materialize_submission_work_value,
@@ -43,7 +46,10 @@ from .work_accounting import (
 DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 GIT_SHA = re.compile(r"^[0-9a-f]{40}$")
 STAGES = ("safe-facts", "no-access", "with-access")
+STAGES_V2 = ("safe-facts", "with-access", "no-access")
 PROFILE = "math-flow/work-accounting-transition-v1"
+PROFILE_V2 = "math-flow/work-accounting-transition-v2"
+SUPPORTED_PROFILES = {PROFILE: (1, STAGES), PROFILE_V2: (2, STAGES_V2)}
 
 REQUEST_FIELDS = {
     "schemaVersion",
@@ -122,6 +128,27 @@ UNIQUE_ARTIFACT_ROLES = {
     "with-access-work-patch": "state/with-access-patch.json",
     "with-access-work-state": "state/with-access-state.json",
     "submission-work-evaluation": "evaluation.json",
+}
+V2_FROZEN_CANDIDATE_ROLE = "frozen-with-access-candidate"
+V2_FROZEN_CANDIDATE_PATH = "context/frozen-with-access-candidate.json"
+
+FROZEN_CANDIDATE_FIELDS = {
+    "schemaVersion",
+    "profile",
+    "problemId",
+    "subjectTransactionId",
+    "bindings",
+    "descendantDepth",
+    "safeRequest",
+    "safeResponse",
+    "safeFacts",
+    "impactContext",
+    "withAccessInput",
+    "withAccessRequest",
+    "withAccessResponse",
+    "withAccessPatch",
+    "withAccessState",
+    "candidateDigest",
 }
 
 
@@ -496,10 +523,14 @@ def _make_request(
     topology_alignment: Mapping[str, object],
     required_updates: Sequence[Mapping[str, object]],
     stage_input: object,
+    profile: str = PROFILE,
 ) -> dict[str, object]:
+    protocol = SUPPORTED_PROFILES.get(profile)
+    if protocol is None:
+        raise MathFlowError("work projection request uses an unsupported profile")
     core: dict[str, object] = {
-        "schemaVersion": 1,
-        "profile": PROFILE,
+        "schemaVersion": protocol[0],
+        "profile": profile,
         "stage": stage,
         "problemId": problem_id,
         "subjectTransactionId": subject_transaction_id,
@@ -525,7 +556,9 @@ def _make_request(
 def validate_work_projection_request(value: object) -> dict[str, object]:
     if not isinstance(value, dict) or set(value) != REQUEST_FIELDS:
         raise MathFlowError("work projection request has an invalid envelope")
-    if value.get("schemaVersion") != 1 or value.get("profile") != PROFILE:
+    profile = value.get("profile")
+    protocol = SUPPORTED_PROFILES.get(str(profile))
+    if protocol is None or value.get("schemaVersion") != protocol[0]:
         raise MathFlowError("work projection request has an invalid version or profile")
     stage = value.get("stage")
     if stage not in STAGES:
@@ -617,7 +650,10 @@ def validate_work_projection_request(value: object) -> dict[str, object]:
         if stage_input["verifiedChunkDigests"] != expected_chunks:
             raise MathFlowError("safe-fact extraction chunk binding is incomplete")
     elif stage == "no-access":
-        validate_no_access_stage_input(stage_input)
+        if profile == PROFILE_V2:
+            validate_no_access_stage_input_v2(stage_input)
+        else:
+            validate_no_access_stage_input(stage_input)
     else:
         validate_with_access_stage_input(stage_input)
     if value.get("requestDigest") != _object_digest(_without_digest(value, "requestDigest")):
@@ -891,15 +927,402 @@ def _response_digest(stage: str, response: object) -> dict[str, str]:
     return {"stage": stage, "digest": _object_digest(response)}
 
 
+def _seal_frozen_with_access_candidate_v2(
+    value: Mapping[str, object],
+) -> dict[str, object]:
+    core = _without_digest(value, "candidateDigest")
+    result = {**core, "candidateDigest": _object_digest(core)}
+    return result
+
+
+def _prepare_frozen_with_access_candidate_v2(
+    *,
+    provider: WorkProjectionProvider,
+    checkpoint: WorkProjectionCheckpointStore | None,
+    subject: str,
+    contract: Mapping[str, object],
+    before: Mapping[str, object],
+    after: Mapping[str, object],
+    base: Mapping[str, object],
+    alignment: Mapping[str, object],
+    manifest: Mapping[str, object],
+    chunks: Mapping[str, bytes],
+    claims: Sequence[Mapping[str, object]],
+    bindings: Mapping[str, object],
+    verified_files: Sequence[SubmissionEvidenceFile],
+    no_access_required_updates: Sequence[Mapping[str, object]],
+    with_access_required_updates: Sequence[Mapping[str, object]],
+    descendant_depth: int,
+) -> dict[str, object]:
+    safe_request = _make_request(
+        stage="safe-facts",
+        problem_id=str(contract["problemId"]),
+        subject_transaction_id=subject,
+        bindings=bindings,
+        root_contract=contract,
+        base_accounting_state=base,
+        topology_alignment=alignment,
+        required_updates=[],
+        stage_input=_safe_fact_stage_input(
+            accepted_claim_refs=claims,
+            target_knowledge_state=after,
+            evidence_manifest=manifest,
+        ),
+        profile=PROFILE_V2,
+    )
+    safe_response = _invoke(
+        provider,
+        checkpoint,
+        stage="safe-facts",
+        request=safe_request,
+        evidence_files=verified_files,
+    )
+    try:
+        safe_facts = build_counterfactual_safe_facts(
+            problem_id=str(contract["problemId"]),
+            subject_transaction_id=subject,
+            accepted_claim_refs=claims,
+            research_state=after,
+            evidence_manifest=manifest,
+            evidence_chunks=chunks,
+            extracted=safe_response,
+        )
+        context = build_impact_subgraph_context(
+            problem_id=str(contract["problemId"]),
+            subject_transaction_id=subject,
+            accepted_claim_refs=claims,
+            research_state=after,
+            seed_node_refs=_seed_refs_from_safe_facts(safe_facts),
+            descendant_depth=descendant_depth,
+        )
+        _ensure_required_context_coverage(no_access_required_updates, context)
+        _ensure_required_context_coverage(with_access_required_updates, context)
+    except Exception:
+        if checkpoint is not None:
+            checkpoint.invalidate(stage="safe-facts", request=safe_request)
+        raise
+
+    with_input = build_with_access_stage_input(
+        safe_facts=safe_facts,
+        impact_context=context,
+        research_state=after,
+        evidence_manifest=manifest,
+        evidence_chunks=chunks,
+    )
+    assembled = assemble_with_access_evidence(with_input, chunks)
+    with_files = tuple(
+        SubmissionEvidenceFile(
+            path=str(item["path"]),
+            digest=str(item["digest"]),
+            content=bytes(item["content"]),
+        )
+        for item in assembled
+    )
+    with_request = _make_request(
+        stage="with-access",
+        problem_id=str(contract["problemId"]),
+        subject_transaction_id=subject,
+        bindings=bindings,
+        root_contract=contract,
+        base_accounting_state=base,
+        topology_alignment=alignment,
+        required_updates=with_access_required_updates,
+        stage_input=with_input,
+        profile=PROFILE_V2,
+    )
+    with_response = _invoke(
+        provider,
+        checkpoint,
+        stage="with-access",
+        request=with_request,
+        evidence_files=with_files,
+    )
+    try:
+        with_patch = _patch_from_response(
+            with_response,
+            mode="with-access",
+            problem_id=str(contract["problemId"]),
+            subject_transaction_id=subject,
+            bindings=bindings,
+            base_accounting_state=base,
+            required_updates=with_access_required_updates,
+            impact_context=context,
+        )
+        with_state = apply_work_accounting_patch(
+            base,
+            with_patch,
+            root_contract=contract,
+            base_knowledge_state=before,
+            target_knowledge_state=after,
+            topology_alignment=alignment,
+        )
+    except Exception:
+        if checkpoint is not None:
+            checkpoint.invalidate(stage="with-access", request=with_request)
+        raise
+    return _seal_frozen_with_access_candidate_v2(
+        {
+            "schemaVersion": 1,
+            "profile": PROFILE_V2,
+            "problemId": contract["problemId"],
+            "subjectTransactionId": subject,
+            "bindings": copy.deepcopy(bindings),
+            "descendantDepth": descendant_depth,
+            "safeRequest": safe_request,
+            "safeResponse": safe_response,
+            "safeFacts": safe_facts,
+            "impactContext": context,
+            "withAccessInput": with_input,
+            "withAccessRequest": with_request,
+            "withAccessResponse": with_response,
+            "withAccessPatch": with_patch,
+            "withAccessState": with_state,
+        }
+    )
+
+
+def validate_frozen_with_access_candidate_v2(
+    value: object,
+    *,
+    subject: str,
+    contract: Mapping[str, object],
+    before: Mapping[str, object],
+    after: Mapping[str, object],
+    base: Mapping[str, object],
+    alignment: Mapping[str, object],
+    manifest: Mapping[str, object],
+    chunks: Mapping[str, bytes],
+    claims: Sequence[Mapping[str, object]],
+    bindings: Mapping[str, object],
+    no_access_required_updates: Sequence[Mapping[str, object]],
+    with_access_required_updates: Sequence[Mapping[str, object]],
+) -> dict[str, object]:
+    """Rebuild and verify a persistable V2 live-state candidate."""
+
+    if not isinstance(value, dict) or set(value) != FROZEN_CANDIDATE_FIELDS:
+        raise MathFlowError("frozen with-access candidate has an invalid envelope")
+    candidate = copy.deepcopy(value)
+    if (
+        candidate.get("schemaVersion") != 1
+        or candidate.get("profile") != PROFILE_V2
+        or candidate.get("problemId") != contract["problemId"]
+        or candidate.get("subjectTransactionId") != subject
+        or candidate.get("bindings") != bindings
+    ):
+        raise MathFlowError("frozen with-access candidate has invalid identity bindings")
+    depth = candidate.get("descendantDepth")
+    if isinstance(depth, bool) or not isinstance(depth, int) or not 0 <= depth <= 4:
+        raise MathFlowError("frozen with-access candidate has invalid context depth")
+    if candidate.get("candidateDigest") != _object_digest(
+        _without_digest(candidate, "candidateDigest")
+    ):
+        raise MathFlowError("frozen with-access candidate digest mismatch")
+
+    expected_safe_request = _make_request(
+        stage="safe-facts",
+        problem_id=str(contract["problemId"]),
+        subject_transaction_id=subject,
+        bindings=bindings,
+        root_contract=contract,
+        base_accounting_state=base,
+        topology_alignment=alignment,
+        required_updates=[],
+        stage_input=_safe_fact_stage_input(
+            accepted_claim_refs=claims,
+            target_knowledge_state=after,
+            evidence_manifest=manifest,
+        ),
+        profile=PROFILE_V2,
+    )
+    if candidate["safeRequest"] != expected_safe_request:
+        raise MathFlowError("frozen with-access safe-fact request is not reproducible")
+    safe_response = candidate["safeResponse"]
+    safe_facts = build_counterfactual_safe_facts(
+        problem_id=str(contract["problemId"]),
+        subject_transaction_id=subject,
+        accepted_claim_refs=claims,
+        research_state=after,
+        evidence_manifest=manifest,
+        evidence_chunks=chunks,
+        extracted=safe_response,
+    )
+    if candidate["safeFacts"] != safe_facts:
+        raise MathFlowError("frozen with-access safe facts do not match their response")
+    context = build_impact_subgraph_context(
+        problem_id=str(contract["problemId"]),
+        subject_transaction_id=subject,
+        accepted_claim_refs=claims,
+        research_state=after,
+        seed_node_refs=_seed_refs_from_safe_facts(safe_facts),
+        descendant_depth=depth,
+    )
+    if candidate["impactContext"] != context:
+        raise MathFlowError("frozen with-access impact context is not reproducible")
+    _ensure_required_context_coverage(no_access_required_updates, context)
+    _ensure_required_context_coverage(with_access_required_updates, context)
+    with_input = build_with_access_stage_input(
+        safe_facts=safe_facts,
+        impact_context=context,
+        research_state=after,
+        evidence_manifest=manifest,
+        evidence_chunks=chunks,
+    )
+    if candidate["withAccessInput"] != with_input:
+        raise MathFlowError("frozen with-access input is not reproducible")
+    assemble_with_access_evidence(with_input, chunks)
+    with_request = _make_request(
+        stage="with-access",
+        problem_id=str(contract["problemId"]),
+        subject_transaction_id=subject,
+        bindings=bindings,
+        root_contract=contract,
+        base_accounting_state=base,
+        topology_alignment=alignment,
+        required_updates=with_access_required_updates,
+        stage_input=with_input,
+        profile=PROFILE_V2,
+    )
+    if candidate["withAccessRequest"] != with_request:
+        raise MathFlowError("frozen with-access request is not reproducible")
+    with_patch = _patch_from_response(
+        candidate["withAccessResponse"],
+        mode="with-access",
+        problem_id=str(contract["problemId"]),
+        subject_transaction_id=subject,
+        bindings=bindings,
+        base_accounting_state=base,
+        required_updates=with_access_required_updates,
+        impact_context=context,
+    )
+    if candidate["withAccessPatch"] != with_patch:
+        raise MathFlowError("frozen with-access patch does not match its response")
+    with_state = apply_work_accounting_patch(
+        base,
+        with_patch,
+        root_contract=contract,
+        base_knowledge_state=before,
+        target_knowledge_state=after,
+        topology_alignment=alignment,
+    )
+    candidate_state = validate_work_accounting_state(
+        candidate["withAccessState"], after, contract
+    )
+    expected_processed = [*base["processedSubmissionIds"], subject]
+    if (
+        candidate_state.get("processedSubmissionIds") != expected_processed
+        or candidate_state.get("predecessorStateDigest") != base["stateDigest"]
+    ):
+        raise MathFlowError("frozen with-access state has a stale live predecessor")
+    if candidate_state != with_state:
+        raise MathFlowError("frozen with-access state is not reproducible")
+    return candidate
+
+
+def prepare_frozen_with_access_candidate_v2(
+    *,
+    provider: WorkProjectionProvider,
+    subject_transaction_id: str,
+    root_contract: object,
+    base_knowledge_state: object,
+    target_knowledge_state: object,
+    base_accounting_state: object,
+    topology_alignment: object | None,
+    evidence_manifest: object,
+    evidence_chunks: Mapping[str, bytes],
+    accepted_claim_refs: object,
+    checkpoint_dir: Path | None = None,
+    descendant_depth: int = 1,
+) -> dict[str, object]:
+    """Produce a semantically validated V2 ``W+`` candidate safe to persist."""
+
+    (
+        subject,
+        contract,
+        before,
+        after,
+        base,
+        alignment,
+        chunks,
+        claims,
+    ) = _validate_transition(
+        subject_transaction_id=subject_transaction_id,
+        root_contract=root_contract,
+        base_knowledge_state=base_knowledge_state,
+        target_knowledge_state=target_knowledge_state,
+        base_accounting_state=base_accounting_state,
+        topology_alignment=topology_alignment,
+        evidence_manifest=evidence_manifest,
+        evidence_chunks=evidence_chunks,
+        accepted_claim_refs=accepted_claim_refs,
+    )
+    manifest = validate_submission_evidence_manifest(evidence_manifest)
+    bindings = _bindings(
+        contract=contract,
+        base=base,
+        before=before,
+        after=after,
+        alignment=alignment,
+        manifest=manifest,
+        accepted_claim_refs=claims,
+    )
+    no_required = _required_primitive_updates(
+        before, after, base, evaluation_mode="no-access"
+    )
+    with_required = _required_primitive_updates(
+        before, after, base, evaluation_mode="with-access"
+    )
+    checkpoint = (
+        WorkProjectionCheckpointStore(checkpoint_dir)
+        if checkpoint_dir is not None
+        else None
+    )
+    candidate = _prepare_frozen_with_access_candidate_v2(
+        provider=provider,
+        checkpoint=checkpoint,
+        subject=subject,
+        contract=contract,
+        before=before,
+        after=after,
+        base=base,
+        alignment=alignment,
+        manifest=manifest,
+        chunks=chunks,
+        claims=claims,
+        bindings=bindings,
+        verified_files=_evidence_files(manifest, chunks),
+        no_access_required_updates=no_required,
+        with_access_required_updates=with_required,
+        descendant_depth=descendant_depth,
+    )
+    return validate_frozen_with_access_candidate_v2(
+        candidate,
+        subject=subject,
+        contract=contract,
+        before=before,
+        after=after,
+        base=base,
+        alignment=alignment,
+        manifest=manifest,
+        chunks=chunks,
+        claims=claims,
+        bindings=bindings,
+        no_access_required_updates=no_required,
+        with_access_required_updates=with_required,
+    )
+
+
 def validate_work_projection_manifest(value: object) -> dict[str, object]:
     if not isinstance(value, dict) or set(value) != MANIFEST_FIELDS:
         raise MathFlowError("work projection bundle manifest has an invalid envelope")
+    profile = value.get("outputProfile")
+    protocol = SUPPORTED_PROFILES.get(str(profile))
     if (
-        value.get("protocolVersion") != 1
+        protocol is None
+        or value.get("protocolVersion") != 1
         or value.get("runKind") != "work-accounting-evaluation"
-        or value.get("outputProfile") != PROFILE
     ):
         raise MathFlowError("work projection bundle has an invalid protocol identity")
+    stages = protocol[1]
     _require_transaction(value.get("subjectTransactionId"), "work projection bundle subject")
     if not isinstance(value.get("problemId"), str) or not value["problemId"]:
         raise MathFlowError("work projection bundle problem ID is invalid")
@@ -923,7 +1346,7 @@ def validate_work_projection_manifest(value: object) -> dict[str, object]:
     if (
         not isinstance(responses, list)
         or [item.get("stage") if isinstance(item, dict) else None for item in responses]
-        != list(STAGES)
+        != list(stages)
     ):
         raise MathFlowError("work projection bundle response index is invalid")
     for item in responses:
@@ -955,10 +1378,13 @@ def validate_work_projection_manifest(value: object) -> dict[str, object]:
     if paths != sorted(set(paths)):
         raise MathFlowError("work projection artifact paths are not canonical")
     roles = [str(item.get("role")) for item in artifacts]
-    for role in UNIQUE_ARTIFACT_ROLES:
+    required_roles = set(UNIQUE_ARTIFACT_ROLES)
+    if profile == PROFILE_V2:
+        required_roles.add(V2_FROZEN_CANDIDATE_ROLE)
+    for role in required_roles:
         if roles.count(role) != 1:
             raise MathFlowError(f"work projection bundle must contain one {role} artifact")
-    allowed_roles = set(UNIQUE_ARTIFACT_ROLES) | {"submission-evidence-chunk"}
+    allowed_roles = required_roles | {"submission-evidence-chunk"}
     if any(role not in allowed_roles for role in roles):
         raise MathFlowError("work projection bundle contains an unexpected artifact role")
     return value
@@ -979,8 +1405,32 @@ def run_work_projection_bundle(
     accepted_claim_refs: object,
     checkpoint_dir: Path | None = None,
     descendant_depth: int = 1,
+    output_profile: str = PROFILE,
+    frozen_with_access_candidate: object | None = None,
 ) -> dict[str, object]:
-    """Run one inactive V1 work transition and materialize its immutable bundle."""
+    """Run one versioned work transition and materialize its immutable bundle."""
+
+    if output_profile == PROFILE_V2:
+        return _run_work_projection_bundle_v2(
+            output_dir=output_dir,
+            provider=provider,
+            subject_transaction_id=subject_transaction_id,
+            root_contract=root_contract,
+            base_knowledge_state=base_knowledge_state,
+            target_knowledge_state=target_knowledge_state,
+            base_accounting_state=base_accounting_state,
+            topology_alignment=topology_alignment,
+            evidence_manifest=evidence_manifest,
+            evidence_chunks=evidence_chunks,
+            accepted_claim_refs=accepted_claim_refs,
+            checkpoint_dir=checkpoint_dir,
+            descendant_depth=descendant_depth,
+            frozen_with_access_candidate=frozen_with_access_candidate,
+        )
+    if output_profile != PROFILE:
+        raise MathFlowError("work projection runner uses an unsupported output profile")
+    if frozen_with_access_candidate is not None:
+        raise MathFlowError("V1 work projection cannot consume a frozen V2 candidate")
 
     (
         subject,
@@ -1286,6 +1736,246 @@ def run_work_projection_bundle(
     return result
 
 
+def _run_work_projection_bundle_v2(
+    *,
+    output_dir: Path,
+    provider: WorkProjectionProvider,
+    subject_transaction_id: str,
+    root_contract: object,
+    base_knowledge_state: object,
+    target_knowledge_state: object,
+    base_accounting_state: object,
+    topology_alignment: object | None,
+    evidence_manifest: object,
+    evidence_chunks: Mapping[str, bytes],
+    accepted_claim_refs: object,
+    checkpoint_dir: Path | None,
+    descendant_depth: int,
+    frozen_with_access_candidate: object | None,
+) -> dict[str, object]:
+    """Run one additive V2 transition: freeze ``W+``, then estimate ``W-``."""
+
+    (
+        subject,
+        contract,
+        before,
+        after,
+        base,
+        alignment,
+        chunks,
+        claims,
+    ) = _validate_transition(
+        subject_transaction_id=subject_transaction_id,
+        root_contract=root_contract,
+        base_knowledge_state=base_knowledge_state,
+        target_knowledge_state=target_knowledge_state,
+        base_accounting_state=base_accounting_state,
+        topology_alignment=topology_alignment,
+        evidence_manifest=evidence_manifest,
+        evidence_chunks=evidence_chunks,
+        accepted_claim_refs=accepted_claim_refs,
+    )
+    manifest = validate_submission_evidence_manifest(evidence_manifest)
+    bindings = _bindings(
+        contract=contract,
+        base=base,
+        before=before,
+        after=after,
+        alignment=alignment,
+        manifest=manifest,
+        accepted_claim_refs=claims,
+    )
+    no_required = _required_primitive_updates(
+        before, after, base, evaluation_mode="no-access"
+    )
+    with_required = _required_primitive_updates(
+        before, after, base, evaluation_mode="with-access"
+    )
+    verified_files = _evidence_files(manifest, chunks)
+    checkpoint = (
+        WorkProjectionCheckpointStore(checkpoint_dir)
+        if checkpoint_dir is not None
+        else None
+    )
+    if frozen_with_access_candidate is None:
+        candidate = _prepare_frozen_with_access_candidate_v2(
+            provider=provider,
+            checkpoint=checkpoint,
+            subject=subject,
+            contract=contract,
+            before=before,
+            after=after,
+            base=base,
+            alignment=alignment,
+            manifest=manifest,
+            chunks=chunks,
+            claims=claims,
+            bindings=bindings,
+            verified_files=verified_files,
+            no_access_required_updates=no_required,
+            with_access_required_updates=with_required,
+            descendant_depth=descendant_depth,
+        )
+    else:
+        candidate = copy.deepcopy(frozen_with_access_candidate)
+    candidate = validate_frozen_with_access_candidate_v2(
+        candidate,
+        subject=subject,
+        contract=contract,
+        before=before,
+        after=after,
+        base=base,
+        alignment=alignment,
+        manifest=manifest,
+        chunks=chunks,
+        claims=claims,
+        bindings=bindings,
+        no_access_required_updates=no_required,
+        with_access_required_updates=with_required,
+    )
+    safe_request = candidate["safeRequest"]
+    safe_response = candidate["safeResponse"]
+    safe_facts = candidate["safeFacts"]
+    context = candidate["impactContext"]
+    with_input = candidate["withAccessInput"]
+    with_request = candidate["withAccessRequest"]
+    with_response = candidate["withAccessResponse"]
+    with_patch = candidate["withAccessPatch"]
+    frozen_with_state = candidate["withAccessState"]
+    assert isinstance(safe_facts, dict)
+    assert isinstance(context, dict)
+    assert isinstance(frozen_with_state, dict)
+
+    no_input = build_no_access_stage_input_v2(
+        safe_facts=safe_facts,
+        impact_context=context,
+        research_state=after,
+        frozen_with_access_state=frozen_with_state,
+        frozen_with_access_candidate_digest=str(candidate["candidateDigest"]),
+    )
+    no_request = _make_request(
+        stage="no-access",
+        problem_id=str(contract["problemId"]),
+        subject_transaction_id=subject,
+        bindings=bindings,
+        root_contract=contract,
+        base_accounting_state=base,
+        topology_alignment=alignment,
+        required_updates=no_required,
+        stage_input=no_input,
+        profile=PROFILE_V2,
+    )
+    _assert_no_access_evidence_nonleakage(no_request, verified_files)
+    no_response = _invoke(
+        provider,
+        checkpoint,
+        stage="no-access",
+        request=no_request,
+        evidence_files=(),
+    )
+    try:
+        no_patch = _patch_from_response(
+            no_response,
+            mode="no-access",
+            problem_id=str(contract["problemId"]),
+            subject_transaction_id=subject,
+            bindings=bindings,
+            base_accounting_state=base,
+            required_updates=no_required,
+            impact_context=context,
+        )
+        no_state, reproduced_with_state, evaluation = materialize_submission_work_value(
+            base_state=base,
+            no_access_patch=no_patch,
+            with_access_patch=with_patch,
+            root_contract=contract,
+            base_knowledge_state=before,
+            target_knowledge_state=after,
+            topology_alignment=alignment,
+        )
+        if reproduced_with_state != frozen_with_state:
+            raise MathFlowError("V2 no-access estimation mutated the frozen with-access state")
+    except Exception:
+        # A response is cacheable only after its sparse patch and the combined
+        # positive reduction have passed trusted semantic reduction.  Retain the
+        # already validated W+ checkpoints; only W- is re-estimated.
+        if checkpoint is not None:
+            checkpoint.invalidate(stage="no-access", request=no_request)
+        raise
+
+    bundle = ArtifactBundle(output_dir)
+    bundle.add_json(UNIQUE_ARTIFACT_ROLES["work-root-contract"], contract, "work-root-contract")
+    bundle.add_json(
+        UNIQUE_ARTIFACT_ROLES["work-base-knowledge-state"], before, "work-base-knowledge-state"
+    )
+    bundle.add_json(
+        UNIQUE_ARTIFACT_ROLES["work-target-knowledge-state"], after, "work-target-knowledge-state"
+    )
+    bundle.add_json(
+        UNIQUE_ARTIFACT_ROLES["work-base-accounting-state"], base, "work-base-accounting-state"
+    )
+    bundle.add_json(
+        UNIQUE_ARTIFACT_ROLES["work-topology-alignment"], alignment, "work-topology-alignment"
+    )
+    bundle.add_json(
+        UNIQUE_ARTIFACT_ROLES["submission-evidence-manifest"], manifest, "submission-evidence-manifest"
+    )
+    for digest, content in sorted(chunks.items()):
+        bundle.add_bytes(
+            f"input/evidence/chunks/{digest.removeprefix('sha256:')}.bin",
+            content,
+            "submission-evidence-chunk",
+            "application/octet-stream",
+        )
+    for path, value, role in (
+        (UNIQUE_ARTIFACT_ROLES["safe-facts-request"], safe_request, "safe-facts-request"),
+        (UNIQUE_ARTIFACT_ROLES["safe-facts-response"], safe_response, "safe-facts-response"),
+        (UNIQUE_ARTIFACT_ROLES["counterfactual-safe-facts"], safe_facts, "counterfactual-safe-facts"),
+        (UNIQUE_ARTIFACT_ROLES["work-impact-context"], context, "work-impact-context"),
+        (V2_FROZEN_CANDIDATE_PATH, candidate, V2_FROZEN_CANDIDATE_ROLE),
+        (UNIQUE_ARTIFACT_ROLES["with-access-stage-input"], with_input, "with-access-stage-input"),
+        (UNIQUE_ARTIFACT_ROLES["with-access-request"], with_request, "with-access-request"),
+        (UNIQUE_ARTIFACT_ROLES["with-access-response"], with_response, "with-access-response"),
+        (UNIQUE_ARTIFACT_ROLES["with-access-work-patch"], with_patch, "with-access-work-patch"),
+        (UNIQUE_ARTIFACT_ROLES["with-access-work-state"], frozen_with_state, "with-access-work-state"),
+        (UNIQUE_ARTIFACT_ROLES["no-access-stage-input"], no_input, "no-access-stage-input"),
+        (UNIQUE_ARTIFACT_ROLES["no-access-request"], no_request, "no-access-request"),
+        (UNIQUE_ARTIFACT_ROLES["no-access-response"], no_response, "no-access-response"),
+        (UNIQUE_ARTIFACT_ROLES["no-access-work-patch"], no_patch, "no-access-work-patch"),
+        (UNIQUE_ARTIFACT_ROLES["no-access-work-state"], no_state, "no-access-work-state"),
+        (UNIQUE_ARTIFACT_ROLES["submission-work-evaluation"], evaluation, "submission-work-evaluation"),
+    ):
+        bundle.add_json(path, value, role)
+    envelope: dict[str, object] = {
+        "protocolVersion": 1,
+        "runKind": "work-accounting-evaluation",
+        "outputProfile": PROFILE_V2,
+        "problemId": contract["problemId"],
+        "subjectTransactionId": subject,
+        **bindings,
+        "safeFactsDigest": safe_facts["safeFactsDigest"],
+        "impactContextDigest": context["contextDigest"],
+        "requestDigests": [
+            safe_request["requestDigest"],
+            with_request["requestDigest"],
+            no_request["requestDigest"],
+        ],
+        "responseDigests": [
+            _response_digest("safe-facts", safe_response),
+            _response_digest("with-access", with_response),
+            _response_digest("no-access", no_response),
+        ],
+        "noAccessPatchDigest": no_patch["patchDigest"],
+        "withAccessPatchDigest": with_patch["patchDigest"],
+        "noAccessStateDigest": no_state["stateDigest"],
+        "withAccessStateDigest": frozen_with_state["stateDigest"],
+        "evaluationDigest": evaluation["evaluationDigest"],
+    }
+    result = bundle.finalize(envelope)
+    validate_work_projection_manifest(result)
+    return result
+
+
 def _artifact_entry(
     manifest: Mapping[str, object], role: str
 ) -> Mapping[str, object]:
@@ -1324,6 +2014,8 @@ def load_work_projection_bundle(
         _require_digest(expected_bundle_digest, "expected work projection bundle digest")
         if bundle_digest != expected_bundle_digest:
             raise MathFlowError("work projection bundle does not match its content address")
+    if manifest["outputProfile"] == PROFILE_V2:
+        return _load_work_projection_bundle_v2(bundle_dir, manifest, bundle_digest)
     for role, expected_path in UNIQUE_ARTIFACT_ROLES.items():
         entry = _artifact_entry(manifest, role)
         if entry.get("path") != expected_path:
@@ -1584,5 +2276,215 @@ def load_work_projection_bundle(
         "withAccessPatch": with_patch,
         "noAccessState": no_state,
         "withAccessState": with_state,
+        "evaluation": evaluation,
+    }
+
+
+def _load_work_projection_bundle_v2(
+    bundle_dir: Path,
+    manifest: Mapping[str, object],
+    bundle_digest: str,
+) -> dict[str, object]:
+    for role, expected_path in UNIQUE_ARTIFACT_ROLES.items():
+        entry = _artifact_entry(manifest, role)
+        if entry.get("path") != expected_path:
+            raise MathFlowError(f"work projection {role} artifact has a noncanonical path")
+    if _artifact_entry(manifest, V2_FROZEN_CANDIDATE_ROLE).get("path") != V2_FROZEN_CANDIDATE_PATH:
+        raise MathFlowError("work projection frozen candidate artifact has a noncanonical path")
+
+    contract = _load_json_role(bundle_dir, manifest, "work-root-contract")
+    before = _load_json_role(bundle_dir, manifest, "work-base-knowledge-state")
+    after = _load_json_role(bundle_dir, manifest, "work-target-knowledge-state")
+    base = _load_json_role(bundle_dir, manifest, "work-base-accounting-state")
+    alignment = _load_json_role(bundle_dir, manifest, "work-topology-alignment")
+    evidence_manifest = _load_json_role(bundle_dir, manifest, "submission-evidence-manifest")
+    chunks: dict[str, bytes] = {}
+    for entry in manifest["artifacts"]:
+        if entry.get("role") != "submission-evidence-chunk":
+            continue
+        digest = str(entry.get("digest"))
+        expected_path = f"input/evidence/chunks/{digest.removeprefix('sha256:')}.bin"
+        if entry.get("path") != expected_path or digest in chunks:
+            raise MathFlowError("work projection evidence chunk artifact is not canonical")
+        chunks[digest] = _read_entry(bundle_dir, entry)
+
+    candidate = _load_json_role(bundle_dir, manifest, V2_FROZEN_CANDIDATE_ROLE)
+    if not isinstance(candidate, dict):
+        raise MathFlowError("work projection frozen candidate must be an object")
+    safe_request = candidate.get("safeRequest")
+    validated_safe_request = validate_work_projection_request(safe_request)
+    if (
+        validated_safe_request.get("profile") != PROFILE_V2
+        or validated_safe_request.get("stage") != "safe-facts"
+    ):
+        raise MathFlowError("work projection V2 frozen candidate has the wrong safe request")
+    safe_stage_input = validated_safe_request["stageInput"]
+    assert isinstance(safe_stage_input, dict)
+    subject, contract, before, after, base, alignment, chunks, claims = _validate_transition(
+        subject_transaction_id=str(manifest["subjectTransactionId"]),
+        root_contract=contract,
+        base_knowledge_state=before,
+        target_knowledge_state=after,
+        base_accounting_state=base,
+        topology_alignment=alignment,
+        evidence_manifest=evidence_manifest,
+        evidence_chunks=chunks,
+        accepted_claim_refs=safe_stage_input["acceptedClaimRefs"],
+    )
+    bindings = _bindings(
+        contract=contract,
+        base=base,
+        before=before,
+        after=after,
+        alignment=alignment,
+        manifest=evidence_manifest,
+        accepted_claim_refs=claims,
+    )
+    for field, expected in bindings.items():
+        if manifest.get(field) != expected:
+            raise MathFlowError(f"work projection bundle {field} binding mismatch")
+    no_required = _required_primitive_updates(
+        before, after, base, evaluation_mode="no-access"
+    )
+    with_required = _required_primitive_updates(
+        before, after, base, evaluation_mode="with-access"
+    )
+    candidate = validate_frozen_with_access_candidate_v2(
+        candidate,
+        subject=subject,
+        contract=contract,
+        before=before,
+        after=after,
+        base=base,
+        alignment=alignment,
+        manifest=evidence_manifest,
+        chunks=chunks,
+        claims=claims,
+        bindings=bindings,
+        no_access_required_updates=no_required,
+        with_access_required_updates=with_required,
+    )
+    duplicate_candidate_artifacts = {
+        "safe-facts-request": "safeRequest",
+        "safe-facts-response": "safeResponse",
+        "counterfactual-safe-facts": "safeFacts",
+        "work-impact-context": "impactContext",
+        "with-access-stage-input": "withAccessInput",
+        "with-access-request": "withAccessRequest",
+        "with-access-response": "withAccessResponse",
+        "with-access-work-patch": "withAccessPatch",
+        "with-access-work-state": "withAccessState",
+    }
+    for role, field in duplicate_candidate_artifacts.items():
+        if _load_json_role(bundle_dir, manifest, role) != candidate[field]:
+            raise MathFlowError(f"work projection {role} differs from its frozen candidate")
+
+    safe_facts = candidate["safeFacts"]
+    context = candidate["impactContext"]
+    frozen_with_state = candidate["withAccessState"]
+    assert isinstance(safe_facts, dict)
+    assert isinstance(context, dict)
+    assert isinstance(frozen_with_state, dict)
+    no_input = _load_json_role(bundle_dir, manifest, "no-access-stage-input")
+    expected_no_input = build_no_access_stage_input_v2(
+        safe_facts=safe_facts,
+        impact_context=context,
+        research_state=after,
+        frozen_with_access_state=frozen_with_state,
+        frozen_with_access_candidate_digest=str(candidate["candidateDigest"]),
+    )
+    if no_input != expected_no_input:
+        raise MathFlowError("work projection V2 no-access input is not reproducible")
+    no_request = _load_json_role(bundle_dir, manifest, "no-access-request")
+    expected_no_request = _make_request(
+        stage="no-access",
+        problem_id=str(contract["problemId"]),
+        subject_transaction_id=subject,
+        bindings=bindings,
+        root_contract=contract,
+        base_accounting_state=base,
+        topology_alignment=alignment,
+        required_updates=no_required,
+        stage_input=no_input,
+        profile=PROFILE_V2,
+    )
+    if no_request != expected_no_request:
+        raise MathFlowError("work projection V2 no-access request is not reproducible")
+    _assert_no_access_evidence_nonleakage(
+        no_request, _evidence_files(evidence_manifest, chunks)
+    )
+    no_response = _load_json_role(bundle_dir, manifest, "no-access-response")
+    no_patch = _load_json_role(bundle_dir, manifest, "no-access-work-patch")
+    rebuilt_no_patch = _patch_from_response(
+        no_response,
+        mode="no-access",
+        problem_id=str(contract["problemId"]),
+        subject_transaction_id=subject,
+        bindings=bindings,
+        base_accounting_state=base,
+        required_updates=no_required,
+        impact_context=context,
+    )
+    if no_patch != rebuilt_no_patch:
+        raise MathFlowError("work projection V2 no-access patch does not match its response")
+    no_state, reproduced_with_state, evaluation = materialize_submission_work_value(
+        base_state=base,
+        no_access_patch=no_patch,
+        with_access_patch=candidate["withAccessPatch"],
+        root_contract=contract,
+        base_knowledge_state=before,
+        target_knowledge_state=after,
+        topology_alignment=alignment,
+    )
+    if reproduced_with_state != frozen_with_state:
+        raise MathFlowError("work projection V2 replay changed its frozen with-access state")
+    if no_state != _load_json_role(bundle_dir, manifest, "no-access-work-state"):
+        raise MathFlowError("work projection V2 no-access state is not reproducible")
+    if evaluation != _load_json_role(bundle_dir, manifest, "submission-work-evaluation"):
+        raise MathFlowError("work projection V2 evaluation is not reproducible")
+    validate_counterfactual_safe_facts(safe_facts)
+    validate_impact_subgraph_context(context)
+    validate_work_accounting_patch(no_patch)
+    validate_work_accounting_patch(candidate["withAccessPatch"])
+    validate_submission_work_value(evaluation)
+
+    requests = (candidate["safeRequest"], candidate["withAccessRequest"], no_request)
+    responses = (candidate["safeResponse"], candidate["withAccessResponse"], no_response)
+    if manifest["requestDigests"] != [item["requestDigest"] for item in requests]:
+        raise MathFlowError("work projection bundle request digest index mismatch")
+    if manifest["responseDigests"] != [
+        _response_digest(stage, response)
+        for stage, response in zip(STAGES_V2, responses, strict=True)
+    ]:
+        raise MathFlowError("work projection bundle response digest index mismatch")
+    final_bindings = {
+        "safeFactsDigest": safe_facts["safeFactsDigest"],
+        "impactContextDigest": context["contextDigest"],
+        "noAccessPatchDigest": no_patch["patchDigest"],
+        "withAccessPatchDigest": candidate["withAccessPatch"]["patchDigest"],
+        "noAccessStateDigest": no_state["stateDigest"],
+        "withAccessStateDigest": frozen_with_state["stateDigest"],
+        "evaluationDigest": evaluation["evaluationDigest"],
+    }
+    for field, expected in final_bindings.items():
+        if manifest.get(field) != expected:
+            raise MathFlowError(f"work projection bundle {field} binding mismatch")
+    return {
+        "manifest": manifest,
+        "bundleDigest": bundle_digest,
+        "rootContract": contract,
+        "baseKnowledgeState": before,
+        "targetKnowledgeState": after,
+        "baseAccountingState": base,
+        "topologyAlignment": alignment,
+        "evidenceManifest": evidence_manifest,
+        "evidenceChunks": chunks,
+        "safeFacts": safe_facts,
+        "impactContext": context,
+        "frozenWithAccessCandidate": candidate,
+        "noAccessPatch": no_patch,
+        "withAccessPatch": candidate["withAccessPatch"],
+        "noAccessState": no_state,
+        "withAccessState": frozen_with_state,
         "evaluation": evaluation,
     }

@@ -151,7 +151,7 @@ class BsscHostedAccountingTests(unittest.TestCase):
         )
         self.assertEqual(
             deployment["config"]["configDigest"],
-            "sha256:23bb9004f769c3a4f884fe7928dbb105018de41184ba0744b2c372778f07a6d4",
+            "sha256:33957fc0f451c09235f4482b3b43a8fd681f1fd47defa3020ec9ccb64803c189",
         )
         self.assertEqual(
             deployment["contract"]["rootContractDigest"],

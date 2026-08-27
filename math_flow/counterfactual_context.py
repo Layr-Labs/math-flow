@@ -1151,6 +1151,128 @@ def validate_no_access_stage_input(value: object) -> dict[str, object]:
     return stage
 
 
+def build_no_access_stage_input_v2(
+    *,
+    safe_facts: object,
+    impact_context: object,
+    research_state: object,
+    frozen_with_access_state: object,
+    frozen_with_access_candidate_digest: str,
+) -> dict[str, object]:
+    """Bind the immutable live ``W+`` candidate into the no-access estimate.
+
+    V2 deliberately exposes the reducer-authored numeric consequences of the
+    submission to the evaluator while continuing to withhold the submission
+    itself from both the request and the simulated actors.
+    """
+
+    safe, context = _validate_bound_pair(safe_facts, impact_context)
+    _validate_context_against_builder_state(context, research_state)
+    if not isinstance(frozen_with_access_state, dict):
+        raise MathFlowError("no-access V2 input requires a frozen with-access state")
+    state = copy.deepcopy(frozen_with_access_state)
+    state_digest = _require_digest(
+        state.get("stateDigest"), "frozen with-access state digest"
+    )
+    candidate_digest = _require_digest(
+        frozen_with_access_candidate_digest,
+        "frozen with-access candidate digest",
+    )
+    if (
+        state.get("problemId") != safe["problemId"]
+        or state.get("knowledgeStateDigest") != safe["knowledgeStateDigest"]
+        or state.get("evaluationMode") != "with-access"
+        or state.get("subjectTransactionId") != safe["subjectTransactionId"]
+    ):
+        raise MathFlowError("frozen with-access state has different identity bindings")
+    processed = state.get("processedSubmissionIds")
+    if not isinstance(processed, list) or not processed or processed[-1] != safe[
+        "subjectTransactionId"
+    ]:
+        raise MathFlowError("frozen with-access state does not commit its subject")
+    core: dict[str, object] = {
+        "schemaVersion": 2,
+        "evaluationMode": "no-access",
+        "problemId": safe["problemId"],
+        "subjectTransactionId": safe["subjectTransactionId"],
+        "acceptedClaimRefs": copy.deepcopy(safe["acceptedClaimRefs"]),
+        "knowledgeStateDigest": safe["knowledgeStateDigest"],
+        "safeFacts": copy.deepcopy(safe),
+        "impactContext": copy.deepcopy(context),
+        "frozenWithAccessCandidateDigest": candidate_digest,
+        "frozenWithAccessStateDigest": state_digest,
+        "frozenWithAccessState": state,
+        "visibilityPolicy": {
+            "rawContributionAvailableToEvaluator": False,
+            "frozenWithAccessStateAvailableToEvaluator": True,
+            "contributionAvailableToActors": False,
+            "actorsMayUseOnlyPreexistingPolicyUntilIndependentDiscovery": True,
+        },
+    }
+    result = {**core, "inputDigest": _object_digest(core)}
+    validate_no_access_stage_input_v2(result)
+    return result
+
+
+def validate_no_access_stage_input_v2(value: object) -> dict[str, object]:
+    fields = {
+        "schemaVersion",
+        "evaluationMode",
+        "problemId",
+        "subjectTransactionId",
+        "acceptedClaimRefs",
+        "knowledgeStateDigest",
+        "safeFacts",
+        "impactContext",
+        "frozenWithAccessCandidateDigest",
+        "frozenWithAccessStateDigest",
+        "frozenWithAccessState",
+        "visibilityPolicy",
+        "inputDigest",
+    }
+    stage = _require_exact_fields(value, fields, "no-access V2 stage input")
+    if stage.get("schemaVersion") != 2 or stage.get("evaluationMode") != "no-access":
+        raise MathFlowError("no-access V2 stage input has an invalid version or mode")
+    safe, context = _validate_bound_pair(stage.get("safeFacts"), stage.get("impactContext"))
+    for field in ("problemId", "subjectTransactionId", "acceptedClaimRefs", "knowledgeStateDigest"):
+        if stage.get(field) != safe[field] or stage.get(field) != context[field]:
+            raise MathFlowError("no-access V2 stage identity binding mismatch")
+    frozen = stage.get("frozenWithAccessState")
+    if not isinstance(frozen, dict):
+        raise MathFlowError("no-access V2 stage is missing its frozen with-access state")
+    frozen_digest = _require_digest(
+        stage.get("frozenWithAccessStateDigest"),
+        "no-access V2 frozen with-access state digest",
+    )
+    _require_digest(
+        stage.get("frozenWithAccessCandidateDigest"),
+        "no-access V2 frozen with-access candidate digest",
+    )
+    if (
+        frozen.get("stateDigest") != frozen_digest
+        or frozen.get("problemId") != stage["problemId"]
+        or frozen.get("knowledgeStateDigest") != stage["knowledgeStateDigest"]
+        or frozen.get("evaluationMode") != "with-access"
+        or frozen.get("subjectTransactionId") != stage["subjectTransactionId"]
+    ):
+        raise MathFlowError("no-access V2 frozen with-access binding mismatch")
+    processed = frozen.get("processedSubmissionIds")
+    if not isinstance(processed, list) or not processed or processed[-1] != stage[
+        "subjectTransactionId"
+    ]:
+        raise MathFlowError("no-access V2 frozen state does not commit its subject")
+    if stage.get("visibilityPolicy") != {
+        "rawContributionAvailableToEvaluator": False,
+        "frozenWithAccessStateAvailableToEvaluator": True,
+        "contributionAvailableToActors": False,
+        "actorsMayUseOnlyPreexistingPolicyUntilIndependentDiscovery": True,
+    }:
+        raise MathFlowError("no-access V2 stage has an invalid epistemic policy")
+    if stage.get("inputDigest") != _object_digest(_without_digest(stage, "inputDigest")):
+        raise MathFlowError("no-access V2 stage input digest mismatch")
+    return stage
+
+
 def build_with_access_stage_input(
     *,
     safe_facts: object,

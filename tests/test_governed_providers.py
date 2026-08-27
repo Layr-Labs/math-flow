@@ -15,6 +15,7 @@ from math_flow.governance import validate_projection_registry, validate_projecti
 from math_flow.governed_providers import (
     OpenRouterResearchBuilderV6Provider,
     OpenRouterWorkProjectionProvider,
+    OpenRouterWorkProjectionProviderV2,
     _builder_transition_schema,
     _primitive_patch_schema,
     _safe_facts_schema,
@@ -25,7 +26,11 @@ from math_flow.judges import load_judge_spec
 from math_flow.research_state import empty_research_program_state
 from math_flow.research_topology import derive_research_topology_alignment
 from math_flow.repository import sha256_json
-from math_flow.work_projection import SubmissionEvidenceFile, run_work_projection_bundle
+from math_flow.work_projection import (
+    PROFILE_V2,
+    SubmissionEvidenceFile,
+    run_work_projection_bundle,
+)
 from tests.test_research_builder_v6 import (
     JUDGMENT_A,
     TX_A,
@@ -45,6 +50,7 @@ from tests.test_work_projection import (
 
 ROOT = Path(__file__).resolve().parents[1]
 WORK_SPEC = ROOT / "protocol/judges/openrouter-work-accounting-v1.json"
+WORK_SPEC_V2 = ROOT / "protocol/judges/openrouter-work-accounting-v2.json"
 BUILDER_SPEC = ROOT / "protocol/judges/openrouter-hierarchical-research-builder-v6.json"
 
 
@@ -280,6 +286,44 @@ class GovernedProviderTests(unittest.TestCase):
         self.assertNotIn("credit", rendered_schema.lower())
         self.assertNotIn("totalWork", rendered_schema)
         self.assertIn("directWorkHours", rendered_schema)
+
+    def test_v2_governed_provider_uses_a_first_order_and_numeric_only_w_plus_binding(self) -> None:
+        fixture = self._work_fixture()
+        transport = SequentialTransport(
+            [
+                _response(_safe_response(), ordinal=1),
+                _response(_patch("2", "with-access"), ordinal=2),
+                _response(_patch("8", "no-access"), ordinal=3),
+            ]
+        )
+        provider = OpenRouterWorkProjectionProviderV2(
+            load_judge_spec(WORK_SPEC_V2), transport=transport
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            manifest = run_work_projection_bundle(
+                output_dir=Path(temporary) / "bundle",
+                provider=provider,
+                subject_transaction_id=fixture.claims[0]["transactionId"],
+                root_contract=fixture.contract,
+                base_knowledge_state=fixture.base_knowledge,
+                target_knowledge_state=fixture.target_knowledge,
+                base_accounting_state=fixture.base_accounting,
+                topology_alignment=fixture.alignment,
+                evidence_manifest=fixture.evidence_manifest,
+                evidence_chunks=fixture.evidence_chunks,
+                accepted_claim_refs=fixture.claims,
+                output_profile=PROFILE_V2,
+            )
+        self.assertEqual(manifest["outputProfile"], PROFILE_V2)
+        self.assertEqual(
+            [record["stage"] for record in provider.invocation_records],
+            ["safe-facts", "with-access", "no-access"],
+        )
+        no_user_data = transport.requests[2]["messages"][-1]["content"]
+        self.assertIn('"frozenWithAccessState"', no_user_data)
+        self.assertNotIn('"withAccessPatch"', no_user_data)
+        self.assertNotIn("RAW-ACTIONABLE-EVIDENCE", no_user_data)
+        self.assertNotIn('"evidenceManifest"', no_user_data)
 
     def test_automatic_retry_rejects_truncation_without_manual_path(self) -> None:
         transport = SequentialTransport(
