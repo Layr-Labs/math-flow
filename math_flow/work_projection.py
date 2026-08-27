@@ -378,7 +378,11 @@ def _required_primitive_updates(
     before: Mapping[str, object],
     after: Mapping[str, object],
     base_accounting_state: Mapping[str, object],
+    *,
+    evaluation_mode: str,
 ) -> list[dict[str, object]]:
+    if evaluation_mode not in {"no-access", "with-access"}:
+        raise MathFlowError("primitive updates require a counterfactual evaluation mode")
     base_annotations = {
         _node_key(item["nodeRef"]): item for item in base_accounting_state["annotations"]
     }
@@ -409,7 +413,10 @@ def _required_primitive_updates(
                 )
                 if old_parent != new_parent:
                     add(key, ("conditionalIncidence",), "reparented")
-            if record.get("status") in {"completed", "retired"}:
+            if (
+                evaluation_mode == "with-access"
+                and record.get("status") in {"completed", "retired"}
+            ):
                 annotation = base_annotations.get(key)
                 if annotation is not None:
                     changes = []
@@ -1005,7 +1012,18 @@ def run_work_projection_bundle(
         manifest=manifest,
         accepted_claim_refs=claims,
     )
-    required_updates = _required_primitive_updates(before, after, base)
+    no_access_required_updates = _required_primitive_updates(
+        before,
+        after,
+        base,
+        evaluation_mode="no-access",
+    )
+    with_access_required_updates = _required_primitive_updates(
+        before,
+        after,
+        base,
+        evaluation_mode="with-access",
+    )
     verified_files = _evidence_files(manifest, chunks)
     checkpoint = (
         WorkProjectionCheckpointStore(checkpoint_dir)
@@ -1046,7 +1064,8 @@ def run_work_projection_bundle(
             seed_node_refs=_seed_refs_from_safe_facts(safe),
             descendant_depth=descendant_depth,
         )
-        _ensure_required_context_coverage(required_updates, safe_context)
+        _ensure_required_context_coverage(no_access_required_updates, safe_context)
+        _ensure_required_context_coverage(with_access_required_updates, safe_context)
         return safe
 
     safe_response = _invoke(
@@ -1066,7 +1085,8 @@ def run_work_projection_bundle(
         seed_node_refs=_seed_refs_from_safe_facts(safe_facts),
         descendant_depth=descendant_depth,
     )
-    _ensure_required_context_coverage(required_updates, context)
+    _ensure_required_context_coverage(no_access_required_updates, context)
+    _ensure_required_context_coverage(with_access_required_updates, context)
 
     no_input = build_no_access_stage_input(
         safe_facts=safe_facts,
@@ -1081,7 +1101,7 @@ def run_work_projection_bundle(
         root_contract=contract,
         base_accounting_state=base,
         topology_alignment=alignment,
-        required_updates=required_updates,
+        required_updates=no_access_required_updates,
         stage_input=no_input,
     )
     _assert_no_access_evidence_nonleakage(no_request, verified_files)
@@ -1093,7 +1113,7 @@ def run_work_projection_bundle(
             subject_transaction_id=subject,
             bindings=bindings,
             base_accounting_state=base,
-            required_updates=required_updates,
+            required_updates=no_access_required_updates,
             impact_context=context,
         )
 
@@ -1132,7 +1152,7 @@ def run_work_projection_bundle(
         root_contract=contract,
         base_accounting_state=base,
         topology_alignment=alignment,
-        required_updates=required_updates,
+        required_updates=with_access_required_updates,
         stage_input=with_input,
     )
     def validate_with_access_response(response: object) -> dict[str, object]:
@@ -1143,7 +1163,7 @@ def run_work_projection_bundle(
             subject_transaction_id=subject,
             bindings=bindings,
             base_accounting_state=base,
-            required_updates=required_updates,
+            required_updates=with_access_required_updates,
             impact_context=context,
         )
         materialize_submission_work_value(
@@ -1353,7 +1373,18 @@ def load_work_projection_bundle(
     for field, expected in bindings.items():
         if manifest.get(field) != expected:
             raise MathFlowError(f"work projection bundle {field} binding mismatch")
-    required_updates = _required_primitive_updates(before, after, base)
+    no_access_required_updates = _required_primitive_updates(
+        before,
+        after,
+        base,
+        evaluation_mode="no-access",
+    )
+    with_access_required_updates = _required_primitive_updates(
+        before,
+        after,
+        base,
+        evaluation_mode="with-access",
+    )
 
     safe_response = _load_json_role(bundle_dir, manifest, "safe-facts-response")
     safe_facts = _load_json_role(bundle_dir, manifest, "counterfactual-safe-facts")
@@ -1396,7 +1427,8 @@ def load_work_projection_bundle(
     )
     if context != rebuilt_context:
         raise MathFlowError("work projection impact context is not reproducible")
-    _ensure_required_context_coverage(required_updates, context)
+    _ensure_required_context_coverage(no_access_required_updates, context)
+    _ensure_required_context_coverage(with_access_required_updates, context)
 
     no_input = _load_json_role(bundle_dir, manifest, "no-access-stage-input")
     expected_no_input = build_no_access_stage_input(
@@ -1413,11 +1445,29 @@ def load_work_projection_bundle(
         root_contract=contract,
         base_accounting_state=base,
         topology_alignment=alignment,
-        required_updates=required_updates,
+        required_updates=no_access_required_updates,
         stage_input=no_input,
     )
     if no_request != expected_no_request:
-        raise MathFlowError("work projection no-access request is not reproducible")
+        # Bundles produced before inactive-node counterfactuals were repaired
+        # required completed/retired zeroing in both branches.  Keep those
+        # immutable bundles replayable while new runs use mode-aware rules.
+        legacy_no_request = _make_request(
+            stage="no-access",
+            problem_id=str(contract["problemId"]),
+            subject_transaction_id=subject,
+            bindings=bindings,
+            root_contract=contract,
+            base_accounting_state=base,
+            topology_alignment=alignment,
+            required_updates=with_access_required_updates,
+            stage_input=no_input,
+        )
+        if no_request != legacy_no_request:
+            raise MathFlowError("work projection no-access request is not reproducible")
+        effective_no_access_required_updates = with_access_required_updates
+    else:
+        effective_no_access_required_updates = no_access_required_updates
     _assert_no_access_evidence_nonleakage(
         no_request, _evidence_files(evidence_manifest, chunks)
     )
@@ -1430,7 +1480,7 @@ def load_work_projection_bundle(
         subject_transaction_id=subject,
         bindings=bindings,
         base_accounting_state=base,
-        required_updates=required_updates,
+        required_updates=effective_no_access_required_updates,
         impact_context=context,
     )
     if no_patch != rebuilt_no_patch:
@@ -1456,7 +1506,7 @@ def load_work_projection_bundle(
         root_contract=contract,
         base_accounting_state=base,
         topology_alignment=alignment,
-        required_updates=required_updates,
+        required_updates=with_access_required_updates,
         stage_input=with_input,
     )
     if with_request != expected_with_request:
@@ -1470,7 +1520,7 @@ def load_work_projection_bundle(
         subject_transaction_id=subject,
         bindings=bindings,
         base_accounting_state=base,
-        required_updates=required_updates,
+        required_updates=with_access_required_updates,
         impact_context=context,
     )
     if with_patch != rebuilt_with_patch:

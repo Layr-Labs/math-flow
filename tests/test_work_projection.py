@@ -12,6 +12,7 @@ from math_flow.counterfactual_context import (
     build_submission_evidence_manifest,
 )
 from math_flow.errors import MathFlowError
+from math_flow.repository import sha256_json
 from math_flow.research_state import (
     apply_research_program_delta,
     empty_research_program_state,
@@ -22,6 +23,7 @@ from math_flow.research_topology import (
 )
 from math_flow.work_accounting import build_work_accounting_state, make_root_contract
 from math_flow.work_projection import (
+    _required_primitive_updates,
     PROFILE,
     SubmissionEvidenceFile,
     load_work_projection_bundle,
@@ -476,6 +478,49 @@ class WorkProjectionTests(unittest.TestCase):
                     },
                 ],
             )
+
+    def test_inactive_zeroing_is_required_only_with_access(self) -> None:
+        after = copy.deepcopy(self.target_knowledge)
+        thread = after["threads"]["root/unstructured-search"]
+        thread["status"] = "completed"
+        thread["expectedExposure"] = "0"
+        thread_content = {
+            key: value for key, value in thread.items() if key != "digest"
+        }
+        thread["digest"] = "sha256:" + sha256_json(thread_content)
+        state_content = {key: value for key, value in after.items() if key != "stateDigest"}
+        after["stateDigest"] = "sha256:" + sha256_json(state_content)
+
+        self.assertEqual(
+            _required_primitive_updates(
+                self.base_knowledge,
+                after,
+                self.base_accounting,
+                evaluation_mode="no-access",
+            ),
+            [],
+        )
+        self.assertEqual(
+            _required_primitive_updates(
+                self.base_knowledge,
+                after,
+                self.base_accounting,
+                evaluation_mode="with-access",
+            ),
+            [
+                {
+                    "nodeRef": {
+                        "kind": "thread",
+                        "id": "root/unstructured-search",
+                    },
+                    "requiredChanges": [
+                        "conditionalIncidence",
+                        "directWorkHours",
+                    ],
+                    "reasons": ["inactive-zeroing"],
+                }
+            ],
+        )
 
     def test_checkpoint_tampering_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

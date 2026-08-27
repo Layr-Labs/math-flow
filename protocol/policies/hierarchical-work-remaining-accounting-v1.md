@@ -98,7 +98,10 @@ these fields is invalid.
 
 All V1 primitive values are canonical non-negative finite-decimal strings.
 Incidence lies in `[0,1]`. Completed and retired knowledge nodes have zero direct
-work and zero non-root incidence.
+work and zero non-root incidence in baseline and committed with-access states.
+An ephemeral no-access state may retain positive work and incidence on such a
+node when the counterfactual community would still pursue it before independently
+discovering the result that caused the builder to complete or retire it.
 
 ## 5. Progressive knowledge and the same-world comparison
 
@@ -176,6 +179,10 @@ The accounting evaluator then reasons counterfactually on the revised topology:
   treated as work created by the submission; and
 - a retired branch can retain positive no-access incidence while having zero
   with-access incidence where the submission prunes it.
+
+Builder status records factual post-submission organization. It does not by
+itself reveal the submission to no-access actors or force their effective
+counterfactual activity to zero.
 
 The current reducer verifies the exact alignment digest and state bindings. Full
 semantic validation of split/merge lineage belongs to the builder topology

@@ -471,6 +471,8 @@ def build_work_accounting_state(
 ) -> dict[str, object]:
     contract = validate_root_contract(root_contract)
     knowledge = _validate_knowledge_state(knowledge_state, str(contract["problemId"]))
+    if evaluation_mode not in EVALUATION_MODES:
+        raise MathFlowError("work-accounting state has an invalid evaluation mode")
     nodes, parents, root = _knowledge_topology(knowledge)
     normalized_by_key: dict[tuple[str, str], dict[str, object]] = {}
     for raw in annotations:
@@ -489,20 +491,23 @@ def build_work_accounting_state(
         )
     if set(normalized_by_key) != set(nodes):
         raise MathFlowError("work-accounting state must annotate every program and thread exactly once")
-    for key, annotation in normalized_by_key.items():
-        status = nodes[key].get("status")
-        if status in {"completed", "retired"}:
-            if annotation["directWorkHours"] != "0":
-                raise MathFlowError("completed or retired knowledge nodes must have zero direct work")
-            if key != root and annotation["conditionalIncidence"] != "0":
-                raise MathFlowError("completed or retired knowledge nodes must have zero incidence")
+    if evaluation_mode != "no-access":
+        for key, annotation in normalized_by_key.items():
+            status = nodes[key].get("status")
+            if status in {"completed", "retired"}:
+                if annotation["directWorkHours"] != "0":
+                    raise MathFlowError(
+                        "completed or retired knowledge nodes must have zero direct work"
+                    )
+                if key != root and annotation["conditionalIncidence"] != "0":
+                    raise MathFlowError(
+                        "completed or retired knowledge nodes must have zero incidence"
+                    )
     processed = list(processed_submission_ids)
     if processed != list(dict.fromkeys(processed)) or any(
         not GIT_SHA.fullmatch(item) for item in processed
     ):
         raise MathFlowError("processed submission IDs must be unique canonical transactions")
-    if evaluation_mode not in EVALUATION_MODES:
-        raise MathFlowError("work-accounting state has an invalid evaluation mode")
     if evaluation_mode == "baseline":
         if subject_transaction_id is not None:
             raise MathFlowError("baseline accounting state may not name a subject")
@@ -660,9 +665,17 @@ def validate_work_accounting_state(
                 raise MathFlowError("root program conditional incidence must be null")
         else:
             incidence = _require_probability(raw.get("conditionalIncidence"), "conditional incidence")
-            if record.get("status") in {"completed", "retired"} and incidence != 0:
+            if (
+                mode != "no-access"
+                and record.get("status") in {"completed", "retired"}
+                and incidence != 0
+            ):
                 raise MathFlowError("completed or retired knowledge nodes must have zero incidence")
-        if record.get("status") in {"completed", "retired"} and direct != 0:
+        if (
+            mode != "no-access"
+            and record.get("status") in {"completed", "retired"}
+            and direct != 0
+        ):
             raise MathFlowError("completed or retired knowledge nodes must have zero direct work")
         if raw.get("annotationDigest") != _annotation_digest(raw):
             raise MathFlowError("work-accounting annotation digest mismatch")
