@@ -16,6 +16,7 @@ from math_flow.work_accounting_pipeline import (
     CASConflict,
     LocalCASObjectStore,
     WorkProviderFailure,
+    _frozen_with_access_candidate_key,
     advance_work_accounting_pipeline,
     initialize_work_accounting_pipeline,
     materialize_stored_work_projection_bundle,
@@ -608,12 +609,17 @@ class WorkAccountingPipelineTests(unittest.TestCase):
             evidence_chunks=chunks,
         )
 
-    def _initialize(self, store: LocalCASObjectStore) -> dict[str, object]:
+    def _initialize(
+        self,
+        store: LocalCASObjectStore,
+        *,
+        projection_id: str = "work-accounting-v1",
+    ) -> dict[str, object]:
         return initialize_work_accounting_pipeline(
             store,
             self.root,
             problem="demo",
-            projection_id="work-accounting-v1",
+            projection_id=projection_id,
             projection_spec_digest=PROJECTION_SPEC,
             root_contract=self.contract,
             initial_knowledge_state=self.initial_knowledge,
@@ -935,12 +941,12 @@ class WorkAccountingPipelineTests(unittest.TestCase):
 
     def test_v2_outer_retry_reuses_cas_frozen_with_access_candidate(self) -> None:
         store = LocalCASObjectStore(self.root / "store-v2-retry")
-        self._initialize(store)
+        self._initialize(store, projection_id="work-accounting-v2")
         first_provider = FailingV2WorkProvider(self.transaction_ids)
         failed = advance_work_accounting_pipeline(
             store,
             self.root,
-            projection_id="work-accounting-v1",
+            projection_id="work-accounting-v2",
             problem="demo",
             builder_provider=RecordingBuilder(),
             work_provider=first_provider,
@@ -948,6 +954,7 @@ class WorkAccountingPipelineTests(unittest.TestCase):
             scratch_root=self.root / "scratch-v2-first-process",
             as_of=100,
             maximum_subjects=1,
+            expected_work_projection_profile=PROFILE_V2,
         )
         self.assertEqual(failed["phase"], "awaiting-work")
         self.assertIsNone(failed["pendingTransition"]["claimDigest"])
@@ -967,7 +974,7 @@ class WorkAccountingPipelineTests(unittest.TestCase):
         recovered = advance_work_accounting_pipeline(
             store,
             self.root,
-            projection_id="work-accounting-v1",
+            projection_id="work-accounting-v2",
             problem="demo",
             builder_provider=RecordingBuilder(),
             work_provider=retry_provider,
@@ -977,10 +984,46 @@ class WorkAccountingPipelineTests(unittest.TestCase):
             scratch_root=self.root / "scratch-v2-second-process",
             as_of=110,
             maximum_subjects=1,
+            expected_work_projection_profile=PROFILE_V2,
         )
         self.assertEqual(retry_provider.calls, ["no-access"])
         self.assertEqual(len(recovered["completedTransitions"]), 1)
         self.assertEqual(frozen[0].read_bytes(), frozen_bytes)
+
+    def test_v2_profile_and_candidate_key_are_bound_to_governed_lane_inputs(self) -> None:
+        retry_key = "sha256:" + "9" * 64
+        shallow = _frozen_with_access_candidate_key(
+            retry_key,
+            output_profile=PROFILE_V2,
+            descendant_depth=1,
+        )
+        deep = _frozen_with_access_candidate_key(
+            retry_key,
+            output_profile=PROFILE_V2,
+            descendant_depth=2,
+        )
+        self.assertNotEqual(shallow, deep)
+
+        store = LocalCASObjectStore(self.root / "store-v2-under-v1")
+        self._initialize(store)
+        provider = FailingV2WorkProvider(self.transaction_ids)
+        state = advance_work_accounting_pipeline(
+            store,
+            self.root,
+            projection_id="work-accounting-v1",
+            problem="demo",
+            builder_provider=RecordingBuilder(),
+            work_provider=provider,
+            accepted_submissions=self.submissions[:1],
+            scratch_root=self.root / "scratch-v2-under-v1",
+            as_of=100,
+            maximum_subjects=1,
+        )
+        self.assertEqual(state["completedTransitions"], [])
+        self.assertEqual(provider.calls, [])
+        self.assertFalse(
+            (self.root / "store-v2-under-v1/indexes/frozen-with-access-candidates").exists()
+        )
 
     def test_local_store_rejects_path_escape(self) -> None:
         store = LocalCASObjectStore(self.root / "safe-store")

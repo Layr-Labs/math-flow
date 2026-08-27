@@ -20,8 +20,10 @@ For one adjacent accepted submission `x`, V2 performs:
 The persistable frozen candidate binds the exact transition, safe-fact request
 and response, impact context, with-access request and response, primitive patch,
 and reducer-authored state. Reuse reproduces the candidate from its patch and
-old base. A stale, tampered, wrong-predecessor, or differently processed state
-is rejected.
+old base. Reuse also requires the caller-expected descendant depth; that depth
+and the V2 output profile are part of the retry-stable CAS key. A stale,
+tampered, wrong-predecessor, differently processed, or wrong-depth state is
+rejected.
 
 The no-access input contains the numeric `W+` state and its exact candidate/state
 digests. It does not contain the `W+` patch, rationales, evidence references,
@@ -61,3 +63,9 @@ profile-conditional V2 dispatch and CAS retry isolation; its active and inactive
 V1 runtime bindings are repinned to that additive implementation, while their V1
 provider, request order, claim-scoped checkpoints, bundle format, and projection
 remain unchanged. No V2 projection is active.
+
+The pipeline selects an expected profile from trusted lane configuration, binds
+its version to the versioned projection ID, cross-checks the provider, and
+requires restored and newly produced bundles to use that exact profile. Both
+judge loading and overlay governance verify the V2 policy digest against the
+actual policy bytes rather than accepting a declared digest alone.

@@ -325,6 +325,62 @@ class GovernedProviderTests(unittest.TestCase):
         self.assertNotIn("RAW-ACTIONABLE-EVIDENCE", no_user_data)
         self.assertNotIn('"evidenceManifest"', no_user_data)
 
+    def test_v2_policy_digest_is_verified_for_provider_and_governance_resolution(self) -> None:
+        policy_relative = (
+            "protocol/policies/hierarchical-work-remaining-accounting-v2.md"
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            spec_path = root / "protocol/judges/openrouter-work-accounting-v2.json"
+            policy_path = root / policy_relative
+            spec_path.parent.mkdir(parents=True)
+            policy_path.parent.mkdir(parents=True)
+            spec_path.write_bytes(WORK_SPEC_V2.read_bytes())
+            policy_path.write_bytes((ROOT / policy_relative).read_bytes())
+            self.assertEqual(
+                load_judge_spec(spec_path)["implementation"],
+                "openrouter-work-accounting-v2",
+            )
+            policy_path.write_bytes(policy_path.read_bytes() + b"\nTampered.\n")
+            with self.assertRaisesRegex(MathFlowError, "policy digest mismatch"):
+                load_judge_spec(spec_path)
+
+        overlay = {
+            "schemaVersion": 2,
+            "id": "candidate-work-accounting-v2",
+            "description": "Inactive A-first candidate only.",
+            "status": "disabled",
+            "engine": "overlay-repository-v1",
+            "allowedProblems": ["*"],
+            "runner": {
+                "implementation": "openrouter-work-accounting-v2",
+                "spec": "protocol/judges/openrouter-work-accounting-v2.json",
+            },
+            "dependencies": [
+                {
+                    "name": "knowledge",
+                    "projectionId": "candidate-research-v6",
+                    "artifactRole": "knowledge-state",
+                }
+            ],
+            "scheduling": {"minimumIntervalSeconds": 300},
+        }
+        reader = lambda relative: (ROOT / relative).read_text(encoding="utf-8")
+        self.assertEqual(
+            validate_projection_spec(overlay, overlay["id"], reader), overlay
+        )
+
+        def tampered_reader(relative: str) -> str:
+            value = reader(relative)
+            return value + "\nTampered.\n" if relative == policy_relative else value
+
+        with self.assertRaisesRegex(MathFlowError, "policy digest mismatch"):
+            validate_projection_spec(overlay, overlay["id"], tampered_reader)
+        wrong_lane = copy.deepcopy(overlay)
+        wrong_lane["id"] = "candidate-work-accounting-v1"
+        with self.assertRaisesRegex(MathFlowError, "profile version disagree"):
+            validate_projection_spec(wrong_lane, wrong_lane["id"], reader)
+
     def test_automatic_retry_rejects_truncation_without_manual_path(self) -> None:
         transport = SequentialTransport(
             [

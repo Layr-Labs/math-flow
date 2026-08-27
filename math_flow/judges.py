@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import json
 import re
-from pathlib import Path
+from collections.abc import Mapping
+from pathlib import Path, PurePosixPath
 
 from . import __version__
+from .artifacts import sha256_bytes
 from .errors import MathFlowError
 from .openrouter import (
     OpenRouterTransport,
@@ -143,6 +145,29 @@ TEXT_ARTIFACT_SUFFIXES = {
 }
 MAX_ARTIFACT_CHARS = 50_000
 MAX_EVIDENCE_CHARS = 300_000
+
+
+def _validate_work_v2_policy_bytes(
+    spec_path: Path, policy: Mapping[str, object]
+) -> None:
+    """Resolve and verify the exact repository policy pinned by work V2."""
+
+    relative = str(policy["path"])
+    parts = PurePosixPath(relative).parts
+    policy_path: Path | None = None
+    for ancestor in spec_path.resolve().parents:
+        candidate = ancestor.joinpath(*parts)
+        if candidate.exists() or candidate.is_symlink():
+            policy_path = candidate
+            break
+    if policy_path is None or policy_path.is_symlink() or not policy_path.is_file():
+        raise MathFlowError("work-accounting V2 policy file is missing or unsafe")
+    try:
+        actual = sha256_bytes(policy_path.read_bytes())
+    except OSError as exc:
+        raise MathFlowError(f"could not read work-accounting V2 policy: {exc}") from exc
+    if actual != policy["digest"]:
+        raise MathFlowError("work-accounting V2 policy digest mismatch")
 
 
 def load_judge_spec(path: Path) -> dict[str, object]:
@@ -471,6 +496,7 @@ def load_judge_spec(path: Path) -> dict[str, object]:
                 or not re.fullmatch(r"sha256:[0-9a-f]{64}", str(policy["digest"]))
             ):
                 raise MathFlowError("work-accounting V2 judge must pin its V2 policy")
+            _validate_work_v2_policy_bytes(path, policy)
     return spec
 
 

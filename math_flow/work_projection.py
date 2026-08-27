@@ -1096,6 +1096,7 @@ def validate_frozen_with_access_candidate_v2(
     bindings: Mapping[str, object],
     no_access_required_updates: Sequence[Mapping[str, object]],
     with_access_required_updates: Sequence[Mapping[str, object]],
+    expected_descendant_depth: int,
 ) -> dict[str, object]:
     """Rebuild and verify a persistable V2 live-state candidate."""
 
@@ -1110,9 +1111,17 @@ def validate_frozen_with_access_candidate_v2(
         or candidate.get("bindings") != bindings
     ):
         raise MathFlowError("frozen with-access candidate has invalid identity bindings")
+    if (
+        isinstance(expected_descendant_depth, bool)
+        or not isinstance(expected_descendant_depth, int)
+        or not 0 <= expected_descendant_depth <= 4
+    ):
+        raise MathFlowError("expected frozen candidate context depth is invalid")
     depth = candidate.get("descendantDepth")
     if isinstance(depth, bool) or not isinstance(depth, int) or not 0 <= depth <= 4:
         raise MathFlowError("frozen with-access candidate has invalid context depth")
+    if depth != expected_descendant_depth:
+        raise MathFlowError("frozen with-access candidate context depth mismatch")
     if candidate.get("candidateDigest") != _object_digest(
         _without_digest(candidate, "candidateDigest")
     ):
@@ -1308,6 +1317,7 @@ def prepare_frozen_with_access_candidate_v2(
         bindings=bindings,
         no_access_required_updates=no_required,
         with_access_required_updates=with_required,
+        expected_descendant_depth=descendant_depth,
     )
 
 
@@ -1832,6 +1842,7 @@ def _run_work_projection_bundle_v2(
         bindings=bindings,
         no_access_required_updates=no_required,
         with_access_required_updates=with_required,
+        expected_descendant_depth=descendant_depth,
     )
     safe_request = candidate["safeRequest"]
     safe_response = candidate["safeResponse"]
@@ -2363,6 +2374,7 @@ def _load_work_projection_bundle_v2(
         bindings=bindings,
         no_access_required_updates=no_required,
         with_access_required_updates=with_required,
+        expected_descendant_depth=candidate.get("descendantDepth"),  # type: ignore[arg-type]
     )
     duplicate_candidate_artifacts = {
         "safe-facts-request": "safeRequest",

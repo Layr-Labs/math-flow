@@ -572,6 +572,32 @@ class WorkProjectionTests(unittest.TestCase):
                     frozen_candidate=wrong_processed,
                 )
 
+    def test_v2_frozen_candidate_reuse_binds_caller_expected_context_depth(self) -> None:
+        provider = FakeProvider()
+        candidate = prepare_frozen_with_access_candidate_v2(
+            provider=provider,
+            subject_transaction_id=TX,
+            root_contract=self.contract,
+            base_knowledge_state=self.base_knowledge,
+            target_knowledge_state=self.target_knowledge,
+            base_accounting_state=self.base_accounting,
+            topology_alignment=self.alignment,
+            evidence_manifest=self.evidence_manifest,
+            evidence_chunks=self.evidence_chunks,
+            accepted_claim_refs=self.claims,
+            descendant_depth=2,
+        )
+        self.assertEqual(candidate["descendantDepth"], 2)
+        retry = FakeProvider(fail=True)
+        with tempfile.TemporaryDirectory() as temporary:
+            with self.assertRaisesRegex(MathFlowError, "context depth mismatch"):
+                self._run_v2(
+                    Path(temporary) / "depth-mismatch",
+                    retry,
+                    frozen_candidate=candidate,
+                )
+        self.assertEqual(retry.calls, [])
+
     def test_same_world_estimation_handles_new_builder_nodes(self) -> None:
         target = _topology_target_state(self.base_knowledge)
         alignment = derive_research_topology_alignment(self.base_knowledge, target)
