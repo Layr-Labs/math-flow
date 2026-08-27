@@ -11,7 +11,7 @@ import { createViewerReferenceResolver } from "./referenceLinks.mjs";
 import { preferredTransactionDetailMode, resolveTransactionDetailMode } from "./transactionDetailMode.mjs";
 import { validityReferenceGroups } from "./validityPresentation.mjs";
 import { applyViewerStateToSearch, parseViewerState } from "./viewerState.mjs";
-import { addCanonicalDecimals, formatWorkShare, isWorkAccountingProjection, isWorkAccountingRun, validWorkAccountingRun, workAccountingForNode, workAccountingForTransaction } from "./workAccountingPresentation.mjs";
+import { addCanonicalDecimals, formatWorkShare, isWorkAccountingProjection, isWorkAccountingRun, terminalWorkAccountingForNode, validWorkAccountingRun, workAccountingForNode, workAccountingForTransaction } from "./workAccountingPresentation.mjs";
 
 type Ref = {
   kind: string;
@@ -289,16 +289,47 @@ type WorkAccountingNodeAnnotation = {
   expectedDirectWorkHours: string;
 };
 
+type WorkAccountingNodeValues = Omit<WorkAccountingNodeAnnotation, "nodeRef" | "knowledgeNodeDigest">;
+
+type WorkAccountingNodeEffect = {
+  nodeRef: { kind: "program" | "thread"; id: string };
+  knowledgeNodeDigest: string;
+  knowledgeStatus: string;
+  effectKind: "direct" | "propagated";
+  directUpdateBranches: Array<"no-access" | "new-live">;
+  topologyRequiredBranches: Array<"no-access" | "new-live">;
+  topologyReasons: Array<"created" | "reparented" | "inactive-zeroing">;
+  topologyOnly: boolean;
+  primitiveDifferenceFields: Array<"directWorkHours" | "conditionalIncidence">;
+  derivedDifferenceFields: Array<"globalReach" | "conditionalSubtreeWorkHours" | "expectedDirectWorkHours">;
+  noAccess: WorkAccountingNodeValues;
+  newLive: WorkAccountingNodeValues;
+  noAccessPatch: null | { changes: Record<string, string>; rationale: string; evidenceRefs: string[] };
+  newLivePatch: null | { changes: Record<string, string>; rationale: string; evidenceRefs: string[] };
+  workReductionHours: string;
+};
+
+type TerminalWorkAccountingNodeAnnotation = WorkAccountingNodeAnnotation & {
+  knowledgeStatus: string;
+};
+
 type WorkAccountingEvaluation = {
   subjectTransactionId: string;
   canonicalOrdinal: number;
   evaluationDigest: string;
   publicationManifestDigest: string;
   committedAccountingStateDigest: string;
+  noAccessWorkHours?: string;
+  newLiveWorkHours?: string;
   exAnteWorkHours: string;
   exPostWorkHours: string;
   workReductionHours: string;
   nodeAnnotations: WorkAccountingNodeAnnotation[];
+  directUpdateCount?: number;
+  propagatedEffectCount?: number;
+  topologyOnlyCount?: number;
+  nodeEffectsDigest?: string;
+  nodeEffects?: WorkAccountingNodeEffect[];
   prospectiveCorrection: boolean;
   affectedHistory: boolean;
   affectedByRepairDigests: string[];
@@ -327,6 +358,7 @@ type WorkAccountingRun = {
   evaluations: WorkAccountingEvaluation[];
   repairs: Array<Record<string, unknown>>;
   terminalAccountingState: Record<string, unknown>;
+  terminalNodeAnnotations?: TerminalWorkAccountingNodeAnnotation[];
   stale: false;
   staleReasons: [];
 };
@@ -1041,6 +1073,7 @@ export function KnowledgeViewer({
   onViewerStateChange(patch: Partial<ViewerState>): void;
 }) {
   const judgments = useMemo(() => data.judgments ?? [], [data.judgments]);
+  const [workEffectFilter, setWorkEffectFilter] = useState<"all" | "direct" | "propagated">("all");
   const query = viewerState.query ?? "";
   const run = data.runs.find((item) => item.id === viewerState.runId) ?? data.runs.at(-1)!;
   const creditRun = creditProjection?.runs.find(
@@ -1133,8 +1166,15 @@ export function KnowledgeViewer({
       ? workAccountingForNode(workAccountingRun, selectedNode) as Array<{
         evaluation: WorkAccountingEvaluation;
         annotation: WorkAccountingNodeAnnotation;
+        effect?: WorkAccountingNodeEffect;
       }>
       : [],
+    [selectedNode, workAccountingRun],
+  );
+  const terminalNodeWorkAccounting = useMemo(
+    () => workAccountingRun
+      ? terminalWorkAccountingForNode(workAccountingRun, selectedNode) as TerminalWorkAccountingNodeAnnotation | null
+      : null,
     [selectedNode, workAccountingRun],
   );
 
@@ -1193,6 +1233,10 @@ export function KnowledgeViewer({
   const selectedWorkAccounting = workAccountingRun
     ? workAccountingForTransaction(workAccountingRun, transactionId) as WorkAccountingEvaluation | null
     : null;
+  const selectedWorkNodeEffects = selectedWorkAccounting?.nodeEffects ?? [];
+  const visibleWorkNodeEffects = selectedWorkNodeEffects.filter(
+    (effect) => workEffectFilter === "all" || effect.effectKind === workEffectFilter,
+  );
   const selectedAttestation = objectiveAttestations?.find(
     (item) => item.transactionId === transactionId,
   );
@@ -1697,12 +1741,31 @@ export function KnowledgeViewer({
                   </div>
                 </section>
               )}
+              {terminalNodeWorkAccounting && workAccountingRun && (
+                <section className="node-current-work-accounting">
+                  <div className="section-label">
+                    <h3>Current live work parameterization</h3>
+                    <span>W+ terminal</span>
+                  </div>
+                  <p className="muted">This is the committed live state used as the predecessor for future contribution accounting.</p>
+                  <div className="hierarchical-credit-summary node-work-parameter-grid">
+                    <div><span>Direct work d</span><strong>{terminalNodeWorkAccounting.directWorkHours} h</strong></div>
+                    <div><span>Incoming incidence P</span><strong>{terminalNodeWorkAccounting.conditionalIncidence ?? "root"}</strong></div>
+                    <div><span>Global reach R</span><strong>{terminalNodeWorkAccounting.globalReach}</strong></div>
+                    <div><span>Conditional subtree C</span><strong>{terminalNodeWorkAccounting.conditionalSubtreeWorkHours} h</strong></div>
+                    <div><span>Expected direct R × d</span><strong>{terminalNodeWorkAccounting.expectedDirectWorkHours} h</strong></div>
+                    <div><span>Knowledge status</span><strong>{terminalNodeWorkAccounting.knowledgeStatus}</strong></div>
+                    <div><span>Knowledge node</span><code>{short(terminalNodeWorkAccounting.knowledgeNodeDigest, 12)}</code></div>
+                    <div><span>Accounting state</span><code>{short(workAccountingRun.terminalAccountingStateDigest, 12)}</code></div>
+                  </div>
+                </section>
+              )}
               {workAccountingRun && (selectedNode.type === "program" || selectedNode.id.startsWith("thread:")) && (
                 <section className="node-work-accounting">
-                  <div className="section-label"><h3>Submission accounting annotations</h3><span>{nodeWorkAccounting.length}</span></div>
-                  <p className="muted">These are program/thread annotations inside each submission evaluation. Credit belongs to the submission; semantic result and method items carry no numeric accounting.</p>
+                  <div className="section-label"><h3>Submission accounting effects</h3><span>{nodeWorkAccounting.length}</span></div>
+                  <p className="muted">These are direct or propagated W− → W+ effects involving this program/thread. Credit belongs to the submission; semantic result and method items carry no numeric accounting.</p>
                   <div className="node-work-accounting-list">
-                    {nodeWorkAccounting.map(({ evaluation, annotation }) => {
+                    {nodeWorkAccounting.map(({ evaluation, annotation, effect }) => {
                       const transaction = data.transactions.find(
                         (item) => item.transactionId === evaluation.subjectTransactionId,
                       );
@@ -1711,9 +1774,9 @@ export function KnowledgeViewer({
                           <span className="ordinal">{String(evaluation.canonicalOrdinal).padStart(2, "0")}</span>
                           <span>
                             <strong>{transaction ? label(transaction.contributionId) : short(evaluation.subjectTransactionId)}</strong>
-                            <small>direct {annotation.directWorkHours} h · expected direct {annotation.expectedDirectWorkHours} h · reach {annotation.globalReach}</small>
+                            <small>{effect ? `${effect.effectKind} · ` : ""}direct {annotation.directWorkHours} h · expected direct {annotation.expectedDirectWorkHours} h · reach {annotation.globalReach}</small>
                           </span>
-                          <span className="credit-share">D {evaluation.workReductionHours} h</span>
+                          <span className="credit-share">{effect ? `node Δe ${effect.workReductionHours}` : `D ${evaluation.workReductionHours}`} h</span>
                         </button>
                       );
                     })}
@@ -1974,9 +2037,9 @@ export function KnowledgeViewer({
                 <div><span>Canonical ordinal</span><strong>{selectedWorkAccounting.canonicalOrdinal}</strong></div>
                 <div><span>Portfolio share</span><strong>{formatWorkShare(selectedWorkAccounting.workReductionHours, workAccountingRun.evaluations.map((item) => item.workReductionHours))}</strong></div>
                 <div><span>Credited D total</span><strong>{addCanonicalDecimals(workAccountingRun.evaluations.map((item) => item.workReductionHours))} h</strong></div>
-                <div><span>Ex-ante R</span><strong>{selectedWorkAccounting.exAnteWorkHours} h</strong></div>
-                <div><span>Ex-post C</span><strong>{selectedWorkAccounting.exPostWorkHours} h</strong></div>
-                <div><span>D = R − C</span><strong>{selectedWorkAccounting.workReductionHours} h</strong></div>
+                <div><span>No-access W−</span><strong>{selectedWorkAccounting.noAccessWorkHours ?? selectedWorkAccounting.exAnteWorkHours} h</strong></div>
+                <div><span>New live W+</span><strong>{selectedWorkAccounting.newLiveWorkHours ?? selectedWorkAccounting.exPostWorkHours} h</strong></div>
+                <div><span>D = W− − W+</span><strong>{selectedWorkAccounting.workReductionHours} h</strong></div>
                 <div><span>Committed state</span><code>{short(selectedWorkAccounting.committedAccountingStateDigest, 12)}</code></div>
               </div>
               <article className={`credit-lock-card ${selectedWorkAccounting.prospectiveCorrection ? "stale" : "current"}`}>
@@ -1986,22 +2049,88 @@ export function KnowledgeViewer({
                   : "The publication manifest and schedule bind this evaluation to its exact committed post-state."}</span>
                 {selectedWorkAccounting.affectedByRepairDigests.map((digest) => <small key={digest}>repair · {short(digest, 12)}</small>)}
               </article>
-              <section className="credit-effect-list">
-                <div className="section-label"><h3>Program/thread annotations</h3><span>{selectedWorkAccounting.nodeAnnotations.length}</span></div>
-                <p className="muted">Credit is assigned to this submission. The figures below annotate affected accounting nodes within this evaluation; semantic items are intentionally excluded.</p>
-                {selectedWorkAccounting.nodeAnnotations.map((annotation) => {
-                  const nodeId = annotation.nodeRef.kind === "thread"
-                    ? `thread:${annotation.nodeRef.id}`
-                    : annotation.nodeRef.id;
-                  return (
-                    <button key={`${annotation.nodeRef.kind}:${annotation.nodeRef.id}`} onClick={() => onViewerStateChange({ nodeId, transactionId: undefined, judgmentId: undefined, detailMode: "node" })}>
-                      <span>{annotation.nodeRef.kind}</span>
-                      <strong>{nodes[nodeId]?.title ?? label(annotation.nodeRef.id)}</strong>
-                      <small>direct {annotation.directWorkHours} h · subtree {annotation.conditionalSubtreeWorkHours} h · expected direct {annotation.expectedDirectWorkHours} h</small>
-                    </button>
-                  );
-                })}
-              </section>
+              {selectedWorkAccounting.nodeEffects ? (
+                <section className="credit-effect-list work-node-effect-list">
+                  <div className="section-label">
+                    <h3>Accounting node effects</h3>
+                    <span>{selectedWorkNodeEffects.length}</span>
+                  </div>
+                  <p className="muted">Direct updates are the complete union of W− and W+ patch nodes. Propagated effects were not patched but changed through R/C reduction. Node Δe values are additive and sum to D; subtree C differences overlap and are context only.</p>
+                  <div className="work-effect-filters" aria-label="Accounting effect filter">
+                    {([
+                      ["all", "All effects", selectedWorkNodeEffects.length],
+                      ["direct", "Direct updates", selectedWorkAccounting.directUpdateCount ?? 0],
+                      ["propagated", "Propagated", selectedWorkAccounting.propagatedEffectCount ?? 0],
+                    ] as const).map(([value, text, count]) => (
+                      <button
+                        className={workEffectFilter === value ? "active" : ""}
+                        key={value}
+                        onClick={() => setWorkEffectFilter(value)}
+                      >
+                        {text} <span>{count}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {visibleWorkNodeEffects.map((effect) => {
+                    const nodeId = effect.nodeRef.kind === "thread"
+                      ? `thread:${effect.nodeRef.id}`
+                      : effect.nodeRef.id;
+                    const badges = [
+                      effect.effectKind,
+                      ...(effect.directUpdateBranches.includes("no-access") ? ["W− patch"] : []),
+                      ...(effect.directUpdateBranches.includes("new-live") ? ["W+ patch"] : []),
+                      ...(effect.topologyOnly ? ["topology only"] : []),
+                    ];
+                    return (
+                      <article className={`work-node-effect ${effect.topologyOnly ? "topology-only" : ""}`} key={`${effect.nodeRef.kind}:${effect.nodeRef.id}`}>
+                        <button className="work-node-effect-heading" onClick={() => onViewerStateChange({ nodeId, transactionId: undefined, judgmentId: undefined, detailMode: "node" })}>
+                          <span>{effect.nodeRef.kind}</span>
+                          <strong>{nodes[nodeId]?.title ?? label(effect.nodeRef.id)}</strong>
+                          <code>node Δe {effect.workReductionHours} h</code>
+                        </button>
+                        <div className="work-effect-badges">
+                          {badges.map((badge) => <span key={badge}>{badge}</span>)}
+                          {effect.topologyReasons.map((reason) => <span key={reason}>{label(reason)}</span>)}
+                        </div>
+                        <div className="work-node-comparison">
+                          <div><span>d · direct work</span><code>{effect.noAccess.directWorkHours} → {effect.newLive.directWorkHours} h</code></div>
+                          <div><span>P · incoming incidence</span><code>{effect.noAccess.conditionalIncidence ?? "root"} → {effect.newLive.conditionalIncidence ?? "root"}</code></div>
+                          <div><span>R · global reach</span><code>{effect.noAccess.globalReach} → {effect.newLive.globalReach}</code></div>
+                          <div><span>C · subtree (non-additive)</span><code>{effect.noAccess.conditionalSubtreeWorkHours} → {effect.newLive.conditionalSubtreeWorkHours} h</code></div>
+                          <div><span>e = R × d · additive</span><code>{effect.noAccess.expectedDirectWorkHours} → {effect.newLive.expectedDirectWorkHours} h</code></div>
+                        </div>
+                        {effect.topologyOnly && <p className="muted">Required to align topology; primitive branch values agree and this row contributes zero additive credit. Its non-additive subtree context may still reflect descendant effects.</p>}
+                        {(effect.noAccessPatch || effect.newLivePatch) && (
+                          <details>
+                            <summary>Direct patch rationales</summary>
+                            {effect.noAccessPatch && <p><strong>W−:</strong> {effect.noAccessPatch.rationale}</p>}
+                            {effect.newLivePatch && <p><strong>W+:</strong> {effect.newLivePatch.rationale}</p>}
+                          </details>
+                        )}
+                      </article>
+                    );
+                  })}
+                  {!visibleWorkNodeEffects.length && <p className="muted">No nodes match this effect filter.</p>}
+                  <small className="work-effects-binding">Effects bound to evaluation {short(selectedWorkAccounting.nodeEffectsDigest ?? selectedWorkAccounting.evaluationDigest, 12)}</small>
+                </section>
+              ) : (
+                <section className="credit-effect-list">
+                  <div className="section-label"><h3>Program/thread annotations</h3><span>{selectedWorkAccounting.nodeAnnotations.length}</span></div>
+                  <p className="muted">This V1 projection exposes only directly patched W+ annotations. Regenerate the viewer projection to inspect W− comparisons and propagated effects.</p>
+                  {selectedWorkAccounting.nodeAnnotations.map((annotation) => {
+                    const nodeId = annotation.nodeRef.kind === "thread"
+                      ? `thread:${annotation.nodeRef.id}`
+                      : annotation.nodeRef.id;
+                    return (
+                      <button key={`${annotation.nodeRef.kind}:${annotation.nodeRef.id}`} onClick={() => onViewerStateChange({ nodeId, transactionId: undefined, judgmentId: undefined, detailMode: "node" })}>
+                        <span>{annotation.nodeRef.kind}</span>
+                        <strong>{nodes[nodeId]?.title ?? label(annotation.nodeRef.id)}</strong>
+                        <small>direct {annotation.directWorkHours} h · subtree {annotation.conditionalSubtreeWorkHours} h · expected direct {annotation.expectedDirectWorkHours} h</small>
+                      </button>
+                    );
+                  })}
+                </section>
+              )}
               <details className="raw-artifact structured-record">
                 <summary>Exact submission work evaluation</summary>
                 <pre>{JSON.stringify(selectedWorkAccounting.evaluation, null, 2)}</pre>

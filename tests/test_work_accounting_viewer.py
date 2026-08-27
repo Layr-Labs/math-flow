@@ -6,13 +6,22 @@ import unittest
 from pathlib import Path
 
 from math_flow.errors import MathFlowError
-from math_flow.work_accounting import build_work_accounting_state
+from math_flow.work_accounting import (
+    apply_work_accounting_patch,
+    bind_patch_to_state,
+    build_work_accounting_state,
+    make_work_accounting_patch,
+    materialize_submission_work_value,
+)
 from math_flow.work_accounting_schedule import (
     apply_work_accounting_publication,
     apply_work_accounting_state_repair,
     materialize_work_accounting_state_repair,
 )
-from math_flow.work_accounting_viewer import build_work_accounting_viewer_projection
+from math_flow.work_accounting_viewer import (
+    _node_effect_view,
+    build_work_accounting_viewer_projection,
+)
 from math_flow.viewer import export_viewer_catalog
 from tests import test_work_accounting_schedule as schedule_tests
 
@@ -47,6 +56,13 @@ class WorkAccountingViewerTests(unittest.TestCase):
             target_knowledge_state=self.fixture.knowledge,
             root_contract=self.fixture.contract,
         )
+        first_no_access = apply_work_accounting_patch(
+            self.fixture.baseline,
+            self.no_access_patch,
+            root_contract=self.fixture.contract,
+            base_knowledge_state=self.fixture.knowledge,
+            target_knowledge_state=self.fixture.knowledge,
+        )
         first_loaded = {
             "manifest": {
                 "problemId": "demo",
@@ -56,6 +72,9 @@ class WorkAccountingViewerTests(unittest.TestCase):
             "baseKnowledgeState": self.fixture.knowledge,
             "targetKnowledgeState": self.fixture.knowledge,
             "baseAccountingState": self.fixture.baseline,
+            "noAccessPatch": self.no_access_patch,
+            "withAccessPatch": self.with_access_patch,
+            "noAccessState": first_no_access,
             "withAccessState": self.committed,
             "evaluation": self.evaluation,
         }
@@ -80,6 +99,13 @@ class WorkAccountingViewerTests(unittest.TestCase):
             target_knowledge_state=self.fixture.knowledge,
             root_contract=self.fixture.contract,
         )
+        second_no_access = apply_work_accounting_patch(
+            self.committed,
+            second_no_access_patch,
+            root_contract=self.fixture.contract,
+            base_knowledge_state=self.fixture.knowledge,
+            target_knowledge_state=self.fixture.knowledge,
+        )
         second_loaded = {
             "manifest": {
                 "problemId": "demo",
@@ -89,6 +115,9 @@ class WorkAccountingViewerTests(unittest.TestCase):
             "baseKnowledgeState": self.fixture.knowledge,
             "targetKnowledgeState": self.fixture.knowledge,
             "baseAccountingState": self.committed,
+            "noAccessPatch": second_no_access_patch,
+            "withAccessPatch": second_with_access_patch,
+            "noAccessState": second_no_access,
             "withAccessState": second_committed,
             "evaluation": second_evaluation,
         }
@@ -116,6 +145,7 @@ class WorkAccountingViewerTests(unittest.TestCase):
 
     def test_exports_exact_submission_credit_and_program_thread_annotations(self) -> None:
         projection = self._build()
+        self.assertEqual(projection["schemaVersion"], 2)
         self.assertEqual(projection["workAccounting"]["label"], "competent human researcher hours")
         run = projection["runs"][0]
         self.assertEqual(run["terminalAccountingState"], self.committed)
@@ -125,8 +155,22 @@ class WorkAccountingViewerTests(unittest.TestCase):
         self.assertEqual(evaluation["evaluation"], self.evaluation)
         self.assertEqual(evaluation["exAnteWorkHours"], self.evaluation["noAccessWorkHours"])
         self.assertEqual(evaluation["exPostWorkHours"], self.evaluation["withAccessWorkHours"])
+        self.assertEqual(evaluation["noAccessWorkHours"], self.evaluation["noAccessWorkHours"])
+        self.assertEqual(evaluation["newLiveWorkHours"], self.evaluation["withAccessWorkHours"])
         self.assertEqual(evaluation["workReductionHours"], self.evaluation["workValueHours"])
         self.assertTrue(evaluation["nodeAnnotations"])
+        self.assertEqual(evaluation["directUpdateCount"], 1)
+        self.assertEqual(evaluation["propagatedEffectCount"], 2)
+        self.assertEqual(len(evaluation["nodeEffects"]), 3)
+        effect = next(
+            item for item in evaluation["nodeEffects"] if item["effectKind"] == "direct"
+        )
+        self.assertEqual(effect["effectKind"], "direct")
+        self.assertEqual(effect["directUpdateBranches"], ["no-access", "new-live"])
+        self.assertEqual(effect["primitiveDifferenceFields"], ["directWorkHours"])
+        self.assertEqual(effect["workReductionHours"], evaluation["workReductionHours"])
+        self.assertTrue(run["terminalNodeAnnotations"])
+        self.assertTrue(all("knowledgeStatus" in item for item in run["terminalNodeAnnotations"]))
         self.assertLessEqual(
             {item["nodeRef"]["kind"] for item in evaluation["nodeAnnotations"]},
             {"program", "thread"},
@@ -143,6 +187,135 @@ class WorkAccountingViewerTests(unittest.TestCase):
                 canonical_ref="HEAD",
             )
         self.assertNotIn("workAccountingProjections", catalog)
+
+    def test_node_effects_separate_direct_updates_from_propagation(self) -> None:
+        subject = self.evaluation["subjectTransactionId"]
+
+        def patch(mode: str, updates: list[dict[str, object]]) -> dict[str, object]:
+            return bind_patch_to_state(
+                make_work_accounting_patch(
+                    problem_id="demo",
+                    subject_transaction_id=subject,
+                    evaluation_mode=mode,
+                    root_contract_digest=self.fixture.contract["rootContractDigest"],
+                    base_accounting_state_digest=self.fixture.baseline["stateDigest"],
+                    base_knowledge_state_digest=self.fixture.knowledge["stateDigest"],
+                    target_knowledge_state_digest=self.fixture.knowledge["stateDigest"],
+                    topology_alignment_digest=None,
+                    updates=updates,
+                ),
+                self.fixture.baseline,
+            )
+
+        no_patch = patch("no-access", [])
+        live_patch = patch(
+            "with-access",
+            [
+                {
+                    "nodeRef": {"kind": "program", "id": "root/approach"},
+                    "changes": {"conditionalIncidence": "0.5"},
+                    "rationale": "The contribution halves the chance that this program is needed.",
+                    "evidenceRefs": [subject],
+                }
+            ],
+        )
+        no_state, live_state, evaluation = materialize_submission_work_value(
+            base_state=self.fixture.baseline,
+            no_access_patch=no_patch,
+            with_access_patch=live_patch,
+            root_contract=self.fixture.contract,
+            base_knowledge_state=self.fixture.knowledge,
+            target_knowledge_state=self.fixture.knowledge,
+        )
+        effects, _ = _node_effect_view(
+            evaluation_digest=evaluation["evaluationDigest"],
+            no_access_state=no_state,
+            new_live_state=live_state,
+            no_access_patch=no_patch,
+            new_live_patch=live_patch,
+            base_state=self.fixture.baseline,
+            before_knowledge=self.fixture.knowledge,
+            after_knowledge=self.fixture.knowledge,
+            expected_work_reduction=evaluation["workValueHours"],
+        )
+        direct = [item for item in effects if item["effectKind"] == "direct"]
+        propagated = [item for item in effects if item["effectKind"] == "propagated"]
+        self.assertEqual(
+            [item["nodeRef"] for item in direct],
+            [{"kind": "program", "id": "root/approach"}],
+        )
+        self.assertEqual(len(propagated), 3)
+        self.assertTrue(
+            any("conditionalSubtreeWorkHours" in item["derivedDifferenceFields"] for item in propagated)
+        )
+        self.assertTrue(
+            any("globalReach" in item["derivedDifferenceFields"] for item in propagated)
+        )
+
+    def test_node_effects_preserve_signed_rerouting_contributions(self) -> None:
+        subject = self.evaluation["subjectTransactionId"]
+        updates = {
+            "no-access": [
+                {
+                    "nodeRef": {"kind": "thread", "id": "root/approach/unstructured-search"},
+                    "changes": {"conditionalIncidence": "0"},
+                    "rationale": "The fallback is not reached in the no-access route.",
+                    "evidenceRefs": [subject],
+                },
+            ],
+            "with-access": [
+                {
+                    "nodeRef": {"kind": "thread", "id": "root/approach/direct-line"},
+                    "changes": {"directWorkHours": "1"},
+                    "rationale": "The contribution nearly completes the direct line.",
+                    "evidenceRefs": [subject],
+                },
+            ],
+        }
+        patches = []
+        for mode in ("no-access", "with-access"):
+            patches.append(
+                bind_patch_to_state(
+                    make_work_accounting_patch(
+                        problem_id="demo",
+                        subject_transaction_id=subject,
+                        evaluation_mode=mode,
+                        root_contract_digest=self.fixture.contract["rootContractDigest"],
+                        base_accounting_state_digest=self.fixture.baseline["stateDigest"],
+                        base_knowledge_state_digest=self.fixture.knowledge["stateDigest"],
+                        target_knowledge_state_digest=self.fixture.knowledge["stateDigest"],
+                        topology_alignment_digest=None,
+                        updates=updates[mode],
+                    ),
+                    self.fixture.baseline,
+                )
+            )
+        no_state, live_state, evaluation = materialize_submission_work_value(
+            base_state=self.fixture.baseline,
+            no_access_patch=patches[0],
+            with_access_patch=patches[1],
+            root_contract=self.fixture.contract,
+            base_knowledge_state=self.fixture.knowledge,
+            target_knowledge_state=self.fixture.knowledge,
+        )
+        effects, _ = _node_effect_view(
+            evaluation_digest=evaluation["evaluationDigest"],
+            no_access_state=no_state,
+            new_live_state=live_state,
+            no_access_patch=patches[0],
+            new_live_patch=patches[1],
+            base_state=self.fixture.baseline,
+            before_knowledge=self.fixture.knowledge,
+            after_knowledge=self.fixture.knowledge,
+            expected_work_reduction=evaluation["workValueHours"],
+        )
+        fallback = next(
+            item
+            for item in effects
+            if item["nodeRef"]
+            == {"kind": "thread", "id": "root/approach/unstructured-search"}
+        )
+        self.assertEqual(fallback["workReductionHours"], "-3")
 
     def test_rejects_publication_or_terminal_state_not_bound_by_schedule(self) -> None:
         publication = copy.deepcopy(self.publication)

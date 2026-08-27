@@ -10,6 +10,22 @@ function decimalParts(value) {
   return { coefficient: BigInt(`${integer}${fraction}`), scale: fraction.length };
 }
 
+function signedDecimalParts(value) {
+  if (typeof value !== "string") {
+    throw new TypeError("work accounting requires a canonical signed decimal string");
+  }
+  const negative = value.startsWith("-");
+  const magnitude = negative ? value.slice(1) : value;
+  const parts = decimalParts(magnitude);
+  if (negative && parts.coefficient === 0n) {
+    throw new TypeError("negative zero is not a canonical signed decimal");
+  }
+  return {
+    coefficient: negative ? -parts.coefficient : parts.coefficient,
+    scale: parts.scale,
+  };
+}
+
 function powerOfTen(exponent) {
   return 10n ** BigInt(exponent);
 }
@@ -30,6 +46,13 @@ function decimalFromCoefficient(coefficient, scale) {
   return fraction ? `${integer}.${fraction}` : integer;
 }
 
+function signedDecimalFromCoefficient(coefficient, scale) {
+  if (coefficient < 0n) {
+    return `-${decimalFromCoefficient(-coefficient, scale)}`;
+  }
+  return decimalFromCoefficient(coefficient, scale);
+}
+
 export function addCanonicalDecimals(values) {
   const parsed = values.map(decimalParts);
   const scale = parsed.reduce((maximum, item) => Math.max(maximum, item.scale), 0);
@@ -38,6 +61,16 @@ export function addCanonicalDecimals(values) {
     0n,
   );
   return decimalFromCoefficient(coefficient, scale);
+}
+
+export function addSignedCanonicalDecimals(values) {
+  const parsed = values.map(signedDecimalParts);
+  const scale = parsed.reduce((maximum, item) => Math.max(maximum, item.scale), 0);
+  const coefficient = parsed.reduce(
+    (total, item) => total + item.coefficient * powerOfTen(scale - item.scale),
+    0n,
+  );
+  return signedDecimalFromCoefficient(coefficient, scale);
 }
 
 export function subtractCanonicalDecimals(left, right) {
@@ -49,6 +82,16 @@ export function subtractCanonicalDecimals(left, right) {
     rightParts.coefficient * powerOfTen(scale - rightParts.scale);
   if (difference < 0n) throw new RangeError("work reduction cannot be negative");
   return decimalFromCoefficient(difference, scale);
+}
+
+export function subtractCanonicalDecimalsSigned(left, right) {
+  const leftParts = decimalParts(left);
+  const rightParts = decimalParts(right);
+  const scale = Math.max(leftParts.scale, rightParts.scale);
+  const difference =
+    leftParts.coefficient * powerOfTen(scale - leftParts.scale) -
+    rightParts.coefficient * powerOfTen(scale - rightParts.scale);
+  return signedDecimalFromCoefficient(difference, scale);
 }
 
 export function formatWorkShare(value, values, digits = 1) {
@@ -80,6 +123,113 @@ export function isWorkAccountingRun(run) {
     Array.isArray(run?.evaluations);
 }
 
+function validNodeRef(ref) {
+  return ["program", "thread"].includes(ref?.kind) && typeof ref?.id === "string";
+}
+
+function nodeKey(value) {
+  return `${value?.nodeRef?.kind}:${value?.nodeRef?.id}`;
+}
+
+function validValues(values) {
+  return CANONICAL_DECIMAL.test(values?.directWorkHours) &&
+    (values?.conditionalIncidence === null || CANONICAL_DECIMAL.test(values?.conditionalIncidence)) &&
+    CANONICAL_DECIMAL.test(values?.globalReach) &&
+    CANONICAL_DECIMAL.test(values?.conditionalSubtreeWorkHours) &&
+    CANONICAL_DECIMAL.test(values?.expectedDirectWorkHours);
+}
+
+function canonicalOrdered(values, allowed) {
+  return Array.isArray(values) &&
+    values.every((value) => allowed.includes(value)) &&
+    values.join("\n") === [...new Set(values)].sort((left, right) =>
+      allowed.indexOf(left) - allowed.indexOf(right)).join("\n");
+}
+
+function validPatchSummary(summary) {
+  if (summary === null) return true;
+  const changes = summary?.changes;
+  const keys = changes && typeof changes === "object" ? Object.keys(changes).sort() : [];
+  return keys.length > 0 &&
+    keys.every((key) => ["conditionalIncidence", "directWorkHours"].includes(key)) &&
+    keys.every((key) => CANONICAL_DECIMAL.test(changes[key])) &&
+    typeof summary?.rationale === "string" && summary.rationale.length > 0 &&
+    Array.isArray(summary?.evidenceRefs) && summary.evidenceRefs.length > 0 &&
+    summary.evidenceRefs.join("\n") === [...new Set(summary.evidenceRefs)].sort().join("\n");
+}
+
+function validNodeEffects(evaluation) {
+  if (!Array.isArray(evaluation?.nodeEffects)) return false;
+  let prior = null;
+  let directCount = 0;
+  let propagatedCount = 0;
+  let topologyOnlyCount = 0;
+  const directKeys = [];
+  for (const effect of evaluation.nodeEffects) {
+    const key = nodeKey(effect);
+    if (
+      !validNodeRef(effect?.nodeRef) ||
+      (prior !== null && prior >= key) ||
+      !DIGEST.test(effect?.knowledgeNodeDigest) ||
+      typeof effect?.knowledgeStatus !== "string" || !effect.knowledgeStatus ||
+      !["direct", "propagated"].includes(effect?.effectKind) ||
+      !canonicalOrdered(effect?.directUpdateBranches, ["no-access", "new-live"]) ||
+      !canonicalOrdered(effect?.topologyRequiredBranches, ["no-access", "new-live"]) ||
+      !canonicalOrdered(effect?.topologyReasons, ["created", "inactive-zeroing", "reparented"]) ||
+      !canonicalOrdered(effect?.primitiveDifferenceFields, ["conditionalIncidence", "directWorkHours"]) ||
+      !canonicalOrdered(effect?.derivedDifferenceFields, ["conditionalSubtreeWorkHours", "expectedDirectWorkHours", "globalReach"]) ||
+      !validValues(effect?.noAccess) || !validValues(effect?.newLive) ||
+      !validPatchSummary(effect?.noAccessPatch) || !validPatchSummary(effect?.newLivePatch) ||
+      (effect.noAccessPatch !== null) !== effect.directUpdateBranches.includes("no-access") ||
+      (effect.newLivePatch !== null) !== effect.directUpdateBranches.includes("new-live") ||
+      (effect.effectKind === "direct") !== Boolean(effect.directUpdateBranches.length) ||
+      effect.primitiveDifferenceFields.join("\n") !== ["conditionalIncidence", "directWorkHours"]
+        .filter((field) => effect.noAccess[field] !== effect.newLive[field]).join("\n") ||
+      effect.derivedDifferenceFields.join("\n") !== ["conditionalSubtreeWorkHours", "expectedDirectWorkHours", "globalReach"]
+        .filter((field) => effect.noAccess[field] !== effect.newLive[field]).join("\n") ||
+      subtractCanonicalDecimalsSigned(
+        effect.noAccess.expectedDirectWorkHours,
+        effect.newLive.expectedDirectWorkHours,
+      ) !== effect.workReductionHours ||
+      typeof effect.topologyOnly !== "boolean" ||
+      effect.topologyOnly !== Boolean(
+        effect.topologyRequiredBranches.length &&
+        !effect.primitiveDifferenceFields.length &&
+        effect.workReductionHours === "0"
+      )
+    ) {
+      return false;
+    }
+    prior = key;
+    if (effect.effectKind === "direct") {
+      directCount += 1;
+      directKeys.push(key);
+    } else {
+      propagatedCount += 1;
+    }
+    if (effect.topologyOnly) topologyOnlyCount += 1;
+  }
+  return directCount === evaluation.directUpdateCount &&
+    propagatedCount === evaluation.propagatedEffectCount &&
+    topologyOnlyCount === evaluation.topologyOnlyCount &&
+    addSignedCanonicalDecimals(evaluation.nodeEffects.map((item) => item.workReductionHours)) === evaluation.workReductionHours &&
+    DIGEST.test(evaluation.nodeEffectsDigest) &&
+    evaluation.nodeAnnotations.map(nodeKey).join("\n") === directKeys.join("\n");
+}
+
+function validTerminalAnnotations(run) {
+  if (!Array.isArray(run?.terminalNodeAnnotations)) return false;
+  return run.terminalNodeAnnotations.every((annotation, index, annotations) => {
+    const key = nodeKey(annotation);
+    const prior = index ? nodeKey(annotations[index - 1]) : null;
+    return validNodeRef(annotation?.nodeRef) &&
+      (prior === null || prior < key) &&
+      DIGEST.test(annotation?.knowledgeNodeDigest) &&
+      typeof annotation?.knowledgeStatus === "string" && Boolean(annotation.knowledgeStatus) &&
+      validValues(annotation);
+  });
+}
+
 export function validWorkAccountingRun(run) {
   if (
     !isWorkAccountingRun(run) ||
@@ -92,6 +242,13 @@ export function validWorkAccountingRun(run) {
     return false;
   }
   try {
+    const detailed = run.evaluations.some((evaluation) => evaluation?.nodeEffects !== undefined);
+    if (
+      detailed && (
+        run.evaluations.some((evaluation) => !Array.isArray(evaluation?.nodeEffects)) ||
+        !validTerminalAnnotations(run)
+      )
+    ) return false;
     let priorOrdinal = 0;
     const subjects = new Set();
     for (const evaluation of run.evaluations) {
@@ -101,8 +258,8 @@ export function validWorkAccountingRun(run) {
         !Number.isInteger(evaluation?.canonicalOrdinal) ||
         evaluation.canonicalOrdinal <= priorOrdinal ||
         subtractCanonicalDecimals(
-          evaluation.exAnteWorkHours,
-          evaluation.exPostWorkHours,
+          evaluation.noAccessWorkHours ?? evaluation.exAnteWorkHours,
+          evaluation.newLiveWorkHours ?? evaluation.exPostWorkHours,
         ) !== evaluation.workReductionHours ||
         evaluation.workReductionHours === "0" ||
         !DIGEST.test(evaluation.evaluationDigest) ||
@@ -122,6 +279,11 @@ export function validWorkAccountingRun(run) {
             CANONICAL_DECIMAL.test(annotation?.conditionalSubtreeWorkHours) &&
             CANONICAL_DECIMAL.test(annotation?.expectedDirectWorkHours);
         }) ||
+        (evaluation.nodeEffects !== undefined && (
+          evaluation.noAccessWorkHours !== evaluation.exAnteWorkHours ||
+          evaluation.newLiveWorkHours !== evaluation.exPostWorkHours ||
+          !validNodeEffects(evaluation)
+        )) ||
         typeof evaluation.prospectiveCorrection !== "boolean" ||
         typeof evaluation.affectedHistory !== "boolean" ||
         !Array.isArray(evaluation.affectedByRepairDigests) ||
@@ -160,9 +322,33 @@ export function workAccountingForNode(run, node) {
   const ref = workAccountingNodeRef(node);
   if (!isWorkAccountingRun(run) || !ref) return [];
   return run.evaluations.flatMap((evaluation) => {
+    if (Array.isArray(evaluation.nodeEffects)) {
+      const effect = evaluation.nodeEffects.find(
+        (item) => item.nodeRef.kind === ref.kind && item.nodeRef.id === ref.id,
+      );
+      return effect ? [{
+        evaluation,
+        effect,
+        annotation: {
+          nodeRef: effect.nodeRef,
+          knowledgeNodeDigest: effect.knowledgeNodeDigest,
+          ...effect.newLive,
+        },
+      }] : [];
+    }
     const annotation = evaluation.nodeAnnotations.find(
       (item) => item.nodeRef.kind === ref.kind && item.nodeRef.id === ref.id,
     );
     return annotation ? [{ evaluation, annotation }] : [];
   });
+}
+
+export function terminalWorkAccountingForNode(run, node) {
+  const ref = workAccountingNodeRef(node);
+  if (!isWorkAccountingRun(run) || !ref || !Array.isArray(run.terminalNodeAnnotations)) {
+    return null;
+  }
+  return run.terminalNodeAnnotations.find(
+    (item) => item.nodeRef.kind === ref.kind && item.nodeRef.id === ref.id,
+  ) ?? null;
 }

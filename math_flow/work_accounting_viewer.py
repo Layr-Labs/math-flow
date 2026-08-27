@@ -1,4 +1,4 @@
-"""Deterministic viewer export for committed work-accounting V1 lanes."""
+"""Deterministic V2 viewer export for committed work-accounting V1 lanes."""
 
 from __future__ import annotations
 
@@ -6,14 +6,17 @@ import copy
 import json
 import tempfile
 from collections.abc import Mapping, Sequence
+from fractions import Fraction
 from pathlib import Path
 
 from .errors import MathFlowError
 from .repository import sha256_json
 from .research_topology import validate_research_program_state_versioned
 from .work_accounting import (
+    canonical_decimal,
     validate_root_contract,
     validate_submission_work_value,
+    validate_work_accounting_patch,
     validate_work_accounting_state,
 )
 from .work_accounting_schedule import (
@@ -101,6 +104,234 @@ def _annotation_view(
             }
         )
     return result
+
+
+def _signed_decimal(value: Fraction) -> str:
+    if value < 0:
+        return f"-{canonical_decimal(-value)}"
+    return canonical_decimal(value)
+
+
+def _state_node_views(
+    state: Mapping[str, object], knowledge_state: Mapping[str, object]
+) -> dict[tuple[str, str], dict[str, object]]:
+    annotations = {
+        _node_key(item["nodeRef"]): item
+        for item in state["annotations"]
+        if isinstance(item, dict)
+    }
+    derived = {
+        _node_key(item["nodeRef"]): item
+        for item in state["derived"]
+        if isinstance(item, dict)
+    }
+    knowledge_nodes: dict[tuple[str, str], Mapping[str, object]] = {}
+    for kind, collection_name in (("program", "programs"), ("thread", "threads")):
+        collection = knowledge_state[collection_name]
+        assert isinstance(collection, dict)
+        for node_id, record in collection.items():
+            assert isinstance(record, dict)
+            knowledge_nodes[(kind, str(node_id))] = record
+    if set(annotations) != set(derived) or set(annotations) != set(knowledge_nodes):
+        raise MathFlowError(
+            "work-accounting viewer state does not cover the target knowledge topology"
+        )
+    return {
+        key: {
+            "nodeRef": copy.deepcopy(annotation["nodeRef"]),
+            "knowledgeNodeDigest": annotation["knowledgeNodeDigest"],
+            "knowledgeStatus": knowledge_nodes[key]["status"],
+            "directWorkHours": annotation["directWorkHours"],
+            "conditionalIncidence": annotation["conditionalIncidence"],
+            "globalReach": derived[key]["globalReach"],
+            "conditionalSubtreeWorkHours": derived[key]["conditionalSubtreeWork"],
+            "expectedDirectWorkHours": derived[key]["expectedDirectWork"],
+        }
+        for key, annotation in annotations.items()
+    }
+
+
+def _patch_update_index(
+    patch: Mapping[str, object],
+) -> dict[tuple[str, str], dict[str, object]]:
+    return {
+        _node_key(item["nodeRef"]): copy.deepcopy(item)
+        for item in patch["updates"]
+        if isinstance(item, dict)
+    }
+
+
+def _topology_required_index(
+    before: Mapping[str, object],
+    after: Mapping[str, object],
+    base_state: Mapping[str, object],
+    *,
+    evaluation_mode: str,
+) -> dict[tuple[str, str], list[str]]:
+    """Mirror the provider request's deterministic topology requirements.
+
+    The viewer does not trust provider prose to decide whether an update was
+    structurally required.  This intentionally follows
+    ``work_projection._required_primitive_updates`` without importing the
+    private provider-order implementation.
+    """
+
+    base_annotations = {
+        _node_key(item["nodeRef"]): item
+        for item in base_state["annotations"]
+        if isinstance(item, dict)
+    }
+    reasons: dict[tuple[str, str], set[str]] = {}
+
+    def add(key: tuple[str, str], reason: str) -> None:
+        reasons.setdefault(key, set()).add(reason)
+
+    for kind, collection_name in (("program", "programs"), ("thread", "threads")):
+        before_nodes = before[collection_name]
+        after_nodes = after[collection_name]
+        assert isinstance(before_nodes, dict) and isinstance(after_nodes, dict)
+        for node_id, raw_record in after_nodes.items():
+            assert isinstance(raw_record, dict)
+            key = (kind, str(node_id))
+            old = before_nodes.get(node_id)
+            if old is None:
+                add(key, "created")
+            else:
+                assert isinstance(old, dict)
+                old_parent = old.get("parentId") if kind == "program" else old.get("programId")
+                new_parent = (
+                    raw_record.get("parentId")
+                    if kind == "program"
+                    else raw_record.get("programId")
+                )
+                if old_parent != new_parent:
+                    add(key, "reparented")
+            if (
+                evaluation_mode == "with-access"
+                and raw_record.get("status") in {"completed", "retired"}
+            ):
+                annotation = base_annotations.get(key)
+                if annotation is not None and (
+                    annotation.get("directWorkHours") != "0"
+                    or (
+                        key != ("program", str(after["rootProgramId"]))
+                        and annotation.get("conditionalIncidence") != "0"
+                    )
+                ):
+                    add(key, "inactive-zeroing")
+    return {key: sorted(values) for key, values in reasons.items()}
+
+
+def _patch_view(update: Mapping[str, object] | None) -> dict[str, object] | None:
+    if update is None:
+        return None
+    return {
+        "changes": copy.deepcopy(update["changes"]),
+        "rationale": update["rationale"],
+        "evidenceRefs": copy.deepcopy(update["evidenceRefs"]),
+    }
+
+
+def _node_effect_view(
+    *,
+    evaluation_digest: str,
+    no_access_state: Mapping[str, object],
+    new_live_state: Mapping[str, object],
+    no_access_patch: Mapping[str, object],
+    new_live_patch: Mapping[str, object],
+    base_state: Mapping[str, object],
+    before_knowledge: Mapping[str, object],
+    after_knowledge: Mapping[str, object],
+    expected_work_reduction: str,
+) -> tuple[list[dict[str, object]], str]:
+    no_views = _state_node_views(no_access_state, after_knowledge)
+    live_views = _state_node_views(new_live_state, after_knowledge)
+    if set(no_views) != set(live_views):
+        raise MathFlowError("work-accounting counterfactual node sets differ")
+    no_updates = _patch_update_index(no_access_patch)
+    live_updates = _patch_update_index(new_live_patch)
+    direct_keys = set(no_updates) | set(live_updates)
+    no_topology = _topology_required_index(
+        before_knowledge, after_knowledge, base_state, evaluation_mode="no-access"
+    )
+    live_topology = _topology_required_index(
+        before_knowledge, after_knowledge, base_state, evaluation_mode="with-access"
+    )
+    primitive_fields = ("directWorkHours", "conditionalIncidence")
+    derived_fields = (
+        "globalReach",
+        "conditionalSubtreeWorkHours",
+        "expectedDirectWorkHours",
+    )
+    effects: list[dict[str, object]] = []
+    additive_total = Fraction(0)
+    for key in sorted(no_views):
+        no_view = no_views[key]
+        live_view = live_views[key]
+        primitive_differences = sorted(
+            field for field in primitive_fields if no_view[field] != live_view[field]
+        )
+        derived_differences = sorted(
+            field for field in derived_fields if no_view[field] != live_view[field]
+        )
+        is_direct = key in direct_keys
+        if not is_direct and not derived_differences:
+            continue
+        direct_branches = []
+        if key in no_updates:
+            direct_branches.append("no-access")
+        if key in live_updates:
+            direct_branches.append("new-live")
+        topology_branches = []
+        topology_reasons: set[str] = set()
+        if key in no_topology:
+            topology_branches.append("no-access")
+            topology_reasons.update(no_topology[key])
+        if key in live_topology:
+            topology_branches.append("new-live")
+            topology_reasons.update(live_topology[key])
+        reduction = Fraction(str(no_view["expectedDirectWorkHours"])) - Fraction(
+            str(live_view["expectedDirectWorkHours"])
+        )
+        additive_total += reduction
+        effects.append(
+            {
+                "nodeRef": copy.deepcopy(no_view["nodeRef"]),
+                "knowledgeNodeDigest": no_view["knowledgeNodeDigest"],
+                "knowledgeStatus": no_view["knowledgeStatus"],
+                "effectKind": "direct" if is_direct else "propagated",
+                "directUpdateBranches": direct_branches,
+                "topologyRequiredBranches": topology_branches,
+                "topologyReasons": sorted(topology_reasons),
+                "topologyOnly": bool(topology_branches)
+                and not primitive_differences
+                and reduction == 0,
+                "primitiveDifferenceFields": primitive_differences,
+                "derivedDifferenceFields": derived_differences,
+                "noAccess": {
+                    key: copy.deepcopy(value)
+                    for key, value in no_view.items()
+                    if key not in {"nodeRef", "knowledgeNodeDigest", "knowledgeStatus"}
+                },
+                "newLive": {
+                    key: copy.deepcopy(value)
+                    for key, value in live_view.items()
+                    if key not in {"nodeRef", "knowledgeNodeDigest", "knowledgeStatus"}
+                },
+                "noAccessPatch": _patch_view(no_updates.get(key)),
+                "newLivePatch": _patch_view(live_updates.get(key)),
+                "workReductionHours": _signed_decimal(reduction),
+            }
+        )
+    if additive_total != Fraction(expected_work_reduction):
+        raise MathFlowError(
+            "work-accounting viewer node effects do not sum to submission work value"
+        )
+    digest_value = {
+        "evaluationDigest": evaluation_digest,
+        "nodeEffects": effects,
+    }
+    return effects, f"sha256:{sha256_json(digest_value)}"
 
 
 def _publication_index(
@@ -254,6 +485,15 @@ def build_work_accounting_viewer_projection(
         base_state = validate_work_accounting_state(
             loaded.get("baseAccountingState"), before_knowledge, bundle_contract
         )
+        no_access_patch = validate_work_accounting_patch(
+            loaded.get("noAccessPatch")
+        )
+        new_live_patch = validate_work_accounting_patch(
+            loaded.get("withAccessPatch")
+        )
+        no_access_state = validate_work_accounting_state(
+            loaded.get("noAccessState"), after_knowledge, bundle_contract
+        )
         committed_state = validate_work_accounting_state(
             loaded.get("withAccessState"), after_knowledge, bundle_contract
         )
@@ -266,7 +506,14 @@ def build_work_accounting_viewer_projection(
             or evaluation["subjectTransactionId"] != subject
             or base_state["stateDigest"] != state_cursor
             or evaluation["baseAccountingStateDigest"] != state_cursor
+            or evaluation["noAccessPatchDigest"] != no_access_patch["patchDigest"]
+            or evaluation["withAccessPatchDigest"] != new_live_patch["patchDigest"]
+            or evaluation["noAccessStateDigest"] != no_access_state["stateDigest"]
             or evaluation["withAccessStateDigest"] != committed_state["stateDigest"]
+            or no_access_patch["evaluationMode"] != "no-access"
+            or new_live_patch["evaluationMode"] != "with-access"
+            or no_access_state["evaluationMode"] != "no-access"
+            or committed_state["evaluationMode"] != "with-access"
             or after_knowledge["stateDigest"] != record["postKnowledgeStateDigest"]
             or after_knowledge["ledgerHead"] != record["postKnowledgeLedgerHead"]
             or publication["ledgerOrdinal"] != record["ledgerOrdinal"]
@@ -304,6 +551,23 @@ def build_work_accounting_viewer_projection(
                 )
 
         affected_repairs = list(record["affectedByRepairDigests"])
+        node_effects, node_effects_digest = _node_effect_view(
+            evaluation_digest=str(evaluation["evaluationDigest"]),
+            no_access_state=no_access_state,
+            new_live_state=committed_state,
+            no_access_patch=no_access_patch,
+            new_live_patch=new_live_patch,
+            base_state=base_state,
+            before_knowledge=before_knowledge,
+            after_knowledge=after_knowledge,
+            expected_work_reduction=str(evaluation["workValueHours"]),
+        )
+        direct_update_count = sum(
+            item["effectKind"] == "direct" for item in node_effects
+        )
+        propagated_effect_count = sum(
+            item["effectKind"] == "propagated" for item in node_effects
+        )
         evaluations.append(
             {
                 "subjectTransactionId": subject,
@@ -311,12 +575,21 @@ def build_work_accounting_viewer_projection(
                 "evaluationDigest": evaluation["evaluationDigest"],
                 "publicationManifestDigest": publication["publicationManifestDigest"],
                 "committedAccountingStateDigest": committed_state["stateDigest"],
+                "noAccessWorkHours": evaluation["noAccessWorkHours"],
+                "newLiveWorkHours": evaluation["withAccessWorkHours"],
                 "exAnteWorkHours": evaluation["noAccessWorkHours"],
                 "exPostWorkHours": evaluation["withAccessWorkHours"],
                 "workReductionHours": evaluation["workValueHours"],
                 "nodeAnnotations": _annotation_view(
                     committed_state, evaluation["affectedNodeRefs"]
                 ),
+                "directUpdateCount": direct_update_count,
+                "propagatedEffectCount": propagated_effect_count,
+                "topologyOnlyCount": sum(
+                    bool(item["topologyOnly"]) for item in node_effects
+                ),
+                "nodeEffectsDigest": node_effects_digest,
+                "nodeEffects": node_effects,
                 "prospectiveCorrection": bool(affected_repairs),
                 "affectedHistory": bool(affected_repairs),
                 "affectedByRepairDigests": affected_repairs,
@@ -412,6 +685,12 @@ def build_work_accounting_viewer_projection(
         "evaluations": evaluations,
         "repairs": ordered_repairs,
         "terminalAccountingState": copy.deepcopy(terminal),
+        "terminalNodeAnnotations": [
+            value
+            for _, value in sorted(
+                _state_node_views(terminal, knowledge).items()
+            )
+        ],
         "scheduleDigest": current["scheduleDigest"],
         "inputStatus": "exact-committed",
         "stale": False,
@@ -419,6 +698,7 @@ def build_work_accounting_viewer_projection(
     }
     run["viewerDigest"] = _digest(run, "viewerDigest")
     return {
+        "schemaVersion": 2,
         "id": projection_id,
         "problemId": current["problemId"],
         "label": label,
