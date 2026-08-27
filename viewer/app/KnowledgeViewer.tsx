@@ -291,6 +291,15 @@ type WorkAccountingNodeAnnotation = {
 
 type WorkAccountingNodeValues = Omit<WorkAccountingNodeAnnotation, "nodeRef" | "knowledgeNodeDigest">;
 
+type WorkAccountingPatchPreview = {
+  changes: Record<string, string>;
+  rationalePreview: string;
+  rationaleTruncated: boolean;
+  evidenceRefPreviews: string[];
+  evidenceRefCount: number;
+  evidenceRefsTruncated: boolean;
+};
+
 type WorkAccountingNodeEffect = {
   nodeRef: { kind: "program" | "thread"; id: string };
   knowledgeNodeDigest: string;
@@ -299,13 +308,19 @@ type WorkAccountingNodeEffect = {
   directUpdateBranches: Array<"no-access" | "new-live">;
   topologyRequiredBranches: Array<"no-access" | "new-live">;
   topologyReasons: Array<"created" | "reparented" | "inactive-zeroing">;
+  topologyRequirements: Array<{
+    branch: "no-access" | "new-live";
+    requiredChanges: Array<"directWorkHours" | "conditionalIncidence">;
+    reasons: Array<"created" | "reparented" | "inactive-zeroing">;
+  }>;
+  topologyClassification: "none" | "topology-associated" | "topology-only";
   topologyOnly: boolean;
   primitiveDifferenceFields: Array<"directWorkHours" | "conditionalIncidence">;
   derivedDifferenceFields: Array<"globalReach" | "conditionalSubtreeWorkHours" | "expectedDirectWorkHours">;
   noAccess: WorkAccountingNodeValues;
   newLive: WorkAccountingNodeValues;
-  noAccessPatch: null | { changes: Record<string, string>; rationale: string; evidenceRefs: string[] };
-  newLivePatch: null | { changes: Record<string, string>; rationale: string; evidenceRefs: string[] };
+  noAccessPatch: null | WorkAccountingPatchPreview;
+  newLivePatch: null | WorkAccountingPatchPreview;
   workReductionHours: string;
 };
 
@@ -2079,10 +2094,12 @@ export function KnowledgeViewer({
                       effect.effectKind,
                       ...(effect.directUpdateBranches.includes("no-access") ? ["W− patch"] : []),
                       ...(effect.directUpdateBranches.includes("new-live") ? ["W+ patch"] : []),
-                      ...(effect.topologyOnly ? ["topology only"] : []),
+                      ...(effect.topologyClassification !== "none"
+                        ? [effect.topologyClassification]
+                        : []),
                     ];
                     return (
-                      <article className={`work-node-effect ${effect.topologyOnly ? "topology-only" : ""}`} key={`${effect.nodeRef.kind}:${effect.nodeRef.id}`}>
+                      <article className={`work-node-effect ${effect.topologyClassification}`} key={`${effect.nodeRef.kind}:${effect.nodeRef.id}`}>
                         <button className="work-node-effect-heading" onClick={() => onViewerStateChange({ nodeId, transactionId: undefined, judgmentId: undefined, detailMode: "node" })}>
                           <span>{effect.nodeRef.kind}</span>
                           <strong>{nodes[nodeId]?.title ?? label(effect.nodeRef.id)}</strong>
@@ -2092,6 +2109,9 @@ export function KnowledgeViewer({
                           {badges.map((badge) => <span key={badge}>{badge}</span>)}
                           {effect.topologyReasons.map((reason) => <span key={reason}>{label(reason)}</span>)}
                         </div>
+                        {effect.topologyRequirements.length > 0 && (
+                          <p className="muted">Required fields: {effect.topologyRequirements.map((requirement) => `${requirement.branch === "no-access" ? "W−" : "W+"} ${requirement.requiredChanges.map(label).join(", ")}`).join(" · ")}</p>
+                        )}
                         <div className="work-node-comparison">
                           <div><span>d · direct work</span><code>{effect.noAccess.directWorkHours} → {effect.newLive.directWorkHours} h</code></div>
                           <div><span>P · incoming incidence</span><code>{effect.noAccess.conditionalIncidence ?? "root"} → {effect.newLive.conditionalIncidence ?? "root"}</code></div>
@@ -2099,12 +2119,13 @@ export function KnowledgeViewer({
                           <div><span>C · subtree (non-additive)</span><code>{effect.noAccess.conditionalSubtreeWorkHours} → {effect.newLive.conditionalSubtreeWorkHours} h</code></div>
                           <div><span>e = R × d · additive</span><code>{effect.noAccess.expectedDirectWorkHours} → {effect.newLive.expectedDirectWorkHours} h</code></div>
                         </div>
-                        {effect.topologyOnly && <p className="muted">Required to align topology; primitive branch values agree and this row contributes zero additive credit. Its non-additive subtree context may still reflect descendant effects.</p>}
+                        {effect.topologyOnly && <p className="muted">Every primitive field patched on this row was required by the stored branch request. Its additive node credit is still the displayed Δe; subtree C differences remain non-additive context.</p>}
+                        {effect.topologyClassification === "topology-associated" && <p className="muted">This row includes topology-required fields and at least one discretionary primitive estimate.</p>}
                         {(effect.noAccessPatch || effect.newLivePatch) && (
                           <details>
-                            <summary>Direct patch rationales</summary>
-                            {effect.noAccessPatch && <p><strong>W−:</strong> {effect.noAccessPatch.rationale}</p>}
-                            {effect.newLivePatch && <p><strong>W+:</strong> {effect.newLivePatch.rationale}</p>}
+                            <summary>Direct patch previews</summary>
+                            {effect.noAccessPatch && <p><strong>W− rationale preview:</strong> {effect.noAccessPatch.rationalePreview}{effect.noAccessPatch.rationaleTruncated ? "…" : ""}</p>}
+                            {effect.newLivePatch && <p><strong>W+ rationale preview:</strong> {effect.newLivePatch.rationalePreview}{effect.newLivePatch.rationaleTruncated ? "…" : ""}</p>}
                           </details>
                         )}
                       </article>
@@ -2116,7 +2137,7 @@ export function KnowledgeViewer({
               ) : (
                 <section className="credit-effect-list">
                   <div className="section-label"><h3>Program/thread annotations</h3><span>{selectedWorkAccounting.nodeAnnotations.length}</span></div>
-                  <p className="muted">This V1 projection exposes only directly patched W+ annotations. Regenerate the viewer projection to inspect W− comparisons and propagated effects.</p>
+                  <p className="muted">This V1 projection exposes the union of directly patched W− and W+ nodes, shown with committed W+ values. Regenerate the viewer projection to inspect branch comparisons and propagated effects.</p>
                   {selectedWorkAccounting.nodeAnnotations.map((annotation) => {
                     const nodeId = annotation.nodeRef.kind === "thread"
                       ? `thread:${annotation.nodeRef.id}`

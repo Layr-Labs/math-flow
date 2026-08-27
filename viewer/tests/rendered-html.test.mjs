@@ -99,7 +99,10 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /Direct updates/);
   assert.match(viewer, /Propagated/);
   assert.match(viewer, /subtree \(non-additive\)/);
-  assert.match(viewer, /topology only/);
+  assert.match(viewer, /topology-only/);
+  assert.match(viewer, /topology-associated/);
+  assert.match(viewer, /Direct patch previews/);
+  assert.match(viewer, /union of directly patched W− and W\+ nodes/);
   assert.match(viewer, /Prospective correction affects this history/);
   assert.match(viewer, /Credit belongs to the submission/);
   assert.match(viewer, /semantic result and method items carry no numeric accounting/);
@@ -225,6 +228,8 @@ test("validates detailed W-minus/W-plus node effects while retaining V1", async 
         directUpdateBranches: ["no-access", "new-live"],
         topologyRequiredBranches: [],
         topologyReasons: [],
+        topologyRequirements: [],
+        topologyClassification: "none",
         topologyOnly: false,
         primitiveDifferenceFields: ["directWorkHours"],
         derivedDifferenceFields: ["conditionalSubtreeWorkHours", "expectedDirectWorkHours"],
@@ -242,8 +247,22 @@ test("validates detailed W-minus/W-plus node effects while retaining V1", async 
           conditionalSubtreeWorkHours: annotation.conditionalSubtreeWorkHours,
           expectedDirectWorkHours: annotation.expectedDirectWorkHours,
         },
-        noAccessPatch: { changes: { directWorkHours: noDirect }, rationale: "No-access estimate.", evidenceRefs: [evaluation.subjectTransactionId] },
-        newLivePatch: { changes: { directWorkHours: annotation.directWorkHours }, rationale: "New live estimate.", evidenceRefs: [evaluation.subjectTransactionId] },
+        noAccessPatch: {
+          changes: { directWorkHours: noDirect },
+          rationalePreview: "No-access estimate.",
+          rationaleTruncated: false,
+          evidenceRefPreviews: [evaluation.subjectTransactionId],
+          evidenceRefCount: 1,
+          evidenceRefsTruncated: false,
+        },
+        newLivePatch: {
+          changes: { directWorkHours: annotation.directWorkHours },
+          rationalePreview: "New live estimate.",
+          rationaleTruncated: false,
+          evidenceRefPreviews: [evaluation.subjectTransactionId],
+          evidenceRefCount: 1,
+          evidenceRefsTruncated: false,
+        },
         workReductionHours: evaluation.workReductionHours,
       }],
     };

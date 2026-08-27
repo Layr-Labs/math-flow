@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import copy
+import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from math_flow.errors import MathFlowError
 from math_flow.work_accounting import (
@@ -19,7 +21,9 @@ from math_flow.work_accounting_schedule import (
     materialize_work_accounting_state_repair,
 )
 from math_flow.work_accounting_viewer import (
+    _attach_verified_requests,
     _node_effect_view,
+    _patch_view,
     build_work_accounting_viewer_projection,
 )
 from math_flow.viewer import export_viewer_catalog
@@ -74,6 +78,8 @@ class WorkAccountingViewerTests(unittest.TestCase):
             "baseAccountingState": self.fixture.baseline,
             "noAccessPatch": self.no_access_patch,
             "withAccessPatch": self.with_access_patch,
+            "noAccessRequest": {"requiredPrimitiveUpdates": []},
+            "withAccessRequest": {"requiredPrimitiveUpdates": []},
             "noAccessState": first_no_access,
             "withAccessState": self.committed,
             "evaluation": self.evaluation,
@@ -117,6 +123,8 @@ class WorkAccountingViewerTests(unittest.TestCase):
             "baseAccountingState": self.committed,
             "noAccessPatch": second_no_access_patch,
             "withAccessPatch": second_with_access_patch,
+            "noAccessRequest": {"requiredPrimitiveUpdates": []},
+            "withAccessRequest": {"requiredPrimitiveUpdates": []},
             "noAccessState": second_no_access,
             "withAccessState": second_committed,
             "evaluation": second_evaluation,
@@ -233,8 +241,8 @@ class WorkAccountingViewerTests(unittest.TestCase):
             new_live_state=live_state,
             no_access_patch=no_patch,
             new_live_patch=live_patch,
-            base_state=self.fixture.baseline,
-            before_knowledge=self.fixture.knowledge,
+            no_access_request={"requiredPrimitiveUpdates": []},
+            new_live_request={"requiredPrimitiveUpdates": []},
             after_knowledge=self.fixture.knowledge,
             expected_work_reduction=evaluation["workValueHours"],
         )
@@ -304,8 +312,8 @@ class WorkAccountingViewerTests(unittest.TestCase):
             new_live_state=live_state,
             no_access_patch=patches[0],
             new_live_patch=patches[1],
-            base_state=self.fixture.baseline,
-            before_knowledge=self.fixture.knowledge,
+            no_access_request={"requiredPrimitiveUpdates": []},
+            new_live_request={"requiredPrimitiveUpdates": []},
             after_knowledge=self.fixture.knowledge,
             expected_work_reduction=evaluation["workValueHours"],
         )
@@ -316,6 +324,129 @@ class WorkAccountingViewerTests(unittest.TestCase):
             == {"kind": "thread", "id": "root/approach/unstructured-search"}
         )
         self.assertEqual(fallback["workReductionHours"], "-3")
+
+    def test_uses_stored_legacy_no_access_topology_requirement(self) -> None:
+        loaded = copy.deepcopy(self.loaded)
+        no_update = loaded[0]["noAccessPatch"]["updates"][0]
+        loaded[0]["noAccessRequest"] = {
+            "requiredPrimitiveUpdates": [
+                {
+                    "nodeRef": copy.deepcopy(no_update["nodeRef"]),
+                    "requiredChanges": sorted(no_update["changes"]),
+                    "reasons": ["inactive-zeroing"],
+                }
+            ]
+        }
+        projection = self._build(loaded_evaluation_bundles=loaded)
+        effect = next(
+            item
+            for item in projection["runs"][0]["evaluations"][0]["nodeEffects"]
+            if item["nodeRef"] == no_update["nodeRef"]
+        )
+        self.assertEqual(effect["topologyRequiredBranches"], ["no-access"])
+        self.assertEqual(
+            effect["topologyRequirements"],
+            [
+                {
+                    "branch": "no-access",
+                    "requiredChanges": sorted(no_update["changes"]),
+                    "reasons": ["inactive-zeroing"],
+                }
+            ],
+        )
+        self.assertEqual(effect["topologyClassification"], "topology-associated")
+        self.assertFalse(effect["topologyOnly"])
+
+    def test_topology_only_covers_every_patched_field_even_when_credit_changes(self) -> None:
+        loaded = copy.deepcopy(self.loaded)
+        node_ref = loaded[0]["noAccessPatch"]["updates"][0]["nodeRef"]
+        for request_key, patch_key in (
+            ("noAccessRequest", "noAccessPatch"),
+            ("withAccessRequest", "withAccessPatch"),
+        ):
+            update = loaded[0][patch_key]["updates"][0]
+            self.assertEqual(update["nodeRef"], node_ref)
+            loaded[0][request_key] = {
+                "requiredPrimitiveUpdates": [
+                    {
+                        "nodeRef": copy.deepcopy(node_ref),
+                        "requiredChanges": sorted(update["changes"]),
+                        "reasons": ["created"],
+                    }
+                ]
+            }
+        projection = self._build(loaded_evaluation_bundles=loaded)
+        effect = next(
+            item
+            for item in projection["runs"][0]["evaluations"][0]["nodeEffects"]
+            if item["nodeRef"] == node_ref
+        )
+        self.assertNotEqual(effect["workReductionHours"], "0")
+        self.assertEqual(effect["topologyClassification"], "topology-only")
+        self.assertTrue(effect["topologyOnly"])
+
+    def test_patch_prose_is_exported_only_as_bounded_previews(self) -> None:
+        preview = _patch_view(
+            {
+                "changes": {"directWorkHours": "1"},
+                "rationale": "r" * 500,
+                "evidenceRefs": [
+                    "a" * 300,
+                    "b" * 300,
+                    "c" * 300,
+                    "d" * 300,
+                ],
+            }
+        )
+        assert preview is not None
+        self.assertEqual(len(preview["rationalePreview"]), 240)
+        self.assertTrue(preview["rationaleTruncated"])
+        self.assertEqual(len(preview["evidenceRefPreviews"]), 3)
+        self.assertTrue(
+            all(len(value) == 160 for value in preview["evidenceRefPreviews"])
+        )
+        self.assertEqual(preview["evidenceRefCount"], 4)
+        self.assertTrue(preview["evidenceRefsTruncated"])
+        self.assertNotIn("rationale", preview)
+        self.assertNotIn("evidenceRefs", preview)
+
+    def test_attaches_branch_requests_without_assuming_manifest_stage_order(self) -> None:
+        safe_digest = f"sha256:{'1' * 64}"
+        live_digest = f"sha256:{'2' * 64}"
+        no_digest = f"sha256:{'3' * 64}"
+        with tempfile.TemporaryDirectory() as temporary:
+            bundle = Path(temporary)
+            no_path = bundle / "stages/no-access/request.json"
+            live_path = bundle / "stages/with-access/request.json"
+            no_path.parent.mkdir(parents=True)
+            live_path.parent.mkdir(parents=True)
+            no_request = {"stage": "no-access", "requestDigest": no_digest}
+            live_request = {"stage": "with-access", "requestDigest": live_digest}
+            no_path.write_text(json.dumps(no_request), encoding="utf-8")
+            live_path.write_text(json.dumps(live_request), encoding="utf-8")
+            loaded = {
+                "manifest": {
+                    "artifacts": [
+                        {
+                            "role": "no-access-request",
+                            "path": "stages/no-access/request.json",
+                        },
+                        {
+                            "role": "with-access-request",
+                            "path": "stages/with-access/request.json",
+                        },
+                    ],
+                    # Work-projection V2 indexes with-access before no-access.
+                    "requestDigests": [safe_digest, live_digest, no_digest],
+                }
+            }
+            with patch(
+                "math_flow.work_accounting_viewer.validate_work_projection_request",
+                side_effect=lambda value: value,
+            ):
+                attached = _attach_verified_requests(loaded, bundle)
+        self.assertEqual(attached["noAccessRequest"], no_request)
+        self.assertEqual(attached["withAccessRequest"], live_request)
 
     def test_rejects_publication_or_terminal_state_not_bound_by_schedule(self) -> None:
         publication = copy.deepcopy(self.publication)

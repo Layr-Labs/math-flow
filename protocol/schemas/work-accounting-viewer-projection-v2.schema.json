@@ -147,7 +147,14 @@
         { "type": "null" },
         {
           "type": "object",
-          "required": ["changes", "rationale", "evidenceRefs"],
+          "required": [
+            "changes",
+            "rationalePreview",
+            "rationaleTruncated",
+            "evidenceRefPreviews",
+            "evidenceRefCount",
+            "evidenceRefsTruncated"
+          ],
           "properties": {
             "changes": {
               "type": "object",
@@ -158,13 +165,20 @@
               },
               "additionalProperties": false
             },
-            "rationale": { "type": "string", "minLength": 1 },
-            "evidenceRefs": {
+            "rationalePreview": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 240
+            },
+            "rationaleTruncated": { "type": "boolean" },
+            "evidenceRefPreviews": {
               "type": "array",
               "minItems": 1,
-              "uniqueItems": true,
-              "items": { "type": "string", "minLength": 1 }
-            }
+              "maxItems": 3,
+              "items": { "type": "string", "minLength": 1, "maxLength": 160 }
+            },
+            "evidenceRefCount": { "type": "integer", "minimum": 1 },
+            "evidenceRefsTruncated": { "type": "boolean" }
           },
           "additionalProperties": false
         }
@@ -180,6 +194,8 @@
         "directUpdateBranches",
         "topologyRequiredBranches",
         "topologyReasons",
+        "topologyRequirements",
+        "topologyClassification",
         "topologyOnly",
         "primitiveDifferenceFields",
         "derivedDifferenceFields",
@@ -208,6 +224,33 @@
           "type": "array",
           "uniqueItems": true,
           "items": { "enum": ["created", "reparented", "inactive-zeroing"] }
+        },
+        "topologyRequirements": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "required": ["branch", "requiredChanges", "reasons"],
+            "properties": {
+              "branch": { "enum": ["no-access", "new-live"] },
+              "requiredChanges": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "enum": ["conditionalIncidence", "directWorkHours"] }
+              },
+              "reasons": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "enum": ["created", "reparented", "inactive-zeroing"] }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "topologyClassification": {
+          "enum": ["none", "topology-associated", "topology-only"]
         },
         "topologyOnly": { "type": "boolean" },
         "primitiveDifferenceFields": {

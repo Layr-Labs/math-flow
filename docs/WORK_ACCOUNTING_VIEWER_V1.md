@@ -53,9 +53,16 @@ terminal accounting state and exact per-submission evaluation objects.
   propagation. Every row contains both branch values. The signed node quantity
   `R^-d^- - R^+d^+` is additive and the exact row sum must equal `D`; differences
   of overlapping subtree `C` values are shown only as non-additive context.
-- Topology-required patch rows are marked explicitly. If their primitive branch
-  values agree and their additive node contribution is zero, the row is
-  topology-only even when non-additive subtree context changes below it.
+- Topology requirements come from each verified bundle's stored branch request,
+  including the effective legacy request accepted during deterministic replay.
+  Required fields and reasons remain separate for `W^-` and `W^+`. A row is
+  topology-only only when every field patched on it is required by its branch;
+  a mixed required/discretionary row is topology-associated.
+- Direct patch changes remain exact. Provider rationale and evidence references
+  are exported only as explicitly labelled bounded previews (240 rationale
+  characters and up to three 160-character evidence-reference previews), with
+  total counts and truncation flags. This keeps catalog growth bounded without
+  changing the exact node set or numeric accounting comparison.
 - Only research programs and research threads may have numeric annotations.
   Semantic result/method items are excluded.
 - Corrections are prospective. Historical `D` is not replayed; an affected

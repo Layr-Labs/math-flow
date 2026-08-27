@@ -7,7 +7,7 @@ import json
 import tempfile
 from collections.abc import Mapping, Sequence
 from fractions import Fraction
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from .errors import MathFlowError
 from .repository import sha256_json
@@ -31,7 +31,10 @@ from .work_accounting_projection_store import (
     ProjectionBranchWorkAccountingStore,
     work_accounting_lane_scope_digest,
 )
-from .work_projection import load_work_projection_bundle
+from .work_projection import (
+    load_work_projection_bundle,
+    validate_work_projection_request,
+)
 
 
 UNIT = {
@@ -40,6 +43,10 @@ UNIT = {
     "storedValues": "canonical-decimal-hours",
     "displayShares": "derived-from-exact-values",
 }
+
+RATIONALE_PREVIEW_LENGTH = 240
+EVIDENCE_REF_PREVIEW_LENGTH = 160
+EVIDENCE_REF_PREVIEW_COUNT = 3
 
 
 def _digest(value: Mapping[str, object], field: str) -> str:
@@ -162,73 +169,71 @@ def _patch_update_index(
 
 
 def _topology_required_index(
-    before: Mapping[str, object],
-    after: Mapping[str, object],
-    base_state: Mapping[str, object],
-    *,
-    evaluation_mode: str,
-) -> dict[tuple[str, str], list[str]]:
-    """Mirror the provider request's deterministic topology requirements.
+    request: Mapping[str, object], *, label: str
+) -> dict[tuple[str, str], dict[str, list[str]]]:
+    """Read the exact topology contract already verified for one branch."""
 
-    The viewer does not trust provider prose to decide whether an update was
-    structurally required.  This intentionally follows
-    ``work_projection._required_primitive_updates`` without importing the
-    private provider-order implementation.
-    """
+    raw_required = request.get("requiredPrimitiveUpdates")
+    if not isinstance(raw_required, list):
+        raise MathFlowError(f"work-accounting viewer {label} request has no requirements")
+    result: dict[tuple[str, str], dict[str, list[str]]] = {}
+    prior: tuple[str, str] | None = None
+    for raw in raw_required:
+        if not isinstance(raw, dict):
+            raise MathFlowError(
+                f"work-accounting viewer {label} requirement is invalid"
+            )
+        key = _node_key(raw.get("nodeRef"))
+        changes = raw.get("requiredChanges")
+        reasons = raw.get("reasons")
+        if (
+            prior is not None
+            and prior >= key
+            or not isinstance(changes, list)
+            or not changes
+            or changes != sorted(set(changes))
+            or not set(changes) <= {"directWorkHours", "conditionalIncidence"}
+            or not isinstance(reasons, list)
+            or not reasons
+            or reasons != sorted(set(reasons))
+            or not set(reasons) <= {"created", "reparented", "inactive-zeroing"}
+        ):
+            raise MathFlowError(
+                f"work-accounting viewer {label} requirements are not canonical"
+            )
+        result[key] = {
+            "requiredChanges": copy.deepcopy(changes),
+            "reasons": copy.deepcopy(reasons),
+        }
+        prior = key
+    return result
 
-    base_annotations = {
-        _node_key(item["nodeRef"]): item
-        for item in base_state["annotations"]
-        if isinstance(item, dict)
-    }
-    reasons: dict[tuple[str, str], set[str]] = {}
 
-    def add(key: tuple[str, str], reason: str) -> None:
-        reasons.setdefault(key, set()).add(reason)
-
-    for kind, collection_name in (("program", "programs"), ("thread", "threads")):
-        before_nodes = before[collection_name]
-        after_nodes = after[collection_name]
-        assert isinstance(before_nodes, dict) and isinstance(after_nodes, dict)
-        for node_id, raw_record in after_nodes.items():
-            assert isinstance(raw_record, dict)
-            key = (kind, str(node_id))
-            old = before_nodes.get(node_id)
-            if old is None:
-                add(key, "created")
-            else:
-                assert isinstance(old, dict)
-                old_parent = old.get("parentId") if kind == "program" else old.get("programId")
-                new_parent = (
-                    raw_record.get("parentId")
-                    if kind == "program"
-                    else raw_record.get("programId")
-                )
-                if old_parent != new_parent:
-                    add(key, "reparented")
-            if (
-                evaluation_mode == "with-access"
-                and raw_record.get("status") in {"completed", "retired"}
-            ):
-                annotation = base_annotations.get(key)
-                if annotation is not None and (
-                    annotation.get("directWorkHours") != "0"
-                    or (
-                        key != ("program", str(after["rootProgramId"]))
-                        and annotation.get("conditionalIncidence") != "0"
-                    )
-                ):
-                    add(key, "inactive-zeroing")
-    return {key: sorted(values) for key, values in reasons.items()}
+def _preview(value: str, maximum: int) -> tuple[str, bool]:
+    return value[:maximum], len(value) > maximum
 
 
 def _patch_view(update: Mapping[str, object] | None) -> dict[str, object] | None:
     if update is None:
         return None
+    rationale = str(update["rationale"])
+    rationale_preview, rationale_truncated = _preview(
+        rationale, RATIONALE_PREVIEW_LENGTH
+    )
+    evidence_refs = [str(value) for value in update["evidenceRefs"]]
+    evidence_previews: list[str] = []
+    evidence_truncated = len(evidence_refs) > EVIDENCE_REF_PREVIEW_COUNT
+    for value in evidence_refs[:EVIDENCE_REF_PREVIEW_COUNT]:
+        preview, truncated = _preview(value, EVIDENCE_REF_PREVIEW_LENGTH)
+        evidence_previews.append(preview)
+        evidence_truncated = evidence_truncated or truncated
     return {
         "changes": copy.deepcopy(update["changes"]),
-        "rationale": update["rationale"],
-        "evidenceRefs": copy.deepcopy(update["evidenceRefs"]),
+        "rationalePreview": rationale_preview,
+        "rationaleTruncated": rationale_truncated,
+        "evidenceRefPreviews": evidence_previews,
+        "evidenceRefCount": len(evidence_refs),
+        "evidenceRefsTruncated": evidence_truncated,
     }
 
 
@@ -239,8 +244,8 @@ def _node_effect_view(
     new_live_state: Mapping[str, object],
     no_access_patch: Mapping[str, object],
     new_live_patch: Mapping[str, object],
-    base_state: Mapping[str, object],
-    before_knowledge: Mapping[str, object],
+    no_access_request: Mapping[str, object],
+    new_live_request: Mapping[str, object],
     after_knowledge: Mapping[str, object],
     expected_work_reduction: str,
 ) -> tuple[list[dict[str, object]], str]:
@@ -251,12 +256,20 @@ def _node_effect_view(
     no_updates = _patch_update_index(no_access_patch)
     live_updates = _patch_update_index(new_live_patch)
     direct_keys = set(no_updates) | set(live_updates)
-    no_topology = _topology_required_index(
-        before_knowledge, after_knowledge, base_state, evaluation_mode="no-access"
-    )
-    live_topology = _topology_required_index(
-        before_knowledge, after_knowledge, base_state, evaluation_mode="with-access"
-    )
+    no_topology = _topology_required_index(no_access_request, label="no-access")
+    live_topology = _topology_required_index(new_live_request, label="new-live")
+    for requirements, updates in (
+        (no_topology, no_updates),
+        (live_topology, live_updates),
+    ):
+        for key, requirement in requirements.items():
+            update = updates.get(key)
+            if update is None or not set(requirement["requiredChanges"]) <= set(
+                update["changes"]
+            ):
+                raise MathFlowError(
+                    "work-accounting viewer topology requirement is absent from its patch"
+                )
     primitive_fields = ("directWorkHours", "conditionalIncidence")
     derived_fields = (
         "globalReach",
@@ -284,12 +297,41 @@ def _node_effect_view(
             direct_branches.append("new-live")
         topology_branches = []
         topology_reasons: set[str] = set()
+        topology_requirements: list[dict[str, object]] = []
         if key in no_topology:
             topology_branches.append("no-access")
-            topology_reasons.update(no_topology[key])
+            topology_reasons.update(no_topology[key]["reasons"])
+            topology_requirements.append(
+                {"branch": "no-access", **copy.deepcopy(no_topology[key])}
+            )
         if key in live_topology:
             topology_branches.append("new-live")
-            topology_reasons.update(live_topology[key])
+            topology_reasons.update(live_topology[key]["reasons"])
+            topology_requirements.append(
+                {"branch": "new-live", **copy.deepcopy(live_topology[key])}
+            )
+        discretionary_fields = False
+        for update, requirements in (
+            (no_updates.get(key), no_topology.get(key)),
+            (live_updates.get(key), live_topology.get(key)),
+        ):
+            if update is None:
+                continue
+            required_changes = (
+                set(requirements["requiredChanges"])
+                if requirements is not None
+                else set()
+            )
+            if not set(update["changes"]) <= required_changes:
+                discretionary_fields = True
+        topology_only = bool(topology_requirements) and not discretionary_fields
+        topology_classification = (
+            "topology-only"
+            if topology_only
+            else "topology-associated"
+            if topology_requirements
+            else "none"
+        )
         reduction = Fraction(str(no_view["expectedDirectWorkHours"])) - Fraction(
             str(live_view["expectedDirectWorkHours"])
         )
@@ -303,9 +345,9 @@ def _node_effect_view(
                 "directUpdateBranches": direct_branches,
                 "topologyRequiredBranches": topology_branches,
                 "topologyReasons": sorted(topology_reasons),
-                "topologyOnly": bool(topology_branches)
-                and not primitive_differences
-                and reduction == 0,
+                "topologyRequirements": topology_requirements,
+                "topologyClassification": topology_classification,
+                "topologyOnly": topology_only,
                 "primitiveDifferenceFields": primitive_differences,
                 "derivedDifferenceFields": derived_differences,
                 "noAccess": {
@@ -384,6 +426,55 @@ def _repair_index(
             "work-accounting viewer repair states do not exactly match the repair events"
         )
     return events, states
+
+
+def _attach_verified_requests(
+    loaded: Mapping[str, object], bundle_dir: Path
+) -> dict[str, object]:
+    """Attach the stored requests after the bundle loader has replayed them."""
+
+    manifest = loaded.get("manifest")
+    if not isinstance(manifest, dict):
+        raise MathFlowError("work-accounting viewer verified bundle has no manifest")
+    artifacts = manifest.get("artifacts")
+    request_digests = manifest.get("requestDigests")
+    if not isinstance(artifacts, list) or not isinstance(request_digests, list):
+        raise MathFlowError("work-accounting viewer bundle request index is invalid")
+    result = dict(loaded)
+    seen_request_digests: set[str] = set()
+    for output_key, role, stage in (
+        ("noAccessRequest", "no-access-request", "no-access"),
+        ("withAccessRequest", "with-access-request", "with-access"),
+    ):
+        matches = [
+            item
+            for item in artifacts
+            if isinstance(item, dict) and item.get("role") == role
+        ]
+        if len(matches) != 1:
+            raise MathFlowError(f"work-accounting viewer bundle must contain one {role}")
+        relative = PurePosixPath(str(matches[0].get("path", "")))
+        if relative.is_absolute() or not relative.parts or ".." in relative.parts:
+            raise MathFlowError("work-accounting viewer bundle request path is unsafe")
+        target = bundle_dir.resolve().joinpath(*relative.parts).resolve()
+        try:
+            target.relative_to(bundle_dir.resolve())
+            raw = json.loads(target.read_bytes())
+        except (ValueError, OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise MathFlowError(
+                "work-accounting viewer bundle request cannot be loaded"
+            ) from exc
+        request = validate_work_projection_request(raw)
+        request_digest = str(request["requestDigest"])
+        if (
+            request["stage"] != stage
+            or request_digest not in request_digests
+            or request_digest in seen_request_digests
+        ):
+            raise MathFlowError("work-accounting viewer bundle request binding mismatch")
+        seen_request_digests.add(request_digest)
+        result[output_key] = request
+    return result
 
 
 def build_work_accounting_viewer_projection(
@@ -497,6 +588,14 @@ def build_work_accounting_viewer_projection(
         committed_state = validate_work_accounting_state(
             loaded.get("withAccessState"), after_knowledge, bundle_contract
         )
+        no_access_request = loaded.get("noAccessRequest")
+        new_live_request = loaded.get("withAccessRequest")
+        if not isinstance(no_access_request, dict) or not isinstance(
+            new_live_request, dict
+        ):
+            raise MathFlowError(
+                "work-accounting viewer bundle has no verified branch requests"
+            )
         completion = record["completion"]
         assert isinstance(completion, dict)
         if (
@@ -557,8 +656,8 @@ def build_work_accounting_viewer_projection(
             new_live_state=committed_state,
             no_access_patch=no_access_patch,
             new_live_patch=new_live_patch,
-            base_state=base_state,
-            before_knowledge=before_knowledge,
+            no_access_request=no_access_request,
+            new_live_request=new_live_request,
             after_knowledge=after_knowledge,
             expected_work_reduction=str(evaluation["workValueHours"]),
         )
@@ -718,7 +817,10 @@ def load_work_accounting_viewer_projection(
 ) -> dict[str, object]:
     """Verify bundle directories, then build the inactive viewer projection."""
 
-    loaded = [load_work_projection_bundle(Path(path)) for path in evaluation_bundle_dirs]
+    loaded = [
+        _attach_verified_requests(load_work_projection_bundle(Path(path)), Path(path))
+        for path in evaluation_bundle_dirs
+    ]
     return build_work_accounting_viewer_projection(
         loaded_evaluation_bundles=loaded,
         **kwargs,
@@ -816,14 +918,19 @@ def load_published_work_accounting_viewer_projection(
     ]
     with tempfile.TemporaryDirectory() as temporary:
         bundle_root = Path(temporary)
-        loaded_bundles = [
-            materialize_stored_work_projection_bundle(
-                store,
-                bundle_digest=str(item["workBundleDigest"]),
-                output_dir=bundle_root / f"bundle-{index:06d}",
+        loaded_bundles = []
+        for index, item in enumerate(completed, start=1):
+            output_dir = bundle_root / f"bundle-{index:06d}"
+            loaded_bundles.append(
+                _attach_verified_requests(
+                    materialize_stored_work_projection_bundle(
+                        store,
+                        bundle_digest=str(item["workBundleDigest"]),
+                        output_dir=output_dir,
+                    ),
+                    output_dir,
+                )
             )
-            for index, item in enumerate(completed, start=1)
-        ]
         return build_work_accounting_viewer_projection(
             projection_id=store.projection_id,
             label=label,

@@ -150,12 +150,60 @@ function validPatchSummary(summary) {
   if (summary === null) return true;
   const changes = summary?.changes;
   const keys = changes && typeof changes === "object" ? Object.keys(changes).sort() : [];
+  const rationaleLength = typeof summary?.rationalePreview === "string"
+    ? Array.from(summary.rationalePreview).length
+    : 0;
   return keys.length > 0 &&
     keys.every((key) => ["conditionalIncidence", "directWorkHours"].includes(key)) &&
     keys.every((key) => CANONICAL_DECIMAL.test(changes[key])) &&
-    typeof summary?.rationale === "string" && summary.rationale.length > 0 &&
-    Array.isArray(summary?.evidenceRefs) && summary.evidenceRefs.length > 0 &&
-    summary.evidenceRefs.join("\n") === [...new Set(summary.evidenceRefs)].sort().join("\n");
+    rationaleLength > 0 && rationaleLength <= 240 &&
+    typeof summary?.rationaleTruncated === "boolean" &&
+    (!summary.rationaleTruncated || rationaleLength === 240) &&
+    Array.isArray(summary?.evidenceRefPreviews) &&
+    summary.evidenceRefPreviews.length > 0 && summary.evidenceRefPreviews.length <= 3 &&
+    summary.evidenceRefPreviews.every((value) =>
+      typeof value === "string" && Array.from(value).length > 0 && Array.from(value).length <= 160) &&
+    Number.isInteger(summary?.evidenceRefCount) &&
+    summary.evidenceRefCount >= summary.evidenceRefPreviews.length &&
+    typeof summary?.evidenceRefsTruncated === "boolean" &&
+    (summary.evidenceRefCount === summary.evidenceRefPreviews.length || summary.evidenceRefsTruncated);
+}
+
+function validTopologyRequirements(effect) {
+  if (!Array.isArray(effect?.topologyRequirements)) return false;
+  const branches = [];
+  const reasons = new Set();
+  const requirements = new Map();
+  for (const requirement of effect.topologyRequirements) {
+    if (
+      !["no-access", "new-live"].includes(requirement?.branch) ||
+      branches.includes(requirement.branch) ||
+      !canonicalOrdered(requirement?.requiredChanges, ["conditionalIncidence", "directWorkHours"]) ||
+      !requirement.requiredChanges.length ||
+      !canonicalOrdered(requirement?.reasons, ["created", "inactive-zeroing", "reparented"]) ||
+      !requirement.reasons.length
+    ) return false;
+    branches.push(requirement.branch);
+    requirements.set(requirement.branch, new Set(requirement.requiredChanges));
+    requirement.reasons.forEach((reason) => reasons.add(reason));
+  }
+  if (branches.join("\n") !== effect.topologyRequiredBranches.join("\n")) return false;
+  if ([...reasons].sort().join("\n") !== effect.topologyReasons.join("\n")) return false;
+  const patchEntries = [
+    ["no-access", effect.noAccessPatch],
+    ["new-live", effect.newLivePatch],
+  ];
+  for (const [branch, required] of requirements) {
+    const patch = patchEntries.find(([name]) => name === branch)?.[1];
+    if (!patch || [...required].some((field) => !(field in patch.changes))) return false;
+  }
+  const topologyOnly = Boolean(requirements.size) && patchEntries.every(([branch, patch]) =>
+    patch === null || Object.keys(patch.changes).every((field) => requirements.get(branch)?.has(field)));
+  const classification = requirements.size
+    ? topologyOnly ? "topology-only" : "topology-associated"
+    : "none";
+  return effect.topologyOnly === topologyOnly &&
+    effect.topologyClassification === classification;
 }
 
 function validNodeEffects(evaluation) {
@@ -176,6 +224,7 @@ function validNodeEffects(evaluation) {
       !canonicalOrdered(effect?.directUpdateBranches, ["no-access", "new-live"]) ||
       !canonicalOrdered(effect?.topologyRequiredBranches, ["no-access", "new-live"]) ||
       !canonicalOrdered(effect?.topologyReasons, ["created", "inactive-zeroing", "reparented"]) ||
+      !validTopologyRequirements(effect) ||
       !canonicalOrdered(effect?.primitiveDifferenceFields, ["conditionalIncidence", "directWorkHours"]) ||
       !canonicalOrdered(effect?.derivedDifferenceFields, ["conditionalSubtreeWorkHours", "expectedDirectWorkHours", "globalReach"]) ||
       !validValues(effect?.noAccess) || !validValues(effect?.newLive) ||
@@ -191,12 +240,7 @@ function validNodeEffects(evaluation) {
         effect.noAccess.expectedDirectWorkHours,
         effect.newLive.expectedDirectWorkHours,
       ) !== effect.workReductionHours ||
-      typeof effect.topologyOnly !== "boolean" ||
-      effect.topologyOnly !== Boolean(
-        effect.topologyRequiredBranches.length &&
-        !effect.primitiveDifferenceFields.length &&
-        effect.workReductionHours === "0"
-      )
+      typeof effect.topologyOnly !== "boolean"
     ) {
       return false;
     }
