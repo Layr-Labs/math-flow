@@ -491,8 +491,13 @@ def build_work_accounting_state(
             is_root=key == root,
         )
     if set(normalized_by_key) != set(nodes):
+        node_scope = (
+            "every program"
+            if knowledge.get("schemaVersion") == 3
+            else "every program and thread"
+        )
         raise MathFlowError(
-            "work-accounting state must annotate every accounting node exactly once"
+            f"work-accounting state must annotate {node_scope} exactly once"
         )
     if evaluation_mode != "no-access":
         for key, annotation in normalized_by_key.items():
@@ -686,7 +691,14 @@ def validate_work_accounting_state(
     if observed_order != sorted(observed_order):
         raise MathFlowError("work-accounting annotations must be in canonical order")
     if set(annotations) != set(nodes):
-        raise MathFlowError("work-accounting state must annotate every program and thread exactly once")
+        node_scope = (
+            "every program"
+            if knowledge.get("schemaVersion") == 3
+            else "every program and thread"
+        )
+        raise MathFlowError(
+            f"work-accounting state must annotate {node_scope} exactly once"
+        )
 
     expected_derived, expected_total = _derive(annotations, parents, root)
     if value.get("derived") != expected_derived:

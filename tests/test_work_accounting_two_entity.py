@@ -25,7 +25,7 @@ from math_flow.work_accounting import (
     make_zero_work_accounting_state,
     materialize_submission_work_value,
 )
-from math_flow.work_accounting_pipeline import (
+from math_flow.work_accounting_pipeline_v3 import (
     AcceptedWorkSubmission,
     LocalCASObjectStore,
     _materialize_builder_result,

@@ -15,9 +15,11 @@ knowledge-state version:
 
 `math_flow.work_accounting_knowledge` is the single version-dispatch boundary
 used by accounting state construction, work projection, scheduling, and the
-CAS pipeline. It selects builder-v6 reducers and alignment/handoff V1 for
-legacy state, and builder-v7 reducers and alignment/handoff V2 for state V3.
-Cross-version transitions fail closed.
+additive `work_accounting_pipeline_v3` CAS pipeline. It selects builder-v6
+reducers and alignment/handoff V1 for legacy state, and builder-v7 reducers
+and alignment/handoff V2 for state V3. Cross-version transitions fail closed.
+The sealed `work_accounting_pipeline` used by active V1/V2 deployments remains
+byte-for-byte unchanged.
 
 ## Impact context V2
 
@@ -48,6 +50,7 @@ profile. That adapter should mirror `work_accounting_research_v6`: replay the
 v7 reducer, alignment V2, and handoff V2 from exact bundle bytes, follow the
 content-addressed `baseRun` chain to origin, and perform no provider call.
 
-These are activation seams, not gaps in local reducer consumption. The CAS
-pipeline can already consume a supplied V7 transition end to end and persist
-its program-only state, alignment, and handoff.
+These are activation seams, not gaps in local reducer consumption. The
+additive V3 CAS pipeline can already consume a supplied V7 transition end to
+end and persist its program-only state, alignment, and handoff without
+changing either active runner identity.

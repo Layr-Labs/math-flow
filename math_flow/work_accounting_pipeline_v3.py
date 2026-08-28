@@ -1,4 +1,4 @@
-"""Inactive end-to-end orchestration and CAS persistence for work accounting V1."""
+"""Additive V3 orchestration and CAS persistence for two-entity knowledge."""
 
 from __future__ import annotations
 
@@ -19,13 +19,11 @@ from .counterfactual_context import (
 )
 from .errors import MathFlowError
 from .repository import canonical_json, ledger, sha256_json
-from .research_builder_v6 import (
-    apply_research_builder_v6_transition,
-    validate_research_builder_v6_handoff,
-)
-from .research_topology import (
-    validate_research_program_state_v2,
-    validate_research_topology_alignment,
+from .work_accounting_knowledge import (
+    apply_work_accounting_builder_transition,
+    validate_work_accounting_builder_handoff,
+    validate_work_accounting_knowledge_state,
+    validate_work_accounting_topology_alignment,
 )
 from .work_accounting import (
     validate_root_contract,
@@ -169,7 +167,7 @@ class CASObjectStore(Protocol):
 
 
 class BuilderTransitionProvider(Protocol):
-    """Provider-neutral source of one v6 builder transition proposal."""
+    """Provider-neutral source of one version-matched builder transition."""
 
     def __call__(
         self,
@@ -746,7 +744,7 @@ def _load_live_objects(
         ),
         str(pipeline["problemId"]),
     )
-    knowledge = validate_research_program_state_v2(
+    knowledge = validate_work_accounting_knowledge_state(
         _load_digest_object(
             store, "knowledge-states", str(pipeline["formedKnowledgeStateDigest"])
         ),
@@ -756,7 +754,7 @@ def _load_live_objects(
         _load_digest_object(store, "schedules", str(pipeline["scheduleDigest"]))
     )
     accounting_knowledge_digest = str(schedule["terminalKnowledgeStateDigest"])
-    accounting_knowledge = validate_research_program_state_v2(
+    accounting_knowledge = validate_work_accounting_knowledge_state(
         _load_digest_object(store, "knowledge-states", accounting_knowledge_digest),
         str(pipeline["problemId"]),
     )
@@ -798,7 +796,7 @@ def initialize_work_accounting_pipeline(
     base_retry_seconds: int = 60,
 ) -> dict[str, object]:
     contract = validate_root_contract(root_contract, problem)
-    knowledge = validate_research_program_state_v2(initial_knowledge_state, problem)
+    knowledge = validate_work_accounting_knowledge_state(initial_knowledge_state, problem)
     accounting = validate_work_accounting_state(
         initial_accounting_state, knowledge, contract
     )
@@ -817,7 +815,7 @@ def initialize_work_accounting_pipeline(
     )
     if schedule["subjects"] or accounting["processedSubmissionIds"]:
         raise MathFlowError(
-            "pipeline initialization requires an unprocessed builder-v6 baseline"
+            "pipeline initialization requires an unprocessed knowledge baseline"
         )
     pipeline = _seal_pipeline_state(
         {
@@ -1062,19 +1060,19 @@ def _materialize_builder_result(
         submission=submission,
     )
     _call_hook(crash_hook, "builder-proposal-stored")
-    reduced = apply_research_builder_v6_transition(
+    reduced = apply_work_accounting_builder_transition(
         dict(base_knowledge),
         proposal,
         accepted_claims=submission["acceptedClaims"],
         judgment_id=str(submission["judgmentId"]),
     )
-    post = validate_research_program_state_v2(
+    post = validate_work_accounting_knowledge_state(
         reduced["postState"], str(submission["problemId"])
     )
-    alignment = validate_research_topology_alignment(
+    alignment = validate_work_accounting_topology_alignment(
         reduced["topologyAlignment"], dict(base_knowledge), post
     )
-    handoff = validate_research_builder_v6_handoff(
+    handoff = validate_work_accounting_builder_handoff(
         reduced["sameWorldHandoff"],
         dict(base_knowledge),
         post,
@@ -1474,24 +1472,24 @@ def _load_builder_objects(
             store, "builder-results", str(pending["builderResultDigest"])
         )
     )
-    before = validate_research_program_state_v2(
+    before = validate_work_accounting_knowledge_state(
         _load_digest_object(
             store, "knowledge-states", str(pending["beforeKnowledgeStateDigest"])
         )
     )
-    after = validate_research_program_state_v2(
+    after = validate_work_accounting_knowledge_state(
         _load_digest_object(
             store, "knowledge-states", str(pending["afterKnowledgeStateDigest"])
         )
     )
-    alignment = validate_research_topology_alignment(
+    alignment = validate_work_accounting_topology_alignment(
         _load_digest_object(
             store, "topology-alignments", str(pending["topologyAlignmentDigest"])
         ),
         before,
         after,
     )
-    handoff = validate_research_builder_v6_handoff(
+    handoff = validate_work_accounting_builder_handoff(
         _load_digest_object(
             store, "builder-handoffs", str(pending["builderHandoffDigest"])
         ),
@@ -1909,7 +1907,7 @@ def _finalize_publication(
     next_schedule = validate_work_accounting_schedule(
         _load_digest_object(store, "schedules", str(pending["nextScheduleDigest"]))
     )
-    target_knowledge = validate_research_program_state_v2(
+    target_knowledge = validate_work_accounting_knowledge_state(
         _load_digest_object(
             store, "knowledge-states", str(pending["afterKnowledgeStateDigest"])
         )
