@@ -13,9 +13,9 @@ from .governance import resolve_projection
 from .projection_queue import validate_scheduler_state
 from .repository import is_ancestor, list_files_at, read_at, sha256_json
 from .research_state import (
-    validate_research_program_state,
     validate_research_program_v5_batch_binding,
 )
+from .research_topology import validate_research_program_state_versioned
 
 
 TRANSACTION_ID = re.compile(r"\b[0-9a-f]{40}\b")
@@ -178,7 +178,7 @@ def _historical_context(
             except json.JSONDecodeError as exc:
                 raise MathFlowError("knowledge context state is not valid JSON") from exc
             if role == "research-program-state":
-                validate_research_program_state(state, problem)
+                validate_research_program_state_versioned(state, problem)
                 source_kind = "research-program-state"
             else:
                 if not isinstance(state, dict) or not isinstance(
@@ -209,6 +209,66 @@ def _selected_research_state_context(
     state_artifact_digest: str,
     problem_ledger_head: str,
 ) -> dict[str, object]:
+    if state.get("schemaVersion") == 3:
+        selected_contributions = {
+            transaction_id: state["contributions"][transaction_id]
+            for transaction_id in dependencies
+            if transaction_id in state["contributions"]
+        }
+        selected_result_ids = {
+            str(result_id)
+            for contribution in selected_contributions.values()
+            for result_id in contribution.get("intermediateResultIds", [])
+        }
+        frontier = list(selected_result_ids)
+        while frontier:
+            result_id = frontier.pop()
+            result = state["intermediateResults"].get(result_id)
+            if not isinstance(result, dict):
+                continue
+            for dependency_result_id in result.get("dependencyResultIds", []):
+                dependency_result_id = str(dependency_result_id)
+                if dependency_result_id not in selected_result_ids:
+                    selected_result_ids.add(dependency_result_id)
+                    frontier.append(dependency_result_id)
+        selected_results = {
+            result_id: state["intermediateResults"][result_id]
+            for result_id in sorted(selected_result_ids)
+            if result_id in state["intermediateResults"]
+        }
+        selected_program_ids = {
+            str(program_id)
+            for contribution in selected_contributions.values()
+            for program_id in contribution.get("directProgramIds", [])
+        }
+        for result in selected_results.values():
+            selected_program_ids.add(str(result["primaryProgramId"]))
+            selected_program_ids.update(
+                str(program_id) for program_id in result.get("relatedProgramIds", [])
+            )
+        for program_id in list(selected_program_ids):
+            cursor = state["programs"].get(program_id)
+            while isinstance(cursor, dict) and isinstance(cursor.get("parentId"), str):
+                parent_id = str(cursor["parentId"])
+                selected_program_ids.add(parent_id)
+                cursor = state["programs"].get(parent_id)
+        return {
+            "sourceKind": "research-program-state",
+            "runDigest": run_digest,
+            "stateDigest": state["stateDigest"],
+            "stateArtifactDigest": state_artifact_digest,
+            "problemLedgerHead": problem_ledger_head,
+            "selectedPrograms": {
+                program_id: state["programs"][program_id]
+                for program_id in sorted(selected_program_ids)
+                if program_id in state["programs"]
+            },
+            "selectedIntermediateResults": selected_results,
+            "unresolvedDependencyTransactionIds": sorted(
+                set(dependencies) - set(selected_contributions)
+            ),
+        }
+
     selected_contributions = {
         transaction_id: state["contributions"][transaction_id]
         for transaction_id in dependencies
@@ -301,7 +361,7 @@ def research_state_dependency_context(
             batch_input = None
     except json.JSONDecodeError as exc:
         raise MathFlowError("validity research-state context is invalid JSON") from exc
-    validate_research_program_state(state, problem)
+    validate_research_program_state_versioned(state, problem)
     transaction_ordinals = {
         str(item["transactionId"]): int(item["ordinal"])
         for item in source["transactions"]

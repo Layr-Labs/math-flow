@@ -1374,6 +1374,7 @@ def main(argv: list[str] | None = None) -> int:
                     "openrouter-hierarchical-research-builder-v4",
                     "openrouter-hierarchical-research-builder-v5",
                     "openrouter-hierarchical-research-builder-v6",
+                    "openrouter-hierarchical-research-builder-v7",
                 }
             ):
                 result = run_research_build_bundle(

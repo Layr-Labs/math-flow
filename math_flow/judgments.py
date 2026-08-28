@@ -808,6 +808,7 @@ def _run_validity_primary_judgment_bundle(
                         "selectedPrograms",
                         "selectedThreads",
                         "selectedItems",
+                        "selectedIntermediateResults",
                     }
                 }
             ),

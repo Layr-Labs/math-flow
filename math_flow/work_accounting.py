@@ -267,7 +267,10 @@ def _knowledge_topology(
 ]:
     state = _validate_knowledge_state(knowledge_state)
     programs = state["programs"]
-    threads = state["threads"]
+    # State v3 makes programs the only accounting nodes. Earlier states keep
+    # their explicit thread nodes so already-published accounting remains
+    # replayable under its original topology.
+    threads = state.get("threads", {})
     assert isinstance(programs, dict) and isinstance(threads, dict)
     nodes: dict[tuple[str, str], dict[str, object]] = {}
     parents: dict[tuple[str, str], tuple[str, str] | None] = {}
@@ -490,7 +493,9 @@ def build_work_accounting_state(
             is_root=key == root,
         )
     if set(normalized_by_key) != set(nodes):
-        raise MathFlowError("work-accounting state must annotate every program and thread exactly once")
+        raise MathFlowError(
+            "work-accounting state must annotate every accounting node exactly once"
+        )
     if evaluation_mode != "no-access":
         for key, annotation in normalized_by_key.items():
             status = nodes[key].get("status")

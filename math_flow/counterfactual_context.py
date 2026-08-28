@@ -24,6 +24,8 @@ MAX_SAFE_ASSUMPTIONS = 128
 EVIDENCE_COPY_WINDOW = 32
 MIN_SHORT_EVIDENCE_COPY = 16
 
+# ``thread`` remains accepted for replay of state-v1/v2 accounting bundles.
+# State v3 exposes only program accounting nodes.
 NODE_KINDS = {"program", "thread"}
 SAFE_FACT_FIELDS = {
     "id",
@@ -501,7 +503,9 @@ def _state_bindings(
         research_state, problem=problem_id
     )
     refs = {("program", str(node_id)) for node_id in state["programs"]}
-    refs.update(("thread", str(node_id)) for node_id in state["threads"])
+    refs.update(
+        ("thread", str(node_id)) for node_id in state.get("threads", {})
+    )
     return state, refs
 
 
