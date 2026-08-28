@@ -1052,6 +1052,9 @@ class GovernedProviderTests(unittest.TestCase):
         v2_overlay_admission = (
             ROOT / "protocol/projections/openrouter-work-accounting-v2.json"
         )
+        two_entity_admission = (
+            ROOT / "protocol/projections/openrouter-research-v5.json"
+        )
         registry = validate_projection_registry(ROOT)
         self.assertEqual(
             registry,
@@ -1059,11 +1062,13 @@ class GovernedProviderTests(unittest.TestCase):
                 "projections": 9
                 + int(serial_admission.exists())
                 + int(overlay_admission.exists())
-                + int(v2_overlay_admission.exists()),
+                + int(v2_overlay_admission.exists())
+                + int(two_entity_admission.exists()),
                 "active": 2
                 + int(serial_admission.exists())
                 + int(overlay_admission.exists())
-                + int(v2_overlay_admission.exists()),
+                + int(v2_overlay_admission.exists())
+                + int(two_entity_admission.exists()),
             },
         )
         registered = "\n".join(
@@ -1081,6 +1086,10 @@ class GovernedProviderTests(unittest.TestCase):
             self.assertIn("openrouter-work-accounting-v1", registered)
         else:
             self.assertNotIn("openrouter-work-accounting-v1", registered)
+        if two_entity_admission.exists():
+            self.assertIn("openrouter-research-v5", registered)
+        else:
+            self.assertNotIn("openrouter-research-v5", registered)
         if v2_overlay_admission.exists():
             self.assertEqual(
                 v2_overlay_admission.read_bytes(),
