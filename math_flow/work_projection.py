@@ -970,23 +970,39 @@ def _prepare_frozen_with_access_candidate_v2(
         ),
         profile=PROFILE_V2,
     )
-    safe_response = _invoke(
-        provider,
-        checkpoint,
-        stage="safe-facts",
-        request=safe_request,
-        evidence_files=verified_files,
-    )
-    try:
-        safe_facts = build_counterfactual_safe_facts(
+
+    def validate_safe_response(response: object) -> dict[str, object]:
+        safe = build_counterfactual_safe_facts(
             problem_id=str(contract["problemId"]),
             subject_transaction_id=subject,
             accepted_claim_refs=claims,
             research_state=after,
             evidence_manifest=manifest,
             evidence_chunks=chunks,
-            extracted=safe_response,
+            extracted=response,
         )
+        safe_context = build_impact_subgraph_context(
+            problem_id=str(contract["problemId"]),
+            subject_transaction_id=subject,
+            accepted_claim_refs=claims,
+            research_state=after,
+            seed_node_refs=_seed_refs_from_safe_facts(safe),
+            descendant_depth=descendant_depth,
+        )
+        _ensure_required_context_coverage(no_access_required_updates, safe_context)
+        _ensure_required_context_coverage(with_access_required_updates, safe_context)
+        return safe
+
+    safe_response = _invoke(
+        provider,
+        checkpoint,
+        stage="safe-facts",
+        request=safe_request,
+        evidence_files=verified_files,
+        semantic_validate=validate_safe_response,
+    )
+    try:
+        safe_facts = validate_safe_response(safe_response)
         context = build_impact_subgraph_context(
             problem_id=str(contract["problemId"]),
             subject_transaction_id=subject,
@@ -1030,16 +1046,10 @@ def _prepare_frozen_with_access_candidate_v2(
         stage_input=with_input,
         profile=PROFILE_V2,
     )
-    with_response = _invoke(
-        provider,
-        checkpoint,
-        stage="with-access",
-        request=with_request,
-        evidence_files=with_files,
-    )
-    try:
-        with_patch = _patch_from_response(
-            with_response,
+
+    def validate_with_access_response(response: object) -> dict[str, object]:
+        patch = _patch_from_response(
+            response,
             mode="with-access",
             problem_id=str(contract["problemId"]),
             subject_transaction_id=subject,
@@ -1048,6 +1058,26 @@ def _prepare_frozen_with_access_candidate_v2(
             required_updates=with_access_required_updates,
             impact_context=context,
         )
+        apply_work_accounting_patch(
+            base,
+            patch,
+            root_contract=contract,
+            base_knowledge_state=before,
+            target_knowledge_state=after,
+            topology_alignment=alignment,
+        )
+        return patch
+
+    with_response = _invoke(
+        provider,
+        checkpoint,
+        stage="with-access",
+        request=with_request,
+        evidence_files=with_files,
+        semantic_validate=validate_with_access_response,
+    )
+    try:
+        with_patch = validate_with_access_response(with_response)
         with_state = apply_work_accounting_patch(
             base,
             with_patch,
@@ -1877,16 +1907,10 @@ def _run_work_projection_bundle_v2(
         profile=PROFILE_V2,
     )
     _assert_no_access_evidence_nonleakage(no_request, verified_files)
-    no_response = _invoke(
-        provider,
-        checkpoint,
-        stage="no-access",
-        request=no_request,
-        evidence_files=(),
-    )
-    try:
-        no_patch = _patch_from_response(
-            no_response,
+
+    def validate_no_access_response(response: object) -> dict[str, object]:
+        patch = _patch_from_response(
+            response,
             mode="no-access",
             problem_id=str(contract["problemId"]),
             subject_transaction_id=subject,
@@ -1895,6 +1919,30 @@ def _run_work_projection_bundle_v2(
             required_updates=no_required,
             impact_context=context,
         )
+        # Keep provider-local feedback absolute and branch-local.  The combined
+        # D(W-, W+) check remains outside the invocation so the no-access judge
+        # never receives a target-D diagnostic, while an outer retry can reuse
+        # the exact frozen W+ candidate.
+        apply_work_accounting_patch(
+            base,
+            patch,
+            root_contract=contract,
+            base_knowledge_state=before,
+            target_knowledge_state=after,
+            topology_alignment=alignment,
+        )
+        return patch
+
+    no_response = _invoke(
+        provider,
+        checkpoint,
+        stage="no-access",
+        request=no_request,
+        evidence_files=(),
+        semantic_validate=validate_no_access_response,
+    )
+    try:
+        no_patch = validate_no_access_response(no_response)
         no_state, reproduced_with_state, evaluation = materialize_submission_work_value(
             base_state=base,
             no_access_patch=no_patch,

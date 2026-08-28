@@ -1,0 +1,184 @@
+name: Project BSSC work accounting V2
+
+# Inert template. Activation requires admitting the V2 projection candidate
+# byte-for-byte and renaming this file to project-bssc-work-accounting-v2.yml.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: projection-openrouter-work-accounting-v2-bssc-sum-capacity
+  cancel-in-progress: false
+
+jobs:
+  one-subject:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out governed main state
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: main
+
+      - name: Check out the frozen projection pre-state
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          path: work-projection
+          persist-credentials: false
+          ref: projections
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch prior frozen plans and normalized GitHub run history
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MATH_FLOW_REPOSITORY: ${{ github.repository }}
+          MATH_FLOW_RUN_ID: ${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          history_root="${RUNNER_TEMP}/bssc-work-v2-history"
+          archive_root="${history_root}/archives"
+          empty_root="${history_root}/empty"
+          mkdir -p "$archive_root" "$empty_root"
+          gh run list --repo "$MATH_FLOW_REPOSITORY" \
+            --workflow project-bssc-work-accounting-v2.yml --limit 50 \
+            --json conclusion,createdAt,databaseId,startedAt,status,updatedAt \
+            >"${history_root}/runs.json"
+          while IFS= read -r prior_run_id; do
+            if [[ ! "$prior_run_id" =~ ^[1-9][0-9]*$ ]] || [[ "$prior_run_id" == "$MATH_FLOW_RUN_ID" ]]; then
+              continue
+            fi
+            artifact_name="bssc-work-accounting-v2-plan-${prior_run_id}"
+            artifact_id="$(gh api \
+              "repos/${MATH_FLOW_REPOSITORY}/actions/runs/${prior_run_id}/artifacts" \
+              --jq ".artifacts | map(select(.name == \"${artifact_name}\" and .expired == false)) | if length == 1 then .[0].id else empty end")"
+            if [[ "$artifact_id" =~ ^[1-9][0-9]*$ ]]; then
+              gh api \
+                "repos/${MATH_FLOW_REPOSITORY}/actions/artifacts/${artifact_id}/zip" \
+                >"${archive_root}/${prior_run_id}.zip"
+            fi
+          done < <(jq -r '.[].databaseId' "${history_root}/runs.json")
+          echo "MATH_FLOW_HISTORY_ROOT=$history_root" >>"$GITHUB_ENV"
+
+      - id: plan
+        name: Freeze one exact canonical dispatch before provider access
+        env:
+          MATH_FLOW_RUN_ID: ${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          as_of="$(date +%s)"
+          python -m math_flow.bssc_work_accounting_hosted --root . \
+            --config protocol/runtime/bssc-work-accounting-hosted-v2.json plan \
+            --projection-dir work-projection \
+            --github-runs "${MATH_FLOW_HISTORY_ROOT}/runs.json" \
+            --frozen-plan-dir "${MATH_FLOW_HISTORY_ROOT}/empty" \
+            --frozen-plan-zip-dir "${MATH_FLOW_HISTORY_ROOT}/archives" \
+            --run-id "$MATH_FLOW_RUN_ID" --as-of "$as_of" \
+            --output "${RUNNER_TEMP}/frozen-plan.json" \
+            --github-output "$GITHUB_OUTPUT"
+
+      - name: Upload the frozen pre-provider authorization
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: bssc-work-accounting-v2-plan-${{ github.run_id }}
+          path: ${{ runner.temp }}/frozen-plan.json
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Execute the exact published builder transition and V2 work provider
+        if: steps.plan.outputs.eligible == 'true'
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          as_of="$(date +%s)"
+          python -m math_flow.bssc_work_accounting_hosted --root . \
+            --config protocol/runtime/bssc-work-accounting-hosted-v2.json execute \
+            --projection-dir work-projection \
+            --frozen-plan "${RUNNER_TEMP}/frozen-plan.json" \
+            --scratch-root "${RUNNER_TEMP}/bssc-work-v2-scratch" \
+            --as-of "$as_of" --output "${RUNNER_TEMP}/execution-receipt.json"
+
+      - name: Check out fresh canonical state
+        if: steps.plan.outputs.eligible == 'true'
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          path: prepublish-main
+          persist-credentials: false
+          ref: main
+
+      - name: Check out fresh projection state
+        if: steps.plan.outputs.eligible == 'true'
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          path: prepublish-projection
+          persist-credentials: false
+          ref: projections
+
+      - id: prepublish
+        name: Recheck every frozen binding against fresh state
+        if: steps.plan.outputs.eligible == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          as_of="$(date +%s)"
+          python -m math_flow.bssc_work_accounting_hosted --root prepublish-main \
+            --config protocol/runtime/bssc-work-accounting-hosted-v2.json prepublish \
+            --projection-dir prepublish-projection \
+            --frozen-plan "${RUNNER_TEMP}/frozen-plan.json" \
+            --as-of "$as_of" --output "${RUNNER_TEMP}/prepublication-check.json" \
+            --github-output "$GITHUB_OUTPUT"
+
+      - name: Publish the exact deletion-free CAS delta with GitHub signing
+        if: steps.prepublish.outputs.publishable == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          MATH_FLOW_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m math_flow.bssc_work_accounting_hosted --root . \
+            --config protocol/runtime/bssc-work-accounting-hosted-v2.json publish \
+            --projection-dir work-projection \
+            --frozen-plan "${RUNNER_TEMP}/frozen-plan.json" \
+            --execution-receipt "${RUNNER_TEMP}/execution-receipt.json" \
+            --prepublication-check "${RUNNER_TEMP}/prepublication-check.json" \
+            --repository "$MATH_FLOW_REPOSITORY" --branch projections \
+            --output "${RUNNER_TEMP}/publication-report.json"
+
+      - name: Upload execution and publication audit artifacts
+        if: steps.plan.outputs.eligible == 'true' && always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: bssc-work-accounting-v2-result-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/execution-receipt.json
+            ${{ runner.temp }}/prepublication-check.json
+            ${{ runner.temp }}/publication-report.json
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Refresh the viewer catalog after publication
+        if: steps.prepublish.outputs.publishable == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MATH_FLOW_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run refresh-viewer-catalog.yml --repo "$MATH_FLOW_REPOSITORY"

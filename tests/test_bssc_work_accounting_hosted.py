@@ -10,6 +10,7 @@ from types import SimpleNamespace
 
 from math_flow.bssc_work_accounting_hosted import (
     _load_plan_archives,
+    _load_governed_work_provider,
     _research_transition_base_knowledge_state,
     _require_admitted_copy,
     build_work_dispatch_history,
@@ -20,13 +21,19 @@ from math_flow.bssc_work_accounting_hosted import (
 )
 from math_flow.errors import MathFlowError
 from math_flow.bssc_work_replay import load_bssc_replay_source
+from math_flow.governed_providers import (
+    OpenRouterWorkProjectionProvider,
+    OpenRouterWorkProjectionProviderV2,
+)
 from math_flow.repository import sha256_json
 from math_flow.research_topology import empty_research_program_state_v2
 from math_flow.work_accounting_dispatch import (
     load_work_accounting_hosted_config,
     validate_work_accounting_dispatch_plan,
     validate_work_dispatch_history,
+    work_projection_profile_for_hosted_config,
 )
+from math_flow.work_projection import PROFILE_V2
 
 
 DIGEST = "sha256:" + "a" * 64
@@ -151,12 +158,78 @@ class BsscHostedAccountingTests(unittest.TestCase):
         )
         self.assertEqual(
             deployment["config"]["configDigest"],
-            "sha256:fae8e7d3aba92ba64c9595ebf53f9d18cc53d10fb9ba0eadbc3f5e4b329d3e71",
+            "sha256:c8883651bbbc684acfe4c8c18455a3a6a0715627c91df4d7a227202adaa77281",
         )
         self.assertEqual(
             deployment["contract"]["rootContractDigest"],
             "sha256:01d52a695e88694768973f3590c0c13eb5acd8070fbed32de8ad01e460c41135",
         )
+
+    def test_v2_hosted_candidate_selects_only_the_v2_provider_and_profile(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        v1_config = load_bssc_work_accounting_deployment(
+            root, require_admitted=False
+        )["config"]
+        self.assertIs(
+            type(_load_governed_work_provider(root, v1_config)),
+            OpenRouterWorkProjectionProvider,
+        )
+        config_path = root / "protocol/runtime/bssc-work-accounting-hosted-v2.json"
+        deployment = load_bssc_work_accounting_deployment(
+            root, config_path, require_admitted=False
+        )
+        config = deployment["config"]
+        self.assertEqual(config["id"], "bssc-work-accounting-hosted-v2")
+        self.assertEqual(config["projectionId"], "openrouter-work-accounting-v2")
+        self.assertEqual(
+            config["configDigest"],
+            "sha256:b413ea1aaa118e08723fd1e86405850100a62da32e37152dd137fd5adedda450",
+        )
+        self.assertEqual(
+            work_projection_profile_for_hosted_config(config), PROFILE_V2
+        )
+        provider = _load_governed_work_provider(root, config)
+        self.assertIsInstance(provider, OpenRouterWorkProjectionProviderV2)
+        self.assertEqual(provider.output_profile, PROFILE_V2)
+        admitted = root / "protocol/projections/openrouter-work-accounting-v2.json"
+        if admitted.is_file():
+            self.assertEqual(
+                admitted.read_bytes(),
+                (
+                    root
+                    / "protocol/runtime/active-openrouter-work-accounting-v2-projection.json"
+                ).read_bytes(),
+            )
+            load_bssc_work_accounting_deployment(root, config_path)
+        else:
+            with self.assertRaisesRegex(MathFlowError, "has not been admitted"):
+                load_bssc_work_accounting_deployment(root, config_path)
+
+    def test_v2_hosted_workflow_uses_only_v2_config_and_history(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        inactive = (
+            root
+            / ".github/workflows/project-bssc-work-accounting-v2.yml.inactive"
+        )
+        active = root / ".github/workflows/project-bssc-work-accounting-v2.yml"
+        self.assertEqual(
+            [path.is_file() for path in (inactive, active)].count(True), 1
+        )
+        workflow_path = inactive if inactive.is_file() else active
+        workflow = workflow_path.read_text(encoding="utf-8")
+        config = "--config protocol/runtime/bssc-work-accounting-hosted-v2.json"
+        self.assertEqual(workflow.count(config), 4)
+        for command in ("plan", "execute", "prepublish", "publish"):
+            self.assertIn(f"{config} {command}", workflow)
+        self.assertIn(
+            "--workflow project-bssc-work-accounting-v2.yml", workflow
+        )
+        self.assertIn(
+            "projection-openrouter-work-accounting-v2-bssc-sum-capacity", workflow
+        )
+        self.assertIn("bssc-work-accounting-v2-plan-", workflow)
+        self.assertIn("bssc-work-accounting-v2-result-", workflow)
+        self.assertEqual(workflow.count("OPENROUTER_API_KEY:"), 1)
 
     def test_pinned_validity_history_normalizes_to_16_accepted_9_indeterminate(self) -> None:
         root = Path(__file__).resolve().parents[1]

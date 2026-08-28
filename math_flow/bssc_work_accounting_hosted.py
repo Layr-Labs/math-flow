@@ -21,7 +21,10 @@ from .bssc_work_replay import _load_v5_chain, load_bssc_replay_source
 from .bssc_zero_lane import load_bssc_zero_lane_accepted_submissions
 from .errors import MathFlowError
 from .governance import validate_projection_spec
-from .governed_providers import OpenRouterWorkProjectionProvider
+from .governed_providers import (
+    OpenRouterWorkProjectionProvider,
+    OpenRouterWorkProjectionProviderV2,
+)
 from .repository import canonical_json, ledger, sha256_json
 from .research_topology import empty_research_program_state_v2
 from .research_topology import validate_research_program_state_v2
@@ -33,6 +36,7 @@ from .work_accounting_dispatch import (
     validate_work_accounting_dispatch_plan,
     validate_work_accounting_prepublication_check,
     validate_work_dispatch_history,
+    work_projection_profile_for_hosted_config,
 )
 from .work_accounting_pipeline import (
     AcceptedWorkSubmission,
@@ -46,6 +50,7 @@ from .work_accounting_projection_store import (
     publish_work_accounting_projection,
 )
 from .work_accounting_schedule import validate_work_accounting_schedule
+from .work_projection import PROFILE_V2
 
 
 PROBLEM = "bssc-sum-capacity"
@@ -127,6 +132,22 @@ def _require_admitted_copy(
         raise MathFlowError(
             f"admitted projection {projection_id!r} is not byte-identical to its governed candidate"
         )
+
+
+def _load_governed_work_provider(
+    repository_root: Path, config: Mapping[str, object]
+) -> OpenRouterWorkProjectionProvider:
+    """Instantiate only the provider class governed by the hosted lane profile."""
+
+    expected_profile = work_projection_profile_for_hosted_config(config)
+    provider_class = (
+        OpenRouterWorkProjectionProviderV2
+        if expected_profile == PROFILE_V2
+        else OpenRouterWorkProjectionProvider
+    )
+    return provider_class.load(
+        repository_root / str(config["workProviderSpec"]["path"])
+    )
 
 
 def load_bssc_work_accounting_deployment(
@@ -750,8 +771,9 @@ def execute_bssc_work_accounting(
         expected_builder_spec_digest=str(config["builderSpec"]["digest"]),
     )
     builder_provider = PublishedResearchV6TransitionProvider([transition])
-    governed_work = work_provider or OpenRouterWorkProjectionProvider.load(
-        repository_root / str(config["workProviderSpec"]["path"])
+    expected_profile = work_projection_profile_for_hosted_config(config)
+    governed_work = work_provider or _load_governed_work_provider(
+        repository_root, config
     )
     result = advance_work_accounting_pipeline(
         store,
@@ -765,6 +787,7 @@ def execute_bssc_work_accounting(
         as_of=as_of,
         head=canonical_head,
         maximum_subjects=1,
+        expected_work_projection_profile=expected_profile,
     )
     completed_before = len(before["completedTransitions"])
     completed_after = len(result["completedTransitions"])
