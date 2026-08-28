@@ -1,9 +1,10 @@
 # Per-submission work projection V2
 
-V2 is an additive, provider-neutral A-first foundation. It is implemented and
-replayable, but no projection file activates it. Active
-`openrouter-work-accounting-v1` bundles retain their original request schema,
-stage order, prompts, and loader.
+V2 is the active BSSC A-first work-accounting lane under
+`openrouter-work-accounting-v2`. It begins from its own zero-origin accounting
+state and processes accepted submissions serially, independently of the
+completed V1 lane. `openrouter-work-accounting-v1` bundles retain their original
+request schema, stage order, prompts, and loader.
 
 ## Order and state authority
 
@@ -57,12 +58,11 @@ schema, and deterministic reducer. It adds:
 - `openrouter-work-accounting-v2`; and
 - a dedicated V2 policy.
 
-The repository includes a sealed BSSC V2 hosted-runtime candidate, an active-form
-runtime projection candidate, and a workflow initially shipped as an ignored
-`.yml.inactive` template. These files are activation inputs, not admission or
-deployment by themselves. Admission still requires a separately governed,
-byte-identical copy in `protocol/projections/`; workflow activation still
-requires the explicit template rename. The shared pipeline has dormant
+The repository includes a sealed BSSC V2 hosted runtime, its active-form runtime
+projection candidate, a separately governed byte-identical admission at
+`protocol/projections/openrouter-work-accounting-v2.json`, and the active
+five-minute workflow at
+`.github/workflows/project-bssc-work-accounting-v2.yml`. The shared pipeline has
 profile-conditional V2 dispatch and CAS retry isolation; its V1 provider,
 request order, claim-scoped checkpoints, bundle format, projection, and semantic
 retry behavior remain unchanged.

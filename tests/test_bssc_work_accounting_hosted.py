@@ -165,7 +165,7 @@ class BsscHostedAccountingTests(unittest.TestCase):
             "sha256:01d52a695e88694768973f3590c0c13eb5acd8070fbed32de8ad01e460c41135",
         )
 
-    def test_v2_hosted_candidate_selects_only_the_v2_provider_and_profile(self) -> None:
+    def test_v2_hosted_runtime_is_admitted_and_selects_only_v2(self) -> None:
         root = Path(__file__).resolve().parents[1]
         v1_config = load_bssc_work_accounting_deployment(
             root, require_admitted=False
@@ -192,31 +192,27 @@ class BsscHostedAccountingTests(unittest.TestCase):
         self.assertIsInstance(provider, OpenRouterWorkProjectionProviderV2)
         self.assertEqual(provider.output_profile, PROFILE_V2)
         admitted = root / "protocol/projections/openrouter-work-accounting-v2.json"
-        if admitted.is_file():
-            self.assertEqual(
-                admitted.read_bytes(),
-                (
-                    root
-                    / "protocol/runtime/active-openrouter-work-accounting-v2-projection.json"
-                ).read_bytes(),
-            )
-            load_bssc_work_accounting_deployment(root, config_path)
-        else:
-            with self.assertRaisesRegex(MathFlowError, "has not been admitted"):
-                load_bssc_work_accounting_deployment(root, config_path)
+        self.assertTrue(admitted.is_file())
+        self.assertEqual(
+            admitted.read_bytes(),
+            (
+                root
+                / "protocol/runtime/active-openrouter-work-accounting-v2-projection.json"
+            ).read_bytes(),
+        )
+        load_bssc_work_accounting_deployment(root, config_path)
 
     def test_v2_hosted_workflow_uses_only_v2_config_and_history(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        inactive = (
-            root
-            / ".github/workflows/project-bssc-work-accounting-v2.yml.inactive"
-        )
         active = root / ".github/workflows/project-bssc-work-accounting-v2.yml"
-        self.assertEqual(
-            [path.is_file() for path in (inactive, active)].count(True), 1
+        self.assertTrue(active.is_file())
+        self.assertFalse(
+            (
+                root
+                / ".github/workflows/project-bssc-work-accounting-v2.yml.inactive"
+            ).exists()
         )
-        workflow_path = inactive if inactive.is_file() else active
-        workflow = workflow_path.read_text(encoding="utf-8")
+        workflow = active.read_text(encoding="utf-8")
         config = "--config protocol/runtime/bssc-work-accounting-hosted-v2.json"
         self.assertEqual(workflow.count(config), 4)
         for command in ("plan", "execute", "prepublish", "publish"):
