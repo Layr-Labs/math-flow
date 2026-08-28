@@ -4,6 +4,7 @@ import copy
 from collections import defaultdict
 
 from .errors import MathFlowError
+from .research_builder_v7 import validate_research_program_state_v3
 from .repository import sha256_json
 from .research_topology import validate_research_program_state_v2
 
@@ -570,6 +571,9 @@ def _validate_proposed_state_v3(value: dict[str, object]) -> None:
             raise MathFlowError(f"proposed contribution has missing intermediate result: {contribution_id}")
     if value.get("stateDigest") != _with_state_digest(value)["stateDigest"]:
         raise MathFlowError("proposed two-entity state v3 digest mismatch")
+    # The audit's mapping checks are intentionally readable and localized, but
+    # the emitted proposal must also pass the exact governed V3 contract.
+    validate_research_program_state_v3(value, str(value["problemId"]))
 
 
 def audit_two_entity_migration_v2(value: object) -> dict[str, object]:

@@ -921,7 +921,7 @@ class ResearchProjectionTests(unittest.TestCase):
                 }
                 if calls == 2:
                     self.assertIn(
-                        "missing program",
+                        "direct programs",
                         str(request["messages"][-1]["content"]),
                     )
                 return response(json.dumps(transition), calls)
@@ -972,6 +972,37 @@ class ResearchProjectionTests(unittest.TestCase):
                     "attestationRefs",
                 },
             )
+            viewer = export_viewer_data(
+                ROOT,
+                PROBLEM,
+                TX,
+                [output],
+                judgment_dirs=[validity],
+            )
+            self.assertEqual(viewer["runs"][0]["machineState"], state)
+            self.assertEqual(
+                set(viewer["runs"][0]["state"]["nodes"]),
+                {"root", "result:root/v7-fixture-result"},
+            )
+            self.assertEqual(
+                viewer["runs"][0]["topologyAlignment"]["schemaVersion"], 2
+            )
+            dependency_context = research_state_dependency_context(
+                output,
+                PROBLEM,
+                load_source(ROOT, PROBLEM, TRANSACTIONS[1]),
+                2,
+                [TX],
+            )
+            self.assertEqual(
+                set(dependency_context["selectedPrograms"]), {"root"}
+            )
+            self.assertEqual(
+                set(dependency_context["selectedIntermediateResults"]),
+                {"root/v7-fixture-result"},
+            )
+            self.assertNotIn("selectedThreads", dependency_context)
+            self.assertNotIn("selectedItems", dependency_context)
 
     def _validity_bundle(
         self,

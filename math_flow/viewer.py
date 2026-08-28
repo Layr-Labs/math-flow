@@ -588,20 +588,26 @@ def _export_research_viewer_data(
         same_world_handoff = None
         semantic_profile = None
         if profile == TWO_ENTITY_RESEARCH_OUTPUT_PROFILE:
-            # Imported lazily so every historical viewer path remains usable even
-            # in installations that have not admitted the additive V7 runtime.
-            from .research_builder_v7 import (
-                empty_research_program_state_v3,
-                validate_research_program_state_v3,
-            )
+            from .research_builder_v7 import empty_research_program_state_v3
+            from .research_projection import load_research_build_bundle
 
+            replayed_manifest, state, replayed_digest = load_research_build_bundle(
+                bundle
+            )
+            if replayed_manifest != manifest or replayed_digest != manifest_digest:
+                raise MathFlowError(
+                    "viewer research-v7 bundle differs from reducer replay"
+                )
             base_state = _json_artifact(
                 bundle, manifest, "research-program-base-state"
             )
-            state = _json_artifact(bundle, manifest, "research-program-state")
             delta = _json_artifact(bundle, manifest, "research-program-transition")
-            validate_research_program_state_v3(base_state, problem)
-            validate_research_program_state_v3(state, problem)
+            topology_alignment = _json_artifact(
+                bundle, manifest, "research-topology-alignment"
+            )
+            same_world_handoff = _json_artifact(
+                bundle, manifest, "research-builder-handoff"
+            )
             if ordinal == 1 and manifest.get("baseRun") is None:
                 if base_state != empty_research_program_state_v3(problem):
                     raise MathFlowError(
