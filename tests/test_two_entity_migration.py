@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import copy
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
+from math_flow.cli import main
 from math_flow.errors import MathFlowError
 from math_flow.repository import sha256_json
 from math_flow.research_topology import validate_research_program_state_v2
@@ -349,6 +353,30 @@ class TwoEntityMigrationTests(unittest.TestCase):
 
         with self.assertRaisesRegex(MathFlowError, "state v2 digest mismatch"):
             audit_two_entity_migration_v2(source)
+
+    def test_cli_writes_the_provider_free_audit(self) -> None:
+        result = _item("item/result", "result", TRANSACTION_A)
+        source = _source_state([(TRANSACTION_A, JUDGMENT_A, [result])])
+        with tempfile.TemporaryDirectory() as directory_value:
+            directory = Path(directory_value)
+            state_path = directory / "state.json"
+            output_path = directory / "audit.json"
+            state_path.write_text(json.dumps(source), encoding="utf-8")
+
+            exit_code = main(
+                [
+                    "two-entity-migration-audit",
+                    "--state",
+                    str(state_path),
+                    "--output",
+                    str(output_path),
+                ]
+            )
+            audit = json.loads(output_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(audit["status"], "ready")
+        self.assertEqual(audit["sourceStateDigest"], source["stateDigest"])
 
 
 if __name__ == "__main__":

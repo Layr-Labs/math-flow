@@ -26,6 +26,16 @@ The adapter answers two questions before a fresh V7 lane is considered:
 2. Where did state v2 fail to record enough structure to perform that fold
    deterministically?
 
+Run the read-only audit against an extracted state-v2 artifact with:
+
+```console
+python3 -m math_flow two-entity-migration-audit \
+  --state /path/to/research-program-state-v2.json \
+  --output /path/to/two-entity-audit.json
+```
+
+The command does not call a provider or modify a projection.
+
 ## Deterministic mapping
 
 `audit_two_entity_migration_v2` first validates the complete source state with
