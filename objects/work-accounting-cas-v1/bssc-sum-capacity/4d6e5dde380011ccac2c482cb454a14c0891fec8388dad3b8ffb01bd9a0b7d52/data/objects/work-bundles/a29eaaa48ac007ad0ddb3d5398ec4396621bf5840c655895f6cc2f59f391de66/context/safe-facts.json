@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+  "acceptedClaimRefs": [
+    {
+      "transactionId": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+      "claimKey": "bssc-sum-capacity/two-letter-output-covariance-curvature",
+      "judgmentId": "sha256:141c4c2658e3662b874c8df5bd25eedffebed7155677cc2181a64c9bddda36af",
+      "assessmentDigest": "sha256:93ebc48965953337c8c70b303ffdf4bfff09cc0f966e0ac0da25539928c78e44"
+    }
+  ],
+  "knowledgeStateDigest": "sha256:a538e38923ffc39056053598a8c950230ae1a9b8c099b638402eb254e5c340c0",
+  "subjectEvidenceManifestDigest": "sha256:bdf86101ac115102a1f7e4baa33fc3932b22f93bd5462427c089b9c7bca2fc63",
+  "facts": [
+    {
+      "id": "two-use-input-covariance-screen",
+      "condition": "Necessary screening rule: if a finite blocklength-two auxiliary construction has a Marton objective above the doubled optimal one-symbol randomized-time-division baseline, then its binary-input covariance κ obeys κ² < 7 ln(2)/248, and therefore |κ| < 0.14.",
+      "actorVisibility": "withheld-until-independent-discovery",
+      "affectedNodeRefs": [
+        {
+          "kind": "program",
+          "id": "root/multiletter-marton-achievability"
+        },
+        {
+          "kind": "thread",
+          "id": "root/multiletter-marton-achievability/conditional-product-and-correlation-pruning"
+        }
+      ],
+      "acceptedClaimKeys": [
+        "bssc-sum-capacity/two-letter-output-covariance-curvature"
+      ]
+    }
+  ],
+  "assumptions": [
+    "The Marton objective and randomized-time-division baseline use the canonical problem's established normalization.",
+    "The rule applies only to finite blocklength-two candidates and does not itself establish achievability, exclusion of all gains, tensorization, or a capacity converse.",
+    "κ is the covariance of the two binary channel inputs under the candidate's induced two-use input law."
+  ],
+  "safeFactsDigest": "sha256:82fe7608a900b334f01a982a32dba8cc1e8760dbec65e326f12c64cb3df50784"
+}
