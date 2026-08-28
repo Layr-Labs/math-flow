@@ -11,6 +11,9 @@ from .repository import is_ancestor, ledger
 from .viewer import export_viewer_catalog
 
 
+TWO_ENTITY_SEMANTIC_PROFILE = "programs-and-intermediate-results-v1"
+
+
 def _select_projection(
     catalog: dict[str, object], problem: str, projection_id: str | None
 ) -> dict[str, object]:
@@ -141,6 +144,84 @@ def _scope_nodes(
     else:
         included = set(nodes)
 
+    if requested and state.get("semanticProfile") == TWO_ENTITY_SEMANTIC_PROFILE:
+        # Result support is packaged in the node, while reusable mathematical
+        # dependencies remain separate results. Include that dependency closure
+        # and its program path so a scoped machine context stays intelligible.
+        initial_program_scope = {
+            node_id
+            for node_id in included
+            if isinstance(nodes.get(node_id), dict)
+            and nodes[node_id].get("type") == "program"
+        }
+        for node_id, raw_node in nodes.items():
+            if (
+                node_id in included
+                or not isinstance(raw_node, dict)
+                or raw_node.get("type") != "intermediate-result"
+            ):
+                continue
+            evidence = raw_node.get("evidence")
+            if isinstance(evidence, list) and any(
+                isinstance(reference, dict)
+                and reference.get("kind") == "knowledge-node"
+                and reference.get("relation") == "related-program"
+                and reference.get("id") in initial_program_scope
+                for reference in evidence
+            ):
+                included.add(str(node_id))
+
+        directly_requested_results = {
+            node_id
+            for node_id in requested
+            if isinstance(nodes.get(node_id), dict)
+            and nodes[node_id].get("type") == "intermediate-result"
+        }
+        for node_id in directly_requested_results:
+            evidence = nodes[node_id].get("evidence")
+            if not isinstance(evidence, list):
+                continue
+            included.update(
+                str(reference["id"])
+                for reference in evidence
+                if isinstance(reference, dict)
+                and reference.get("kind") == "knowledge-node"
+                and reference.get("relation") == "related-program"
+                and isinstance(reference.get("id"), str)
+                and reference["id"] in nodes
+            )
+
+        changed = True
+        while changed:
+            changed = False
+            for node_id in list(included):
+                raw_node = nodes.get(node_id)
+                if not isinstance(raw_node, dict):
+                    continue
+                parent = raw_node.get("parentId")
+                if isinstance(parent, str) and parent not in included:
+                    included.add(parent)
+                    changed = True
+                if raw_node.get("type") != "intermediate-result":
+                    continue
+                evidence = raw_node.get("evidence")
+                if not isinstance(evidence, list):
+                    continue
+                for reference in evidence:
+                    if (
+                        isinstance(reference, dict)
+                        and reference.get("kind") == "knowledge-node"
+                        and reference.get("relation") in {
+                            "depends-on",
+                            "superseded-by",
+                        }
+                        and isinstance(reference.get("id"), str)
+                        and reference["id"] in nodes
+                        and reference["id"] not in included
+                    ):
+                        included.add(str(reference["id"]))
+                        changed = True
+
     children: dict[str | None, list[str]] = {}
     for node_id, raw_node in nodes.items():
         if isinstance(raw_node, dict):
@@ -206,6 +287,7 @@ def _markdown(context: dict[str, object], scoped_nodes: list[dict[str, object]])
         "",
         f"- Problem: `{problem['id']}`",
         f"- Projection: `{projection['id']}` ({projection['label']})",
+        f"- Semantic profile: `{projection.get('semanticProfile', 'legacy')}`",
         f"- State digest: `{projection['stateDigest']}`",
         f"- Latest state run: `{projection['latestRunDigest']}`",
         "- Verification: content-addressed bundles, artifact digests, and the base-run chain verified",
@@ -351,9 +433,16 @@ def _markdown(context: dict[str, object], scoped_nodes: list[dict[str, object]])
                 "",
             ]
         )
-    lines.append(
-        "`state.json` contains the complete, exact verified state; scoping only reduces this Markdown view."
-    )
+    if projection.get("semanticProfile") == TWO_ENTITY_SEMANTIC_PROFILE:
+        lines.append(
+            "`state.json` contains the complete, exact schema-v3 program/result state. "
+            "`viewer-state.json` contains its verified navigation normalization; "
+            "scoping only reduces this Markdown view."
+        )
+    else:
+        lines.append(
+            "`state.json` contains the complete, exact verified state; scoping only reduces this Markdown view."
+        )
     lines.append("")
     for node in scoped_nodes:
         lineage = node.get("lineage", [])
@@ -366,6 +455,22 @@ def _markdown(context: dict[str, object], scoped_nodes: list[dict[str, object]])
             if isinstance(lineage, list) and lineage
             else "none"
         )
+        evidence = node.get("evidence", [])
+        knowledge_links = [
+            item
+            for item in evidence
+            if isinstance(item, dict)
+            and item.get("kind") == "knowledge-node"
+            and isinstance(item.get("id"), str)
+        ] if isinstance(evidence, list) else []
+        knowledge_link_text = (
+            ", ".join(
+                f"`{item.get('relation', 'related')}` `{item['id']}`"
+                for item in knowledge_links
+            )
+            if knowledge_links
+            else "none"
+        )
         lines.extend(
             [
                 f"### {node.get('title', node.get('id'))}",
@@ -374,6 +479,7 @@ def _markdown(context: dict[str, object], scoped_nodes: list[dict[str, object]])
                 f"- Parent: `{node.get('parentId')}`",
                 f"- Type/status: `{node.get('type')}` / `{node.get('status')}`",
                 f"- Taxonomy lineage: {lineage_text}",
+                f"- Knowledge links: {knowledge_link_text}",
                 f"- Node digest: `{node.get('digest')}`",
                 "",
                 "<knowledge-node>",
@@ -418,6 +524,16 @@ def materialize_agent_context(
     state = latest.get("state")
     if not isinstance(state, dict):
         raise MathFlowError("selected projection has no machine-readable knowledge state")
+    machine_state = latest.get("machineState")
+    two_entity_state = state.get("semanticProfile") == TWO_ENTITY_SEMANTIC_PROFILE
+    if two_entity_state and (
+        not isinstance(machine_state, dict)
+        or machine_state.get("schemaVersion") != 3
+        or machine_state.get("stateDigest") != state.get("stateDigest")
+    ):
+        raise MathFlowError(
+            "selected two-entity projection has no exact schema-v3 machine state"
+        )
 
     canonical = ledger(root, problem, head)
     projected_head = latest.get("ledgerHead")
@@ -506,6 +622,7 @@ def materialize_agent_context(
             "latestRunDigest": selected.get("latestRunDigest"),
             "runCount": selected.get("runCount"),
             "stateDigest": state.get("stateDigest"),
+            "semanticProfile": state.get("semanticProfile"),
         },
         "verification": {
             "contentAddressedBundles": "verified",
@@ -555,9 +672,15 @@ def materialize_agent_context(
             "requestedNodeIds": requested,
             "includedNodeIds": [str(node["id"]) for node in scoped_nodes],
             "stateFileContainsCompleteState": True,
+            "policy": (
+                "descendants-plus-result-dependencies-and-related-results"
+                if state.get("semanticProfile") == TWO_ENTITY_SEMANTIC_PROFILE
+                else "descendants"
+            ),
         },
         "files": {
             "state": "state.json",
+            **({"viewerState": "viewer-state.json"} if two_entity_state else {}),
             "context": "context.md",
             "directions": "directions.json",
             "credit": "credit.json",
@@ -571,8 +694,15 @@ def materialize_agent_context(
         raise MathFlowError(f"agent context output directory is not empty: {output}")
     output.mkdir(parents=True, exist_ok=True)
     (output / "state.json").write_text(
-        json.dumps(state, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        json.dumps(machine_state if two_entity_state else state, indent=2, ensure_ascii=False)
+        + "\n",
+        encoding="utf-8",
     )
+    if two_entity_state:
+        (output / "viewer-state.json").write_text(
+            json.dumps(state, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
     (output / "context.json").write_text(
         json.dumps(context, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )

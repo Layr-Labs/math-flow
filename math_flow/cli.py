@@ -72,6 +72,7 @@ from .research_projection import (
 from .runs import run_judge_bundle
 from .scale_probe import run_provider_free_scale_probe
 from .solver_tools import credit_status, register_direction
+from .two_entity_migration import audit_two_entity_migration_v2
 from .viewer import export_viewer_catalog, export_viewer_data
 from .validity import formation_dependency_transaction_ids
 from .work_accounting_dispatch import (
@@ -648,6 +649,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--materialization-dir", required=True, type=Path
     )
     bssc_research_v4_parser.add_argument("--output", type=Path)
+
+    two_entity_audit_parser = commands.add_parser(
+        "two-entity-migration-audit",
+        help="audit a state-v2 snapshot for a provider-free two-entity mapping",
+    )
+    two_entity_audit_parser.add_argument("--state", required=True, type=Path)
+    two_entity_audit_parser.add_argument("--output", type=Path)
 
     publish_parser = commands.add_parser(
         "publish-batch", help="stage verified run bundles in a projection worktree"
@@ -1374,6 +1382,7 @@ def main(argv: list[str] | None = None) -> int:
                     "openrouter-hierarchical-research-builder-v4",
                     "openrouter-hierarchical-research-builder-v5",
                     "openrouter-hierarchical-research-builder-v6",
+                    "openrouter-hierarchical-research-builder-v7",
                 }
             ):
                 result = run_research_build_bundle(
@@ -1437,6 +1446,16 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 expected_projection_digest=args.expected_projection_digest,
             )
+            _write_json(result, str(args.output) if args.output else None)
+            return 0
+        elif args.command == "two-entity-migration-audit":
+            try:
+                state = json.loads(args.state.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                raise MathFlowError(
+                    f"two-entity migration state is not valid JSON: {args.state}"
+                ) from exc
+            result = audit_two_entity_migration_v2(state)
             _write_json(result, str(args.output) if args.output else None)
             return 0
         elif args.command == "publish-batch":

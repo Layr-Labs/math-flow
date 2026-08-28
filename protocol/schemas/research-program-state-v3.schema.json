@@ -1,0 +1,284 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/research-program-state-v3.schema.json",
+  "title": "Two-Entity Hierarchical Research Program State v3",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "ledgerHead",
+    "baseStateDigest",
+    "rootProgramId",
+    "programs",
+    "intermediateResults",
+    "contributions",
+    "stateDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 3 },
+    "problemId": { "$ref": "#/$defs/id" },
+    "ledgerHead": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/transaction" }
+      ]
+    },
+    "baseStateDigest": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/digest" }
+      ]
+    },
+    "rootProgramId": { "const": "root" },
+    "programs": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/program" }
+    },
+    "intermediateResults": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/intermediateResult" }
+    },
+    "contributions": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/contribution" }
+    },
+    "stateDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "nonemptyText": { "type": "string", "minLength": 1 },
+    "claimRef": {
+      "type": "object",
+      "required": ["transactionId", "claimKey"],
+      "properties": {
+        "transactionId": { "$ref": "#/$defs/transaction" },
+        "claimKey": { "$ref": "#/$defs/id" }
+      },
+      "additionalProperties": false
+    },
+    "lineage": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["relation", "programId"],
+        "properties": {
+          "relation": {
+            "enum": ["split-from", "split-into", "merged-from", "merged-into"]
+          },
+          "programId": { "$ref": "#/$defs/id" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "artifactRef": {
+      "type": "object",
+      "required": ["path", "digest"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "digest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "support": {
+      "type": "object",
+      "required": [
+        "proofs",
+        "methods",
+        "computations",
+        "tools",
+        "artifactRefs",
+        "attestationRefs"
+      ],
+      "properties": {
+        "proofs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonemptyText" }
+        },
+        "methods": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonemptyText" }
+        },
+        "computations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonemptyText" }
+        },
+        "tools": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonemptyText" }
+        },
+        "artifactRefs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/artifactRef" }
+        },
+        "attestationRefs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/digest" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "program": {
+      "type": "object",
+      "required": [
+        "id",
+        "parentId",
+        "title",
+        "objective",
+        "currentStateSummary",
+        "localResidualSummary",
+        "status",
+        "intermediateResultIds",
+        "sourceTransactionIds",
+        "lineage",
+        "digest"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "parentId": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/id" }
+          ]
+        },
+        "title": { "$ref": "#/$defs/nonemptyText" },
+        "objective": { "$ref": "#/$defs/nonemptyText" },
+        "currentStateSummary": { "$ref": "#/$defs/nonemptyText" },
+        "localResidualSummary": { "$ref": "#/$defs/nonemptyText" },
+        "status": { "enum": ["active", "completed", "retired"] },
+        "intermediateResultIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "sourceTransactionIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/transaction" }
+        },
+        "lineage": { "$ref": "#/$defs/lineage" },
+        "digest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "intermediateResult": {
+      "type": "object",
+      "required": [
+        "id",
+        "primaryProgramId",
+        "relatedProgramIds",
+        "title",
+        "statement",
+        "scopeQualifications",
+        "support",
+        "dependencyResultIds",
+        "claimRefs",
+        "sourceTransactionIds",
+        "judgmentIds",
+        "status",
+        "supersededByResultIds",
+        "digest"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "primaryProgramId": { "$ref": "#/$defs/id" },
+        "relatedProgramIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "title": { "$ref": "#/$defs/nonemptyText" },
+        "statement": { "$ref": "#/$defs/nonemptyText" },
+        "scopeQualifications": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonemptyText" }
+        },
+        "support": { "$ref": "#/$defs/support" },
+        "dependencyResultIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "claimRefs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/claimRef" }
+        },
+        "sourceTransactionIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/transaction" }
+        },
+        "judgmentIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/digest" }
+        },
+        "status": { "enum": ["active", "superseded", "retired"] },
+        "supersededByResultIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "digest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "contribution": {
+      "type": "object",
+      "required": [
+        "id",
+        "transactionId",
+        "claimKeys",
+        "directProgramIds",
+        "intermediateResultIds",
+        "dependencyTransactionIds",
+        "judgmentId",
+        "digest"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/transaction" },
+        "transactionId": { "$ref": "#/$defs/transaction" },
+        "claimKeys": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "directProgramIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "intermediateResultIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "dependencyTransactionIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/transaction" }
+        },
+        "judgmentId": { "$ref": "#/$defs/digest" },
+        "digest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

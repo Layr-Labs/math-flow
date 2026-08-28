@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/research-program-submission-transition-v7.schema.json",
+  "title": "Sequential Two-Entity Research Builder Submission Transition v7",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "subjectTransactionId",
+    "baseStateDigest",
+    "contentOperations",
+    "topologyOperations",
+    "contribution",
+    "placementAudit",
+    "topologyRationale"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+    "baseStateDigest": { "$ref": "#/$defs/digest" },
+    "contentOperations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/contentOperation" }
+    },
+    "topologyOperations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/topologyOperation" }
+    },
+    "contribution": {
+      "type": "object",
+      "required": ["claimKeys", "directProgramIds", "intermediateResultIds"],
+      "properties": {
+        "claimKeys": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "directProgramIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "intermediateResultIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "placementAudit": {
+      "type": "object",
+      "required": ["basis", "rationale", "relatedProgramIds"],
+      "properties": {
+        "basis": { "enum": ["local-objective", "cross-program", "canonical-objective"] },
+        "rationale": { "type": "string", "minLength": 1 },
+        "relatedProgramIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "topologyRationale": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "string", "minLength": 1 }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "contentOperation": {
+      "type": "object",
+      "required": ["entityKind", "entityId", "baseDigest", "value"],
+      "properties": {
+        "entityKind": { "enum": ["program", "intermediateResult"] },
+        "entityId": { "$ref": "#/$defs/id" },
+        "baseDigest": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/digest" }
+          ]
+        },
+        "value": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "topologyOperation": {
+      "type": "object",
+      "required": ["action", "entityKind", "entityId", "baseDigest", "value"],
+      "properties": {
+        "action": { "enum": ["create", "move", "retire"] },
+        "entityKind": { "enum": ["program", "intermediateResult"] },
+        "entityId": { "$ref": "#/$defs/id" },
+        "baseDigest": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/digest" }
+          ]
+        },
+        "value": { "type": "object" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -38,6 +38,7 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-hierarchical-research-builder-v4",
     "openrouter-hierarchical-research-builder-v5",
     "openrouter-hierarchical-research-builder-v6",
+    "openrouter-hierarchical-research-builder-v7",
     "openrouter-hierarchical-research-credit-v2",
     "openrouter-work-accounting-v1",
     "openrouter-work-accounting-v2",
@@ -57,6 +58,7 @@ SUPPORTED_INPUT_BUILDERS = {
     "accepted-validity-batch-program-state-v4",
     "accepted-validity-batch-program-state-v5",
     "accepted-validity-submission-program-state-v6",
+    "accepted-validity-submission-program-state-v7",
     "counterfactual-work-transition-v1",
     "counterfactual-work-transition-v2",
     "locked-research-history-v2",
@@ -80,6 +82,7 @@ SUPPORTED_OUTPUT_PROFILES = {
     "math-flow/hierarchical-research-v4",
     "math-flow/hierarchical-research-v5",
     "math-flow/hierarchical-research-v6",
+    "math-flow/hierarchical-research-v7",
     "math-flow/hierarchical-research-credit-v2",
     "math-flow/work-accounting-transition-v1",
     "math-flow/work-accounting-transition-v2",
@@ -104,6 +107,7 @@ SUPPORTED_OUTPUT_ADAPTERS = {
     "structured-research-batch-v4",
     "structured-research-batch-v5",
     "structured-research-submission-v6",
+    "structured-research-submission-v7",
     "structured-hierarchical-credit-v2",
     "structured-work-estimation-v1",
 }
@@ -118,6 +122,7 @@ SUPPORTED_REDUCERS = {
     "batched-research-state-v4",
     "batched-research-state-v5",
     "sequential-research-state-v6",
+    "sequential-research-state-v7",
     "hierarchical-credit-allocation-v2",
     "per-submission-work-accounting-v1",
 }
@@ -306,6 +311,12 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputAdapter": "structured-research-submission-v6",
             "reducer": "sequential-research-state-v6",
         },
+        "openrouter-hierarchical-research-builder-v7": {
+            "inputBuilder": "accepted-validity-submission-program-state-v7",
+            "outputProfile": "math-flow/hierarchical-research-v7",
+            "outputAdapter": "structured-research-submission-v7",
+            "reducer": "sequential-research-state-v7",
+        },
         "openrouter-hierarchical-research-credit-v2": {
             "inputBuilder": "locked-research-history-v2",
             "outputProfile": "math-flow/hierarchical-research-credit-v2",
@@ -378,6 +389,7 @@ def load_judge_spec(path: Path) -> dict[str, object]:
         "openrouter-hierarchical-research-builder-v4",
         "openrouter-hierarchical-research-builder-v5",
         "openrouter-hierarchical-research-builder-v6",
+        "openrouter-hierarchical-research-builder-v7",
         "openrouter-work-accounting-v1",
         "openrouter-work-accounting-v2",
     }:
@@ -428,6 +440,7 @@ def load_judge_spec(path: Path) -> dict[str, object]:
                     raise MathFlowError(f"OpenRouter stage parameters must be an object: {stage_name}")
     if spec["implementation"] in {
         "openrouter-hierarchical-research-builder-v6",
+        "openrouter-hierarchical-research-builder-v7",
         "openrouter-work-accounting-v1",
         "openrouter-work-accounting-v2",
     }:
@@ -454,7 +467,10 @@ def load_judge_spec(path: Path) -> dict[str, object]:
         expected_prompts = (
             {"organize"}
             if spec["implementation"]
-            == "openrouter-hierarchical-research-builder-v6"
+            in {
+                "openrouter-hierarchical-research-builder-v6",
+                "openrouter-hierarchical-research-builder-v7",
+            }
             else {"safe-facts", "no-access", "with-access"}
         )
         prompts = spec.get("stagePrompts")

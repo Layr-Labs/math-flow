@@ -36,7 +36,12 @@ research-program states distinguish programs, local work threads, and accepted
 results or methods, while the hierarchical two-term credit overlay exposes both
 direct and obviated work, local and overall allocation shares, counterfactuals,
 and unattributed program residuals. Legacy judgment and qualitative-credit
-artifacts remain readable. The complete active view is
+artifacts remain readable. Additive hierarchical-research V7 states instead
+render exactly two semantic entity types: hierarchical programs and packaged
+intermediate results. Proofs, methods, computations, tools, artifacts, and
+attestations appear inside an intermediate result's support bundle; result
+dependencies and cross-program links remain navigable. Contribution records
+remain provenance and are never rendered as knowledge nodes. The complete active view is
 mirrored in the query string, so its URL can be refreshed or shared without
 losing the selected projection, state, artifact, detail tab, or search filter.
 

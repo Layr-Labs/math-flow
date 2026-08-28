@@ -8,7 +8,7 @@ from pathlib import Path, PurePosixPath
 from .artifacts import sha256_bytes
 from .errors import MathFlowError
 from .repository import list_files_at, read_bytes_at, sha256_json
-from .research_topology import validate_research_program_state_versioned
+from .work_accounting_knowledge import validate_work_accounting_knowledge_state
 
 
 GIT_SHA = re.compile(r"^[0-9a-f]{40}$")
@@ -24,6 +24,8 @@ MAX_SAFE_ASSUMPTIONS = 128
 EVIDENCE_COPY_WINDOW = 32
 MIN_SHORT_EVIDENCE_COPY = 16
 
+# ``thread`` remains accepted for replay of state-v1/v2 accounting bundles.
+# State v3 exposes only program accounting nodes.
 NODE_KINDS = {"program", "thread"}
 SAFE_FACT_FIELDS = {
     "id",
@@ -497,11 +499,12 @@ def _node_ref_key(value: Mapping[str, str]) -> tuple[str, str]:
 def _state_bindings(
     research_state: object, problem_id: str | None = None
 ) -> tuple[dict[str, object], set[tuple[str, str]]]:
-    state = validate_research_program_state_versioned(
+    state = validate_work_accounting_knowledge_state(
         research_state, problem=problem_id
     )
     refs = {("program", str(node_id)) for node_id in state["programs"]}
-    refs.update(("thread", str(node_id)) for node_id in state["threads"])
+    if state.get("schemaVersion") != 3:
+        refs.update(("thread", str(node_id)) for node_id in state["threads"])
     return state, refs
 
 
@@ -744,6 +747,168 @@ def validate_counterfactual_safe_facts(value: object) -> dict[str, object]:
     return safe
 
 
+def _build_impact_subgraph_context_v2(
+    *,
+    problem: str,
+    subject: str,
+    claims: list[dict[str, object]],
+    state: dict[str, object],
+    seeds: list[dict[str, str]],
+    descendant_depth: int,
+) -> dict[str, object]:
+    """Build the program-only structural context for research state v3.
+
+    Intermediate-result statements, support bodies, titles, and scope prose are
+    intentionally absent.  The packet is shared with no-access and therefore
+    carries only topology/provenance identities needed to orient the estimate.
+    """
+
+    if any(seed["kind"] != "program" for seed in seeds):
+        raise MathFlowError("impact context v2 seeds must be programs")
+    programs: dict[str, dict[str, object]] = state["programs"]
+    results: dict[str, dict[str, object]] = state["intermediateResults"]
+    program_children: dict[str, list[str]] = {
+        str(program_id): [] for program_id in programs
+    }
+    for program_id, program_record in programs.items():
+        parent_id = program_record.get("parentId")
+        if isinstance(parent_id, str):
+            program_children[parent_id].append(str(program_id))
+    for children in program_children.values():
+        children.sort()
+
+    included_programs: set[str] = set()
+    roles: dict[str, set[str]] = {}
+
+    def add(program_id: str, role: str) -> None:
+        included_programs.add(program_id)
+        roles.setdefault(program_id, set()).add(role)
+
+    for seed in seeds:
+        program_id = seed["id"]
+        add(program_id, "seed")
+        cursor: str | None = program_id
+        while cursor is not None:
+            add(cursor, "seed" if cursor == program_id else "ancestor")
+            parent = programs[cursor].get("parentId")
+            cursor = str(parent) if isinstance(parent, str) else None
+
+        parent_id = programs[program_id].get("parentId")
+        if isinstance(parent_id, str):
+            for sibling_id in program_children[parent_id]:
+                add(sibling_id, "sibling-decision-point")
+
+        frontier = [(program_id, 0)]
+        while frontier:
+            current_id, depth = frontier.pop(0)
+            if depth >= descendant_depth:
+                continue
+            for child_id in program_children[current_id]:
+                add(child_id, "descendant")
+                frontier.append((child_id, depth + 1))
+
+    included_nodes: list[dict[str, object]] = []
+    for program_id in sorted(included_programs):
+        program_record = programs[program_id]
+        parent_id = program_record.get("parentId")
+        included_nodes.append(
+            {
+                "ref": {"kind": "program", "id": program_id},
+                "parentRef": (
+                    {"kind": "program", "id": parent_id}
+                    if isinstance(parent_id, str)
+                    else None
+                ),
+                "status": program_record["status"],
+                "roles": sorted(roles.get(program_id, set())),
+                "recordDigest": program_record["digest"],
+            }
+        )
+
+    boundary_summaries: list[dict[str, object]] = []
+    for parent_id in sorted(included_programs):
+        for child_id in program_children[parent_id]:
+            if child_id in included_programs:
+                continue
+            descendant_programs: set[str] = set()
+            queue = [child_id]
+            while queue:
+                current_id = queue.pop(0)
+                if current_id in descendant_programs:
+                    continue
+                descendant_programs.add(current_id)
+                queue.extend(program_children[current_id])
+            boundary_summaries.append(
+                {
+                    "nodeRef": {"kind": "program", "id": child_id},
+                    "parentRef": {"kind": "program", "id": parent_id},
+                    "relationship": "collapsed-descendant-subtree",
+                    "programCount": len(descendant_programs),
+                    "intermediateResultCount": sum(
+                        1
+                        for result in results.values()
+                        if set(
+                            [
+                                str(result["primaryProgramId"]),
+                                *map(str, result.get("relatedProgramIds", [])),
+                            ]
+                        )
+                        & descendant_programs
+                    ),
+                    "recordDigest": programs[child_id]["digest"],
+                }
+            )
+    boundary_summaries.sort(key=lambda item: _node_ref_key(item["nodeRef"]))
+
+    semantic_result_refs: list[dict[str, object]] = []
+    for result_id, result in sorted(results.items()):
+        linked_program_ids = [
+            str(result["primaryProgramId"]),
+            *map(str, result.get("relatedProgramIds", [])),
+        ]
+        if not set(linked_program_ids) & included_programs:
+            continue
+        semantic_result_refs.append(
+            {
+                "intermediateResultId": str(result_id),
+                "primaryProgramRef": {
+                    "kind": "program",
+                    "id": str(result["primaryProgramId"]),
+                },
+                "relatedProgramRefs": [
+                    {"kind": "program", "id": program_id}
+                    for program_id in sorted(map(str, result.get("relatedProgramIds", [])))
+                ],
+                "status": result["status"],
+                "claimRefs": copy.deepcopy(result["claimRefs"]),
+                "dependencyResultIds": sorted(result["dependencyResultIds"]),
+                "recordDigest": result["digest"],
+            }
+        )
+
+    core: dict[str, object] = {
+        "schemaVersion": 2,
+        "problemId": problem,
+        "subjectTransactionId": subject,
+        "acceptedClaimRefs": claims,
+        "knowledgeStateDigest": state["stateDigest"],
+        "seedNodeRefs": seeds,
+        "descendantDepth": descendant_depth,
+        "includedNodes": included_nodes,
+        "boundarySummaries": boundary_summaries,
+        "semanticIntermediateResultRefs": semantic_result_refs,
+        "expansionPolicy": {
+            "allowedKinds": ["program"],
+            "maximumDescendantDepth": 4,
+            "requiresExactBuilderNode": True,
+            "semanticPayload": "structural-metadata-only",
+        },
+    }
+    context = {**core, "contextDigest": _object_digest(core)}
+    validate_impact_subgraph_context(context)
+    return context
+
+
 def build_impact_subgraph_context(
     *,
     problem_id: str,
@@ -769,6 +934,16 @@ def build_impact_subgraph_context(
     seeds.sort(key=_node_ref_key)
     if len({_node_ref_key(seed) for seed in seeds}) != len(seeds):
         raise MathFlowError("impact context repeats a seed builder node")
+
+    if state.get("schemaVersion") == 3:
+        return _build_impact_subgraph_context_v2(
+            problem=problem,
+            subject=subject,
+            claims=claims,
+            state=state,
+            seeds=seeds,
+            descendant_depth=descendant_depth,
+        )
 
     programs: dict[str, dict[str, object]] = state["programs"]
     threads: dict[str, dict[str, object]] = state["threads"]
@@ -915,7 +1090,235 @@ def build_impact_subgraph_context(
     return context
 
 
+def _validate_impact_subgraph_context_v2(value: object) -> dict[str, object]:
+    fields = {
+        "schemaVersion",
+        "problemId",
+        "subjectTransactionId",
+        "acceptedClaimRefs",
+        "knowledgeStateDigest",
+        "seedNodeRefs",
+        "descendantDepth",
+        "includedNodes",
+        "boundarySummaries",
+        "semanticIntermediateResultRefs",
+        "expansionPolicy",
+        "contextDigest",
+    }
+    context = _require_exact_fields(value, fields, "impact-subgraph context v2")
+    if context.get("schemaVersion") != 2:
+        raise MathFlowError("impact-subgraph context v2 has an unsupported version")
+    _require_problem(context.get("problemId"))
+    subject = _require_transaction(
+        context.get("subjectTransactionId"), "impact context v2 subject ID"
+    )
+    claims = _accepted_claim_refs(context.get("acceptedClaimRefs"), subject)
+    if context.get("acceptedClaimRefs") != claims:
+        raise MathFlowError("impact context v2 accepted claim identities are not canonical")
+    _require_digest(
+        context.get("knowledgeStateDigest"), "impact context v2 knowledge-state digest"
+    )
+    depth = context.get("descendantDepth")
+    if isinstance(depth, bool) or not isinstance(depth, int) or not 0 <= depth <= 4:
+        raise MathFlowError("impact context v2 has an invalid descendant depth")
+
+    seeds = context.get("seedNodeRefs")
+    if not isinstance(seeds, list) or not seeds:
+        raise MathFlowError("impact context v2 must contain seed programs")
+    parsed_seeds = [_node_ref(item, "impact context v2 seed") for item in seeds]
+    if (
+        any(seed["kind"] != "program" for seed in parsed_seeds)
+        or parsed_seeds != sorted(parsed_seeds, key=_node_ref_key)
+        or len({_node_ref_key(seed) for seed in parsed_seeds}) != len(parsed_seeds)
+    ):
+        raise MathFlowError("impact context v2 seeds are not canonical programs")
+
+    included = context.get("includedNodes")
+    if not isinstance(included, list) or not included:
+        raise MathFlowError("impact context v2 must contain programs")
+    included_keys: set[tuple[str, str]] = set()
+    previous_key: tuple[str, str] | None = None
+    for raw_node in included:
+        node = _require_exact_fields(
+            raw_node,
+            {"ref", "parentRef", "status", "roles", "recordDigest"},
+            "impact context v2 program",
+        )
+        ref = _node_ref(node.get("ref"), "impact context v2 program reference")
+        key = _node_ref_key(ref)
+        if (
+            ref["kind"] != "program"
+            or key in included_keys
+            or (previous_key is not None and key <= previous_key)
+        ):
+            raise MathFlowError("impact context v2 programs are not uniquely sorted")
+        included_keys.add(key)
+        previous_key = key
+        parent = node.get("parentRef")
+        if parent is not None and _node_ref(
+            parent, "impact context v2 parent"
+        )["kind"] != "program":
+            raise MathFlowError("impact context v2 parent must be a program")
+        _require_text(node.get("status"), "impact context v2 program status")
+        roles = node.get("roles")
+        if not isinstance(roles, list) or roles != sorted(set(roles)) or any(
+            not isinstance(role, str) or not role for role in roles
+        ):
+            raise MathFlowError("impact context v2 roles are not canonical")
+        _require_digest(
+            node.get("recordDigest"), "impact context v2 program record digest"
+        )
+    if any(_node_ref_key(seed) not in included_keys for seed in parsed_seeds):
+        raise MathFlowError("impact context v2 omits a seed program")
+
+    boundaries = context.get("boundarySummaries")
+    if not isinstance(boundaries, list):
+        raise MathFlowError("impact context v2 boundaries must be an array")
+    boundary_keys: list[tuple[str, str]] = []
+    for raw_boundary in boundaries:
+        boundary = _require_exact_fields(
+            raw_boundary,
+            {
+                "nodeRef",
+                "parentRef",
+                "relationship",
+                "programCount",
+                "intermediateResultCount",
+                "recordDigest",
+            },
+            "impact context v2 boundary",
+        )
+        ref = _node_ref(
+            boundary.get("nodeRef"), "impact context v2 boundary program"
+        )
+        parent = _node_ref(
+            boundary.get("parentRef"), "impact context v2 boundary parent"
+        )
+        if (
+            ref["kind"] != "program"
+            or _node_ref_key(ref) in included_keys
+            or parent["kind"] != "program"
+            or _node_ref_key(parent) not in included_keys
+        ):
+            raise MathFlowError("impact context v2 boundary is outside the program cut")
+        if boundary.get("relationship") != "collapsed-descendant-subtree":
+            raise MathFlowError("impact context v2 boundary relationship is invalid")
+        for field in ("programCount", "intermediateResultCount"):
+            number = boundary.get(field)
+            minimum = 1 if field == "programCount" else 0
+            if isinstance(number, bool) or not isinstance(number, int) or number < minimum:
+                raise MathFlowError("impact context v2 boundary count is invalid")
+        _require_digest(
+            boundary.get("recordDigest"), "impact context v2 boundary record digest"
+        )
+        boundary_keys.append(_node_ref_key(ref))
+    if boundary_keys != sorted(set(boundary_keys)):
+        raise MathFlowError("impact context v2 boundaries are not uniquely sorted")
+
+    semantic = context.get("semanticIntermediateResultRefs")
+    if not isinstance(semantic, list):
+        raise MathFlowError("impact context v2 intermediate results must be an array")
+    previous_result: str | None = None
+    for raw_result in semantic:
+        result = _require_exact_fields(
+            raw_result,
+            {
+                "intermediateResultId",
+                "primaryProgramRef",
+                "relatedProgramRefs",
+                "status",
+                "claimRefs",
+                "dependencyResultIds",
+                "recordDigest",
+            },
+            "impact context v2 intermediate result",
+        )
+        result_id = _require_identifier(
+            result.get("intermediateResultId"),
+            "impact context v2 intermediate result ID",
+        )
+        if previous_result is not None and result_id <= previous_result:
+            raise MathFlowError(
+                "impact context v2 intermediate results are not uniquely sorted"
+            )
+        previous_result = result_id
+        primary = _node_ref(
+            result.get("primaryProgramRef"), "impact context v2 primary program"
+        )
+        related = result.get("relatedProgramRefs")
+        if not isinstance(related, list):
+            raise MathFlowError("impact context v2 related programs must be an array")
+        parsed_related = [
+            _node_ref(item, "impact context v2 related program") for item in related
+        ]
+        if (
+            primary["kind"] != "program"
+            or any(ref["kind"] != "program" for ref in parsed_related)
+            or parsed_related != sorted(parsed_related, key=_node_ref_key)
+            or len({_node_ref_key(ref) for ref in parsed_related})
+            != len(parsed_related)
+            or _node_ref_key(primary) in {_node_ref_key(ref) for ref in parsed_related}
+        ):
+            raise MathFlowError("impact context v2 result program links are not canonical")
+        linked = {_node_ref_key(primary), *(_node_ref_key(ref) for ref in parsed_related)}
+        if not linked & included_keys:
+            raise MathFlowError("impact context v2 result is outside included programs")
+        _require_text(result.get("status"), "impact context v2 result status")
+        claim_refs = result.get("claimRefs")
+        if not isinstance(claim_refs, list) or not claim_refs:
+            raise MathFlowError("impact context v2 result claim references are invalid")
+        seen_claims: set[tuple[str, str]] = set()
+        observed_claims: list[tuple[str, str]] = []
+        for raw_claim in claim_refs:
+            claim_ref = _require_exact_fields(
+                raw_claim,
+                {"transactionId", "claimKey"},
+                "impact context v2 result claim reference",
+            )
+            identity = (
+                _require_transaction(
+                    claim_ref.get("transactionId"),
+                    "impact context v2 result claim transaction",
+                ),
+                _require_identifier(
+                    claim_ref.get("claimKey"),
+                    "impact context v2 result claim key",
+                ),
+            )
+            if identity in seen_claims:
+                raise MathFlowError("impact context v2 result repeats a claim reference")
+            seen_claims.add(identity)
+            observed_claims.append(identity)
+        if observed_claims != sorted(observed_claims):
+            raise MathFlowError("impact context v2 result claim references are not sorted")
+        dependencies = result.get("dependencyResultIds")
+        if not isinstance(dependencies, list) or dependencies != sorted(set(dependencies)):
+            raise MathFlowError("impact context v2 result dependencies are not canonical")
+        for dependency_id in dependencies:
+            _require_identifier(
+                dependency_id, "impact context v2 dependency result ID"
+            )
+        _require_digest(
+            result.get("recordDigest"), "impact context v2 result record digest"
+        )
+
+    if context.get("expansionPolicy") != {
+        "allowedKinds": ["program"],
+        "maximumDescendantDepth": 4,
+        "requiresExactBuilderNode": True,
+        "semanticPayload": "structural-metadata-only",
+    }:
+        raise MathFlowError("impact context v2 expansion policy is invalid")
+    if context.get("contextDigest") != _object_digest(
+        _without_digest(context, "contextDigest")
+    ):
+        raise MathFlowError("impact context v2 digest mismatch")
+    return context
+
+
 def validate_impact_subgraph_context(value: object) -> dict[str, object]:
+    if isinstance(value, dict) and value.get("schemaVersion") == 2:
+        return _validate_impact_subgraph_context_v2(value)
     fields = {
         "schemaVersion",
         "problemId",

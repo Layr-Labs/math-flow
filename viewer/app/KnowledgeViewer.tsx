@@ -2,7 +2,7 @@
 
 import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import katex from "katex";
-import { validKnowledgeProjectionIndex } from "./catalogValidation.mjs";
+import { TWO_ENTITY_SEMANTIC_PROFILE, validKnowledgeProjectionIndex } from "./catalogValidation.mjs";
 import { compatibleCreditProjections as compatibleCreditProjectionList, creditRunAssignmentCount, formatCreditFraction, hierarchicalCreditForTransaction, isHierarchicalCreditProjection, isHierarchicalCreditRun } from "./creditPresentation.mjs";
 import { splitDisplayMath, splitInlineMath } from "./markdownMath.mjs";
 import { collectProgramContributionIds } from "./programContributions.mjs";
@@ -74,7 +74,7 @@ type Run = {
   cost: number;
   selection: { selectedNodeIds: string[]; rationale: string };
   normalizations: Array<Record<string, unknown>>;
-  state: { nodes: Record<string, KnowledgeNode>; stateDigest: string };
+  state: { nodes: Record<string, KnowledgeNode>; stateDigest: string; semanticProfile?: string };
   revisionIds: string[];
   addedRevisionIds: string[];
   changedNodeIds: string[];
@@ -82,6 +82,7 @@ type Run = {
   revisionSemantics?: "neutral-knowledge" | "legacy-adjudication";
   delta?: { contribution?: Record<string, unknown> } | Record<string, unknown>;
   runKind?: string;
+  outputProfile?: string;
   inputs?: { judgmentIds?: string[] } | null;
 };
 
@@ -1060,6 +1061,7 @@ function TypeMark({ type }: { type: string }) {
     question: "?",
     dispute: "!",
     program: "⌘",
+    "intermediate-result": "=",
     result: "=",
     proof: "∎",
     computation: "#",
@@ -1142,13 +1144,16 @@ export function KnowledgeViewer({
     [referenceTransactions, referenceJudgments],
   );
   const nodes = run.state.nodes;
+  const isTwoEntityResearchState = run.state.semanticProfile === TWO_ENTITY_SEMANTIC_PROFILE;
   const isResearchProgramState = Boolean(
+    isTwoEntityResearchState ||
     (run.delta && "contribution" in run.delta) ||
     Object.keys(nodes).some((id) => id.startsWith("thread:") || id.startsWith("item:")),
   );
   const researchProgramCount = Object.values(nodes).filter((node) => node.type === "program" && node.id !== "root").length;
   const researchThreadCount = Object.keys(nodes).filter((id) => id.startsWith("thread:")).length;
   const researchItemCount = Object.keys(nodes).filter((id) => id.startsWith("item:")).length;
+  const intermediateResultCount = Object.values(nodes).filter((node) => node.type === "intermediate-result").length;
   const selectedNode = nodes[viewerState.nodeId ?? "root"] ?? nodes.root;
   const runRevisionSet = useMemo(() => new Set(run.revisionIds), [run.revisionIds]);
   const nodeRevisions = data.revisions.filter(
@@ -1320,7 +1325,19 @@ export function KnowledgeViewer({
   function nodeKind(node: KnowledgeNode) {
     if (node.id.startsWith("thread:")) return "thread";
     if (node.id.startsWith("item:")) return node.type;
+    if (node.type === "intermediate-result") return "intermediate result";
     return node.type;
+  }
+
+  function openKnowledgeNode(nextNodeId: string) {
+    if (!nodes[nextNodeId]) return;
+    onViewerStateChange({
+      nodeId: nextNodeId,
+      transactionId: undefined,
+      directionId: undefined,
+      judgmentId: undefined,
+      detailMode: "node",
+    });
   }
 
   function openCreditKnowledgeRef(reference: CreditKnowledgeRef) {
@@ -1413,11 +1430,18 @@ export function KnowledgeViewer({
         </div>
         <div className="run-metrics">
           {isResearchProgramState ? (
-            <>
-              <span><strong>{researchProgramCount}</strong> subprograms</span>
-              <span><strong>{researchThreadCount}</strong> threads</span>
-              <span><strong>{researchItemCount}</strong> results & methods</span>
-            </>
+            isTwoEntityResearchState ? (
+              <>
+                <span><strong>{researchProgramCount}</strong> programs</span>
+                <span><strong>{intermediateResultCount}</strong> intermediate results</span>
+              </>
+            ) : (
+              <>
+                <span><strong>{researchProgramCount}</strong> subprograms</span>
+                <span><strong>{researchThreadCount}</strong> threads</span>
+                <span><strong>{researchItemCount}</strong> results & methods</span>
+              </>
+            )
           ) : (
             <>
               <span><strong>{Object.keys(nodes).length}</strong> nodes</span>
@@ -1567,7 +1591,7 @@ export function KnowledgeViewer({
             <div><span className="eyebrow">{isResearchProgramState ? "Research formation" : "Knowledge build"} · state {run.ordinal}</span><h2>{isResearchProgramState ? "Research program state" : "Knowledge state"}</h2></div>
             <label className="search-box">
               <span>⌕</span>
-              <input value={query} onChange={(event) => onViewerStateChange({ query: event.target.value })} placeholder={isResearchProgramState ? "Find a program, thread, result, or method" : "Find a claim, proof, or lemma"} />
+              <input value={query} onChange={(event) => onViewerStateChange({ query: event.target.value })} placeholder={isTwoEntityResearchState ? "Find a program or intermediate result" : isResearchProgramState ? "Find a program, thread, result, or method" : "Find a claim, proof, or lemma"} />
             </label>
           </div>
           {(query || transactionId) && (
@@ -1711,8 +1735,8 @@ export function KnowledgeViewer({
                 )}
                 <h3>Subjects</h3>
                 <div className="chip-row">{selectedNode.subjects.length ? selectedNode.subjects.map((item) => <button key={item.id} onClick={() => openTransaction(item.id)}>tx {item.ledgerPosition ?? "·"} · {short(item.id)}</button>) : <span className="muted">No transaction subjects</span>}</div>
-                <h3>Evidence</h3>
-                <div className="chip-row">{selectedNode.evidence.length ? selectedNode.evidence.map((item) => item.kind === "transaction" ? <button key={`${item.id}-${item.relation}`} onClick={() => openTransaction(item.id)}>{item.relation} · {short(item.id)}</button> : item.kind === "judgment" && referenceResolver.resolve(item.id)?.kind === "judgment" ? <button key={`${item.id}-${item.relation}`} onClick={() => openJudgment(item.id)}>judgment · {short(item.id)}</button> : <span className="reference-chip" key={`${item.id}-${item.relation}`}>{item.kind} · {short(item.id)}</span>) : <span className="muted">No linked evidence</span>}</div>
+                <h3>Evidence and knowledge links</h3>
+                <div className="chip-row">{selectedNode.evidence.length ? selectedNode.evidence.map((item) => item.kind === "transaction" ? <button key={`${item.id}-${item.relation}`} onClick={() => openTransaction(item.id)}>{item.relation} · {short(item.id)}</button> : item.kind === "judgment" && referenceResolver.resolve(item.id)?.kind === "judgment" ? <button key={`${item.id}-${item.relation}`} onClick={() => openJudgment(item.id)}>judgment · {short(item.id)}</button> : item.kind === "knowledge-node" && nodes[item.id] ? <button key={`${item.id}-${item.relation}`} onClick={() => openKnowledgeNode(item.id)}>{item.relation} · {nodes[item.id].title}</button> : <span className="reference-chip" key={`${item.id}-${item.relation}`}>{item.kind} · {short(item.id)}</span>) : <span className="muted">No linked evidence or knowledge nodes</span>}</div>
               </div>
               {selectedNode.type === "program" && (
                 <section className="program-contributions">
@@ -1851,7 +1875,7 @@ export function KnowledgeViewer({
               </section>}
               <details className="node-body" open>
                 <summary>{isResearchProgramState
-                  ? selectedNode.type === "program" ? "Program objective" : selectedNode.id.startsWith("thread:") ? "Research thread" : "Result or method"
+                  ? selectedNode.type === "program" ? "Program state" : selectedNode.type === "intermediate-result" ? "Intermediate result and support" : selectedNode.id.startsWith("thread:") ? "Research thread" : "Result or method"
                   : run.revisionSemantics === "neutral-knowledge" ? "Current knowledge" : "Current mathematical assessment"}</summary>
                 <Markdown value={selectedNode.contentMarkdown} actions={referenceActions} />
               </details>
