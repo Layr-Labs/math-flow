@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/research-builder-same-world-handoff-v2.schema.json",
+  "title": "Two-Entity Research Builder Same-World Accounting Handoff v2",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "subjectTransactionId",
+    "beforeKnowledgeStateDigest",
+    "afterKnowledgeStateDigest",
+    "topologyAlignmentDigest",
+    "sameWorldReferenceStateDigest",
+    "accountingNodeKinds",
+    "semanticLeafKinds",
+    "handoffDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "problemId": { "$ref": "#/$defs/id" },
+    "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+    "beforeKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "afterKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+    "topologyAlignmentDigest": { "$ref": "#/$defs/digest" },
+    "sameWorldReferenceStateDigest": { "$ref": "#/$defs/digest" },
+    "accountingNodeKinds": {
+      "type": "array",
+      "prefixItems": [{ "const": "program" }],
+      "items": false,
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "semanticLeafKinds": {
+      "type": "array",
+      "prefixItems": [{ "const": "intermediateResult" }],
+      "items": false,
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "handoffDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+  }
+}

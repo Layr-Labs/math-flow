@@ -502,7 +502,7 @@ def validate_research_program_state_v2(
 def validate_research_program_state_versioned(
     value: object, problem: str | None = None
 ) -> dict[str, object]:
-    """Validate either the replayable state-v1 contract or evolvable state v2."""
+    """Validate any replayable hierarchical research-state contract."""
 
     if not isinstance(value, dict):
         raise MathFlowError("research program state must be an object")
@@ -510,6 +510,12 @@ def validate_research_program_state_versioned(
         return validate_research_program_state(value, problem)
     if value.get("schemaVersion") == 2:
         return validate_research_program_state_v2(value, problem)
+    if value.get("schemaVersion") == 3:
+        # Local import avoids making the independent v7 reducer part of the
+        # state-v1/v2 topology module's import graph.
+        from .research_builder_v7 import validate_research_program_state_v3
+
+        return validate_research_program_state_v3(value, problem)
     raise MathFlowError("research program state has an unsupported version")
 
 
