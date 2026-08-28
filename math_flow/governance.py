@@ -5,6 +5,7 @@ import re
 from pathlib import Path, PurePosixPath
 from typing import Callable
 
+from .artifacts import sha256_bytes
 from .errors import MathFlowError
 from .problem_registry import (
     PROBLEM_REGISTRY_PATH,
@@ -55,6 +56,7 @@ OVERLAY_IMPLEMENTATIONS = {
     "openrouter-credit-assignment-v2",
     "openrouter-hierarchical-research-credit-v2",
     "openrouter-work-accounting-v1",
+    "openrouter-work-accounting-v2",
 }
 PROJECTION_DEPENDENCY_FIELDS = {"name", "projectionId", "artifactRole"}
 ARTIFACT_ROLE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
@@ -244,6 +246,39 @@ def validate_projection_spec(
             raise MathFlowError(
                 f"overlay projection {projection_id!r} runner does not match its spec"
             )
+        work_version_suffix = {
+            "openrouter-work-accounting-v1": "-v1",
+            "openrouter-work-accounting-v2": "-v2",
+        }.get(str(implementation))
+        if work_version_suffix is not None and not projection_id.endswith(
+            work_version_suffix
+        ):
+            raise MathFlowError(
+                f"overlay projection {projection_id!r} ID and work profile version disagree"
+            )
+        if implementation == "openrouter-work-accounting-v2":
+            policy = runner_spec.get("policy")
+            if (
+                not isinstance(policy, dict)
+                or set(policy) != {"path", "digest"}
+                or policy.get("path")
+                != "protocol/policies/hierarchical-work-remaining-accounting-v2.md"
+                or not isinstance(policy.get("digest"), str)
+                or not re.fullmatch(r"sha256:[0-9a-f]{64}", str(policy["digest"]))
+            ):
+                raise MathFlowError(
+                    f"overlay projection {projection_id!r} has an invalid V2 policy binding"
+                )
+            try:
+                policy_bytes = read_text(str(policy["path"])).encode("utf-8")
+            except (OSError, UnicodeError) as exc:
+                raise MathFlowError(
+                    f"overlay projection {projection_id!r} could not read its V2 policy"
+                ) from exc
+            if sha256_bytes(policy_bytes) != policy["digest"]:
+                raise MathFlowError(
+                    f"overlay projection {projection_id!r} V2 policy digest mismatch"
+                )
         scheduling = value.get("scheduling")
         if (
             not isinstance(scheduling, dict)

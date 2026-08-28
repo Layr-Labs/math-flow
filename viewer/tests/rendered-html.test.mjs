@@ -11,7 +11,7 @@ import { preferredTransactionDetailMode, resolveTransactionDetailMode } from "..
 import { validityReferenceGroups } from "../app/validityPresentation.mjs";
 import { creditRunSelectionPatch, historicalOverlaySelection, knowledgeRunSelectionPatch, latestOverlaySelectionPatch, projectionByIdentity, publishedHeadSelectionPatch } from "../app/projectionHeadState.mjs";
 import { applyViewerStateToSearch, parseViewerState } from "../app/viewerState.mjs";
-import { addCanonicalDecimals, formatWorkShare, isWorkAccountingProjection, isWorkAccountingRun, subtractCanonicalDecimals, validWorkAccountingRun, workAccountingForNode, workAccountingForTransaction } from "../app/workAccountingPresentation.mjs";
+import { addCanonicalDecimals, addSignedCanonicalDecimals, formatWorkShare, isWorkAccountingProjection, isWorkAccountingRun, subtractCanonicalDecimals, subtractCanonicalDecimalsSigned, terminalWorkAccountingForNode, validWorkAccountingRun, workAccountingForNode, workAccountingForTransaction } from "../app/workAccountingPresentation.mjs";
 
 const templateRoot = new URL("../", import.meta.url);
 
@@ -92,10 +92,20 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /Hierarchical work credit · separate committed overlay/);
   assert.match(viewer, /Unit: competent human researcher hours/);
   assert.match(viewer, /Raw hours are stable canonical-decimal accounting values/);
-  assert.match(viewer, /D = R − C/);
+  assert.match(viewer, /D = W− − W\+/);
+  assert.match(viewer, /No-access W−/);
+  assert.match(viewer, /New live W\+/);
+  assert.match(viewer, /Current live work parameterization/);
+  assert.match(viewer, /Direct updates/);
+  assert.match(viewer, /Propagated/);
+  assert.match(viewer, /subtree \(non-additive\)/);
+  assert.match(viewer, /topology-only/);
+  assert.match(viewer, /topology-associated/);
+  assert.match(viewer, /Direct patch previews/);
+  assert.match(viewer, /union of directly patched W− and W\+ nodes/);
   assert.match(viewer, /Prospective correction affects this history/);
-  assert.match(viewer, /Credit is assigned to this submission/);
-  assert.match(viewer, /semantic items are intentionally excluded/);
+  assert.match(viewer, /Credit belongs to the submission/);
+  assert.match(viewer, /semantic result and method items carry no numeric accounting/);
   assert.match(viewer, /Validity assessments/);
   assert.match(viewer, /Declared references \/ provenance/);
   assert.match(viewer, /Required premises/);
@@ -190,6 +200,96 @@ test("derives work-accounting shares exactly without floating point", async () =
     ...run,
     evaluations: [{ ...run.evaluations[0], workReductionHours: "0.4" }],
   }), false, "R-C tampering fails catalog validation");
+});
+
+test("validates detailed W-minus/W-plus node effects while retaining V1", async () => {
+  const fixture = JSON.parse(await readFile(
+    new URL("fixtures/work-accounting-overlay-v1.json", import.meta.url),
+    "utf8",
+  ));
+  const run = fixture.runs[0];
+  const detailedEvaluations = run.evaluations.map((evaluation) => {
+    const annotation = evaluation.nodeAnnotations[0];
+    const noExpected = evaluation.workReductionHours === "0.3" ? "1.55" : "2";
+    const noDirect = evaluation.workReductionHours === "0.3" ? "3.1" : "2";
+    return {
+      ...evaluation,
+      noAccessWorkHours: evaluation.exAnteWorkHours,
+      newLiveWorkHours: evaluation.exPostWorkHours,
+      directUpdateCount: 1,
+      propagatedEffectCount: 0,
+      topologyOnlyCount: 0,
+      nodeEffectsDigest: `sha256:${"9".repeat(64)}`,
+      nodeEffects: [{
+        nodeRef: annotation.nodeRef,
+        knowledgeNodeDigest: annotation.knowledgeNodeDigest,
+        knowledgeStatus: "active",
+        effectKind: "direct",
+        directUpdateBranches: ["no-access", "new-live"],
+        topologyRequiredBranches: [],
+        topologyReasons: [],
+        topologyRequirements: [],
+        topologyClassification: "none",
+        topologyOnly: false,
+        primitiveDifferenceFields: ["directWorkHours"],
+        derivedDifferenceFields: ["conditionalSubtreeWorkHours", "expectedDirectWorkHours"],
+        noAccess: {
+          directWorkHours: noDirect,
+          conditionalIncidence: annotation.conditionalIncidence,
+          globalReach: annotation.globalReach,
+          conditionalSubtreeWorkHours: noDirect,
+          expectedDirectWorkHours: noExpected,
+        },
+        newLive: {
+          directWorkHours: annotation.directWorkHours,
+          conditionalIncidence: annotation.conditionalIncidence,
+          globalReach: annotation.globalReach,
+          conditionalSubtreeWorkHours: annotation.conditionalSubtreeWorkHours,
+          expectedDirectWorkHours: annotation.expectedDirectWorkHours,
+        },
+        noAccessPatch: {
+          changes: { directWorkHours: noDirect },
+          rationalePreview: "No-access estimate.",
+          rationaleTruncated: false,
+          evidenceRefPreviews: [evaluation.subjectTransactionId],
+          evidenceRefCount: 1,
+          evidenceRefsTruncated: false,
+        },
+        newLivePatch: {
+          changes: { directWorkHours: annotation.directWorkHours },
+          rationalePreview: "New live estimate.",
+          rationaleTruncated: false,
+          evidenceRefPreviews: [evaluation.subjectTransactionId],
+          evidenceRefCount: 1,
+          evidenceRefsTruncated: false,
+        },
+        workReductionHours: evaluation.workReductionHours,
+      }],
+    };
+  });
+  const detailed = {
+    ...run,
+    evaluations: detailedEvaluations,
+    terminalNodeAnnotations: [
+      { ...run.evaluations[1].nodeAnnotations[0], knowledgeStatus: "active" },
+      { ...run.evaluations[0].nodeAnnotations[0], knowledgeStatus: "active" },
+    ],
+  };
+  assert.equal(validWorkAccountingRun(run), true, "published V1 remains readable");
+  assert.equal(validWorkAccountingRun(detailed), true);
+  assert.equal(addSignedCanonicalDecimals(["5", "-3.5", "0.5"]), "2");
+  assert.equal(subtractCanonicalDecimalsSigned("1.25", "2"), "-0.75");
+  assert.equal(
+    terminalWorkAccountingForNode(detailed, { type: "program", id: "root" })?.directWorkHours,
+    "1.4",
+  );
+  assert.equal(validWorkAccountingRun({
+    ...detailed,
+    evaluations: [{
+      ...detailed.evaluations[0],
+      nodeEffects: [{ ...detailed.evaluations[0].nodeEffects[0], workReductionHours: "-0.3" }],
+    }, detailed.evaluations[1]],
+  }), false, "signed node effects must exactly sum to D");
 });
 
 test("separates validity-v3 declared references from judge-selected premises", () => {

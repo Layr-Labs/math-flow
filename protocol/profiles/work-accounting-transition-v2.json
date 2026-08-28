@@ -1,0 +1,36 @@
+{
+  "id": "math-flow/work-accounting-transition-v2",
+  "description": "Additive per-submission A-first work accounting: materialize and freeze the live with-access W+ state, then estimate the direct no-access W- state under an actor epistemic guard.",
+  "requiredArtifactRoles": [
+    "submission-evidence-manifest",
+    "counterfactual-safe-facts",
+    "work-impact-context",
+    "frozen-with-access-candidate",
+    "safe-facts-request",
+    "safe-facts-response",
+    "with-access-request",
+    "with-access-response",
+    "no-access-request",
+    "no-access-response",
+    "with-access-work-patch",
+    "no-access-work-patch",
+    "submission-work-evaluation"
+  ],
+  "schemas": [
+    "protocol/schemas/submission-evidence-manifest-v1.schema.json",
+    "protocol/schemas/counterfactual-safe-facts-v1.schema.json",
+    "protocol/schemas/work-impact-context-v1.schema.json",
+    "protocol/schemas/frozen-with-access-candidate-v2.schema.json",
+    "protocol/schemas/work-projection-request-v2.schema.json",
+    "protocol/schemas/work-accounting-patch-v1.schema.json",
+    "protocol/schemas/submission-work-value-v1.schema.json",
+    "protocol/schemas/work-projection-bundle-v2.schema.json"
+  ],
+  "reducer": "per-submission-work-accounting-v1",
+  "providerStages": ["safe-facts", "with-access", "no-access"],
+  "accountingUnit": "competent-human-researcher-hour",
+  "referenceRule": "same-world-post-topology",
+  "estimateForm": "point-estimate",
+  "liveStateRule": "freeze-with-access-before-no-access",
+  "retryRule": "retain-validated-with-access-reestimate-no-access"
+}

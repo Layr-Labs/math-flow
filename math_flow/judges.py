@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import json
 import re
-from pathlib import Path
+from collections.abc import Mapping
+from pathlib import Path, PurePosixPath
 
 from . import __version__
+from .artifacts import sha256_bytes
 from .errors import MathFlowError
 from .openrouter import (
     OpenRouterTransport,
@@ -38,6 +40,7 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-hierarchical-research-builder-v6",
     "openrouter-hierarchical-research-credit-v2",
     "openrouter-work-accounting-v1",
+    "openrouter-work-accounting-v2",
 }
 SUPPORTED_INPUT_BUILDERS = {
     "ledger-index-v1",
@@ -55,6 +58,7 @@ SUPPORTED_INPUT_BUILDERS = {
     "accepted-validity-batch-program-state-v5",
     "accepted-validity-submission-program-state-v6",
     "counterfactual-work-transition-v1",
+    "counterfactual-work-transition-v2",
     "locked-research-history-v2",
 }
 SUPPORTED_INVOCATION_ADAPTERS = {"local-v1", "openrouter-chat-completions-v1"}
@@ -78,6 +82,7 @@ SUPPORTED_OUTPUT_PROFILES = {
     "math-flow/hierarchical-research-v6",
     "math-flow/hierarchical-research-credit-v2",
     "math-flow/work-accounting-transition-v1",
+    "math-flow/work-accounting-transition-v2",
 }
 SUPPORTED_OUTPUT_ADAPTERS = {
     "flat-json-v1",
@@ -140,6 +145,29 @@ TEXT_ARTIFACT_SUFFIXES = {
 }
 MAX_ARTIFACT_CHARS = 50_000
 MAX_EVIDENCE_CHARS = 300_000
+
+
+def _validate_work_v2_policy_bytes(
+    spec_path: Path, policy: Mapping[str, object]
+) -> None:
+    """Resolve and verify the exact repository policy pinned by work V2."""
+
+    relative = str(policy["path"])
+    parts = PurePosixPath(relative).parts
+    policy_path: Path | None = None
+    for ancestor in spec_path.resolve().parents:
+        candidate = ancestor.joinpath(*parts)
+        if candidate.exists() or candidate.is_symlink():
+            policy_path = candidate
+            break
+    if policy_path is None or policy_path.is_symlink() or not policy_path.is_file():
+        raise MathFlowError("work-accounting V2 policy file is missing or unsafe")
+    try:
+        actual = sha256_bytes(policy_path.read_bytes())
+    except OSError as exc:
+        raise MathFlowError(f"could not read work-accounting V2 policy: {exc}") from exc
+    if actual != policy["digest"]:
+        raise MathFlowError("work-accounting V2 policy digest mismatch")
 
 
 def load_judge_spec(path: Path) -> dict[str, object]:
@@ -290,6 +318,12 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputAdapter": "structured-work-estimation-v1",
             "reducer": "per-submission-work-accounting-v1",
         },
+        "openrouter-work-accounting-v2": {
+            "inputBuilder": "counterfactual-work-transition-v2",
+            "outputProfile": "math-flow/work-accounting-transition-v2",
+            "outputAdapter": "structured-work-estimation-v1",
+            "reducer": "per-submission-work-accounting-v1",
+        },
     }
     expected_components = hierarchical_components.get(str(spec["implementation"]))
     if expected_components is not None:
@@ -345,6 +379,7 @@ def load_judge_spec(path: Path) -> dict[str, object]:
         "openrouter-hierarchical-research-builder-v5",
         "openrouter-hierarchical-research-builder-v6",
         "openrouter-work-accounting-v1",
+        "openrouter-work-accounting-v2",
     }:
         for field in ("model", "systemPrompt", "rubric", "parameters", "provider"):
             if field not in spec:
@@ -394,6 +429,7 @@ def load_judge_spec(path: Path) -> dict[str, object]:
     if spec["implementation"] in {
         "openrouter-hierarchical-research-builder-v6",
         "openrouter-work-accounting-v1",
+        "openrouter-work-accounting-v2",
     }:
         retry = spec.get("retryPolicy")
         if (
@@ -431,17 +467,36 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             )
         ):
             raise MathFlowError("governed judge has invalid role-specific prompts")
-    if spec["implementation"] == "openrouter-work-accounting-v1":
+    if spec["implementation"] in {
+        "openrouter-work-accounting-v1",
+        "openrouter-work-accounting-v2",
+    }:
         if set(spec.get("stages", {})) != {"safe-facts", "no-access", "with-access"}:
             raise MathFlowError("work-accounting judge must configure all three roles")
-        if spec.get("accountingPolicy") != {
+        expected_policy = {
             "unit": "competent-human-researcher-hour",
             "referenceRule": "same-world-post-topology",
             "estimateForm": "point-estimate",
             "subject": "exactly-one-accepted-submission",
             "positiveReduction": "enforced-by-trusted-reducer-without-clamping",
-        }:
+        }
+        if spec["implementation"] == "openrouter-work-accounting-v2":
+            expected_policy["estimationOrder"] = "with-access-then-no-access"
+            expected_policy["liveStateAuthority"] = "frozen-with-access-candidate"
+        if spec.get("accountingPolicy") != expected_policy:
             raise MathFlowError("work-accounting judge has an invalid accounting policy")
+        if spec["implementation"] == "openrouter-work-accounting-v2":
+            policy = spec.get("policy")
+            if (
+                not isinstance(policy, dict)
+                or set(policy) != {"path", "digest"}
+                or policy.get("path")
+                != "protocol/policies/hierarchical-work-remaining-accounting-v2.md"
+                or not isinstance(policy.get("digest"), str)
+                or not re.fullmatch(r"sha256:[0-9a-f]{64}", str(policy["digest"]))
+            ):
+                raise MathFlowError("work-accounting V2 judge must pin its V2 policy")
+            _validate_work_v2_policy_bytes(path, policy)
     return spec
 
 

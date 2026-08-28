@@ -192,6 +192,20 @@ def baseline_state() -> tuple[dict[str, object], dict[str, object], dict[str, ob
     return knowledge, root_contract, state
 
 
+def knowledge_with_completed_direct_line() -> dict[str, object]:
+    knowledge = copy.deepcopy(accepted_knowledge_state())
+    thread = knowledge["threads"]["root/approach/direct-line"]
+    thread["status"] = "completed"
+    thread["expectedExposure"] = "0"
+    thread_content = {key: value for key, value in thread.items() if key != "digest"}
+    thread["digest"] = "sha256:" + sha256_json(thread_content)
+    state_content = {
+        key: value for key, value in knowledge.items() if key != "stateDigest"
+    }
+    knowledge["stateDigest"] = "sha256:" + sha256_json(state_content)
+    return knowledge
+
+
 def patch(
     state: dict[str, object],
     knowledge: dict[str, object],
@@ -299,6 +313,95 @@ class WorkAccountingTests(unittest.TestCase):
             [{"kind": "thread", "id": "root/approach/direct-line"}],
         )
         validate_submission_work_value(evaluation)
+
+    def test_no_access_retains_work_on_post_submission_completed_node(self) -> None:
+        base_knowledge, root_contract, state = baseline_state()
+        target_knowledge = knowledge_with_completed_direct_line()
+        no_access = bind_patch_to_state(
+            make_work_accounting_patch(
+                problem_id="demo",
+                subject_transaction_id=TX,
+                evaluation_mode="no-access",
+                root_contract_digest=str(root_contract["rootContractDigest"]),
+                base_accounting_state_digest=str(state["stateDigest"]),
+                base_knowledge_state_digest=str(base_knowledge["stateDigest"]),
+                target_knowledge_state_digest=str(target_knowledge["stateDigest"]),
+                topology_alignment_digest=None,
+                updates=[],
+            ),
+            state,
+        )
+        with_access = bind_patch_to_state(
+            make_work_accounting_patch(
+                problem_id="demo",
+                subject_transaction_id=TX,
+                evaluation_mode="with-access",
+                root_contract_digest=str(root_contract["rootContractDigest"]),
+                base_accounting_state_digest=str(state["stateDigest"]),
+                base_knowledge_state_digest=str(base_knowledge["stateDigest"]),
+                target_knowledge_state_digest=str(target_knowledge["stateDigest"]),
+                topology_alignment_digest=None,
+                updates=[
+                    {
+                        "nodeRef": {
+                            "kind": "thread",
+                            "id": "root/approach/direct-line",
+                        },
+                        "changes": {
+                            "directWorkHours": "0",
+                            "conditionalIncidence": "0",
+                        },
+                        "rationale": "Access completes this research thread.",
+                        "evidenceRefs": [TX],
+                    }
+                ],
+            ),
+            state,
+        )
+
+        no_state, with_state, evaluation = materialize_submission_work_value(
+            base_state=state,
+            no_access_patch=no_access,
+            with_access_patch=with_access,
+            root_contract=root_contract,
+            base_knowledge_state=base_knowledge,
+            target_knowledge_state=target_knowledge,
+        )
+
+        no_annotation = next(
+            item
+            for item in no_state["annotations"]
+            if item["nodeRef"]
+            == {"kind": "thread", "id": "root/approach/direct-line"}
+        )
+        with_annotation = next(
+            item
+            for item in with_state["annotations"]
+            if item["nodeRef"]
+            == {"kind": "thread", "id": "root/approach/direct-line"}
+        )
+        self.assertEqual(
+            (no_annotation["directWorkHours"], no_annotation["conditionalIncidence"]),
+            ("10", "0.8"),
+        )
+        self.assertEqual(
+            (
+                with_annotation["directWorkHours"],
+                with_annotation["conditionalIncidence"],
+            ),
+            ("0", "0"),
+        )
+        self.assertEqual(evaluation["workValueHours"], "4")
+
+        with self.assertRaisesRegex(MathFlowError, "must have zero direct work"):
+            build_work_accounting_state(
+                root_contract=root_contract,
+                knowledge_state=target_knowledge,
+                annotations=annotations(),
+                evaluation_mode="with-access",
+                subject_transaction_id=TX,
+                processed_submission_ids=[TX],
+            )
 
     def test_nonpositive_counterfactual_is_rejected_without_clamping(self) -> None:
         knowledge, root_contract, state = baseline_state()

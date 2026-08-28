@@ -15,6 +15,7 @@ from math_flow.governance import validate_projection_registry, validate_projecti
 from math_flow.governed_providers import (
     OpenRouterResearchBuilderV6Provider,
     OpenRouterWorkProjectionProvider,
+    OpenRouterWorkProjectionProviderV2,
     _builder_transition_schema,
     _primitive_patch_schema,
     _safe_facts_schema,
@@ -25,7 +26,11 @@ from math_flow.judges import load_judge_spec
 from math_flow.research_state import empty_research_program_state
 from math_flow.research_topology import derive_research_topology_alignment
 from math_flow.repository import sha256_json
-from math_flow.work_projection import SubmissionEvidenceFile, run_work_projection_bundle
+from math_flow.work_projection import (
+    PROFILE_V2,
+    SubmissionEvidenceFile,
+    run_work_projection_bundle,
+)
 from tests.test_research_builder_v6 import (
     JUDGMENT_A,
     TX_A,
@@ -45,6 +50,7 @@ from tests.test_work_projection import (
 
 ROOT = Path(__file__).resolve().parents[1]
 WORK_SPEC = ROOT / "protocol/judges/openrouter-work-accounting-v1.json"
+WORK_SPEC_V2 = ROOT / "protocol/judges/openrouter-work-accounting-v2.json"
 BUILDER_SPEC = ROOT / "protocol/judges/openrouter-hierarchical-research-builder-v6.json"
 
 
@@ -280,6 +286,246 @@ class GovernedProviderTests(unittest.TestCase):
         self.assertNotIn("credit", rendered_schema.lower())
         self.assertNotIn("totalWork", rendered_schema)
         self.assertIn("directWorkHours", rendered_schema)
+
+    def test_v2_governed_provider_uses_a_first_order_and_numeric_only_w_plus_binding(self) -> None:
+        fixture = self._work_fixture()
+        transport = SequentialTransport(
+            [
+                _response(_safe_response(), ordinal=1),
+                _response(_patch("2", "with-access"), ordinal=2),
+                _response(_patch("8", "no-access"), ordinal=3),
+            ]
+        )
+        provider = OpenRouterWorkProjectionProviderV2(
+            load_judge_spec(WORK_SPEC_V2), transport=transport
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            manifest = run_work_projection_bundle(
+                output_dir=Path(temporary) / "bundle",
+                provider=provider,
+                subject_transaction_id=fixture.claims[0]["transactionId"],
+                root_contract=fixture.contract,
+                base_knowledge_state=fixture.base_knowledge,
+                target_knowledge_state=fixture.target_knowledge,
+                base_accounting_state=fixture.base_accounting,
+                topology_alignment=fixture.alignment,
+                evidence_manifest=fixture.evidence_manifest,
+                evidence_chunks=fixture.evidence_chunks,
+                accepted_claim_refs=fixture.claims,
+                output_profile=PROFILE_V2,
+            )
+        self.assertEqual(manifest["outputProfile"], PROFILE_V2)
+        self.assertEqual(
+            [record["stage"] for record in provider.invocation_records],
+            ["safe-facts", "with-access", "no-access"],
+        )
+        no_user_data = transport.requests[2]["messages"][-1]["content"]
+        self.assertIn('"frozenWithAccessState"', no_user_data)
+        self.assertNotIn('"withAccessPatch"', no_user_data)
+        self.assertNotIn("RAW-ACTIONABLE-EVIDENCE", no_user_data)
+        self.assertNotIn('"evidenceManifest"', no_user_data)
+
+    def test_v2_semantic_retries_preserve_the_accepted_frozen_w_plus(self) -> None:
+        fixture = self._work_fixture()
+        copied_safe_facts = _safe_response()
+        copied_safe_facts["facts"][0]["condition"] = SECRET
+        outside_context = _patch("2", "with-access")
+        outside_context["updates"][0]["nodeRef"]["id"] = "root/outside-context"
+        outside_no_access = _patch("8", "no-access")
+        outside_no_access["updates"][0]["nodeRef"]["id"] = "root/outside-context"
+        transport = SequentialTransport(
+            [
+                _response(copied_safe_facts, ordinal=1),
+                _response(_safe_response(), ordinal=2),
+                _response(outside_context, ordinal=3),
+                _response(_patch("2", "with-access"), ordinal=4),
+                _response(outside_no_access, ordinal=5),
+                _response(_patch("8", "no-access"), ordinal=6),
+            ]
+        )
+        provider = OpenRouterWorkProjectionProviderV2(
+            load_judge_spec(WORK_SPEC_V2), transport=transport
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            run_work_projection_bundle(
+                output_dir=Path(temporary) / "bundle",
+                provider=provider,
+                subject_transaction_id=fixture.claims[0]["transactionId"],
+                root_contract=fixture.contract,
+                base_knowledge_state=fixture.base_knowledge,
+                target_knowledge_state=fixture.target_knowledge,
+                base_accounting_state=fixture.base_accounting,
+                topology_alignment=fixture.alignment,
+                evidence_manifest=fixture.evidence_manifest,
+                evidence_chunks=fixture.evidence_chunks,
+                accepted_claim_refs=fixture.claims,
+                output_profile=PROFILE_V2,
+            )
+        self.assertEqual(
+            [record["stage"] for record in provider.invocation_records],
+            ["safe-facts", "with-access", "no-access"],
+        )
+        self.assertEqual(
+            [record["attempts"] for record in provider.invocation_records],
+            [2, 2, 2],
+        )
+        self.assertTrue(
+            all(
+                [item["outcome"] for item in record["attemptRecords"]]
+                == ["validation-rejected", "accepted"]
+                for record in provider.invocation_records
+            )
+        )
+
+        def frozen_input(payload: dict[str, object]) -> str:
+            messages = payload["messages"]
+            assert isinstance(messages, list)
+            return next(
+                str(message["content"])
+                for message in messages
+                if isinstance(message, dict)
+                and "frozenWithAccessState" in str(message.get("content"))
+            )
+
+        self.assertEqual(
+            frozen_input(transport.requests[4]), frozen_input(transport.requests[5])
+        )
+        self.assertIn("impact context", transport.requests[5]["messages"][-1]["content"])
+        self.assertNotIn(SECRET, transport.requests[1]["messages"][-1]["content"])
+
+    def test_v2_nonpositive_delta_never_enters_provider_retry_feedback(self) -> None:
+        fixture = self._work_fixture()
+        transport = SequentialTransport(
+            [
+                _response(_safe_response(), ordinal=1),
+                _response(_patch("2", "with-access"), ordinal=2),
+                _response(_patch("2", "no-access"), ordinal=3),
+            ]
+        )
+        provider = OpenRouterWorkProjectionProviderV2(
+            load_judge_spec(WORK_SPEC_V2), transport=transport
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            with self.assertRaisesRegex(MathFlowError, "strictly positive"):
+                run_work_projection_bundle(
+                    output_dir=Path(temporary) / "bundle",
+                    provider=provider,
+                    subject_transaction_id=fixture.claims[0]["transactionId"],
+                    root_contract=fixture.contract,
+                    base_knowledge_state=fixture.base_knowledge,
+                    target_knowledge_state=fixture.target_knowledge,
+                    base_accounting_state=fixture.base_accounting,
+                    topology_alignment=fixture.alignment,
+                    evidence_manifest=fixture.evidence_manifest,
+                    evidence_chunks=fixture.evidence_chunks,
+                    accepted_claim_refs=fixture.claims,
+                    output_profile=PROFILE_V2,
+                )
+        self.assertEqual(len(transport.requests), 3)
+        self.assertEqual(provider.invocation_records[-1]["stage"], "no-access")
+        self.assertEqual(provider.invocation_records[-1]["attempts"], 1)
+        self.assertNotIn(
+            "strictly positive", json.dumps(transport.requests, sort_keys=True)
+        )
+
+    def test_v2_semantic_retry_entry_point_rejects_v1_request_profile(self) -> None:
+        fixture = self._work_fixture()
+        v1_transport = SequentialTransport(
+            [
+                _response(_safe_response(), ordinal=1),
+                _response(_patch("8", "no-access"), ordinal=2),
+                _response(_patch("2", "with-access"), ordinal=3),
+            ]
+        )
+        v1_provider = OpenRouterWorkProjectionProvider(
+            load_judge_spec(WORK_SPEC), transport=v1_transport
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "bundle"
+            run_work_projection_bundle(
+                output_dir=output,
+                provider=v1_provider,
+                subject_transaction_id=fixture.claims[0]["transactionId"],
+                root_contract=fixture.contract,
+                base_knowledge_state=fixture.base_knowledge,
+                target_knowledge_state=fixture.target_knowledge,
+                base_accounting_state=fixture.base_accounting,
+                topology_alignment=fixture.alignment,
+                evidence_manifest=fixture.evidence_manifest,
+                evidence_chunks=fixture.evidence_chunks,
+                accepted_claim_refs=fixture.claims,
+            )
+            request = json.loads(
+                (output / "stages/safe-facts/request.json").read_text()
+            )
+        v2_transport = SequentialTransport([])
+        v2_provider = OpenRouterWorkProjectionProviderV2(
+            load_judge_spec(WORK_SPEC_V2), transport=v2_transport
+        )
+        with self.assertRaisesRegex(MathFlowError, "stage does not match"):
+            v2_provider.call_with_semantic_validation(
+                stage="safe-facts",
+                request=request,
+                evidence_files=(),
+                validate=lambda value: value,
+            )
+        self.assertEqual(v2_transport.requests, [])
+
+    def test_v2_policy_digest_is_verified_for_provider_and_governance_resolution(self) -> None:
+        policy_relative = (
+            "protocol/policies/hierarchical-work-remaining-accounting-v2.md"
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            spec_path = root / "protocol/judges/openrouter-work-accounting-v2.json"
+            policy_path = root / policy_relative
+            spec_path.parent.mkdir(parents=True)
+            policy_path.parent.mkdir(parents=True)
+            spec_path.write_bytes(WORK_SPEC_V2.read_bytes())
+            policy_path.write_bytes((ROOT / policy_relative).read_bytes())
+            self.assertEqual(
+                load_judge_spec(spec_path)["implementation"],
+                "openrouter-work-accounting-v2",
+            )
+            policy_path.write_bytes(policy_path.read_bytes() + b"\nTampered.\n")
+            with self.assertRaisesRegex(MathFlowError, "policy digest mismatch"):
+                load_judge_spec(spec_path)
+
+        overlay = {
+            "schemaVersion": 2,
+            "id": "candidate-work-accounting-v2",
+            "description": "Inactive A-first candidate only.",
+            "status": "disabled",
+            "engine": "overlay-repository-v1",
+            "allowedProblems": ["*"],
+            "runner": {
+                "implementation": "openrouter-work-accounting-v2",
+                "spec": "protocol/judges/openrouter-work-accounting-v2.json",
+            },
+            "dependencies": [
+                {
+                    "name": "knowledge",
+                    "projectionId": "candidate-research-v6",
+                    "artifactRole": "knowledge-state",
+                }
+            ],
+            "scheduling": {"minimumIntervalSeconds": 300},
+        }
+        reader = lambda relative: (ROOT / relative).read_text(encoding="utf-8")
+        self.assertEqual(
+            validate_projection_spec(overlay, overlay["id"], reader), overlay
+        )
+
+        def tampered_reader(relative: str) -> str:
+            value = reader(relative)
+            return value + "\nTampered.\n" if relative == policy_relative else value
+
+        with self.assertRaisesRegex(MathFlowError, "policy digest mismatch"):
+            validate_projection_spec(overlay, overlay["id"], tampered_reader)
+        wrong_lane = copy.deepcopy(overlay)
+        wrong_lane["id"] = "candidate-work-accounting-v1"
+        with self.assertRaisesRegex(MathFlowError, "profile version disagree"):
+            validate_projection_spec(wrong_lane, wrong_lane["id"], reader)
 
     def test_automatic_retry_rejects_truncation_without_manual_path(self) -> None:
         transport = SequentialTransport(
@@ -803,16 +1049,21 @@ class GovernedProviderTests(unittest.TestCase):
         overlay_admission = (
             ROOT / "protocol/projections/openrouter-work-accounting-v1.json"
         )
+        v2_overlay_admission = (
+            ROOT / "protocol/projections/openrouter-work-accounting-v2.json"
+        )
         registry = validate_projection_registry(ROOT)
         self.assertEqual(
             registry,
             {
                 "projections": 9
                 + int(serial_admission.exists())
-                + int(overlay_admission.exists()),
+                + int(overlay_admission.exists())
+                + int(v2_overlay_admission.exists()),
                 "active": 2
                 + int(serial_admission.exists())
-                + int(overlay_admission.exists()),
+                + int(overlay_admission.exists())
+                + int(v2_overlay_admission.exists()),
             },
         )
         registered = "\n".join(
@@ -830,6 +1081,17 @@ class GovernedProviderTests(unittest.TestCase):
             self.assertIn("openrouter-work-accounting-v1", registered)
         else:
             self.assertNotIn("openrouter-work-accounting-v1", registered)
+        if v2_overlay_admission.exists():
+            self.assertEqual(
+                v2_overlay_admission.read_bytes(),
+                (
+                    ROOT
+                    / "protocol/runtime/active-openrouter-work-accounting-v2-projection.json"
+                ).read_bytes(),
+            )
+            self.assertIn("openrouter-work-accounting-v2", registered)
+        else:
+            self.assertNotIn("openrouter-work-accounting-v2", registered)
         if serial_admission.exists():
             self.assertIn("openrouter-hierarchical-research-builder-v6", registered)
         else:

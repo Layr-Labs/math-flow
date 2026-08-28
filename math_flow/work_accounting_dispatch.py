@@ -15,6 +15,8 @@ from .governance import validate_projection_spec
 from .judges import load_judge_spec
 from .repository import ledger, resolve_commit, sha256_json
 from .work_accounting_pipeline import validate_work_accounting_pipeline_state
+from .work_projection import PROFILE as PROFILE_V1
+from .work_projection import PROFILE_V2
 from .work_accounting_schedule import validate_work_accounting_schedule
 
 
@@ -58,6 +60,36 @@ RETRY_FIELDS = {
     "manualReview",
 }
 BATCH_FIELDS = {"maximumSubjectsPerRun", "semanticEffect"}
+
+HOSTED_RUNTIME_IDENTITIES = {
+    ("active", "bssc-work-accounting-hosted-v1"): {
+        "production": True,
+        "projectionId": "openrouter-work-accounting-v1",
+        "projectionImplementation": "openrouter-work-accounting-v1",
+        "workProviderImplementation": "openrouter-work-accounting-v1",
+        "hostedRunnerImplementation": "bssc-work-accounting-hosted-v1",
+        "runnerImplementation": "work-accounting-pipeline-v1",
+        "outputProfile": PROFILE_V1,
+    },
+    ("inactive", "inactive-work-accounting-hosted-v1"): {
+        "production": False,
+        "projectionId": "openrouter-work-accounting-v1",
+        "projectionImplementation": "openrouter-work-accounting-v1",
+        "workProviderImplementation": "openrouter-work-accounting-v1",
+        "hostedRunnerImplementation": None,
+        "runnerImplementation": "work-accounting-pipeline-v1",
+        "outputProfile": PROFILE_V1,
+    },
+    ("active", "bssc-work-accounting-hosted-v2"): {
+        "production": True,
+        "projectionId": "openrouter-work-accounting-v2",
+        "projectionImplementation": "openrouter-work-accounting-v2",
+        "workProviderImplementation": "openrouter-work-accounting-v2",
+        "hostedRunnerImplementation": "bssc-work-accounting-hosted-v2",
+        "runnerImplementation": "work-accounting-pipeline-v2",
+        "outputProfile": PROFILE_V2,
+    },
+}
 
 SNAPSHOT_FIELDS = {
     "schemaVersion",
@@ -224,6 +256,23 @@ def _runtime_policy_core(config: Mapping[str, object]) -> dict[str, object]:
     return result
 
 
+def work_projection_profile_for_hosted_config(
+    config: Mapping[str, object],
+) -> str:
+    """Resolve the trusted work profile from one exact hosted lane identity."""
+
+    status = config.get("status")
+    config_id = config.get("id")
+    runtime = (
+        HOSTED_RUNTIME_IDENTITIES.get((status, config_id))
+        if isinstance(status, str) and isinstance(config_id, str)
+        else None
+    )
+    if runtime is None or config.get("projectionId") != runtime["projectionId"]:
+        raise MathFlowError("hosted work-accounting profile identity is invalid")
+    return str(runtime["outputProfile"])
+
+
 def load_work_accounting_hosted_config(
     root: Path, path: Path
 ) -> dict[str, object]:
@@ -240,16 +289,24 @@ def load_work_accounting_hosted_config(
     }:
         raise MathFlowError("hosted work-accounting config has an invalid envelope")
     production = set(config) == PRODUCTION_CONFIG_FIELDS
-    expected_identity = (
-        ("active", "bssc-work-accounting-hosted-v1")
-        if production
-        else ("inactive", "inactive-work-accounting-hosted-v1")
+    status = config.get("status")
+    config_id = config.get("id")
+    runtime = (
+        HOSTED_RUNTIME_IDENTITIES.get((status, config_id))
+        if isinstance(status, str) and isinstance(config_id, str)
+        else None
     )
-    if config.get("schemaVersion") != 1 or (
-        config.get("status"), config.get("id")
-    ) != expected_identity:
+    if (
+        config.get("schemaVersion") != 1
+        or runtime is None
+        or bool(runtime["production"]) != production
+    ):
         raise MathFlowError("hosted work-accounting config identity is invalid")
-    _require_identifier(config.get("projectionId"), "hosted work projection ID")
+    if (
+        _require_identifier(config.get("projectionId"), "hosted work projection ID")
+        != runtime["projectionId"]
+    ):
+        raise MathFlowError("hosted work projection ID is invalid for its runtime")
     _require_identifier(
         config.get("knowledgeProjectionId"), "hosted knowledge projection ID"
     )
@@ -277,7 +334,7 @@ def load_work_accounting_hosted_config(
     if (
         projection_binding.get("id") != config["projectionId"]
         or projection.get("runner", {}).get("implementation")
-        != "openrouter-work-accounting-v1"
+        != runtime["projectionImplementation"]
         or projection.get("allowedProblems") != ["bssc-sum-capacity"]
         or projection_binding.get("digest") != _digest(projection)
         or projection.get("status") != ("active" if production else "disabled")
@@ -345,7 +402,7 @@ def load_work_accounting_hosted_config(
         hosted_runner_path = root / relative_hosted_runner
         if (
             hosted_runner.get("implementation")
-            != "bssc-work-accounting-hosted-v1"
+            != runtime["hostedRunnerImplementation"]
             or not hosted_runner_path.is_file()
             or hosted_runner.get("digest")
             != sha256_bytes(hosted_runner_path.read_bytes())
@@ -357,7 +414,7 @@ def load_work_accounting_hosted_config(
             "builderSpec",
             "openrouter-hierarchical-research-builder-v6",
         ),
-        ("workProviderSpec", "openrouter-work-accounting-v1"),
+        ("workProviderSpec", str(runtime["workProviderImplementation"])),
     )
     for field, implementation in expected_specs:
         binding = config.get(field)
@@ -388,7 +445,7 @@ def load_work_accounting_hosted_config(
     relative_runner = _repository_path(runner.get("path"), "hosted runner path")
     runner_path = root / relative_runner
     if (
-        runner.get("implementation") != "work-accounting-pipeline-v1"
+        runner.get("implementation") != runtime["runnerImplementation"]
         or not runner_path.is_file()
         or runner.get("digest") != sha256_bytes(runner_path.read_bytes())
     ):
@@ -425,6 +482,7 @@ def load_work_accounting_hosted_config(
         raise MathFlowError("hosted runtime policy digest mismatch")
     if config.get("configDigest") != _digest(_without(config, "configDigest")):
         raise MathFlowError("hosted config digest mismatch")
+    work_projection_profile_for_hosted_config(config)
     return config
 
 

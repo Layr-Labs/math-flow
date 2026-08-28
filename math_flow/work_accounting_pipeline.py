@@ -43,8 +43,11 @@ from .work_accounting_schedule import (
     validate_work_accounting_transition_claim,
 )
 from .work_projection import (
+    PROFILE as WORK_PROJECTION_PROFILE_V1,
+    PROFILE_V2 as WORK_PROJECTION_PROFILE_V2,
     WorkProjectionProvider,
     load_work_projection_bundle,
+    prepare_frozen_with_access_candidate_v2,
     run_work_projection_bundle,
 )
 
@@ -53,6 +56,7 @@ DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 GIT_SHA = re.compile(r"^[0-9a-f]{40}$")
 IDENTIFIER = re.compile(r"^[a-z0-9][a-z0-9/_-]*$")
 SAFE_KEY_PART = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+WORK_PROJECTION_DESCENDANT_DEPTH = 1
 
 PIPELINE_FIELDS = {
     "schemaVersion",
@@ -1178,6 +1182,50 @@ def _work_index_key(automatic_retry_key: str) -> str:
     )
 
 
+def _frozen_with_access_candidate_key(
+    automatic_retry_key: str,
+    *,
+    output_profile: str,
+    descendant_depth: int,
+) -> str:
+    """Address one V2 ``W+`` candidate by its complete stable run identity."""
+
+    _require_digest(automatic_retry_key, "automatic retry key")
+    if output_profile != WORK_PROJECTION_PROFILE_V2:
+        raise MathFlowError("frozen W+ candidate key requires the V2 output profile")
+    if (
+        isinstance(descendant_depth, bool)
+        or not isinstance(descendant_depth, int)
+        or not 0 <= descendant_depth <= 4
+    ):
+        raise MathFlowError("frozen W+ candidate key has invalid context depth")
+    stable_identity = {
+        "schemaVersion": 1,
+        "automaticRetryKey": automatic_retry_key,
+        "outputProfile": output_profile,
+        "descendantDepth": descendant_depth,
+    }
+    identity_digest = f"sha256:{sha256_json(stable_identity)}"
+    return (
+        "indexes/frozen-with-access-candidates/"
+        f"{identity_digest.removeprefix('sha256:')}.json"
+    )
+
+
+def _validate_lane_output_profile(projection_id: str, output_profile: str) -> str:
+    """Bind a trusted profile selection to the governed versioned lane ID."""
+
+    suffix = {
+        WORK_PROJECTION_PROFILE_V1: "-v1",
+        WORK_PROJECTION_PROFILE_V2: "-v2",
+    }.get(output_profile)
+    if suffix is None:
+        raise MathFlowError("work-accounting lane uses an unsupported output profile")
+    if not projection_id.endswith(suffix):
+        raise MathFlowError("work-accounting lane ID and output profile version disagree")
+    return output_profile
+
+
 def _seal_work_index(value: Mapping[str, object]) -> dict[str, object]:
     result = {
         key: copy.deepcopy(item)
@@ -1211,11 +1259,13 @@ def _validate_loaded_work(
     claim: Mapping[str, object],
     submission: Mapping[str, object],
     builder_result: Mapping[str, object],
+    expected_output_profile: str,
 ) -> None:
     manifest = loaded["manifest"]
     evaluation = loaded["evaluation"]
     if (
-        manifest["subjectTransactionId"] != claim["subjectTransactionId"]
+        manifest["outputProfile"] != expected_output_profile
+        or manifest["subjectTransactionId"] != claim["subjectTransactionId"]
         or manifest["baseAccountingStateDigest"]
         != claim["predecessorAccountingStateDigest"]
         or manifest["baseKnowledgeStateDigest"]
@@ -1245,8 +1295,14 @@ def _load_or_run_work_bundle(
     target_knowledge: Mapping[str, object],
     base_accounting: Mapping[str, object],
     alignment: Mapping[str, object],
+    expected_output_profile: str,
 ) -> dict[str, object]:
     retry_key = str(claim["automaticRetryKey"])
+    provider_output_profile = getattr(
+        work_provider, "output_profile", WORK_PROJECTION_PROFILE_V1
+    )
+    if provider_output_profile != expected_output_profile:
+        raise MathFlowError("work provider output profile disagrees with its governed lane")
     existing = store.get(_work_index_key(retry_key))
     scratch_root.mkdir(parents=True, exist_ok=True)
     if existing is not None:
@@ -1262,14 +1318,65 @@ def _load_or_run_work_bundle(
             claim=claim,
             submission=submission,
             builder_result=builder_result,
+            expected_output_profile=expected_output_profile,
         )
         return loaded
 
-    checkpoint_dir = (
-        scratch_root
-        / "checkpoints"
-        / str(claim["claimDigest"]).removeprefix("sha256:")
-    )
+    frozen_candidate: object | None = None
+    if expected_output_profile == WORK_PROJECTION_PROFILE_V2:
+        # The scheduler issues a new claim digest after a failed attempt, while
+        # automaticRetryKey remains bound to the same semantic transition.  W+
+        # must therefore be durable under the latter identity.  The local
+        # checkpoint is also retry-stable, but the immutable CAS candidate is
+        # authoritative when a later hosted attempt has a fresh scratch root.
+        checkpoint_dir = (
+            scratch_root
+            / "checkpoints"
+            / "work-accounting-v2"
+            / retry_key.removeprefix("sha256:")
+        )
+        candidate_key = _frozen_with_access_candidate_key(
+            retry_key,
+            output_profile=expected_output_profile,
+            descendant_depth=WORK_PROJECTION_DESCENDANT_DEPTH,
+        )
+        stored_candidate = store.get(candidate_key)
+        if stored_candidate is None:
+            proposed_candidate = prepare_frozen_with_access_candidate_v2(
+                provider=work_provider,
+                subject_transaction_id=str(claim["subjectTransactionId"]),
+                root_contract=root_contract,
+                base_knowledge_state=base_knowledge,
+                target_knowledge_state=target_knowledge,
+                base_accounting_state=base_accounting,
+                topology_alignment=alignment,
+                evidence_manifest=submission["evidenceManifest"],
+                evidence_chunks=evidence_chunks,
+                accepted_claim_refs=submission["acceptedClaimRefs"],
+                checkpoint_dir=checkpoint_dir,
+                descendant_depth=WORK_PROJECTION_DESCENDANT_DEPTH,
+            )
+            try:
+                store.put_immutable(candidate_key, _json_bytes(proposed_candidate))
+                frozen_candidate = proposed_candidate
+            except ImmutableConflict:
+                winner = store.get(candidate_key)
+                if winner is None:  # pragma: no cover - immutable CAS contract
+                    raise MathFlowError("frozen W+ candidate winner disappeared")
+                frozen_candidate = _json_value(
+                    winner.value, "frozen with-access candidate"
+                )
+        else:
+            frozen_candidate = _json_value(
+                stored_candidate.value, "frozen with-access candidate"
+            )
+    else:
+        # Preserve the historical V1 claim-scoped checkpoint behavior exactly.
+        checkpoint_dir = (
+            scratch_root
+            / "checkpoints"
+            / str(claim["claimDigest"]).removeprefix("sha256:")
+        )
     with tempfile.TemporaryDirectory(dir=scratch_root) as temporary:
         bundle_dir = Path(temporary) / "bundle"
         run_work_projection_bundle(
@@ -1285,6 +1392,9 @@ def _load_or_run_work_bundle(
             evidence_chunks=evidence_chunks,
             accepted_claim_refs=submission["acceptedClaimRefs"],
             checkpoint_dir=checkpoint_dir,
+            descendant_depth=WORK_PROJECTION_DESCENDANT_DEPTH,
+            output_profile=expected_output_profile,
+            frozen_with_access_candidate=frozen_candidate,
         )
         loaded = _store_work_bundle(store, bundle_dir)
     _validate_loaded_work(
@@ -1292,6 +1402,7 @@ def _load_or_run_work_bundle(
         claim=claim,
         submission=submission,
         builder_result=builder_result,
+        expected_output_profile=expected_output_profile,
     )
     index = _seal_work_index(
         {
@@ -1326,6 +1437,7 @@ def _load_or_run_work_bundle(
             claim=claim,
             submission=submission,
             builder_result=builder_result,
+            expected_output_profile=expected_output_profile,
         )
     return loaded
 
@@ -1657,6 +1769,7 @@ def _prepare_publication(
     base_knowledge: Mapping[str, object],
     target_knowledge: Mapping[str, object],
     alignment: Mapping[str, object],
+    expected_output_profile: str,
     failed_at: int,
     crash_hook: CrashHook | None,
 ) -> tuple[dict[str, object], str, bool]:
@@ -1674,6 +1787,7 @@ def _prepare_publication(
             target_knowledge=target_knowledge,
             base_accounting=base_accounting,
             alignment=alignment,
+            expected_output_profile=expected_output_profile,
         )
     except Exception as exc:
         return _record_attempt_failure(
@@ -1896,6 +2010,7 @@ def advance_work_accounting_pipeline(
     head: str = "HEAD",
     maximum_subjects: int | None = None,
     crash_hook: CrashHook | None = None,
+    expected_work_projection_profile: str = WORK_PROJECTION_PROFILE_V1,
 ) -> dict[str, object]:
     """Advance one inactive lane without making hosted batch size semantic."""
 
@@ -1903,6 +2018,9 @@ def advance_work_accounting_pipeline(
         raise MathFlowError("pipeline as-of time must be a non-negative integer")
     if maximum_subjects is not None:
         _require_positive_integer(maximum_subjects, "pipeline maximum subjects")
+    expected_output_profile = _validate_lane_output_profile(
+        projection_id, expected_work_projection_profile
+    )
     normalized = _canonicalize_submissions(
         repository_root,
         problem=problem,
@@ -2045,6 +2163,7 @@ def advance_work_accounting_pipeline(
             base_knowledge=base_knowledge,
             target_knowledge=target_knowledge,
             alignment=alignment,
+            expected_output_profile=expected_output_profile,
             failed_at=as_of,
             crash_hook=crash_hook,
         )

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/frozen-with-access-candidate-v2.schema.json",
+  "title": "Frozen With-Access Work Candidate V2",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "profile",
+    "problemId",
+    "subjectTransactionId",
+    "bindings",
+    "descendantDepth",
+    "safeRequest",
+    "safeResponse",
+    "safeFacts",
+    "impactContext",
+    "withAccessInput",
+    "withAccessRequest",
+    "withAccessResponse",
+    "withAccessPatch",
+    "withAccessState",
+    "candidateDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "profile": { "const": "math-flow/work-accounting-transition-v2" },
+    "problemId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "subjectTransactionId": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "bindings": {
+      "type": "object",
+      "required": [
+        "rootContractDigest",
+        "baseAccountingStateDigest",
+        "baseKnowledgeStateDigest",
+        "targetKnowledgeStateDigest",
+        "topologyAlignmentDigest",
+        "submissionEvidenceManifestDigest",
+        "submissionDigest",
+        "acceptedClaimRefsDigest"
+      ],
+      "properties": {
+        "rootContractDigest": { "$ref": "#/$defs/digest" },
+        "baseAccountingStateDigest": { "$ref": "#/$defs/digest" },
+        "baseKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+        "targetKnowledgeStateDigest": { "$ref": "#/$defs/digest" },
+        "topologyAlignmentDigest": { "$ref": "#/$defs/digest" },
+        "submissionEvidenceManifestDigest": { "$ref": "#/$defs/digest" },
+        "submissionDigest": { "$ref": "#/$defs/digest" },
+        "acceptedClaimRefsDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "descendantDepth": { "type": "integer", "minimum": 0, "maximum": 4 },
+    "safeRequest": { "$ref": "work-projection-request-v2.schema.json" },
+    "safeResponse": { "type": "object" },
+    "safeFacts": { "$ref": "counterfactual-safe-facts-v1.schema.json" },
+    "impactContext": { "$ref": "work-impact-context-v1.schema.json" },
+    "withAccessInput": { "$ref": "with-access-stage-input-v1.schema.json" },
+    "withAccessRequest": { "$ref": "work-projection-request-v2.schema.json" },
+    "withAccessResponse": { "type": "object" },
+    "withAccessPatch": { "$ref": "work-accounting-patch-v1.schema.json" },
+    "withAccessState": { "$ref": "work-accounting-state-v1.schema.json" },
+    "candidateDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+  }
+}
