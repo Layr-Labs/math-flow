@@ -30,7 +30,11 @@ HIERARCHICAL_RESEARCH_OUTPUT_PROFILES = {
     "math-flow/hierarchical-research-v4",
     "math-flow/hierarchical-research-v5",
     "math-flow/hierarchical-research-v6",
+    "math-flow/hierarchical-research-v7",
 }
+
+TWO_ENTITY_RESEARCH_OUTPUT_PROFILE = "math-flow/hierarchical-research-v7"
+TWO_ENTITY_SEMANTIC_PROFILE = "programs-and-intermediate-results-v1"
 
 
 def _projection_catalog_sort_key(item: dict[str, object]) -> tuple[object, ...]:
@@ -309,6 +313,232 @@ def _research_viewer_nodes(
     return nodes
 
 
+def _research_v7_viewer_nodes(
+    state: dict[str, object], transaction_positions: dict[str, int]
+) -> dict[str, dict[str, object]]:
+    """Normalize the two-entity research state without inventing leaf entities."""
+
+    def transaction_references(
+        transaction_ids: list[object], relation: str
+    ) -> list[dict[str, object]]:
+        return [
+            {
+                "kind": "transaction",
+                "id": str(transaction_id),
+                "ledgerPosition": transaction_positions.get(str(transaction_id)),
+                "relation": relation,
+            }
+            for transaction_id in transaction_ids
+        ]
+
+    def result_node_id(result_id: object) -> str:
+        return f"result:{result_id}"
+
+    def knowledge_reference(node_id: str, relation: str) -> dict[str, object]:
+        return {"kind": "knowledge-node", "id": node_id, "relation": relation}
+
+    programs = state.get("programs")
+    results = state.get("intermediateResults")
+    if not isinstance(programs, dict) or not isinstance(results, dict):
+        raise MathFlowError(
+            "viewer research-v7 state must contain program and intermediate-result maps"
+        )
+
+    primary_results: dict[str, list[tuple[str, dict[str, object]]]] = {}
+    related_results: dict[str, list[tuple[str, dict[str, object]]]] = {}
+    for raw_result_id, raw_result in results.items():
+        if not isinstance(raw_result, dict):
+            raise MathFlowError("viewer research-v7 intermediate result is not an object")
+        result_id = str(raw_result_id)
+        primary_program_id = raw_result.get("primaryProgramId")
+        if not isinstance(primary_program_id, str):
+            raise MathFlowError(
+                "viewer research-v7 intermediate result has no primary program"
+            )
+        primary_results.setdefault(primary_program_id, []).append(
+            (result_id, raw_result)
+        )
+        for related_program_id in raw_result.get("relatedProgramIds", []):
+            related_results.setdefault(str(related_program_id), []).append(
+                (result_id, raw_result)
+            )
+
+    nodes: dict[str, dict[str, object]] = {}
+    for raw_program_id, raw_program in programs.items():
+        if not isinstance(raw_program, dict):
+            raise MathFlowError("viewer research-v7 program is not an object")
+        program_id = str(raw_program_id)
+        source_ids = list(raw_program.get("sourceTransactionIds", []))
+        state_summary = str(raw_program.get("currentStateSummary", ""))
+        residual_summary = str(raw_program.get("localResidualSummary", ""))
+        primary = sorted(
+            primary_results.get(program_id, []), key=lambda item: item[1]["title"]
+        )
+        related = sorted(
+            related_results.get(program_id, []), key=lambda item: item[1]["title"]
+        )
+        result_lines = [
+            f"- **{result['title']}** (`{result_id}`) — primary"
+            for result_id, result in primary
+        ]
+        result_lines.extend(
+            f"- **{result['title']}** (`{result_id}`) — related"
+            for result_id, result in related
+            if result_id not in {primary_id for primary_id, _ in primary}
+        )
+        content_sections = [
+            f"## Objective\n\n{raw_program['objective']}",
+            f"## Current state\n\n{state_summary}",
+        ]
+        if residual_summary:
+            content_sections.append(
+                f"## Local residual work\n\n{residual_summary}"
+            )
+        content_sections.append(
+            "## Intermediate results\n\n"
+            + ("\n".join(result_lines) if result_lines else "None yet.")
+        )
+        evidence = [
+            knowledge_reference(result_node_id(result_id), "primary-result")
+            for result_id, _ in primary
+        ]
+        evidence.extend(
+            knowledge_reference(result_node_id(result_id), "related-result")
+            for result_id, _ in related
+            if result_id not in {primary_id for primary_id, _ in primary}
+        )
+        nodes[program_id] = {
+            "id": program_id,
+            "parentId": raw_program.get("parentId"),
+            "type": "program",
+            "title": raw_program["title"],
+            "summary": state_summary or str(raw_program["objective"]),
+            "status": raw_program["status"],
+            "contentMarkdown": "\n\n".join(content_sections),
+            "subjects": transaction_references(source_ids, "source"),
+            "evidence": evidence,
+            "lineage": [
+                {
+                    "relation": lineage["relation"],
+                    "nodeId": lineage["programId"],
+                }
+                for lineage in raw_program.get("lineage", [])
+                if isinstance(lineage, dict)
+            ],
+            "reportRef": None,
+            "digest": raw_program["digest"],
+        }
+
+    support_labels = (
+        ("proofs", "Proofs"),
+        ("methods", "Methods"),
+        ("computations", "Computations"),
+        ("tools", "Tools"),
+    )
+    for raw_result_id, raw_result in results.items():
+        if not isinstance(raw_result, dict):
+            raise MathFlowError("viewer research-v7 intermediate result is not an object")
+        result_id = str(raw_result_id)
+        node_id = result_node_id(result_id)
+        claim_refs = raw_result.get("claimRefs", [])
+        if not isinstance(claim_refs, list):
+            raise MathFlowError("viewer research-v7 claim references are invalid")
+        subject_ids = list(
+            dict.fromkeys(
+                str(reference["transactionId"])
+                for reference in claim_refs
+                if isinstance(reference, dict)
+            )
+        )
+        source_ids = [
+            str(transaction_id)
+            for transaction_id in raw_result.get("sourceTransactionIds", [])
+            if str(transaction_id) not in subject_ids
+        ]
+        support = raw_result.get("support")
+        if not isinstance(support, dict):
+            raise MathFlowError("viewer research-v7 result support is not an object")
+        content_sections = [f"## Statement\n\n{raw_result['statement']}"]
+        qualifications = list(raw_result.get("scopeQualifications", []))
+        content_sections.append(
+            "## Scope qualifications\n\n"
+            + (
+                "\n".join(f"- {qualification}" for qualification in qualifications)
+                if qualifications
+                else "None."
+            )
+        )
+        for support_key, label in support_labels:
+            entries = list(support.get(support_key, []))
+            if entries:
+                content_sections.append(
+                    f"## {label}\n\n"
+                    + "\n\n".join(
+                        f"### {label[:-1]} {index}\n\n{entry}"
+                        for index, entry in enumerate(entries, start=1)
+                    )
+                )
+        artifact_refs = list(support.get("artifactRefs", []))
+        if artifact_refs:
+            content_sections.append(
+                "## Supporting artifacts\n\n"
+                + "\n".join(
+                    f"- `{reference['path']}` — `{reference['digest']}`"
+                    for reference in artifact_refs
+                    if isinstance(reference, dict)
+                )
+            )
+        attestation_refs = list(support.get("attestationRefs", []))
+        if attestation_refs:
+            content_sections.append(
+                "## Objective attestations\n\n"
+                + "\n".join(f"- `{reference}`" for reference in attestation_refs)
+            )
+        claim_lines = [
+            f"- `{reference['claimKey']}` from `{reference['transactionId']}`"
+            for reference in claim_refs
+            if isinstance(reference, dict)
+        ]
+        if claim_lines:
+            content_sections.append("## Accepted claims\n\n" + "\n".join(claim_lines))
+        superseded_by = list(raw_result.get("supersededByResultIds", []))
+        evidence = transaction_references(source_ids, "source")
+        evidence.extend(
+            {
+                "kind": "judgment",
+                "id": str(judgment_id),
+                "relation": "accepted-by",
+            }
+            for judgment_id in raw_result.get("judgmentIds", [])
+        )
+        evidence.extend(
+            knowledge_reference(result_node_id(dependency_id), "depends-on")
+            for dependency_id in raw_result.get("dependencyResultIds", [])
+        )
+        evidence.extend(
+            knowledge_reference(str(program_id), "related-program")
+            for program_id in raw_result.get("relatedProgramIds", [])
+        )
+        evidence.extend(
+            knowledge_reference(result_node_id(successor_id), "superseded-by")
+            for successor_id in superseded_by
+        )
+        nodes[node_id] = {
+            "id": node_id,
+            "parentId": raw_result["primaryProgramId"],
+            "type": "intermediate-result",
+            "title": raw_result["title"],
+            "summary": raw_result["statement"],
+            "status": raw_result["status"],
+            "contentMarkdown": "\n\n".join(content_sections),
+            "subjects": transaction_references(subject_ids, "accepted-claim"),
+            "evidence": evidence,
+            "reportRef": None,
+            "digest": raw_result["digest"],
+        }
+    return nodes
+
+
 def _export_research_viewer_data(
     root: Path,
     problem: str,
@@ -356,7 +586,36 @@ def _export_research_viewer_data(
             raise MathFlowError("viewer research chain changes output profile")
         topology_alignment = None
         same_world_handoff = None
-        if profile == "math-flow/hierarchical-research-v6":
+        semantic_profile = None
+        if profile == TWO_ENTITY_RESEARCH_OUTPUT_PROFILE:
+            # Imported lazily so every historical viewer path remains usable even
+            # in installations that have not admitted the additive V7 runtime.
+            from .research_builder_v7 import (
+                empty_research_program_state_v3,
+                validate_research_program_state_v3,
+            )
+
+            base_state = _json_artifact(
+                bundle, manifest, "research-program-base-state"
+            )
+            state = _json_artifact(bundle, manifest, "research-program-state")
+            delta = _json_artifact(bundle, manifest, "research-program-transition")
+            validate_research_program_state_v3(base_state, problem)
+            validate_research_program_state_v3(state, problem)
+            if ordinal == 1 and manifest.get("baseRun") is None:
+                if base_state != empty_research_program_state_v3(problem):
+                    raise MathFlowError(
+                        "viewer research-v7 origin does not use the empty state"
+                    )
+            elif (
+                previous_program_state is not None
+                and base_state != previous_program_state
+            ):
+                raise MathFlowError(
+                    "viewer research-v7 base state differs from its predecessor"
+                )
+            semantic_profile = TWO_ENTITY_SEMANTIC_PROFILE
+        elif profile == "math-flow/hierarchical-research-v6":
             loaded_v6 = load_published_research_v6_transition(
                 bundle,
                 expected_bundle_digest=manifest_digest,
@@ -406,7 +665,11 @@ def _export_research_viewer_data(
                 validate_research_program_v5_transition_shape(
                     previous_program_state, delta, state
                 )
-        nodes = _research_viewer_nodes(state, transaction_positions)
+        nodes = (
+            _research_v7_viewer_nodes(state, transaction_positions)
+            if profile == TWO_ENTITY_RESEARCH_OUTPUT_PROFILE
+            else _research_viewer_nodes(state, transaction_positions)
+        )
         changed_node_ids = [
             node_id
             for node_id, node in nodes.items()
@@ -429,6 +692,7 @@ def _export_research_viewer_data(
             "runDigest": manifest_digest,
             "baseRun": manifest.get("baseRun"),
             "runKind": manifest.get("runKind"),
+            "outputProfile": profile,
             "inputs": manifest.get("inputs"),
             "judgeSpec": manifest["judgeSpec"],
             "runner": manifest["runner"],
@@ -439,7 +703,15 @@ def _export_research_viewer_data(
             },
             "normalizations": [],
             "delta": delta,
-            "state": {"nodes": nodes, "stateDigest": state["stateDigest"]},
+            "state": {
+                "nodes": nodes,
+                "stateDigest": state["stateDigest"],
+                **(
+                    {"semanticProfile": semantic_profile}
+                    if semantic_profile is not None
+                    else {}
+                ),
+            },
             "revisionIds": [],
             "addedRevisionIds": [],
             "changedNodeIds": sorted(changed_node_ids),
@@ -449,6 +721,10 @@ def _export_research_viewer_data(
         if topology_alignment is not None and same_world_handoff is not None:
             run["topologyAlignment"] = topology_alignment
             run["sameWorldHandoff"] = same_world_handoff
+        if profile == TWO_ENTITY_RESEARCH_OUTPUT_PROFILE:
+            # Preserve the exact typed machine state for agent-context consumers.
+            # ``state.nodes`` is only the viewer navigation normalization.
+            run["machineState"] = state
         runs.append(run)
         previous_digest = manifest_digest
         previous_nodes = nodes

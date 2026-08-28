@@ -19,6 +19,17 @@ export function collectProgramContributionIds(nodes, programId) {
     if (!nodeId || subtree.has(nodeId)) continue;
     subtree.add(nodeId);
     pending.push(...(children.get(nodeId) ?? []));
+    const node = nodes[nodeId];
+    if (node?.type === "program") {
+      pending.push(...(node.evidence ?? [])
+        .filter((reference) =>
+          reference?.kind === "knowledge-node" &&
+          ["primary-result", "related-result"].includes(reference.relation) &&
+          typeof reference.id === "string" &&
+          nodes[reference.id]?.type === "intermediate-result",
+        )
+        .map((reference) => reference.id));
+    }
   }
 
   const contributionIds = new Set();

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 import katex from "katex";
-import { validKnowledgeProjectionIndex } from "../app/catalogValidation.mjs";
+import { TWO_ENTITY_SEMANTIC_PROFILE, validKnowledgeProjectionIndex, validTwoEntityKnowledgeState, validTwoEntityMachineState } from "../app/catalogValidation.mjs";
 import { allCreditProjections, compatibleCreditProjections, creditRunAssignmentCount, formatCreditFraction, hierarchicalCreditForTransaction, isHierarchicalCreditProjection } from "../app/creditPresentation.mjs";
 import { collectProgramContributionIds } from "../app/programContributions.mjs";
 import { splitDisplayMath, splitInlineMath } from "../app/markdownMath.mjs";
@@ -47,6 +47,82 @@ test("accepts an empty knowledge projection index without inventing a fallback",
   assert.equal(validKnowledgeProjectionIndex([]), true);
   assert.equal(validKnowledgeProjectionIndex(undefined), false);
   assert.equal(validKnowledgeProjectionIndex([{ id: "incomplete" }]), false);
+});
+
+test("validates the two-entity viewer state without admitting contribution nodes", () => {
+  const state = {
+    semanticProfile: TWO_ENTITY_SEMANTIC_PROFILE,
+    stateDigest: `sha256:${"a".repeat(64)}`,
+    nodes: {
+      root: {
+        id: "root",
+        parentId: null,
+        type: "program",
+        title: "Root program",
+        summary: "Current state.",
+        status: "active",
+        contentMarkdown: "## Current state\n\nCurrent state.",
+        subjects: [],
+        evidence: [{ kind: "knowledge-node", id: "result:one", relation: "primary-result" }],
+        digest: `sha256:${"b".repeat(64)}`,
+      },
+      "result:one": {
+        id: "result:one",
+        parentId: "root",
+        type: "intermediate-result",
+        title: "One result",
+        summary: "A reusable statement.",
+        status: "active",
+        contentMarkdown: "## Statement\n\nA reusable statement.",
+        subjects: [{ kind: "transaction", id: "1".repeat(40), relation: "accepted-claim" }],
+        evidence: [],
+        digest: `sha256:${"c".repeat(64)}`,
+      },
+    },
+  };
+  const machineState = {
+    schemaVersion: 3,
+    problemId: "demo",
+    programs: { root: {} },
+    intermediateResults: { one: {} },
+    contributions: {},
+    stateDigest: state.stateDigest,
+  };
+  const projection = {
+    id: "two-entity",
+    problemId: "demo",
+    data: { runs: [{ state, machineState }] },
+  };
+
+  assert.equal(validTwoEntityKnowledgeState(state), true);
+  assert.deepEqual(collectProgramContributionIds(state.nodes, "root"), ["1".repeat(40)]);
+  assert.equal(validTwoEntityMachineState(machineState, state.stateDigest), true);
+  assert.equal(validKnowledgeProjectionIndex([projection]), true);
+  assert.equal(validKnowledgeProjectionIndex([{
+    ...projection,
+    data: { runs: [{ state }] },
+  }]), false, "the exact typed machine state is required");
+  assert.equal(validTwoEntityKnowledgeState({
+    ...state,
+    nodes: {
+      ...state.nodes,
+      contribution: {
+        ...state.nodes["result:one"],
+        id: "contribution",
+        type: "contribution",
+      },
+    },
+  }), false);
+  assert.equal(validTwoEntityKnowledgeState({
+    ...state,
+    nodes: {
+      ...state.nodes,
+      "result:one": {
+        ...state.nodes["result:one"],
+        evidence: [{ kind: "knowledge-node", id: "result:missing", relation: "depends-on" }],
+      },
+    },
+  }), false);
 });
 
 test("keeps the viewer data-driven with contextual artifact details", async () => {
@@ -136,6 +212,9 @@ test("keeps the viewer data-driven with contextual artifact details", async () =
   assert.match(viewer, /inline\(revision\.changeRationale, referenceActions\)/);
   assert.match(viewer, /revision\.changeRef\.section/);
   assert.match(viewer, /Related contributions/);
+  assert.match(viewer, /Find a program or intermediate result/);
+  assert.match(viewer, /Intermediate result and support/);
+  assert.match(viewer, /Evidence and knowledge links/);
   assert.match(viewer, /Research directions/);
   assert.match(viewer, /Registration is evidence, not ownership/);
   assert.match(viewer, /Direction event history/);

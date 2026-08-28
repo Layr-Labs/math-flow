@@ -210,6 +210,81 @@ class AgentContextTests(unittest.TestCase):
         self.assertNotIn("Unrelated assessment.", markdown)
         self.assertIn("untrusted research content", markdown)
 
+    def test_materializes_exact_two_entity_machine_state_and_navigation_view(self) -> None:
+        catalog = self._catalog()
+        latest = catalog["projections"][0]["data"]["runs"][0]
+        digest = "sha256:" + "d" * 64
+        latest["state"] = {
+            "semanticProfile": "programs-and-intermediate-results-v1",
+            "stateDigest": digest,
+            "nodes": {
+                "root": {
+                    "id": "root",
+                    "parentId": None,
+                    "type": "program",
+                    "title": "Root program",
+                    "summary": "Current state.",
+                    "status": "active",
+                    "contentMarkdown": "## Current state\n\nCurrent state.",
+                    "subjects": [],
+                    "evidence": [],
+                    "digest": "sha256:" + "1" * 64,
+                },
+                "result:one": {
+                    "id": "result:one",
+                    "parentId": "root",
+                    "type": "intermediate-result",
+                    "title": "Result one",
+                    "summary": "A reusable statement.",
+                    "status": "active",
+                    "contentMarkdown": "## Statement\n\nA reusable statement.",
+                    "subjects": [
+                        {"kind": "transaction", "id": self.first, "relation": "accepted-claim"}
+                    ],
+                    "evidence": [],
+                    "digest": "sha256:" + "2" * 64,
+                },
+            },
+        }
+        latest["machineState"] = {
+            "schemaVersion": 3,
+            "problemId": "demo",
+            "programs": {"root": {"id": "root"}},
+            "intermediateResults": {"one": {"id": "one"}},
+            "contributions": {},
+            "stateDigest": digest,
+        }
+        output = self.root / "two-entity-agent-context"
+
+        with patch("math_flow.context.export_viewer_catalog", return_value=catalog):
+            materialize_agent_context(
+                self.root,
+                self.projection_root,
+                "demo",
+                output,
+                head="HEAD",
+                node_ids=["result:one"],
+            )
+
+        self.assertEqual(
+            json.loads((output / "state.json").read_text()), latest["machineState"]
+        )
+        self.assertEqual(
+            json.loads((output / "viewer-state.json").read_text()), latest["state"]
+        )
+        context = json.loads((output / "context.json").read_text())
+        self.assertEqual(
+            context["projection"]["semanticProfile"],
+            "programs-and-intermediate-results-v1",
+        )
+        self.assertEqual(
+            context["scope"]["policy"],
+            "descendants-plus-result-dependencies-and-related-results",
+        )
+        markdown = (output / "context.md").read_text()
+        self.assertIn("exact schema-v3 program/result state", markdown)
+        self.assertIn("`viewer-state.json`", markdown)
+
     def test_omitted_projection_selects_sole_active_registered_lane(self) -> None:
         catalog = self._catalog()
         historical = dict(catalog["projections"][0])
