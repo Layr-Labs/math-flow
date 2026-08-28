@@ -786,6 +786,193 @@ class ResearchProjectionTests(unittest.TestCase):
                 },
             )
 
+    def test_builder_v7_publishes_one_two_entity_transition(self) -> None:
+        with tempfile.TemporaryDirectory() as directory_value:
+            directory = Path(directory_value)
+            validity = self._validity_v4_bundle(
+                directory,
+                PROBLEM,
+                TX,
+                status="valid",
+                required_dependencies=[],
+                evidence_transaction_ids=[],
+            )
+            _, judgment, _ = load_judgment_bundle(validity)
+            builder_path = (
+                ROOT
+                / "protocol/judges/openrouter-hierarchical-research-builder-v7.json"
+            )
+            builder = load_judge_spec(builder_path)
+            projection = json.loads(
+                (
+                    ROOT
+                    / "protocol/runtime/inactive-openrouter-research-v5-projection.json"
+                ).read_text(encoding="utf-8")
+            )
+            scheduler = directory / "scheduler.json"
+            lane = record_completed_inputs(
+                scheduler,
+                PROBLEM,
+                f"sha256:{sha256_json(builder)}",
+                [str(judgment["judgmentId"])],
+                [],
+                0,
+                1,
+                projection_spec_digest=f"sha256:{sha256_json(projection)}",
+            )
+            claim = claim_due_build(scheduler, str(lane["laneId"]), 1, 1)
+            assert claim is not None
+
+            calls = 0
+
+            def v7_transport(request: dict[str, object]) -> dict[str, object]:
+                nonlocal calls
+                calls += 1
+                content = next(
+                    str(message["content"])
+                    for message in request["messages"]
+                    if "<math-flow-input>" in str(message["content"])
+                )
+                payload = json.loads(
+                    content.split("<math-flow-input>\n", 1)[1].split(
+                        "\n</math-flow-input>", 1
+                    )[0]
+                )
+                subject = str(payload["subjectTransactionId"])
+                claims = payload["acceptedClaims"]
+                judgment_id = str(payload["judgmentId"])
+                base_root = payload["baseState"]["programs"]["root"]
+                result_id = "root/v7-fixture-result"
+                primary_program_id = "missing-program" if calls == 1 else "root"
+                transition = {
+                    "schemaVersion": 1,
+                    "subjectTransactionId": subject,
+                    "baseStateDigest": payload["baseState"]["stateDigest"],
+                    "contentOperations": [
+                        {
+                            "entityKind": "program",
+                            "entityId": "root",
+                            "baseDigest": base_root["digest"],
+                            "value": {
+                                "id": "root",
+                                "parentId": None,
+                                "title": base_root["title"],
+                                "objective": base_root["objective"],
+                                "currentStateSummary": (
+                                    "The accepted fixture establishes one reusable result."
+                                ),
+                                "localResidualSummary": base_root[
+                                    "localResidualSummary"
+                                ],
+                                "status": "active",
+                                "intermediateResultIds": [result_id],
+                                "sourceTransactionIds": [subject],
+                                "lineage": [],
+                            },
+                        },
+                        {
+                            "entityKind": "intermediateResult",
+                            "entityId": result_id,
+                            "baseDigest": None,
+                            "value": {
+                                "id": result_id,
+                                "primaryProgramId": primary_program_id,
+                                "relatedProgramIds": [],
+                                "title": "Fixture intermediate result",
+                                "statement": "The exact accepted fixture claim holds.",
+                                "scopeQualifications": [],
+                                "support": {
+                                    "proofs": [],
+                                    "methods": [],
+                                    "computations": [],
+                                    "tools": [],
+                                    "artifactRefs": [],
+                                    "attestationRefs": [],
+                                },
+                                "dependencyResultIds": [],
+                                "claimRefs": [
+                                    {
+                                        "transactionId": subject,
+                                        "claimKey": item["claimKey"],
+                                    }
+                                    for item in claims
+                                ],
+                                "sourceTransactionIds": [subject],
+                                "judgmentIds": [judgment_id],
+                                "status": "active",
+                                "supersededByResultIds": [],
+                            },
+                        },
+                    ],
+                    "topologyOperations": [],
+                    "contribution": {
+                        "claimKeys": sorted(
+                            str(item["claimKey"]) for item in claims
+                        ),
+                        "directProgramIds": ["root"],
+                        "intermediateResultIds": [result_id],
+                    },
+                    "placementAudit": {
+                        "basis": "canonical-objective",
+                        "rationale": "The fixture result addresses the canonical objective.",
+                        "relatedProgramIds": [],
+                    },
+                    "topologyRationale": None,
+                }
+                if calls == 2:
+                    self.assertIn(
+                        "missing program",
+                        str(request["messages"][-1]["content"]),
+                    )
+                return response(json.dumps(transition), calls)
+
+            output = directory / "builder-v7"
+            run_research_build_bundle(
+                ROOT,
+                PROBLEM,
+                builder_path,
+                TX,
+                claim,
+                [validity],
+                None,
+                output,
+                transport=v7_transport,
+            )
+            self.assertEqual(calls, 2)
+            manifest, state, _ = load_research_build_bundle(output)
+            self.assertEqual(
+                manifest["outputProfile"], "math-flow/hierarchical-research-v7"
+            )
+            self.assertEqual(state["schemaVersion"], 3)
+            self.assertEqual(set(state), {
+                "schemaVersion",
+                "problemId",
+                "ledgerHead",
+                "baseStateDigest",
+                "rootProgramId",
+                "programs",
+                "intermediateResults",
+                "contributions",
+                "stateDigest",
+            })
+            self.assertNotIn("threads", state)
+            self.assertNotIn("items", state)
+            self.assertEqual(
+                state["programs"]["root"]["intermediateResultIds"],
+                ["root/v7-fixture-result"],
+            )
+            self.assertEqual(
+                set(state["intermediateResults"]["root/v7-fixture-result"]["support"]),
+                {
+                    "proofs",
+                    "methods",
+                    "computations",
+                    "tools",
+                    "artifactRefs",
+                    "attestationRefs",
+                },
+            )
+
     def _validity_bundle(
         self,
         directory: Path,
