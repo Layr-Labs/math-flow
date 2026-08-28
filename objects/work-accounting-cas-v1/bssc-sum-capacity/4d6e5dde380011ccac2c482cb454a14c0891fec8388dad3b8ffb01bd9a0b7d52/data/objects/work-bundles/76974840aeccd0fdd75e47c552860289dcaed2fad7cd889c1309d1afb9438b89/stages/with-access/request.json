@@ -1,0 +1,690 @@
+{
+  "schemaVersion": 2,
+  "profile": "math-flow/work-accounting-transition-v2",
+  "stage": "with-access",
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+  "bindings": {
+    "rootContractDigest": "sha256:01d52a695e88694768973f3590c0c13eb5acd8070fbed32de8ad01e460c41135",
+    "baseAccountingStateDigest": "sha256:00897f41b0db226e426f009838d7c76e1cc198b9a816067566902b4dbfa46a59",
+    "baseKnowledgeStateDigest": "sha256:64471ccdbed45510517f681d18b1a96102116fcd246b477b0e1a742b2e2c4be5",
+    "targetKnowledgeStateDigest": "sha256:0bbdeb3a10f50d634cff67c0606754eee1535272d269d01600a6e36007def3ff",
+    "topologyAlignmentDigest": "sha256:b895bca3caeec45f724932b4a38ee02847015ef8e51c9fb535287c849bd5c6dd",
+    "submissionEvidenceManifestDigest": "sha256:a69dd143a2ee1a361b1bd65561e79ac9402b0fd71033213b1df43652f6d7150b",
+    "submissionDigest": "sha256:4bf6ebede3bdb345c7c3b90bce0e41a35bf3ce8873ec588323097e868d814ef3",
+    "acceptedClaimRefsDigest": "sha256:6f6b3e6b8354d45271079f5a9608dde79ed97ec7b9485d38531c86a36a7df0b3"
+  },
+  "rootContract": {
+    "knowledgeProjectionId": "openrouter-research-v4",
+    "knowledgeProjectionSpecDigest": "sha256:8bcab1fa785b4c5d757668ef2ff9ce1ef3046a54828c71ed846f84e6b33cf31a",
+    "objective": "Determine the exact private-message sum-capacity C_sum of the half-skew binary skew-symmetric broadcast channel specified by the canonical problem.",
+    "problemId": "bssc-sum-capacity",
+    "referenceCommunity": {
+      "description": "A counterfactual community of competent human mathematical researchers collaborating on the canonical BSSC objective, with its program and thread portfolio defined exclusively by the bound builder-v6 knowledge projection.",
+      "portfolioAuthority": "math-flow-knowledge-state-builder",
+      "researcherQualification": "For each local work package, a researcher with graduate-level mathematical maturity and the information-theory, probability, optimization, or computer-assisted proof expertise needed to begin productive work without general disciplinary training, but without unpublished solution-specific knowledge."
+    },
+    "rootContractDigest": "sha256:01d52a695e88694768973f3590c0c13eb5acd8070fbed32de8ad01e460c41135",
+    "schemaVersion": 1,
+    "terminalCondition": "A validity-v4 accepted result establishes one exact value of C_sum by matching rigorous achievability and converse bounds, including every limiting, cardinality, and certification condition needed for the canonical channel.",
+    "workUnit": {
+      "definition": "One focused person-hour of research by a researcher qualified for the relevant work package, using the fixed conventional tool baseline named by this contract.",
+      "id": "competent-human-researcher-hour",
+      "toolBaseline": "Public mathematical literature and standard non-autonomous research tools available as of 2026-08-25, including handwritten reasoning, symbolic algebra, numerical computation, interval arithmetic, proof assistants, and code execution on commodity research hardware; autonomous LLM or agent labor is excluded."
+    }
+  },
+  "baseAccountingState": {
+    "annotations": [
+      {
+        "annotationDigest": "sha256:036725e1d34b3067dfd0a7e5724dc2e8f09c4aa0969611ade43c614cddbd6024",
+        "conditionalIncidence": null,
+        "directWorkHours": "0",
+        "knowledgeNodeDigest": "sha256:6c667e70ec5eeb0bbca5cc382893b021b8e4dff33403e3ec09d92532f24e49dd",
+        "nodeRef": {
+          "id": "root",
+          "kind": "program"
+        }
+      },
+      {
+        "annotationDigest": "sha256:dd6adefe6a3a4a9bcef65797278d11a87bf03b5f3f934304be60ed70ad7d81a4",
+        "conditionalIncidence": "0.95",
+        "directWorkHours": "18",
+        "knowledgeNodeDigest": "sha256:b9dcb917359a21c184538fcd5afde2659b0ec70a3c8b37cda415f835ceb7af26",
+        "nodeRef": {
+          "id": "root/code-structure-converse",
+          "kind": "program"
+        }
+      },
+      {
+        "annotationDigest": "sha256:87b0870c422281fd43b6f069ed6811733f750c857f366402b5efd7e03775ed04",
+        "conditionalIncidence": "0.9",
+        "directWorkHours": "420",
+        "knowledgeNodeDigest": "sha256:be35b9071e3c1771d6de37cf8dedb082627ae39b1a8d02daa2cd2d4b401de358",
+        "nodeRef": {
+          "id": "root/code-structure-converse/dependence-balance-and-channel-refinement",
+          "kind": "thread"
+        }
+      },
+      {
+        "annotationDigest": "sha256:68b11496fc2019b452c05f4da23e600a9b83712f33b6dcec80d322eaf176a506",
+        "conditionalIncidence": "0.45",
+        "directWorkHours": "260",
+        "knowledgeNodeDigest": "sha256:21542d60cc740c3de51655b277c1d05f68529005f8a3320e510f5e3b0dab75ef",
+        "nodeRef": {
+          "id": "root/code-structure-converse/unstructured-search",
+          "kind": "thread"
+        }
+      },
+      {
+        "annotationDigest": "sha256:3bfa0c76881112d3081af6327f0adc753820071bffb7ec0aaac41c0254870faa",
+        "conditionalIncidence": "1",
+        "directWorkHours": "0",
+        "knowledgeNodeDigest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e",
+        "nodeRef": {
+          "id": "root/unstructured-search",
+          "kind": "thread"
+        }
+      }
+    ],
+    "derived": [
+      {
+        "conditionalSubtreeWork": "487.35",
+        "expectedDirectWork": "0",
+        "globalReach": "1",
+        "nodeRef": {
+          "id": "root",
+          "kind": "program"
+        }
+      },
+      {
+        "conditionalSubtreeWork": "513",
+        "expectedDirectWork": "17.1",
+        "globalReach": "0.95",
+        "nodeRef": {
+          "id": "root/code-structure-converse",
+          "kind": "program"
+        }
+      },
+      {
+        "conditionalSubtreeWork": "420",
+        "expectedDirectWork": "359.1",
+        "globalReach": "0.855",
+        "nodeRef": {
+          "id": "root/code-structure-converse/dependence-balance-and-channel-refinement",
+          "kind": "thread"
+        }
+      },
+      {
+        "conditionalSubtreeWork": "260",
+        "expectedDirectWork": "111.15",
+        "globalReach": "0.4275",
+        "nodeRef": {
+          "id": "root/code-structure-converse/unstructured-search",
+          "kind": "thread"
+        }
+      },
+      {
+        "conditionalSubtreeWork": "0",
+        "expectedDirectWork": "0",
+        "globalReach": "1",
+        "nodeRef": {
+          "id": "root/unstructured-search",
+          "kind": "thread"
+        }
+      }
+    ],
+    "evaluationMode": "with-access",
+    "knowledgeLedgerHead": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+    "knowledgeStateDigest": "sha256:64471ccdbed45510517f681d18b1a96102116fcd246b477b0e1a742b2e2c4be5",
+    "predecessorStateDigest": "sha256:96ae0c9463bd565c33495ef214bd0435d306be776b479fc0c0f236de02cc8fdb",
+    "problemId": "bssc-sum-capacity",
+    "processedSubmissionIds": [
+      "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+    ],
+    "rootContractDigest": "sha256:01d52a695e88694768973f3590c0c13eb5acd8070fbed32de8ad01e460c41135",
+    "rootNodeRef": {
+      "id": "root",
+      "kind": "program"
+    },
+    "schemaVersion": 1,
+    "stateDigest": "sha256:00897f41b0db226e426f009838d7c76e1cc198b9a816067566902b4dbfa46a59",
+    "subjectTransactionId": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+    "totalWorkHours": "487.35"
+  },
+  "topologyAlignmentRef": {
+    "alignmentDigest": "sha256:b895bca3caeec45f724932b4a38ee02847015ef8e51c9fb535287c849bd5c6dd",
+    "beforeKnowledgeStateDigest": "sha256:64471ccdbed45510517f681d18b1a96102116fcd246b477b0e1a742b2e2c4be5",
+    "afterKnowledgeStateDigest": "sha256:0bbdeb3a10f50d634cff67c0606754eee1535272d269d01600a6e36007def3ff"
+  },
+  "requiredPrimitiveUpdates": [
+    {
+      "nodeRef": {
+        "kind": "program",
+        "id": "root/uv-scalar-converse"
+      },
+      "requiredChanges": [
+        "conditionalIncidence",
+        "directWorkHours"
+      ],
+      "reasons": [
+        "created"
+      ]
+    },
+    {
+      "nodeRef": {
+        "kind": "thread",
+        "id": "root/uv-scalar-converse-agenda"
+      },
+      "requiredChanges": [
+        "conditionalIncidence",
+        "directWorkHours"
+      ],
+      "reasons": [
+        "created"
+      ]
+    },
+    {
+      "nodeRef": {
+        "kind": "thread",
+        "id": "root/uv-scalar-converse/product-and-skew-symmetry"
+      },
+      "requiredChanges": [
+        "conditionalIncidence",
+        "directWorkHours"
+      ],
+      "reasons": [
+        "created"
+      ]
+    },
+    {
+      "nodeRef": {
+        "kind": "thread",
+        "id": "root/uv-scalar-converse/unstructured-search"
+      },
+      "requiredChanges": [
+        "conditionalIncidence",
+        "directWorkHours"
+      ],
+      "reasons": [
+        "created"
+      ]
+    }
+  ],
+  "stageInput": {
+    "schemaVersion": 1,
+    "evaluationMode": "with-access",
+    "problemId": "bssc-sum-capacity",
+    "subjectTransactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+    "acceptedClaimRefs": [
+      {
+        "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+        "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity",
+        "judgmentId": "sha256:2c29fd881dec9aa923aa0713acc56df2c05d02f30ac544213f720af9158b7a41",
+        "assessmentDigest": "sha256:42a0f83e2459c5e69f7788df43b135f2f87dc8abc744b085e69353b360442b77"
+      }
+    ],
+    "knowledgeStateDigest": "sha256:0bbdeb3a10f50d634cff67c0606754eee1535272d269d01600a6e36007def3ff",
+    "safeFactsDigest": "sha256:6847daebd8fbd4202f20d4180bc2ea2a5257a04c077f7b8b53b64d779771fe50",
+    "safeFactsEvidenceManifestDigest": "sha256:a69dd143a2ee1a361b1bd65561e79ac9402b0fd71033213b1df43652f6d7150b",
+    "impactContext": {
+      "schemaVersion": 1,
+      "problemId": "bssc-sum-capacity",
+      "subjectTransactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+      "acceptedClaimRefs": [
+        {
+          "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+          "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity",
+          "judgmentId": "sha256:2c29fd881dec9aa923aa0713acc56df2c05d02f30ac544213f720af9158b7a41",
+          "assessmentDigest": "sha256:42a0f83e2459c5e69f7788df43b135f2f87dc8abc744b085e69353b360442b77"
+        }
+      ],
+      "knowledgeStateDigest": "sha256:0bbdeb3a10f50d634cff67c0606754eee1535272d269d01600a6e36007def3ff",
+      "seedNodeRefs": [
+        {
+          "kind": "program",
+          "id": "root/code-structure-converse"
+        },
+        {
+          "kind": "thread",
+          "id": "root/code-structure-converse/dependence-balance-and-channel-refinement"
+        }
+      ],
+      "descendantDepth": 1,
+      "includedNodes": [
+        {
+          "ref": {
+            "kind": "program",
+            "id": "root"
+          },
+          "parentRef": null,
+          "status": "active",
+          "roles": [
+            "ancestor"
+          ],
+          "recordDigest": "sha256:6c667e70ec5eeb0bbca5cc382893b021b8e4dff33403e3ec09d92532f24e49dd"
+        },
+        {
+          "ref": {
+            "kind": "program",
+            "id": "root/code-structure-converse"
+          },
+          "parentRef": {
+            "kind": "program",
+            "id": "root"
+          },
+          "status": "active",
+          "roles": [
+            "seed",
+            "seed-owner",
+            "sibling-decision-point"
+          ],
+          "recordDigest": "sha256:b9dcb917359a21c184538fcd5afde2659b0ec70a3c8b37cda415f835ceb7af26"
+        },
+        {
+          "ref": {
+            "kind": "program",
+            "id": "root/uv-scalar-converse"
+          },
+          "parentRef": {
+            "kind": "program",
+            "id": "root"
+          },
+          "status": "active",
+          "roles": [
+            "sibling-decision-point"
+          ],
+          "recordDigest": "sha256:fcc703456c24e5b4761dfb3ffca9cee02cb267bebe124a36811b185069a0daec"
+        },
+        {
+          "ref": {
+            "kind": "thread",
+            "id": "root/code-structure-converse/dependence-balance-and-channel-refinement"
+          },
+          "parentRef": {
+            "kind": "program",
+            "id": "root/code-structure-converse"
+          },
+          "status": "active",
+          "roles": [
+            "local-thread",
+            "seed"
+          ],
+          "recordDigest": "sha256:be35b9071e3c1771d6de37cf8dedb082627ae39b1a8d02daa2cd2d4b401de358"
+        },
+        {
+          "ref": {
+            "kind": "thread",
+            "id": "root/code-structure-converse/unstructured-search"
+          },
+          "parentRef": {
+            "kind": "program",
+            "id": "root/code-structure-converse"
+          },
+          "status": "active",
+          "roles": [
+            "local-thread"
+          ],
+          "recordDigest": "sha256:21542d60cc740c3de51655b277c1d05f68529005f8a3320e510f5e3b0dab75ef"
+        },
+        {
+          "ref": {
+            "kind": "thread",
+            "id": "root/unstructured-search"
+          },
+          "parentRef": {
+            "kind": "program",
+            "id": "root"
+          },
+          "status": "active",
+          "roles": [
+            "local-thread"
+          ],
+          "recordDigest": "sha256:593d11c9f455aa91fa91e9083a6bb6ffcf4823726f6843239f552eb8fe24b48e"
+        },
+        {
+          "ref": {
+            "kind": "thread",
+            "id": "root/uv-scalar-converse-agenda"
+          },
+          "parentRef": {
+            "kind": "program",
+            "id": "root"
+          },
+          "status": "active",
+          "roles": [
+            "local-thread"
+          ],
+          "recordDigest": "sha256:1ec5b7ce786e9f1df13aab296e9407b0ecb76bc59c6201f87f03e4b745fb5e18"
+        },
+        {
+          "ref": {
+            "kind": "thread",
+            "id": "root/uv-scalar-converse/product-and-skew-symmetry"
+          },
+          "parentRef": {
+            "kind": "program",
+            "id": "root/uv-scalar-converse"
+          },
+          "status": "active",
+          "roles": [
+            "local-thread"
+          ],
+          "recordDigest": "sha256:206803453dcc63f60aef83904eb09d1b3a6ac2265b0581baa29798b977b9bd7d"
+        },
+        {
+          "ref": {
+            "kind": "thread",
+            "id": "root/uv-scalar-converse/unstructured-search"
+          },
+          "parentRef": {
+            "kind": "program",
+            "id": "root/uv-scalar-converse"
+          },
+          "status": "active",
+          "roles": [
+            "local-thread"
+          ],
+          "recordDigest": "sha256:e3cb2726702d8a286ee254ceafdd5251f4412e4222fc7678ffc1c59be356dd9e"
+        }
+      ],
+      "boundarySummaries": [],
+      "semanticItemRefs": [
+        {
+          "itemId": "root/code-structure-converse/code-induced-dependence-balance",
+          "programRef": {
+            "kind": "program",
+            "id": "root/code-structure-converse"
+          },
+          "itemType": "result",
+          "claimRefs": [
+            {
+              "claimKey": "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go",
+              "transactionId": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+            }
+          ],
+          "dependencyItemIds": [
+            "root/code-structure-converse/finite-block-balance-proof"
+          ],
+          "recordDigest": "sha256:f7f13394e11395e8d2f2728659d807142ed525017b688668eefdbfd92b06810d"
+        },
+        {
+          "itemId": "root/code-structure-converse/copy-extension-proof",
+          "programRef": {
+            "kind": "program",
+            "id": "root/code-structure-converse"
+          },
+          "itemType": "proof",
+          "claimRefs": [],
+          "dependencyItemIds": [
+            "root/code-structure-converse/entropy-counterfeit-witness"
+          ],
+          "recordDigest": "sha256:7d4d8300feed467f40d7cab85ca12c51db03fb897daf2c88ae3aca9e8b11d2bf"
+        },
+        {
+          "itemId": "root/code-structure-converse/entropy-copy-no-go",
+          "programRef": {
+            "kind": "program",
+            "id": "root/code-structure-converse"
+          },
+          "itemType": "result",
+          "claimRefs": [
+            {
+              "claimKey": "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go",
+              "transactionId": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+            }
+          ],
+          "dependencyItemIds": [
+            "root/code-structure-converse/copy-extension-proof",
+            "root/code-structure-converse/entropy-counterfeit-witness"
+          ],
+          "recordDigest": "sha256:4d3e3bb55a0cf45bcf1ed21e6dc7fbbc3462691f9b2907fa300128bd53a97d83"
+        },
+        {
+          "itemId": "root/code-structure-converse/entropy-counterfeit-witness",
+          "programRef": {
+            "kind": "program",
+            "id": "root/code-structure-converse"
+          },
+          "itemType": "computation",
+          "claimRefs": [],
+          "dependencyItemIds": [
+            "root/code-structure-converse/code-induced-dependence-balance"
+          ],
+          "recordDigest": "sha256:051254fb85f0e7177352428a4a9c735952678f44d3b7ed4242885bd43e8a9a56"
+        },
+        {
+          "itemId": "root/code-structure-converse/exact-witness-checker",
+          "programRef": {
+            "kind": "program",
+            "id": "root/code-structure-converse"
+          },
+          "itemType": "tool",
+          "claimRefs": [],
+          "dependencyItemIds": [
+            "root/code-structure-converse/entropy-counterfeit-witness"
+          ],
+          "recordDigest": "sha256:caeffc0ea1de4056a6c4e5691e5bf171b8d8197a6eae501fe6f1d8c1921d2e30"
+        },
+        {
+          "itemId": "root/code-structure-converse/finite-block-balance-proof",
+          "programRef": {
+            "kind": "program",
+            "id": "root/code-structure-converse"
+          },
+          "itemType": "proof",
+          "claimRefs": [],
+          "dependencyItemIds": [],
+          "recordDigest": "sha256:6b5eb4b706c1b19bdc51166ed41e9daa809d20f3bca4deaa44903d8fa8d8de3b"
+        },
+        {
+          "itemId": "root/uv-scalar-converse/averaged-uv-product-additivity",
+          "programRef": {
+            "kind": "program",
+            "id": "root/uv-scalar-converse"
+          },
+          "itemType": "result",
+          "claimRefs": [
+            {
+              "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity",
+              "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556"
+            }
+          ],
+          "dependencyItemIds": [
+            "root/uv-scalar-converse/correlated-input-envelope-factorization"
+          ],
+          "recordDigest": "sha256:22292ed1b0d08b9fc46adaf79040acad6c17618225e7016ac063132bd3eded4f"
+        },
+        {
+          "itemId": "root/uv-scalar-converse/bssc-uv-blocking-value",
+          "programRef": {
+            "kind": "program",
+            "id": "root/uv-scalar-converse"
+          },
+          "itemType": "result",
+          "claimRefs": [
+            {
+              "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity",
+              "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556"
+            }
+          ],
+          "dependencyItemIds": [
+            "root/uv-scalar-converse/bssc-uv-envelope-contact",
+            "root/uv-scalar-converse/receiver-skew-branchwise-additivity"
+          ],
+          "recordDigest": "sha256:d7c210886c9dbf591d9e6e8e0d0fb857888c5fff216631365b02483715492975"
+        },
+        {
+          "itemId": "root/uv-scalar-converse/bssc-uv-envelope-contact",
+          "programRef": {
+            "kind": "program",
+            "id": "root/uv-scalar-converse"
+          },
+          "itemType": "computation",
+          "claimRefs": [],
+          "dependencyItemIds": [
+            "root/code-structure-converse/entropy-counterfeit-witness"
+          ],
+          "recordDigest": "sha256:97b200eb9f24a8bffed4b26321ff1f5d862165739dac02c7adcfc9d11d0b4d4e"
+        },
+        {
+          "itemId": "root/uv-scalar-converse/correlated-input-envelope-factorization",
+          "programRef": {
+            "kind": "program",
+            "id": "root/uv-scalar-converse"
+          },
+          "itemType": "proof",
+          "claimRefs": [],
+          "dependencyItemIds": [],
+          "recordDigest": "sha256:b2ebd7a2310b2281ddec41499725fdb756ac5805b2c0ffe8695ee42df24893ef"
+        },
+        {
+          "itemId": "root/uv-scalar-converse/receiver-skew-branchwise-additivity",
+          "programRef": {
+            "kind": "program",
+            "id": "root/uv-scalar-converse"
+          },
+          "itemType": "result",
+          "claimRefs": [
+            {
+              "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity",
+              "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556"
+            }
+          ],
+          "dependencyItemIds": [
+            "root/uv-scalar-converse/averaged-uv-product-additivity",
+            "root/uv-scalar-converse/receiver-skew-invariant-prior-reduction"
+          ],
+          "recordDigest": "sha256:dc25d541448bf327952a21e9384f9c92ac3dfcaa9da88fa2ecd82ed143e4bceb"
+        },
+        {
+          "itemId": "root/uv-scalar-converse/receiver-skew-invariant-prior-reduction",
+          "programRef": {
+            "kind": "program",
+            "id": "root/uv-scalar-converse"
+          },
+          "itemType": "proof",
+          "claimRefs": [],
+          "dependencyItemIds": [],
+          "recordDigest": "sha256:380496838c0cf07b32286cee3ffa8f8348a46ff6c89940f7427efcbfdc1050ce"
+        },
+        {
+          "itemId": "root/uv-scalar-converse/uv-factorization-and-hostile-case-audits",
+          "programRef": {
+            "kind": "program",
+            "id": "root/uv-scalar-converse"
+          },
+          "itemType": "tool",
+          "claimRefs": [],
+          "dependencyItemIds": [
+            "root/uv-scalar-converse/bssc-uv-envelope-contact",
+            "root/uv-scalar-converse/correlated-input-envelope-factorization",
+            "root/uv-scalar-converse/receiver-skew-invariant-prior-reduction"
+          ],
+          "recordDigest": "sha256:128c75898781ae9e6fec46fe2c1b61f96c97c7e243df78f0d5b69b27ffef9441"
+        }
+      ],
+      "expansionPolicy": {
+        "allowedKinds": [
+          "program",
+          "thread"
+        ],
+        "maximumDescendantDepth": 4,
+        "requiresExactBuilderNode": true
+      },
+      "contextDigest": "sha256:3186b090759c6da0d26dae8da03cc68ad88ab2b6eb66f0ec62759d03f2949070"
+    },
+    "evidenceManifest": {
+      "chunkSizeBytes": 65536,
+      "contributionPath": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity",
+      "files": [
+        {
+          "bytes": 8568,
+          "chunks": [
+            {
+              "bytes": 8568,
+              "digest": "sha256:fe480b29698c63afd6c80d4e3c5b155d227ce19b74910de8a38f73b807a94e9a",
+              "offset": 0,
+              "ordinal": 0
+            }
+          ],
+          "digest": "sha256:fe480b29698c63afd6c80d4e3c5b155d227ce19b74910de8a38f73b807a94e9a",
+          "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/README.md"
+        },
+        {
+          "bytes": 8398,
+          "chunks": [
+            {
+              "bytes": 8398,
+              "digest": "sha256:64ddb2c3d0c375bbca746842e21689f11883d989d56a0f0028ceaf216715e623",
+              "offset": 0,
+              "ordinal": 0
+            }
+          ],
+          "digest": "sha256:64ddb2c3d0c375bbca746842e21689f11883d989d56a0f0028ceaf216715e623",
+          "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/frontier-uv-branchwise/FULL.md"
+        },
+        {
+          "bytes": 14681,
+          "chunks": [
+            {
+              "bytes": 14681,
+              "digest": "sha256:69a33f9fc84a5dbabbad6bdf53b34e722238c6a6b3f625d49e00f599e942b94a",
+              "offset": 0,
+              "ordinal": 0
+            }
+          ],
+          "digest": "sha256:69a33f9fc84a5dbabbad6bdf53b34e722238c6a6b3f625d49e00f599e942b94a",
+          "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/FULL.md"
+        },
+        {
+          "bytes": 8067,
+          "chunks": [
+            {
+              "bytes": 8067,
+              "digest": "sha256:bdd966d11f1914425ed4932b459c83508a6a61a73131f4f2a184204ad0c4153e",
+              "offset": 0,
+              "ordinal": 0
+            }
+          ],
+          "digest": "sha256:bdd966d11f1914425ed4932b459c83508a6a61a73131f4f2a184204ad0c4153e",
+          "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/verify_uv_factorization.py"
+        },
+        {
+          "bytes": 5740,
+          "chunks": [
+            {
+              "bytes": 5740,
+              "digest": "sha256:ffa2b5d66670f0fd03338e73f8ecc5400bf23b162a92fa327f363c7bb1aac6c0",
+              "offset": 0,
+              "ordinal": 0
+            }
+          ],
+          "digest": "sha256:ffa2b5d66670f0fd03338e73f8ecc5400bf23b162a92fa327f363c7bb1aac6c0",
+          "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/verify_uv_hostile_cases.py"
+        }
+      ],
+      "manifestDigest": "sha256:a69dd143a2ee1a361b1bd65561e79ac9402b0fd71033213b1df43652f6d7150b",
+      "problemId": "bssc-sum-capacity",
+      "schemaVersion": 1,
+      "sourceRevision": "f236017c62c67ce4218c1f81ea34134f0954b556",
+      "subjectTransactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+      "submissionDigest": "sha256:4bf6ebede3bdb345c7c3b90bce0e41a35bf3ce8873ec588323097e868d814ef3",
+      "totalBytes": 45454
+    },
+    "verifiedChunkDigests": [
+      "sha256:64ddb2c3d0c375bbca746842e21689f11883d989d56a0f0028ceaf216715e623",
+      "sha256:69a33f9fc84a5dbabbad6bdf53b34e722238c6a6b3f625d49e00f599e942b94a",
+      "sha256:bdd966d11f1914425ed4932b459c83508a6a61a73131f4f2a184204ad0c4153e",
+      "sha256:fe480b29698c63afd6c80d4e3c5b155d227ce19b74910de8a38f73b807a94e9a",
+      "sha256:ffa2b5d66670f0fd03338e73f8ecc5400bf23b162a92fa327f363c7bb1aac6c0"
+    ],
+    "verifiedFileCount": 5,
+    "verifiedTotalBytes": 45454,
+    "visibilityPolicy": {
+      "contributionAvailableToEvaluator": true,
+      "contributionAvailableToActors": true
+    },
+    "inputDigest": "sha256:1f85922fa55a6083adf5368b1eb59e4244eeca3898ac403adc4dfbe2af66b7f8"
+  },
+  "requestDigest": "sha256:87f226b96bb032b38c5d6ad93853216d0862f04d539ebf292485ab7572ca4b5c"
+}
