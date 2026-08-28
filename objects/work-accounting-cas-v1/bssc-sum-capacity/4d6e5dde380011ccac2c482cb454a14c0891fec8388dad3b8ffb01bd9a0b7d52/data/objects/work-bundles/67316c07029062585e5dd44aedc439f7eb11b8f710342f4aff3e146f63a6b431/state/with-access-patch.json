@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+  "evaluationMode": "with-access",
+  "rootContractDigest": "sha256:01d52a695e88694768973f3590c0c13eb5acd8070fbed32de8ad01e460c41135",
+  "baseAccountingStateDigest": "sha256:1e82a770eb595aff11766eb0243f092e8e85b820eb1e805669b0ac35dd108bf5",
+  "baseKnowledgeStateDigest": "sha256:0bbdeb3a10f50d634cff67c0606754eee1535272d269d01600a6e36007def3ff",
+  "targetKnowledgeStateDigest": "sha256:04d09ef748906bd0af20dfa0fa1f2749a940b911cdd2706a2cbcbb10bbe5a684",
+  "topologyAlignmentDigest": "sha256:338c3d2183c3997c38e732578552b0a4e01206c7b08dd536d74820a9c24b8f7b",
+  "updates": [
+    {
+      "nodeRef": {
+        "kind": "program",
+        "id": "root/uv-scalar-converse"
+      },
+      "baseAnnotationDigest": "sha256:49af2dc6b7e2775f219b4f47f6182114cc0d1ca7c1be09222762750a262a3b57",
+      "changes": {
+        "directWorkHours": "12",
+        "conditionalIncidence": "0.3"
+      },
+      "rationale": "The accepted tensorization theorem settles the separately relaxed product functional and shows that its exact BSSC specialization does not tighten the governed capacity interval, leaving less synthesis work and reducing the likelihood that this program supplies the terminal converse.",
+      "evidenceRefs": [
+        "bssc-sum-capacity/uv-relaxed-converse-tensorization",
+        "sha256:c4df63434cb0c5f76918bd0ba578629f7373d4f2b24d6d6b5e21d3c253f2e852"
+      ]
+    },
+    {
+      "nodeRef": {
+        "kind": "thread",
+        "id": "root/uv-scalar-converse-agenda"
+      },
+      "baseAnnotationDigest": "sha256:a47dfc1399266fc15586fa85e1847da1d910caa578a8b9763a1321a2e7ada32c",
+      "changes": {
+        "directWorkHours": "55",
+        "conditionalIncidence": "0.4"
+      },
+      "rationale": "The theorem and its explicit scope limitations resolve a substantial agenda question by identifying an additive relaxed functional while excluding it as a capacity-closing converse, leaving a narrower agenda-setting task.",
+      "evidenceRefs": [
+        "sha256:96375d4961d1ed5f5f5b3da368e59c60c4bd0fc6779b741a484b40f2114db4a2",
+        "sha256:c4df63434cb0c5f76918bd0ba578629f7373d4f2b24d6d6b5e21d3c253f2e852"
+      ]
+    },
+    {
+      "nodeRef": {
+        "kind": "thread",
+        "id": "root/uv-scalar-converse/product-and-skew-symmetry"
+      },
+      "baseAnnotationDigest": "sha256:59aa3c57bc1bff1b3b1d0f2cc6eaf28b7c9c0a057942c08ae41963f5a28e0095",
+      "changes": {
+        "directWorkHours": "6",
+        "conditionalIncidence": "0.25"
+      },
+      "rationale": "The submission provides the general product proof, receiver-skew reduction, and exact half-skew specialization; only limited integration and independent audit work remains on this package.",
+      "evidenceRefs": [
+        "sha256:96375d4961d1ed5f5f5b3da368e59c60c4bd0fc6779b741a484b40f2114db4a2",
+        "sha256:c4df63434cb0c5f76918bd0ba578629f7373d4f2b24d6d6b5e21d3c253f2e852"
+      ]
+    },
+    {
+      "nodeRef": {
+        "kind": "thread",
+        "id": "root/uv-scalar-converse/unstructured-search"
+      },
+      "baseAnnotationDigest": "sha256:e8aa2db3af6240cc81d29e1e2116d7b5f726e8b074e7305a31b784c73e8edba0",
+      "changes": {
+        "conditionalIncidence": "0.55"
+      },
+      "rationale": "Conditional on continuing the UV-scalar program, the resolved relaxed-product route is too loose for the capacity objective, making alternative UV formulations or sharper non-relaxed arguments more likely to be required.",
+      "evidenceRefs": [
+        "bssc-sum-capacity/uv-relaxed-converse-tensorization",
+        "sha256:0d46c2dbd1a62f0385fc4d8878d8cfef3749f85cca019e1284c5e54c12016874"
+      ]
+    }
+  ],
+  "patchDigest": "sha256:75675eb65b73c9e9bed341fe97cec2bd90b57bea400d8ec6249615ec994be759"
+}
