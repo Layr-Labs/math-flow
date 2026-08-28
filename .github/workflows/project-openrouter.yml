@@ -112,6 +112,10 @@ jobs:
         name: Resolve approved projection
         run: |
           set -euo pipefail
+          if [[ "$MATH_FLOW_PROJECTION_ID" == "openrouter-research-v5" ]]; then
+            echo "openrouter-research-v5 must run through project-research-v5-serial.yml" >&2
+            exit 1
+          fi
           resolved="${RUNNER_TEMP}/projection-spec.json"
           python -m math_flow resolve-projection \
             --projection "$MATH_FLOW_PROJECTION_ID" \
