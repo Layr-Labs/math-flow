@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import re
+from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Mapping
 
@@ -39,6 +40,26 @@ VALIDITY_PROFILE = "math-flow/validity-judgment-v4"
 DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 
+@dataclass(frozen=True)
+class SerialBSSCResearchLane:
+    projection_id: str
+    builder_path: str
+    builder_profile: str
+    builder_implementation: str
+    label: str
+    state_schema_version: int
+
+
+V4_LANE = SerialBSSCResearchLane(
+    projection_id=PROJECTION_ID,
+    builder_path=BUILDER_PATH,
+    builder_profile=BUILDER_PROFILE,
+    builder_implementation="openrouter-hierarchical-research-builder-v6",
+    label="builder-v6",
+    state_schema_version=2,
+)
+
+
 def _content_digest(value: Mapping[str, object], field: str) -> str:
     return f"sha256:{sha256_json({key: item for key, item in value.items() if key != field})}"
 
@@ -49,26 +70,28 @@ def _bundle_path(kind: str, run_digest: str) -> str:
 
 
 def _load_active_projection(
-    repository_root: Path, projection: object
+    repository_root: Path,
+    projection: object,
+    lane: SerialBSSCResearchLane,
 ) -> tuple[dict[str, object], str, str]:
     spec = validate_projection_spec(
         projection,
-        PROJECTION_ID,
+        lane.projection_id,
         lambda relative: (repository_root / relative).read_text(encoding="utf-8"),
     )
     if (
         spec.get("status") != "active"
         or spec.get("allowedProblems") != [PROBLEM_ID]
-        or spec.get("knowledgeBuilder") != BUILDER_PATH
+        or spec.get("knowledgeBuilder") != lane.builder_path
         or spec.get("reconciliationJudge") is not None
         or spec.get("scheduling", {}).get("maximumJudgmentsPerBuild") != 1
     ):
         raise MathFlowError(
-            "serial BSSC producer requires the active BSSC-only builder-v6 projection"
+            f"serial BSSC producer requires the active BSSC-only {lane.label} projection"
         )
     projection_digest = f"sha256:{sha256_json(spec)}"
-    builder = load_judge_spec(repository_root / BUILDER_PATH)
-    if builder.get("implementation") != "openrouter-hierarchical-research-builder-v6":
+    builder = load_judge_spec(repository_root / lane.builder_path)
+    if builder.get("implementation") != lane.builder_implementation:
         raise MathFlowError("serial BSSC producer has the wrong builder implementation")
     return spec, projection_digest, f"sha256:{sha256_json(builder)}"
 
@@ -202,26 +225,33 @@ def _materialize_validity_bundle(
         raise MathFlowError("materialized BSSC validity bundle identity mismatch")
 
 
-def _published_v6_chain(
+def _published_chain(
     projection_root: Path,
     latest_run_digest: str | None,
     *,
     projection_digest: str,
     builder_digest: str,
     accepted: list[dict[str, object]],
+    lane: SerialBSSCResearchLane,
 ) -> list[dict[str, object]]:
     reverse: list[dict[str, object]] = []
     observed: set[str] = set()
     current = latest_run_digest
     while current is not None:
         if not DIGEST.fullmatch(current) or current in observed:
-            raise MathFlowError("published BSSC builder-v6 chain has an invalid base link")
+            raise MathFlowError(
+                f"published BSSC {lane.label} chain has an invalid base link"
+            )
         observed.add(current)
         relative = _bundle_path("knowledge-build", current)
         bundle = projection_root / relative
         manifest, state, loaded_digest = load_research_build_bundle(bundle)
         if loaded_digest != current:
-            raise MathFlowError("published BSSC builder-v6 run is misaddressed")
+            raise MathFlowError(f"published BSSC {lane.label} run is misaddressed")
+        if state.get("schemaVersion") != lane.state_schema_version:
+            raise MathFlowError(
+                f"published BSSC {lane.label} state has the wrong schema version"
+            )
         try:
             submission = json.loads(
                 read_verified_artifact(
@@ -230,20 +260,20 @@ def _published_v6_chain(
             )
         except json.JSONDecodeError as exc:
             raise MathFlowError(
-                "published BSSC builder-v6 submission input is invalid JSON"
+                f"published BSSC {lane.label} submission input is invalid JSON"
             ) from exc
         judge = manifest.get("judgeSpec")
         inputs = manifest.get("inputs")
         if (
             manifest.get("problemId") != PROBLEM_ID
-            or manifest.get("outputProfile") != BUILDER_PROFILE
+            or manifest.get("outputProfile") != lane.builder_profile
             or not isinstance(judge, dict)
             or judge.get("digest") != builder_digest
             or not isinstance(inputs, dict)
             or inputs.get("projectionSpecDigest") != projection_digest
             or not isinstance(submission, dict)
         ):
-            raise MathFlowError("published BSSC builder-v6 run belongs to another lane")
+            raise MathFlowError(f"published BSSC {lane.label} run belongs to another lane")
         reverse.append(
             {
                 "runDigest": current,
@@ -256,12 +286,16 @@ def _published_v6_chain(
         )
         base = manifest.get("baseRun")
         if base is not None and (not isinstance(base, str) or not DIGEST.fullmatch(base)):
-            raise MathFlowError("published BSSC builder-v6 run has an invalid base digest")
+            raise MathFlowError(
+                f"published BSSC {lane.label} run has an invalid base digest"
+            )
         current = base if isinstance(base, str) else None
 
     chain = list(reversed(reverse))
     if len(chain) > len(accepted):
-        raise MathFlowError("published BSSC builder-v6 chain exceeds the accepted frontier")
+        raise MathFlowError(
+            f"published BSSC {lane.label} chain exceeds the accepted frontier"
+        )
     prior: str | None = None
     for index, record in enumerate(chain):
         expected = accepted[index]
@@ -272,13 +306,13 @@ def _published_v6_chain(
             or record["judgmentRunDigest"] != expected["judgmentRunDigest"]
         ):
             raise MathFlowError(
-                "published BSSC builder-v6 chain is not the canonical accepted prefix"
+                f"published BSSC {lane.label} chain is not the canonical accepted prefix"
             )
         prior = str(record["runDigest"])
     return chain
 
 
-def plan_bssc_research_v4_frontier(
+def _plan_bssc_research_frontier(
     repository_root: Path,
     *,
     projection_root: Path,
@@ -286,6 +320,7 @@ def plan_bssc_research_v4_frontier(
     materialization_root: Path,
     replay_source: object,
     projection: object,
+    lane: SerialBSSCResearchLane,
     expected_projection_digest: str | None = None,
 ) -> dict[str, object]:
     """Validate the published prefix and materialize inputs through one frontier.
@@ -298,7 +333,9 @@ def plan_bssc_research_v4_frontier(
     root = repository_root.resolve()
     projection_root = projection_root.resolve()
     materialization_root = materialization_root.resolve()
-    spec, projection_digest, builder_digest = _load_active_projection(root, projection)
+    spec, projection_digest, builder_digest = _load_active_projection(
+        root, projection, lane
+    )
     if (
         expected_projection_digest is not None
         and expected_projection_digest != projection_digest
@@ -309,40 +346,43 @@ def plan_bssc_research_v4_frontier(
     pins, accepted = _accepted_frontier(root, replay_source)
     identifier = lane_id(PROBLEM_ID, builder_digest, projection_digest)
     scheduler = load_scheduler(scheduler_file)
-    lane = scheduler["lanes"].get(identifier)
-    if lane is None:
+    scheduler_lane = scheduler["lanes"].get(identifier)
+    if scheduler_lane is None:
         latest_run = None
         observed_ids: list[str] = []
         pending_ids: list[str] = []
     else:
         if (
-            not isinstance(lane, dict)
-            or lane.get("problemId") != PROBLEM_ID
-            or lane.get("builderSpecDigest") != builder_digest
-            or lane.get("projectionSpecDigest") != projection_digest
-            or lane.get("minimumIntervalSeconds")
+            not isinstance(scheduler_lane, dict)
+            or scheduler_lane.get("problemId") != PROBLEM_ID
+            or scheduler_lane.get("builderSpecDigest") != builder_digest
+            or scheduler_lane.get("projectionSpecDigest") != projection_digest
+            or scheduler_lane.get("minimumIntervalSeconds")
             != spec["scheduling"]["knowledgeMinimumIntervalSeconds"]
-            or lane.get("activeBuild") is not None
-            or lane.get("observedConflictIds") != []
-            or lane.get("pendingConflictIds") != []
+            or scheduler_lane.get("activeBuild") is not None
+            or scheduler_lane.get("observedConflictIds") != []
+            or scheduler_lane.get("pendingConflictIds") != []
         ):
-            raise MathFlowError("published BSSC builder-v6 scheduler lane is inconsistent")
-        latest_run = lane.get("latestStateRun")
+            raise MathFlowError(
+                f"published BSSC {lane.label} scheduler lane is inconsistent"
+            )
+        latest_run = scheduler_lane.get("latestStateRun")
         if latest_run is not None and (
             not isinstance(latest_run, str) or not DIGEST.fullmatch(latest_run)
         ):
             raise MathFlowError("published BSSC scheduler has an invalid latest run")
-        observed_ids = lane.get("observedJudgmentIds")
-        pending_ids = lane.get("pendingJudgmentIds")
+        observed_ids = scheduler_lane.get("observedJudgmentIds")
+        pending_ids = scheduler_lane.get("pendingJudgmentIds")
         if not isinstance(observed_ids, list) or not isinstance(pending_ids, list):
             raise MathFlowError("published BSSC scheduler has invalid judgment indexes")
 
-    chain = _published_v6_chain(
+    chain = _published_chain(
         projection_root,
         latest_run,
         projection_digest=projection_digest,
         builder_digest=builder_digest,
         accepted=accepted,
+        lane=lane,
     )
     completed_count = len(chain)
     expected_completed_ids = sorted(
@@ -409,7 +449,7 @@ def plan_bssc_research_v4_frontier(
             "validityProjectionCommit": pins["projectionCommit"],
         },
         "projection": {
-            "id": PROJECTION_ID,
+            "id": lane.projection_id,
             "projectionSpecDigest": projection_digest,
             "builderSpecDigest": builder_digest,
             "maximumJudgmentsPerBuild": 1,
@@ -428,6 +468,28 @@ def plan_bssc_research_v4_frontier(
     }
     result["planDigest"] = _content_digest(result, "planDigest")
     return result
+
+
+def plan_bssc_research_v4_frontier(
+    repository_root: Path,
+    *,
+    projection_root: Path,
+    scheduler_file: Path,
+    materialization_root: Path,
+    replay_source: object,
+    projection: object,
+    expected_projection_digest: str | None = None,
+) -> dict[str, object]:
+    return _plan_bssc_research_frontier(
+        repository_root,
+        projection_root=projection_root,
+        scheduler_file=scheduler_file,
+        materialization_root=materialization_root,
+        replay_source=replay_source,
+        projection=projection,
+        lane=V4_LANE,
+        expected_projection_digest=expected_projection_digest,
+    )
 
 
 def load_json_file(path: Path, label: str) -> object:
