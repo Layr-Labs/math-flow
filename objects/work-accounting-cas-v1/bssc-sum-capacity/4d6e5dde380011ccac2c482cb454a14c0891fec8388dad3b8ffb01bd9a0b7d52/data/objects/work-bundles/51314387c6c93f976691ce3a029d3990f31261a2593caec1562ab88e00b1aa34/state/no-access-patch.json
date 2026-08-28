@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+  "evaluationMode": "no-access",
+  "rootContractDigest": "sha256:01d52a695e88694768973f3590c0c13eb5acd8070fbed32de8ad01e460c41135",
+  "baseAccountingStateDigest": "sha256:19525f4bd2804d7bb00bb14c5da1639a9e2e575d3bdf42ace306f09637c64dbf",
+  "baseKnowledgeStateDigest": "sha256:c9458133e92111ac4df0542400598af0595ce964dd3c89b47efec0bf38b1d344",
+  "targetKnowledgeStateDigest": "sha256:3e9323e362b1000d99bb9bf0c32ba56b059c908532558321036f0f6ffceb24f1",
+  "topologyAlignmentDigest": "sha256:e32ad40fb54649fbbe8313b4a048ab59667540b454b0e2b15a9edca4c6244feb",
+  "updates": [
+    {
+      "nodeRef": {
+        "kind": "program",
+        "id": "root/multiletter-marton-achievability"
+      },
+      "baseAnnotationDigest": "sha256:379310fd91d96eec62b234a41da693a089eadc21cbd311501dc2aa615e3c6190",
+      "changes": {
+        "directWorkHours": "20",
+        "conditionalIncidence": "0.88"
+      },
+      "rationale": "Independent reconstruction requires program-level integration of finite-support restrictions, asymptotic sequence structure, operational lifting, and benchmark certification. The strengthened finite-block route also modestly raises the likelihood that this program is pursued.",
+      "evidenceRefs": [
+        "finite-block-operational-lifting",
+        "finite-block-sequence-structure",
+        "multiblock-threshold-test",
+        "receiver-switching-benchmark-characterization"
+      ]
+    },
+    {
+      "nodeRef": {
+        "kind": "thread",
+        "id": "root/multiletter-marton-achievability-agenda"
+      },
+      "baseAnnotationDigest": "sha256:be122853bca5ca83f844ab9d6809043b2cba2f73ac5a4a9283c50965e89a6fea",
+      "changes": {
+        "directWorkHours": "16"
+      },
+      "rationale": "Without access, researchers must independently formulate the finite-block superadditivity route, isolate its assumptions, and derive the exact receiver-switching benchmark before the agenda can be closed.",
+      "evidenceRefs": [
+        "finite-block-sequence-structure",
+        "receiver-switching-benchmark-characterization"
+      ]
+    },
+    {
+      "nodeRef": {
+        "kind": "thread",
+        "id": "root/multiletter-marton-achievability/conditional-product-and-correlation-pruning"
+      },
+      "baseAnnotationDigest": "sha256:a42c6446528f3890f0e926e657ceec0f980bcdb026e84a234610cfa4e8ff328b",
+      "changes": {
+        "directWorkHours": "64"
+      },
+      "rationale": "This thread bears the main independent proof effort: finite-auxiliary operational flattening, the multiblock threshold equivalence, and verification that the construction preserves the required per-symbol conclusion.",
+      "evidenceRefs": [
+        "finite-block-operational-lifting",
+        "multiblock-threshold-test"
+      ]
+    },
+    {
+      "nodeRef": {
+        "kind": "thread",
+        "id": "root/multiletter-marton-achievability/unstructured-search"
+      },
+      "baseAnnotationDigest": "sha256:a49a62d119bc076acd32e9b894ff6f4300c7b62b90f033c3e634e1524fc785f6",
+      "changes": {
+        "directWorkHours": "190",
+        "conditionalIncidence": "0.7"
+      },
+      "rationale": "After independent discovery of the finite-foundation route, residual exploratory work is somewhat better focused, while correlated multiletter possibilities remain sufficiently unresolved to make this search branch more likely.",
+      "evidenceRefs": [
+        "finite-block-sequence-structure",
+        "multiblock-threshold-test"
+      ]
+    }
+  ],
+  "patchDigest": "sha256:99cc218ee34a67c9d6091d3d078801f44a923b58f121f58ae371dae598d74b76"
+}

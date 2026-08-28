@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "units": "bits",
+  "precisionDigits": 120,
+  "exactDefinitions": {
+    "binaryEntropy": "h_2(t)=-t log_2(t)-(1-t) log_2(1-t)",
+    "receiverCurve": "J(q)=h_2(q/2)-q",
+    "differenceCurve": "D(q)=J(q)-J(1-q)",
+    "stationaryPolynomial": "15q^2-15q+2",
+    "maximizer": "q_-=(15-sqrt(105))/30",
+    "lRtd": "h_2(1/4)-1/2+(1/2)[h_2(q_-/2)-h_2((1-q_-)/2)+1-2q_-]"
+  },
+  "sqrt105": {
+    "lower": "10.24695076595959838322103868052105199073503266345483292954197849989034798570535407292723162837854673695",
+    "upper": "10.24695076595959838322103868052105199073503266345483292954197849989034798570535407292723162837854673696",
+    "proofObligation": "lower^2 < 105 < upper^2 over exact rationals"
+  },
+  "lRtd": {
+    "lower": "0.3616428844219546156634415781505870072079810107238605552037137298028007",
+    "upper": "0.3616428844219546156634415781505870072079810107238605552037137298028008"
+  },
+  "twoLRtd": {
+    "lower": "0.7232857688439092313268831563011740144159620214477211104074274596056014",
+    "upper": "0.7232857688439092313268831563011740144159620214477211104074274596056016"
+  },
+  "method": {
+    "sqrt": "exact rational square comparison; no runtime square root",
+    "arithmetic": "Decimal contexts with ROUND_FLOOR and ROUND_CEILING",
+    "logarithm": "correctly rounded Decimal.ln at 120 digits, expanded by one representable number in each direction",
+    "acceptance": "computed enclosures must lie strictly inside every declared interval"
+  }
+}
