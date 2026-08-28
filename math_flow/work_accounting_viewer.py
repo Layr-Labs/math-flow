@@ -1,4 +1,4 @@
-"""Deterministic V2 viewer export for committed work-accounting V1 lanes."""
+"""Deterministic V2 viewer export for committed work-accounting V1/V2 lanes."""
 
 from __future__ import annotations
 
@@ -47,6 +47,11 @@ UNIT = {
 RATIONALE_PREVIEW_LENGTH = 240
 EVIDENCE_REF_PREVIEW_LENGTH = 160
 EVIDENCE_REF_PREVIEW_COUNT = 3
+
+WORK_ACCOUNTING_VIEWER_OUTPUT_PROFILES = {
+    "openrouter-work-accounting-v1": "math-flow/work-accounting-transition-v1",
+    "openrouter-work-accounting-v2": "math-flow/work-accounting-transition-v2",
+}
 
 
 def _digest(value: Mapping[str, object], field: str) -> str:
@@ -848,11 +853,26 @@ def _digest_key(kind: str, digest: str) -> str:
     return f"objects/{kind}/{digest.removeprefix('sha256:')}.json"
 
 
+def _require_bundle_output_profile(
+    loaded: Mapping[str, object], expected_output_profile: str
+) -> None:
+    manifest = loaded.get("manifest")
+    if (
+        not isinstance(manifest, dict)
+        or manifest.get("outputProfile") != expected_output_profile
+    ):
+        raise MathFlowError(
+            "published work-accounting bundle profile disagrees with "
+            "its governed viewer lane"
+        )
+
+
 def load_published_work_accounting_viewer_projection(
     store: ProjectionBranchWorkAccountingStore,
     *,
     label: str,
     research_projection_ids: Sequence[str],
+    expected_output_profile: str | None = None,
 ) -> dict[str, object]:
     """Reconstruct a viewer projection solely from one verified published CAS lane."""
 
@@ -921,16 +941,14 @@ def load_published_work_accounting_viewer_projection(
         loaded_bundles = []
         for index, item in enumerate(completed, start=1):
             output_dir = bundle_root / f"bundle-{index:06d}"
-            loaded_bundles.append(
-                _attach_verified_requests(
-                    materialize_stored_work_projection_bundle(
-                        store,
-                        bundle_digest=str(item["workBundleDigest"]),
-                        output_dir=output_dir,
-                    ),
-                    output_dir,
-                )
+            loaded = materialize_stored_work_projection_bundle(
+                store,
+                bundle_digest=str(item["workBundleDigest"]),
+                output_dir=output_dir,
             )
+            if expected_output_profile is not None:
+                _require_bundle_output_profile(loaded, expected_output_profile)
+            loaded_bundles.append(_attach_verified_requests(loaded, output_dir))
         return build_work_accounting_viewer_projection(
             projection_id=store.projection_id,
             label=label,
@@ -955,6 +973,14 @@ def discover_published_work_accounting_viewer_projections(
     results: list[dict[str, object]] = []
     for projection_digest, spec in sorted(projection_specs.items()):
         runner = spec.get("runner")
+        implementation = (
+            runner.get("implementation") if isinstance(runner, dict) else None
+        )
+        expected_output_profile = (
+            WORK_ACCOUNTING_VIEWER_OUTPUT_PROFILES.get(implementation)
+            if isinstance(implementation, str)
+            else None
+        )
         dependencies = spec.get("dependencies")
         handoffs = (
             [
@@ -969,7 +995,7 @@ def discover_published_work_accounting_viewer_projections(
         if (
             spec.get("engine") != "overlay-repository-v1"
             or not isinstance(runner, dict)
-            or runner.get("implementation") != "openrouter-work-accounting-v1"
+            or expected_output_profile is None
             or len(handoffs) != 1
         ):
             continue
@@ -1015,6 +1041,7 @@ def discover_published_work_accounting_viewer_projections(
                     store,
                     label=projection_id,
                     research_projection_ids=[str(handoffs[0]["projectionId"])],
+                    expected_output_profile=expected_output_profile,
                 )
             )
     results.sort(

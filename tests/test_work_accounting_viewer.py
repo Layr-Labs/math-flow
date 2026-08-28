@@ -4,6 +4,7 @@ import copy
 import json
 import tempfile
 import unittest
+from fractions import Fraction
 from pathlib import Path
 from unittest.mock import patch
 
@@ -15,6 +16,9 @@ from math_flow.work_accounting import (
     make_work_accounting_patch,
     materialize_submission_work_value,
 )
+from math_flow.work_accounting_projection_store import (
+    work_accounting_lane_scope_digest,
+)
 from math_flow.work_accounting_schedule import (
     apply_work_accounting_publication,
     apply_work_accounting_state_repair,
@@ -24,7 +28,9 @@ from math_flow.work_accounting_viewer import (
     _attach_verified_requests,
     _node_effect_view,
     _patch_view,
+    _require_bundle_output_profile,
     build_work_accounting_viewer_projection,
+    discover_published_work_accounting_viewer_projections,
 )
 from math_flow.viewer import export_viewer_catalog
 from tests import test_work_accounting_schedule as schedule_tests
@@ -195,6 +201,164 @@ class WorkAccountingViewerTests(unittest.TestCase):
                 canonical_ref="HEAD",
             )
         self.assertNotIn("workAccountingProjections", catalog)
+
+    def test_discovers_governed_v1_and_v2_but_not_unrelated_overlays(self) -> None:
+        digests = {
+            "openrouter-work-accounting-v1": f"sha256:{'1' * 64}",
+            "openrouter-work-accounting-v2": f"sha256:{'2' * 64}",
+            "unrelated-credit-overlay": f"sha256:{'3' * 64}",
+        }
+
+        def spec(projection_id: str, implementation: str) -> dict[str, object]:
+            return {
+                "id": projection_id,
+                "engine": "overlay-repository-v1",
+                "allowedProblems": ["demo"],
+                "runner": {
+                    "implementation": implementation,
+                    "spec": f"protocol/judges/{implementation}.json",
+                },
+                "dependencies": [
+                    {
+                        "name": "knowledge",
+                        "projectionId": "openrouter-research-v3",
+                        "artifactRole": "research-builder-handoff",
+                    }
+                ],
+            }
+
+        specs = {
+            digests["openrouter-work-accounting-v1"]: spec(
+                "openrouter-work-accounting-v1", "openrouter-work-accounting-v1"
+            ),
+            digests["openrouter-work-accounting-v2"]: spec(
+                "openrouter-work-accounting-v2", "openrouter-work-accounting-v2"
+            ),
+            digests["unrelated-credit-overlay"]: spec(
+                "unrelated-credit-overlay", "openrouter-credit-assignment-v2"
+            ),
+        }
+        stores: list[object] = []
+        loaded_profiles: dict[str, str] = {}
+
+        class FakeStore:
+            def __init__(
+                self,
+                root: Path,
+                *,
+                problem: str,
+                projection_id: str,
+                projection_spec_digest: str,
+                create: bool,
+            ) -> None:
+                self.root = root
+                self.problem = problem
+                self.projection_id = projection_id
+                self.projection_spec_digest = projection_spec_digest
+                self.create = create
+                stores.append(self)
+
+            def load_published_snapshot(self) -> dict[str, object]:
+                return {"pipeline": {"completedTransitions": [{}]}}
+
+        def load_projection(
+            store: FakeStore,
+            *,
+            label: str,
+            research_projection_ids: list[str],
+            expected_output_profile: str,
+        ) -> dict[str, object]:
+            loaded_profiles[store.projection_id] = expected_output_profile
+            return self._build(
+                projection_id=store.projection_id,
+                label=label,
+                research_projection_ids=research_projection_ids,
+            )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            projection_root = Path(temporary)
+            for projection_id, projection_digest in digests.items():
+                scope = work_accounting_lane_scope_digest(
+                    problem="demo",
+                    projection_id=projection_id,
+                    projection_spec_digest=projection_digest,
+                ).removeprefix("sha256:")
+                marker = (
+                    projection_root
+                    / "indexes/problems/demo/work-accounting-v1"
+                    / scope
+                    / "publication.json"
+                )
+                marker.parent.mkdir(parents=True)
+                marker.write_text("{}\n", encoding="utf-8")
+            with (
+                patch(
+                    "math_flow.work_accounting_viewer.ProjectionBranchWorkAccountingStore",
+                    FakeStore,
+                ),
+                patch(
+                    "math_flow.work_accounting_viewer.load_published_work_accounting_viewer_projection",
+                    side_effect=load_projection,
+                ),
+            ):
+                projections = discover_published_work_accounting_viewer_projections(
+                    projection_root,
+                    projection_specs=specs,
+                    problem_ids=["demo"],
+                )
+
+        self.assertEqual(
+            [item["id"] for item in projections],
+            ["openrouter-work-accounting-v1", "openrouter-work-accounting-v2"],
+        )
+        self.assertEqual(
+            loaded_profiles,
+            {
+                "openrouter-work-accounting-v1": "math-flow/work-accounting-transition-v1",
+                "openrouter-work-accounting-v2": "math-flow/work-accounting-transition-v2",
+            },
+        )
+        self.assertEqual(
+            {store.projection_id for store in stores},
+            {"openrouter-work-accounting-v1", "openrouter-work-accounting-v2"},
+        )
+        v2_evaluation = projections[1]["runs"][0]["evaluations"][0]
+        self.assertTrue(v2_evaluation["nodeEffects"])
+        self.assertEqual(
+            sum(
+                Fraction(str(item["workReductionHours"]))
+                for item in v2_evaluation["nodeEffects"]
+            ),
+            Fraction(str(v2_evaluation["workReductionHours"])),
+        )
+        self.assertTrue(v2_evaluation["nodeEffectsDigest"].startswith("sha256:"))
+
+    def test_published_bundle_profile_must_match_the_governed_lane(self) -> None:
+        _require_bundle_output_profile(
+            {
+                "manifest": {
+                    "outputProfile": "math-flow/work-accounting-transition-v1"
+                }
+            },
+            "math-flow/work-accounting-transition-v1",
+        )
+        _require_bundle_output_profile(
+            {
+                "manifest": {
+                    "outputProfile": "math-flow/work-accounting-transition-v2"
+                }
+            },
+            "math-flow/work-accounting-transition-v2",
+        )
+        with self.assertRaisesRegex(MathFlowError, "profile disagrees"):
+            _require_bundle_output_profile(
+                {
+                    "manifest": {
+                        "outputProfile": "math-flow/work-accounting-transition-v1"
+                    }
+                },
+                "math-flow/work-accounting-transition-v2",
+            )
 
     def test_node_effects_separate_direct_updates_from_propagation(self) -> None:
         subject = self.evaluation["subjectTransactionId"]
