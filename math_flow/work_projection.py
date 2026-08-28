@@ -26,10 +26,10 @@ from .counterfactual_context import (
 )
 from .errors import MathFlowError
 from .repository import sha256_json
-from .research_topology import (
-    derive_research_topology_alignment,
-    validate_research_program_state_versioned,
-    validate_research_topology_alignment,
+from .work_accounting_knowledge import (
+    derive_work_accounting_topology_alignment,
+    validate_work_accounting_knowledge_state,
+    validate_work_accounting_topology_alignment,
 )
 from .work_accounting import (
     apply_work_accounting_patch,
@@ -323,14 +323,14 @@ def _validate_transition(
     subject = _require_transaction(subject_transaction_id, "work projection subject")
     contract = validate_root_contract(root_contract)
     problem = str(contract["problemId"])
-    before = validate_research_program_state_versioned(base_knowledge_state, problem)
-    after = validate_research_program_state_versioned(target_knowledge_state, problem)
+    before = validate_work_accounting_knowledge_state(base_knowledge_state, problem)
+    after = validate_work_accounting_knowledge_state(target_knowledge_state, problem)
     base = validate_work_accounting_state(base_accounting_state, before, contract)
-    expected_alignment = derive_research_topology_alignment(before, after)
+    expected_alignment = derive_work_accounting_topology_alignment(before, after)
     if topology_alignment is None:
         alignment = expected_alignment
     else:
-        alignment = validate_research_topology_alignment(
+        alignment = validate_work_accounting_topology_alignment(
             topology_alignment, before, after
         )
     if alignment != expected_alignment:
@@ -420,7 +420,10 @@ def _required_primitive_updates(
         existing[0].update(changes)
         existing[1].add(reason)
 
-    for kind, collection_name in (("program", "programs"), ("thread", "threads")):
+    accounting_collections = [("program", "programs")]
+    if after.get("schemaVersion") != 3:
+        accounting_collections.append(("thread", "threads"))
+    for kind, collection_name in accounting_collections:
         before_nodes = before[collection_name]
         after_nodes = after[collection_name]
         assert isinstance(before_nodes, dict) and isinstance(after_nodes, dict)

@@ -7,7 +7,10 @@ from typing import Iterable, Mapping
 
 from .errors import MathFlowError
 from .repository import sha256_json
-from .research_state import validate_research_program_state
+from .work_accounting_knowledge import (
+    validate_work_accounting_knowledge_state,
+    validate_work_accounting_topology_alignment,
+)
 
 
 DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
@@ -119,15 +122,9 @@ PORTFOLIO_AUTHORITY = "math-flow-knowledge-state-builder"
 def _validate_knowledge_state(
     value: object, problem: str | None = None
 ) -> dict[str, object]:
-    """Validate active v1 state and use the additive v1/v2 dispatcher when present."""
+    """Validate every immutable knowledge format consumed by work accounting."""
 
-    try:
-        from .research_topology import validate_research_program_state_versioned
-    except ModuleNotFoundError as exc:
-        if exc.name != f"{__package__}.research_topology":
-            raise
-        return validate_research_program_state(value, problem)
-    return validate_research_program_state_versioned(value, problem)
+    return validate_work_accounting_knowledge_state(value, problem)
 
 
 def _content_digest(value: Mapping[str, object], digest_field: str) -> str:
@@ -267,11 +264,7 @@ def _knowledge_topology(
 ]:
     state = _validate_knowledge_state(knowledge_state)
     programs = state["programs"]
-    # State v3 makes programs the only accounting nodes. Earlier states keep
-    # their explicit thread nodes so already-published accounting remains
-    # replayable under its original topology.
-    threads = state.get("threads", {})
-    assert isinstance(programs, dict) and isinstance(threads, dict)
+    assert isinstance(programs, dict)
     nodes: dict[tuple[str, str], dict[str, object]] = {}
     parents: dict[tuple[str, str], tuple[str, str] | None] = {}
     for program_id, program in programs.items():
@@ -282,11 +275,16 @@ def _knowledge_topology(
         parents[key] = (
             ("program", str(parent_id)) if isinstance(parent_id, str) else None
         )
-    for thread_id, thread in threads.items():
-        key = ("thread", str(thread_id))
-        assert isinstance(thread, dict)
-        nodes[key] = thread
-        parents[key] = ("program", str(thread["programId"]))
+    # State v3 makes programs the complete accounting topology.  Legacy
+    # program/thread states retain their exact node set for immutable replay.
+    if state.get("schemaVersion") != 3:
+        threads = state["threads"]
+        assert isinstance(threads, dict)
+        for thread_id, thread in threads.items():
+            key = ("thread", str(thread_id))
+            assert isinstance(thread, dict)
+            nodes[key] = thread
+            parents[key] = ("program", str(thread["programId"]))
     root = ("program", str(state["rootProgramId"]))
     if parents.get(root) is not None:
         raise MathFlowError("work-accounting root must be the knowledge-state root program")
@@ -843,7 +841,11 @@ def _validate_alignment_binding(
 ) -> None:
     if not isinstance(alignment, dict):
         raise MathFlowError("topology alignment must be an object")
-    if alignment.get("schemaVersion") != 1 or alignment.get("problemId") != problem_id:
+    expected_version = 2 if before_state.get("schemaVersion") == 3 else 1
+    if (
+        alignment.get("schemaVersion") != expected_version
+        or alignment.get("problemId") != problem_id
+    ):
         raise MathFlowError("topology alignment has an invalid identity")
     if alignment.get("beforeKnowledgeStateDigest") != before_state.get("stateDigest"):
         raise MathFlowError("topology alignment has the wrong before state")
@@ -853,9 +855,7 @@ def _validate_alignment_binding(
         raise MathFlowError("topology alignment digest does not match the patch")
     if expected_digest != _content_digest(alignment, "alignmentDigest"):
         raise MathFlowError("topology alignment digest mismatch")
-    from .research_topology import validate_research_topology_alignment
-
-    validate_research_topology_alignment(alignment, before_state, after_state)
+    validate_work_accounting_topology_alignment(alignment, before_state, after_state)
 
 
 def apply_work_accounting_patch(

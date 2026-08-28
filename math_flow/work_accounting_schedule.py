@@ -10,7 +10,7 @@ from typing import Iterable, Mapping
 
 from .errors import MathFlowError
 from .repository import ledger, sha256_json
-from .research_topology import validate_research_program_state_versioned
+from .work_accounting_knowledge import validate_work_accounting_knowledge_state
 from .work_accounting import (
     materialize_submission_work_value,
     validate_root_contract,
@@ -389,7 +389,7 @@ def initialize_work_accounting_schedule(
     base_retry_seconds: int = 60,
 ) -> dict[str, object]:
     contract = validate_root_contract(root_contract, problem)
-    knowledge = validate_research_program_state_versioned(knowledge_state, problem)
+    knowledge = validate_work_accounting_knowledge_state(knowledge_state, problem)
     accounting = validate_work_accounting_state(accounting_state, knowledge, contract)
     if accounting.get("evaluationMode") == "no-access":
         raise MathFlowError("an ephemeral no-access state cannot initialize scheduling")
@@ -469,7 +469,7 @@ def discover_work_accounting_subjects(
 ) -> dict[str, object]:
     current = validate_work_accounting_schedule(schedule)
     problem = str(current["problemId"])
-    knowledge = validate_research_program_state_versioned(knowledge_state, problem)
+    knowledge = validate_work_accounting_knowledge_state(knowledge_state, problem)
     canonical, canonical_ids, ordinals = _canonical_transactions(root, problem, head)
     old_canonical = list(current["canonicalTransactionIds"])
     if canonical_ids[: len(old_canonical)] != old_canonical:
@@ -845,7 +845,7 @@ def plan_next_work_accounting_transition(
     now = _require_nonnegative_integer(as_of, "work-accounting planning time")
     maximum_attempts = int(current["retryPolicy"]["maximumAttempts"])
     contract = validate_root_contract(root_contract, str(current["problemId"]))
-    predecessor_knowledge = validate_research_program_state_versioned(
+    predecessor_knowledge = validate_work_accounting_knowledge_state(
         predecessor_knowledge_state, str(current["problemId"])
     )
     accounting = validate_work_accounting_state(
@@ -903,7 +903,7 @@ def plan_next_work_accounting_transition(
                 "nextEligibleAt": retry_at,
                 "claim": None,
             }
-    target_knowledge = validate_research_program_state_versioned(
+    target_knowledge = validate_work_accounting_knowledge_state(
         target_knowledge_state, str(current["problemId"])
     )
     if target_knowledge.get("stateDigest") != frontier.get("postKnowledgeStateDigest"):
@@ -1098,10 +1098,10 @@ def materialize_work_accounting_publication_manifest(
     transition = validate_work_accounting_transition_claim(claim)
     result_value = validate_submission_work_value(evaluation)
     contract = validate_root_contract(root_contract, str(transition["problemId"]))
-    predecessor_knowledge = validate_research_program_state_versioned(
+    predecessor_knowledge = validate_work_accounting_knowledge_state(
         predecessor_knowledge_state, str(transition["problemId"])
     )
-    target_knowledge = validate_research_program_state_versioned(
+    target_knowledge = validate_work_accounting_knowledge_state(
         target_knowledge_state, str(transition["problemId"])
     )
     predecessor = validate_work_accounting_state(
@@ -1251,7 +1251,7 @@ def apply_work_accounting_publication(
     ):
         raise MathFlowError("publication transition claim is stale")
     contract = validate_root_contract(root_contract, str(current["problemId"]))
-    target_knowledge = validate_research_program_state_versioned(
+    target_knowledge = validate_work_accounting_knowledge_state(
         target_knowledge_state, str(current["problemId"])
     )
     committed = validate_work_accounting_state(
@@ -1324,7 +1324,7 @@ def materialize_work_accounting_state_repair(
     if any(record["completion"] is None for record in current["subjects"]):
         raise MathFlowError("prospective state repair requires an empty subject backlog")
     contract = validate_root_contract(root_contract, str(current["problemId"]))
-    knowledge = validate_research_program_state_versioned(
+    knowledge = validate_work_accounting_knowledge_state(
         knowledge_state, str(current["problemId"])
     )
     base = validate_work_accounting_state(base_accounting_state, knowledge, contract)
@@ -1448,7 +1448,7 @@ def apply_work_accounting_state_repair(
     if any(record["completion"] is None for record in current["subjects"]):
         raise MathFlowError("prospective state repair requires an empty subject backlog")
     contract = validate_root_contract(root_contract, str(current["problemId"]))
-    knowledge = validate_research_program_state_versioned(
+    knowledge = validate_work_accounting_knowledge_state(
         knowledge_state, str(current["problemId"])
     )
     repaired = validate_work_accounting_state(
