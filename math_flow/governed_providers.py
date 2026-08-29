@@ -1365,6 +1365,37 @@ class OpenRouterResearchBuilderV7Provider(_GovernedOpenRouterAdapter):
                         prior_judgment, str
                     ):
                         judgment_by_transaction[transaction_id] = prior_judgment
+
+            def inject_result_judgment_ids(operation: object) -> None:
+                if not isinstance(operation, dict):
+                    return
+                result_value = operation.get("value")
+                if (
+                    operation.get("entityKind") != "intermediateResult"
+                    or not isinstance(result_value, dict)
+                ):
+                    return
+                source_ids = result_value.get("sourceTransactionIds")
+                claim_refs = result_value.get("claimRefs")
+                if not isinstance(source_ids, list) or not isinstance(claim_refs, list):
+                    return
+                referenced_transactions = list(source_ids)
+                for reference in claim_refs:
+                    if not isinstance(reference, dict):
+                        return
+                    referenced_transactions.append(reference.get("transactionId"))
+                if referenced_transactions and all(
+                    isinstance(transaction_id, str)
+                    and transaction_id in judgment_by_transaction
+                    for transaction_id in referenced_transactions
+                ):
+                    result_value["judgmentIds"] = sorted(
+                        {
+                            judgment_by_transaction[str(transaction_id)]
+                            for transaction_id in referenced_transactions
+                        }
+                    )
+
             for operation in operations:
                 if not isinstance(operation, dict):
                     continue
@@ -1379,34 +1410,11 @@ class OpenRouterResearchBuilderV7Provider(_GovernedOpenRouterAdapter):
                 digest = existing.get("digest") if isinstance(existing, dict) else None
                 if isinstance(digest, str):
                     operation["baseDigest"] = digest
-                result_value = operation.get("value")
-                if (
-                    operation.get("entityKind") == "intermediateResult"
-                    and isinstance(result_value, dict)
-                ):
-                    source_ids = result_value.get("sourceTransactionIds")
-                    claim_refs = result_value.get("claimRefs")
-                    if not isinstance(source_ids, list) or not isinstance(
-                        claim_refs, list
-                    ):
-                        continue
-                    referenced_transactions = list(source_ids)
-                    for reference in claim_refs:
-                        if not isinstance(reference, dict):
-                            referenced_transactions = []
-                            break
-                        referenced_transactions.append(reference.get("transactionId"))
-                    if referenced_transactions and all(
-                        isinstance(transaction_id, str)
-                        and transaction_id in judgment_by_transaction
-                        for transaction_id in referenced_transactions
-                    ):
-                        result_value["judgmentIds"] = sorted(
-                            {
-                                judgment_by_transaction[str(transaction_id)]
-                                for transaction_id in referenced_transactions
-                            }
-                        )
+                inject_result_judgment_ids(operation)
+            topology_operations = normalized.get("topologyOperations")
+            if isinstance(topology_operations, list):
+                for operation in topology_operations:
+                    inject_result_judgment_ids(operation)
             return normalized
 
         def validate(value: object) -> dict[str, object]:
