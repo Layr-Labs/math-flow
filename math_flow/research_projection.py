@@ -30,6 +30,7 @@ from .repository import is_ancestor, read_at, sha256_json
 from .governed_providers import (
     OpenRouterResearchBuilderV6Provider,
     OpenRouterResearchBuilderV7Provider,
+    OpenRouterResearchBuilderV8Provider,
 )
 from .research_builder_v6 import (
     apply_research_builder_v6_transition,
@@ -42,6 +43,7 @@ from .research_builder_v7 import (
     validate_research_program_state_v3,
     validate_research_topology_alignment_v2,
 )
+from .research_builder_v8 import apply_research_builder_v8_transition
 from .research_state import (
     affected_credit_targets,
     apply_research_program_delta,
@@ -801,7 +803,7 @@ def _validate_research_builder_submission_input(
     subject = value.get("subjectTransactionId")
     judgment = value.get("judgmentId")
     if (
-        value.get("schemaVersion") != 1
+        value.get("schemaVersion") != (2 if version == 8 else 1)
         or not isinstance(value.get("problemId"), str)
         or not isinstance(subject, str)
         or not re.fullmatch(GIT_SHA_PATTERN, subject)
@@ -822,13 +824,50 @@ def _validate_research_builder_submission_input(
     keys: list[str] = []
     for claim in claims:
         dependencies = claim.get("dependencyTransactionIds") if isinstance(claim, dict) else None
+        if version == 8:
+            validity_fields = {
+                "claimKey",
+                "declaredStatement",
+                "validitySummary",
+                "scopeQualifications",
+                "evidenceTransactionIds",
+                "dependencyTransactionIds",
+            }
+            qualifications = (
+                claim.get("scopeQualifications") if isinstance(claim, dict) else None
+            )
+            evidence_transactions = (
+                claim.get("evidenceTransactionIds") if isinstance(claim, dict) else None
+            )
+            valid = (
+                isinstance(claim, dict)
+                and set(claim) == validity_fields
+                and isinstance(claim.get("declaredStatement"), str)
+                and bool(str(claim["declaredStatement"]).strip())
+                and isinstance(claim.get("validitySummary"), str)
+                and bool(str(claim["validitySummary"]).strip())
+                and isinstance(qualifications, list)
+                and all(isinstance(item, str) and item.strip() for item in qualifications)
+                and qualifications == sorted(set(qualifications))
+                and isinstance(evidence_transactions, list)
+                and all(
+                    isinstance(item, str) and re.fullmatch(GIT_SHA_PATTERN, item)
+                    for item in evidence_transactions
+                )
+                and evidence_transactions == sorted(set(evidence_transactions))
+            )
+        else:
+            valid = (
+                isinstance(claim, dict)
+                and set(claim) == {"claimKey", "statement", "dependencyTransactionIds"}
+                and isinstance(claim.get("statement"), str)
+                and bool(str(claim["statement"]).strip())
+            )
         if (
             not isinstance(claim, dict)
-            or set(claim) != {"claimKey", "statement", "dependencyTransactionIds"}
+            or not valid
             or not isinstance(claim.get("claimKey"), str)
             or not re.fullmatch(IDENTIFIER_PATTERN, str(claim["claimKey"]))
-            or not isinstance(claim.get("statement"), str)
-            or not str(claim["statement"]).strip()
             or not isinstance(dependencies, list)
             or dependencies != sorted(set(dependencies))
             or any(
@@ -859,6 +898,12 @@ def validate_research_builder_v7_submission_input(
     return _validate_research_builder_submission_input(value, version=7)
 
 
+def validate_research_builder_v8_submission_input(
+    value: object,
+) -> dict[str, object]:
+    return _validate_research_builder_submission_input(value, version=8)
+
+
 def load_research_build_bundle(
     bundle_dir: Path,
 ) -> tuple[dict[str, object], dict[str, object], str]:
@@ -873,6 +918,7 @@ def load_research_build_bundle(
             "math-flow/hierarchical-research-v5",
             "math-flow/hierarchical-research-v6",
             "math-flow/hierarchical-research-v7",
+            "math-flow/hierarchical-research-v8",
         }
     ):
         raise MathFlowError("bundle is not a hierarchical research build")
@@ -883,6 +929,7 @@ def load_research_build_bundle(
         if manifest.get("outputProfile") in {
             "math-flow/hierarchical-research-v6",
             "math-flow/hierarchical-research-v7",
+            "math-flow/hierarchical-research-v8",
         }:
             base_state = json.loads(
                 read_verified_artifact(
@@ -934,16 +981,23 @@ def load_research_build_bundle(
     if manifest.get("outputProfile") in {
         "math-flow/hierarchical-research-v6",
         "math-flow/hierarchical-research-v7",
+        "math-flow/hierarchical-research-v8",
     }:
-        is_v7 = manifest.get("outputProfile") == "math-flow/hierarchical-research-v7"
-        version = 7 if is_v7 else 6
+        is_two_entity = manifest.get("outputProfile") in {
+            "math-flow/hierarchical-research-v7",
+            "math-flow/hierarchical-research-v8",
+        }
+        is_v8 = manifest.get("outputProfile") == "math-flow/hierarchical-research-v8"
+        version = 8 if is_v8 else (7 if is_two_entity else 6)
         label = f"hierarchical research v{version}"
         problem = str(manifest["problemId"])
-        if is_v7:
+        if is_two_entity:
             validate_research_program_state_v3(base_state, problem)
             validate_research_program_state_v3(program_state, problem)
-            submission = validate_research_builder_v7_submission_input(
-                submission_input
+            submission = (
+                validate_research_builder_v8_submission_input(submission_input)
+                if is_v8
+                else validate_research_builder_v7_submission_input(submission_input)
             )
         else:
             validate_research_program_state_v2(base_state, problem)
@@ -984,20 +1038,32 @@ def load_research_build_bundle(
             != submission.get("evidenceManifestDigest")
         ):
             raise MathFlowError(f"{label} manifest input binding mismatch")
-        reduce_transition = (
-            apply_research_builder_v7_transition
-            if is_v7
-            else apply_research_builder_v6_transition
-        )
-        reduced = reduce_transition(
-            base_state,
-            program_transition,
-            accepted_claims=submission["acceptedClaims"],
-            judgment_id=str(submission["judgmentId"]),
-        )
+        if is_v8:
+            reduced = apply_research_builder_v8_transition(
+                base_state,
+                program_transition,
+                accepted_claims=submission["acceptedClaims"],
+                judgment_id=str(submission["judgmentId"]),
+                evidence_file_refs={
+                    str(item["path"]): str(item["digest"])
+                    for item in evidence["files"]
+                },
+            )
+        else:
+            reduce_transition = (
+                apply_research_builder_v7_transition
+                if is_two_entity
+                else apply_research_builder_v6_transition
+            )
+            reduced = reduce_transition(
+                base_state,
+                program_transition,
+                accepted_claims=submission["acceptedClaims"],
+                judgment_id=str(submission["judgmentId"]),
+            )
         if reduced["postState"] != program_state:
             raise MathFlowError(f"{label} post-state is not reducer-authored")
-        if is_v7:
+        if is_two_entity:
             validate_research_topology_alignment_v2(
                 topology_alignment, base_state, program_state
             )
@@ -1009,7 +1075,7 @@ def load_research_build_bundle(
             raise MathFlowError(f"{label} alignment is not deterministic")
         validate_handoff = (
             validate_research_builder_v7_handoff
-            if is_v7
+            if is_two_entity
             else validate_research_builder_v6_handoff
         )
         validate_handoff(
@@ -1067,7 +1133,7 @@ def _run_research_build_bundle_sequential(
 ) -> dict[str, object]:
     """Publish one exact sequential transition for one accepted submission."""
 
-    if version not in {6, 7}:
+    if version not in {6, 7, 8}:
         raise MathFlowError("sequential research builder has an unsupported version")
     label = f"hierarchical research v{version}"
 
@@ -1115,19 +1181,41 @@ def _run_research_build_bundle_sequential(
     raw_claims = _accepted_claims(judgment, packet)
     if not raw_claims:
         raise MathFlowError(f"{label} excludes submissions with no valid claims")
-    accepted_claims = sorted(
-        [
-            {
-                "claimKey": str(item["claimKey"]),
-                "statement": str(item["statement"]),
-                "dependencyTransactionIds": sorted(
-                    str(value) for value in item["dependencyTransactionIds"]
-                ),
-            }
-            for item in raw_claims
-        ],
-        key=lambda item: str(item["claimKey"]),
-    )
+    if version == 8:
+        accepted_claims = sorted(
+            [
+                {
+                    "claimKey": str(item["claimKey"]),
+                    "declaredStatement": str(item["statement"]),
+                    "validitySummary": str(item["validitySummary"]),
+                    "scopeQualifications": sorted(
+                        {str(value) for value in item["scopeQualifications"]}
+                    ),
+                    "evidenceTransactionIds": sorted(
+                        {str(value) for value in item["evidenceTransactionIds"]}
+                    ),
+                    "dependencyTransactionIds": sorted(
+                        {str(value) for value in item["dependencyTransactionIds"]}
+                    ),
+                }
+                for item in raw_claims
+            ],
+            key=lambda item: str(item["claimKey"]),
+        )
+    else:
+        accepted_claims = sorted(
+            [
+                {
+                    "claimKey": str(item["claimKey"]),
+                    "statement": str(item["statement"]),
+                    "dependencyTransactionIds": sorted(
+                        str(value) for value in item["dependencyTransactionIds"]
+                    ),
+                }
+                for item in raw_claims
+            ],
+            key=lambda item: str(item["claimKey"]),
+        )
 
     base_run_digest = None
     if base_run is None:
@@ -1199,7 +1287,7 @@ def _run_research_build_bundle_sequential(
     )
     submission_input = _seal_sequential_submission_input(
         {
-            "schemaVersion": 1,
+            "schemaVersion": 2 if version == 8 else 1,
             "problemId": problem,
             "subjectTransactionId": subject,
             "ledgerOrdinal": transaction["ordinal"],
@@ -1216,11 +1304,11 @@ def _run_research_build_bundle_sequential(
         checkpoint_transport = _ReplayCheckpointTransport(checkpoint_dir, send)
         checkpoint_transport.begin_stage()
         send = checkpoint_transport
-    provider_class = (
-        OpenRouterResearchBuilderV6Provider
-        if version == 6
-        else OpenRouterResearchBuilderV7Provider
-    )
+    provider_class = {
+        6: OpenRouterResearchBuilderV6Provider,
+        7: OpenRouterResearchBuilderV7Provider,
+        8: OpenRouterResearchBuilderV8Provider,
+    }[version]
     provider = provider_class(
         spec,
         transport=send,
@@ -1243,17 +1331,29 @@ def _run_research_build_bundle_sequential(
         judgment_id=judgment_id,
         evidence_files=evidence_files,
     )
-    reduce_transition = (
-        apply_research_builder_v6_transition
-        if version == 6
-        else apply_research_builder_v7_transition
-    )
-    reduced = reduce_transition(
-        base_state,
-        transition,
-        accepted_claims=accepted_claims,
-        judgment_id=judgment_id,
-    )
+    if version == 8:
+        reduced = apply_research_builder_v8_transition(
+            base_state,
+            transition,
+            accepted_claims=accepted_claims,
+            judgment_id=judgment_id,
+            evidence_file_refs={
+                evidence.path: evidence.digest
+                for evidence in evidence_files
+            },
+        )
+    else:
+        reduce_transition = (
+            apply_research_builder_v6_transition
+            if version == 6
+            else apply_research_builder_v7_transition
+        )
+        reduced = reduce_transition(
+            base_state,
+            transition,
+            accepted_claims=accepted_claims,
+            judgment_id=judgment_id,
+        )
 
     bundle = ArtifactBundle(output_dir)
     bundle.add_json("control/build-input.json", build_input, "knowledge-build-input")
@@ -1371,6 +1471,36 @@ def _run_research_build_bundle_v7(
     )
 
 
+def _run_research_build_bundle_v8(
+    root: Path,
+    problem: str,
+    builder_path: Path,
+    head: str,
+    claim: object,
+    judgment_bundle_dirs: list[Path],
+    conflicts_path: Path | None,
+    output_dir: Path,
+    *,
+    base_run: Path | None,
+    transport: OpenRouterTransport | None,
+    checkpoint_dir: Path | None,
+) -> dict[str, object]:
+    return _run_research_build_bundle_sequential(
+        root,
+        problem,
+        builder_path,
+        head,
+        claim,
+        judgment_bundle_dirs,
+        conflicts_path,
+        output_dir,
+        base_run=base_run,
+        transport=transport,
+        checkpoint_dir=checkpoint_dir,
+        version=8,
+    )
+
+
 def run_research_build_bundle(
     root: Path,
     problem: str,
@@ -1411,6 +1541,20 @@ def run_research_build_bundle(
         )
     if implementation == "openrouter-hierarchical-research-builder-v7":
         return _run_research_build_bundle_v7(
+            root,
+            problem,
+            builder_path,
+            head,
+            claim,
+            judgment_bundle_dirs,
+            conflicts_path,
+            output_dir,
+            base_run=base_run,
+            transport=transport,
+            checkpoint_dir=checkpoint_dir,
+        )
+    if implementation == "openrouter-hierarchical-research-builder-v8":
+        return _run_research_build_bundle_v8(
             root,
             problem,
             builder_path,

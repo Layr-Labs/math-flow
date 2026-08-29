@@ -31,9 +31,13 @@ HIERARCHICAL_RESEARCH_OUTPUT_PROFILES = {
     "math-flow/hierarchical-research-v5",
     "math-flow/hierarchical-research-v6",
     "math-flow/hierarchical-research-v7",
+    "math-flow/hierarchical-research-v8",
 }
 
-TWO_ENTITY_RESEARCH_OUTPUT_PROFILE = "math-flow/hierarchical-research-v7"
+TWO_ENTITY_RESEARCH_OUTPUT_PROFILES = {
+    "math-flow/hierarchical-research-v7",
+    "math-flow/hierarchical-research-v8",
+}
 TWO_ENTITY_SEMANTIC_PROFILE = "programs-and-intermediate-results-v1"
 
 
@@ -587,7 +591,7 @@ def _export_research_viewer_data(
         topology_alignment = None
         same_world_handoff = None
         semantic_profile = None
-        if profile == TWO_ENTITY_RESEARCH_OUTPUT_PROFILE:
+        if profile in TWO_ENTITY_RESEARCH_OUTPUT_PROFILES:
             from .research_builder_v7 import empty_research_program_state_v3
             from .research_projection import load_research_build_bundle
 
@@ -673,7 +677,7 @@ def _export_research_viewer_data(
                 )
         nodes = (
             _research_v7_viewer_nodes(state, transaction_positions)
-            if profile == TWO_ENTITY_RESEARCH_OUTPUT_PROFILE
+            if profile in TWO_ENTITY_RESEARCH_OUTPUT_PROFILES
             else _research_viewer_nodes(state, transaction_positions)
         )
         changed_node_ids = [
@@ -727,7 +731,7 @@ def _export_research_viewer_data(
         if topology_alignment is not None and same_world_handoff is not None:
             run["topologyAlignment"] = topology_alignment
             run["sameWorldHandoff"] = same_world_handoff
-        if profile == TWO_ENTITY_RESEARCH_OUTPUT_PROFILE:
+        if profile in TWO_ENTITY_RESEARCH_OUTPUT_PROFILES:
             # Preserve the exact typed machine state for agent-context consumers.
             # ``state.nodes`` is only the viewer navigation normalization.
             run["machineState"] = state

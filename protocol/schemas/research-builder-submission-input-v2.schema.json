@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://math-flow.local/schemas/research-builder-submission-input-v2.schema.json",
+  "title": "Research Builder V8 Validity-Complete Accepted Submission Input",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "subjectTransactionId",
+    "ledgerOrdinal",
+    "judgmentId",
+    "acceptedClaims",
+    "evidenceManifestDigest",
+    "submissionInputDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "problemId": { "$ref": "#/$defs/id" },
+    "subjectTransactionId": { "$ref": "#/$defs/transaction" },
+    "ledgerOrdinal": { "type": "integer", "minimum": 1 },
+    "judgmentId": { "$ref": "#/$defs/digest" },
+    "acceptedClaims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "claimKey",
+          "declaredStatement",
+          "validitySummary",
+          "scopeQualifications",
+          "evidenceTransactionIds",
+          "dependencyTransactionIds"
+        ],
+        "properties": {
+          "claimKey": { "$ref": "#/$defs/id" },
+          "declaredStatement": { "type": "string", "minLength": 1 },
+          "validitySummary": { "type": "string", "minLength": 1 },
+          "scopeQualifications": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "evidenceTransactionIds": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "$ref": "#/$defs/transaction" }
+          },
+          "dependencyTransactionIds": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "$ref": "#/$defs/transaction" }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "evidenceManifestDigest": { "$ref": "#/$defs/digest" },
+    "submissionInputDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$" },
+    "transaction": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+  }
+}
