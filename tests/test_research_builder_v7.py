@@ -462,9 +462,12 @@ class ResearchBuilderV7Tests(unittest.TestCase):
         self.assertEqual(invalidations, 1)
         self.assertEqual(len(transport.requests), 2)
 
-    def test_provider_injects_existing_content_entity_base_digest(self) -> None:
+    def test_provider_injects_deterministic_content_control_fields(self) -> None:
         transition = _first_transition(self.base)
         transition["contentOperations"][0]["baseDigest"] = self.base["stateDigest"]
+        transition["contentOperations"][1]["value"]["judgmentIds"] = [
+            self.base["stateDigest"]
+        ]
         transport = SequentialTransport([transition])
         provider = OpenRouterResearchBuilderV7Provider(
             json.loads(BUILDER_SPEC.read_text()), transport=transport
@@ -487,6 +490,10 @@ class ResearchBuilderV7Tests(unittest.TestCase):
         self.assertEqual(
             output["contentOperations"][0]["baseDigest"],
             self.base["programs"]["root"]["digest"],
+        )
+        self.assertEqual(
+            output["contentOperations"][1]["value"]["judgmentIds"],
+            [JUDGMENT_A],
         )
         self.assertEqual(len(transport.requests), 1)
 

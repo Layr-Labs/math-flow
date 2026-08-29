@@ -27,9 +27,12 @@ foreign run stops before a provider call.
 
 Existing content-entity `baseDigest` values are deterministic concurrency
 tokens, not AI judgments. The trusted Builder V7 adapter replaces those fields
-with the exact digest from the bound base state before reducer validation. New
-entity and topology-operation digest rules remain fail-closed, and replay still
-revalidates every normalized transition against its exact predecessor.
+with the exact digest from the bound base state before reducer validation.
+Likewise, an intermediate result's `judgmentIds` are derived from the result's
+AI-chosen `claimRefs` and `sourceTransactionIds` using the bound current judgment
+and prior accepted contributions. New entity and topology-operation digest rules
+remain fail-closed, unknown provenance still fails, and replay revalidates every
+normalized transition against its exact predecessor.
 
 ## Hosted route and inspection gate
 

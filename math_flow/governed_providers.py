@@ -1337,10 +1337,10 @@ class OpenRouterResearchBuilderV7Provider(_GovernedOpenRouterAdapter):
             },
         }
 
-        def inject_existing_content_base_digests(
+        def inject_deterministic_content_fields(
             value: object,
         ) -> object:
-            """Fill deterministic concurrency tokens that are not AI judgments."""
+            """Fill bound control fields that are not AI judgments."""
 
             if not isinstance(value, dict):
                 return value
@@ -1352,6 +1352,19 @@ class OpenRouterResearchBuilderV7Provider(_GovernedOpenRouterAdapter):
                 "program": "programs",
                 "intermediateResult": "intermediateResults",
             }
+            judgment_by_transaction = {subject_transaction_id: judgment_id}
+            base_contributions = base_state.get("contributions")
+            if isinstance(base_contributions, dict):
+                for transaction_id, contribution in base_contributions.items():
+                    prior_judgment = (
+                        contribution.get("judgmentId")
+                        if isinstance(contribution, dict)
+                        else None
+                    )
+                    if isinstance(transaction_id, str) and isinstance(
+                        prior_judgment, str
+                    ):
+                        judgment_by_transaction[transaction_id] = prior_judgment
             for operation in operations:
                 if not isinstance(operation, dict):
                     continue
@@ -1366,10 +1379,38 @@ class OpenRouterResearchBuilderV7Provider(_GovernedOpenRouterAdapter):
                 digest = existing.get("digest") if isinstance(existing, dict) else None
                 if isinstance(digest, str):
                     operation["baseDigest"] = digest
+                result_value = operation.get("value")
+                if (
+                    operation.get("entityKind") == "intermediateResult"
+                    and isinstance(result_value, dict)
+                ):
+                    source_ids = result_value.get("sourceTransactionIds")
+                    claim_refs = result_value.get("claimRefs")
+                    if not isinstance(source_ids, list) or not isinstance(
+                        claim_refs, list
+                    ):
+                        continue
+                    referenced_transactions = list(source_ids)
+                    for reference in claim_refs:
+                        if not isinstance(reference, dict):
+                            referenced_transactions = []
+                            break
+                        referenced_transactions.append(reference.get("transactionId"))
+                    if referenced_transactions and all(
+                        isinstance(transaction_id, str)
+                        and transaction_id in judgment_by_transaction
+                        for transaction_id in referenced_transactions
+                    ):
+                        result_value["judgmentIds"] = sorted(
+                            {
+                                judgment_by_transaction[str(transaction_id)]
+                                for transaction_id in referenced_transactions
+                            }
+                        )
             return normalized
 
         def validate(value: object) -> dict[str, object]:
-            value = inject_existing_content_base_digests(value)
+            value = inject_deterministic_content_fields(value)
             if not isinstance(value, dict) or set(value) != TRANSITION_FIELDS_V7:
                 raise MathFlowError(
                     "builder-v7 provider must return only transition operations"
@@ -1405,8 +1446,9 @@ class OpenRouterResearchBuilderV7Provider(_GovernedOpenRouterAdapter):
                 "- The post-state contains only programs and intermediateResults; "
                 "never create thread or item entities.\n"
                 "- New IDs use null baseDigest. Trusted code injects exact existing "
-                "content-entity digests; topology operations still use their exact "
-                "intermediate-state entity digest, never stateDigest.\n"
+                "content-entity digests and result judgmentIds implied by claim/source "
+                "choices; topology operations still use their exact intermediate-state "
+                "entity digest, never stateDigest.\n"
                 "- Every operation cites the current accepted submission and only "
                 "accepted prior sources.\n"
                 "- Program intermediateResultIds exactly reciprocate each result's "
