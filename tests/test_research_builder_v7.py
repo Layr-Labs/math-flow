@@ -497,6 +497,40 @@ class ResearchBuilderV7Tests(unittest.TestCase):
         )
         self.assertEqual(len(transport.requests), 1)
 
+    def test_provider_injects_topology_created_result_judgment_ids(self) -> None:
+        transition = _first_transition(self.base)
+        result_operation = transition["contentOperations"].pop()
+        result_operation["action"] = "create"
+        result_operation["value"]["judgmentIds"] = [self.base["stateDigest"]]
+        transition["topologyOperations"] = [result_operation]
+        transition["topologyRationale"] = (
+            "Create the new reusable result while preserving the root program."
+        )
+        transport = SequentialTransport([transition])
+        provider = OpenRouterResearchBuilderV7Provider(
+            json.loads(BUILDER_SPEC.read_text()), transport=transport
+        )
+        content = b"# Exact accepted submission\n"
+        output = provider.run(
+            problem_id="two-entity-fixture",
+            subject_transaction_id=TX_A,
+            base_state=self.base,
+            accepted_claims=_accepted_claim("claim-a"),
+            judgment_id=JUDGMENT_A,
+            evidence_files=(
+                SubmissionEvidenceFile(
+                    path="problems/two-entity-fixture/contributions/accepted/README.md",
+                    digest=sha256_bytes(content),
+                    content=content,
+                ),
+            ),
+        )
+        self.assertEqual(
+            output["topologyOperations"][0]["value"]["judgmentIds"],
+            [JUDGMENT_A],
+        )
+        self.assertEqual(len(transport.requests), 1)
+
     def test_provider_schema_is_strict_and_profile_is_additive(self) -> None:
         schema = _builder_transition_schema_v7()
         stack: list[object] = [schema]
