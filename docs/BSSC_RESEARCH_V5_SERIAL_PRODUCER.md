@@ -25,6 +25,12 @@ governed projection digest, exact validity judgment, and canonical accepted
 prefix. A cycle, stale scheduler, alternate order, wrong state version, or
 foreign run stops before a provider call.
 
+Existing content-entity `baseDigest` values are deterministic concurrency
+tokens, not AI judgments. The trusted Builder V7 adapter replaces those fields
+with the exact digest from the bound base state before reducer validation. New
+entity and topology-operation digest rules remain fail-closed, and replay still
+revalidates every normalized transition against its exact predecessor.
+
 ## Hosted route and inspection gate
 
 `.github/workflows/project-research-v5-serial.yml` is the only hosted V5 route.

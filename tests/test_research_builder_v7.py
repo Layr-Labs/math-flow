@@ -462,6 +462,34 @@ class ResearchBuilderV7Tests(unittest.TestCase):
         self.assertEqual(invalidations, 1)
         self.assertEqual(len(transport.requests), 2)
 
+    def test_provider_injects_existing_content_entity_base_digest(self) -> None:
+        transition = _first_transition(self.base)
+        transition["contentOperations"][0]["baseDigest"] = self.base["stateDigest"]
+        transport = SequentialTransport([transition])
+        provider = OpenRouterResearchBuilderV7Provider(
+            json.loads(BUILDER_SPEC.read_text()), transport=transport
+        )
+        content = b"# Exact accepted submission\n"
+        output = provider.run(
+            problem_id="two-entity-fixture",
+            subject_transaction_id=TX_A,
+            base_state=self.base,
+            accepted_claims=_accepted_claim("claim-a"),
+            judgment_id=JUDGMENT_A,
+            evidence_files=(
+                SubmissionEvidenceFile(
+                    path="problems/two-entity-fixture/contributions/accepted/README.md",
+                    digest=sha256_bytes(content),
+                    content=content,
+                ),
+            ),
+        )
+        self.assertEqual(
+            output["contentOperations"][0]["baseDigest"],
+            self.base["programs"]["root"]["digest"],
+        )
+        self.assertEqual(len(transport.requests), 1)
+
     def test_provider_schema_is_strict_and_profile_is_additive(self) -> None:
         schema = _builder_transition_schema_v7()
         stack: list[object] = [schema]
