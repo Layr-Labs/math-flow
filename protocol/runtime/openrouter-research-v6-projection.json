@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "openrouter-research-v6",
+  "description": "A BSSC-only validity-v4 and builder-v8 knowledge projection that emits one validity-complete two-entity transition per accepted submission.",
+  "status": "active",
+  "engine": "openrouter-repository-v1",
+  "allowedProblems": ["bssc-sum-capacity"],
+  "primaryJudge": "protocol/judges/openrouter-validity-judgment-v4.json",
+  "reconciliationJudge": null,
+  "knowledgeBuilder": "protocol/judges/openrouter-hierarchical-research-builder-v8.json",
+  "scheduling": {
+    "judgmentMaxParallel": 16,
+    "knowledgeMinimumIntervalSeconds": 0,
+    "maximumJudgmentsPerBuild": 1
+  }
+}

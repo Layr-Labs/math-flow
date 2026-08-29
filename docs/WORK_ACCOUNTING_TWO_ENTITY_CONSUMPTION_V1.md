@@ -44,13 +44,15 @@ builder state remains mandatory before either counterfactual stage.
 This foundation does not mutate the immutable work-accounting V1/V2 profiles
 or their prompts. A hosted two-entity lane still needs additive governed
 identities that register impact-context V2 and describe program-only node
-references. It also needs a `PublishedResearchV7TransitionProvider` after the
-research bundle loader publishes and verifies the hierarchical-research-v7
-profile. That adapter should mirror `work_accounting_research_v6`: replay the
-v7 reducer, alignment V2, and handoff V2 from exact bundle bytes, follow the
-content-addressed `baseRun` chain to origin, and perform no provider call.
+references. It also needs a published two-entity transition provider for the
+selected governed knowledge lane. For the corrected Builder V8 experiment,
+that should be a `PublishedResearchV8TransitionProvider` after the research
+bundle loader publishes and verifies `hierarchical-research-v8`. The adapter
+should mirror `work_accounting_research_v6`: replay the V8 context checks and
+state-v3 reducer, alignment V2, and handoff V2 from exact bundle bytes, follow
+the content-addressed `baseRun` chain to origin, and perform no provider call.
 
 These are activation seams, not gaps in local reducer consumption. The
-additive V3 CAS pipeline can already consume a supplied V7 transition end to
+additive V3 CAS pipeline can already consume a supplied two-entity transition end to
 end and persist its program-only state, alignment, and handoff without
 changing either active runner identity.
