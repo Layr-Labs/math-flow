@@ -1567,9 +1567,11 @@ class OpenRouterResearchBuilderV8Provider(_GovernedOpenRouterAdapter):
         expected_base_digest = base_state.get("stateDigest")
         if not isinstance(expected_base_digest, str):
             raise MathFlowError("builder-v8 provider state has no state digest")
+        # Keep the trusted binding map structurally separate from the provider
+        # payload records, which also contain base64 submission content.
         evidence_by_path = {
-            str(item["path"]): str(item["digest"])
-            for item in evidence
+            item.path: item.digest
+            for item in evidence_files
         }
         response_schema = _builder_transition_schema_v8()
         response_properties = response_schema["properties"]
