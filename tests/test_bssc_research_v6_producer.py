@@ -271,15 +271,15 @@ class BSSCResearchV6ProducerTests(unittest.TestCase):
             generic,
         )
 
-    def test_runtime_candidate_is_ready_for_separate_admission(self) -> None:
+    def test_runtime_candidate_accepts_optional_separate_admission(self) -> None:
         self.assertEqual(PROJECTION["status"], "active")
         self.assertEqual(
             PROJECTION["knowledgeBuilder"],
             "protocol/judges/openrouter-hierarchical-research-builder-v8.json",
         )
-        self.assertFalse(
-            (ROOT / "protocol/projections/openrouter-research-v6.json").exists()
-        )
+        admitted = ROOT / "protocol/projections/openrouter-research-v6.json"
+        if admitted.exists():
+            self.assertEqual(PROJECTION_PATH.read_bytes(), admitted.read_bytes())
 
 
 if __name__ == "__main__":
