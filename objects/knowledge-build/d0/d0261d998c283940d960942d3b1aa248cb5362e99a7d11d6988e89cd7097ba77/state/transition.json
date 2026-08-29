@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+  "baseStateDigest": "sha256:500941593e5489e7f9d5d0a7a7d68946ae1b53ce14ec3e19d514a9f54748895a",
+  "contentOperations": [],
+  "topologyOperations": [
+    {
+      "action": "create",
+      "entityKind": "program",
+      "entityId": "prog-uv-scalar-product-additivity",
+      "baseDigest": null,
+      "value": {
+        "id": "prog-uv-scalar-product-additivity",
+        "parentId": "root",
+        "title": "UV scalar product additivity and symmetry",
+        "objective": "Determine the tensorization and blocking behavior of separately relaxed UV sum-rate scalar functionals, including symmetry conditions that identify their branchwise and averaged forms.",
+        "currentStateSummary": "The averaged separately relaxed UV scalar is exactly additive for arbitrary finite-alphabet DMBC products, even with correlated product-channel inputs and joint envelope auxiliaries. Receiver-skew symmetry equates the branchwise and averaged scalars and is preserved by finite products. Consequently, every finite power of the half-skew BSSC has normalized value 2h2(1/4)-5/4, which is weaker than the certified capacity upper bound and does not change the capacity frontier.",
+        "localResidualSummary": "Determine whether any stronger coupled UV formulation, complete UV region, other weighted scalarization, nested auxiliary construction, or full Theorem-9 system tensorizes or can yield a sharper BSSC converse; the established theorem does not cover those objectives.",
+        "status": "active",
+        "intermediateResultIds": [
+          "ir-uv-product-branchwise-additivity"
+        ],
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "action": "create",
+      "entityKind": "intermediateResult",
+      "entityId": "ir-uv-product-branchwise-additivity",
+      "baseDigest": null,
+      "value": {
+        "id": "ir-uv-product-branchwise-additivity",
+        "primaryProgramId": "prog-uv-scalar-product-additivity",
+        "relatedProgramIds": [],
+        "title": "Exact UV product and receiver-skew branchwise additivity",
+        "statement": "For a finite-alphabet DMBC W, let t_W(p)=I_p(X;Y)-I_p(X;Z), let C denote the upper concave envelope on the input simplex, and define A_W(p)=I_p(X;Y)+C[-t_W](p), D_W(p)=I_p(X;Z)+C[t_W](p), B_avg(W)=sup_p (A_W(p)+D_W(p))/2, and B_br(W)=sup_p min{A_W(p),D_W(p)}. Then B_avg(W1×W2)=B_avg(W1)+B_avg(W2) for arbitrary finite-alphabet DMBCs, including correlated product-channel priors and envelope auxiliaries joint across factors. If an involutive input relabeling exchanges the receivers, then B_br(W)=B_avg(W), and the optimization may be restricted to invariant input laws. Finite products preserve this symmetry, so both functionals are exactly additive on arbitrary finite products of receiver-skew-symmetric channels. For the half-skew BSSC P, the invariant binary prior is fair and, using the accepted sharp BSSC posterior support, B_br(P^{×n})=B_avg(P^{×n})=n(2h2(1/4)-5/4) for every finite n≥1, with normalized value 0.3725562489182657… bits per channel use.",
+        "scopeQualifications": [
+          "The theorem concerns the two separately relaxed UV sum-rate rows and their averaged or pointwise-minimum scalarizations; it does not establish tensorization of the complete UV rate region or simultaneous attainment by a common joint (U,V) law.",
+          "Branchwise equality is established under receiver-skew symmetry and is not claimed for nonsymmetric channels or other weighted UV scalarizations.",
+          "The theorem does not tensorize the simplified GK functional, nested auxiliary-receiver constructions, or the full Gohari–Liu–Nair Theorem-9 constraint system.",
+          "The half-skew BSSC value is a valid non-frontier converse value. It exceeds the certified full-Theorem-9 upper bound 0.369296945969202842443 and therefore changes neither endpoint of the governed capacity interval.",
+          "No achievability result or capacity formula follows."
+        ],
+        "support": {
+          "proofs": [
+            "For a product DMBC and an arbitrary auxiliary A, a forward/reverse chain-rule expansion gives an exact cancellation of the cross co-information terms at coefficient one. The conditioned variables remaining in the two summands are valid one-factor auxiliaries, yielding factorwise upper bounds for both concave envelopes even under correlated inputs.",
+            "Mutual-information subadditivity and the envelope inequalities give the product upper bound for B_avg. Product priors together with independent near-optimal posterior decompositions give the reverse inequality and hence exact additivity.",
+            "Under the receiver-skew involution S, t(Sp)=-t(p), the envelope decompositions are carried bijectively to one another, and A_W(Sp)=D_W(p). Concavity at the invariant symmetrization (p+Sp)/2 proves B_br≥B_avg, while min(a,d)≤(a+d)/2 proves the reverse inequality.",
+            "The coordinatewise receiver-skew involution makes every finite product receiver-skew-symmetric. Combining symmetry equality with averaged-functional additivity proves finite-product additivity of both scalar functionals.",
+            "For the half-skew BSSC, the sharp posterior-support inequality and its reflected form identify the fair-prior envelope contact. The source mixture supported at posterior parameters 0 and 4/5 attains the contact, giving the exact one-letter value 2h2(1/4)-5/4."
+          ],
+          "methods": [
+            "Exact chain-rule factorization for product broadcast channels, upper-concave-envelope decomposition, mutual-information subadditivity, product posterior mixtures, involutive receiver-exchange covariance, and concavity-based symmetrization.",
+            "Dependency-ordered specialization using the sharp BSSC posterior support represented by ir-code-induced-balance-entropy-nogo.",
+            "Analytic proofs are retained in source-artifacts/upper-uv-additivity/FULL.md (SHA-256 69a33f9fc84a5dbabbad6bdf53b34e722238c6a6b3f625d49e00f599e942b94a) and source-artifacts/frontier-uv-branchwise/FULL.md (SHA-256 64ddb2c3d0c375bbca746842e21689f11883d989d56a0f0028ceaf216715e623)."
+          ],
+          "computations": [
+            "The BSSC specialization evaluates exactly to 2h2(1/4)-5/4=0.3725562489182657… bits per channel use; finite powers multiply this value by the blocklength.",
+            "The normalized UV value 0.3725562489182657… is numerically larger, and hence weaker as an upper bound, than the certified full-Theorem-9 value 0.369296945969202842443.",
+            "A 90-digit Decimal audit checks the BSSC envelope contact, fair-prior barycenter, receiver-skew matrices, and exact-form numerical evaluation."
+          ],
+          "tools": [
+            "Python 3 standard-library audit source-artifacts/upper-uv-additivity/verify_uv_factorization.py (SHA-256 bdd966d11f1914425ed4932b459c83508a6a61a73131f4f2a184204ad0c4153e) checks the product chain identities, conditional Markov relations, mutual-information subadditivity, product mixtures, and BSSC contact value.",
+            "Python 3 hostile-case audit verify_uv_hostile_cases.py (SHA-256 ffa2b5d66670f0fd03338e73f8ecc5400bf23b162a92fa327f363c7bb1aac6c0) checks deterministic and zero-probability channels, correlated and degenerate inputs, receiver-skew matrices, and the high-precision BSSC specialization."
+          ],
+          "artifactRefs": [],
+          "attestationRefs": []
+        },
+        "dependencyResultIds": [
+          "ir-code-induced-balance-entropy-nogo"
+        ],
+        "claimRefs": [
+          {
+            "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+            "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity"
+          }
+        ],
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "judgmentIds": [
+          "sha256:2c29fd881dec9aa923aa0713acc56df2c05d02f30ac544213f720af9158b7a41"
+        ],
+        "status": "active",
+        "supersededByResultIds": []
+      }
+    }
+  ],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/uv-product-branchwise-additivity"
+    ],
+    "directProgramIds": [
+      "prog-uv-scalar-product-additivity"
+    ],
+    "intermediateResultIds": [
+      "ir-uv-product-branchwise-additivity"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted theorem chain advances one durable objective—tensorization and symmetry of separately relaxed UV scalar converses—distinct from the existing code-induced converse-structure program. Its BSSC specialization depends on the prior posterior-support result without changing that prior program's objective or result ownership.",
+    "relatedProgramIds": [
+      "prog-uv-scalar-product-additivity"
+    ]
+  },
+  "topologyRationale": "Create a new active sibling program under the canonical root and place the single reusable dependency-ordered theorem chain in it. No existing program or result is moved, retired, split, merged, or reassigned."
+}
