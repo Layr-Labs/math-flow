@@ -1337,7 +1337,39 @@ class OpenRouterResearchBuilderV7Provider(_GovernedOpenRouterAdapter):
             },
         }
 
+        def inject_existing_content_base_digests(
+            value: object,
+        ) -> object:
+            """Fill deterministic concurrency tokens that are not AI judgments."""
+
+            if not isinstance(value, dict):
+                return value
+            normalized = copy.deepcopy(value)
+            operations = normalized.get("contentOperations")
+            if not isinstance(operations, list):
+                return normalized
+            collection_names = {
+                "program": "programs",
+                "intermediateResult": "intermediateResults",
+            }
+            for operation in operations:
+                if not isinstance(operation, dict):
+                    continue
+                collection_name = collection_names.get(operation.get("entityKind"))
+                entity_id = operation.get("entityId")
+                collection = base_state.get(collection_name) if collection_name else None
+                existing = (
+                    collection.get(entity_id)
+                    if isinstance(collection, dict) and isinstance(entity_id, str)
+                    else None
+                )
+                digest = existing.get("digest") if isinstance(existing, dict) else None
+                if isinstance(digest, str):
+                    operation["baseDigest"] = digest
+            return normalized
+
         def validate(value: object) -> dict[str, object]:
+            value = inject_existing_content_base_digests(value)
             if not isinstance(value, dict) or set(value) != TRANSITION_FIELDS_V7:
                 raise MathFlowError(
                     "builder-v7 provider must return only transition operations"
@@ -1372,8 +1404,9 @@ class OpenRouterResearchBuilderV7Provider(_GovernedOpenRouterAdapter):
                 f"baseStateDigest={expected_base_digest}. Verify this checklist:\n"
                 "- The post-state contains only programs and intermediateResults; "
                 "never create thread or item entities.\n"
-                "- New IDs use null baseDigest; existing IDs use their exact entity "
-                "digest from baseState, never stateDigest.\n"
+                "- New IDs use null baseDigest. Trusted code injects exact existing "
+                "content-entity digests; topology operations still use their exact "
+                "intermediate-state entity digest, never stateDigest.\n"
                 "- Every operation cites the current accepted submission and only "
                 "accepted prior sources.\n"
                 "- Program intermediateResultIds exactly reciprocate each result's "
