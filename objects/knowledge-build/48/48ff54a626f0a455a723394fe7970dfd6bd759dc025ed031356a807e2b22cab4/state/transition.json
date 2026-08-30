@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+  "baseStateDigest": "sha256:9c9b5de58aff9305ede8f8634c1ab3a3c37762aba4606c283cd4bc4230b3257d",
+  "contentOperations": [
+    {
+      "entityKind": "intermediateResult",
+      "entityId": "result-finite-auxiliary-marton-multiletter-foundation",
+      "baseDigest": null,
+      "value": {
+        "id": "result-finite-auxiliary-marton-multiletter-foundation",
+        "primaryProgramId": "program-bssc-multiletter-marton-support-search",
+        "relatedProgramIds": [],
+        "title": "Finite-auxiliary multiletter Marton foundation and exact RTD threshold",
+        "statement": "For the governed half-skew BSSC P and n≥1, let M_n^fin(P) be the supremum of the private-message Marton functional over finite auxiliary alphabets U,V,W and finite laws (U,V,W)-X^n-(Y^n,Z^n). Unconditionally, 0≤M_n^fin(P)≤2n, M_{m+n}^fin(P)≥M_m^fin(P)+M_n^fin(P), and lim_{n→∞}M_n^fin(P)/n=sup_{n≥1}M_n^fin(P)/n. If a selected finite n-letter law has value S_n, then k independent copies have value exactly kS_n. The BSSC randomized-time-division value is L_RTD=h_2(1/4)-1/2+(1/2)[h_2(q_-/2)-h_2((1-q_-)/2)+1-2q_-], where q_-=(15-√105)/30, and it satisfies 0.3616428844219546156634415781505870072079810107238605552037137298028007<L_RTD<0.3616428844219546156634415781505870072079810107238605552037137298028008 and 0.7232857688439092313268831563011740144159620214477211104074274596056014<2L_RTD<0.7232857688439092313268831563011740144159620214477211104074274596056016. Assuming (H-Marton), the stated finite-DMBC Marton achievability theorem, C_sum(P)≥M_n^fin(P)/n for every n and therefore C_sum(P) is at least the displayed Fekete limit; under this hypothesis, a selected law improves the governed RTD achievable lower bound by super-symbol normalization exactly when S_n>nL_RTD. Assuming (H-binary), the stated binary-input Marton-equals-randomized-time-division theorem, M_1^fin(P)=L_RTD; under both hypotheses the same strict inequality is equivalent to improvement over the complete one-letter Marton sum optimum. None of these statements makes a fixed-n equality into a capacity converse.",
+        "scopeQualifications": [
+          "Every optimization defining M_n^fin(P) is restricted to finite auxiliary alphabets; no optimizer, auxiliary-cardinality theorem, or reduction from non-finite auxiliary spaces is assumed.",
+          "The capacity bounds C_sum(P)≥M_n^fin(P)/n and C_sum(P)≥lim_n M_n^fin(P)/n are conditional on (H-Marton), which is not independently proved or authenticated by this result.",
+          "The identity M_1^fin(P)=L_RTD is conditional on (H-binary), which is not independently proved or authenticated by this result.",
+          "Equivalence between improvement over randomized time division and improvement over the complete one-letter Marton optimum requires both (H-Marton) and (H-binary).",
+          "No fixed-blocklength equality is asserted or used as a capacity converse; another blocklength or a non-Marton construction could perform better.",
+          "The cited prior corrective transaction is provenance material only and is not a mathematical dependency."
+        ],
+        "support": {
+          "proofs": [
+            "Concatenating independent finite near-supremizing laws at lengths m and n makes the private and penalty terms additive, while min{a_m+a_n,b_m+b_n}≥min{a_m,b_m}+min{a_n,b_n}; taking approximation errors to zero proves superadditivity.",
+            "The zero law and binary output entropy bounds give 0≤M_n^fin(P)≤2n, after which Fekete's lemma applies to the finite superadditive sequence.",
+            "For a selected law, independent repetition makes every conditional term additive and uses min{kA,kB}=k min{A,B}, proving exact value kS_n without asserting additivity of the suprema.",
+            "Under (H-Marton), rates arbitrarily close to the selected Marton value are achievable on the finite super-channel P^{⊗n}; flattening a super-channel code gives the normalized BSSC lower bound.",
+            "Symmetrization reduces randomized time division to J(1/2)+(1/2)max_q D(q). Differentiation gives the stationary polynomial 15q^2-15q+2, and its sign pattern and antisymmetry identify q_- as the global maximizer."
+          ],
+          "methods": [
+            "Finite-alphabet epsilon-supremum arguments",
+            "Independent concatenation and repetition",
+            "Fekete superadditivity analysis",
+            "Super-symbol code flattening under an explicit achievability hypothesis",
+            "BSSC reflection symmetrization and one-variable calculus",
+            "Directed high-precision interval arithmetic"
+          ],
+          "computations": [
+            "A standard-library directed-interval certificate brackets √105 by exact rational square comparisons, evaluates the closed form with outward-rounded 120-digit Decimal arithmetic, and proves the stated strict intervals for L_RTD and 2L_RTD."
+          ],
+          "tools": [
+            "The submitted Python standard-library verifier audits the finite-scope claim structure, the superadditivity minimum inequality, the exact stationary-point bracket, and the directed RTD intervals without network access or external packages."
+          ],
+          "attestationRefs": [],
+          "artifactRefs": [
+            {
+              "path": "problems/bssc-sum-capacity/contributions/marton-multiletter-foundation-repair/README.md",
+              "digest": "sha256:6be5c69775f5316ae9f3bb4c3fb5ee03ecf84d3b411948e15dc40cee4c1455fc"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/marton-multiletter-foundation-repair/claims.json",
+              "digest": "sha256:a742ff0834934235afd4b0fab555a9fbc603eff3c76861b4d123b40141586449"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/marton-multiletter-foundation-repair/interval_certificate.json",
+              "digest": "sha256:cc42ffacba86122ce7c47250b36e545500a2e57263c8a5ae3dfd18b6691c5d4a"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/marton-multiletter-foundation-repair/premises.json",
+              "digest": "sha256:d75ec8ff5d9a0a1d1a448be222042022e78627a1d9b009fc3a7cf4e6efc1c22e"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/marton-multiletter-foundation-repair/verification.json",
+              "digest": "sha256:fb439106f26e3c02e2cb16997c4919e2518c022124161761db27037d919af564"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/marton-multiletter-foundation-repair/verify_repair.py",
+              "digest": "sha256:b98d1815d3edd7d6b7b25ed02757bea8684b03333b8de5e6dec099a10a9f872f"
+            }
+          ]
+        },
+        "dependencyResultIds": [],
+        "claimRefs": [
+          {
+            "transactionId": "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+            "claimKey": "bssc-sum-capacity/marton-multiletter-finite-foundation-repair"
+          }
+        ],
+        "sourceTransactionIds": [
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc"
+        ],
+        "judgmentIds": [
+          "sha256:d81cf4cc1f5f2703ca77636193ba253473b9270c5f68d1f4384ac0a67d69e665"
+        ],
+        "status": "active",
+        "supersededByResultIds": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "program-bssc-multiletter-marton-support-search",
+      "baseDigest": "sha256:04bcdd13fa29ee123e1516f11a22c5eff824f0b25d2b72fd9a47181539a96c8f",
+      "value": {
+        "id": "program-bssc-multiletter-marton-support-search",
+        "parentId": "root",
+        "title": "Multiletter Marton support search",
+        "objective": "Determine whether multiletter Marton coding can strictly improve the current half-skew BSSC achievable rate, and rigorously characterize the super-input support and auxiliary structure required by any such improvement.",
+        "currentStateSummary": "The finite-auxiliary multiletter Marton sequence now has an unconditional foundation: 0≤M_n^fin(P)≤2n, it is superadditive, its normalized values converge to their supremum by Fekete's lemma, and independent repetition of a selected law scales its value exactly. The BSSC randomized-time-division value L_RTD has an exact closed form at q_-=(15-√105)/30 and directed strict decimal certificates, including a certified interval for 2L_RTD. Under the explicit hypothesis (H-Marton), M_n^fin(P)/n and the Fekete limit are achievable capacity lower bounds, and a selected n-letter law improves the governed RTD lower bound exactly when its value exceeds nL_RTD. Under the separate hypothesis (H-binary), M_1^fin(P)=L_RTD; comparison with the complete one-letter Marton optimum requires both hypotheses. These statements are confined to finite auxiliaries and provide no fixed-n capacity converse. Existing structural filters remain: conditional-product Marton laws are exactly additive on finite receiver-skew channels; arbitrary two-letter laws must pass all four constant-padding correlation tests to gain; and, conditional on the binary-input theorem, two-symbol super-input supports cannot improve the benchmark. Three- and four-symbol, genuinely conditionally coupled laws passing all four tests remain open.",
+        "localResidualSummary": "Search for finite n-letter witnesses with S_n>nL_RTD, beginning with three- and four-symbol two-letter supports and genuinely nonfactorizable cross-use dependence. Use the certified RTD upper endpoint for strict numerical comparisons and require every candidate to pass all four padding-correlation tests, retaining the two crossed inequalities separately. Determine whether stronger analytic pruning or an explicit gaining law is possible. Independently authenticate or prove (H-Marton) and (H-binary), and investigate whether finite-auxiliary cardinality control or extensions beyond finite auxiliaries are needed. Keep superadditivity distinct from additivity and do not treat any fixed-n optimum as a capacity converse.",
+        "status": "active",
+        "intermediateResultIds": [
+          "result-conditional-product-marton-additivity-correlation-ledger",
+          "result-two-letter-marton-two-symbol-support-pruning",
+          "result-two-letter-padding-correlation-tests",
+          "result-finite-auxiliary-marton-multiletter-foundation"
+        ],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:d95a22d00f46f545c7d84621fd63ae1ed602ddf0babdc17998b944de7ae6fa1c",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "currentStateSummary": "Four complementary directions are established. Genuine deterministic finite-block private-message codes induce approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary witness obstructs the specified coarse entropy and finite copy-lemma route; fixed-cardinality auxiliaries and exact BSSC posterior consistency remain unresolved. The separately relaxed UV scalars tensorize, with receiver-skew symmetry giving equality of the branchwise and averaged scalars and half-skew BSSC product values n(2h_2(1/4)-5/4), but these scalars do not establish capacity. Conditional on the exact encoded Gohari-Liu-Nair Theorem 9 premise, the private-message specialization yields C_sum≤inf_{G,K}B(G,K); compact receiver-curve approximation, finite-grid reduction, row-stability bounds, exact Q0 coercivity, and one fixed-pair weak-duality certificate conditionally giving C_sum≤0.369296945969202842443 are available, while premise authentication, unrelaxed convergence, receiver optimality, and matching achievability remain open. In the Marton direction, the finite-auxiliary quantities M_n^fin(P) are unconditionally bounded and superadditive, have the Fekete normalized limit, and scale exactly under repetition of a selected law. The exact randomized-time-division value and strict directed intervals for L_RTD and 2L_RTD are certified. Capacity lower bounds from M_n^fin(P), and the super-symbol threshold S_n>nL_RTD, require the explicit Marton achievability hypothesis; identification M_1^fin(P)=L_RTD requires the separate binary-input theorem, and no fixed-n equality is a capacity converse. Conditional-product architectures are additive, all arbitrary finite two-letter laws must pass four necessary padding-correlation tests to gain, and conditional binary-input support pruning excludes supports of size at most two. Three- and four-symbol conditionally coupled laws passing the tests remain unresolved.",
+        "localResidualSummary": "Authenticate or independently prove the external converse and achievability premises. Convert compact receiver-curve approximation and relaxed-row stability into an unrelaxed converse limit by controlling active rate-free constraints, boundary behavior, and near-optimal feasibility margins; strengthen receiver coercivity and assess optimality of the certified fixed pair. Derive exact binary-BSSC posterior and multiletter constraints for genuine code-induced laws while retaining coupling absent from the additive relaxed UV scalars. In the achievability direction, search finite three- and four-symbol, conditionally nonfactorizable Marton laws satisfying all four padding-correlation tests and rigorously compare their values against nL_RTD using the certified threshold. Clarify finite-auxiliary cardinality scope and never infer a capacity converse from a fixed blocklength. Exact capacity still requires closing the converse gap and supplying a matching achievable rate.",
+        "status": "active",
+        "intermediateResultIds": [],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "lineage": []
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/marton-multiletter-finite-foundation-repair"
+    ],
+    "directProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ],
+    "intermediateResultIds": [
+      "result-finite-auxiliary-marton-multiletter-foundation"
+    ]
+  },
+  "placementAudit": {
+    "rationale": "The accepted claim supplies a reusable finite-auxiliary definition, superadditive asymptotic foundation, exact RTD benchmark, and hypothesis-delimited threshold for multiletter Marton improvement. It therefore belongs in the existing multiletter Marton support-search program rather than creating a submission- or chronology-based program. A new result is warranted because downstream searches can independently cite its normalized threshold, Fekete limit, and directed numerical certificate. The local program and root summaries are updated because the result changes the achievability portfolio and its remaining assumptions, while no converse or UV-scalar program acquires a direct result link.",
+    "basis": "local-objective",
+    "relatedProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ]
+  },
+  "topologyRationale": null
+}
