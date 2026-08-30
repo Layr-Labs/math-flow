@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+  "baseStateDigest": "sha256:bb307f93fdb7a8aaab0856ee859fc7fa8db19c3383eb33b363e9258942549d99",
+  "contentOperations": [
+    {
+      "entityKind": "intermediateResult",
+      "entityId": "result-finite-grid-q0-cardinality-coercivity",
+      "baseDigest": null,
+      "value": {
+        "id": "result-finite-grid-q0-cardinality-coercivity",
+        "primaryProgramId": "program-bssc-theorem9-gk-foundations",
+        "relatedProgramIds": [],
+        "title": "Finite-grid receiver reduction and exact Q0 coercivity",
+        "statement": "Using the accepted private-message 30-row definitions and optimization order supplied by result-theorem9-private-message-product-marginal-foundation, let Q be an N-point posterior grid containing {0,1/2,1}. Every finite-output binary-input receiver has an at-most-N-output replacement with identical mutual-information samples on Q. Consequently, inf over finite-output G,K of V_Q(G,K) equals the infimum restricted to |G|,|K|≤N; when Q is reflection closed, the infimum of V_Q(m,m^circ) over finite m equals its restriction to posterior measures with support size at most N. For Q0={0,1/2,1} and c=h_2(1/4)-1/2, both the unrestricted finite-receiver and reflected finite-receiver infima equal c. Moreover, every finite-output input-only pair G,K with g=J_G(1/2) and k=J_K(1/2) satisfies B(G,K)≥V_0(g,k)≥max{F(g),F(k)}, where F(x)=2c·max{c,x}/(c+x). Hence, as a necessary condition, c≤U<2c and B(G,K)≤U imply 2c^2/U-c≤g,k≤Uc/(2c-U).",
+        "scopeQualifications": [
+          "The result is limited to finite posterior grids and finite-output receivers.",
+          "No continuum cardinality theorem, attainment claim, limit interchange, capacity-converse interpretation, or improved sum-capacity bound is established.",
+          "The reflected-class conclusion is proved only for reflection-closed finite grids; no full-functional reflected-optimality assertion is established.",
+          "The declared dependency is required for the accepted 30-row definitions, optimization order, single-output term structure, and inequality V_Q(G,K)≤B(G,K); external manuscript authenticity is not required.",
+          "The midpoint window is necessary only and supplies no sufficient condition or off-midpoint control for the full receiver functional."
+        ],
+        "support": {
+          "proofs": [
+            "Representing a binary-input receiver by its fair-prior posterior measure expresses every sampled channel curve value as an integral. Carathéodory's theorem applied to the mean and the N-2 nonendpoint samples gives an exact representing measure with at most N atoms.",
+            "The dependency's exhaustive single-output term structure and posterior mutual-information identities show that matching the sampled receiver curves preserves every row, feasible set, and objective of the Q-supported hierarchy. For reflection-closed Q, applying the reduction before reflection preserves the reflected receiver class.",
+            "The complete Q0 hierarchy parametrization and the H, L, and X witness families establish V_0(g,k)≥max{F(g),F(k)} across all midpoint regimes. A reflection-invariant three-output revealing-erasure receiver has sampled curve (0,c,0) and attains c, proving both Q0 infimum equalities.",
+            "Combining B(G,K)≥V_0(g,k) with the two branches of F and solving F(g),F(k)≤U yields the stated necessary midpoint interval."
+          ],
+          "methods": [
+            "Binary-input posterior-measure representation",
+            "Carathéodory finite-support reduction",
+            "Exact Q0 hierarchy parametrization",
+            "Exhaustive 30-row single-output audit",
+            "Reflection symmetry",
+            "Piecewise H/L/X primal witness construction"
+          ],
+          "computations": [
+            "The submitted exact standard-library checker independently rebuilds all 30 rows, verifies their normalized dependency signature and skew symmetry, checks every row and box slack for the H/L/X witnesses by coefficientwise nonnegative polynomial arithmetic, and verifies the common-curve upper witness without floating-point optimization."
+          ],
+          "tools": [
+            "The submitted no-argument Python standard-library verifier performs the deterministic exact symbolic audit."
+          ],
+          "attestationRefs": [],
+          "artifactRefs": [
+            {
+              "path": "problems/bssc-sum-capacity/contributions/finite-grid-q0-foundations/README.md",
+              "digest": "sha256:aa3bf8159f97be9b4ad1bcbbbf4aff3aa674348e6f52a5bf786ceff2138dccb9"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/finite-grid-q0-foundations/claims.json",
+              "digest": "sha256:98970f9e963ac310d114a213f24b1a49bd6fee74793e3770af4d00f206e8f286"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/finite-grid-q0-foundations/verification.json",
+              "digest": "sha256:1718d0c95881d9f249be125dce4b2c6b2d99de9a23b82a29fdf43cdfc06f2466"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/finite-grid-q0-foundations/verify_q0.py",
+              "digest": "sha256:0e20ba65773d2ec212182f96ecaae3f12bd1eaa28150ac3a0051ad34f748b9d4"
+            }
+          ]
+        },
+        "dependencyResultIds": [
+          "result-theorem9-private-message-product-marginal-foundation"
+        ],
+        "claimRefs": [
+          {
+            "transactionId": "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+            "claimKey": "bssc-sum-capacity/finite-grid-q0-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0"
+        ],
+        "judgmentIds": [
+          "sha256:84fba0fcfe43fb79bd21c61917cc3b0a2a2dd9b392c2112411394ea8be7ebdbb"
+        ],
+        "status": "active",
+        "supersededByResultIds": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "program-bssc-theorem9-gk-foundations",
+      "baseDigest": "sha256:8413731bd2a8039099d8ed6589b5b7a0b9ec9b98b74f0104e13d90128118891d",
+      "value": {
+        "id": "program-bssc-theorem9-gk-foundations",
+        "parentId": "root",
+        "title": "Premise-bound Theorem-9/GK converse foundations",
+        "objective": "Develop the full auxiliary-receiver Theorem-9 system into a rigorous private-message BSSC converse framework, separating premise authentication from conditional specialization, receiver reduction, and optimization of the resulting GK-type bound.",
+        "currentStateSummary": "Conditional on the exact cited Theorem 9 outer-bound premise encoded in theorem9_spec.json, the private-message specialization is an independently generated 30-row system preserved by input-only product-marginal receiver replacement, yielding C_sum≤inf_{G,K}B(G,K), V_Q(G,K)≤V(1/2;G,K)≤B(G,K), and a finite V_0(g,k) on its realizable domain. For every fixed N-point posterior grid containing {0,1/2,1}, finite-output receivers can now be reduced exactly to at most N outputs while preserving V_Q; reflection-closed grids admit the analogous reflected support reduction. On Q0={0,1/2,1}, both finite-receiver infima equal c=h_2(1/4)-1/2, and the proved floor B(G,K)≥V_0(g,k)≥max{F(g),F(k)} gives an explicit necessary midpoint window for any pair with B(G,K)<2c. These are finite-grid and necessary-coercivity results only and provide no continuum cardinality, attainment, limit interchange, reflected full-functional optimality, or improved capacity bound. Separately, one specified exact-decimal binary receiver pair has an exact-rational six-row reduction and continuous directed-interval weak-duality certificate establishing the conditional bound C_sum≤0.369296945969202842443; receiver and dual optimality, achievability, exact capacity, and authentication of the external theorem remain unresolved.",
+        "localResidualSummary": "Independently authenticate or re-prove the cited outer-bound premise and its quantifier structure. Extend the finite-grid reduction only with justified continuity, compactness, boundary control, or limit arguments capable of treating the continuum functional; determine whether the midpoint coercivity window can be strengthened to sufficient global receiver control. Optimize inf_{G,K}B(G,K), assess optimality of the certified fixed receiver pair and its dual face, and seek an appropriate matching achievable rate before drawing any exact-capacity conclusion.",
+        "status": "active",
+        "intermediateResultIds": [
+          "result-fixed-pair-bssc-sum-upper-certificate",
+          "result-theorem9-private-message-product-marginal-foundation",
+          "result-finite-grid-q0-cardinality-coercivity"
+        ],
+        "sourceTransactionIds": [
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:5f6a01811f53cb36fca58e5b753707b2e5162a336a276d0e41739538f357369a",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "currentStateSummary": "Three complementary converse directions are established. Genuine deterministic finite-block private-message codes induce approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary witness obstructs the specified coarse entropy and finite copy-lemma route; fixed-cardinality auxiliaries and exact BSSC posterior consistency remain unresolved. The separately relaxed UV scalars tensorize, with receiver-skew symmetry giving B_br=B_avg and half-skew BSSC product values n(2h_2(1/4)-5/4), but these scalars do not establish capacity. Conditional on the exact encoded Gohari–Liu–Nair Theorem 9 premise, the private-message specialization is a 30-row system preserved by input-only product-marginal receiver replacement, yielding C_sum≤inf_{G,K}B(G,K). On any fixed N-point posterior grid containing {0,1/2,1}, receivers admit an exact at-most-N-output reduction; on Q0 the unrestricted and reflected finite-receiver infima both equal c=h_2(1/4)-1/2, and an explicit lower floor gives a necessary midpoint coercivity window below 2c. These new conclusions are confined to finite grids and establish no continuum cardinality, attainment, limit interchange, reflected full-functional optimality, capacity converse, or improved sum-capacity bound. For one specified exact-decimal binary receiver pair, a continuous weak-duality certificate conditionally gives C_sum≤0.369296945969202842443. The theorem premise and transcription remain unauthenticated, receiver and dual optimality and matching achievability are unknown, and the canonical capacity problem remains unresolved.",
+        "localResidualSummary": "Authenticate or independently prove the full Theorem-9 premise, then bridge finite-grid receiver reduction to the continuum only through rigorous compactness, continuity, boundary, and limit arguments. Strengthen midpoint coercivity to global receiver control and determine whether the certified fixed pair is optimal. In parallel, derive exact binary-BSSC posterior and multiletter constraints for genuine code-induced laws and retain coupling or nested auxiliary structure absent from the additive relaxed UV scalars. Exact capacity still requires closing the converse gap and supplying a matching achievable rate.",
+        "status": "active",
+        "intermediateResultIds": [],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "lineage": []
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/finite-grid-q0-foundations"
+    ],
+    "directProgramIds": [
+      "program-bssc-theorem9-gk-foundations"
+    ],
+    "intermediateResultIds": [
+      "result-finite-grid-q0-cardinality-coercivity"
+    ]
+  },
+  "placementAudit": {
+    "rationale": "The accepted claim directly advances the existing Theorem-9/GK receiver-reduction and optimization objective: it depends on that program's 30-row foundation, gives a reusable finite-grid cardinality theorem, solves its Q0 lower rung, and adds necessary receiver coercivity. It does not define a separate durable research objective, so one new intermediate result is placed in the existing program and both that program and its root ancestor are updated. No move, split, merge, retirement, or reparenting is warranted.",
+    "basis": "local-objective",
+    "relatedProgramIds": [
+      "program-bssc-theorem9-gk-foundations"
+    ]
+  },
+  "topologyRationale": null
+}
