@@ -1619,7 +1619,55 @@ class OpenRouterResearchBuilderV8Provider(_GovernedOpenRouterAdapter):
                     ):
                         judgment_by_transaction[transaction_id] = prior_judgment
 
-            def normalize_result(operation: object) -> None:
+            def preserve_additive_fields(
+                operation: object, existing: object
+            ) -> None:
+                if not isinstance(operation, dict) or not isinstance(existing, dict):
+                    return
+                value = operation.get("value")
+                if not isinstance(value, dict):
+                    return
+
+                def merge_strings(field: str) -> None:
+                    prior = existing.get(field)
+                    proposed = value.get(field)
+                    if (
+                        isinstance(prior, list)
+                        and isinstance(proposed, list)
+                        and all(isinstance(item, str) for item in [*prior, *proposed])
+                    ):
+                        value[field] = sorted(set(prior) | set(proposed))
+
+                merge_strings("sourceTransactionIds")
+                if operation.get("entityKind") != "intermediateResult":
+                    return
+                merge_strings("dependencyResultIds")
+                merge_strings("supersededByResultIds")
+
+                prior_refs = existing.get("claimRefs")
+                proposed_refs = value.get("claimRefs")
+                if (
+                    isinstance(prior_refs, list)
+                    and isinstance(proposed_refs, list)
+                    and all(
+                        isinstance(item, dict)
+                        and set(item) == {"transactionId", "claimKey"}
+                        and isinstance(item.get("transactionId"), str)
+                        and isinstance(item.get("claimKey"), str)
+                        for item in [*prior_refs, *proposed_refs]
+                    )
+                ):
+                    value["claimRefs"] = [
+                        {"transactionId": transaction_id, "claimKey": claim_key}
+                        for transaction_id, claim_key in sorted(
+                            {
+                                (str(item["transactionId"]), str(item["claimKey"]))
+                                for item in [*prior_refs, *proposed_refs]
+                            }
+                        )
+                    ]
+
+            def normalize_result(operation: object, existing: object) -> None:
                 if not isinstance(operation, dict):
                     return
                 result_value = operation.get("value")
@@ -1635,14 +1683,7 @@ class OpenRouterResearchBuilderV8Provider(_GovernedOpenRouterAdapter):
                         isinstance(path, str) and path in evidence_by_path
                         for path in paths
                     ):
-                        entity_id = operation.get("entityId")
-                        base_results = base_state.get("intermediateResults")
-                        prior = (
-                            base_results.get(entity_id)
-                            if isinstance(base_results, dict)
-                            and isinstance(entity_id, str)
-                            else None
-                        )
+                        prior = existing
                         prior_support = (
                             prior.get("support") if isinstance(prior, dict) else None
                         )
@@ -1698,22 +1739,21 @@ class OpenRouterResearchBuilderV8Provider(_GovernedOpenRouterAdapter):
                 for operation in operations:
                     if not isinstance(operation, dict):
                         continue
+                    collection_name = collection_names.get(
+                        operation.get("entityKind")
+                    )
+                    entity_id = operation.get("entityId")
+                    collection = (
+                        base_state.get(collection_name)
+                        if collection_name is not None
+                        else None
+                    )
+                    existing = (
+                        collection.get(entity_id)
+                        if isinstance(collection, dict) and isinstance(entity_id, str)
+                        else None
+                    )
                     if field == "contentOperations":
-                        collection_name = collection_names.get(
-                            operation.get("entityKind")
-                        )
-                        entity_id = operation.get("entityId")
-                        collection = (
-                            base_state.get(collection_name)
-                            if collection_name is not None
-                            else None
-                        )
-                        existing = (
-                            collection.get(entity_id)
-                            if isinstance(collection, dict)
-                            and isinstance(entity_id, str)
-                            else None
-                        )
                         digest = (
                             existing.get("digest")
                             if isinstance(existing, dict)
@@ -1721,7 +1761,8 @@ class OpenRouterResearchBuilderV8Provider(_GovernedOpenRouterAdapter):
                         )
                         if isinstance(digest, str):
                             operation["baseDigest"] = digest
-                    normalize_result(operation)
+                    preserve_additive_fields(operation, existing)
+                    normalize_result(operation, existing)
             return normalized
 
         def validate(value: object) -> dict[str, object]:
@@ -1765,8 +1806,8 @@ class OpenRouterResearchBuilderV8Provider(_GovernedOpenRouterAdapter):
                 "current subject in sourceTransactionIds; preserve reciprocal program "
                 "and result links, additive provenance, stable identity, acyclic result "
                 "dependencies, and the placement truth table. Trusted code binds "
-                "artifact digests, existing entity baseDigest fields, and result "
-                "judgmentIds."
+                "artifact digests and existing entity baseDigest fields, preserves "
+                "prior additive provenance, and derives result judgmentIds."
             )
 
         return self._invoke(

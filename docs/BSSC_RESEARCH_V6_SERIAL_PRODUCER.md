@@ -45,6 +45,24 @@ operated result must belong to the current evidence manifest. These properties
 are rechecked while loading the published bundle; they are not only prompt
 instructions.
 
+### Trusted additive provenance preservation
+
+Builder V8 responses author complete entity values so that the reducer can
+validate one explicit post-state. Historical provenance inside those values is
+mechanical, not a new semantic judgment. Before reduction, the trusted provider
+adapter therefore unions prior `sourceTransactionIds` into every operated
+existing entity. For existing intermediate results it also preserves prior
+`claimRefs`, `dependencyResultIds`, `supersededByResultIds`, and exact artifact
+references; `judgmentIds` are then derived from the complete trusted source and
+claim set.
+
+This normalization cannot admit invented history. The reducer still rejects
+non-canonical sources, requires the current accepted subject wherever the
+transition contract requires it, validates exact claim and judgment coverage,
+and enforces every topology and placement invariant. It only prevents a model
+from accidentally deleting immutable prior bookkeeping while re-authoring a
+holistic summary.
+
 ### Affected-ancestor synthesis
 
 For every direct program, linked result program, and changed topology scope,
