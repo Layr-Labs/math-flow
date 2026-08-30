@@ -469,6 +469,9 @@ class ResearchBuilderV8Tests(unittest.TestCase):
         rendered = json.dumps(_builder_transition_schema_v8(), sort_keys=True)
         self.assertIn("artifactPaths", rendered)
         self.assertNotIn("artifactRefs", rendered)
+        placement = _builder_transition_schema_v8()["properties"]["placementAudit"]
+        self.assertEqual(placement["required"], ["rationale"])
+        self.assertEqual(set(placement["properties"]), {"rationale"})
         profile = json.loads(
             (ROOT / "protocol/profiles/hierarchical-research-v8.json").read_text()
         )
@@ -477,6 +480,135 @@ class ResearchBuilderV8Tests(unittest.TestCase):
             "protocol/schemas/research-builder-submission-input-v2.schema.json",
             profile["schemas"],
         )
+
+    def test_provider_derives_redundant_placement_and_empty_topology_fields(self) -> None:
+        raw = raw_first_transition(self.base)
+        raw["placementAudit"] = {
+            "rationale": "The result directly concerns the canonical objective."
+        }
+        raw["topologyRationale"] = "No topology revision is needed."
+        provider, _ = self.provider(raw)
+        output = provider.run(
+            problem_id="two-entity-fixture",
+            subject_transaction_id=TX_A,
+            base_state=self.base,
+            accepted_claims=accepted("claim-a"),
+            judgment_id=JUDGMENT_A,
+            evidence_files=(
+                SubmissionEvidenceFile(PATH_A, sha256_bytes(CONTENT_A), CONTENT_A),
+            ),
+        )
+        self.assertEqual(
+            output["placementAudit"],
+            {
+                "basis": "canonical-objective",
+                "rationale": "The result directly concerns the canonical objective.",
+                "relatedProgramIds": [],
+            },
+        )
+        self.assertIsNone(output["topologyRationale"])
+        apply_research_builder_v8_transition(
+            self.base,
+            output,
+            accepted_claims=accepted("claim-a"),
+            judgment_id=JUDGMENT_A,
+            evidence_file_refs={PATH_A: sha256_bytes(CONTENT_A)},
+        )
+
+    def test_provider_derives_local_placement_from_actual_program_mapping(self) -> None:
+        raw = raw_local_first_transition(self.base)
+        raw["placementAudit"] = {
+            "rationale": "The result belongs to a durable local direction.",
+        }
+        provider, _ = self.provider(raw)
+        output = provider.run(
+            problem_id="two-entity-fixture",
+            subject_transaction_id=TX_A,
+            base_state=self.base,
+            accepted_claims=accepted("claim-a"),
+            judgment_id=JUDGMENT_A,
+            evidence_files=(
+                SubmissionEvidenceFile(PATH_A, sha256_bytes(CONTENT_A), CONTENT_A),
+            ),
+        )
+        self.assertEqual(
+            output["placementAudit"],
+            {
+                "basis": "local-objective",
+                "rationale": "The result belongs to a durable local direction.",
+                "relatedProgramIds": ["program/local"],
+            },
+        )
+
+    def test_duplicate_entity_retry_explains_single_operation_rule(self) -> None:
+        corrected = raw_first_transition(self.base)
+        repeated = copy.deepcopy(corrected)
+        duplicate = copy.deepcopy(repeated["contentOperations"][1])
+        duplicate["action"] = "create"
+        repeated["topologyOperations"] = [duplicate]
+        repeated["topologyRationale"] = "Create the accepted result."
+        transport = Transport([repeated, corrected])
+        provider = OpenRouterResearchBuilderV8Provider(
+            json.loads(SPEC.read_text(encoding="utf-8")), transport=transport
+        )
+        provider.run(
+            problem_id="two-entity-fixture",
+            subject_transaction_id=TX_A,
+            base_state=self.base,
+            accepted_claims=accepted("claim-a"),
+            judgment_id=JUDGMENT_A,
+            evidence_files=(
+                SubmissionEvidenceFile(PATH_A, sha256_bytes(CONTENT_A), CONTENT_A),
+            ),
+        )
+        feedback = str(transport.requests[1]["messages"][-1]["content"])
+        self.assertIn("transition repeats an entity", feedback)
+        self.assertIn("at most once across both operation arrays", feedback)
+
+    def test_provider_does_not_repair_invalid_root_local_program_mix(self) -> None:
+        raw = raw_local_first_transition(self.base)
+        raw["contribution"]["directProgramIds"] = ["root", "program/local"]
+        raw["placementAudit"] = {
+            "rationale": "This invalid mixture must remain reducer-visible."
+        }
+        provider, _ = self.provider(raw)
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "direct programs must exactly match its intermediate-result program links",
+        ):
+            provider.run(
+                problem_id="two-entity-fixture",
+                subject_transaction_id=TX_A,
+                base_state=self.base,
+                accepted_claims=accepted("claim-a"),
+                judgment_id=JUDGMENT_A,
+                evidence_files=(
+                    SubmissionEvidenceFile(
+                        PATH_A, sha256_bytes(CONTENT_A), CONTENT_A
+                    ),
+                ),
+            )
+
+    def test_provider_requires_rationale_for_nonempty_topology(self) -> None:
+        raw = raw_first_transition(self.base)
+        result_create = raw["contentOperations"].pop()
+        result_create["action"] = "create"
+        raw["topologyOperations"] = [result_create]
+        raw["topologyRationale"] = None
+        provider, _ = self.provider(raw)
+        with self.assertRaisesRegex(MathFlowError, "topology rationale"):
+            provider.run(
+                problem_id="two-entity-fixture",
+                subject_transaction_id=TX_A,
+                base_state=self.base,
+                accepted_claims=accepted("claim-a"),
+                judgment_id=JUDGMENT_A,
+                evidence_files=(
+                    SubmissionEvidenceFile(
+                        PATH_A, sha256_bytes(CONTENT_A), CONTENT_A
+                    ),
+                ),
+            )
 
 
 if __name__ == "__main__":

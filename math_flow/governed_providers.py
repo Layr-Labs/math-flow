@@ -708,6 +708,12 @@ def _builder_transition_schema_v8() -> dict[str, object]:
                 "artifactPaths" if item == "artifactRefs" else item
                 for item in support_required
             ]
+    placement_audit = properties["placementAudit"]
+    assert isinstance(placement_audit, dict)
+    placement_audit["properties"] = {
+        "rationale": {"type": "string", "minLength": 1}
+    }
+    placement_audit["required"] = ["rationale"]
     return schema
 
 
@@ -1619,6 +1625,35 @@ class OpenRouterResearchBuilderV8Provider(_GovernedOpenRouterAdapter):
                     ):
                         judgment_by_transaction[transaction_id] = prior_judgment
 
+            topology_operations = normalized.get("topologyOperations")
+            if topology_operations == []:
+                normalized["topologyRationale"] = None
+
+            contribution = normalized.get("contribution")
+            placement_audit = normalized.get("placementAudit")
+            direct_program_ids = (
+                contribution.get("directProgramIds")
+                if isinstance(contribution, dict)
+                else None
+            )
+            if (
+                isinstance(placement_audit, dict)
+                and isinstance(direct_program_ids, list)
+                and direct_program_ids
+                and all(isinstance(item, str) for item in direct_program_ids)
+                and len(set(direct_program_ids)) == len(direct_program_ids)
+            ):
+                direct_program_ids = sorted(direct_program_ids)
+                if direct_program_ids == ["root"]:
+                    placement_audit["basis"] = "canonical-objective"
+                    placement_audit["relatedProgramIds"] = []
+                elif len(direct_program_ids) == 1:
+                    placement_audit["basis"] = "local-objective"
+                    placement_audit["relatedProgramIds"] = direct_program_ids
+                elif "root" not in direct_program_ids:
+                    placement_audit["basis"] = "cross-program"
+                    placement_audit["relatedProgramIds"] = direct_program_ids
+
             def preserve_additive_fields(
                 operation: object, existing: object
             ) -> None:
@@ -1807,7 +1842,12 @@ class OpenRouterResearchBuilderV8Provider(_GovernedOpenRouterAdapter):
                 "and result links, additive provenance, stable identity, acyclic result "
                 "dependencies, and the placement truth table. Trusted code binds "
                 "artifact digests and existing entity baseDigest fields, preserves "
-                "prior additive provenance, and derives result judgmentIds."
+                "prior additive provenance, derives result judgmentIds, derives the "
+                "placement basis and related program IDs from directProgramIds, and "
+                "nulls topologyRationale when topologyOperations is empty. Operate "
+                "on each (entityKind, entityId) at most once across both operation "
+                "arrays; never emit both content and topology operations for the "
+                "same entity."
             )
 
         return self._invoke(
