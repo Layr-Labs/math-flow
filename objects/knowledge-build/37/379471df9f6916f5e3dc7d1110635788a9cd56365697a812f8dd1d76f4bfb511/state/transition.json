@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+  "baseStateDigest": "sha256:41023487f70fc4ed94a7cfbd7b0d9e825459ffe1cb3f72107dd18ab42d18d216",
+  "contentOperations": [
+    {
+      "entityKind": "intermediateResult",
+      "entityId": "result-two-letter-marton-marginal-correlation-pruning",
+      "baseDigest": null,
+      "value": {
+        "id": "result-two-letter-marton-marginal-correlation-pruning",
+        "primaryProgramId": "program-bssc-multiletter-marton-support-search",
+        "relatedProgramIds": [],
+        "title": "Marginal-balance and correlation pruning for two-letter Marton gain",
+        "statement": "For the governed half-skew BSSC product channel P^{otimes 2}, consider any finite-auxiliary Marton law (W,U,V)-X_1X_2-(Y^2,Z^2) with unnormalized two-letter Marton sum value M. Let q_i=Pr[X_i=1], Q=q_1+q_2, C_out=I(Y_1;Y_2)+I(Z_1;Z_2), c_in=Pr[X_1X_2=11]-q_1q_2, and T=2L_RTD. If M>T, then q_1,q_2∈(3/8,5/8), and therefore q_1,q_2∈(7/20,13/20); moreover 17/20<Q<23/20, C_out<7/160=0.04375<0.044 bits, and |c_in|<7/40. On the reflected/transposed family Pr[00]=Pr[11]=alpha and Pr[01]=Pr[10]=1/2-alpha, M>T additionally requires 1/8<alpha<5/13. These are necessary conditions only: they neither construct nor prove a two-letter gain, rule one out, nor provide a capacity converse.",
+        "scopeQualifications": [
+          "Applies only to the governed half-skew BSSC product channel P^{otimes 2}.",
+          "Applies to finite-auxiliary laws and the unnormalized two-letter Marton sum value.",
+          "Every conclusion is a necessary condition conditional on M>T=2L_RTD.",
+          "Only the unconditional RTD calculus and directed threshold certificate are used from the threshold foundation; neither (H-Marton) nor (H-binary) is used.",
+          "The alpha-window applies only to the stated reflected/transposed one-parameter input family.",
+          "The result does not construct or prove a two-letter gain.",
+          "The result does not rule out a two-letter gain.",
+          "The result is not a capacity converse."
+        ],
+        "support": {
+          "proofs": [
+            "Memorylessness gives the exact decomposition G(P_{X_1X_2})=F(q_1)+F(q_2)-C_out/2 for the averaged product-channel input mutual information.",
+            "Combining that identity and the two pre-averaging Marton-to-input rows with strictly concave coordinatewise envelopes forces q_1,q_2∈(3/8,5/8) and 17/20<Q<23/20 whenever M>T.",
+            "Reflection symmetry and the maximum of the one-coordinate average curve give C_out<7/160<0.044 bits.",
+            "The channel's affine output laws identify each receiver-pair covariance as c_in/4; Pinsker's inequality then converts the output mutual-information bound into |c_in|<7/40.",
+            "For the reflected/transposed one-parameter family, monotonicity of the exact output-correlation expression and certified endpoint comparisons force 1/8<alpha<5/13."
+          ],
+          "methods": [
+            "Exact product-channel mutual-information decomposition",
+            "Coordinatewise strict-concavity and reflection envelopes",
+            "Directed interval arithmetic and rational cutoff certification",
+            "Affine binary-output covariance identities",
+            "Pinsker inequality",
+            "Monotonicity analysis on the reflected/transposed family"
+          ],
+          "computations": [
+            "The submitted directed checker reconstructs the exact RTD threshold, verifies the coordinate and sum-envelope separations, brackets the sharp crossings, certifies C_out<7/160<0.044 and the rational covariance comparison, and verifies the two symmetric-family endpoint inequalities."
+          ],
+          "tools": [
+            "The submitted Python standard-library checker uses exact rational arithmetic and outward-rounded 120-digit Decimal intervals without network access or external packages."
+          ],
+          "attestationRefs": [],
+          "artifactRefs": [
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-marginal-correlation-pruning/README.md",
+              "digest": "sha256:0a1716c89d079f622be5fef00e03251f5b300b5692275f529cb49a74caae574d"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-marginal-correlation-pruning/claims.json",
+              "digest": "sha256:fa482fa6cd2074e0ac5752bc676356f4af4a759392e2c23533422eae4ed4254e"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-marginal-correlation-pruning/verification.json",
+              "digest": "sha256:9764fcc6d169eaa82f04d483f6dec405c8df5eff3f9c94bcee3dd46a1ee40b69"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-marginal-correlation-pruning/verify.py",
+              "digest": "sha256:25a8cbc3b85fdacb4df9d8e92fd57f6468ba3060c56c94a5eebc35a5403d28a9"
+            }
+          ]
+        },
+        "dependencyResultIds": [
+          "result-two-letter-marton-full-support-necessity",
+          "result-finite-auxiliary-marton-multiletter-foundation"
+        ],
+        "claimRefs": [
+          {
+            "transactionId": "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-marginal-correlation-pruning"
+          }
+        ],
+        "sourceTransactionIds": [
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff"
+        ],
+        "judgmentIds": [
+          "sha256:dc34c24c1066faf7f4d68fd8ba8fd051664ccdbc4e8ce14dcd230729dc69240e"
+        ],
+        "status": "active",
+        "supersededByResultIds": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "program-bssc-multiletter-marton-support-search",
+      "baseDigest": "sha256:21556d1c6750de7187b6a04883f52d028bbaf5e3f7713a71909c7e7eb40d21c3",
+      "value": {
+        "id": "program-bssc-multiletter-marton-support-search",
+        "parentId": "root",
+        "title": "Multiletter Marton support search",
+        "objective": "Determine whether multiletter Marton coding can strictly improve the current half-skew BSSC achievable rate, and rigorously characterize the super-input support and auxiliary structure required by any such improvement.",
+        "currentStateSummary": "The finite-auxiliary multiletter Marton sequence is unconditionally bounded and superadditive, has the Fekete normalized limit, and scales exactly under independent repetition of a selected law. The exact randomized-time-division value L_RTD and directed strict intervals for L_RTD and 2L_RTD are certified; capacity lower bounds and identification of the one-letter Marton optimum require the separate stated hypotheses, and no fixed-blocklength equality is a capacity converse. Conditional-product Marton laws are additive on finite receiver-skew channels, while every arbitrary finite two-letter gaining law must pass all four constant-padding correlation tests. Every two-letter law supported on at most three super-input symbols has value below 0.695 bits, so a witness exceeding twice the optimal one-letter RTD value must have full support with masses above 1/180 on 00 and 11 and above 1/325 on 01 and 10. Further necessary pruning now shows that M>2L_RTD forces each input marginal into (3/8,5/8), the marginal sum into (17/20,23/20), total within-receiver output correlation below 7/160 bits, and input covariance magnitude below 7/40; on the reflected/transposed one-parameter family it also forces 1/8<alpha<5/13. These conditions are necessary only and neither establish nor exclude a gain. Whether any full-support, genuinely conditionally coupled law satisfying all filters can gain remains open.",
+        "localResidualSummary": "Restrict the two-letter search to genuinely nonfactorizable full-support finite Marton laws satisfying the certified symbol-mass floors, all four padding-correlation tests, q_1,q_2∈(3/8,5/8), 17/20<q_1+q_2<23/20, C_out<7/160, and |c_in|<7/40; retain the crossed padding tests separately. Within the reflected/transposed family, restrict to 1/8<alpha<5/13. Seek either stronger interior pruning or a certified law above 2L_RTD. Independently authenticate or prove (H-Marton) and (H-binary), investigate finite-auxiliary cardinality control and extensions beyond finite auxiliaries, and keep superadditivity distinct from additivity and fixed-blocklength optimization distinct from a capacity converse.",
+        "status": "active",
+        "intermediateResultIds": [
+          "result-conditional-product-marton-additivity-correlation-ledger",
+          "result-finite-auxiliary-marton-multiletter-foundation",
+          "result-two-letter-marton-full-support-necessity",
+          "result-two-letter-marton-two-symbol-support-pruning",
+          "result-two-letter-padding-correlation-tests",
+          "result-two-letter-marton-marginal-correlation-pruning"
+        ],
+        "sourceTransactionIds": [
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:8e1c90cfb3f5ae8a8b664ae1e776a35383469f63564855b6880338e52ac5d559",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "currentStateSummary": "Four complementary directions are established. Genuine deterministic finite-block private-message codes induce approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary witness obstructs the specified coarse entropy and finite copy-lemma route; fixed-cardinality auxiliaries and exact BSSC posterior consistency remain unresolved. The separately relaxed UV scalars tensorize, with receiver-skew symmetry giving equality of the branchwise and averaged scalars and half-skew BSSC product values n(2h_2(1/4)-5/4), but these scalars do not establish capacity. Conditional on the exact encoded Gohari–Liu–Nair Theorem 9 premise, the private-message specialization yields C_sum≤inf_{G,K}B(G,K); compact receiver-curve approximation, finite-grid reduction, row-stability bounds, exact Q0 coercivity, and one fixed-pair weak-duality certificate conditionally giving C_sum≤0.369296945969202842443 are available, while premise authentication, unrelaxed convergence, receiver optimality, and matching achievability remain open. In the Marton direction, the finite-auxiliary quantities are unconditionally bounded and superadditive and have a certified RTD threshold. Conditional-product architectures are additive, arbitrary two-letter candidates must pass four padding-correlation tests, and every candidate improving on twice the one-letter RTD optimum must have full support with certified mass floors. Such a candidate must now also have q_1,q_2∈(3/8,5/8), 17/20<q_1+q_2<23/20, total within-receiver output correlation below 7/160 bits, and input covariance magnitude below 7/40; the reflected/transposed family additionally requires 1/8<alpha<5/13. These are necessary conditions only. Full-support, conditionally coupled laws satisfying all constraints remain unresolved.",
+        "localResidualSummary": "Authenticate or independently prove the external converse and achievability premises. Convert compact receiver-curve approximation and relaxed-row stability into an unrelaxed converse limit, strengthen receiver coercivity, and assess optimality of the certified fixed pair. Derive exact binary-BSSC posterior and multiletter constraints for genuine code-induced laws while retaining coupling absent from the additive relaxed UV scalars. In the achievability direction, search only among genuinely nonfactorizable full-support two-letter Marton laws satisfying the symbol-mass floors, four padding tests, marginal-balance windows, output-correlation cap, and input-covariance cap, with the additional alpha-window on the reflected/transposed family; compare candidates rigorously against 2L_RTD. Clarify finite-auxiliary cardinality scope and never infer a capacity converse from a fixed blocklength. Exact capacity still requires closing the converse gap and supplying a matching achievable rate.",
+        "status": "active",
+        "intermediateResultIds": [],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "lineage": []
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/two-letter-marton-marginal-correlation-pruning"
+    ],
+    "directProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ],
+    "intermediateResultIds": [
+      "result-two-letter-marton-marginal-correlation-pruning"
+    ]
+  },
+  "placementAudit": {
+    "rationale": "The accepted claim is an independently reusable necessary-condition theorem that directly narrows the existing two-letter multiletter Marton search. It depends on the established Marton-to-input reduction and exact RTD threshold, belongs in the existing multiletter Marton support-search program, and changes no program hierarchy. The direct program and root summaries are updated to incorporate the new marginal, output-correlation, covariance, and one-parameter-family restrictions while preserving their necessary-only scope.",
+    "basis": "local-objective",
+    "relatedProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ]
+  },
+  "topologyRationale": null
+}
