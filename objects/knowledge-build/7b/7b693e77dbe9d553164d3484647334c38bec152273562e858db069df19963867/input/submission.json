@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 2,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+  "ledgerOrdinal": 15,
+  "judgmentId": "sha256:fb042c476afdbb03551bcf3dcb05c4cc1ab3d2eeeee845e1d5031ebfb44d1c65",
+  "acceptedClaims": [
+    {
+      "claimKey": "bssc-sum-capacity/conditional-product-marton-no-gain",
+      "declaredStatement": "Let T be any finite receiver-skew two-receiver broadcast channel, and let M_T be its one-letter private-message Marton sum-rate. For every n >= 1, the supremum of the n-letter Marton functional over laws P(w,u^n,v^n,x^n)=P(w) product_i P_i(u_i,v_i,x_i|w), with aggregate U=(U_i) and V=(V_i), equals n M_T. The common W is arbitrary and may correlate coordinates unconditionally. Consequently, any strict two-letter gain for the half-skew BSSC must use a law outside this conditional-product class: every chosen coordinate-packet decomposition under which the factorization could be tested must fail it. For the broader class of arbitrary finite tuple laws P(w,u^n,v^n,x^n), with a chosen aggregate U=(U_i), V=(V_i) and the product channel, the exact total-correlation residual identity in README equation (11) holds, so any strict gain must satisfy the correlation-balance inequality (13) for that decomposition. Trivial constant padding always supplies a tuple representation, but the ledger and its pruning usefulness depend on the noncanonical decomposition. These results do not establish unrestricted Marton additivity, binary-input tightness, a capacity bound, or the exact BSSC capacity.",
+      "validitySummary": "The analytic entropy argument establishes that receiver-skew symmetry gives M_T=L_{1/2,T}; conditional coordinate independence then makes the satellite terms additive and bounds the common terms by coordinate sums, yielding an upper bound nM_T. Independent epsilon-optimal one-letter copies give the reverse bound without requiring attainment. For arbitrary tuple laws over the product channel, direct entropy expansion establishes the stated total-correlation residual identity and makes positivity of the residual—and hence inequality (13)—necessary for any strict gain.",
+      "scopeQualifications": [
+        "A strict-gain law must fail the conditional-product factorization for every exact chosen coordinate-packet decomposition to which the theorem applies.",
+        "Constant padding supplies a tuple representation, but does not make the ledger canonical or necessarily useful for pruning.",
+        "For arbitrary tuple laws, the residual ledger and correlation-balance condition are relative to the chosen aggregate coordinate decomposition; they are noncanonical.",
+        "Inequality (13) is only a necessary condition for strict gain, not a sufficient condition.",
+        "The result does not establish unrestricted Marton additivity, binary-input tightness, a capacity bound, or the exact half-skew BSSC capacity.",
+        "The theorem applies to finite receiver-skew two-receiver broadcast channels and to the specified conditional-product factorization with a common W that may induce unconditional coordinate correlation."
+      ],
+      "evidenceTransactionIds": [],
+      "dependencyTransactionIds": []
+    }
+  ],
+  "evidenceManifestDigest": "sha256:059df67ceab76a406cf7dc16fe8f7a849342bc16ec3749c6d0e9f73b913fd512",
+  "submissionInputDigest": "sha256:4edeff13b9d743b6a029e3b1d6b0f9c460e9f3bacad91bf7742a4e8f47c39b36"
+}
