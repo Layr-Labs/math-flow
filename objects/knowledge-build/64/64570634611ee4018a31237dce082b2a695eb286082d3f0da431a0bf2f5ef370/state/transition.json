@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383",
+  "baseStateDigest": "sha256:67d95993d708b66bcbd41dcfa44176ff4089375cefef25e4babaca65b05f0e9c",
+  "contentOperations": [
+    {
+      "entityKind": "intermediateResult",
+      "entityId": "result-two-letter-marton-product-code-quotient-local-maximum",
+      "baseDigest": null,
+      "value": {
+        "id": "result-two-letter-marton-product-code-quotient-local-maximum",
+        "primaryProgramId": "program-bssc-multiletter-marton-support-search",
+        "relatedProgramIds": [],
+        "title": "Strict local maximum in the two-letter product-code Marton quotient",
+        "statement": "For the governed half-skew BSSC product channel, restrict to the open 16-cell simplex of positive masses q(W,X^2), with W and X^2 each taking four symbols and with the four fixed deterministic orientations (U,V)=(X^2,0),(2X_1,X_2),(X_2,2X_1),(0,X^2). At the tensor product of the exact one-use randomized-time-division optimizer, whose 4-by-4 mass matrix has the stated symmetry pattern with entries (11-sqrt(105))/120, 1/30, and (11+sqrt(105))/120, the half-weight functional L_{1/2} has constant gradient and a negative-definite Hessian on the full 15-dimensional simplex tangent space. Therefore this interior tensor point is a strict local maximum of L_{1/2} within this fixed-map quotient. Its value is 2L_RTD, and every distinct sufficiently close law in the quotient has selected-law Marton value strictly below 2L_RTD because min(E_Y,E_Z) is at most L_{1/2}.",
+        "scopeQualifications": [
+          "The result applies only to the open 16-cell quotient with the four specified deterministic product-code maps, four-symbol W and X^2, and variation solely of the positive masses q(W,X^2).",
+          "The result is local, supplies no explicit neighborhood radius, and does not establish global optimality even within the fixed-map quotient or exclude distant points in it.",
+          "It does not address directions activating other (W,U,V,X^2) atoms, stochastic or different maps, larger auxiliaries, or other two-letter architectures.",
+          "It does not establish unrestricted Marton additivity, rule out a two-letter Marton gain in another architecture, or provide a capacity converse."
+        ],
+        "support": {
+          "proofs": [
+            "Exact tangent-space stationarity follows from the 15 verified gradient log-product identities at the tensor point.",
+            "An exact LDL^T decomposition of the tangent-restricted Hessian has 15 strictly negative pivots and reconstructs the matrix exactly, proving negative definiteness and hence strict local maximality by the second-derivative test.",
+            "Tensor-product additivity and the exact one-use randomized-time-division identification give L_{1/2}(q_*)=2L_RTD; combining strict local decrease of L_{1/2} with min(E_Y,E_Z)<=L_{1/2} gives the nearby selected-law inequality."
+          ],
+          "methods": [
+            "Exact symbolic entropy differentiation",
+            "Simplex tangent-space restriction",
+            "Exact quadratic-field arithmetic in Q(sqrt(105))",
+            "Exact LDL^T inertia certification",
+            "Tensor-product evaluation"
+          ],
+          "computations": [
+            "The standard-library checker constructs all seven entropy marginal maps, verifies all 15 tangent gradient identities, forms the exact 16-by-16 Hessian, and certifies the 15-dimensional tangent restriction through 15 negative exact LDL^T pivots and exact reconstruction."
+          ],
+          "tools": [
+            "The submitted Python standard-library verifier performs the certificate using exact rational arithmetic in Q(sqrt(105)), without floating-point arithmetic for the governing stationarity or definiteness checks."
+          ],
+          "attestationRefs": [],
+          "artifactRefs": [
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-product-code-quotient-local-maximum/README.md",
+              "digest": "sha256:c1981e9a7b6568af0fba60cf44a09e0cea9a54ecf76fe642132fa85671a3762a"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-product-code-quotient-local-maximum/claims.json",
+              "digest": "sha256:c016a6c6689e6f8b8a600e75aebc70c441e282f78187e31c51d9067102cc5a09"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-product-code-quotient-local-maximum/verification.json",
+              "digest": "sha256:9764fcc6d169eaa82f04d483f6dec405c8df5eff3f9c94bcee3dd46a1ee40b69"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-product-code-quotient-local-maximum/verify.py",
+              "digest": "sha256:0838e33e076c5713cadd26ca23255dcf9d1f446df4652b16c3f42612c3445036"
+            }
+          ]
+        },
+        "dependencyResultIds": [
+          "result-finite-auxiliary-marton-multiletter-foundation"
+        ],
+        "claimRefs": [
+          {
+            "transactionId": "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-product-code-quotient-local-maximum"
+          }
+        ],
+        "sourceTransactionIds": [
+          "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383"
+        ],
+        "judgmentIds": [
+          "sha256:ebee9dfee81fa760589e21f275573709beab85fe319c0deab2dbcc7b26423370"
+        ],
+        "status": "active",
+        "supersededByResultIds": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "program-bssc-multiletter-marton-support-search",
+      "baseDigest": "sha256:d5b4594c14a7e35dd8572ccbd4910cf227682959cc2024355c54b313e08efe1b",
+      "value": {
+        "id": "program-bssc-multiletter-marton-support-search",
+        "parentId": "root",
+        "title": "Multiletter Marton support search",
+        "objective": "Determine whether multiletter Marton coding can strictly improve the current half-skew BSSC achievable rate, and rigorously characterize the super-input support and auxiliary structure required by any such improvement.",
+        "currentStateSummary": "The finite-auxiliary multiletter Marton sequence is bounded and superadditive, has a Fekete normalized limit, and scales exactly under independent repetition of a selected law; its randomized-time-division threshold is certified, while capacity and one-letter-optimum interpretations retain their stated hypotheses. Conditional-product laws are additive on finite receiver-skew channels, and arbitrary finite two-letter gaining laws must pass four constant-padding correlation tests. Any law exceeding 2L_RTD must have full super-input support with certified mass floors, balanced marginal windows, C_out<7/160, and |c_in|<sqrt(7 ln 2/248)<7/50; the reflected/transposed family also obeys 1/8<alpha<5/13. Exhaustive outward-interval evaluation rules out all 524,288 deterministic maps for two pinned exact rational auxiliary laws, but only within that finite family. In the separate open 16-cell quotient with the four specified deterministic product-code orientations, the tensor product of the exact one-use RTD optimizer is now an exactly certified strict local maximum of L_{1/2} on the full 15-dimensional simplex tangent space, with value 2L_RTD; every distinct sufficiently close selected law in that quotient is strictly below 2L_RTD. This local theorem gives no explicit radius and does not exclude distant quotient points, other atoms, stochastic or different maps, larger auxiliaries, or other architectures. Full-support, genuinely conditionally coupled laws outside the certified finite and local neighborhoods remain unresolved.",
+        "localResidualSummary": "Restrict further searches to genuinely nonfactorizable full-support finite Marton laws satisfying the established mass floors, four padding tests, marginal-balance windows, C_out<7/160, and |c_in|<sqrt(7 ln 2/248)<7/50, with 1/8<alpha<5/13 in the reflected/transposed family. Avoid local perturbations of the exact RTD tensor point inside the certified four-orientation positive-mass quotient, and exclude the exhaustively certified deterministic relabelings of the two pinned laws. Continue investigating distant points in that quotient, altered auxiliary laws, activated atoms, stochastic or different maps, mixtures, continuations, larger auxiliaries, and other architectures. Seek stronger interior or global pruning or a rigorously certified law above 2L_RTD. Independently authenticate or prove the Marton-achievability and binary-input hypotheses, investigate finite-auxiliary cardinality control and extensions beyond finite auxiliaries, and keep local, fixed-family, and fixed-blocklength conclusions distinct from unrestricted additivity and capacity converses.",
+        "status": "active",
+        "intermediateResultIds": [
+          "result-conditional-product-marton-additivity-correlation-ledger",
+          "result-finite-auxiliary-marton-multiletter-foundation",
+          "result-two-letter-marton-fixed-law-map-exhaustive-certificate",
+          "result-two-letter-marton-full-support-necessity",
+          "result-two-letter-marton-marginal-correlation-pruning",
+          "result-two-letter-marton-product-code-quotient-local-maximum",
+          "result-two-letter-marton-two-symbol-support-pruning",
+          "result-two-letter-output-covariance-curvature",
+          "result-two-letter-padding-correlation-tests"
+        ],
+        "sourceTransactionIds": [
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+          "43fcf08a3272a3995158951de8d8ca2a666a0792",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+          "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:dcbe7cd2ccf11307c91b2ea834023a6f13e7edfaecc4c3f10f50b91e4f775b49",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "currentStateSummary": "Four complementary directions are established. Genuine deterministic finite-block private-message codes induce approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary witness obstructs the specified coarse entropy and finite copy-lemma route; fixed-cardinality auxiliaries and exact BSSC posterior consistency remain unresolved. The separately relaxed UV scalars tensorize, with receiver-skew symmetry giving equality of the branchwise and averaged scalars and half-skew BSSC product values n(2h_2(1/4)-5/4), but these scalars do not establish capacity. Conditional on the encoded Gohari-Liu-Nair Theorem 9 premise, the private-message specialization yields C_sum<=inf_{G,K}B(G,K); compact receiver-curve approximation, finite-grid reduction, row-stability bounds, exact Q0 coercivity, and one fixed-pair weak-duality certificate conditionally giving C_sum<=0.369296945969202842443 are available, while premise authentication, unrelaxed convergence, receiver optimality, and matching achievability remain open. In the Marton direction, finite-auxiliary quantities are bounded and superadditive and have a certified randomized-time-division threshold. Conditional-product architectures are additive, arbitrary two-letter candidates must pass four padding-correlation tests, and candidates above 2L_RTD must satisfy full-support, mass-floor, marginal-balance, output-correlation, and sharpened covariance constraints. An exhaustive certificate rules out all 524,288 deterministic relabelings of two pinned exact rational auxiliary laws. Additionally, in the fixed open 16-cell quotient with four specified deterministic product-code orientations, the exact one-use RTD tensor point is a strict local maximum of L_{1/2} on the full simplex tangent space, has value 2L_RTD, and strictly dominates every distinct sufficiently close selected law in that quotient. This is not global even within the quotient and does not cover distant points, additional atoms, stochastic or different maps, larger auxiliaries, unrestricted Marton additivity, or capacity. Full-support, conditionally coupled laws outside the certified finite family and local neighborhood remain unresolved.",
+        "localResidualSummary": "Authenticate or independently prove the external converse and achievability premises. Convert compact receiver-curve approximation and relaxed-row stability into an unrelaxed converse limit, strengthen receiver coercivity, and assess optimality of the certified fixed pair. Derive exact binary-BSSC posterior and multiletter constraints for genuine code-induced laws while retaining coupling absent from the additive relaxed UV scalars. In the achievability direction, search only among genuinely nonfactorizable full-support two-letter Marton laws satisfying all established support, padding, marginal, output-correlation, and covariance filters. Exclude the certified deterministic-map family and local perturbations of the RTD tensor point in the fixed four-orientation quotient, while retaining distant quotient points, activated atoms, stochastic or different maps, altered auxiliary laws, mixtures, continuations, larger auxiliaries, and other architectures as unresolved possibilities; compare every candidate rigorously against 2L_RTD. Clarify finite-auxiliary cardinality scope and never infer unrestricted additivity or a capacity converse from a local theorem, fixed family, or fixed blocklength. Exact capacity still requires closing the converse gap and supplying a matching achievable rate.",
+        "status": "active",
+        "intermediateResultIds": [],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+          "43fcf08a3272a3995158951de8d8ca2a666a0792",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+          "9ff49a7c2d1c242d6cb29cf9afd34803b06d2383",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "lineage": []
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/two-letter-marton-product-code-quotient-local-maximum"
+    ],
+    "directProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ],
+    "intermediateResultIds": [
+      "result-two-letter-marton-product-code-quotient-local-maximum"
+    ]
+  },
+  "placementAudit": {
+    "rationale": "The accepted claim is an independently reusable local optimality theorem for a constrained two-letter Marton architecture. It belongs in the existing multiletter Marton support-search program because it prunes a neighborhood of the natural tensor point without creating a new durable objective. The result is linked only to that program, while the program and root summaries are updated to incorporate both the exact local obstruction and its material limitations.",
+    "basis": "local-objective",
+    "relatedProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ]
+  },
+  "topologyRationale": null
+}
