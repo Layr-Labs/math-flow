@@ -63,6 +63,32 @@ and enforces every topology and placement invariant. It only prevents a model
 from accidentally deleting immutable prior bookkeeping while re-authoring a
 holistic summary.
 
+### Trusted derivation of redundant transition bookkeeping
+
+The provider still authors the semantic assignment in
+`contribution.directProgramIds` and explains that choice. The placement basis
+and related-program list are an exact truth-table encoding of those IDs, so
+trusted code derives them rather than asking the model to repeat the same
+choice in three fields. A single root ID is canonical placement, one non-root
+ID is local placement, and two or more non-root IDs are cross-program
+placement. Invalid mixtures, nonexistent programs, inactive programs, and
+comparable cross-program choices still fail in the reducer.
+
+Likewise, trusted code writes `topologyRationale: null` when there are no
+topology operations. A nonempty topology transition still requires a
+provider-authored rationale. These normalizations do not choose a program,
+create or move an entity, or repair a semantic topology proposal; they only
+remove duplicated serialization work from the judgment.
+
+V8 still inherits V7's strict one-operation-per-entity partition. An existing
+entity therefore cannot currently receive a semantic refresh and a move or
+retirement in the same transition; for existing programs, that also conflicts
+with V8's affected-ancestor provenance refresh. This is a known topology-
+revision seam, not something trusted normalization guesses around. It does not
+affect ordinary creation of a new local program or result. The serial lane must
+stop for protocol revision if a live submission actually needs the combined
+path.
+
 ### Affected-ancestor synthesis
 
 For every direct program, linked result program, and changed topology scope,
