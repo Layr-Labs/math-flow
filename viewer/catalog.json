@@ -58557,8 +58557,8 @@
         "id": "openrouter-hierarchical-research-builder-v8",
         "digest": "sha256:18683ac97b1b0ec57f6f5a741a133720f013bcc1bef56a21fb1784a62d838b8b"
       },
-      "latestRunDigest": "sha256:c504ca2ee6e63c080a6f85b073353b1ca337723f048cdc67637a70db16cfbee3",
-      "runCount": 2,
+      "latestRunDigest": "sha256:5d45d631157ee897e78b475c5186ac3edc16958e974004e08d72105e0634c837",
+      "runCount": 3,
       "data": {
         "schemaVersion": 1,
         "problem": {
@@ -58566,7 +58566,7 @@
           "title": "Half-skew BSSC private-message sum-capacity",
           "statementMarkdown": "# Half-skew BSSC private-message sum-capacity\n\nConsider the binary-input, two-receiver discrete memoryless broadcast channel\nwith \\(X,Y,Z\\in\\{0,1\\}\\) and marginal transition matrices, whose rows are\nindexed by \\(x=0,1\\) and columns by the output symbol \\(0,1\\),\n\n\\[\nP_{Y|X}=\\begin{pmatrix}\\tfrac12&\\tfrac12\\\\0&1\\end{pmatrix},\n\\qquad\nP_{Z|X}=\\begin{pmatrix}1&0\\\\\\tfrac12&\\tfrac12\\end{pmatrix}.\n\\]\n\nThere are two independent private messages: receiver \\(Y\\) must decode the\nfirst and receiver \\(Z\\) the second. There is no common message and no\nfeedback. A nonnegative rate pair \\((R_1,R_2)\\) is *achievable* if there is a\nsequence of length-\\(n\\) broadcast codes with message-set sizes\n\\(2^{n(R_i-o(1))}\\) whose average decoding error at both receivers tends to\nzero. Only the two displayed marginals affect this private-message capacity;\nany fixed joint coupling \\(P_{Y,Z|X}\\) with those marginals gives the same\nobjective. All logarithms are base two and rates are in bits per channel use.\nDefine\n\n\\[\nC_{\\mathrm{sum}}\n=\\sup\\{R_1+R_2:(R_1,R_2)\\text{ is achievable}\\}.\n\\]\n\nDetermine \\(C_{\\mathrm{sum}}\\), or rigorously improve either side of the\npublished benchmark interval\n\n\\[\n0.361642884421954615663441578150587\\ldots\n\\le C_{\\mathrm{sum}}\\le\n0.369316568803963.\n\\]\n\nThe lower endpoint is the randomized-time-division value within Marton's inner\nbound. The January 2026 Gohari--Liu--Nair manuscript records the displayed\nupper endpoint and reports the smaller numerical value\n\\(0.369296340638082\\) from a simplified two-auxiliary-receiver calculation.\nA numerical minimization or finite posterior grid alone does not certify a\nconverse over every admissible auxiliary law, so the latter decimal is a lead\nrather than the governed baseline here.\n\nThis problem is ported from `Layr-Labs/bssc-challenge`. Its public `main`\nbaseline is commit `2e11491b10730ec601cea363cf2565cc13cf2892`. The source\nworktree's local `local-yukon/canonical` commit\n`1af4e641fcfd4c76ec382c4e7cd5bed32af15e9c` records later accepted artifacts,\nincluding a fixed-pair continuous certificate\n\\(C_{\\mathrm{sum}}\\le0.369296945969202842443\\). Those artifacts are candidates\nfor separate governed contributions; this admission neither copies nor\npre-accepts them.\n\nUseful contributions include:\n\n- an achievable coding scheme with a rigorously evaluated larger sum rate;\n- a converse proving a smaller universal upper bound;\n- an exact or globally certified optimization of a named inner- or\n  outer-bound functional;\n- a cardinality, extremal, tensorization, or multiletter theorem with its\n  precise scope stated;\n- an auditable formal or interval-arithmetic certificate covering every point\n  in the claimed continuous domain;\n- an independent port and verification of a source-challenge artifact; or\n- a reproducible numerical lead or non-finding clearly labeled as non-proof.\n\n## Frontier sources\n\n- Layr Labs,\n  [BSSC challenge public baseline](https://github.com/Layr-Labs/bssc-challenge/tree/2e11491b10730ec601cea363cf2565cc13cf2892).\n- Amin Gohari, Yi Liu, and Chandra Nair,\n  [A Two Auxiliary Receiver Outer Bound to the Capacity Region of a Two-Receiver Discrete Memoryless Broadcast Channel](https://chandra.ie.cuhk.edu.hk/pub/papers/BC/GK-outer.pdf),\n  manuscript, 2026-01.\n- Yanlin Geng, Varun Jog, Chandra Nair, and Zizhou Vincent Wang,\n  [An Information Inequality and Evaluation of Marton's Inner Bound for Binary Input Broadcast Channels](https://arxiv.org/abs/1001.1468),\n  IEEE Transactions on Information Theory 59 (2013).\n- Varun Jog and Chandra Nair,\n  [An information inequality for the BSSC channel](https://arxiv.org/abs/0901.1492),\n  2009.\n"
         },
-        "ledgerHead": "f236017c62c67ce4218c1f81ea34134f0954b556",
+        "ledgerHead": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
         "transactions": [
           {
             "ordinal": 1,
@@ -58611,6 +58611,17 @@
               "email": "35671663+mooselumph@users.noreply.github.com"
             },
             "contentMarkdown": "# Exact UV product and branchwise additivity\n\n## Claim and scope\n\nThis contribution independently ports and rechecks the two accepted Yukon\nartifacts `upper-uv-additivity` and `frontier-uv-branchwise`.  They form one\ndependency-ordered theorem chain for the two separately relaxed UV sum-rate\nrows.\n\nFor a finite-alphabet discrete memoryless broadcast channel \\(W\\), write\n\n\\[\nt_W(p)=I_p(X;Y)-I_p(X;Z)\n\\]\n\nand let \\(\\mathfrak C\\) denote the upper concave envelope on the input\nsimplex.  Define\n\n\\[\nA_W(p)=I_p(X;Y)+\\mathfrak C[-t_W](p),\n\\qquad\nD_W(p)=I_p(X;Z)+\\mathfrak C[t_W](p),\n\\]\n\n\\[\nB_{\\rm avg}(W)=\\sup_p\\frac{A_W(p)+D_W(p)}2,\n\\qquad\nB_{\\rm br}(W)=\\sup_p\\min\\{A_W(p),D_W(p)\\}.\n\\]\n\nThe checked claims are:\n\n1. For arbitrary finite-alphabet DMBCs,\n   \\[\n   B_{\\rm avg}(W_1\\times W_2)\n   =B_{\\rm avg}(W_1)+B_{\\rm avg}(W_2).\n   \\]\n   The product-channel prior may be correlated and the envelope auxiliary may\n   be joint across factors.\n2. If an involutive input relabeling exchanges the two receivers, then\n   \\[\n   B_{\\rm br}(W)=B_{\\rm avg}(W),\n   \\]\n   and the optimum may be restricted to invariant input laws.\n3. Finite products preserve this receiver-skew symmetry, so both scalar\n   functionals are exactly additive on arbitrary finite products of such\n   channels.\n4. For the half-skew BSSC \\(P\\), the unique invariant binary prior is the fair\n   prior.  Combining the theorem with the sharp BSSC posterior support already\n   represented by canonical transaction\n   `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6` gives\n   \\[\n   B_{\\rm br}(P^{\\times n})=B_{\\rm avg}(P^{\\times n})\n   =n\\left(2h_2(1/4)-\\frac54\\right)\n   \\]\n   for every finite \\(n\\ge1\\).  Numerically, the normalized value is\n   \\(0.3725562489182657\\ldots\\) bits per channel use.\n\nThe last value is a valid but non-frontier UV converse.  It is weaker than the\ncurrent certified full-Theorem-9 capacity upper bound\n\\(0.369296945969202842443\\), so this contribution does not move either endpoint\nof the governed capacity interval.\n\nThis is an ordinary unregistered contribution.  The UV program lies outside\nthe registered `yukon-auxiliary-converse-port` scope, and this contribution\ndoes not claim to advance or complete that direction.\n\n## Argument\n\nFor any finite auxiliary\n\n\\[\nA-(X_1,X_2)-(Y_1,Z_1,Y_2,Z_2)\n\\]\n\non a product DMBC, the crucial exact identity is\n\n\\[\n\\begin{aligned}\n&I(X_1X_2;Y_1Y_2\\mid A)-I(X_1X_2;Z_1Z_2\\mid A)\\\\\n&=I(X_1;Y_1\\mid A,Z_2)-I(X_1;Z_1\\mid A,Z_2)\\\\\n&\\quad+I(X_2;Y_2\\mid A,Y_1)-I(X_2;Z_2\\mid A,Y_1).\n\\end{aligned}\n\\]\n\nThe two chain-rule correction terms are both\n\\(I(Y_1;Z_2\\mid A)\\) and cancel.  The conditioned variables\n\\((A,Z_2)\\) and \\((A,Y_1)\\) remain valid one-factor auxiliaries.  Applying the\none-factor envelopes and their concavity gives\n\n\\[\n\\mathfrak C[\\pm t_{12}](p_{12})\n\\le\n\\mathfrak C[\\pm t_1](p_1)+\\mathfrak C[\\pm t_2](p_2)\n\\]\n\neven for correlated \\(p_{12}\\).  Mutual-information subadditivity proves the\nproduct upper bound.  Product priors and independent near-optimal posterior\ndecompositions prove the reverse inequality.\n\nFor a receiver-skew involution \\(S\\), posterior decompositions are carried\nbijectively to posterior decompositions and \\(t(Sp)=-t(p)\\).  Hence\n\n\\[\nA_W(Sp)=D_W(p),\\qquad D_W(Sp)=A_W(p).\n\\]\n\nBoth rows are concave.  At \\(\\bar p=(p+Sp)/2\\), each row is therefore at least\nthe average of the two rows at \\(p\\).  This gives\n\\(B_{\\rm br}\\ge B_{\\rm avg}\\); the pointwise inequality\n\\(\\min(a,d)\\le(a+d)/2\\) gives the reverse direction.\n\nFor the BSSC, put \\(h=h_2(1/4)\\), \\(c=h-1/2\\), and \\(r=h-3/4\\).  The sharp\ncanonical support from transaction `c70e182...` and its reflection give\n\\(t(q)\\le2rq\\).  Thus every fair-prior posterior decomposition has mean\n\\(1/2\\) and average \\(t\\) at most \\(r\\).  Equality is attained by the source\nmixture with masses \\(5/8\\) at \\(q=4/5\\) and \\(3/8\\) at \\(q=0\\), since\n\\(t(4/5)=8r/5\\).  Therefore the relevant envelope value is exactly \\(r\\), and\nthe fair-prior UV value is\n\n\\[\nc+r=2h_2(1/4)-\\frac54.\n\\]\n\n## Immutable Yukon provenance\n\nAll source reads were made from the dirty-worktree-independent Git objects of\n`/Users/robert/eig/autoresearch/bssc/yukon-bssc-challenge`.  The accepted\nformed source snapshot is `local-yukon/canonical` commit\n`1af4e641fcfd4c76ec382c4e7cd5bed32af15e9c`.\n\n### Averaged functional\n\n- Original source commit: `1e41cfadf20ec6d1e149547d10b074d882a6cb79`\n- Original author: Robert `<robert.raynor@gmail.com>`\n- Source subject: `Prove exact UV product additivity`\n- Accepted judgment ID:\n  `71f4dc08876d2e6aeee3b569f30e2142fdaf845d0d5cd4df5ef69168d19cda80`\n- Immutable judgment commit:\n  `fdd2dc2137e1e0ca5dd38acd1fdc89f5c09f056f`\n- Formed Yukon knowledge commit:\n  `31c4c4ef5e72a1099863905267a681efe2d26a40`\n- `FULL.md` Git blob: `06834d7020429bcae39e5f321787b6a4f191e381`\n- `verify_uv_factorization.py` Git blob:\n  `93efd576e1652ca77ee78a89db095f19d3759f55`\n\nThe judgment verdict was `ACCEPT`.  It specifically accepted the correlated\ninput chain-rule identity, both envelope inequalities, exact arbitrary-product\nadditivity, and the all-blocklength structural consequence, while excluding\nthe complete UV region, branchwise minimum, and the GK/Theorem-9 systems.\n\n### Branchwise functional\n\n- Original source commit: `7f51930dd39a89c0a0a4e78d8630f39da8e6c87f`\n- Original author: Robert `<robert.raynor@gmail.com>`\n- Source subject: `Prove branchwise UV additivity under skew symmetry`\n- Accepted judgment ID:\n  `d2251d88c98360c9b6db0a22daedc778c667bb66c2e70999cff67a1ec72909e7`\n- Immutable judgment commit:\n  `f7046f55f817c02f80d086b34b18fb5e1038e3c5`\n- Formed Yukon knowledge commit:\n  `ccee6b9529621884c014db5a81dc5c2f6a67c6f0`\n- `FULL.md` Git blob: `e020e5c85c3e101baddda12fba5dd906b2a72ac9`\n\nIts judgment verdict was also `ACCEPT`.  It accepted envelope covariance,\nsymmetrization, equality of the two scalar optima, closure of skew symmetry\nunder products, and the inherited all-blocklength BSSC result.\n\nThe three copied source files in `source-artifacts/` are byte-identical to\ntheir original source-commit blobs.  Porting preserves the original\nauthorship; it is not a claim of new authorship for those results.\n\n## Reproduction\n\nFrom the repository root, run:\n\n```text\npython3 problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/verify_uv_factorization.py\npython3 problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/verify_uv_hostile_cases.py\n```\n\nThe first command is the original dependency-free, deterministic Yukon audit.\nIt checks random strictly positive finite product channels, correlated input\nlaws, the coefficient-one and general-coefficient chain identities,\nmutual-information subadditivity, product posterior mixtures, and the BSSC\ncontact value.  The second command independently adds deterministic channels,\nzero-probability rows, perfectly correlated and degenerate inputs, exact BSSC\nskew-matrix checks, and a 90-digit Decimal contact evaluation.\n\nByte identity can be checked with:\n\n```text\ngit hash-object problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/FULL.md\ngit hash-object problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/verify_uv_factorization.py\ngit hash-object problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/frontier-uv-branchwise/FULL.md\n```\n\nThe expected hashes, in order, are `06834d7020429bcae39e5f321787b6a4f191e381`,\n`93efd576e1652ca77ee78a89db095f19d3759f55`, and\n`e020e5c85c3e101baddda12fba5dd906b2a72ac9`.\n\n## Limitations\n\n- The scalar rows optimize their envelope auxiliaries separately.  The theorem\n  does not establish tensorization of the complete UV rate region or a common\n  joint-\\((U,V)\\) optimization.\n- Branchwise equality is proved only under receiver-skew symmetry; no claim is\n  made for nonsymmetric channels or other weighted scalarizations.\n- Nothing here tensorizes the simplified GK functional or the full\n  Gohari--Liu--Nair Theorem-9 system.\n- The executable checks are corroboration.  The universal finite-alphabet\n  theorem rests on the displayed analytic identities and concavity argument.\n- The original averaged-functional artifact labels its sampled BSSC decimals\n  as non-certified.  The exact BSSC specialization here instead uses the sharp\n  posterior support already accepted and represented under canonical Math Flow\n  transaction `c70e182...`.\n- This contribution changes no capacity frontier and supplies no achievable\n  coding improvement.\n"
+          },
+          {
+            "ordinal": 5,
+            "transactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+            "contributionId": "uv-relaxed-converse-tensorization",
+            "path": "problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization",
+            "author": {
+              "displayName": "Robert Raynor",
+              "email": "35671663+mooselumph@users.noreply.github.com"
+            },
+            "contentMarkdown": "# Tensorization of two separately relaxed UV scalar functionals\n\n## Claim and exact scope\n\nLet \\(W:x\\mapsto (Y,Z)\\) be a finite-alphabet discrete memoryless\nbroadcast channel.  For an input law \\(p\\), define\n\n\\[\nt_W(p)=I_p(X;Y)-I_p(X;Z).\n\\]\n\nFor a real function \\(f\\) on the input simplex, write\n\n\\[\n\\mathfrak C[f](p)\n=\\sup\\left\\{\\sum_a \\lambda_a f(p_a):\n  \\lambda_a\\ge0,\\ \\sum_a\\lambda_a=1,\\\n  \\sum_a\\lambda_a p_a=p\\right\\}\n\\]\n\nfor its upper concave envelope.  Put\n\n\\[\n A_W(p)=I_p(X;Y)+\\mathfrak C[-t_W](p),\\qquad\n D_W(p)=I_p(X;Z)+\\mathfrak C[t_W](p),\n\\]\n\nand define the two scalar functionals\n\n\\[\n B_{\\rm avg}(W)=\\sup_p\\frac{A_W(p)+D_W(p)}2,\n \\qquad\n B_{\\rm br}(W)=\\sup_p\\min\\{A_W(p),D_W(p)\\}.\n\\]\n\nThe claim is the following single theorem and its BSSC specialization.\n\n1. For arbitrary finite-alphabet DMBCs \\(W_1,W_2\\),\n   \\[\n   B_{\\rm avg}(W_1\\times W_2)\n   =B_{\\rm avg}(W_1)+B_{\\rm avg}(W_2).\n   \\]\n   This includes correlated product-channel input laws and envelope\n   auxiliaries that are joint across the factors.\n2. If an involutive input relabeling exchanges the two receiver marginals,\n   up to output relabeling, then\n   \\(B_{\\rm br}(W)=B_{\\rm avg}(W)\\), and either supremum may be restricted\n   to input laws invariant under that involution.  Finite products preserve\n   this symmetry, so both scalar functionals are additive on finite products\n   of receiver-skew channels.\n3. For the half-skew BSSC \\(P\\) in the governed problem and every integer\n   \\(n\\ge1\\),\n   \\[\n   B_{\\rm br}(P^{\\times n})=B_{\\rm avg}(P^{\\times n})\n   =n\\left(2h_2(1/4)-\\frac54\\right).\n   \\]\n   The normalized value is\n   \\(0.37255624891826566\\ldots\\) bits per channel use.\n\nThis contribution depends on canonical transaction\n`c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6` only for the sharp scalar\nBSSC posterior-support inequality used in the last specialization.  The\ngeneral product and symmetry theorem below is independent of that result.\n\nThe theorem concerns two *separately relaxed scalar* UV rows.  It does not\ntensorize the complete UV rate region or a common joint-\\((U,V)\\)\noptimization.  It says nothing about tensorization of the simplified GK\nfunctional or the full Gohari--Liu--Nair Theorem-9 system, and it does not\nidentify the BSSC capacity.  Its normalized BSSC value is larger than the\ngoverned upper endpoint \\(0.369316568803963\\), so it does not change the\nproblem's capacity interval.\n\n## Product theorem\n\nWrite \\(X_{12}=(X_1,X_2)\\), and similarly for the outputs of the product\nchannel.  Let \\(A-X_{12}-(Y_1,Z_1,Y_2,Z_2)\\) be any finite auxiliary.  The\nCsiszar sum identity, together with the product-channel Markov relations,\ngives\n\n\\[\n\\begin{aligned}\n &I(X_{12};Y_1Y_2\\mid A)-I(X_{12};Z_1Z_2\\mid A)\\\\\n &=I(X_1;Y_1\\mid A,Z_2)-I(X_1;Z_1\\mid A,Z_2)\\\\\n &\\quad+I(X_2;Y_2\\mid A,Y_1)-I(X_2;Z_2\\mid A,Y_1).\n\\end{aligned}\n\\tag{1}\n\\]\n\nFor completeness, expand the two left-hand mutual informations in opposite\norders.  The uncancelled cross terms are both \\(I(Y_1;Z_2\\mid A)\\):\n\n\\[\n\\begin{aligned}\nI(X_{12};Y_1Y_2\\mid A)\n &=I(X_1;Y_1\\mid A,Z_2)+I(X_2;Y_2\\mid A,Y_1)\n   +I(Y_1;Z_2\\mid A),\\\\\nI(X_{12};Z_1Z_2\\mid A)\n &=I(X_1;Z_1\\mid A,Z_2)+I(X_2;Z_2\\mid A,Y_1)\n   +I(Y_1;Z_2\\mid A).\n\\end{aligned}\n\\]\n\nConditioning on \\((A,Z_2)\\) leaves the first factor governed by \\(W_1\\),\nand conditioning on \\((A,Y_1)\\) leaves the second governed by \\(W_2\\).\nThe corresponding conditional input laws form posterior ensembles with\nbarycenters \\(p_1\\) and \\(p_2\\).  Thus (1), first for every posterior\nensemble of \\(p_{12}\\) and then after taking its supremum, proves\n\n\\[\n\\mathfrak C[t_{12}](p_{12})\n\\le \\mathfrak C[t_1](p_1)+\\mathfrak C[t_2](p_2).\n\\tag{2}\n\\]\n\nExchanging \\(Y\\) and \\(Z\\) in the same calculation gives\n\n\\[\n\\mathfrak C[-t_{12}](p_{12})\n\\le \\mathfrak C[-t_1](p_1)+\\mathfrak C[-t_2](p_2).\n\\tag{3}\n\\]\n\nOutput independence conditional on \\(X_{12}\\), followed by entropy\nsubadditivity, gives\n\n\\[\nI(X_{12};Y_1Y_2)\\le I(X_1;Y_1)+I(X_2;Y_2),\n\\]\n\nand the analogous inequality for \\(Z_1Z_2\\).  Combining these inequalities\nwith (2)--(3) yields, for every possibly correlated \\(p_{12}\\),\n\n\\[\nA_{12}(p_{12})\\le A_1(p_1)+A_2(p_2),\\qquad\nD_{12}(p_{12})\\le D_1(p_1)+D_2(p_2).\n\\tag{4}\n\\]\n\nTaking the averaged row and its supremum proves the `<=` product inequality.\n\nFor the reverse inequality, take product input laws \\(p_1p_2\\).  Given\nposterior ensembles for \\(p_1\\) and \\(p_2\\), their independent product\nensemble has barycenter \\(p_1p_2\\), while\n\n\\[\nt_{12}(q_1q_2)=t_1(q_1)+t_2(q_2).\n\\]\n\nConsequently both envelope inequalities (2)--(3) reverse at product input\nlaws.  The ordinary mutual informations are also additive there, so\n\n\\[\nA_{12}(p_1p_2)=A_1(p_1)+A_2(p_2),\\qquad\nD_{12}(p_1p_2)=D_1(p_1)+D_2(p_2).\n\\]\n\nChoosing factor laws arbitrarily close to their suprema proves the `>=`\ninequality and hence exact additivity.  No attainment assumption is needed.\n\n## Receiver-skew reduction\n\nSuppose an involution \\(S\\) of the input alphabet exchanges the receiver\nmarginals up to bijective output relabelings.  Mutual information is invariant\nunder relabeling, so\n\n\\[\nI_Y(Sp)=I_Z(p),\\qquad t(Sp)=-t(p).\n\\]\n\nApplying \\(S\\) to every member of a posterior ensemble is a barycenter-\npreserving bijection.  Therefore\n\n\\[\nA(Sp)=D(p),\\qquad D(Sp)=A(p).\n\\tag{5}\n\\]\n\nBoth \\(A\\) and \\(D\\) are concave.  For\n\\(\\bar p=(p+Sp)/2\\), equations (5) and concavity give\n\n\\[\nA(\\bar p),D(\\bar p)\\ge \\frac{A(p)+D(p)}2.\n\\]\n\nThus an invariant law attains at least the averaged value of every law, and\n\n\\[\nB_{\\rm br}(W)\\ge B_{\\rm avg}(W).\n\\]\n\nThe reverse inequality follows pointwise from\n\\(\\min\\{a,d\\}\\le(a+d)/2\\).  This proves equality and the invariant-law\nrestriction.  The componentwise product of the involutions exchanges the\nreceivers of a product channel.  Combining this observation with the product\ntheorem proves the finite-product statement.\n\n## Exact half-skew BSSC specialization\n\nLet \\(q=\\Pr[X=1]\\), \\(h=h_2(1/4)\\), and \\(r=h-3/4\\).  Directly from the two\nchannel matrices,\n\n\\[\nI_Y(q)=h_2((1-q)/2)-(1-q),\\qquad\nI_Z(q)=h_2(q/2)-q.\n\\tag{6}\n\\]\n\nThe BSSC is receiver-skew under input and output bit flips, and its only\ninvariant binary input law is \\(q=1/2\\).  At that law,\n\n\\[\nI_Y(1/2)=I_Z(1/2)=h-\\frac12.\n\\tag{7}\n\\]\n\nThe sharp posterior support established by canonical transaction\n`c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`, after reflection, is\n\n\\[\nt(q)\\le 2rq\\qquad(0\\le q\\le1).\n\\tag{8}\n\\]\n\nEvery posterior ensemble with barycenter \\(1/2\\) therefore has average\n\\(t\\) at most \\(r\\).  Equality is attained by putting mass \\(5/8\\) at\n\\(q=4/5\\) and mass \\(3/8\\) at \\(q=0\\): its barycenter is \\(1/2\\), and (6)\ngives \\(t(4/5)=8r/5\\) and \\(t(0)=0\\).  Hence\n\n\\[\n\\mathfrak C[t](1/2)=r.\n\\]\n\nReceiver skew gives the same value for \\(\\mathfrak C[-t](1/2)\\).  Combining\nthis with (7), the invariant-law reduction, and finite-product additivity\nproves\n\n\\[\nB_{\\rm br}(P^{\\times n})=B_{\\rm avg}(P^{\\times n})\n=n\\left(h-\\frac12+r\\right)\n=n\\left(2h_2(1/4)-\\frac54\\right).\n\\]\n\n## Reproduction\n\nFrom the repository root, run\n\n```text\nPYTHONDONTWRITEBYTECODE=1 python3 problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/verify_specialization.py\n```\n\nThe standard-library script evaluates (6)--(8) at 90-decimal precision,\nchecks the attaining posterior mixture and the receiver-skew channel\nrelations, and prints the normalized value.  It corroborates the exact\nspecialization; the universal theorem rests on the analytic proof above.\n"
           }
         ],
         "judgments": [
@@ -58759,6 +58770,83 @@
             },
             "declaredReferenceTransactionIdsByClaim": {
               "bssc-sum-capacity/uv-product-branchwise-additivity": [
+                "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+              ]
+            }
+          },
+          {
+            "judgmentId": "sha256:34c5377dbd5c5d147acb250ac80640770b6176749e6c235d4a71ebc508b615c2",
+            "runDigest": "sha256:cd8752f9eade1a095dd49c5b3d80463c89786ecf9e6587d57fb6f08c31ce86ec",
+            "judgmentKind": "primary",
+            "ledgerHead": "0ee3fa9ecb9c0d06c9dba7e3318f334360d31375",
+            "problemLedgerHead": "dcdd3ab29be1a45b42a75767dbee30d8381544eb",
+            "judgeSpec": {
+              "id": "openrouter-validity-judgment-v4",
+              "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+            },
+            "models": [
+              "openai/gpt-5.6-sol"
+            ],
+            "cost": 0.132472375,
+            "reportDigest": "sha256:d3d738bf8f1372c50ed551573aa3461c394c779f4868baca631f93a4a7fb23b1",
+            "reportMarkdown": "## `bssc-sum-capacity/uv-relaxed-converse-tensorization`\n\n**Verdict: Valid**\n\n**Required dependency:** `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`, but only for the global sharp BSSC support inequality used in the specialization. The general product and receiver-skew arguments are independently established in the subject. The reference’s dependence-balance and entropy-counterfeit results are not dependencies.\n\n### 1. Product identity and concave-envelope bounds\n\nFor an auxiliary \\(A-X_1X_2-(Y_1,Z_1,Y_2,Z_2)\\), the displayed decomposition\n\n\\[\n\\begin{aligned}\n&I(X_1X_2;Y_1Y_2\\mid A)-I(X_1X_2;Z_1Z_2\\mid A)\\\\\n&=I(X_1;Y_1\\mid A,Z_2)-I(X_1;Z_1\\mid A,Z_2)\\\\\n&\\quad+I(X_2;Y_2\\mid A,Y_1)-I(X_2;Z_2\\mid A,Y_1)\n\\end{aligned}\n\\]\n\nis correct. For example, product-channel conditional independence gives\n\n\\[\nH(Y_1\\mid X_1,A,Z_2)=H(Y_1\\mid X_1),\n\\]\n\nand similarly for the other three channel outputs. The two expansions in the subject then both contain exactly the cross term \\(I(Y_1;Z_2\\mid A)\\), which cancels.\n\nConditioned on \\((A,Z_2)\\), the first difference is the average of\n\\(t_{W_1}\\) over the posterior laws of \\(X_1\\); those posteriors have barycenter \\(p_1\\). The analogous statement holds for \\(X_2\\) conditioned on \\((A,Y_1)\\). Thus\n\n\\[\n\\mathfrak C[t_{12}](p_{12})\n \\le \\mathfrak C[t_1](p_1)+\\mathfrak C[t_2](p_2).\n\\]\n\nSwapping the receivers yields the same inequality for \\(-t\\). This argument covers correlated \\(p_{12}\\) and auxiliaries joint across the factors.\n\nEntropy subadditivity and product-channel conditional entropy additivity correctly give\n\n\\[\nI(X_1X_2;Y_1Y_2)\\le I(X_1;Y_1)+I(X_2;Y_2),\n\\]\n\nand likewise for \\(Z\\). Hence the claimed pointwise inequalities for \\(A\\) and \\(D\\) follow.\n\nFor product input laws, independent products of posterior ensembles have the correct barycenter, and\n\n\\[\nt_{12}(q_1q_2)=t_1(q_1)+t_2(q_2).\n\\]\n\nTogether with the preceding upper bound, this establishes equality of both concave envelopes at product laws. Ordinary mutual information is additive there as well. Taking factor laws arbitrarily close to their respective suprema proves the reverse inequality without requiring attainment. Therefore\n\n\\[\nB_{\\rm avg}(W_1\\times W_2)\n=B_{\\rm avg}(W_1)+B_{\\rm avg}(W_2).\n\\]\n\nNo cardinality, boundary, or correlated-input case is omitted.\n\n### 2. Receiver-skew reduction\n\nAn involutive input permutation \\(S\\) exchanging the receiver marginals implies\n\n\\[\nI_Y(Sp)=I_Z(p),\\qquad t(Sp)=-t(p).\n\\]\n\nApplying \\(S\\) to every posterior in an ensemble correctly gives\n\n\\[\nA(Sp)=D(p),\\qquad D(Sp)=A(p).\n\\]\n\nBoth \\(A\\) and \\(D\\) are concave: channel mutual information is concave in the input law, and the defined upper concave envelope is concave. Thus, for the invariant law\n\\(\\bar p=(p+Sp)/2\\),\n\n\\[\nA(\\bar p),D(\\bar p)\\ge \\frac{A(p)+D(p)}2.\n\\]\n\nConsequently,\n\n\\[\nB_{\\rm br}\\ge B_{\\rm avg},\n\\]\n\nwhile the pointwise inequality\n\\(\\min\\{A,D\\}\\le (A+D)/2\\) gives the reverse direction. This also justifies restricting both suprema to invariant laws.\n\nThe componentwise product involution exchanges the complete product receiver marginals, so the same equality holds for finite products. Combining this with additivity of \\(B_{\\rm avg}\\) proves additivity of \\(B_{\\rm br}\\) on products of receiver-skew channels.\n\n### 3. Half-skew BSSC specialization\n\nFor \\(q=\\Pr[X=1]\\), the formulas\n\n\\[\nI_Y(q)=h_2((1-q)/2)-(1-q),\\qquad\nI_Z(q)=h_2(q/2)-q\n\\]\n\nfollow directly from the transition matrices. At \\(q=1/2\\),\n\n\\[\nI_Y(1/2)=I_Z(1/2)=h_2(1/4)-\\frac12.\n\\]\n\nThe declared reference proves, for\n\\(g(q)=I_Z(q)-I_Y(q)\\) and \\(r=h_2(1/4)-3/4\\),\n\n\\[\ng(q)\\le 2r(1-q).\n\\]\n\nIts proof is sufficient: the stated second derivative has the correct sign, the tangent identities at \\(q=1/5\\) are correct, concavity controls \\(q\\le 1/2\\), and convexity with zero endpoint values controls \\(q\\ge1/2\\). Reflecting via \\(g(1-q)=-g(q)\\) gives exactly the inequality needed by the subject:\n\n\\[\nt(q)=I_Y(q)-I_Z(q)\\le 2rq.\n\\]\n\nTherefore every posterior ensemble with barycenter \\(1/2\\) has average \\(t\\) at most \\(r\\). The two-point ensemble\n\n\\[\n\\Pr(q=4/5)=5/8,\\qquad \\Pr(q=0)=3/8\n\\]\n\nhas barycenter \\(1/2\\), and \\(t(4/5)=8r/5\\), so it attains average \\(r\\). Hence\n\n\\[\n\\mathfrak C[t](1/2)=\\mathfrak C[-t](1/2)=r.\n\\]\n\nThe binary input-flip involution has the unique invariant input law \\(q=1/2\\). The receiver-skew reduction and product theorem therefore yield, for every \\(n\\ge1\\),\n\n\\[\nB_{\\rm br}(P^{\\times n})\n=B_{\\rm avg}(P^{\\times n})\n=n\\left(2h_2(1/4)-\\frac54\\right).\n\\]\n\n### 4. Objective attestation scope\n\nThe passed attestation verifies only:\n\n- the contact value at \\(q=4/5\\) to \\(10^{-80}\\) Decimal tolerance;\n- the attaining posterior mixture and its barycenter;\n- the receiver-skew matrix identities exactly using rational arithmetic;\n- the numerical evaluation of the final constant.\n\nIt does **not** verify the global support inequality over all \\(q\\), the concave-envelope optimization, or the product theorem. Those obligations are instead discharged analytically by the subject and the required reference, so the limited scope of the executable evidence does not leave a gap.\n\n### Minor non-claim defect\n\nThe README’s decimal\n\n\\[\n0.37255624891826566\\ldots\n\\]\n\nis inaccurate. The exact expression begins\n\n\\[\n0.372556248918265727819391584\\ldots,\n\\]\n\nas also shown by the attested execution. This does not affect the declared claim, which states the correct exact value. The result remains explicitly scoped to the two separately relaxed scalar functionals and does not establish capacity tensorization or a new capacity bound.\n",
+            "record": {
+              "schemaVersion": 4,
+              "judgmentKind": "primary",
+              "problemId": "bssc-sum-capacity",
+              "ledgerHead": "0ee3fa9ecb9c0d06c9dba7e3318f334360d31375",
+              "problemLedgerDigest": "sha256:361ab8c751586738730b9a86a3b2eac0196f13be92f6a72929a7714f15bde30f",
+              "judgeSpec": {
+                "id": "openrouter-validity-judgment-v4",
+                "digest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6"
+              },
+              "subjects": [
+                {
+                  "kind": "transaction",
+                  "id": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                  "ledgerPosition": 5
+                }
+              ],
+              "assessments": [
+                {
+                  "claimKey": "bssc-sum-capacity/uv-relaxed-converse-tensorization",
+                  "status": "valid",
+                  "premiseStatus": "satisfied",
+                  "summary": "The argument establishes exact product additivity of the averaged separately-relaxed UV sum-rate functional for finite-alphabet discrete memoryless broadcast channels, equality of the branchwise and averaged functionals on receiver-skew channels and their finite products, and the stated exact value n(2h_2(1/4)-5/4) for every finite power of the half-skew BSSC. The general product and receiver-skew arguments are established internally; the declared reference supplies the logically necessary global sharp BSSC support inequality used in the specialization.",
+                  "scopeQualifications": [
+                    "The theorem concerns only the two separately-relaxed scalar UV functionals.",
+                    "It does not establish tensorization of the full UV region, optimization over a common joint (U,V), the GK functional, broadcast-channel capacity, or capacity tensorization.",
+                    "The executable attestation checks selected numerical and algebraic facts but not the global support inequality, concave-envelope optimization, or product theorem; those are discharged analytically.",
+                    "The README decimal approximation is inaccurate, but the exact expression in the claim is correct and unaffected."
+                  ],
+                  "evidenceIssues": [],
+                  "evidenceTransactionIds": [
+                    "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+                  ],
+                  "requiredDependencyTransactionIds": [
+                    "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+                  ]
+                }
+              ],
+              "findings": [
+                {
+                  "claimKey": "bssc-sum-capacity/uv-relaxed-converse-tensorization",
+                  "stance": "supports",
+                  "summary": "The argument establishes exact product additivity of the averaged separately-relaxed UV sum-rate functional for finite-alphabet discrete memoryless broadcast channels, equality of the branchwise and averaged functionals on receiver-skew channels and their finite products, and the stated exact value n(2h_2(1/4)-5/4) for every finite power of the half-skew BSSC. The general product and receiver-skew arguments are established internally; the declared reference supplies the logically necessary global sharp BSSC support inequality used in the specialization.",
+                  "subjectTransactionIds": [
+                    "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9"
+                  ],
+                  "evidenceTransactionIds": [
+                    "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+                  ]
+                }
+              ],
+              "dependencyPacketDigest": "sha256:93db3a288ac4c5a473d2f5e44ef44ff11a08b7f4257e36233d3fc97be82153ec",
+              "reportDigest": "sha256:d3d738bf8f1372c50ed551573aa3461c394c779f4868baca631f93a4a7fb23b1",
+              "judgmentId": "sha256:34c5377dbd5c5d147acb250ac80640770b6176749e6c235d4a71ebc508b615c2"
+            },
+            "declaredReferenceTransactionIdsByClaim": {
+              "bssc-sum-capacity/uv-relaxed-converse-tensorization": [
                 "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
               ]
             }
@@ -59876,11 +59964,754 @@
               },
               "stateDigest": "sha256:f5b3b9bb12ddf5727daaf0e2b6ae121f5fd2d662a5c6721c8f845517e10ac25c"
             }
+          },
+          {
+            "id": "5d45d631157ee897e78b475c5186ac3edc16958e974004e08d72105e0634c837",
+            "ordinal": 3,
+            "ledgerHead": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+            "problemLedgerHead": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+            "runDigest": "sha256:5d45d631157ee897e78b475c5186ac3edc16958e974004e08d72105e0634c837",
+            "baseRun": "sha256:c504ca2ee6e63c080a6f85b073353b1ca337723f048cdc67637a70db16cfbee3",
+            "runKind": "knowledge-build",
+            "outputProfile": "math-flow/hierarchical-research-v8",
+            "inputs": {
+              "problemId": "bssc-sum-capacity",
+              "builderSpecDigest": "sha256:18683ac97b1b0ec57f6f5a741a133720f013bcc1bef56a21fb1784a62d838b8b",
+              "judgmentIds": [
+                "sha256:34c5377dbd5c5d147acb250ac80640770b6176749e6c235d4a71ebc508b615c2"
+              ],
+              "baseStateRun": "sha256:c504ca2ee6e63c080a6f85b073353b1ca337723f048cdc67637a70db16cfbee3",
+              "judgmentSetDigest": "sha256:b6581f9b2c48deb0c22a6660c6a6cc6931a8b499194df4dc978fbf066ff261df",
+              "conflictIds": [],
+              "schemaVersion": 1,
+              "laneId": "sha256:9e465496ef2a18d23b7373d4f42bf2d9621100d91b91b40197bd8335a6089e47",
+              "projectionSpecDigest": "sha256:ab4f236fc12bb62438468850dfd21e9ad526d0c61e090b06d531d53a203ae74f",
+              "buildToken": "sha256:8746b42a28f9a7c4f56671c9628dd0d8550051c8f7566eaf32667c9173c7fe05",
+              "judgmentRunDigest": "sha256:cd8752f9eade1a095dd49c5b3d80463c89786ecf9e6587d57fb6f08c31ce86ec",
+              "submissionInputDigest": "sha256:48e7b480ecf62c2e96ee29774cb409ee6a58a10727cfa83dd0433372b1dc9d87"
+            },
+            "judgeSpec": {
+              "id": "openrouter-hierarchical-research-builder-v8",
+              "digest": "sha256:18683ac97b1b0ec57f6f5a741a133720f013bcc1bef56a21fb1784a62d838b8b"
+            },
+            "runner": {
+              "implementation": "openrouter-hierarchical-research-builder-v8",
+              "mathFlowVersion": "0.6.0"
+            },
+            "cost": 0,
+            "selection": {
+              "selectedNodeIds": [
+                "program-bssc-uv-scalar-tensorization",
+                "result:result-uv-product-branchwise-additivity",
+                "root"
+              ],
+              "rationale": "Nodes changed by the accepted validity batch."
+            },
+            "normalizations": [],
+            "delta": {
+              "schemaVersion": 1,
+              "subjectTransactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+              "baseStateDigest": "sha256:f5b3b9bb12ddf5727daaf0e2b6ae121f5fd2d662a5c6721c8f845517e10ac25c",
+              "contentOperations": [
+                {
+                  "entityKind": "intermediateResult",
+                  "entityId": "result-uv-product-branchwise-additivity",
+                  "baseDigest": "sha256:d0195fb0dfc351fcdda06c066034feab7327608c00c01727aa535db9085b1eea",
+                  "value": {
+                    "id": "result-uv-product-branchwise-additivity",
+                    "primaryProgramId": "program-bssc-uv-scalar-tensorization",
+                    "relatedProgramIds": [],
+                    "title": "Exact product and branchwise additivity of relaxed UV scalars",
+                    "statement": "For a finite-alphabet discrete memoryless broadcast channel W, let t_W(p)=I_p(X;Y)-I_p(X;Z), define A_W(p)=I_p(X;Y)+C[-t_W](p) and D_W(p)=I_p(X;Z)+C[t_W](p), where C is the upper concave envelope on the input simplex, and set B_avg(W)=sup_p(A_W(p)+D_W(p))/2 and B_br(W)=sup_p min{A_W(p),D_W(p)}. Then B_avg is exactly additive under arbitrary finite products of finite-alphabet discrete memoryless broadcast channels, including optimization over correlated product-channel input laws and envelope auxiliaries joint across factors. If a channel is receiver-skew, in the sense that an involutive input relabeling exchanges its receiver marginals up to output relabeling, then B_br(W)=B_avg(W), and the optimization may be restricted to invariant input laws. Finite products of receiver-skew channels preserve this property, so both scalar functionals are additive on every such finite product. For the half-skew BSSC P, the sharp one-letter posterior-support inequality and equality-achieving mixture supplied by result-code-induced-balance-entropy-copy-no-go give B_br(P^{×n})=B_avg(P^{×n})=n(2h_2(1/4)-5/4) bits for every integer n≥1.",
+                    "scopeQualifications": [
+                      "The theorem concerns only the two separately relaxed scalar UV functionals. It does not establish tensorization of the full UV region, optimization over a common joint (U,V), the GK functional, the full Gohari–Liu–Nair Theorem-9 system, broadcast-channel capacity, or capacity tensorization.",
+                      "Exact additivity of B_avg holds for arbitrary finite-alphabet DMBC products, while equality B_br=B_avg and the resulting additivity of B_br require receiver-skew involutive symmetry and its finite-product closure.",
+                      "The dependency result is needed only for the global sharp BSSC posterior-support inequality and equality-achieving posterior mixture used in the half-skew BSSC specialization; the general product and receiver-skew arguments are established analytically within this result.",
+                      "The README decimal approximation is inaccurate; the exact expression n(2h_2(1/4)-5/4) is the established value and is unaffected.",
+                      "The executable checker verifies selected numerical and algebraic identities, including the BSSC contact mixture and receiver-skew relations, but does not verify the global support inequality, concave-envelope optimization, or product theorem; those steps are discharged analytically.",
+                      "The resulting separately relaxed BSSC scalar value supplies neither an achievability theorem nor a capacity formula or certified improvement of a governed capacity endpoint."
+                    ],
+                    "support": {
+                      "proofs": [
+                        "Conditional mutual-information chain rules and cancellation of cross-factor co-information terms bound each product-channel concave-envelope contribution by the corresponding one-factor contributions; mutual-information subadditivity then gives the product upper bound for B_avg, while product priors and product posterior decompositions give the reverse inequality.",
+                        "Receiver-exchanging involutive relabeling exchanges A_W and D_W. Concavity and symmetrization yield an invariant input law attaining at least the averaged value in the branchwise minimum, while min{a,d}≤(a+d)/2 gives the reverse bound.",
+                        "Coordinatewise receiver-skew involutions preserve the symmetry on finite products, and combining this closure with product additivity of B_avg proves finite-product additivity of both scalar functionals on the receiver-skew class.",
+                        "For the half-skew BSSC, the dependency's global sharp posterior-support inequality and equality-achieving posterior mixture evaluate the one-letter envelopes at the invariant fair input law, yielding the exact value 2h_2(1/4)-5/4 per factor."
+                      ],
+                      "methods": [
+                        "Concave-envelope factorization",
+                        "Conditional mutual-information chain rules and co-information cancellation",
+                        "Mutual-information subadditivity",
+                        "Receiver-skew symmetrization",
+                        "Finite-product induction",
+                        "Sharp BSSC posterior-support specialization"
+                      ],
+                      "computations": [
+                        "The submitted standard-library script evaluates the half-skew BSSC identities at high precision and checks the contact posterior mixture and receiver-skew channel relations. These checks are corroborative and do not replace the analytic product, envelope, or global-support arguments."
+                      ],
+                      "tools": [
+                        "The submitted Python standard-library verifier checks selected algebraic and numerical specialization identities."
+                      ],
+                      "attestationRefs": [],
+                      "artifactRefs": [
+                        {
+                          "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/README.md",
+                          "digest": "sha256:fe480b29698c63afd6c80d4e3c5b155d227ce19b74910de8a38f73b807a94e9a"
+                        },
+                        {
+                          "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/frontier-uv-branchwise/FULL.md",
+                          "digest": "sha256:64ddb2c3d0c375bbca746842e21689f11883d989d56a0f0028ceaf216715e623"
+                        },
+                        {
+                          "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/FULL.md",
+                          "digest": "sha256:69a33f9fc84a5dbabbad6bdf53b34e722238c6a6b3f625d49e00f599e942b94a"
+                        },
+                        {
+                          "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/verify_uv_factorization.py",
+                          "digest": "sha256:bdd966d11f1914425ed4932b459c83508a6a61a73131f4f2a184204ad0c4153e"
+                        },
+                        {
+                          "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/verify_uv_hostile_cases.py",
+                          "digest": "sha256:ffa2b5d66670f0fd03338e73f8ecc5400bf23b162a92fa327f363c7bb1aac6c0"
+                        },
+                        {
+                          "path": "problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/README.md",
+                          "digest": "sha256:c4df63434cb0c5f76918bd0ba578629f7373d4f2b24d6d6b5e21d3c253f2e852"
+                        },
+                        {
+                          "path": "problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/claims.json",
+                          "digest": "sha256:0d46c2dbd1a62f0385fc4d8878d8cfef3749f85cca019e1284c5e54c12016874"
+                        },
+                        {
+                          "path": "problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/verification.json",
+                          "digest": "sha256:d0dce591c90e6b529890b34e4bd515167ea3c447daef11e95f28e1c5f3c328d2"
+                        },
+                        {
+                          "path": "problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/verify_specialization.py",
+                          "digest": "sha256:96375d4961d1ed5f5f5b3da368e59c60c4bd0fc6779b741a484b40f2114db4a2"
+                        }
+                      ]
+                    },
+                    "dependencyResultIds": [
+                      "result-code-induced-balance-entropy-copy-no-go"
+                    ],
+                    "claimRefs": [
+                      {
+                        "transactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                        "claimKey": "bssc-sum-capacity/uv-relaxed-converse-tensorization"
+                      },
+                      {
+                        "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+                        "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity"
+                      }
+                    ],
+                    "sourceTransactionIds": [
+                      "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                      "f236017c62c67ce4218c1f81ea34134f0954b556"
+                    ],
+                    "judgmentIds": [
+                      "sha256:2c29fd881dec9aa923aa0713acc56df2c05d02f30ac544213f720af9158b7a41",
+                      "sha256:34c5377dbd5c5d147acb250ac80640770b6176749e6c235d4a71ebc508b615c2"
+                    ],
+                    "status": "active",
+                    "supersededByResultIds": []
+                  }
+                },
+                {
+                  "entityKind": "program",
+                  "entityId": "program-bssc-uv-scalar-tensorization",
+                  "baseDigest": "sha256:aef77962f4b4afe283bd1ae7c871e95dbc36920af7797fb5d20e36b72009ea17",
+                  "value": {
+                    "id": "program-bssc-uv-scalar-tensorization",
+                    "parentId": "root",
+                    "title": "Tensorization of relaxed UV sum-rate scalars",
+                    "objective": "Characterize product behavior, symmetry reductions, and BSSC implications of the separately relaxed UV sum-rate scalar functionals, and determine which richer converse structures remain capable of multiletter improvement.",
+                    "currentStateSummary": "The averaged separately relaxed UV scalar B_avg is exactly additive for arbitrary finite-alphabet DMBC products, even with correlated product-channel input laws and joint envelope auxiliaries. For receiver-skew channels with an involutive receiver-exchanging input symmetry, B_br equals B_avg, invariant input laws suffice, and finite products preserve the symmetry; consequently both scalars are additive on every finite product of such channels. Using the established global sharp BSSC posterior-support inequality and equality-achieving mixture, the half-skew BSSC satisfies B_br(P^{×n})=B_avg(P^{×n})=n(2h_2(1/4)-5/4) for every n≥1. The exact expression governs despite an inaccurate README decimal approximation. This exhausts blocking as a strengthening mechanism for these two separately relaxed scalar rows, but it does not address a common joint-(U,V) optimization, the full UV region, the GK functional, richer Theorem-9 systems, or capacity itself.",
+                    "localResidualSummary": "Investigate converse structures absent from the additive separately relaxed scalars, including coupling of UV branches through a common joint law, exact BSSC posterior consistency, nonsymmetric branchwise behavior, and richer GK or full-Theorem-9 auxiliary constraints. Any extension must be proved independently and connected to a certified capacity bound; the present scalar theorem itself moves no capacity endpoint.",
+                    "status": "active",
+                    "intermediateResultIds": [
+                      "result-uv-product-branchwise-additivity"
+                    ],
+                    "sourceTransactionIds": [
+                      "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                      "f236017c62c67ce4218c1f81ea34134f0954b556"
+                    ],
+                    "lineage": []
+                  }
+                },
+                {
+                  "entityKind": "program",
+                  "entityId": "root",
+                  "baseDigest": "sha256:718399ee3f25db81e4f70c5c29429ad87622bdeb219a98ae176f49682d7233e0",
+                  "value": {
+                    "id": "root",
+                    "parentId": null,
+                    "title": "Canonical problem",
+                    "objective": "Resolve the canonical problem.",
+                    "currentStateSummary": "Two complementary converse directions remain established. The code-induced structural direction shows that deterministic finite-block private-message codes obey approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary entropic witness obstructs the specified coarse entropy and finite copy-lemma refinement route; blocklength-dependent auxiliaries and exact BSSC posterior consistency remain unresolved. In the relaxed UV-scalar direction, B_avg is exactly additive for arbitrary finite-alphabet DMBC products, receiver-skew symmetry gives B_br=B_avg, and finite products preserve that symmetry. With the global sharp BSSC posterior support, both separately relaxed scalars on P^{×n} equal n(2h_2(1/4)-5/4); the exact expression is unaffected by an inaccurate README decimal approximation. This scalar theorem concerns neither the full UV region nor common joint-(U,V), GK, full-Theorem-9, or capacity optimization, and it changes no capacity endpoint. The canonical capacity problem therefore remains unresolved.",
+                    "localResidualSummary": "Develop a fixed-cardinality reduction or exact binary-BSSC posterior and multiletter constraints for laws induced by genuine codes, excluding the nonbinary entropy witness where appropriate. Because the separately relaxed UV scalars tensorize at a non-frontier value, a stronger multiletter converse must retain structure absent from those scalars—such as coupling between UV branches, exact channel-consistent posteriors, or richer nested auxiliary and full-region constraints—and must ultimately yield a certified capacity improvement or resolution.",
+                    "status": "active",
+                    "intermediateResultIds": [],
+                    "sourceTransactionIds": [
+                      "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                      "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                      "f236017c62c67ce4218c1f81ea34134f0954b556"
+                    ],
+                    "lineage": []
+                  }
+                }
+              ],
+              "topologyOperations": [],
+              "contribution": {
+                "claimKeys": [
+                  "bssc-sum-capacity/uv-relaxed-converse-tensorization"
+                ],
+                "directProgramIds": [
+                  "program-bssc-uv-scalar-tensorization"
+                ],
+                "intermediateResultIds": [
+                  "result-uv-product-branchwise-additivity"
+                ]
+              },
+              "placementAudit": {
+                "rationale": "The accepted claim establishes the same independently reusable tensorization, receiver-skew reduction, and half-skew BSSC specialization already represented by result-uv-product-branchwise-additivity. Its analytic proof and current evidence are therefore consolidated into that stable result rather than creating a duplicate result. The result remains under the objective-specific relaxed-UV-scalar tensorization program, with the sharp BSSC support result retained as its sole dependency. The affected leaf program and root ancestor are updated to synthesize the accepted theorem, its exact-value qualification, its strict scalar scope, and the remaining richer-converse directions.",
+                "basis": "local-objective",
+                "relatedProgramIds": [
+                  "program-bssc-uv-scalar-tensorization"
+                ]
+              },
+              "topologyRationale": null
+            },
+            "state": {
+              "nodes": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "type": "program",
+                  "title": "Canonical problem",
+                  "summary": "Two complementary converse directions remain established. The code-induced structural direction shows that deterministic finite-block private-message codes obey approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary entropic witness obstructs the specified coarse entropy and finite copy-lemma refinement route; blocklength-dependent auxiliaries and exact BSSC posterior consistency remain unresolved. In the relaxed UV-scalar direction, B_avg is exactly additive for arbitrary finite-alphabet DMBC products, receiver-skew symmetry gives B_br=B_avg, and finite products preserve that symmetry. With the global sharp BSSC posterior support, both separately relaxed scalars on P^{×n} equal n(2h_2(1/4)-5/4); the exact expression is unaffected by an inaccurate README decimal approximation. This scalar theorem concerns neither the full UV region nor common joint-(U,V), GK, full-Theorem-9, or capacity optimization, and it changes no capacity endpoint. The canonical capacity problem therefore remains unresolved.",
+                  "status": "active",
+                  "contentMarkdown": "## Objective\n\nResolve the canonical problem.\n\n## Current state\n\nTwo complementary converse directions remain established. The code-induced structural direction shows that deterministic finite-block private-message codes obey approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary entropic witness obstructs the specified coarse entropy and finite copy-lemma refinement route; blocklength-dependent auxiliaries and exact BSSC posterior consistency remain unresolved. In the relaxed UV-scalar direction, B_avg is exactly additive for arbitrary finite-alphabet DMBC products, receiver-skew symmetry gives B_br=B_avg, and finite products preserve that symmetry. With the global sharp BSSC posterior support, both separately relaxed scalars on P^{×n} equal n(2h_2(1/4)-5/4); the exact expression is unaffected by an inaccurate README decimal approximation. This scalar theorem concerns neither the full UV region nor common joint-(U,V), GK, full-Theorem-9, or capacity optimization, and it changes no capacity endpoint. The canonical capacity problem therefore remains unresolved.\n\n## Local residual work\n\nDevelop a fixed-cardinality reduction or exact binary-BSSC posterior and multiletter constraints for laws induced by genuine codes, excluding the nonbinary entropy witness where appropriate. Because the separately relaxed UV scalars tensorize at a non-frontier value, a stronger multiletter converse must retain structure absent from those scalars—such as coupling between UV branches, exact channel-consistent posteriors, or richer nested auxiliary and full-region constraints—and must ultimately yield a certified capacity improvement or resolution.\n\n## Intermediate results\n\nNone yet.",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                      "ledgerPosition": 5,
+                      "relation": "source"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                      "ledgerPosition": 3,
+                      "relation": "source"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+                      "ledgerPosition": 4,
+                      "relation": "source"
+                    }
+                  ],
+                  "evidence": [],
+                  "lineage": [],
+                  "reportRef": null,
+                  "digest": "sha256:e124c56d03b1994760bd00942c3b66d961ef239dc54f7fc1c00b65993a3c99c4"
+                },
+                "program-bssc-structural-converse-refinements": {
+                  "id": "program-bssc-structural-converse-refinements",
+                  "parentId": "root",
+                  "type": "program",
+                  "title": "Code-induced converse structure and BSSC-specific refinements",
+                  "summary": "Every deterministic finite-block private-message code is known to induce an approximate dependence-balance relation, a fixed encoder-coordinate map, and four compatible rate rows. The auxiliary alphabets remain blocklength-dependent, preventing direct fixed-cardinality optimization. For the specified coarse BSSC entropy relaxation, a finite nonbinary entropic witness attains both direct-sum branches at 2h_2(1/4)-5/4 and survives all universal finite-variable information inequalities and every finite sequence of standard copy-lemma extensions. Thus that entropy/copy route is obstructed, but exact binary-posterior and other channel-specific consistency constraints remain available because the witness is not a binary-input BSSC law.",
+                  "status": "active",
+                  "contentMarkdown": "## Objective\n\nConvert structure inherited from genuine private-message codes into certified BSSC converse bounds, while identifying which entropy relaxations are too coarse and which channel-specific constraints remain viable.\n\n## Current state\n\nEvery deterministic finite-block private-message code is known to induce an approximate dependence-balance relation, a fixed encoder-coordinate map, and four compatible rate rows. The auxiliary alphabets remain blocklength-dependent, preventing direct fixed-cardinality optimization. For the specified coarse BSSC entropy relaxation, a finite nonbinary entropic witness attains both direct-sum branches at 2h_2(1/4)-5/4 and survives all universal finite-variable information inequalities and every finite sequence of standard copy-lemma extensions. Thus that entropy/copy route is obstructed, but exact binary-posterior and other channel-specific consistency constraints remain available because the witness is not a binary-input BSSC law.\n\n## Local residual work\n\nProve a simultaneous support or compactness reduction preserving independence, time structure, the fixed encoder map, dependence balance, and all four rate rows; alternatively derive exact jointly consistent binary-BSSC posterior constraints or direct multiletter inequalities that exclude the witness and support a certified global converse optimization.\n\n## Intermediate results\n\n- **Code-induced dependence balance and entropy/copy obstruction** (`result-code-induced-balance-entropy-copy-no-go`) — primary",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                      "ledgerPosition": 3,
+                      "relation": "source"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "knowledge-node",
+                      "id": "result:result-code-induced-balance-entropy-copy-no-go",
+                      "relation": "primary-result"
+                    }
+                  ],
+                  "lineage": [],
+                  "reportRef": null,
+                  "digest": "sha256:4eb408da588102986b6363a73c0258d93c77a5a5b13eeb461b085848338cd961"
+                },
+                "program-bssc-uv-scalar-tensorization": {
+                  "id": "program-bssc-uv-scalar-tensorization",
+                  "parentId": "root",
+                  "type": "program",
+                  "title": "Tensorization of relaxed UV sum-rate scalars",
+                  "summary": "The averaged separately relaxed UV scalar B_avg is exactly additive for arbitrary finite-alphabet DMBC products, even with correlated product-channel input laws and joint envelope auxiliaries. For receiver-skew channels with an involutive receiver-exchanging input symmetry, B_br equals B_avg, invariant input laws suffice, and finite products preserve the symmetry; consequently both scalars are additive on every finite product of such channels. Using the established global sharp BSSC posterior-support inequality and equality-achieving mixture, the half-skew BSSC satisfies B_br(P^{×n})=B_avg(P^{×n})=n(2h_2(1/4)-5/4) for every n≥1. The exact expression governs despite an inaccurate README decimal approximation. This exhausts blocking as a strengthening mechanism for these two separately relaxed scalar rows, but it does not address a common joint-(U,V) optimization, the full UV region, the GK functional, richer Theorem-9 systems, or capacity itself.",
+                  "status": "active",
+                  "contentMarkdown": "## Objective\n\nCharacterize product behavior, symmetry reductions, and BSSC implications of the separately relaxed UV sum-rate scalar functionals, and determine which richer converse structures remain capable of multiletter improvement.\n\n## Current state\n\nThe averaged separately relaxed UV scalar B_avg is exactly additive for arbitrary finite-alphabet DMBC products, even with correlated product-channel input laws and joint envelope auxiliaries. For receiver-skew channels with an involutive receiver-exchanging input symmetry, B_br equals B_avg, invariant input laws suffice, and finite products preserve the symmetry; consequently both scalars are additive on every finite product of such channels. Using the established global sharp BSSC posterior-support inequality and equality-achieving mixture, the half-skew BSSC satisfies B_br(P^{×n})=B_avg(P^{×n})=n(2h_2(1/4)-5/4) for every n≥1. The exact expression governs despite an inaccurate README decimal approximation. This exhausts blocking as a strengthening mechanism for these two separately relaxed scalar rows, but it does not address a common joint-(U,V) optimization, the full UV region, the GK functional, richer Theorem-9 systems, or capacity itself.\n\n## Local residual work\n\nInvestigate converse structures absent from the additive separately relaxed scalars, including coupling of UV branches through a common joint law, exact BSSC posterior consistency, nonsymmetric branchwise behavior, and richer GK or full-Theorem-9 auxiliary constraints. Any extension must be proved independently and connected to a certified capacity bound; the present scalar theorem itself moves no capacity endpoint.\n\n## Intermediate results\n\n- **Exact product and branchwise additivity of relaxed UV scalars** (`result-uv-product-branchwise-additivity`) — primary",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                      "ledgerPosition": 5,
+                      "relation": "source"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+                      "ledgerPosition": 4,
+                      "relation": "source"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "knowledge-node",
+                      "id": "result:result-uv-product-branchwise-additivity",
+                      "relation": "primary-result"
+                    }
+                  ],
+                  "lineage": [],
+                  "reportRef": null,
+                  "digest": "sha256:eae5a1e51452298600776608a5413653f2bd6ee9a89d09b33831ad001712e800"
+                },
+                "result:result-code-induced-balance-entropy-copy-no-go": {
+                  "id": "result:result-code-induced-balance-entropy-copy-no-go",
+                  "parentId": "program-bssc-structural-converse-refinements",
+                  "type": "intermediate-result",
+                  "title": "Code-induced dependence balance and entropy/copy obstruction",
+                  "summary": "For independent uniform private messages A and B encoded deterministically over n uses of a finite-alphabet memoryless broadcast channel, with receiver errors p_1,p_2 and message alphabet sizes N_1,N_2 at least 2, let F_j=h_2(p_j)+p_j log_2(N_j-1), delta_j=F_j/n, and S_i=(Y^{i-1},Z_{i+1}^n). Then the exact telescope sum_i[I(A;B|S_i,Y_i)-I(A;B|S_i,Z_i)]=I(A;B|Y^n)-I(A;B|Z^n), together with separate Fano bounds on the endpoints, implies that the time-shared variables U=A, V=B, W=S_T, X=X_T satisfy |I(U;V|W,T,Y)-I(U;V|W,T,Z)| <= max{delta_1,delta_2}. Their law has the fixed-map factorization p(t,u,v,w,x,y,z)=(1/n)p_U(u)p_V(v)p(w|u,v,t)1{x=f_t(u,v)}P_{YZ|X}(y,z|x), and they satisfy the four compatible rows R_1<=I(U,W;Y|T)+delta_1, R_2<=I(V,W;Z|T)+delta_2, R_1+R_2<=I(U,W;Y|T)+I(X;Z|U,W,T)+delta_1+delta_2, and R_1+R_2<=I(V,W;Z|T)+I(X;Y|V,W,T)+delta_1+delta_2. For the specifically stated coarse uniform-input BSSC entropy relaxation—comprising the complete seven base entropies, message/time independence, deterministic encoding, fixed-map and memoryless Markov equalities, exact dependence balance, all stated conditional BEC identities, and the two sharp scalar posterior-support inequalities—an actual finite entropic witness attains both direct-sum branches at 2h_2(1/4)-5/4. Hence universally valid finite-variable information inequalities, including unknown non-Shannon inequalities, and any finite sequence of standard copy-lemma extensions cannot lower that relaxation below this value. The first conclusion is a sequence-level necessary condition, while the second is only a no-go theorem for the specified entropy/copy refinement route; neither is a BSSC capacity bound.",
+                  "status": "active",
+                  "contentMarkdown": "## Statement\n\nFor independent uniform private messages A and B encoded deterministically over n uses of a finite-alphabet memoryless broadcast channel, with receiver errors p_1,p_2 and message alphabet sizes N_1,N_2 at least 2, let F_j=h_2(p_j)+p_j log_2(N_j-1), delta_j=F_j/n, and S_i=(Y^{i-1},Z_{i+1}^n). Then the exact telescope sum_i[I(A;B|S_i,Y_i)-I(A;B|S_i,Z_i)]=I(A;B|Y^n)-I(A;B|Z^n), together with separate Fano bounds on the endpoints, implies that the time-shared variables U=A, V=B, W=S_T, X=X_T satisfy |I(U;V|W,T,Y)-I(U;V|W,T,Z)| <= max{delta_1,delta_2}. Their law has the fixed-map factorization p(t,u,v,w,x,y,z)=(1/n)p_U(u)p_V(v)p(w|u,v,t)1{x=f_t(u,v)}P_{YZ|X}(y,z|x), and they satisfy the four compatible rows R_1<=I(U,W;Y|T)+delta_1, R_2<=I(V,W;Z|T)+delta_2, R_1+R_2<=I(U,W;Y|T)+I(X;Z|U,W,T)+delta_1+delta_2, and R_1+R_2<=I(V,W;Z|T)+I(X;Y|V,W,T)+delta_1+delta_2. For the specifically stated coarse uniform-input BSSC entropy relaxation—comprising the complete seven base entropies, message/time independence, deterministic encoding, fixed-map and memoryless Markov equalities, exact dependence balance, all stated conditional BEC identities, and the two sharp scalar posterior-support inequalities—an actual finite entropic witness attains both direct-sum branches at 2h_2(1/4)-5/4. Hence universally valid finite-variable information inequalities, including unknown non-Shannon inequalities, and any finite sequence of standard copy-lemma extensions cannot lower that relaxation below this value. The first conclusion is a sequence-level necessary condition, while the second is only a no-go theorem for the specified entropy/copy refinement route; neither is a BSSC capacity bound.\n\n## Scope qualifications\n\n- Exact binary-posterior and other channel-specific consistency constraints exclude or may exclude the witness and remain viable research directions.\n- The displayed Fano formula is literal for message alphabet sizes N_1,N_2 at least 2; singleton messages require a separate harmless convention.\n- The entropy witness is an actual finite distribution but is not an actual binary-input BSSC distribution: X is a tuple of six nondegenerate independent binary components.\n- The induced message and W alphabets may grow with blocklength, so the finite-block necessary condition is not by itself a fixed-cardinality single-letter outer region.\n- The no-go conclusion applies only to the specified coarse entropy, universal-information-inequality, and finite standard-copy-lemma relaxation.\n- The result supplies neither a broadcast-channel capacity bound nor an achievability result, capacity formula, or improvement of an existing certified numerical bound.\n\n## Proofs\n\n### Proof 1\n\nEach finite standard copy-lemma step remains feasible by conditional resampling of the finite witness while preserving the original marginal and objective.\n\n### Proof 2\n\nMemorylessness and deterministic encoding give the fixed coordinate-map factorization, while conditioned Csiszar identities and nonnegative remainder terms give the four rate rows.\n\n### Proof 3\n\nThe dependence-balance identity is obtained by telescoping D_i=I(A;B|Y^i,Z_{i+1}^n), followed by separate Fano bounds at its two endpoints.\n\n### Proof 4\n\nThe no-go theorem is witnessed by an explicit finite distribution assembled from independent binary components whose component entropies verify the base entropy vector, structural equalities, dependence balance, all conditional BEC identities, both support rows, and both objective branches.\n\n## Methods\n\n### Method 1\n\nConditional-resampling realization of finite copy-lemma extensions\n\n### Method 2\n\nConditioned Csiszar sum identities\n\n### Method 3\n\nExact component-set entropy arithmetic\n\n### Method 4\n\nFano endpoint control\n\n### Method 5\n\nFinite-block information telescoping and time sharing\n\n## Computations\n\n### Computation 1\n\nAn exact affine-in-h symbolic audit verifies positivity on 3/4<h_2(1/4)<7/8, the complete base entropy vector, structural equalities, both zero dependence-balance sides, all 65 disjoint-subtuple conditional BEC identities, both sharp support rows, and both objective branches at 2h_2(1/4)-5/4.\n\n## Tools\n\n### Tool 1\n\nThe submitted Python standard-library checker performs the exact rational/affine symbolic witness audit without floating-point arithmetic.\n\n## Supporting artifacts\n\n- `problems/bssc-sum-capacity/contributions/code-induced-dependence-balance-and-entropy-no-go/README.md` — `sha256:d86f552c74e3ba4b132e942f03b033af8da52a668d9e58eab111fac3bfafd025`\n- `problems/bssc-sum-capacity/contributions/code-induced-dependence-balance-and-entropy-no-go/source-artifacts/upper-dependence-balance/FULL.md` — `sha256:a11816b72452187bed84f3d9d32ef6fa2788f444077222fc66854ba2cf9cccc8`\n- `problems/bssc-sum-capacity/contributions/code-induced-dependence-balance-and-entropy-no-go/source-artifacts/upper-entropy-nogo/FULL.md` — `sha256:ad7b04c34212cb4dc7debc04fb4c0a37cb4dad1e91dcb14c0000104b8120b779`\n- `problems/bssc-sum-capacity/contributions/code-induced-dependence-balance-and-entropy-no-go/verify_exact_witness.py` — `sha256:0be3d1bf7dfc02f22cc55cd52fafcb7e9290cfb32db7d4a103a570deefb0f32b`\n\n## Accepted claims\n\n- `bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go` from `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                      "ledgerPosition": 3,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:6811dbc06c253fd81a1d9244887b661fff26b22c3cdcda708cd6bdf5642a7293",
+                      "relation": "accepted-by"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:7de2d3a54340e7d40c5bd83800a47898f210dcf5415447ab0cd1ea50c8b6e61f"
+                },
+                "result:result-uv-product-branchwise-additivity": {
+                  "id": "result:result-uv-product-branchwise-additivity",
+                  "parentId": "program-bssc-uv-scalar-tensorization",
+                  "type": "intermediate-result",
+                  "title": "Exact product and branchwise additivity of relaxed UV scalars",
+                  "summary": "For a finite-alphabet discrete memoryless broadcast channel W, let t_W(p)=I_p(X;Y)-I_p(X;Z), define A_W(p)=I_p(X;Y)+C[-t_W](p) and D_W(p)=I_p(X;Z)+C[t_W](p), where C is the upper concave envelope on the input simplex, and set B_avg(W)=sup_p(A_W(p)+D_W(p))/2 and B_br(W)=sup_p min{A_W(p),D_W(p)}. Then B_avg is exactly additive under arbitrary finite products of finite-alphabet discrete memoryless broadcast channels, including optimization over correlated product-channel input laws and envelope auxiliaries joint across factors. If a channel is receiver-skew, in the sense that an involutive input relabeling exchanges its receiver marginals up to output relabeling, then B_br(W)=B_avg(W), and the optimization may be restricted to invariant input laws. Finite products of receiver-skew channels preserve this property, so both scalar functionals are additive on every such finite product. For the half-skew BSSC P, the sharp one-letter posterior-support inequality and equality-achieving mixture supplied by result-code-induced-balance-entropy-copy-no-go give B_br(P^{×n})=B_avg(P^{×n})=n(2h_2(1/4)-5/4) bits for every integer n≥1.",
+                  "status": "active",
+                  "contentMarkdown": "## Statement\n\nFor a finite-alphabet discrete memoryless broadcast channel W, let t_W(p)=I_p(X;Y)-I_p(X;Z), define A_W(p)=I_p(X;Y)+C[-t_W](p) and D_W(p)=I_p(X;Z)+C[t_W](p), where C is the upper concave envelope on the input simplex, and set B_avg(W)=sup_p(A_W(p)+D_W(p))/2 and B_br(W)=sup_p min{A_W(p),D_W(p)}. Then B_avg is exactly additive under arbitrary finite products of finite-alphabet discrete memoryless broadcast channels, including optimization over correlated product-channel input laws and envelope auxiliaries joint across factors. If a channel is receiver-skew, in the sense that an involutive input relabeling exchanges its receiver marginals up to output relabeling, then B_br(W)=B_avg(W), and the optimization may be restricted to invariant input laws. Finite products of receiver-skew channels preserve this property, so both scalar functionals are additive on every such finite product. For the half-skew BSSC P, the sharp one-letter posterior-support inequality and equality-achieving mixture supplied by result-code-induced-balance-entropy-copy-no-go give B_br(P^{×n})=B_avg(P^{×n})=n(2h_2(1/4)-5/4) bits for every integer n≥1.\n\n## Scope qualifications\n\n- Exact additivity of B_avg holds for arbitrary finite-alphabet DMBC products, while equality B_br=B_avg and the resulting additivity of B_br require receiver-skew involutive symmetry and its finite-product closure.\n- The README decimal approximation is inaccurate; the exact expression n(2h_2(1/4)-5/4) is the established value and is unaffected.\n- The dependency result is needed only for the global sharp BSSC posterior-support inequality and equality-achieving posterior mixture used in the half-skew BSSC specialization; the general product and receiver-skew arguments are established analytically within this result.\n- The executable checker verifies selected numerical and algebraic identities, including the BSSC contact mixture and receiver-skew relations, but does not verify the global support inequality, concave-envelope optimization, or product theorem; those steps are discharged analytically.\n- The resulting separately relaxed BSSC scalar value supplies neither an achievability theorem nor a capacity formula or certified improvement of a governed capacity endpoint.\n- The theorem concerns only the two separately relaxed scalar UV functionals. It does not establish tensorization of the full UV region, optimization over a common joint (U,V), the GK functional, the full Gohari–Liu–Nair Theorem-9 system, broadcast-channel capacity, or capacity tensorization.\n\n## Proofs\n\n### Proof 1\n\nConditional mutual-information chain rules and cancellation of cross-factor co-information terms bound each product-channel concave-envelope contribution by the corresponding one-factor contributions; mutual-information subadditivity then gives the product upper bound for B_avg, while product priors and product posterior decompositions give the reverse inequality.\n\n### Proof 2\n\nCoordinatewise receiver-skew involutions preserve the symmetry on finite products, and combining this closure with product additivity of B_avg proves finite-product additivity of both scalar functionals on the receiver-skew class.\n\n### Proof 3\n\nFor the half-skew BSSC, the dependency's global sharp posterior-support inequality and equality-achieving posterior mixture evaluate the one-letter envelopes at the invariant fair input law, yielding the exact value 2h_2(1/4)-5/4 per factor.\n\n### Proof 4\n\nReceiver-exchanging involutive relabeling exchanges A_W and D_W. Concavity and symmetrization yield an invariant input law attaining at least the averaged value in the branchwise minimum, while min{a,d}≤(a+d)/2 gives the reverse bound.\n\n## Methods\n\n### Method 1\n\nConcave-envelope factorization\n\n### Method 2\n\nConditional mutual-information chain rules and co-information cancellation\n\n### Method 3\n\nFinite-product induction\n\n### Method 4\n\nMutual-information subadditivity\n\n### Method 5\n\nReceiver-skew symmetrization\n\n### Method 6\n\nSharp BSSC posterior-support specialization\n\n## Computations\n\n### Computation 1\n\nThe submitted standard-library script evaluates the half-skew BSSC identities at high precision and checks the contact posterior mixture and receiver-skew channel relations. These checks are corroborative and do not replace the analytic product, envelope, or global-support arguments.\n\n## Tools\n\n### Tool 1\n\nThe submitted Python standard-library verifier checks selected algebraic and numerical specialization identities.\n\n## Supporting artifacts\n\n- `problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/README.md` — `sha256:fe480b29698c63afd6c80d4e3c5b155d227ce19b74910de8a38f73b807a94e9a`\n- `problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/frontier-uv-branchwise/FULL.md` — `sha256:64ddb2c3d0c375bbca746842e21689f11883d989d56a0f0028ceaf216715e623`\n- `problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/FULL.md` — `sha256:69a33f9fc84a5dbabbad6bdf53b34e722238c6a6b3f625d49e00f599e942b94a`\n- `problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/verify_uv_factorization.py` — `sha256:bdd966d11f1914425ed4932b459c83508a6a61a73131f4f2a184204ad0c4153e`\n- `problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/verify_uv_hostile_cases.py` — `sha256:ffa2b5d66670f0fd03338e73f8ecc5400bf23b162a92fa327f363c7bb1aac6c0`\n- `problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/README.md` — `sha256:c4df63434cb0c5f76918bd0ba578629f7373d4f2b24d6d6b5e21d3c253f2e852`\n- `problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/claims.json` — `sha256:0d46c2dbd1a62f0385fc4d8878d8cfef3749f85cca019e1284c5e54c12016874`\n- `problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/verification.json` — `sha256:d0dce591c90e6b529890b34e4bd515167ea3c447daef11e95f28e1c5f3c328d2`\n- `problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/verify_specialization.py` — `sha256:96375d4961d1ed5f5f5b3da368e59c60c4bd0fc6779b741a484b40f2114db4a2`\n\n## Accepted claims\n\n- `bssc-sum-capacity/uv-relaxed-converse-tensorization` from `14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9`\n- `bssc-sum-capacity/uv-product-branchwise-additivity` from `f236017c62c67ce4218c1f81ea34134f0954b556`",
+                  "subjects": [
+                    {
+                      "kind": "transaction",
+                      "id": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                      "ledgerPosition": 5,
+                      "relation": "accepted-claim"
+                    },
+                    {
+                      "kind": "transaction",
+                      "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+                      "ledgerPosition": 4,
+                      "relation": "accepted-claim"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:2c29fd881dec9aa923aa0713acc56df2c05d02f30ac544213f720af9158b7a41",
+                      "relation": "accepted-by"
+                    },
+                    {
+                      "kind": "judgment",
+                      "id": "sha256:34c5377dbd5c5d147acb250ac80640770b6176749e6c235d4a71ebc508b615c2",
+                      "relation": "accepted-by"
+                    },
+                    {
+                      "kind": "knowledge-node",
+                      "id": "result:result-code-induced-balance-entropy-copy-no-go",
+                      "relation": "depends-on"
+                    }
+                  ],
+                  "reportRef": null,
+                  "digest": "sha256:bdecc7d1871585915334e44f386afb87e039bbff5859e4307684fed00c68c63a"
+                }
+              },
+              "stateDigest": "sha256:bef4eaa78eb2473dc9080ac6da04e77ec5ddc87520b031411c47cd84393e963e",
+              "semanticProfile": "programs-and-intermediate-results-v1"
+            },
+            "revisionIds": [],
+            "addedRevisionIds": [],
+            "changedNodeIds": [
+              "program-bssc-uv-scalar-tensorization",
+              "result:result-uv-product-branchwise-additivity",
+              "root"
+            ],
+            "reportDigest": "sha256:bef4eaa78eb2473dc9080ac6da04e77ec5ddc87520b031411c47cd84393e963e",
+            "revisionSemantics": "neutral-knowledge",
+            "topologyAlignment": {
+              "schemaVersion": 2,
+              "problemId": "bssc-sum-capacity",
+              "beforeKnowledgeStateDigest": "sha256:f5b3b9bb12ddf5727daaf0e2b6ae121f5fd2d662a5c6721c8f845517e10ac25c",
+              "afterKnowledgeStateDigest": "sha256:bef4eaa78eb2473dc9080ac6da04e77ec5ddc87520b031411c47cd84393e963e",
+              "preserved": [
+                {
+                  "entityKind": "intermediateResult",
+                  "entityId": "result-code-induced-balance-entropy-copy-no-go",
+                  "beforeDigest": "sha256:7de2d3a54340e7d40c5bd83800a47898f210dcf5415447ab0cd1ea50c8b6e61f",
+                  "afterDigest": "sha256:7de2d3a54340e7d40c5bd83800a47898f210dcf5415447ab0cd1ea50c8b6e61f"
+                },
+                {
+                  "entityKind": "intermediateResult",
+                  "entityId": "result-uv-product-branchwise-additivity",
+                  "beforeDigest": "sha256:d0195fb0dfc351fcdda06c066034feab7327608c00c01727aa535db9085b1eea",
+                  "afterDigest": "sha256:bdecc7d1871585915334e44f386afb87e039bbff5859e4307684fed00c68c63a"
+                },
+                {
+                  "entityKind": "program",
+                  "entityId": "program-bssc-structural-converse-refinements",
+                  "beforeDigest": "sha256:4eb408da588102986b6363a73c0258d93c77a5a5b13eeb461b085848338cd961",
+                  "afterDigest": "sha256:4eb408da588102986b6363a73c0258d93c77a5a5b13eeb461b085848338cd961"
+                },
+                {
+                  "entityKind": "program",
+                  "entityId": "program-bssc-uv-scalar-tensorization",
+                  "beforeDigest": "sha256:aef77962f4b4afe283bd1ae7c871e95dbc36920af7797fb5d20e36b72009ea17",
+                  "afterDigest": "sha256:eae5a1e51452298600776608a5413653f2bd6ee9a89d09b33831ad001712e800"
+                },
+                {
+                  "entityKind": "program",
+                  "entityId": "root",
+                  "beforeDigest": "sha256:718399ee3f25db81e4f70c5c29429ad87622bdeb219a98ae176f49682d7233e0",
+                  "afterDigest": "sha256:e124c56d03b1994760bd00942c3b66d961ef239dc54f7fc1c00b65993a3c99c4"
+                }
+              ],
+              "moved": [],
+              "splits": [],
+              "merges": [],
+              "created": [],
+              "retired": [],
+              "alignmentDigest": "sha256:b2ac22bc93d96b9a4c7ef6bf982e07b12380ffef3d988fae500a9642eab38929"
+            },
+            "sameWorldHandoff": {
+              "schemaVersion": 2,
+              "problemId": "bssc-sum-capacity",
+              "subjectTransactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+              "beforeKnowledgeStateDigest": "sha256:f5b3b9bb12ddf5727daaf0e2b6ae121f5fd2d662a5c6721c8f845517e10ac25c",
+              "afterKnowledgeStateDigest": "sha256:bef4eaa78eb2473dc9080ac6da04e77ec5ddc87520b031411c47cd84393e963e",
+              "topologyAlignmentDigest": "sha256:b2ac22bc93d96b9a4c7ef6bf982e07b12380ffef3d988fae500a9642eab38929",
+              "sameWorldReferenceStateDigest": "sha256:bef4eaa78eb2473dc9080ac6da04e77ec5ddc87520b031411c47cd84393e963e",
+              "accountingNodeKinds": [
+                "program"
+              ],
+              "semanticLeafKinds": [
+                "intermediateResult"
+              ],
+              "handoffDigest": "sha256:7a96e745bf1d6dfc56985b46ef3ebd68a86fd0095402d8fd6d252bfa7261983e"
+            },
+            "machineState": {
+              "schemaVersion": 3,
+              "problemId": "bssc-sum-capacity",
+              "ledgerHead": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+              "baseStateDigest": "sha256:f5b3b9bb12ddf5727daaf0e2b6ae121f5fd2d662a5c6721c8f845517e10ac25c",
+              "rootProgramId": "root",
+              "programs": {
+                "root": {
+                  "id": "root",
+                  "parentId": null,
+                  "title": "Canonical problem",
+                  "objective": "Resolve the canonical problem.",
+                  "currentStateSummary": "Two complementary converse directions remain established. The code-induced structural direction shows that deterministic finite-block private-message codes obey approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary entropic witness obstructs the specified coarse entropy and finite copy-lemma refinement route; blocklength-dependent auxiliaries and exact BSSC posterior consistency remain unresolved. In the relaxed UV-scalar direction, B_avg is exactly additive for arbitrary finite-alphabet DMBC products, receiver-skew symmetry gives B_br=B_avg, and finite products preserve that symmetry. With the global sharp BSSC posterior support, both separately relaxed scalars on P^{×n} equal n(2h_2(1/4)-5/4); the exact expression is unaffected by an inaccurate README decimal approximation. This scalar theorem concerns neither the full UV region nor common joint-(U,V), GK, full-Theorem-9, or capacity optimization, and it changes no capacity endpoint. The canonical capacity problem therefore remains unresolved.",
+                  "localResidualSummary": "Develop a fixed-cardinality reduction or exact binary-BSSC posterior and multiletter constraints for laws induced by genuine codes, excluding the nonbinary entropy witness where appropriate. Because the separately relaxed UV scalars tensorize at a non-frontier value, a stronger multiletter converse must retain structure absent from those scalars—such as coupling between UV branches, exact channel-consistent posteriors, or richer nested auxiliary and full-region constraints—and must ultimately yield a certified capacity improvement or resolution.",
+                  "status": "active",
+                  "intermediateResultIds": [],
+                  "sourceTransactionIds": [
+                    "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                    "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                    "f236017c62c67ce4218c1f81ea34134f0954b556"
+                  ],
+                  "lineage": [],
+                  "digest": "sha256:e124c56d03b1994760bd00942c3b66d961ef239dc54f7fc1c00b65993a3c99c4"
+                },
+                "program-bssc-structural-converse-refinements": {
+                  "id": "program-bssc-structural-converse-refinements",
+                  "parentId": "root",
+                  "title": "Code-induced converse structure and BSSC-specific refinements",
+                  "objective": "Convert structure inherited from genuine private-message codes into certified BSSC converse bounds, while identifying which entropy relaxations are too coarse and which channel-specific constraints remain viable.",
+                  "currentStateSummary": "Every deterministic finite-block private-message code is known to induce an approximate dependence-balance relation, a fixed encoder-coordinate map, and four compatible rate rows. The auxiliary alphabets remain blocklength-dependent, preventing direct fixed-cardinality optimization. For the specified coarse BSSC entropy relaxation, a finite nonbinary entropic witness attains both direct-sum branches at 2h_2(1/4)-5/4 and survives all universal finite-variable information inequalities and every finite sequence of standard copy-lemma extensions. Thus that entropy/copy route is obstructed, but exact binary-posterior and other channel-specific consistency constraints remain available because the witness is not a binary-input BSSC law.",
+                  "localResidualSummary": "Prove a simultaneous support or compactness reduction preserving independence, time structure, the fixed encoder map, dependence balance, and all four rate rows; alternatively derive exact jointly consistent binary-BSSC posterior constraints or direct multiletter inequalities that exclude the witness and support a certified global converse optimization.",
+                  "status": "active",
+                  "intermediateResultIds": [
+                    "result-code-induced-balance-entropy-copy-no-go"
+                  ],
+                  "sourceTransactionIds": [
+                    "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+                  ],
+                  "lineage": [],
+                  "digest": "sha256:4eb408da588102986b6363a73c0258d93c77a5a5b13eeb461b085848338cd961"
+                },
+                "program-bssc-uv-scalar-tensorization": {
+                  "id": "program-bssc-uv-scalar-tensorization",
+                  "parentId": "root",
+                  "title": "Tensorization of relaxed UV sum-rate scalars",
+                  "objective": "Characterize product behavior, symmetry reductions, and BSSC implications of the separately relaxed UV sum-rate scalar functionals, and determine which richer converse structures remain capable of multiletter improvement.",
+                  "currentStateSummary": "The averaged separately relaxed UV scalar B_avg is exactly additive for arbitrary finite-alphabet DMBC products, even with correlated product-channel input laws and joint envelope auxiliaries. For receiver-skew channels with an involutive receiver-exchanging input symmetry, B_br equals B_avg, invariant input laws suffice, and finite products preserve the symmetry; consequently both scalars are additive on every finite product of such channels. Using the established global sharp BSSC posterior-support inequality and equality-achieving mixture, the half-skew BSSC satisfies B_br(P^{×n})=B_avg(P^{×n})=n(2h_2(1/4)-5/4) for every n≥1. The exact expression governs despite an inaccurate README decimal approximation. This exhausts blocking as a strengthening mechanism for these two separately relaxed scalar rows, but it does not address a common joint-(U,V) optimization, the full UV region, the GK functional, richer Theorem-9 systems, or capacity itself.",
+                  "localResidualSummary": "Investigate converse structures absent from the additive separately relaxed scalars, including coupling of UV branches through a common joint law, exact BSSC posterior consistency, nonsymmetric branchwise behavior, and richer GK or full-Theorem-9 auxiliary constraints. Any extension must be proved independently and connected to a certified capacity bound; the present scalar theorem itself moves no capacity endpoint.",
+                  "status": "active",
+                  "intermediateResultIds": [
+                    "result-uv-product-branchwise-additivity"
+                  ],
+                  "sourceTransactionIds": [
+                    "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                    "f236017c62c67ce4218c1f81ea34134f0954b556"
+                  ],
+                  "lineage": [],
+                  "digest": "sha256:eae5a1e51452298600776608a5413653f2bd6ee9a89d09b33831ad001712e800"
+                }
+              },
+              "intermediateResults": {
+                "result-code-induced-balance-entropy-copy-no-go": {
+                  "id": "result-code-induced-balance-entropy-copy-no-go",
+                  "primaryProgramId": "program-bssc-structural-converse-refinements",
+                  "relatedProgramIds": [],
+                  "title": "Code-induced dependence balance and entropy/copy obstruction",
+                  "statement": "For independent uniform private messages A and B encoded deterministically over n uses of a finite-alphabet memoryless broadcast channel, with receiver errors p_1,p_2 and message alphabet sizes N_1,N_2 at least 2, let F_j=h_2(p_j)+p_j log_2(N_j-1), delta_j=F_j/n, and S_i=(Y^{i-1},Z_{i+1}^n). Then the exact telescope sum_i[I(A;B|S_i,Y_i)-I(A;B|S_i,Z_i)]=I(A;B|Y^n)-I(A;B|Z^n), together with separate Fano bounds on the endpoints, implies that the time-shared variables U=A, V=B, W=S_T, X=X_T satisfy |I(U;V|W,T,Y)-I(U;V|W,T,Z)| <= max{delta_1,delta_2}. Their law has the fixed-map factorization p(t,u,v,w,x,y,z)=(1/n)p_U(u)p_V(v)p(w|u,v,t)1{x=f_t(u,v)}P_{YZ|X}(y,z|x), and they satisfy the four compatible rows R_1<=I(U,W;Y|T)+delta_1, R_2<=I(V,W;Z|T)+delta_2, R_1+R_2<=I(U,W;Y|T)+I(X;Z|U,W,T)+delta_1+delta_2, and R_1+R_2<=I(V,W;Z|T)+I(X;Y|V,W,T)+delta_1+delta_2. For the specifically stated coarse uniform-input BSSC entropy relaxation—comprising the complete seven base entropies, message/time independence, deterministic encoding, fixed-map and memoryless Markov equalities, exact dependence balance, all stated conditional BEC identities, and the two sharp scalar posterior-support inequalities—an actual finite entropic witness attains both direct-sum branches at 2h_2(1/4)-5/4. Hence universally valid finite-variable information inequalities, including unknown non-Shannon inequalities, and any finite sequence of standard copy-lemma extensions cannot lower that relaxation below this value. The first conclusion is a sequence-level necessary condition, while the second is only a no-go theorem for the specified entropy/copy refinement route; neither is a BSSC capacity bound.",
+                  "scopeQualifications": [
+                    "Exact binary-posterior and other channel-specific consistency constraints exclude or may exclude the witness and remain viable research directions.",
+                    "The displayed Fano formula is literal for message alphabet sizes N_1,N_2 at least 2; singleton messages require a separate harmless convention.",
+                    "The entropy witness is an actual finite distribution but is not an actual binary-input BSSC distribution: X is a tuple of six nondegenerate independent binary components.",
+                    "The induced message and W alphabets may grow with blocklength, so the finite-block necessary condition is not by itself a fixed-cardinality single-letter outer region.",
+                    "The no-go conclusion applies only to the specified coarse entropy, universal-information-inequality, and finite standard-copy-lemma relaxation.",
+                    "The result supplies neither a broadcast-channel capacity bound nor an achievability result, capacity formula, or improvement of an existing certified numerical bound."
+                  ],
+                  "support": {
+                    "proofs": [
+                      "Each finite standard copy-lemma step remains feasible by conditional resampling of the finite witness while preserving the original marginal and objective.",
+                      "Memorylessness and deterministic encoding give the fixed coordinate-map factorization, while conditioned Csiszar identities and nonnegative remainder terms give the four rate rows.",
+                      "The dependence-balance identity is obtained by telescoping D_i=I(A;B|Y^i,Z_{i+1}^n), followed by separate Fano bounds at its two endpoints.",
+                      "The no-go theorem is witnessed by an explicit finite distribution assembled from independent binary components whose component entropies verify the base entropy vector, structural equalities, dependence balance, all conditional BEC identities, both support rows, and both objective branches."
+                    ],
+                    "methods": [
+                      "Conditional-resampling realization of finite copy-lemma extensions",
+                      "Conditioned Csiszar sum identities",
+                      "Exact component-set entropy arithmetic",
+                      "Fano endpoint control",
+                      "Finite-block information telescoping and time sharing"
+                    ],
+                    "computations": [
+                      "An exact affine-in-h symbolic audit verifies positivity on 3/4<h_2(1/4)<7/8, the complete base entropy vector, structural equalities, both zero dependence-balance sides, all 65 disjoint-subtuple conditional BEC identities, both sharp support rows, and both objective branches at 2h_2(1/4)-5/4."
+                    ],
+                    "tools": [
+                      "The submitted Python standard-library checker performs the exact rational/affine symbolic witness audit without floating-point arithmetic."
+                    ],
+                    "artifactRefs": [
+                      {
+                        "path": "problems/bssc-sum-capacity/contributions/code-induced-dependence-balance-and-entropy-no-go/README.md",
+                        "digest": "sha256:d86f552c74e3ba4b132e942f03b033af8da52a668d9e58eab111fac3bfafd025"
+                      },
+                      {
+                        "path": "problems/bssc-sum-capacity/contributions/code-induced-dependence-balance-and-entropy-no-go/source-artifacts/upper-dependence-balance/FULL.md",
+                        "digest": "sha256:a11816b72452187bed84f3d9d32ef6fa2788f444077222fc66854ba2cf9cccc8"
+                      },
+                      {
+                        "path": "problems/bssc-sum-capacity/contributions/code-induced-dependence-balance-and-entropy-no-go/source-artifacts/upper-entropy-nogo/FULL.md",
+                        "digest": "sha256:ad7b04c34212cb4dc7debc04fb4c0a37cb4dad1e91dcb14c0000104b8120b779"
+                      },
+                      {
+                        "path": "problems/bssc-sum-capacity/contributions/code-induced-dependence-balance-and-entropy-no-go/verify_exact_witness.py",
+                        "digest": "sha256:0be3d1bf7dfc02f22cc55cd52fafcb7e9290cfb32db7d4a103a570deefb0f32b"
+                      }
+                    ],
+                    "attestationRefs": []
+                  },
+                  "dependencyResultIds": [],
+                  "claimRefs": [
+                    {
+                      "transactionId": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                      "claimKey": "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go"
+                    }
+                  ],
+                  "sourceTransactionIds": [
+                    "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+                  ],
+                  "judgmentIds": [
+                    "sha256:6811dbc06c253fd81a1d9244887b661fff26b22c3cdcda708cd6bdf5642a7293"
+                  ],
+                  "status": "active",
+                  "supersededByResultIds": [],
+                  "digest": "sha256:7de2d3a54340e7d40c5bd83800a47898f210dcf5415447ab0cd1ea50c8b6e61f"
+                },
+                "result-uv-product-branchwise-additivity": {
+                  "id": "result-uv-product-branchwise-additivity",
+                  "primaryProgramId": "program-bssc-uv-scalar-tensorization",
+                  "relatedProgramIds": [],
+                  "title": "Exact product and branchwise additivity of relaxed UV scalars",
+                  "statement": "For a finite-alphabet discrete memoryless broadcast channel W, let t_W(p)=I_p(X;Y)-I_p(X;Z), define A_W(p)=I_p(X;Y)+C[-t_W](p) and D_W(p)=I_p(X;Z)+C[t_W](p), where C is the upper concave envelope on the input simplex, and set B_avg(W)=sup_p(A_W(p)+D_W(p))/2 and B_br(W)=sup_p min{A_W(p),D_W(p)}. Then B_avg is exactly additive under arbitrary finite products of finite-alphabet discrete memoryless broadcast channels, including optimization over correlated product-channel input laws and envelope auxiliaries joint across factors. If a channel is receiver-skew, in the sense that an involutive input relabeling exchanges its receiver marginals up to output relabeling, then B_br(W)=B_avg(W), and the optimization may be restricted to invariant input laws. Finite products of receiver-skew channels preserve this property, so both scalar functionals are additive on every such finite product. For the half-skew BSSC P, the sharp one-letter posterior-support inequality and equality-achieving mixture supplied by result-code-induced-balance-entropy-copy-no-go give B_br(P^{×n})=B_avg(P^{×n})=n(2h_2(1/4)-5/4) bits for every integer n≥1.",
+                  "scopeQualifications": [
+                    "Exact additivity of B_avg holds for arbitrary finite-alphabet DMBC products, while equality B_br=B_avg and the resulting additivity of B_br require receiver-skew involutive symmetry and its finite-product closure.",
+                    "The README decimal approximation is inaccurate; the exact expression n(2h_2(1/4)-5/4) is the established value and is unaffected.",
+                    "The dependency result is needed only for the global sharp BSSC posterior-support inequality and equality-achieving posterior mixture used in the half-skew BSSC specialization; the general product and receiver-skew arguments are established analytically within this result.",
+                    "The executable checker verifies selected numerical and algebraic identities, including the BSSC contact mixture and receiver-skew relations, but does not verify the global support inequality, concave-envelope optimization, or product theorem; those steps are discharged analytically.",
+                    "The resulting separately relaxed BSSC scalar value supplies neither an achievability theorem nor a capacity formula or certified improvement of a governed capacity endpoint.",
+                    "The theorem concerns only the two separately relaxed scalar UV functionals. It does not establish tensorization of the full UV region, optimization over a common joint (U,V), the GK functional, the full Gohari–Liu–Nair Theorem-9 system, broadcast-channel capacity, or capacity tensorization."
+                  ],
+                  "support": {
+                    "proofs": [
+                      "Conditional mutual-information chain rules and cancellation of cross-factor co-information terms bound each product-channel concave-envelope contribution by the corresponding one-factor contributions; mutual-information subadditivity then gives the product upper bound for B_avg, while product priors and product posterior decompositions give the reverse inequality.",
+                      "Coordinatewise receiver-skew involutions preserve the symmetry on finite products, and combining this closure with product additivity of B_avg proves finite-product additivity of both scalar functionals on the receiver-skew class.",
+                      "For the half-skew BSSC, the dependency's global sharp posterior-support inequality and equality-achieving posterior mixture evaluate the one-letter envelopes at the invariant fair input law, yielding the exact value 2h_2(1/4)-5/4 per factor.",
+                      "Receiver-exchanging involutive relabeling exchanges A_W and D_W. Concavity and symmetrization yield an invariant input law attaining at least the averaged value in the branchwise minimum, while min{a,d}≤(a+d)/2 gives the reverse bound."
+                    ],
+                    "methods": [
+                      "Concave-envelope factorization",
+                      "Conditional mutual-information chain rules and co-information cancellation",
+                      "Finite-product induction",
+                      "Mutual-information subadditivity",
+                      "Receiver-skew symmetrization",
+                      "Sharp BSSC posterior-support specialization"
+                    ],
+                    "computations": [
+                      "The submitted standard-library script evaluates the half-skew BSSC identities at high precision and checks the contact posterior mixture and receiver-skew channel relations. These checks are corroborative and do not replace the analytic product, envelope, or global-support arguments."
+                    ],
+                    "tools": [
+                      "The submitted Python standard-library verifier checks selected algebraic and numerical specialization identities."
+                    ],
+                    "artifactRefs": [
+                      {
+                        "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/README.md",
+                        "digest": "sha256:fe480b29698c63afd6c80d4e3c5b155d227ce19b74910de8a38f73b807a94e9a"
+                      },
+                      {
+                        "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/frontier-uv-branchwise/FULL.md",
+                        "digest": "sha256:64ddb2c3d0c375bbca746842e21689f11883d989d56a0f0028ceaf216715e623"
+                      },
+                      {
+                        "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/FULL.md",
+                        "digest": "sha256:69a33f9fc84a5dbabbad6bdf53b34e722238c6a6b3f625d49e00f599e942b94a"
+                      },
+                      {
+                        "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/verify_uv_factorization.py",
+                        "digest": "sha256:bdd966d11f1914425ed4932b459c83508a6a61a73131f4f2a184204ad0c4153e"
+                      },
+                      {
+                        "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/verify_uv_hostile_cases.py",
+                        "digest": "sha256:ffa2b5d66670f0fd03338e73f8ecc5400bf23b162a92fa327f363c7bb1aac6c0"
+                      },
+                      {
+                        "path": "problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/README.md",
+                        "digest": "sha256:c4df63434cb0c5f76918bd0ba578629f7373d4f2b24d6d6b5e21d3c253f2e852"
+                      },
+                      {
+                        "path": "problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/claims.json",
+                        "digest": "sha256:0d46c2dbd1a62f0385fc4d8878d8cfef3749f85cca019e1284c5e54c12016874"
+                      },
+                      {
+                        "path": "problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/verification.json",
+                        "digest": "sha256:d0dce591c90e6b529890b34e4bd515167ea3c447daef11e95f28e1c5f3c328d2"
+                      },
+                      {
+                        "path": "problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/verify_specialization.py",
+                        "digest": "sha256:96375d4961d1ed5f5f5b3da368e59c60c4bd0fc6779b741a484b40f2114db4a2"
+                      }
+                    ],
+                    "attestationRefs": []
+                  },
+                  "dependencyResultIds": [
+                    "result-code-induced-balance-entropy-copy-no-go"
+                  ],
+                  "claimRefs": [
+                    {
+                      "transactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                      "claimKey": "bssc-sum-capacity/uv-relaxed-converse-tensorization"
+                    },
+                    {
+                      "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+                      "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity"
+                    }
+                  ],
+                  "sourceTransactionIds": [
+                    "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                    "f236017c62c67ce4218c1f81ea34134f0954b556"
+                  ],
+                  "judgmentIds": [
+                    "sha256:2c29fd881dec9aa923aa0713acc56df2c05d02f30ac544213f720af9158b7a41",
+                    "sha256:34c5377dbd5c5d147acb250ac80640770b6176749e6c235d4a71ebc508b615c2"
+                  ],
+                  "status": "active",
+                  "supersededByResultIds": [],
+                  "digest": "sha256:bdecc7d1871585915334e44f386afb87e039bbff5859e4307684fed00c68c63a"
+                }
+              },
+              "contributions": {
+                "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6": {
+                  "id": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                  "transactionId": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+                  "claimKeys": [
+                    "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go"
+                  ],
+                  "directProgramIds": [
+                    "program-bssc-structural-converse-refinements"
+                  ],
+                  "intermediateResultIds": [
+                    "result-code-induced-balance-entropy-copy-no-go"
+                  ],
+                  "dependencyTransactionIds": [],
+                  "judgmentId": "sha256:6811dbc06c253fd81a1d9244887b661fff26b22c3cdcda708cd6bdf5642a7293",
+                  "digest": "sha256:562fa7432cd940e2bd12f00c188be66104bb0f8a5c8928f4da8c685b0feeaca0"
+                },
+                "f236017c62c67ce4218c1f81ea34134f0954b556": {
+                  "id": "f236017c62c67ce4218c1f81ea34134f0954b556",
+                  "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+                  "claimKeys": [
+                    "bssc-sum-capacity/uv-product-branchwise-additivity"
+                  ],
+                  "directProgramIds": [
+                    "program-bssc-uv-scalar-tensorization"
+                  ],
+                  "intermediateResultIds": [
+                    "result-uv-product-branchwise-additivity"
+                  ],
+                  "dependencyTransactionIds": [
+                    "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+                  ],
+                  "judgmentId": "sha256:2c29fd881dec9aa923aa0713acc56df2c05d02f30ac544213f720af9158b7a41",
+                  "digest": "sha256:43abf11c0c64e9be5e210e7e3e5f5d795a9a764b0935cc78b6908e84a3cb9214"
+                },
+                "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9": {
+                  "id": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                  "transactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+                  "claimKeys": [
+                    "bssc-sum-capacity/uv-relaxed-converse-tensorization"
+                  ],
+                  "directProgramIds": [
+                    "program-bssc-uv-scalar-tensorization"
+                  ],
+                  "intermediateResultIds": [
+                    "result-uv-product-branchwise-additivity"
+                  ],
+                  "dependencyTransactionIds": [
+                    "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+                  ],
+                  "judgmentId": "sha256:34c5377dbd5c5d147acb250ac80640770b6176749e6c235d4a71ebc508b615c2",
+                  "digest": "sha256:9c2ddab23b46aa6375c4081517d4782720e916582f0b96db08559b281a320189"
+                }
+              },
+              "stateDigest": "sha256:bef4eaa78eb2473dc9080ac6da04e77ec5ddc87520b031411c47cd84393e963e"
+            }
           }
         ],
         "revisions": [],
         "reports": [],
-        "latestRunId": "c504ca2ee6e63c080a6f85b073353b1ca337723f048cdc67637a70db16cfbee3"
+        "latestRunId": "5d45d631157ee897e78b475c5186ac3edc16958e974004e08d72105e0634c837"
       }
     },
     {
