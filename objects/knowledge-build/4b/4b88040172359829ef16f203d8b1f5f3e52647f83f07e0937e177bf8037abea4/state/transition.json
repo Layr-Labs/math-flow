@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+  "baseStateDigest": "sha256:caaeeb5894c3e77c4e222c5c0e04b281ebf89fab1afe269576fe7b7098c29822",
+  "contentOperations": [
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:0e2105eed3374786b015bb4806ddca7f50f84b9f12d1c47ceb3a60d43a187681",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "currentStateSummary": "A code-induced converse direction is now established: every deterministic finite-block private-message code yields an approximate dependence-balance relation, a fixed-map induced-law factorization, and four compatible rate inequalities. The induced auxiliary alphabets may grow with blocklength, so this is not yet a fixed-cardinality single-letter outer region. An explicit finite entropic witness also shows that the specified coarse BSSC entropy relaxation cannot be improved below 2h_2(1/4)-5/4 using universal finite-variable information inequalities or any finite sequence of standard copy-lemma extensions. This is only an obstruction to that refinement route, not a capacity bound; the active child direction must still develop support reduction or exact BSSC binary-posterior and other channel-specific constraints. The canonical capacity problem remains unresolved.",
+        "localResidualSummary": "Develop a valid fixed-cardinality reduction preserving message/time independence, the fixed encoder map, dependence balance, and all four rate rows, or derive exact BSSC-specific posterior-consistency or direct multiletter inequalities that exclude the nonbinary entropy witness and yield a certified converse improvement.",
+        "status": "active",
+        "intermediateResultIds": [],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "intermediateResult",
+      "entityId": "result-code-induced-balance-entropy-copy-no-go",
+      "baseDigest": null,
+      "value": {
+        "id": "result-code-induced-balance-entropy-copy-no-go",
+        "primaryProgramId": "program-bssc-structural-converse-refinements",
+        "relatedProgramIds": [],
+        "title": "Code-induced dependence balance and entropy/copy obstruction",
+        "statement": "For independent uniform private messages A and B encoded deterministically over n uses of a finite-alphabet memoryless broadcast channel, with receiver errors p_1,p_2 and message alphabet sizes N_1,N_2 at least 2, let F_j=h_2(p_j)+p_j log_2(N_j-1), delta_j=F_j/n, and S_i=(Y^{i-1},Z_{i+1}^n). Then the exact telescope sum_i[I(A;B|S_i,Y_i)-I(A;B|S_i,Z_i)]=I(A;B|Y^n)-I(A;B|Z^n), together with separate Fano bounds on the endpoints, implies that the time-shared variables U=A, V=B, W=S_T, X=X_T satisfy |I(U;V|W,T,Y)-I(U;V|W,T,Z)| <= max{delta_1,delta_2}. Their law has the fixed-map factorization p(t,u,v,w,x,y,z)=(1/n)p_U(u)p_V(v)p(w|u,v,t)1{x=f_t(u,v)}P_{YZ|X}(y,z|x), and they satisfy the four compatible rows R_1<=I(U,W;Y|T)+delta_1, R_2<=I(V,W;Z|T)+delta_2, R_1+R_2<=I(U,W;Y|T)+I(X;Z|U,W,T)+delta_1+delta_2, and R_1+R_2<=I(V,W;Z|T)+I(X;Y|V,W,T)+delta_1+delta_2. For the specifically stated coarse uniform-input BSSC entropy relaxation—comprising the complete seven base entropies, message/time independence, deterministic encoding, fixed-map and memoryless Markov equalities, exact dependence balance, all stated conditional BEC identities, and the two sharp scalar posterior-support inequalities—an actual finite entropic witness attains both direct-sum branches at 2h_2(1/4)-5/4. Hence universally valid finite-variable information inequalities, including unknown non-Shannon inequalities, and any finite sequence of standard copy-lemma extensions cannot lower that relaxation below this value. The first conclusion is a sequence-level necessary condition, while the second is only a no-go theorem for the specified entropy/copy refinement route; neither is a BSSC capacity bound.",
+        "scopeQualifications": [
+          "The displayed Fano formula is literal for message alphabet sizes N_1,N_2 at least 2; singleton messages require a separate harmless convention.",
+          "The induced message and W alphabets may grow with blocklength, so the finite-block necessary condition is not by itself a fixed-cardinality single-letter outer region.",
+          "The entropy witness is an actual finite distribution but is not an actual binary-input BSSC distribution: X is a tuple of six nondegenerate independent binary components.",
+          "The no-go conclusion applies only to the specified coarse entropy, universal-information-inequality, and finite standard-copy-lemma relaxation.",
+          "Exact binary-posterior and other channel-specific consistency constraints exclude or may exclude the witness and remain viable research directions.",
+          "The result supplies neither a broadcast-channel capacity bound nor an achievability result, capacity formula, or improvement of an existing certified numerical bound."
+        ],
+        "support": {
+          "proofs": [
+            "The dependence-balance identity is obtained by telescoping D_i=I(A;B|Y^i,Z_{i+1}^n), followed by separate Fano bounds at its two endpoints.",
+            "Memorylessness and deterministic encoding give the fixed coordinate-map factorization, while conditioned Csiszar identities and nonnegative remainder terms give the four rate rows.",
+            "The no-go theorem is witnessed by an explicit finite distribution assembled from independent binary components whose component entropies verify the base entropy vector, structural equalities, dependence balance, all conditional BEC identities, both support rows, and both objective branches.",
+            "Each finite standard copy-lemma step remains feasible by conditional resampling of the finite witness while preserving the original marginal and objective."
+          ],
+          "methods": [
+            "Finite-block information telescoping and time sharing",
+            "Fano endpoint control",
+            "Conditioned Csiszar sum identities",
+            "Exact component-set entropy arithmetic",
+            "Conditional-resampling realization of finite copy-lemma extensions"
+          ],
+          "computations": [
+            "An exact affine-in-h symbolic audit verifies positivity on 3/4<h_2(1/4)<7/8, the complete base entropy vector, structural equalities, both zero dependence-balance sides, all 65 disjoint-subtuple conditional BEC identities, both sharp support rows, and both objective branches at 2h_2(1/4)-5/4."
+          ],
+          "tools": [
+            "The submitted Python standard-library checker performs the exact rational/affine symbolic witness audit without floating-point arithmetic."
+          ],
+          "attestationRefs": [],
+          "artifactRefs": [
+            {
+              "path": "problems/bssc-sum-capacity/contributions/code-induced-dependence-balance-and-entropy-no-go/README.md",
+              "digest": "sha256:d86f552c74e3ba4b132e942f03b033af8da52a668d9e58eab111fac3bfafd025"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/code-induced-dependence-balance-and-entropy-no-go/source-artifacts/upper-dependence-balance/FULL.md",
+              "digest": "sha256:a11816b72452187bed84f3d9d32ef6fa2788f444077222fc66854ba2cf9cccc8"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/code-induced-dependence-balance-and-entropy-no-go/source-artifacts/upper-entropy-nogo/FULL.md",
+              "digest": "sha256:ad7b04c34212cb4dc7debc04fb4c0a37cb4dad1e91dcb14c0000104b8120b779"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/code-induced-dependence-balance-and-entropy-no-go/verify_exact_witness.py",
+              "digest": "sha256:0be3d1bf7dfc02f22cc55cd52fafcb7e9290cfb32db7d4a103a570deefb0f32b"
+            }
+          ]
+        },
+        "dependencyResultIds": [],
+        "claimRefs": [
+          {
+            "transactionId": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+            "claimKey": "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go"
+          }
+        ],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "judgmentIds": [
+          "sha256:6811dbc06c253fd81a1d9244887b661fff26b22c3cdcda708cd6bdf5642a7293"
+        ],
+        "status": "active",
+        "supersededByResultIds": []
+      }
+    }
+  ],
+  "topologyOperations": [
+    {
+      "action": "create",
+      "entityKind": "program",
+      "entityId": "program-bssc-structural-converse-refinements",
+      "baseDigest": null,
+      "value": {
+        "id": "program-bssc-structural-converse-refinements",
+        "parentId": "root",
+        "title": "Code-induced converse structure and BSSC-specific refinements",
+        "objective": "Convert structure inherited from genuine private-message codes into certified BSSC converse bounds, while identifying which entropy relaxations are too coarse and which channel-specific constraints remain viable.",
+        "currentStateSummary": "Every deterministic finite-block private-message code is known to induce an approximate dependence-balance relation, a fixed encoder-coordinate map, and four compatible rate rows. The auxiliary alphabets remain blocklength-dependent, preventing direct fixed-cardinality optimization. For the specified coarse BSSC entropy relaxation, a finite nonbinary entropic witness attains both direct-sum branches at 2h_2(1/4)-5/4 and survives all universal finite-variable information inequalities and every finite sequence of standard copy-lemma extensions. Thus that entropy/copy route is obstructed, but exact binary-posterior and other channel-specific consistency constraints remain available because the witness is not a binary-input BSSC law.",
+        "localResidualSummary": "Prove a simultaneous support or compactness reduction preserving independence, time structure, the fixed encoder map, dependence balance, and all four rate rows; alternatively derive exact jointly consistent binary-BSSC posterior constraints or direct multiletter inequalities that exclude the witness and support a certified global converse optimization.",
+        "status": "active",
+        "intermediateResultIds": [
+          "result-code-induced-balance-entropy-copy-no-go"
+        ],
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+        ],
+        "lineage": []
+      }
+    }
+  ],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/code-induced-dependence-balance-and-entropy-no-go"
+    ],
+    "directProgramIds": [
+      "program-bssc-structural-converse-refinements"
+    ],
+    "intermediateResultIds": [
+      "result-code-induced-balance-entropy-copy-no-go"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted result belongs in a non-root local program devoted to extracting converse bounds from genuine code-induced structure and testing BSSC refinement mechanisms. It advances that objective by supplying both the necessary finite-block structure and a precisely scoped obstruction to one entropy/copy refinement route.",
+    "relatedProgramIds": [
+      "program-bssc-structural-converse-refinements"
+    ]
+  },
+  "topologyRationale": "Create one durable non-root research direction for code-induced converse structure and BSSC-specific refinements. No prior non-root programs or results exist to move, merge, split, or retire."
+}
