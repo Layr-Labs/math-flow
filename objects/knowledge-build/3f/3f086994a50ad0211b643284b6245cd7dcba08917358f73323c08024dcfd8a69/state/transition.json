@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+  "baseStateDigest": "sha256:f725c2973999e17afa1a72cedfb0cc51c7905612aea264a73e5cab895c00b234",
+  "contentOperations": [
+    {
+      "entityKind": "intermediateResult",
+      "entityId": "result-fixed-pair-bssc-sum-upper-certificate",
+      "baseDigest": null,
+      "value": {
+        "id": "result-fixed-pair-bssc-sum-upper-certificate",
+        "primaryProgramId": "program-bssc-theorem9-gk-foundations",
+        "relatedProgramIds": [],
+        "title": "Conditional fixed-pair BSSC sum-rate upper certificate",
+        "statement": "Assuming exactly the cited Gohari–Liu–Nair Theorem 9 outer-bound interface encoded by result-theorem9-private-message-product-marginal-foundation, consider the half-skew BSSC and the fixed binary auxiliary receivers defined, with every displayed decimal treated as exact, by P(G=0|X=0)=0.206961624915382, P(G=0|X=1)=0.826953249115544, P(K=0|X=0)=0.173046750884456, and P(K=0|X=1)=0.793038375084618. The premise-bound six private-message inequalities, an exact-rational nonnegative dual combination, and directed-interval majorization over the full continuous posterior domain establish C_sum ≤ U for a certified value U in [0.36929694596920284244271335135600317726937686320586339865039784778686683932875798, 0.36929694596920284244271335135600317726937686320586339865039784778686683932875818], and hence C_sum ≤ 0.369296945969202842443. This is only a conditional bound from the specified fixed receiver pair and weak-duality certificate: it neither authenticates the external theorem premise nor establishes receiver or dual optimality, a matching achievable rate, or the exact BSSC sum-capacity.",
+        "scopeQualifications": [
+          "No receiver optimality, dual optimality, matching achievable rate, or exact BSSC sum-capacity is established.",
+          "The certificate applies only to the specified fixed auxiliary receiver pair, with every displayed decimal treated as exact.",
+          "The dependency is needed only for the outer-bound interface and the assertion that the six inequalities constrain every achievable private-message rate pair for the fixed receivers; its broader product-marginal reduction, Q0 discussion, and provenance material are unnecessary.",
+          "The proof uses weak duality over the full continuous posterior domain and all input priors; it does not rely on strong duality, attainment, minimax interchange, or a sampled grid.",
+          "The result is conditional on the declared dependency’s transcription of the external Theorem 9 premise; the external theorem and its transcription are not independently authenticated or re-proved."
+        ],
+        "support": {
+          "proofs": [
+            "Conditional on the dependency’s outer-bound interface, a nonnegative combination of the six identified private-message rows has unit coefficients on both rates and reduces exactly to the submitted posterior-function tensor.",
+            "Affine inner majorants, an affine outer majorant, and the posterior martingale identities give a weak-duality upper bound uniformly over the complete continuous posterior domain and every input prior, without invoking strong duality, attainment, or minimax interchange.",
+            "The certified interval’s upper endpoint is no greater than 0.369296945969202842443, yielding the stated rounded conditional upper bound."
+          ],
+          "methods": [
+            "Directed Decimal interval arithmetic",
+            "Exact-rational dual-row and posterior-tensor reduction",
+            "Posterior martingale reduction",
+            "Continuous-domain weak duality",
+            "Curvature-guided affine majorization and fail-closed interval subdivision"
+          ],
+          "computations": [
+            "The submitted checker verifies with exact Fraction arithmetic the reflected receiver identities, nonnegative six-row weights, unit rate coefficients, and complete reduced tensor; it then certifies all continuous inner and outer inequalities by directed intervals, reproduces the evidence under three hostile ambient Decimal contexts, and obtains the stated final interval using 136 regular cells at maximum depth 30."
+          ],
+          "tools": [
+            "The submitted Python standard-library verifier performs the exact row/tensor audit and fail-closed directed-interval certification without external packages or a sampled-grid substitution."
+          ],
+          "attestationRefs": [],
+          "artifactRefs": [
+            {
+              "path": "problems/bssc-sum-capacity/contributions/fixed-pair-upper-bound-attested/README.md",
+              "digest": "sha256:5ce661a9268de184e6b2f052345efbb0d5035d45cadfbeefd3f2b5ee7e763154"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/fixed-pair-upper-bound-attested/claims.json",
+              "digest": "sha256:28f1c828179a36f2c4ebed29f71311cc64875d6b479f8d5ff0754c68abfa91d3"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/fixed-pair-upper-bound-attested/verification.json",
+              "digest": "sha256:9764fcc6d169eaa82f04d483f6dec405c8df5eff3f9c94bcee3dd46a1ee40b69"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/fixed-pair-upper-bound-attested/verify.py",
+              "digest": "sha256:4f285603cd2617b34499b968a0f287a9dcf0c6d6020b7ee6613a5b7fc6fac881"
+            }
+          ]
+        },
+        "dependencyResultIds": [
+          "result-theorem9-private-message-product-marginal-foundation"
+        ],
+        "claimRefs": [
+          {
+            "transactionId": "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+            "claimKey": "bssc-sum-capacity/fixed-pair-upper-bound-attested"
+          }
+        ],
+        "sourceTransactionIds": [
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1"
+        ],
+        "judgmentIds": [
+          "sha256:5046c2345351f57ac7f82aecf1cf537fbd64cd92dad1e3694282ae6ec9f1f2bc"
+        ],
+        "status": "active",
+        "supersededByResultIds": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "program-bssc-theorem9-gk-foundations",
+      "baseDigest": "sha256:1fba388118545f6520d650cdc8a9d695d53012f4cc0142d25c6e6777c0525d6c",
+      "value": {
+        "id": "program-bssc-theorem9-gk-foundations",
+        "parentId": "root",
+        "title": "Premise-bound Theorem-9/GK converse foundations",
+        "objective": "Develop the full auxiliary-receiver Theorem-9 system into a rigorous private-message BSSC converse framework, separating premise authentication from conditional specialization, receiver reduction, and optimization of the resulting GK-type bound.",
+        "currentStateSummary": "Conditional on the exact cited Theorem 9 outer-bound premise encoded in theorem9_spec.json, the private-message specialization is an independently generated 30-row system whose rows are preserved by replacing arbitrary auxiliary receivers with their input-only product marginals. This yields C_sum ≤ inf_{G,K} B(G,K), together with V_Q(G,K) ≤ V(1/2;G,K) ≤ B(G,K) and a finite, well-defined V_0(g,k) on its realizable domain. For one specified exact-decimal binary receiver pair, an exact-rational six-row reduction and continuous directed-interval weak-duality certificate now establish the conditional numerical bound C_sum ≤ U with U in [0.36929694596920284244271335135600317726937686320586339865039784778686683932875798, 0.36929694596920284244271335135600317726937686320586339865039784778686683932875818], hence C_sum ≤ 0.369296945969202842443. This fixed-pair certificate establishes neither receiver or dual optimality nor achievability or exact capacity, and the external theorem and its transcription remain unauthenticated.",
+        "localResidualSummary": "Independently authenticate or re-prove the cited outer-bound premise and its quantifier structure. Separately develop receiver-cardinality reduction, compactness or attainment, continuity and boundary control, and global optimization of inf_{G,K} B(G,K) or V_0(g,k), including whether the certified fixed receiver pair or its dual face is optimal. A capacity determination would additionally require an appropriate matching achievable rate; the present certificate supplies only a conditional converse bound.",
+        "status": "active",
+        "intermediateResultIds": [
+          "result-theorem9-private-message-product-marginal-foundation",
+          "result-fixed-pair-bssc-sum-upper-certificate"
+        ],
+        "sourceTransactionIds": [
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:85e52e0d5268c782d27947c440bb3695506c0945cf650860a1d89916eed0d623",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "currentStateSummary": "Three complementary converse directions are established. Genuine deterministic finite-block private-message codes induce approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary witness obstructs the specified coarse entropy and finite copy-lemma route; fixed-cardinality auxiliaries and exact BSSC posterior consistency remain unresolved. The separately relaxed UV scalars tensorize, with receiver-skew symmetry giving B_br=B_avg and the half-skew BSSC product values n(2h_2(1/4)-5/4), but these scalars do not establish capacity. Conditional on the exact encoded Gohari–Liu–Nair Theorem 9 premise, the private-message specialization is a 30-row system preserved by input-only product-marginal receiver replacement, yielding C_sum ≤ inf_{G,K} B(G,K). For one specified exact-decimal binary receiver pair, a continuous weak-duality certificate now gives the conditional numerical bound C_sum ≤ U with U in [0.36929694596920284244271335135600317726937686320586339865039784778686683932875798, 0.36929694596920284244271335135600317726937686320586339865039784778686683932875818], hence C_sum ≤ 0.369296945969202842443. The theorem premise and transcription remain unauthenticated, and no receiver optimality, dual optimality, matching achievable rate, or exact sum-capacity follows. The canonical capacity problem remains unresolved.",
+        "localResidualSummary": "Authenticate or independently prove the full Theorem-9 premise, then establish cardinality, compactness, continuity, or coercivity sufficient for global receiver optimization and determine whether the certified fixed pair is optimal. In parallel, derive exact binary-BSSC posterior and multiletter constraints for genuine code-induced laws and retain coupling or nested auxiliary structure absent from the additive relaxed UV scalars. Exact capacity would require closing the remaining converse gap and supplying a matching achievable rate.",
+        "status": "active",
+        "intermediateResultIds": [],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "lineage": []
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/fixed-pair-upper-bound-attested"
+    ],
+    "directProgramIds": [
+      "program-bssc-theorem9-gk-foundations"
+    ],
+    "intermediateResultIds": [
+      "result-fixed-pair-bssc-sum-upper-certificate"
+    ]
+  },
+  "placementAudit": {
+    "rationale": "The accepted claim is an independently reusable conditional numerical converse certificate derived from the existing Theorem-9 private-message interface, so it is placed as a new result under the durable Theorem-9/GK foundations program and depends directly on that program’s specialization result. It does not create a new research objective or alter the hierarchy. The leaf program and root summaries are updated because the fixed-pair certificate changes both the local converse portfolio and the canonical problem’s established numerical state.",
+    "basis": "local-objective",
+    "relatedProgramIds": [
+      "program-bssc-theorem9-gk-foundations"
+    ]
+  },
+  "topologyRationale": null
+}
