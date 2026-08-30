@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "43fcf08a3272a3995158951de8d8ca2a666a0792",
+  "baseStateDigest": "sha256:71c1757709ad450552bc51a5d0792e6c7e5814b9a6b26cfb94fe0e8923e7a5e7",
+  "contentOperations": [
+    {
+      "entityKind": "intermediateResult",
+      "entityId": "result-two-letter-marton-fixed-law-map-exhaustive-certificate",
+      "baseDigest": null,
+      "value": {
+        "id": "result-two-letter-marton-fixed-law-map-exhaustive-certificate",
+        "primaryProgramId": "program-bssc-multiletter-marton-support-search",
+        "relatedProgramIds": [],
+        "title": "Exhaustive no-gain certificate for two fixed two-letter Marton law-map families",
+        "statement": "For the two pinned exact rational 2x4x4x9 auxiliary laws and all deterministic maps from their nine source labels to the four half-skew BSSC two-use super-inputs, an exhaustive evaluation of all 2·4^9=524,288 law-map pairs rigorously encloses the maximum half-weight Marton value in [0.5451904011322205365, 0.5451904011322206215] bits. Source row 7 and base-four map ID 243761, corresponding to (1,0,3,0,0,2,3,2,3), attain the certified lower endpoint. The upper endpoint is strictly below the directed threshold 2L_RTD supplied by result-finite-auxiliary-marton-multiletter-foundation. Thus no member of this fixed-law deterministic-map family exceeds 2L_RTD; no value inside the enclosure is asserted to greater precision.",
+        "scopeQualifications": [
+          "The result applies only to the two pinned exact rational auxiliary laws and deterministic maps from nine labels to four two-use BSSC super-inputs.",
+          "It excludes stochastic relabelings, altered auxiliary laws, mixtures or continuations, local-search campaigns, unrestricted Marton additivity, and any capacity converse.",
+          "No value inside the certified enclosure is claimed to greater precision.",
+          "The local source bytes are pinned, but their external repository history is not independently authenticated; that provenance is not a mathematical premise."
+        ],
+        "support": {
+          "proofs": [
+            "Outward entropy intervals bound every evaluated half-weight Marton value, so the largest certified upper endpoint over the exhaustive scan bounds the entire finite family.",
+            "The row-7/map-243761 replay yields the certified lower endpoint, while direct comparison of the global upper endpoint with the dependency's directed lower bound for 2L_RTD proves the strict no-gain conclusion for this family."
+          ],
+          "methods": [
+            "Exhaustive enumeration of deterministic maps",
+            "Exact rational construction of induced auxiliary laws and BSSC product-channel output masses",
+            "Outward-directed entropy interval arithmetic",
+            "Fail-closed comparison with the certified randomized-time-division threshold"
+          ],
+          "computations": [
+            "The standard-library verifier evaluates all 524,288 law-map pairs and obtains the global interval [0.5451904011322205365, 0.5451904011322206215] bits.",
+            "The verifier identifies source row 7 and map ID 243761, decoded as (1,0,3,0,0,2,3,2,3), as a witness for the lower endpoint and certifies the global upper endpoint strictly below 2L_RTD."
+          ],
+          "tools": [
+            "The submitted Python standard-library verifier checks the pinned local source bytes, exact simplex and channel-mass conditions, complete map count, outward entropy tables, witness replay, and strict threshold comparison without network access."
+          ],
+          "attestationRefs": [],
+          "artifactRefs": [
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-exhaustive-transplant-certificate-repair/README.md",
+              "digest": "sha256:507b9f79c33278daa21b161ebf5a2cf8b8054ed68b1b64a07f5851c96452404d"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-exhaustive-transplant-certificate-repair/claims.json",
+              "digest": "sha256:f48b3a123959ffb3e1fe39e898cc4add6954138b9019d4c156b6fc620c5f415a"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-exhaustive-transplant-certificate-repair/source_certificate.json",
+              "digest": "sha256:45502b2e7a694ae2d1beaee3e19249d63d9efe39b6405daa42ada0e1cbb846d6"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-exhaustive-transplant-certificate-repair/verification.json",
+              "digest": "sha256:9764fcc6d169eaa82f04d483f6dec405c8df5eff3f9c94bcee3dd46a1ee40b69"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-exhaustive-transplant-certificate-repair/verify.py",
+              "digest": "sha256:b62cce61928443b596663251779cb518c46dcd2f9dbf1833f3a90c2cf5259763"
+            }
+          ]
+        },
+        "dependencyResultIds": [
+          "result-finite-auxiliary-marton-multiletter-foundation"
+        ],
+        "claimRefs": [
+          {
+            "transactionId": "43fcf08a3272a3995158951de8d8ca2a666a0792",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-exhaustive-transplant-certificate-repair"
+          }
+        ],
+        "sourceTransactionIds": [
+          "43fcf08a3272a3995158951de8d8ca2a666a0792"
+        ],
+        "judgmentIds": [
+          "sha256:797fe26d8c4010b9b9099bff0b3ec394263653c3f62bade28e274847574d49d3"
+        ],
+        "status": "active",
+        "supersededByResultIds": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "program-bssc-multiletter-marton-support-search",
+      "baseDigest": "sha256:d84717330f07bf4d814c9be25ec6dd579a034452ca32a86026de5fc0de3f1da1",
+      "value": {
+        "id": "program-bssc-multiletter-marton-support-search",
+        "parentId": "root",
+        "title": "Multiletter Marton support search",
+        "objective": "Determine whether multiletter Marton coding can strictly improve the current half-skew BSSC achievable rate, and rigorously characterize the super-input support and auxiliary structure required by any such improvement.",
+        "currentStateSummary": "The finite-auxiliary multiletter Marton sequence is bounded and superadditive, has a Fekete normalized limit, and scales exactly under independent repetition of a selected law; its randomized-time-division threshold is certified, while capacity and one-letter-optimum interpretations retain their stated hypotheses. Conditional-product laws are additive on finite receiver-skew channels, and arbitrary finite two-letter gaining laws must pass four constant-padding correlation tests. Any law exceeding 2L_RTD must have full super-input support with certified mass floors, balanced marginal windows, C_out<7/160, and |c_in|<sqrt(7 ln 2/248)<7/50; the reflected/transposed family also obeys 1/8<alpha<5/13. In addition, exhaustive outward-interval evaluation of all 524,288 deterministic maps for two pinned exact rational auxiliary laws encloses that fixed family's maximum half-weight Marton value in [0.5451904011322205365, 0.5451904011322206215] bits, strictly below 2L_RTD, with row 7/map 243761 attaining the lower endpoint. This new exclusion is limited to those two fixed laws and deterministic relabelings and does not cover stochastic relabelings, altered laws, mixtures, continuations, local search, unrestricted additivity, or a capacity converse. Full-support, genuinely conditionally coupled laws outside this finite family remain unresolved.",
+        "localResidualSummary": "Restrict further searches to genuinely nonfactorizable full-support finite Marton laws satisfying the established mass floors, four padding tests, marginal-balance windows, C_out<7/160, and |c_in|<sqrt(7 ln 2/248)<7/50, with 1/8<alpha<5/13 in the reflected/transposed family. Exclude the exhaustively certified deterministic relabelings of the two pinned laws, but continue to investigate altered auxiliary laws, stochastic relabelings, mixtures, continuations, and other structures not covered by that certificate. Seek stronger interior pruning or a rigorously certified law above 2L_RTD. Independently authenticate or prove the Marton-achievability and binary-input hypotheses, investigate finite-auxiliary cardinality control and extensions beyond finite auxiliaries, and keep fixed-family or fixed-blocklength conclusions distinct from unrestricted additivity and capacity converses.",
+        "status": "active",
+        "intermediateResultIds": [
+          "result-conditional-product-marton-additivity-correlation-ledger",
+          "result-finite-auxiliary-marton-multiletter-foundation",
+          "result-two-letter-marton-fixed-law-map-exhaustive-certificate",
+          "result-two-letter-marton-full-support-necessity",
+          "result-two-letter-marton-marginal-correlation-pruning",
+          "result-two-letter-marton-two-symbol-support-pruning",
+          "result-two-letter-output-covariance-curvature",
+          "result-two-letter-padding-correlation-tests"
+        ],
+        "sourceTransactionIds": [
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+          "43fcf08a3272a3995158951de8d8ca2a666a0792",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:a12ceb809e71bda2ad3108afba11358bd9e067ae99917c4196f9b52f6958fd44",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "currentStateSummary": "Four complementary directions are established. Genuine deterministic finite-block private-message codes induce approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary witness obstructs the specified coarse entropy and finite copy-lemma route; fixed-cardinality auxiliaries and exact BSSC posterior consistency remain unresolved. The separately relaxed UV scalars tensorize, with receiver-skew symmetry giving equality of the branchwise and averaged scalars and half-skew BSSC product values n(2h_2(1/4)-5/4), but these scalars do not establish capacity. Conditional on the encoded Gohari–Liu–Nair Theorem 9 premise, the private-message specialization yields C_sum<=inf_{G,K}B(G,K); compact receiver-curve approximation, finite-grid reduction, row-stability bounds, exact Q0 coercivity, and one fixed-pair weak-duality certificate conditionally giving C_sum<=0.369296945969202842443 are available, while premise authentication, unrelaxed convergence, receiver optimality, and matching achievability remain open. In the Marton direction, finite-auxiliary quantities are bounded and superadditive and have a certified randomized-time-division threshold. Conditional-product architectures are additive, arbitrary two-letter candidates must pass four padding-correlation tests, and candidates above 2L_RTD must satisfy full-support, mass-floor, marginal-balance, output-correlation, and sharpened covariance constraints. An exhaustive certificate now also rules out all 524,288 deterministic relabelings of two pinned exact rational auxiliary laws: their finite-family maximum lies in [0.5451904011322205365, 0.5451904011322206215] bits, strictly below 2L_RTD. That exclusion does not extend to stochastic relabelings, altered laws, mixtures, continuations, unrestricted Marton additivity, or capacity. Full-support, conditionally coupled laws outside the certified finite family remain unresolved.",
+        "localResidualSummary": "Authenticate or independently prove the external converse and achievability premises. Convert compact receiver-curve approximation and relaxed-row stability into an unrelaxed converse limit, strengthen receiver coercivity, and assess optimality of the certified fixed pair. Derive exact binary-BSSC posterior and multiletter constraints for genuine code-induced laws while retaining coupling absent from the additive relaxed UV scalars. In the achievability direction, search only among genuinely nonfactorizable full-support two-letter Marton laws satisfying all established support, padding, marginal, output-correlation, and covariance filters, excluding the certified deterministic-map family but retaining stochastic relabelings, altered auxiliary laws, mixtures, and continuations as unresolved possibilities; compare every candidate rigorously against 2L_RTD. Clarify finite-auxiliary cardinality scope and never infer unrestricted additivity or a capacity converse from a fixed family or fixed blocklength. Exact capacity still requires closing the converse gap and supplying a matching achievable rate.",
+        "status": "active",
+        "intermediateResultIds": [],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+          "43fcf08a3272a3995158951de8d8ca2a666a0792",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "lineage": []
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/two-letter-marton-exhaustive-transplant-certificate-repair"
+    ],
+    "directProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ],
+    "intermediateResultIds": [
+      "result-two-letter-marton-fixed-law-map-exhaustive-certificate"
+    ]
+  },
+  "placementAudit": {
+    "rationale": "The accepted claim is an independently reusable exhaustive exclusion for a narrowly specified family of two-letter Marton candidates. It belongs in the existing multiletter Marton support-search program because it prunes that program's candidate portfolio without changing the objectives or topology of the converse, UV-scalar, or Theorem-9 directions. The leaf and root summaries are updated to record both the finite-family exclusion and its material limitations.",
+    "basis": "local-objective",
+    "relatedProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ]
+  },
+  "topologyRationale": null
+}
