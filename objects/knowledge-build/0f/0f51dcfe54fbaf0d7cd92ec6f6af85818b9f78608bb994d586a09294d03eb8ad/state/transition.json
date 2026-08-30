@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+  "baseStateDigest": "sha256:6acbcfcca8121f877256215ca1434dfb89225f3400ac98a3dd9de9bfa798712e",
+  "contentOperations": [
+    {
+      "entityKind": "intermediateResult",
+      "entityId": "result-two-letter-output-covariance-curvature",
+      "baseDigest": null,
+      "value": {
+        "id": "result-two-letter-output-covariance-curvature",
+        "primaryProgramId": "program-bssc-multiletter-marton-support-search",
+        "relatedProgramIds": [],
+        "title": "Paired-output curvature and sharpened two-letter covariance pruning",
+        "statement": "For every input law on the governed half-skew BSSC product channel P^{otimes 2}, define c_in=Pr[X_1X_2=11]-Pr[X_1=1]Pr[X_2=1] and C_out=I(Y_1;Y_2)+I(Z_1;Z_2). Then, including boundary cases, C_out >= 31 c_in^2/(20 ln 2). For any finite two-letter Marton law whose unnormalized value exceeds twice the optimal one-letter randomized-time-division value, result-two-letter-marton-marginal-correlation-pruning supplies C_out<7/160; consequently every such law satisfies |c_in|<sqrt(7 ln 2/248)<7/50. The latter conclusion is only a necessary condition and neither constructs nor excludes a Marton gain, tensorizes Marton's functional, nor gives a capacity converse.",
+        "scopeQualifications": [
+          "The gain implication applies only to finite two-letter Marton laws on the governed half-skew BSSC product channel whose unnormalized value exceeds twice the optimal one-letter randomized-time-division value.",
+          "The dependency is required only for the implication C_out<7/160; the unconditional curvature inequality is established within this result for every input law, including boundary cases.",
+          "The sharpened covariance bound is solely a necessary condition; it neither constructs nor rules out a gain, tensorizes Marton's functional, nor proves a capacity converse."
+        ],
+        "support": {
+          "proofs": [
+            "Memorylessness and the affine half-skew BSSC output laws give Cov(Y_1,Y_2)=Cov(Z_1,Z_2)=c_in/4.",
+            "Along the fixed-output-marginal covariance segment, differentiating the two binary-table divergences and grouping the eight reciprocal cell terms yields a uniform paired curvature strictly exceeding 248/(5 ln 2).",
+            "Twice integrating the paired curvature from the independent tables, where the divergence and its first derivative vanish, gives C_out >= 31 c_in^2/(20 ln 2); continuity covers zero-cell and degenerate boundary cases.",
+            "Combining the unconditional curvature inequality with the dependency's strict bound C_out<7/160 gives c_in^2<7 ln 2/248, and a directed logarithmic comparison proves sqrt(7 ln 2/248)<7/50."
+          ],
+          "methods": [
+            "Affine output-covariance identities for the half-skew BSSC",
+            "Binary-table KL curvature along fixed-marginal covariance segments",
+            "Cauchy reciprocal-sum lower bounds",
+            "Exact polynomial positivity and boundary continuity",
+            "Directed high-precision logarithmic comparison"
+          ],
+          "computations": [
+            "The submitted standard-library checker verifies the reciprocal-class polynomial identities and positivity bracket, the curvature rescaling from 248/5 to 31/20, the exact dependency metadata, and directed comparisons establishing 7 ln 2/248<(7/50)^2."
+          ],
+          "tools": [
+            "The submitted Python standard-library verifier performs exact rational checks and outward-directed Decimal comparisons without network access or external packages."
+          ],
+          "attestationRefs": [],
+          "artifactRefs": [
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-output-covariance-curvature/README.md",
+              "digest": "sha256:60838ff19a5328d411bb4aa9f7c8bc78a2445d26bdf41a0740e2d08b2ad4a7bc"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-output-covariance-curvature/claims.json",
+              "digest": "sha256:48cafb76a9fb8682784d85548ea8abb532ef28c4f496605a83227887b2b85998"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-output-covariance-curvature/verification.json",
+              "digest": "sha256:9764fcc6d169eaa82f04d483f6dec405c8df5eff3f9c94bcee3dd46a1ee40b69"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-output-covariance-curvature/verify.py",
+              "digest": "sha256:d76ac238ad4a54b7c6cbe365f63cba591210de2924186bb05d18314c17dbb33c"
+            }
+          ]
+        },
+        "dependencyResultIds": [
+          "result-two-letter-marton-marginal-correlation-pruning"
+        ],
+        "claimRefs": [
+          {
+            "transactionId": "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+            "claimKey": "bssc-sum-capacity/two-letter-output-covariance-curvature"
+          }
+        ],
+        "sourceTransactionIds": [
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2"
+        ],
+        "judgmentIds": [
+          "sha256:141c4c2658e3662b874c8df5bd25eedffebed7155677cc2181a64c9bddda36af"
+        ],
+        "status": "active",
+        "supersededByResultIds": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "program-bssc-multiletter-marton-support-search",
+      "baseDigest": "sha256:8463566e9dd0cdf055e98ab998570b78149a83129f6989a23b005ac45e57ca84",
+      "value": {
+        "id": "program-bssc-multiletter-marton-support-search",
+        "parentId": "root",
+        "title": "Multiletter Marton support search",
+        "objective": "Determine whether multiletter Marton coding can strictly improve the current half-skew BSSC achievable rate, and rigorously characterize the super-input support and auxiliary structure required by any such improvement.",
+        "currentStateSummary": "The finite-auxiliary multiletter Marton sequence is unconditionally bounded and superadditive, has a Fekete normalized limit, and scales exactly under independent repetition of a selected law; the exact randomized-time-division threshold is certified, while the associated capacity and one-letter-optimum interpretations retain their stated hypotheses. Conditional-product laws are additive on finite receiver-skew channels, and every arbitrary finite two-letter gaining law must pass four constant-padding correlation tests. A law exceeding twice the optimal one-letter randomized-time-division value must have full super-input support with the certified symbol-mass floors, input marginals q_1,q_2 in (3/8,5/8), marginal sum in (17/20,23/20), and C_out=I(Y_1;Y_2)+I(Z_1;Z_2)<7/160; the reflected/transposed family additionally requires 1/8<alpha<5/13. A paired binary-output-table curvature theorem now gives the unconditional inequality C_out>=31c_in^2/(20 ln 2) for every product-channel input law, including boundary cases, and sharpens the necessary covariance condition for a finite two-letter gain to |c_in|<sqrt(7 ln 2/248)<7/50. All these gain filters are necessary only and neither establish nor exclude a gain. Whether a full-support, genuinely conditionally coupled finite law satisfying every filter can gain remains open.",
+        "localResidualSummary": "Restrict the two-letter search to genuinely nonfactorizable full-support finite Marton laws satisfying the certified symbol-mass floors, all four padding-correlation tests, q_1,q_2 in (3/8,5/8), 17/20<q_1+q_2<23/20, C_out<7/160, and the sharpened covariance condition |c_in|<sqrt(7 ln 2/248)<7/50; retain the crossed padding tests separately. Within the reflected/transposed family, also impose 1/8<alpha<5/13. Seek stronger interior pruning or a certified law above 2L_RTD. Independently authenticate or prove the stated Marton-achievability and binary-input hypotheses, investigate finite-auxiliary cardinality control and extensions beyond finite auxiliaries, and keep superadditivity distinct from additivity and fixed-blocklength optimization distinct from a capacity converse.",
+        "status": "active",
+        "intermediateResultIds": [
+          "result-conditional-product-marton-additivity-correlation-ledger",
+          "result-finite-auxiliary-marton-multiletter-foundation",
+          "result-two-letter-marton-full-support-necessity",
+          "result-two-letter-marton-marginal-correlation-pruning",
+          "result-two-letter-output-covariance-curvature",
+          "result-two-letter-marton-two-symbol-support-pruning",
+          "result-two-letter-padding-correlation-tests"
+        ],
+        "sourceTransactionIds": [
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:acd37c1e61845c416f2c0470433f3559891dae30acf867321e7065d679d86e72",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "currentStateSummary": "Four complementary directions are established. Genuine deterministic finite-block private-message codes induce approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary witness obstructs the specified coarse entropy and finite copy-lemma route; fixed-cardinality auxiliaries and exact BSSC posterior consistency remain unresolved. The separately relaxed UV scalars tensorize, with receiver-skew symmetry giving equality of the branchwise and averaged scalars and half-skew BSSC product values n(2h_2(1/4)-5/4), but these scalars do not establish capacity. Conditional on the exact encoded Gohari–Liu–Nair Theorem 9 premise, the private-message specialization yields C_sum<=inf_{G,K}B(G,K); compact receiver-curve approximation, finite-grid reduction, row-stability bounds, exact Q0 coercivity, and one fixed-pair weak-duality certificate conditionally giving C_sum<=0.369296945969202842443 are available, while premise authentication, unrelaxed convergence, receiver optimality, and matching achievability remain open. In the Marton direction, finite-auxiliary quantities are bounded and superadditive and have a certified randomized-time-division threshold. Conditional-product architectures are additive, arbitrary two-letter candidates must pass four padding-correlation tests, and any candidate exceeding twice the optimal one-letter randomized-time-division value must have full support with certified mass floors, q_1,q_2 in (3/8,5/8), 17/20<q_1+q_2<23/20, and C_out<7/160. The new unconditional paired-output curvature bound C_out>=31c_in^2/(20 ln 2) sharpens the resulting necessary input-covariance condition to |c_in|<sqrt(7 ln 2/248)<7/50; the reflected/transposed family also requires 1/8<alpha<5/13. These conditions neither construct nor exclude a Marton gain, tensorize Marton's functional, or provide a capacity converse. Full-support, conditionally coupled laws satisfying all constraints remain unresolved.",
+        "localResidualSummary": "Authenticate or independently prove the external converse and achievability premises. Convert compact receiver-curve approximation and relaxed-row stability into an unrelaxed converse limit, strengthen receiver coercivity, and assess optimality of the certified fixed pair. Derive exact binary-BSSC posterior and multiletter constraints for genuine code-induced laws while retaining coupling absent from the additive relaxed UV scalars. In the achievability direction, search only among genuinely nonfactorizable full-support two-letter Marton laws satisfying the symbol-mass floors, four padding tests, marginal-balance windows, C_out<7/160, and |c_in|<sqrt(7 ln 2/248)<7/50, with the additional alpha-window on the reflected/transposed family; compare candidates rigorously against 2L_RTD. Clarify finite-auxiliary cardinality scope and never infer a capacity converse from a fixed blocklength. Exact capacity still requires closing the converse gap and supplying a matching achievable rate.",
+        "status": "active",
+        "intermediateResultIds": [],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "906894532b971ecf8c4ac6fcdd3f7380e00549b2",
+          "9bb22afe5abd3e1d9f419c1717bd61bb33a958ff",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "lineage": []
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/two-letter-output-covariance-curvature"
+    ],
+    "directProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ],
+    "intermediateResultIds": [
+      "result-two-letter-output-covariance-curvature"
+    ]
+  },
+  "placementAudit": {
+    "rationale": "The accepted claim supplies an independently reusable unconditional product-channel curvature inequality and a sharper necessary covariance filter for the existing two-letter Marton search. It therefore belongs in the established multiletter Marton support-search program and depends only on the existing marginal-correlation pruning result for the gain-specific bound C_out<7/160. The result changes that local portfolio and the root synthesis, but requires no new program, move, split, merge, or retirement.",
+    "basis": "local-objective",
+    "relatedProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ]
+  },
+  "topologyRationale": null
+}
