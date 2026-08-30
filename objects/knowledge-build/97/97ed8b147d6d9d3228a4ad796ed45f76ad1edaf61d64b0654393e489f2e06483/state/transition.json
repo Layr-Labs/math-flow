@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+  "baseStateDigest": "sha256:bef4eaa78eb2473dc9080ac6da04e77ec5ddc87520b031411c47cd84393e963e",
+  "contentOperations": [
+    {
+      "entityKind": "program",
+      "entityId": "program-bssc-theorem9-gk-foundations",
+      "baseDigest": null,
+      "value": {
+        "id": "program-bssc-theorem9-gk-foundations",
+        "parentId": "root",
+        "title": "Premise-bound Theorem-9/GK converse foundations",
+        "objective": "Develop the full auxiliary-receiver Theorem-9 system into a rigorous private-message BSSC converse framework, separating premise authentication from conditional specialization, receiver reduction, and optimization of the resulting GK-type bound.",
+        "currentStateSummary": "Conditional on the exact cited Theorem 9 outer-bound premise encoded in theorem9_spec.json, the private-message specialization has been expanded into an independently generated 30-row system. An exhaustive audit shows that every auxiliary-receiver term involves only one of G or K, so arbitrary finite auxiliary receivers may be replaced by their input-only product marginals without changing any row. This conditionally yields C_sum ≤ inf_{G,K} B(G,K) over finite-output binary-input receiver channels. The extended-real local definitions also give V_Q(G,K) ≤ V(1/2;G,K) ≤ B(G,K), while every Q_0-supported row depends on the receiver channels only through (c,g,k,c), making V_0(g,k) finite and well defined on its realizable domain. The cited theorem itself, its transcription, and its external provenance have not been authenticated by this result.",
+        "localResidualSummary": "Independently authenticate or re-prove the cited outer-bound premise and its quantifier structure; then analyze receiver-cardinality reduction, attainment or compactness, continuity and boundary behavior, and the optimization of inf_{G,K} B(G,K) or V_0(g,k). Any numerical bound or capacity consequence beyond the accepted conditional inequality requires separate certification.",
+        "status": "active",
+        "intermediateResultIds": [
+          "result-theorem9-private-message-product-marginal-foundation"
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "intermediateResult",
+      "entityId": "result-theorem9-private-message-product-marginal-foundation",
+      "baseDigest": null,
+      "value": {
+        "id": "result-theorem9-private-message-product-marginal-foundation",
+        "primaryProgramId": "program-bssc-theorem9-gk-foundations",
+        "relatedProgramIds": [],
+        "title": "Conditional 30-row Theorem-9 specialization and product-marginal reduction",
+        "statement": "Assume exactly the cited Gohari–Liu–Nair Theorem 9 outer-bound premise encoded in theorem9_spec.json: for each achievable rate triple there is one input prior that works for every finite auxiliary-receiver law, with an appropriate finite auxiliary hierarchy for each such law, under the encoded factorization, equations (19a)–(19p), and both side conditions. Conditional on that premise, setting R0=0, expanding every displayed minimum, and splitting the interval side conditions gives exactly the independently generated local 30-row private-message system. Every auxiliary-receiver information term in that system involves only G or only K, with no joint (G,K) term and no conditioning of one receiver output on another; consequently replacing G and K by their input-only product marginals preserves every row. Therefore, for the physical BSSC, C_sum ≤ inf B(G,K), where the infimum is over finite-output binary-input channels T_{G|X} and T_{K|X}. Under the submitted extended-real local definitions, including sup(empty set)=-infinity, V_Q(G,K) ≤ V(1/2;G,K) ≤ B(G,K). Moreover, every Q_0-supported row depends on the receiver channels only through (c,g,k,c), so V_0(g,k) is finite and well defined on the realizable (g,k)-domain.",
+        "scopeQualifications": [
+          "Finiteness and well-definedness of V_0(g,k) hold only on the realizable (g,k)-domain.",
+          "The capacity conclusion is conditional on the premise's quantifier structure: one prior for each achievable rate pair works for every finite auxiliary-receiver law, with an appropriate finite hierarchy for each law.",
+          "The equality attestation establishes only syntactic and algebraic equality of the pinned encoded systems.",
+          "The product-marginal reduction relies on the audited system containing only single-output G or K information terms, with no joint (G,K) term and no conditioning of one receiver output on another.",
+          "The result does not authenticate the external theorem, manuscript, PDF, transcription provenance, rendering, or source fidelity."
+        ],
+        "support": {
+          "proofs": [
+            "Expanding the minima in the encoded equations after imposing R0=0 produces 26 scalar rows, and splitting the two interval side conditions produces four further nonnegative-slack rows.",
+            "An independently generated length-three path construction agrees row by row with the encoded 30-row specialization after only the stated mutual-information chain-rule normalizations.",
+            "The exhaustive output-term audit shows that all G- and K-bearing terms are single-output marginals. The factorization then preserves every relevant marginal when the auxiliary receiver is replaced by the product of its input-only G and K marginals.",
+            "Posterior mutual-information identities for Q_0-supported hierarchies reduce every row to the four midpoint channel values (c,g,k,c); explicit feasible zero rates and binary-output entropy bounds establish finiteness on the realizable domain."
+          ],
+          "methods": [
+            "Exact symbolic expansion of minima and interval conditions",
+            "Independent path-row generation and algebraic normalization",
+            "Exhaustive single-output information-term audit",
+            "Input-only product-marginal replacement",
+            "Binary-posterior mutual-information reduction",
+            "Extended-real optimization conventions"
+          ],
+          "computations": [
+            "The submitted standard-library verifier checks the encoded factorization, all sixteen equation labels and two side conditions, generates all 30 private-message rows independently, compares their rate coefficients and signed information terms exactly, and audits the distinct output-bearing terms."
+          ],
+          "tools": [
+            "The submitted Python standard-library checker performs an exact no-argument audit without floating-point arithmetic, external packages, network access, PDF parsing, or rendering."
+          ],
+          "attestationRefs": [],
+          "artifactRefs": [
+            {
+              "path": "problems/bssc-sum-capacity/contributions/theorem9-cited-premise-foundations/README.md",
+              "digest": "sha256:a92c4406e94d65833fdb24bc01eace8a00dc734e0af69fd117d1ee7cb268a62d"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/theorem9-cited-premise-foundations/SOURCE_TRANSCRIPTION.md",
+              "digest": "sha256:efb10d0a910570a659125ce333e8b63f592400a51bfe3af9b40d59a25bfe9324"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/theorem9-cited-premise-foundations/claims.json",
+              "digest": "sha256:f4f571216d611dd77c3059cfbf8a58ac430f3fcd9f5e0a9526883fb392f0af7e"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/theorem9-cited-premise-foundations/theorem9_spec.json",
+              "digest": "sha256:96e640c66b4d9fab2bdc351ee3bdb65d353d831062447c5689186a4617d8b2f1"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/theorem9-cited-premise-foundations/verification.json",
+              "digest": "sha256:d0dce591c90e6b529890b34e4bd515167ea3c447daef11e95f28e1c5f3c328d2"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/theorem9-cited-premise-foundations/verify_specialization.py",
+              "digest": "sha256:dffc3ce12d67606ab66df88dcd16b9e43279ec057cbc74db238a2111549f3921"
+            }
+          ]
+        },
+        "dependencyResultIds": [],
+        "claimRefs": [
+          {
+            "transactionId": "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+            "claimKey": "bssc-sum-capacity/theorem9-cited-premise-foundations"
+          }
+        ],
+        "sourceTransactionIds": [
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9"
+        ],
+        "judgmentIds": [
+          "sha256:e89563be428ced06af2609c5de6d0e18b9f6332c77c62ab4c122a85a9e238daa"
+        ],
+        "status": "active",
+        "supersededByResultIds": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:e124c56d03b1994760bd00942c3b66d961ef239dc54f7fc1c00b65993a3c99c4",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "currentStateSummary": "Three complementary converse directions are now established. First, genuine deterministic finite-block private-message codes induce approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary witness obstructs the specified coarse entropy and finite copy-lemma route; fixed-cardinality auxiliaries and exact BSSC posterior consistency remain unresolved. Second, the separately relaxed UV scalars tensorize: B_avg is additive for arbitrary finite-alphabet DMBC products, receiver-skew symmetry gives B_br=B_avg, and for the half-skew BSSC both product scalars equal n(2h_2(1/4)-5/4), without establishing capacity. Third, conditional on the exact encoded Gohari–Liu–Nair Theorem 9 premise and its stated quantifiers, the private-message specialization is exactly a 30-row system preserved by replacing arbitrary auxiliary receivers with input-only product marginals. This gives the conditional bound C_sum ≤ inf_{G,K} B(G,K), the inequalities V_Q(G,K) ≤ V(1/2;G,K) ≤ B(G,K), and a finite well-defined V_0(g,k) on its realizable domain. The external theorem and transcription provenance remain unauthenticated, and no numerical optimization of this new bound has been certified. The canonical capacity problem remains unresolved.",
+        "localResidualSummary": "Authenticate or independently prove the full Theorem-9 premise and then obtain cardinality, compactness, continuity, or coercivity control sufficient to optimize its product-receiver bound. In parallel, derive exact binary-BSSC posterior and multiletter constraints for genuine code-induced laws, and retain coupling or nested auxiliary structure absent from the additive separately relaxed UV scalars. A resolution requires a certified numerical or analytic capacity improvement together with any matching achievability argument needed for equality.",
+        "status": "active",
+        "intermediateResultIds": [],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "lineage": []
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/theorem9-cited-premise-foundations"
+    ],
+    "directProgramIds": [
+      "program-bssc-theorem9-gk-foundations"
+    ],
+    "intermediateResultIds": [
+      "result-theorem9-private-message-product-marginal-foundation"
+    ]
+  },
+  "placementAudit": {
+    "rationale": "The accepted claim establishes a reusable premise-bound full-Theorem-9/GK converse foundation rather than a refinement of the code-induced entropy program or the separately relaxed UV-scalar tensorization program. It therefore warrants its own durable child program under the canonical root. Its exact 30-row specialization, product-marginal reduction, conditional capacity inequality, and local-value consequences form one integrated independently reusable result because each consequence depends on the same audited system and explicit conditional premise.",
+    "basis": "local-objective",
+    "relatedProgramIds": [
+      "program-bssc-theorem9-gk-foundations"
+    ]
+  },
+  "topologyRationale": null
+}
