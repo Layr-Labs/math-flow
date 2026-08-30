@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / "protocol/judges/openrouter-hierarchical-research-builder-v8.json"
 TX_A = "a" * 40
 TX_B = "b" * 40
+TX_C = "c" * 40
 JUDGMENT_A = "sha256:" + "1" * 64
 JUDGMENT_B = "sha256:" + "2" * 64
 PATH_A = "problems/two-entity-fixture/contributions/a/README.md"
@@ -110,6 +111,114 @@ def raw_first_transition(base: dict[str, object]) -> dict[str, object]:
     }
 
 
+def raw_local_first_transition(base: dict[str, object]) -> dict[str, object]:
+    transition = raw_first_transition(base)
+    root = transition["contentOperations"][0]["value"]
+    root["intermediateResultIds"] = []
+    program = {
+        "id": "program/local",
+        "parentId": "root",
+        "title": "Restricted program",
+        "objective": "Resolve the restricted case.",
+        "currentStateSummary": "The finite restricted case is established.",
+        "localResidualSummary": "The unrestricted extension remains open.",
+        "status": "active",
+        "intermediateResultIds": ["result/restricted"],
+        "sourceTransactionIds": [TX_A],
+        "lineage": [],
+    }
+    result = transition["contentOperations"][1]["value"]
+    result["primaryProgramId"] = "program/local"
+    transition["contentOperations"] = [
+        transition["contentOperations"][0],
+        {
+            "entityKind": "program",
+            "entityId": "program/local",
+            "baseDigest": None,
+            "value": program,
+        },
+        transition["contentOperations"][1],
+    ]
+    transition["contribution"]["directProgramIds"] = ["program/local"]
+    transition["placementAudit"] = {
+        "basis": "local-objective",
+        "rationale": "The result concerns a durable restricted direction.",
+        "relatedProgramIds": ["program/local"],
+    }
+    return transition
+
+
+def raw_second_transition(base: dict[str, object]) -> dict[str, object]:
+    root = without_digest(base["programs"]["root"])
+    root.update(
+        {
+            "currentStateSummary": "The finite restricted case is strengthened.",
+            "localResidualSummary": "The unrestricted objective remains open.",
+            "sourceTransactionIds": [TX_B],
+        }
+    )
+    program = without_digest(base["programs"]["program/local"])
+    program.update(
+        {
+            "currentStateSummary": "The finite restricted case is strengthened.",
+            "sourceTransactionIds": [TX_B],
+        }
+    )
+    result = without_digest(base["intermediateResults"]["result/restricted"])
+    support = copy.deepcopy(result["support"])
+    support.pop("artifactRefs")
+    support["artifactPaths"] = [PATH_B]
+    support["methods"] = ["The second submission strengthens the reduction."]
+    result.update(
+        {
+            "statement": "The finite restricted case is established more sharply.",
+            "support": support,
+            "dependencyResultIds": [],
+            "claimRefs": [{"transactionId": TX_B, "claimKey": "claim-b"}],
+            "sourceTransactionIds": [TX_B],
+            "judgmentIds": [],
+            "supersededByResultIds": [],
+        }
+    )
+    return {
+        "schemaVersion": 1,
+        "subjectTransactionId": TX_B,
+        "baseStateDigest": base["stateDigest"],
+        "contentOperations": [
+            {
+                "entityKind": "program",
+                "entityId": "root",
+                "baseDigest": base["stateDigest"],
+                "value": root,
+            },
+            {
+                "entityKind": "program",
+                "entityId": "program/local",
+                "baseDigest": base["stateDigest"],
+                "value": program,
+            },
+            {
+                "entityKind": "intermediateResult",
+                "entityId": "result/restricted",
+                "baseDigest": base["stateDigest"],
+                "value": result,
+            },
+        ],
+        "topologyOperations": [],
+        "contribution": {
+            "claimKeys": ["claim-b"],
+            "directProgramIds": ["program/local"],
+            "intermediateResultIds": ["result/restricted"],
+        },
+        "placementAudit": {
+            "basis": "local-objective",
+            "rationale": "The strengthened result concerns the restricted direction.",
+            "relatedProgramIds": ["program/local"],
+        },
+        "topologyRationale": None,
+    }
+
+
 class Transport:
     def __init__(self, values: list[object]):
         self.values = list(values)
@@ -132,7 +241,7 @@ class ResearchBuilderV8Tests(unittest.TestCase):
         self.base = empty_research_program_state_v3("two-entity-fixture")
 
     def provider(self, transition: dict[str, object]) -> tuple[OpenRouterResearchBuilderV8Provider, Transport]:
-        transport = Transport([transition])
+        transport = Transport([copy.deepcopy(transition) for _ in range(3)])
         provider = OpenRouterResearchBuilderV8Provider(
             json.loads(SPEC.read_text(encoding="utf-8")), transport=transport
         )
@@ -186,6 +295,103 @@ class ResearchBuilderV8Tests(unittest.TestCase):
                 accepted_claims=accepted("claim-a"),
                 judgment_id=JUDGMENT_A,
                 evidence_file_refs={PATH_A: sha256_bytes(CONTENT_A)},
+            )
+
+    def test_provider_preserves_prior_additive_provenance(self) -> None:
+        first_provider, _ = self.provider(raw_local_first_transition(self.base))
+        first_transition = first_provider.run(
+            problem_id="two-entity-fixture",
+            subject_transaction_id=TX_A,
+            base_state=self.base,
+            accepted_claims=accepted("claim-a"),
+            judgment_id=JUDGMENT_A,
+            evidence_files=(
+                SubmissionEvidenceFile(PATH_A, sha256_bytes(CONTENT_A), CONTENT_A),
+            ),
+        )
+        first = apply_research_builder_v8_transition(
+            self.base,
+            first_transition,
+            accepted_claims=accepted("claim-a"),
+            judgment_id=JUDGMENT_A,
+            evidence_file_refs={PATH_A: sha256_bytes(CONTENT_A)},
+        )["postState"]
+
+        second_provider, _ = self.provider(raw_second_transition(first))
+        second_transition = second_provider.run(
+            problem_id="two-entity-fixture",
+            subject_transaction_id=TX_B,
+            base_state=first,
+            accepted_claims=accepted("claim-b"),
+            judgment_id=JUDGMENT_B,
+            evidence_files=(
+                SubmissionEvidenceFile(PATH_B, sha256_bytes(CONTENT_B), CONTENT_B),
+            ),
+        )
+        root = second_transition["contentOperations"][0]["value"]
+        program = second_transition["contentOperations"][1]["value"]
+        result = second_transition["contentOperations"][2]["value"]
+        self.assertEqual(root["sourceTransactionIds"], [TX_A, TX_B])
+        self.assertEqual(program["sourceTransactionIds"], [TX_A, TX_B])
+        self.assertEqual(result["sourceTransactionIds"], [TX_A, TX_B])
+        self.assertEqual(
+            result["claimRefs"],
+            [
+                {"transactionId": TX_A, "claimKey": "claim-a"},
+                {"transactionId": TX_B, "claimKey": "claim-b"},
+            ],
+        )
+        self.assertEqual(result["judgmentIds"], [JUDGMENT_A, JUDGMENT_B])
+        self.assertEqual(
+            result["support"]["artifactRefs"],
+            [
+                {"path": PATH_A, "digest": sha256_bytes(CONTENT_A)},
+                {"path": PATH_B, "digest": sha256_bytes(CONTENT_B)},
+            ],
+        )
+        apply_research_builder_v8_transition(
+            first,
+            second_transition,
+            accepted_claims=accepted("claim-b"),
+            judgment_id=JUDGMENT_B,
+            evidence_file_refs={PATH_B: sha256_bytes(CONTENT_B)},
+        )
+
+    def test_provider_still_rejects_invented_provenance(self) -> None:
+        first_provider, _ = self.provider(raw_local_first_transition(self.base))
+        first_transition = first_provider.run(
+            problem_id="two-entity-fixture",
+            subject_transaction_id=TX_A,
+            base_state=self.base,
+            accepted_claims=accepted("claim-a"),
+            judgment_id=JUDGMENT_A,
+            evidence_files=(
+                SubmissionEvidenceFile(PATH_A, sha256_bytes(CONTENT_A), CONTENT_A),
+            ),
+        )
+        first = apply_research_builder_v8_transition(
+            self.base,
+            first_transition,
+            accepted_claims=accepted("claim-a"),
+            judgment_id=JUDGMENT_A,
+            evidence_file_refs={PATH_A: sha256_bytes(CONTENT_A)},
+        )["postState"]
+        raw = raw_second_transition(first)
+        raw["contentOperations"][0]["value"]["sourceTransactionIds"] = [TX_B, TX_C]
+
+        second_provider, _ = self.provider(raw)
+        with self.assertRaisesRegex(MathFlowError, "only accepted sources"):
+            second_provider.run(
+                problem_id="two-entity-fixture",
+                subject_transaction_id=TX_B,
+                base_state=first,
+                accepted_claims=accepted("claim-b"),
+                judgment_id=JUDGMENT_B,
+                evidence_files=(
+                    SubmissionEvidenceFile(
+                        PATH_B, sha256_bytes(CONTENT_B), CONTENT_B
+                    ),
+                ),
             )
 
     def test_reducer_rejects_stale_existing_ancestor_summary(self) -> None:
