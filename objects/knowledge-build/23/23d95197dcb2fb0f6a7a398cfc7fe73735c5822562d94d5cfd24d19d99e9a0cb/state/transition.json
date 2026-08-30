@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+  "baseStateDigest": "sha256:f304ae66c58b0415964faf2ed4e4ae6de374faf44f25171c91dd079181d517f1",
+  "contentOperations": [
+    {
+      "entityKind": "program",
+      "entityId": "program-bssc-multiletter-marton-support-search",
+      "baseDigest": null,
+      "value": {
+        "id": "program-bssc-multiletter-marton-support-search",
+        "parentId": "root",
+        "title": "Multiletter Marton support search",
+        "objective": "Determine whether multiletter Marton coding can strictly improve the current half-skew BSSC achievable rate, and rigorously characterize the super-input support and auxiliary structure required by any such improvement.",
+        "currentStateSummary": "Conditional on the Geng–Jog–Nair–Wang theorem equating binary-input Marton private-message sum-rate with randomized time division, every finite two-letter Marton law for the half-skew BSSC whose super-input is supported on at most two symbols has sum-rate below 0.615 bits. Adjacent and antirepetition supports are bounded by cooperative BEC(1/2) converses, while repetition support is bounded by 0.614336840676774 bits through the conditional randomized-time-division reduction and a concavity/interval calculation. Relative to the supplied product randomized-time-division benchmark above 0.7232857688439092 bits, any strict two-letter improvement must therefore use at least three super-input symbols. No gain is excluded on three- or four-symbol support.",
+        "localResidualSummary": "Analyze three- and four-symbol super-input supports, including nonrectangular two-letter auxiliary structures, to determine whether a strict Marton gain exists. Independently verify or replace the assumed binary-input Marton-equals-randomized-time-division theorem and establish any numerical benchmark used beyond its status as supplied problem data.",
+        "status": "active",
+        "intermediateResultIds": [
+          "result-two-letter-marton-two-symbol-support-pruning"
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "intermediateResult",
+      "entityId": "result-two-letter-marton-two-symbol-support-pruning",
+      "baseDigest": null,
+      "value": {
+        "id": "result-two-letter-marton-two-symbol-support-pruning",
+        "primaryProgramId": "program-bssc-multiletter-marton-support-search",
+        "relatedProgramIds": [],
+        "title": "Conditional two-symbol support pruning for two-letter Marton laws",
+        "statement": "Conditional on the Geng–Jog–Nair–Wang theorem that Marton's private-message sum-rate equals randomized time division for every binary-input broadcast channel, every finite Marton law for the half-skew BSSC product channel P^{otimes 2} whose induced super-input X_1X_2 is supported on at most two of {00,01,10,11} has sum-rate strictly below 0.615 bits. The adjacent and antirepetition support classes admit cooperative BEC(1/2) upper bounds, and the repetition class is bounded by 0.614336840676774 bits using the assumed theorem and a concavity/interval calculation. Because the supplied product randomized-time-division benchmark exceeds 0.7232857688439092 bits, any strict two-letter Marton improvement over the current BSSC achievable rate must use at least three super-input symbols.",
+        "scopeQualifications": [
+          "The numerical product RTD benchmark is treated as supplied problem data; the execution attestation does not independently prove it.",
+          "The result only excludes supports of cardinality at most two and makes no assertion against gains using three- or four-symbol support.",
+          "Validity is conditional on the Geng–Jog–Nair–Wang theorem explicitly assumed in the claim."
+        ],
+        "support": {
+          "proofs": [
+            "The six unordered two-symbol supports split into four adjacent supports, the antirepetition support {01,10}, and the repetition support {00,11}; singleton supports convey no information.",
+            "For adjacent supports, one product coordinate is input independent and the varying coordinate's receiver outputs can be cooperatively coupled as a BEC(1/2), giving a one-half-bit upper bound. The antirepetition support has BEC(1/2) receiver marginals and admits the same cooperative upper bound.",
+            "On the repetition support, the assumed binary-input Marton theorem reduces the Marton sum-rate to randomized time division. Concavity and reflection symmetry reduce its value to a midpoint term plus half the maximum receiver-information difference, and a global tangent bound yields the accepted upper bound 0.614336840676774 bits.",
+            "Comparison with the supplied product randomized-time-division benchmark above 0.7232857688439092 bits gives the support-pruning consequence."
+          ],
+          "methods": [
+            "Exhaustive two-symbol support-orbit classification",
+            "Receiver-cooperation converse",
+            "Binary-input randomized-time-division reduction",
+            "Concavity, reflection symmetry, and tangent majorization",
+            "Directed interval arithmetic"
+          ],
+          "computations": [
+            "The submitted standard-library checker constructs the product receiver marginals with exact Fraction arithmetic, audits all six support classes, and uses 80-digit directed Decimal intervals to certify the repetition-support tangent bound strictly below 0.615. Its comparison with the product randomized-time-division benchmark treats that benchmark as supplied data."
+          ],
+          "tools": [
+            "The submitted Python standard-library verifier performs the exact support-orbit audit and directed-interval calculation without external packages."
+          ],
+          "attestationRefs": [],
+          "artifactRefs": [
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-two-symbol-pruning/README.md",
+              "digest": "sha256:9e1fbc8415ecf99f413316e55c130780277278267ef7710bf2a6fa721ad9678b"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-two-symbol-pruning/claims.json",
+              "digest": "sha256:bebd37a80c7d7aafcd0536eed61cfc98c83d89bacd4576463d137b3c02f4d648"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-two-symbol-pruning/verification.json",
+              "digest": "sha256:9764fcc6d169eaa82f04d483f6dec405c8df5eff3f9c94bcee3dd46a1ee40b69"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-two-symbol-pruning/verify.py",
+              "digest": "sha256:a4e7cdeddc4ebda93c474c7fbb7dd4ed3aabd95250a05a484ffe43dc99ae2b1d"
+            }
+          ]
+        },
+        "dependencyResultIds": [],
+        "claimRefs": [
+          {
+            "transactionId": "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-two-symbol-pruning"
+          }
+        ],
+        "sourceTransactionIds": [
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05"
+        ],
+        "judgmentIds": [
+          "sha256:b232b1f4661d06d1f0200e12f3425ded180f38c5d0cf06899d88c5108c145d0e"
+        ],
+        "status": "active",
+        "supersededByResultIds": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:eeee73a024c7abd97e55223803cf91c9f83b9e40f21e33a30ac24184695a1130",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "currentStateSummary": "Four complementary directions are established. Genuine deterministic finite-block private-message codes induce approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary witness obstructs the specified coarse entropy and finite copy-lemma route; fixed-cardinality auxiliaries and exact BSSC posterior consistency remain unresolved. The separately relaxed UV scalars tensorize, with receiver-skew symmetry giving B_br=B_avg and half-skew BSSC product values n(2h_2(1/4)-5/4), but these scalars do not establish capacity. Conditional on the exact encoded Gohari–Liu–Nair Theorem 9 premise, the private-message specialization yields C_sum≤inf_{G,K}B(G,K); compact receiver-curve approximation, finite-grid reduction, row-stability bounds, exact Q0 coercivity, and one fixed-pair weak-duality certificate conditionally giving C_sum≤0.369296945969202842443 are available, while premise authentication, unrelaxed convergence, receiver optimality, and matching achievability remain open. In the multiletter Marton direction, conditional on the assumed Geng–Jog–Nair–Wang binary-input theorem, every finite two-letter law supported on at most two super-input symbols has sum-rate below 0.615 bits: adjacent and antirepetition supports have cooperative BEC(1/2) converses, and repetition support is bounded by 0.614336840676774 bits. Against the supplied product randomized-time-division benchmark above 0.7232857688439092 bits, any strict two-letter improvement must use at least three symbols; three- and four-symbol gains are not excluded. The canonical capacity problem remains unresolved.",
+        "localResidualSummary": "Authenticate or independently prove the external converse premises. Convert compact receiver-curve approximation and relaxed-row stability into an unrelaxed converse limit by controlling active rate-free constraints, boundary behavior, and near-optimal feasibility margins; strengthen receiver coercivity and assess optimality of the certified fixed pair. Derive exact binary-BSSC posterior and multiletter constraints for genuine code-induced laws while retaining coupling absent from the additive relaxed UV scalars. In the achievability direction, analyze three- and four-symbol two-letter Marton laws and independently justify any theorem or numerical benchmark used. Exact capacity still requires closing the converse gap and supplying a matching achievable rate.",
+        "status": "active",
+        "intermediateResultIds": [],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "lineage": []
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/two-letter-marton-two-symbol-pruning"
+    ],
+    "directProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ],
+    "intermediateResultIds": [
+      "result-two-letter-marton-two-symbol-support-pruning"
+    ]
+  },
+  "placementAudit": {
+    "rationale": "The accepted claim is an independently reusable support-pruning theorem for multiletter Marton achievability, not a refinement of the existing code-induced, relaxed-UV, or Theorem-9/GK converse objectives. It therefore creates a dedicated leaf program under the canonical root. The new result is linked reciprocally only to that program, and the root synthesis and residual work are updated to incorporate the conditional pruning result and its unresolved three- and four-symbol search space.",
+    "basis": "local-objective",
+    "relatedProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ]
+  },
+  "topologyRationale": null
+}
