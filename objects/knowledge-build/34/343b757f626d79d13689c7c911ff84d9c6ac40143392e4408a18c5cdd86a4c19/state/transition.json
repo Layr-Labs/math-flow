@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+  "baseStateDigest": "sha256:72c9b2bb6a2357a239937b1d24a1231d01ae31f42be4e133f5ca541bbe8ccbcd",
+  "contentOperations": [
+    {
+      "entityKind": "intermediateResult",
+      "entityId": "result-two-letter-marton-full-support-necessity",
+      "baseDigest": null,
+      "value": {
+        "id": "result-two-letter-marton-full-support-necessity",
+        "primaryProgramId": "program-bssc-multiletter-marton-support-search",
+        "relatedProgramIds": [],
+        "title": "Full-support necessity and mass floors for two-letter Marton improvement",
+        "statement": "For the half-skew BSSC product channel P^{⊗2}, every finite Marton law whose induced super-input S=X_1X_2 is supported on at most three symbols of {00,01,10,11} has unnormalized two-letter Marton sum value M<0.695 bits. A fair one-letter randomized-time-division schedule with reflected conditional input priors 1/6 and 5/6, repeated independently twice, has exact unnormalized value B_{1/6}=2h_2(1/4)+h_2(1/12)-h_2(5/12)-1/3=0.723171009237413…>0.7231 bits. Consequently, every finite two-letter Marton witness whose value strictly exceeds twice the optimal one-letter randomized-time-division value must have full super-input support and must satisfy P_S(00),P_S(11)>1/180 and P_S(01),P_S(10)>1/325.",
+        "scopeQualifications": [
+          "The result concerns the unnormalized two-letter Marton functional for the half-skew BSSC product channel and finite Marton laws.",
+          "It is a support-pruning theorem only; it does not prove that full-support Marton laws cannot yield a gain.",
+          "It is not a converse for unrestricted broadcast coding and does not determine unrestricted sum capacity.",
+          "The numerical attestation supports the finite algebraic and numerical inequalities; the universal Marton reduction, product-channel chain identity, calculus support lines, and concavity arguments are established in the written proof."
+        ],
+        "support": {
+          "proofs": [
+            "A universal reduction bounds the Marton value by M≤G(P_S)+2r, where G(P_S)=[I(S;Y^2)+I(S;Z^2)]/2 and r=h_2(1/4)-3/4.",
+            "The four three-symbol faces split under coordinate transposition and receiver-skew reflection into two symmetry orbits. Concavity and symmetry reduce each orbit to one scalar family; exact calculus gives the missing-endpoint maximum and a rational tangent bounds the missing-mixed-symbol family, yielding M<0.695 on every face.",
+            "A finite fair randomized-time-division construction with reflected priors 1/6 and 5/6, repeated independently across two uses, evaluates exactly to B_{1/6}=2h_2(1/4)+h_2(1/12)-h_2(5/12)-1/3.",
+            "For each super-input symbol x, indicator decomposition gives G(P_S)≤h_2(P_S(x))+(1-P_S(x))G(P_S|S≠x). Combining this with the certified face bounds and monotonicity proves the strict mass floors for every witness exceeding the optimal repeated one-letter RTD benchmark."
+          ],
+          "methods": [
+            "Csiszár identity and data-processing reduction of the Marton functional",
+            "Product-channel mutual-information chain identity",
+            "BSSC receiver-skew reflection and coordinate-transposition symmetry",
+            "Concavity, one-variable calculus, and rational tangent majorization",
+            "Indicator decomposition and monotone mass-floor comparison",
+            "Directed high-precision interval arithmetic with exact rational channel construction"
+          ],
+          "computations": [
+            "The standard-library checker constructs both product-channel receiver marginals in exact Fraction arithmetic, verifies the two face orbits and channel symmetries, audits the affine output laws, and uses outward-rounded 80-digit Decimal intervals to certify both face bounds, B_{1/6}>0.7231, and the strict mass-floor separations."
+          ],
+          "tools": [
+            "The submitted Python standard-library verifier performs the exact finite algebraic audit and directed-interval numerical certification without external packages."
+          ],
+          "attestationRefs": [],
+          "artifactRefs": [
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-full-support-necessity/README.md",
+              "digest": "sha256:30d12e5f3cb5734207bd2c303528bd247cfc2250e5ab9aabc0e37cf3922bfebd"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-full-support-necessity/claims.json",
+              "digest": "sha256:757f809dc72142f4b6372c6b764ac553ae290d182c5b40abdca06c8aa85c0522"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-full-support-necessity/verification.json",
+              "digest": "sha256:9764fcc6d169eaa82f04d483f6dec405c8df5eff3f9c94bcee3dd46a1ee40b69"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-marton-full-support-necessity/verify.py",
+              "digest": "sha256:0df12b3c036fdf29b8c364f0d1c7e0286c2b7d861859a4feb249143a602ec538"
+            }
+          ]
+        },
+        "dependencyResultIds": [],
+        "claimRefs": [
+          {
+            "transactionId": "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+            "claimKey": "bssc-sum-capacity/two-letter-marton-full-support-necessity"
+          }
+        ],
+        "sourceTransactionIds": [
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58"
+        ],
+        "judgmentIds": [
+          "sha256:571e072efaeb33eb2f5e43a785cda31e611b2a1d4f2c82c7ada68d329c8f41a8"
+        ],
+        "status": "active",
+        "supersededByResultIds": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "program-bssc-multiletter-marton-support-search",
+      "baseDigest": "sha256:20ee63fade3a2acadfaa63644e0855ceb59cfe240bdd7ada71449e8d6d5d5c20",
+      "value": {
+        "id": "program-bssc-multiletter-marton-support-search",
+        "parentId": "root",
+        "title": "Multiletter Marton support search",
+        "objective": "Determine whether multiletter Marton coding can strictly improve the current half-skew BSSC achievable rate, and rigorously characterize the super-input support and auxiliary structure required by any such improvement.",
+        "currentStateSummary": "The finite-auxiliary multiletter Marton sequence has an unconditional foundation: 0≤M_n^fin(P)≤2n, it is superadditive, its normalized values converge to their supremum by Fekete's lemma, and independent repetition of a selected law scales its value exactly. The BSSC randomized-time-division value L_RTD has an exact closed form and directed strict decimal certificates for L_RTD and 2L_RTD. Capacity lower bounds from M_n^fin(P)/n require the explicit hypothesis (H-Marton), while M_1^fin(P)=L_RTD requires the separate hypothesis (H-binary); no fixed-blocklength equality is a capacity converse. Structural filters now show that conditional-product Marton laws are additive on finite receiver-skew channels and that every arbitrary finite two-letter gaining law must pass all four constant-padding correlation tests. Unconditionally, every finite two-letter law supported on at most three super-input symbols has value below 0.695 bits, whereas an explicit independently repeated rational RTD schedule has value B_{1/6}=0.723171009237413…>0.7231. Thus any witness strictly improving on twice the optimal one-letter RTD value must use all four symbols, with masses above 1/180 on 00 and 11 and above 1/325 on 01 and 10. The earlier conditional two-symbol result retains its sharper class-specific bounds, but three-symbol supports are now excluded without that premise. Whether any full-support, genuinely conditionally coupled law can gain remains open.",
+        "localResidualSummary": "Restrict the two-letter search to full-support finite Marton laws with P_S(00),P_S(11)>1/180 and P_S(01),P_S(10)>1/325, genuinely nonfactorizable cross-use dependence, and satisfaction of all four padding-correlation tests, retaining the crossed tests separately. Seek stronger interior pruning or construct a certified law with value above 2L_RTD; the explicit B_{1/6} witness is only an internal lower comparator and is below the certified optimum repeated-RTD threshold. Independently authenticate or prove (H-Marton) and (H-binary), investigate finite-auxiliary cardinality control and possible extensions beyond finite auxiliaries, and keep superadditivity distinct from additivity and fixed-blocklength optimization distinct from a capacity converse.",
+        "status": "active",
+        "intermediateResultIds": [
+          "result-conditional-product-marton-additivity-correlation-ledger",
+          "result-finite-auxiliary-marton-multiletter-foundation",
+          "result-two-letter-marton-two-symbol-support-pruning",
+          "result-two-letter-padding-correlation-tests",
+          "result-two-letter-marton-full-support-necessity"
+        ],
+        "sourceTransactionIds": [
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:96a24c6068c3c1bb7347dbf4a08a22a9bd972e6120e32ecd2d4946a67747d1b4",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "currentStateSummary": "Four complementary directions are established. Genuine deterministic finite-block private-message codes induce approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary witness obstructs the specified coarse entropy and finite copy-lemma route; fixed-cardinality auxiliaries and exact BSSC posterior consistency remain unresolved. The separately relaxed UV scalars tensorize, with receiver-skew symmetry giving equality of the branchwise and averaged scalars and half-skew BSSC product values n(2h_2(1/4)-5/4), but these scalars do not establish capacity. Conditional on the exact encoded Gohari–Liu–Nair Theorem 9 premise, the private-message specialization yields C_sum≤inf_{G,K}B(G,K); compact receiver-curve approximation, finite-grid reduction, row-stability bounds, exact Q0 coercivity, and one fixed-pair weak-duality certificate conditionally giving C_sum≤0.369296945969202842443 are available, while premise authentication, unrelaxed convergence, receiver optimality, and matching achievability remain open. In the Marton direction, the finite-auxiliary quantities M_n^fin(P) are unconditionally bounded and superadditive, have the Fekete normalized limit, and scale exactly under repetition of a selected law. The exact randomized-time-division value and strict directed intervals for L_RTD and 2L_RTD are certified. Capacity lower bounds from M_n^fin(P), and identification of M_1^fin(P) with L_RTD, require separate explicit hypotheses; no fixed-n equality is a capacity converse. Conditional-product architectures are additive and all arbitrary finite two-letter laws must pass four necessary padding-correlation tests to gain. A new unconditional face theorem excludes every two-letter super-input support of size at most three by proving value below 0.695, while an explicit repeated rational RTD schedule exceeds 0.7231. Hence every witness improving on twice the optimal one-letter RTD value must have full support, with masses above 1/180 on 00 and 11 and above 1/325 on 01 and 10. Full-support, conditionally coupled laws satisfying these constraints remain unresolved.",
+        "localResidualSummary": "Authenticate or independently prove the external converse and achievability premises. Convert compact receiver-curve approximation and relaxed-row stability into an unrelaxed converse limit by controlling active rate-free constraints, boundary behavior, and near-optimal feasibility margins; strengthen receiver coercivity and assess optimality of the certified fixed pair. Derive exact binary-BSSC posterior and multiletter constraints for genuine code-induced laws while retaining coupling absent from the additive relaxed UV scalars. In the achievability direction, restrict the two-letter search to genuinely nonfactorizable full-support Marton laws satisfying the certified mass floors and all four padding-correlation tests, and compare candidates rigorously against 2L_RTD rather than the weaker explicit rational comparator. Clarify finite-auxiliary cardinality scope and never infer a capacity converse from a fixed blocklength. Exact capacity still requires closing the converse gap and supplying a matching achievable rate.",
+        "status": "active",
+        "intermediateResultIds": [],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+          "33a5944dca980bf94cc869c6c7dee2d04385ff58",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "88a1004f309460f3ec1cacdae88d30f88559f9bc",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "lineage": []
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/two-letter-marton-full-support-necessity"
+    ],
+    "directProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ],
+    "intermediateResultIds": [
+      "result-two-letter-marton-full-support-necessity"
+    ]
+  },
+  "placementAudit": {
+    "rationale": "The accepted claim is an independently reusable structural pruning theorem for the two-letter Marton search: it excludes all proper super-input faces and supplies quantitative interior constraints for any improving witness. It therefore belongs in the existing multiletter Marton support-search program, with reciprocal result linkage and holistic updates to that program and its root ancestor. No new durable objective or reorganization is needed.",
+    "basis": "local-objective",
+    "relatedProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ]
+  },
+  "topologyRationale": null
+}
