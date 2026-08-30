@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "subjectTransactionId": "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+  "baseStateDigest": "sha256:caf85dc5201dd1c3a95027c1d9dd03d3be9e483b348fd9fe708c43d1f5562678",
+  "contentOperations": [
+    {
+      "entityKind": "intermediateResult",
+      "entityId": "result-two-letter-padding-correlation-tests",
+      "baseDigest": null,
+      "value": {
+        "id": "result-two-letter-padding-correlation-tests",
+        "primaryProgramId": "program-bssc-multiletter-marton-support-search",
+        "relatedProgramIds": [],
+        "title": "Four padding-correlation tests for two-letter Marton gain",
+        "statement": "Let T be a finite receiver-skew two-receiver broadcast channel, let M_T be its one-letter private-message Marton supremum, and consider any finite two-letter Marton law P(W,U,V,X_1,X_2) driving T^{otimes 2}, without assuming tuple or product structure for U and V. Define A_1=I(Y_2;Y_1,U|W), A_2=I(Y_1;Y_2,U|W), B_1=I(Z_2;Z_1,V|W), B_2=I(Z_1;Z_2,V|W), D=I(U;V|W), and C=[I(Y_1;Y_2|W)+I(Y_1;Y_2)+I(Z_1;Z_2|W)+I(Z_1;Z_2)]/2. If the law's two-letter Marton value is strictly greater than 2M_T, then A_a+B_b>C+1{a!=b}D for every (a,b) in {1,2}^2. Thus failure of any one inequality rules out a strict gain. Adding the two crossed tests also gives the necessary condition I(Y_1;Y_2|W)+I(Z_1;Z_2|W)-I(Y_1;Y_2)-I(Z_1;Z_2)+I(U;Y_2|Y_1,W)+I(U;Y_1|Y_2,W)+I(V;Z_2|Z_1,W)+I(V;Z_1|Z_2,W)>2I(U;V|W). Constant padding makes the four tests applicable to every abstract finite two-letter auxiliary law, including for the half-skew BSSC, but the tests are necessary only.",
+        "scopeQualifications": [
+          "Numerical checker attestations are corroborative only; the universal conclusion rests on the analytic entropy identities.",
+          "The inequalities are necessary only; they do not prove additivity, exhibit a gaining law, establish sufficiency, or determine capacity.",
+          "The result concerns finite receiver-skew broadcast channels and finite auxiliary alphabets.",
+          "The summed crossed condition is weaker than retaining the two crossed inequalities separately."
+        ],
+        "support": {
+          "proofs": [
+            "For each a in {1,2}, represent U as a two-coordinate packet by placing U in coordinate a and a constant in the other coordinate; independently do the same for V in coordinate b. These are four valid tuple decompositions of the same abstract law.",
+            "Specializing the dependency result's exact decomposition-relative residual to each constant-padding pair gives the residual A_a+B_b-1{a!=b}D-C. A two-letter Marton value strictly above 2M_T forces each such residual to be strictly positive.",
+            "Adding the two crossed inequalities and applying mutual-information chain rules yields the displayed combined necessary condition."
+          ],
+          "methods": [
+            "Constant-padding tuple representations",
+            "Exact total-correlation residual specialization",
+            "Entropy expansion and mutual-information chain rules",
+            "Receiver-skew midpoint comparison"
+          ],
+          "computations": [
+            "The submitted deterministic checker constructs a correlated rational law, passes it through exact half-skew BSSC product marginals, evaluates all four padding residuals in two independent forms, and checks the crossed-test chain-rule identity. These computations corroborate but do not establish the universal claim."
+          ],
+          "tools": [
+            "The submitted Python standard-library checker performs finite-alphabet numerical corroboration of the four residual identities and the combined crossed condition."
+          ],
+          "attestationRefs": [],
+          "artifactRefs": [
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-padding-correlation-tests/README.md",
+              "digest": "sha256:6f23cea84ff7605de4a13653f471fc7e8af723d8a4a162afa3cefecfc9b24b3e"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-padding-correlation-tests/claims.json",
+              "digest": "sha256:2e9a8a2e2c66aeae6a1c7246e2c053a1190ed41a551c829e4c276123a6b88eca"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-padding-correlation-tests/verification.json",
+              "digest": "sha256:81b26b524a4a997f55ec6e7548959958607ad70a72031b64cf01463a2e891b8c"
+            },
+            {
+              "path": "problems/bssc-sum-capacity/contributions/two-letter-padding-correlation-tests/verify_padding_tests.py",
+              "digest": "sha256:29f28038e06506636c154c69ec04458783986832dc038ab72a200cd7976a541a"
+            }
+          ]
+        },
+        "dependencyResultIds": [
+          "result-conditional-product-marton-additivity-correlation-ledger"
+        ],
+        "claimRefs": [
+          {
+            "transactionId": "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+            "claimKey": "bssc-sum-capacity/two-letter-padding-correlation-tests"
+          }
+        ],
+        "sourceTransactionIds": [
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ],
+        "judgmentIds": [
+          "sha256:ba0c9b4179bf97fe8ad6aafb6c6ddf8b1b1f6d90c161f29bf6e2a63af03e4b60"
+        ],
+        "status": "active",
+        "supersededByResultIds": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "program-bssc-multiletter-marton-support-search",
+      "baseDigest": "sha256:0165b4eb5fa0f2874b8ba3c8b59771ac55ba3333f43ec9767159cb3e663c3fab",
+      "value": {
+        "id": "program-bssc-multiletter-marton-support-search",
+        "parentId": "root",
+        "title": "Multiletter Marton support search",
+        "objective": "Determine whether multiletter Marton coding can strictly improve the current half-skew BSSC achievable rate, and rigorously characterize the super-input support and auxiliary structure required by any such improvement.",
+        "currentStateSummary": "Three structural filters now constrain the multiletter Marton search. Conditional on the Geng-Jog-Nair-Wang theorem equating binary-input Marton private-message sum-rate with randomized time division, every finite two-letter half-skew BSSC law supported on at most two super-input symbols has sum-rate below 0.615 bits; relative to the supplied product randomized-time-division benchmark, any strict improvement must use at least three symbols. Independently, for every finite receiver-skew channel T, Marton's supremum over coordinate packets conditionally independent given W is exactly additive, so any strict half-skew BSSC gain must be genuinely nonfactorizable under every applicable exact packet decomposition. The exact decomposition-relative correlation ledger now also yields four constant-padding tests for every arbitrary finite two-letter auxiliary law, without an a priori tuple assumption: a value above 2M_T forces A_a+B_b>C+1{a!=b}I(U;V|W) for all four padding choices. Failure of any test excludes gain, while the summed crossed condition is weaker than retaining its two constituent tests. All these correlation conditions are necessary only. Three- and four-symbol, conditionally coupled laws passing the four tests remain open, as do unrestricted Marton additivity, binary-input tightness, and exact capacity.",
+        "localResidualSummary": "Analyze three- and four-symbol super-input supports with genuinely nonfactorizable cross-use satellite and input dependence. Any candidate strict-gain law must pass all four padding-correlation inequalities, not merely their weaker summed crossed consequence; seek sharper consequences, effective optimization constraints, or explicit candidates satisfying them. Apply other decomposition-relative ledgers where useful, and independently verify or replace the assumed binary-input Marton theorem and supplied numerical benchmark. Restricted conditional-product additivity and these necessary filters must remain distinguished from unrestricted Marton additivity and any capacity conclusion.",
+        "status": "active",
+        "intermediateResultIds": [
+          "result-conditional-product-marton-additivity-correlation-ledger",
+          "result-two-letter-marton-two-symbol-support-pruning",
+          "result-two-letter-padding-correlation-tests"
+        ],
+        "sourceTransactionIds": [
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb"
+        ],
+        "lineage": []
+      }
+    },
+    {
+      "entityKind": "program",
+      "entityId": "root",
+      "baseDigest": "sha256:368200802fc8b766d7dd0dd9c09a3d32116a7fc0d235a0fa2a2ce21ef8f35665",
+      "value": {
+        "id": "root",
+        "parentId": null,
+        "title": "Canonical problem",
+        "objective": "Resolve the canonical problem.",
+        "currentStateSummary": "Four complementary directions are established. Genuine deterministic finite-block private-message codes induce approximate dependence balance, a fixed encoder-coordinate map, and four compatible rate rows, while an explicit nonbinary witness obstructs the specified coarse entropy and finite copy-lemma route; fixed-cardinality auxiliaries and exact BSSC posterior consistency remain unresolved. The separately relaxed UV scalars tensorize, with receiver-skew symmetry giving equality of the branchwise and averaged scalars and half-skew BSSC product values n(2h_2(1/4)-5/4), but these scalars do not establish capacity. Conditional on the exact encoded Gohari-Liu-Nair Theorem 9 premise, the private-message specialization yields C_sum<=inf_{G,K}B(G,K); compact receiver-curve approximation, finite-grid reduction, row-stability bounds, exact Q0 coercivity, and one fixed-pair weak-duality certificate conditionally giving C_sum<=0.369296945969202842443 are available, while premise authentication, unrelaxed convergence, receiver optimality, and matching achievability remain open. In the multiletter Marton direction, conditional on the assumed Geng-Jog-Nair-Wang binary-input theorem, all two-letter laws supported on at most two super-input symbols are excluded from improving the supplied benchmark. Conditional-product Marton architectures are exactly additive on finite receiver-skew channels, and arbitrary tuple decompositions obey an exact but noncanonical total-correlation ledger. By applying that ledger to four constant paddings, every arbitrary finite two-letter auxiliary law with value above 2M_T must satisfy four explicit strict correlation inequalities, without an a priori tuple assumption; failure of any one excludes gain, while their summed crossed consequence is weaker. These tests are necessary only. Three- and four-symbol conditionally coupled laws passing them remain unexcluded, and no restricted additivity or pruning result establishes unrestricted Marton additivity, a capacity bound, or exact BSSC capacity.",
+        "localResidualSummary": "Authenticate or independently prove the external converse premises. Convert compact receiver-curve approximation and relaxed-row stability into an unrelaxed converse limit by controlling active rate-free constraints, boundary behavior, and near-optimal feasibility margins; strengthen receiver coercivity and assess optimality of the certified fixed pair. Derive exact binary-BSSC posterior and multiletter constraints for genuine code-induced laws while retaining coupling absent from the additive relaxed UV scalars. In the achievability direction, analyze three- and four-symbol, conditionally nonfactorizable two-letter Marton laws that pass all four padding-correlation tests, retain the two crossed tests separately when stronger than their sum, and independently justify every theorem or numerical benchmark used. Exact capacity still requires closing the converse gap and supplying a matching achievable rate.",
+        "status": "active",
+        "intermediateResultIds": [],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "1be513bb3d8f67f54e299ea0085cd2ef05144711",
+          "5ed3f525b9ae7f32c6e1dcbf22ecdb5ae946a4a6",
+          "b4f10336d43f1c31a11ecbc5f4eb94f1fca70e05",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "d2506be78c46f1799e9b54cfcb6eee17b984f0f1",
+          "e2bbc1e210e496b3c834e658820fc90287f3b2c0",
+          "e3c1036ca607539a5ebcddf3058e6014ac5c1cd9",
+          "eb2d5550bc7af1f971c00c8246e4f951634c1ecb",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "lineage": []
+      }
+    }
+  ],
+  "topologyOperations": [],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/two-letter-padding-correlation-tests"
+    ],
+    "directProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ],
+    "intermediateResultIds": [
+      "result-two-letter-padding-correlation-tests"
+    ]
+  },
+  "placementAudit": {
+    "rationale": "The accepted claim is an independently reusable necessary filter for arbitrary finite two-letter Marton candidates and therefore belongs in the existing multiletter Marton support-search program. It is recorded as a distinct result rather than folded into the general decomposition-relative ledger because downstream searches can cite and test the four canonical padding inequalities directly. The local program and root summaries are updated to incorporate the new filter and its necessary-only qualifications; no hierarchy change is warranted.",
+    "basis": "local-objective",
+    "relatedProgramIds": [
+      "program-bssc-multiletter-marton-support-search"
+    ]
+  },
+  "topologyRationale": null
+}
