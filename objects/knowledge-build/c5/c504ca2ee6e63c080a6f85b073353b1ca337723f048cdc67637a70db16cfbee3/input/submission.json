@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+  "ledgerOrdinal": 4,
+  "judgmentId": "sha256:2c29fd881dec9aa923aa0713acc56df2c05d02f30ac544213f720af9158b7a41",
+  "acceptedClaims": [
+    {
+      "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity",
+      "declaredStatement": "This contribution independently ports and rechecks the two accepted Yukon\nartifacts `upper-uv-additivity` and `frontier-uv-branchwise`.  They form one\ndependency-ordered theorem chain for the two separately relaxed UV sum-rate\nrows.\n\nFor a finite-alphabet discrete memoryless broadcast channel \\(W\\), write\n\n\\[\nt_W(p)=I_p(X;Y)-I_p(X;Z)\n\\]\n\nand let \\(\\mathfrak C\\) denote the upper concave envelope on the input\nsimplex.  Define\n\n\\[\nA_W(p)=I_p(X;Y)+\\mathfrak C[-t_W](p),\n\\qquad\nD_W(p)=I_p(X;Z)+\\mathfrak C[t_W](p),\n\\]\n\n\\[\nB_{\\rm avg}(W)=\\sup_p\\frac{A_W(p)+D_W(p)}2,\n\\qquad\nB_{\\rm br}(W)=\\sup_p\\min\\{A_W(p),D_W(p)\\}.\n\\]\n\nThe checked claims are:\n\n1. For arbitrary finite-alphabet DMBCs,\n   \\[\n   B_{\\rm avg}(W_1\\times W_2)\n   =B_{\\rm avg}(W_1)+B_{\\rm avg}(W_2).\n   \\]\n   The product-channel prior may be correlated and the envelope auxiliary may\n   be joint across factors.\n2. If an involutive input relabeling exchanges the two receivers, then\n   \\[\n   B_{\\rm br}(W)=B_{\\rm avg}(W),\n   \\]\n   and the optimum may be restricted to invariant input laws.\n3. Finite products preserve this receiver-skew symmetry, so both scalar\n   functionals are exactly additive on arbitrary finite products of such\n   channels.\n4. For the half-skew BSSC \\(P\\), the unique invariant binary prior is the fair\n   prior.  Combining the theorem with the sharp BSSC posterior support already\n   represented by canonical transaction\n   `c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6` gives\n   \\[\n   B_{\\rm br}(P^{\\times n})=B_{\\rm avg}(P^{\\times n})\n   =n\\left(2h_2(1/4)-\\frac54\\right)\n   \\]\n   for every finite \\(n\\ge1\\).  Numerically, the normalized value is\n   \\(0.3725562489182657\\ldots\\) bits per channel use.\n\nThe last value is a valid but non-frontier UV converse.  It is weaker than the\ncurrent certified full-Theorem-9 capacity upper bound\n\\(0.369296945969202842443\\), so this contribution does not move either endpoint\nof the governed capacity interval.\n\nThis is an ordinary unregistered contribution.  The UV program lies outside\nthe registered `yukon-auxiliary-converse-port` scope, and this contribution\ndoes not claim to advance or complete that direction.",
+      "validitySummary": "The supplied argument establishes the full dependency-ordered claim. It proves exact additivity of B_avg for arbitrary finite-alphabet DMBC products even with correlated product-channel inputs and joint envelope auxiliaries; proves under receiver-exchanging involutive input symmetry that B_br=B_avg and that optimization may be restricted to invariant laws; extends both conclusions to finite products; and, using the declared BSSC support result, derives B_br(P^n)=B_avg(P^n)=n(2h_2(1/4)-5/4), with normalized value 0.3725562489182657… bits per use.",
+      "scopeQualifications": [
+        "No objective execution attestations were supplied; scripts and hash statements are merely corroborative, while the theorem is supported by the analytic proof.",
+        "The declared reference is required only for the sharp one-letter BSSC posterior-support inequality and equality-achieving posterior mixture used in the BSSC specialization; the general product-additivity and symmetry arguments are established internally.",
+        "The resulting UV converse value is non-frontier because it exceeds an already governed stronger benchmark.",
+        "The separate assertion that 0.369296945969202842443 is a certified full-Theorem-9 bound lacks terminal attestation in the packet; this contextual certification claim is not used as a premise and does not affect validity."
+      ],
+      "evidenceTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ],
+      "dependencyTransactionIds": [
+        "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+      ]
+    }
+  ],
+  "evidenceManifestDigest": "sha256:a69dd143a2ee1a361b1bd65561e79ac9402b0fd71033213b1df43652f6d7150b",
+  "submissionInputDigest": "sha256:aaba936d4464a38daec8176133e33183259c39dc142a73f47bd8c6eda1a3bd26"
+}
