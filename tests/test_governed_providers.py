@@ -17,6 +17,7 @@ from math_flow.governed_providers import (
     OpenRouterWorkProjectionProvider,
     OpenRouterWorkProjectionProviderV2,
     _builder_transition_schema,
+    _builder_transition_schema_v9,
     _primitive_patch_schema,
     _safe_facts_schema,
     _validate_primitive_patch_response,
@@ -147,6 +148,7 @@ class GovernedProviderTests(unittest.TestCase):
             _safe_facts_schema(),
             _primitive_patch_schema(),
             _builder_transition_schema(),
+            _builder_transition_schema_v9(),
         ):
             _assert_openai_strict_schema(schema)
 
@@ -1058,6 +1060,9 @@ class GovernedProviderTests(unittest.TestCase):
         validity_complete_admission = (
             ROOT / "protocol/projections/openrouter-research-v6.json"
         )
+        progressive_context_admission = (
+            ROOT / "protocol/projections/openrouter-research-v7.json"
+        )
         registry = validate_projection_registry(ROOT)
         self.assertEqual(
             registry,
@@ -1067,13 +1072,15 @@ class GovernedProviderTests(unittest.TestCase):
                 + int(overlay_admission.exists())
                 + int(v2_overlay_admission.exists())
                 + int(two_entity_admission.exists())
-                + int(validity_complete_admission.exists()),
+                + int(validity_complete_admission.exists())
+                + int(progressive_context_admission.exists()),
                 "active": 2
                 + int(serial_admission.exists())
                 + int(overlay_admission.exists())
                 + int(v2_overlay_admission.exists())
                 + int(two_entity_admission.exists())
-                + int(validity_complete_admission.exists()),
+                + int(validity_complete_admission.exists())
+                + int(progressive_context_admission.exists()),
             },
         )
         registered = "\n".join(
@@ -1106,6 +1113,17 @@ class GovernedProviderTests(unittest.TestCase):
             self.assertIn("openrouter-research-v6", registered)
         else:
             self.assertNotIn("openrouter-research-v6", registered)
+        if progressive_context_admission.exists():
+            self.assertEqual(
+                progressive_context_admission.read_bytes(),
+                (
+                    ROOT
+                    / "protocol/runtime/openrouter-research-v7-projection.json"
+                ).read_bytes(),
+            )
+            self.assertIn("openrouter-research-v7", registered)
+        else:
+            self.assertNotIn("openrouter-research-v7", registered)
         if v2_overlay_admission.exists():
             self.assertEqual(
                 v2_overlay_admission.read_bytes(),

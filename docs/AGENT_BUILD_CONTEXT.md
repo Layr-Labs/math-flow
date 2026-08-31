@@ -284,6 +284,17 @@ alignment, and emits an exact same-world accounting handoff. Its judge/profile
 identities are not used by any registered projection and no active workflow or
 projection uses them; activation remains a separate governed change.
 
+The inactive Builder V9 experiment preserves the two-entity state-v3 model but
+replaces Builder V8's complete provider-visible predecessor with a digest-bound
+progressive context: every program and result core remains visible, while full
+support is loaded only for results selected by the current submission's declared
+dependencies and recursive result-dependency closure. Provider-authored
+`supportAdditions` are merged into the complete trusted predecessor so omitted
+support cannot be deleted. The context is stored and re-derived during replay.
+Its candidate `openrouter-research-v7` lane and dedicated serial workflow remain
+inactive until separate governed projection admission. See
+`docs/BSSC_RESEARCH_V7_CONTEXT_EXPERIMENT.md`.
+
 Cross-program claims belong at root or another genuinely shared active scope.
 Do not duplicate a mathematical node merely because multiple programs depend on
 it. A dispute follows the claim it disputes. Taxonomy changes must never be based
@@ -852,6 +863,9 @@ upgrade path.
 - `docs/BSSC_RESEARCH_V4_SERIAL_PRODUCER.md` — exact historical validity-v4
   frontier, one-submission builder-v6 production, recovery, and activation
   boundary for the BSSC K0-to-K16 chain.
+- `docs/BSSC_RESEARCH_V7_CONTEXT_EXPERIMENT.md` — inactive Builder V9
+  progressive-context contract, provider-free BSSC measurements, serial route,
+  and stop conditions.
 - `docs/WORK_PROJECTION_V2.md` — inactive A-first work-accounting profile,
   frozen-live-state boundary, epistemic policy, and retry-isolation contract.
 - `docs/MVP.md` — architecture, phased roadmap, and deferred decisions.

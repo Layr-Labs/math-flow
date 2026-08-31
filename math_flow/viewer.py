@@ -32,11 +32,13 @@ HIERARCHICAL_RESEARCH_OUTPUT_PROFILES = {
     "math-flow/hierarchical-research-v6",
     "math-flow/hierarchical-research-v7",
     "math-flow/hierarchical-research-v8",
+    "math-flow/hierarchical-research-v9",
 }
 
 TWO_ENTITY_RESEARCH_OUTPUT_PROFILES = {
     "math-flow/hierarchical-research-v7",
     "math-flow/hierarchical-research-v8",
+    "math-flow/hierarchical-research-v9",
 }
 TWO_ENTITY_SEMANTIC_PROFILE = "programs-and-intermediate-results-v1"
 
