@@ -31,6 +31,7 @@ from .governed_providers import (
     OpenRouterResearchBuilderV6Provider,
     OpenRouterResearchBuilderV7Provider,
     OpenRouterResearchBuilderV8Provider,
+    OpenRouterResearchBuilderV9Provider,
 )
 from .research_builder_v6 import (
     apply_research_builder_v6_transition,
@@ -44,6 +45,11 @@ from .research_builder_v7 import (
     validate_research_topology_alignment_v2,
 )
 from .research_builder_v8 import apply_research_builder_v8_transition
+from .research_builder_v9 import (
+    apply_research_builder_v9_transition,
+    build_research_builder_v9_context,
+    validate_research_builder_v9_context,
+)
 from .research_state import (
     affected_credit_targets,
     apply_research_program_delta,
@@ -798,12 +804,15 @@ def _validate_research_builder_submission_input(
     value: object, *, version: int
 ) -> dict[str, object]:
     label = f"research builder v{version}"
-    if not isinstance(value, dict) or set(value) != SEQUENTIAL_SUBMISSION_INPUT_FIELDS:
+    expected_fields = set(SEQUENTIAL_SUBMISSION_INPUT_FIELDS)
+    if version == 9:
+        expected_fields.add("builderContextDigest")
+    if not isinstance(value, dict) or set(value) != expected_fields:
         raise MathFlowError(f"{label} submission input has an invalid envelope")
     subject = value.get("subjectTransactionId")
     judgment = value.get("judgmentId")
     if (
-        value.get("schemaVersion") != (2 if version == 8 else 1)
+        value.get("schemaVersion") != ({8: 2, 9: 3}.get(version, 1))
         or not isinstance(value.get("problemId"), str)
         or not isinstance(subject, str)
         or not re.fullmatch(GIT_SHA_PATTERN, subject)
@@ -816,6 +825,15 @@ def _validate_research_builder_submission_input(
         or not re.fullmatch(
             DIGEST_PATTERN, str(value["evidenceManifestDigest"])
         )
+        or (
+            version == 9
+            and (
+                not isinstance(value.get("builderContextDigest"), str)
+                or not re.fullmatch(
+                    DIGEST_PATTERN, str(value["builderContextDigest"])
+                )
+            )
+        )
     ):
         raise MathFlowError(f"{label} submission input has invalid identity fields")
     claims = value.get("acceptedClaims")
@@ -824,7 +842,7 @@ def _validate_research_builder_submission_input(
     keys: list[str] = []
     for claim in claims:
         dependencies = claim.get("dependencyTransactionIds") if isinstance(claim, dict) else None
-        if version == 8:
+        if version in {8, 9}:
             validity_fields = {
                 "claimKey",
                 "declaredStatement",
@@ -904,6 +922,12 @@ def validate_research_builder_v8_submission_input(
     return _validate_research_builder_submission_input(value, version=8)
 
 
+def validate_research_builder_v9_submission_input(
+    value: object,
+) -> dict[str, object]:
+    return _validate_research_builder_submission_input(value, version=9)
+
+
 def load_research_build_bundle(
     bundle_dir: Path,
 ) -> tuple[dict[str, object], dict[str, object], str]:
@@ -919,6 +943,7 @@ def load_research_build_bundle(
             "math-flow/hierarchical-research-v6",
             "math-flow/hierarchical-research-v7",
             "math-flow/hierarchical-research-v8",
+            "math-flow/hierarchical-research-v9",
         }
     ):
         raise MathFlowError("bundle is not a hierarchical research build")
@@ -930,6 +955,7 @@ def load_research_build_bundle(
             "math-flow/hierarchical-research-v6",
             "math-flow/hierarchical-research-v7",
             "math-flow/hierarchical-research-v8",
+            "math-flow/hierarchical-research-v9",
         }:
             base_state = json.loads(
                 read_verified_artifact(
@@ -943,6 +969,16 @@ def load_research_build_bundle(
                 read_verified_artifact(
                     bundle_dir, manifest, "research-builder-submission-input"
                 )
+            )
+            builder_context = (
+                json.loads(
+                    read_verified_artifact(
+                        bundle_dir, manifest, "research-builder-context"
+                    )
+                )
+                if manifest.get("outputProfile")
+                == "math-flow/hierarchical-research-v9"
+                else None
             )
             evidence_manifest = json.loads(
                 read_verified_artifact(
@@ -976,26 +1012,32 @@ def load_research_build_bundle(
         else:
             program_delta = None
             batch_input = None
+            builder_context = None
     except json.JSONDecodeError as exc:
         raise MathFlowError("research build bundle contains invalid JSON") from exc
     if manifest.get("outputProfile") in {
         "math-flow/hierarchical-research-v6",
         "math-flow/hierarchical-research-v7",
         "math-flow/hierarchical-research-v8",
+        "math-flow/hierarchical-research-v9",
     }:
         is_two_entity = manifest.get("outputProfile") in {
             "math-flow/hierarchical-research-v7",
             "math-flow/hierarchical-research-v8",
+            "math-flow/hierarchical-research-v9",
         }
         is_v8 = manifest.get("outputProfile") == "math-flow/hierarchical-research-v8"
-        version = 8 if is_v8 else (7 if is_two_entity else 6)
+        is_v9 = manifest.get("outputProfile") == "math-flow/hierarchical-research-v9"
+        version = 9 if is_v9 else (8 if is_v8 else (7 if is_two_entity else 6))
         label = f"hierarchical research v{version}"
         problem = str(manifest["problemId"])
         if is_two_entity:
             validate_research_program_state_v3(base_state, problem)
             validate_research_program_state_v3(program_state, problem)
             submission = (
-                validate_research_builder_v8_submission_input(submission_input)
+                validate_research_builder_v9_submission_input(submission_input)
+                if is_v9
+                else validate_research_builder_v8_submission_input(submission_input)
                 if is_v8
                 else validate_research_builder_v7_submission_input(submission_input)
             )
@@ -1038,7 +1080,31 @@ def load_research_build_bundle(
             != submission.get("evidenceManifestDigest")
         ):
             raise MathFlowError(f"{label} manifest input binding mismatch")
-        if is_v8:
+        if is_v9:
+            if not isinstance(builder_context, dict):
+                raise MathFlowError("hierarchical research v9 context is missing")
+            validate_research_builder_v9_context(
+                builder_context,
+                base_state=base_state,
+                accepted_claims=submission["acceptedClaims"],
+            )
+            if submission.get("builderContextDigest") != builder_context.get(
+                "contextDigest"
+            ):
+                raise MathFlowError(
+                    "hierarchical research v9 submission context binding mismatch"
+                )
+            reduced = apply_research_builder_v9_transition(
+                base_state,
+                program_transition,
+                accepted_claims=submission["acceptedClaims"],
+                judgment_id=str(submission["judgmentId"]),
+                evidence_file_refs={
+                    str(item["path"]): str(item["digest"])
+                    for item in evidence["files"]
+                },
+            )
+        elif is_v8:
             reduced = apply_research_builder_v8_transition(
                 base_state,
                 program_transition,
@@ -1133,7 +1199,7 @@ def _run_research_build_bundle_sequential(
 ) -> dict[str, object]:
     """Publish one exact sequential transition for one accepted submission."""
 
-    if version not in {6, 7, 8}:
+    if version not in {6, 7, 8, 9}:
         raise MathFlowError("sequential research builder has an unsupported version")
     label = f"hierarchical research v{version}"
 
@@ -1181,7 +1247,7 @@ def _run_research_build_bundle_sequential(
     raw_claims = _accepted_claims(judgment, packet)
     if not raw_claims:
         raise MathFlowError(f"{label} excludes submissions with no valid claims")
-    if version == 8:
+    if version in {8, 9}:
         accepted_claims = sorted(
             [
                 {
@@ -1285,15 +1351,25 @@ def _run_research_build_bundle_sequential(
         )
         for path, content in sorted(reconstructed.items())
     )
+    builder_context = (
+        build_research_builder_v9_context(base_state, accepted_claims)
+        if version == 9
+        else None
+    )
     submission_input = _seal_sequential_submission_input(
         {
-            "schemaVersion": 2 if version == 8 else 1,
+            "schemaVersion": {8: 2, 9: 3}.get(version, 1),
             "problemId": problem,
             "subjectTransactionId": subject,
             "ledgerOrdinal": transaction["ordinal"],
             "judgmentId": judgment_id,
             "acceptedClaims": accepted_claims,
             "evidenceManifestDigest": evidence_manifest["manifestDigest"],
+            **(
+                {"builderContextDigest": builder_context["contextDigest"]}
+                if isinstance(builder_context, dict)
+                else {}
+            ),
         },
         version=version,
     )
@@ -1308,6 +1384,7 @@ def _run_research_build_bundle_sequential(
         6: OpenRouterResearchBuilderV6Provider,
         7: OpenRouterResearchBuilderV7Provider,
         8: OpenRouterResearchBuilderV8Provider,
+        9: OpenRouterResearchBuilderV9Provider,
     }[version]
     provider = provider_class(
         spec,
@@ -1331,7 +1408,17 @@ def _run_research_build_bundle_sequential(
         judgment_id=judgment_id,
         evidence_files=evidence_files,
     )
-    if version == 8:
+    if version == 9:
+        reduced = apply_research_builder_v9_transition(
+            base_state,
+            transition,
+            accepted_claims=accepted_claims,
+            judgment_id=judgment_id,
+            evidence_file_refs={
+                evidence.path: evidence.digest for evidence in evidence_files
+            },
+        )
+    elif version == 8:
         reduced = apply_research_builder_v8_transition(
             base_state,
             transition,
@@ -1362,6 +1449,12 @@ def _run_research_build_bundle_sequential(
         submission_input,
         "research-builder-submission-input",
     )
+    if isinstance(builder_context, dict):
+        bundle.add_json(
+            "input/builder-context.json",
+            builder_context,
+            "research-builder-context",
+        )
     bundle.add_json(
         "input/evidence-manifest.json",
         evidence_manifest,
@@ -1501,6 +1594,36 @@ def _run_research_build_bundle_v8(
     )
 
 
+def _run_research_build_bundle_v9(
+    root: Path,
+    problem: str,
+    builder_path: Path,
+    head: str,
+    claim: object,
+    judgment_bundle_dirs: list[Path],
+    conflicts_path: Path | None,
+    output_dir: Path,
+    *,
+    base_run: Path | None,
+    transport: OpenRouterTransport | None,
+    checkpoint_dir: Path | None,
+) -> dict[str, object]:
+    return _run_research_build_bundle_sequential(
+        root,
+        problem,
+        builder_path,
+        head,
+        claim,
+        judgment_bundle_dirs,
+        conflicts_path,
+        output_dir,
+        base_run=base_run,
+        transport=transport,
+        checkpoint_dir=checkpoint_dir,
+        version=9,
+    )
+
+
 def run_research_build_bundle(
     root: Path,
     problem: str,
@@ -1555,6 +1678,20 @@ def run_research_build_bundle(
         )
     if implementation == "openrouter-hierarchical-research-builder-v8":
         return _run_research_build_bundle_v8(
+            root,
+            problem,
+            builder_path,
+            head,
+            claim,
+            judgment_bundle_dirs,
+            conflicts_path,
+            output_dir,
+            base_run=base_run,
+            transport=transport,
+            checkpoint_dir=checkpoint_dir,
+        )
+    if implementation == "openrouter-hierarchical-research-builder-v9":
+        return _run_research_build_bundle_v9(
             root,
             problem,
             builder_path,

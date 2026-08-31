@@ -20,6 +20,10 @@ from .bssc_research_v6_producer import (
     load_json_file as load_bssc_research_v6_json,
     plan_bssc_research_v6_frontier,
 )
+from .bssc_research_v7_producer import (
+    load_json_file as load_bssc_research_v7_json,
+    plan_bssc_research_v7_frontier,
+)
 from .attestations import (
     load_verifier_spec,
     plan_verifier_attestation,
@@ -699,6 +703,27 @@ def build_parser() -> argparse.ArgumentParser:
         "--materialization-dir", required=True, type=Path
     )
     bssc_research_v6_parser.add_argument("--output", type=Path)
+
+    bssc_research_v7_parser = commands.add_parser(
+        "bssc-research-v7-frontier",
+        help="materialize the next exact accepted BSSC builder-v9 frontier",
+    )
+    bssc_research_v7_parser.add_argument("--source", required=True, type=Path)
+    bssc_research_v7_parser.add_argument("--projection", required=True, type=Path)
+    bssc_research_v7_parser.add_argument(
+        "--expected-projection-digest",
+        help="digest resolved from the separately admitted governed projection",
+    )
+    bssc_research_v7_parser.add_argument(
+        "--projection-dir", required=True, type=Path
+    )
+    bssc_research_v7_parser.add_argument(
+        "--scheduler-file", required=True, type=Path
+    )
+    bssc_research_v7_parser.add_argument(
+        "--materialization-dir", required=True, type=Path
+    )
+    bssc_research_v7_parser.add_argument("--output", type=Path)
 
     two_entity_audit_parser = commands.add_parser(
         "two-entity-migration-audit",
@@ -1526,6 +1551,22 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 projection=load_bssc_research_v6_json(
                     args.projection, "BSSC research-v6 projection"
+                ),
+                expected_projection_digest=args.expected_projection_digest,
+            )
+            _write_json(result, str(args.output) if args.output else None)
+            return 0
+        elif args.command == "bssc-research-v7-frontier":
+            result = plan_bssc_research_v7_frontier(
+                root,
+                projection_root=args.projection_dir,
+                scheduler_file=args.scheduler_file,
+                materialization_root=args.materialization_dir,
+                replay_source=load_bssc_research_v7_json(
+                    args.source, "BSSC research-v7 source"
+                ),
+                projection=load_bssc_research_v7_json(
+                    args.projection, "BSSC research-v7 projection"
                 ),
                 expected_projection_digest=args.expected_projection_digest,
             )

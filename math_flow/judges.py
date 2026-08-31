@@ -40,6 +40,7 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-hierarchical-research-builder-v6",
     "openrouter-hierarchical-research-builder-v7",
     "openrouter-hierarchical-research-builder-v8",
+    "openrouter-hierarchical-research-builder-v9",
     "openrouter-hierarchical-research-credit-v2",
     "openrouter-work-accounting-v1",
     "openrouter-work-accounting-v2",
@@ -61,6 +62,7 @@ SUPPORTED_INPUT_BUILDERS = {
     "accepted-validity-submission-program-state-v6",
     "accepted-validity-submission-program-state-v7",
     "accepted-validity-submission-program-state-v8",
+    "accepted-validity-submission-program-state-v9",
     "counterfactual-work-transition-v1",
     "counterfactual-work-transition-v2",
     "locked-research-history-v2",
@@ -86,6 +88,7 @@ SUPPORTED_OUTPUT_PROFILES = {
     "math-flow/hierarchical-research-v6",
     "math-flow/hierarchical-research-v7",
     "math-flow/hierarchical-research-v8",
+    "math-flow/hierarchical-research-v9",
     "math-flow/hierarchical-research-credit-v2",
     "math-flow/work-accounting-transition-v1",
     "math-flow/work-accounting-transition-v2",
@@ -112,6 +115,7 @@ SUPPORTED_OUTPUT_ADAPTERS = {
     "structured-research-submission-v6",
     "structured-research-submission-v7",
     "structured-research-submission-v8",
+    "structured-research-submission-v9",
     "structured-hierarchical-credit-v2",
     "structured-work-estimation-v1",
 }
@@ -128,6 +132,7 @@ SUPPORTED_REDUCERS = {
     "sequential-research-state-v6",
     "sequential-research-state-v7",
     "sequential-research-state-v8",
+    "sequential-research-state-v9",
     "hierarchical-credit-allocation-v2",
     "per-submission-work-accounting-v1",
 }
@@ -327,6 +332,12 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputProfile": "math-flow/hierarchical-research-v8",
             "outputAdapter": "structured-research-submission-v8",
             "reducer": "sequential-research-state-v8",
+        },
+        "openrouter-hierarchical-research-builder-v9": {
+            "inputBuilder": "accepted-validity-submission-program-state-v9",
+            "outputProfile": "math-flow/hierarchical-research-v9",
+            "outputAdapter": "structured-research-submission-v9",
+            "reducer": "sequential-research-state-v9",
         },
         "openrouter-hierarchical-research-credit-v2": {
             "inputBuilder": "locked-research-history-v2",
