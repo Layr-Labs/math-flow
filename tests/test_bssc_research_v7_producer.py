@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from math_flow.artifacts import verify_bundle
 from math_flow.bssc_research_v7_producer import plan_bssc_research_v7_frontier
@@ -266,6 +267,45 @@ class BSSCResearchV7ProducerTests(unittest.TestCase):
             "openrouter-research-v7 must run through project-research-v7-serial.yml",
             generic,
         )
+
+    def test_knowledge_build_cli_routes_builder_v9_to_research_formation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory_value:
+            directory = Path(directory_value)
+            claim = directory / "claim.json"
+            claim.write_text("{}\n", encoding="utf-8")
+            with (
+                patch(
+                    "math_flow.cli.run_research_build_bundle",
+                    return_value={"routed": "builder-v9"},
+                ) as research_build,
+                patch(
+                    "math_flow.cli.run_knowledge_build_bundle",
+                    side_effect=AssertionError("builder-v9 entered the legacy route"),
+                ) as legacy_build,
+            ):
+                self.assertEqual(
+                    main(
+                        [
+                            "--root",
+                            str(ROOT),
+                            "knowledge-build",
+                            "--problem",
+                            "bssc-sum-capacity",
+                            "--builder",
+                            str(
+                                ROOT
+                                / "protocol/judges/openrouter-hierarchical-research-builder-v9.json"
+                            ),
+                            "--claim",
+                            str(claim),
+                            "--output-dir",
+                            str(directory / "knowledge-build"),
+                        ]
+                    ),
+                    0,
+                )
+            research_build.assert_called_once()
+            legacy_build.assert_not_called()
 
     def test_runtime_candidate_accepts_optional_separate_admission(self) -> None:
         self.assertEqual(PROJECTION["status"], "active")
