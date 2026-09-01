@@ -243,24 +243,53 @@ def run(args: argparse.Namespace) -> int:
             "local Builder V10 experiment output directory must be new or empty"
         )
     output.mkdir(parents=True, exist_ok=True)
-    experiment_root = root / "protocol/experiments/bssc-local-builder-v10-v1"
-    manifest = load_json(experiment_root / "manifest.json")
-    base_spec = load_json(
+    manifest_path = args.manifest
+    if not manifest_path.is_absolute():
+        manifest_path = root / manifest_path
+    manifest_path = manifest_path.resolve()
+    try:
+        manifest_path.relative_to(root)
+    except ValueError as exc:
+        raise MathFlowError(
+            "local Builder V10 manifest path escapes the repository"
+        ) from exc
+    manifest = load_json(manifest_path)
+    judge_path = (
         root
-        / "protocol/judges/openrouter-hierarchical-research-builder-v10-experiment.json"
-    )
+        / str(
+            manifest.get(
+                "judgeSpec",
+                "protocol/judges/openrouter-hierarchical-research-builder-v10-experiment.json",
+            )
+        )
+    ).resolve()
+    try:
+        judge_path.relative_to(root)
+    except ValueError as exc:
+        raise MathFlowError(
+            "local Builder V10 judge spec path escapes the repository"
+        ) from exc
+    base_spec = load_json(judge_path)
     source = load_json(
         root / "protocol/runtime/bssc-research-v4-validity-source-v1.json"
     )
     if not all(isinstance(value, dict) for value in (manifest, base_spec, source)):
         raise MathFlowError("local Builder V10 experiment configuration is invalid")
+    expected_judge_digest = manifest.get("judgeSpecDigest")
+    if expected_judge_digest is not None:
+        if sha256_bytes(judge_path.read_bytes()) != expected_judge_digest:
+            raise MathFlowError("local Builder V10 judge spec digest mismatch")
     if manifest.get("problemId") != PROBLEM_ID:
         raise MathFlowError("local Builder V10 manifest names another problem")
     configured_ordinals = tuple(
         int(value) for value in manifest.get("acceptedTransitionOrdinals", [])
     )
-    if configured_ordinals != TRANSITION_ORDINALS:
-        raise MathFlowError("local Builder V10 manifest ordinals do not match the runner")
+    if not configured_ordinals or configured_ordinals != TRANSITION_ORDINALS[
+        : len(configured_ordinals)
+    ]:
+        raise MathFlowError(
+            "local Builder V10 manifest ordinals must be a nonempty K2/K3 prefix"
+        )
     if base_spec.get("model") != manifest.get("model"):
         raise MathFlowError("local Builder V10 manifest model does not match the judge")
     configured_effort = manifest.get("reasoningEffort")
@@ -327,7 +356,7 @@ def run(args: argparse.Namespace) -> int:
             entry=_accepted_entry_by_ordinal(accepted, ordinal),
             directory=output / "inputs" / f"k{ordinal}",
         )
-        for ordinal in TRANSITION_ORDINALS
+        for ordinal in configured_ordinals
     ]
     configured_seeds = tuple(int(value) for value in manifest.get("seeds", []))
     seeds = (
@@ -393,7 +422,7 @@ def run(args: argparse.Namespace) -> int:
             chains.append(chain)
             continue
 
-        for ordinal, case in zip(TRANSITION_ORDINALS, cases, strict=True):
+        for ordinal, case in zip(configured_ordinals, cases, strict=True):
             case_dir = chain_dir / f"k{ordinal}"
             request_start = len(transport.requests)
             response_start = len(transport.responses)
@@ -549,6 +578,13 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=Path(
+            "protocol/experiments/bssc-local-builder-v10-v1/manifest.json"
+        ),
+    )
     parser.add_argument("--seeds")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args(argv)

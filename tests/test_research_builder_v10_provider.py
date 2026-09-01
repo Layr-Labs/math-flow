@@ -79,6 +79,28 @@ class SequentialTransport:
 
 
 class ResearchBuilderV10ProviderTests(unittest.TestCase):
+    def test_experiment_prompt_preserves_accounting_boundary_controls(self) -> None:
+        spec = json.loads(SPEC.read_text(encoding="utf-8"))
+        system_prompt = spec["systemPrompt"]
+        route_prompt = spec["stagePrompts"]["route"]
+        refine_prompt = spec["stagePrompts"]["route-refine"]
+
+        self.assertIn("author-blind intervention test", system_prompt)
+        self.assertIn("independent activation or stopping condition", system_prompt)
+        self.assertIn("does not by itself establish accounting ancestry", system_prompt)
+        self.assertIn("Root is the correct parent", system_prompt)
+        self.assertIn("same-world no-access work package", system_prompt)
+        self.assertIn("with-access remaining work becomes zero", system_prompt)
+        self.assertIn("author-blind work-policy intervention test", route_prompt)
+        self.assertIn("conditionally part of that parent's work policy", route_prompt)
+        self.assertIn("same-world no-access work package", route_prompt)
+        self.assertIn("broad topical umbrella", refine_prompt)
+        self.assertIn("mathematical or evidentiary dependency never establishes", refine_prompt)
+        self.assertEqual(spec["stages"]["route"]["parameters"]["max_tokens"], 6000)
+        self.assertEqual(
+            spec["stages"]["route-refine"]["parameters"]["max_tokens"], 4000
+        )
+
     def test_route_refine_author_keeps_raw_evidence_out_of_routing(self) -> None:
         base = empty_research_program_state_v3("two-entity-fixture")
         route_context_digest = None

@@ -1,9 +1,19 @@
 from __future__ import annotations
 
+import copy
+import json
 import unittest
+from pathlib import Path
 
-from experiments.bssc_local_builder_v10 import BudgetedCapturingTransport
+from experiments.bssc_local_builder_v10 import (
+    BudgetedCapturingTransport,
+    _scenario_artifact,
+)
 from math_flow.errors import MathFlowError
+from math_flow.teacher_student_scenarios import _score_json_relational
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class BudgetedCapturingTransportTests(unittest.TestCase):
@@ -83,6 +93,81 @@ class BudgetedCapturingTransportTests(unittest.TestCase):
             transport({"payload": "x" * 100})
         self.assertEqual(calls, [])
         self.assertEqual(transport.requests, [])
+
+
+class RevisedAccountingGoldTests(unittest.TestCase):
+    def test_accepts_root_owned_replay_and_rejects_k1_nesting(self) -> None:
+        gold = json.loads(
+            (
+                ROOT
+                / "protocol/experiments/bssc-local-builder-v10-v2/relational-gold-v2.json"
+            ).read_text(encoding="utf-8")
+        )
+        fixed = json.loads(
+            (
+                ROOT
+                / "protocol/experiments/bssc-credit-topology-v3/fixtures/k1-refined-seed-2718-state.json"
+            ).read_text(encoding="utf-8")
+        )
+        transition = json.loads(
+            (
+                ROOT
+                / "protocol/experiments/bssc-credit-topology-v3/replay/seed-1729/k2/transition.json"
+            ).read_text(encoding="utf-8")
+        )
+        topology = json.loads(
+            (
+                ROOT
+                / "protocol/experiments/bssc-credit-topology-v3/replay/seed-1729/k2/topology-summary.json"
+            ).read_text(encoding="utf-8")
+        )
+
+        def score(candidate_transition: object, candidate_topology: object) -> dict:
+            return _score_json_relational(
+                gold,
+                {
+                    "fixed-base-state": _scenario_artifact(fixed),
+                    "k2.author.transition": _scenario_artifact(candidate_transition),
+                    "k2.author.topology": _scenario_artifact(candidate_topology),
+                },
+                variant="local-builder-v10",
+                seed=1729,
+                scorer_id="bssc-accounting-topology-v10-v2",
+            )
+
+        accepted = score(transition, topology)
+        self.assertEqual(accepted["status"], "passed")
+        self.assertEqual(accepted["hardFailures"], [])
+
+        nested_transition = copy.deepcopy(transition)
+        nested_topology = copy.deepcopy(topology)
+        created_program_ids = {
+            operation["entityId"]
+            for operation in nested_transition["topologyOperations"]
+            if operation["entityKind"] == "program"
+        }
+        nested_transition["topologyOperations"] = [
+            operation
+            for operation in nested_transition["topologyOperations"]
+            if operation["entityKind"] != "program"
+        ]
+        nested_transition["contribution"]["directProgramIds"] = [
+            "program-channel-specific-converse-refinement"
+        ]
+        nested_topology["programs"] = [
+            program
+            for program in nested_topology["programs"]
+            if program["id"] not in created_program_ids
+        ]
+        for result in nested_topology["subjectResults"]:
+            result["primaryProgramId"] = (
+                "program-channel-specific-converse-refinement"
+            )
+
+        rejected = score(nested_transition, nested_topology)
+        self.assertEqual(rejected["status"], "failed")
+        self.assertIn("k2-adds-one-root-child-program", rejected["hardFailures"])
+        self.assertIn("k2-direct-program-is-new-root-child", rejected["hardFailures"])
 
 
 if __name__ == "__main__":

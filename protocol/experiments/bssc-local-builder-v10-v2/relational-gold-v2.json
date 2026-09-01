@@ -1,0 +1,380 @@
+{
+  "schemaVersion": 1,
+  "description": "K2-first semantic accounting-topology checks for the revised local Builder V10 prompt. Program ownership and parent policy are hard; result partition and unrelated K1 rewrites remain separately visible.",
+  "assertions": [
+    {
+      "id": "k2-adds-one-root-child-program",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "difference",
+          "left": {
+            "operation": "map",
+            "value": {
+              "operation": "filter",
+              "value": {
+                "artifact": "k2.author.topology",
+                "pointer": "/programs"
+              },
+              "where": [
+                {
+                  "pointer": "/parentId",
+                  "operator": "equals",
+                  "expected": "root"
+                }
+              ]
+            },
+            "pointer": "/id"
+          },
+          "right": {
+            "operation": "map",
+            "value": {
+              "operation": "filter",
+              "value": {
+                "operation": "values",
+                "value": {
+                  "artifact": "fixed-base-state",
+                  "pointer": "/programs"
+                }
+              },
+              "where": [
+                {
+                  "pointer": "/parentId",
+                  "operator": "equals",
+                  "expected": "root"
+                }
+              ]
+            },
+            "pointer": "/id"
+          }
+        }
+      },
+      "operator": "equals",
+      "expected": 1,
+      "message": "K2 introduces one independently activated UV work package directly beneath root."
+    },
+    {
+      "id": "k2-preserves-k1-program-identities",
+      "severity": "hard",
+      "actual": {
+        "operation": "keys",
+        "value": {
+          "artifact": "fixed-base-state",
+          "pointer": "/programs"
+        }
+      },
+      "operator": "subset-of",
+      "expectedExpression": {
+        "operation": "map",
+        "value": {
+          "artifact": "k2.author.topology",
+          "pointer": "/programs"
+        },
+        "pointer": "/id"
+      }
+    },
+    {
+      "id": "k2-creates-one-program-operation",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "filter",
+          "value": {
+            "artifact": "k2.author.transition",
+            "pointer": "/topologyOperations"
+          },
+          "where": [
+            {
+              "pointer": "/action",
+              "operator": "equals",
+              "expected": "create"
+            },
+            {
+              "pointer": "/entityKind",
+              "operator": "equals",
+              "expected": "program"
+            }
+          ]
+        }
+      },
+      "operator": "equals",
+      "expected": 1
+    },
+    {
+      "id": "k2-direct-program-is-new-root-child",
+      "severity": "hard",
+      "actual": {
+        "artifact": "k2.author.transition",
+        "pointer": "/contribution/directProgramIds"
+      },
+      "operator": "set-equals",
+      "expectedExpression": {
+        "operation": "difference",
+        "left": {
+          "operation": "map",
+          "value": {
+            "operation": "filter",
+            "value": {
+              "artifact": "k2.author.topology",
+              "pointer": "/programs"
+            },
+            "where": [
+              {
+                "pointer": "/parentId",
+                "operator": "equals",
+                "expected": "root"
+              }
+            ]
+          },
+          "pointer": "/id"
+        },
+        "right": {
+          "operation": "map",
+          "value": {
+            "operation": "filter",
+            "value": {
+              "operation": "values",
+              "value": {
+                "artifact": "fixed-base-state",
+                "pointer": "/programs"
+              }
+            },
+            "where": [
+              {
+                "pointer": "/parentId",
+                "operator": "equals",
+                "expected": "root"
+              }
+            ]
+          },
+          "pointer": "/id"
+        }
+      },
+      "message": "K1 may provide a semantic dependency, but it is not K2's accounting owner."
+    },
+    {
+      "id": "k2-results-owned-by-new-root-child",
+      "severity": "hard",
+      "actual": {
+        "operation": "unique",
+        "value": {
+          "operation": "map",
+          "value": {
+            "artifact": "k2.author.topology",
+            "pointer": "/subjectResults"
+          },
+          "pointer": "/primaryProgramId"
+        }
+      },
+      "operator": "set-equals",
+      "expectedExpression": {
+        "operation": "difference",
+        "left": {
+          "operation": "map",
+          "value": {
+            "operation": "filter",
+            "value": {
+              "artifact": "k2.author.topology",
+              "pointer": "/programs"
+            },
+            "where": [
+              {
+                "pointer": "/parentId",
+                "operator": "equals",
+                "expected": "root"
+              }
+            ]
+          },
+          "pointer": "/id"
+        },
+        "right": {
+          "operation": "map",
+          "value": {
+            "operation": "filter",
+            "value": {
+              "operation": "values",
+              "value": {
+                "artifact": "fixed-base-state",
+                "pointer": "/programs"
+              }
+            },
+            "where": [
+              {
+                "pointer": "/parentId",
+                "operator": "equals",
+                "expected": "root"
+              }
+            ]
+          },
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "k2-creates-at-least-one-reusable-result",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "artifact": "k2.author.topology",
+          "pointer": "/subjectResults"
+        }
+      },
+      "operator": "greater-than",
+      "expected": 0
+    },
+    {
+      "id": "k2-result-create-count-matches-subject-results",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "filter",
+          "value": {
+            "artifact": "k2.author.transition",
+            "pointer": "/topologyOperations"
+          },
+          "where": [
+            {
+              "pointer": "/action",
+              "operator": "equals",
+              "expected": "create"
+            },
+            {
+              "pointer": "/entityKind",
+              "operator": "equals",
+              "expected": "intermediateResult"
+            }
+          ]
+        }
+      },
+      "operator": "equals",
+      "expectedExpression": {
+        "operation": "length",
+        "value": {
+          "artifact": "k2.author.topology",
+          "pointer": "/subjectResults"
+        }
+      }
+    },
+    {
+      "id": "k2-records-narrow-dependency",
+      "severity": "hard",
+      "actual": {
+        "operation": "flatten",
+        "value": {
+          "operation": "map",
+          "value": {
+            "artifact": "k2.author.topology",
+            "pointer": "/subjectResults"
+          },
+          "pointer": "/dependencyResultIds"
+        }
+      },
+      "operator": "contains",
+      "expected": "result-coarse-entropy-copy-no-go"
+    },
+    {
+      "id": "k2-refreshes-root",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "filter",
+          "value": {
+            "artifact": "k2.author.transition",
+            "pointer": "/contentOperations"
+          },
+          "where": [
+            {
+              "pointer": "/entityKind",
+              "operator": "equals",
+              "expected": "program"
+            },
+            {
+              "pointer": "/entityId",
+              "operator": "equals",
+              "expected": "root"
+            }
+          ]
+        }
+      },
+      "operator": "equals",
+      "expected": 1
+    },
+    {
+      "id": "k2-does-not-rewrite-channel-specific-k1-leaf",
+      "severity": "advisory",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "filter",
+          "value": {
+            "artifact": "k2.author.transition",
+            "pointer": "/contentOperations"
+          },
+          "where": [
+            {
+              "pointer": "/entityId",
+              "operator": "equals",
+              "expected": "program-channel-specific-converse-refinement"
+            }
+          ]
+        }
+      },
+      "operator": "equals",
+      "expected": 0,
+      "message": "A cross-program rewrite needs an explicit direct policy impact; operation count alone is not a universal invariant."
+    },
+    {
+      "id": "k2-does-not-rewrite-code-induced-k1-parent",
+      "severity": "advisory",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "filter",
+          "value": {
+            "artifact": "k2.author.transition",
+            "pointer": "/contentOperations"
+          },
+          "where": [
+            {
+              "pointer": "/entityId",
+              "operator": "equals",
+              "expected": "program-code-induced-converse"
+            }
+          ]
+        }
+      },
+      "operator": "equals",
+      "expected": 0,
+      "message": "A cross-program rewrite needs an explicit direct policy impact; operation count alone is not a universal invariant."
+    },
+    {
+      "id": "k2-separates-two-reusable-results",
+      "severity": "advisory",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "artifact": "k2.author.topology",
+          "pointer": "/subjectResults"
+        }
+      },
+      "operator": "equals",
+      "expected": 2,
+      "message": "Two results express dependency scope more precisely, but one aggregate result is acceptable for accounting topology."
+    },
+    {
+      "id": "k2-explains-topology",
+      "severity": "hard",
+      "actual": {
+        "artifact": "k2.author.transition",
+        "pointer": "/topologyRationale"
+      },
+      "operator": "truthy",
+      "expected": true
+    }
+  ]
+}
