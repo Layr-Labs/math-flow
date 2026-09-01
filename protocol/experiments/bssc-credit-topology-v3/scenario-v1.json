@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "id": "bssc-credit-topology-v3-replay",
+  "description": "Provider-free replay and relational scoring of the unpublished sequential K2/K3 accounting-topology holdout from workflow run 33460170824.",
+  "problemId": "bssc-sum-capacity",
+  "ledgerHead": "180e1032695f2b0f17238a01d7bc9e4ff4fb3f8f",
+  "publicationForbidden": true,
+  "execution": {
+    "adapter": "fixture-replay-v1"
+  },
+  "variants": [
+    {
+      "id": "generalized-refined-accounting",
+      "description": "The fixed prompt candidate evaluated in the original V3 holdout."
+    }
+  ],
+  "seeds": [1729, 2718],
+  "budgets": {
+    "maximumProviderCalls": 12,
+    "maximumStageAttempts": 12,
+    "maximumPromptTokens": 600000,
+    "maximumCompletionTokens": 192000,
+    "maximumTotalTokens": 792000,
+    "maximumCostUsd": 3.0
+  },
+  "frozenInputs": [
+    {
+      "id": "fixed-base-state",
+      "path": "protocol/experiments/bssc-credit-topology-v3/fixtures/k1-refined-seed-2718-state.json",
+      "digest": "sha256:03578b951f4790333a2ce566346d0667addf7eb460e30f01fdf86a2c31663f7a",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "original-gold",
+      "path": "protocol/experiments/bssc-credit-topology-v3/gold.md",
+      "digest": "sha256:e78494722ce77de26dacc87e82d888d05e01ccc7b0f1419f9bcb85f297e651d6",
+      "mediaType": "text/markdown"
+    },
+    {
+      "id": "relational-gold",
+      "path": "protocol/experiments/bssc-credit-topology-v3/relational-gold-v1.json",
+      "digest": "sha256:5553ca97d84c07f7554635e2ed711b029c0df2077e5954b8b03cacc93b0121ca",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "builder-spec",
+      "path": "protocol/judges/openrouter-hierarchical-research-builder-v9.json",
+      "digest": "sha256:4b6c42d93061c2be2b8d9ab0da6411f6b40456b9288f9156f34d9716a820956e",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "prompt-additions",
+      "path": "protocol/experiments/bssc-credit-topology-v3/prompt-additions.json",
+      "digest": "sha256:a73e773038b945e420ad691951a7c2641461c427b3d24e99016e9769d3c5af69",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "legacy-manifest",
+      "path": "protocol/experiments/bssc-credit-topology-v3/manifest.json",
+      "digest": "sha256:5c24207d2191e1591c2b2473c7631b8f9a57a2599ae85d36617e11498f59c405",
+      "mediaType": "application/json"
+    }
+  ],
+  "steps": [
+    {
+      "id": "k2",
+      "subjectTransactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+      "stages": [
+        {
+          "id": "author",
+          "adapter": "fixture-replay-v1",
+          "reads": [
+            "fixed-base-state",
+            "builder-spec",
+            "prompt-additions",
+            "legacy-manifest"
+          ],
+          "outputs": ["transition", "topology"],
+          "fixtures": [
+            {
+              "variant": "generalized-refined-accounting",
+              "seed": 1729,
+              "path": "protocol/experiments/bssc-credit-topology-v3/replay/seed-1729/k2/fixture.json",
+              "digest": "sha256:dc5eb986c18db64995f56b5d758d3c9114704da4bfa33b6279943b198a8d9bc6"
+            },
+            {
+              "variant": "generalized-refined-accounting",
+              "seed": 2718,
+              "path": "protocol/experiments/bssc-credit-topology-v3/replay/seed-2718/k2/fixture.json",
+              "digest": "sha256:938a63df0bea2d189ff613aa4487dccc9c5f412492d808042c1d34ed636858bb"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "k3",
+      "subjectTransactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+      "stages": [
+        {
+          "id": "author",
+          "adapter": "fixture-replay-v1",
+          "reads": [
+            "k2.author.transition",
+            "k2.author.topology",
+            "builder-spec",
+            "prompt-additions",
+            "legacy-manifest"
+          ],
+          "outputs": ["transition", "topology"],
+          "fixtures": [
+            {
+              "variant": "generalized-refined-accounting",
+              "seed": 1729,
+              "path": "protocol/experiments/bssc-credit-topology-v3/replay/seed-1729/k3/fixture.json",
+              "digest": "sha256:53efbce3a4507f7b33c0e216e077331fb9102e65abee0045548a3fe57df67f60"
+            },
+            {
+              "variant": "generalized-refined-accounting",
+              "seed": 2718,
+              "path": "protocol/experiments/bssc-credit-topology-v3/replay/seed-2718/k3/fixture.json",
+              "digest": "sha256:c941e348601f750e28ebd9f0904294eb88bb9aa0de1e01e371bac6c30065b37f"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scorers": [
+    {
+      "id": "accounting-topology",
+      "implementation": "json-relational-v1",
+      "goldInputId": "relational-gold"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "stageId": "author",
+  "outcome": "accepted",
+  "attempts": [
+    {
+      "status": "retry",
+      "providerCall": true,
+      "rawRequest": {
+        "capture": "legacy-summary-only",
+        "model": "openai/gpt-5.6-sol",
+        "seed": 1729,
+        "reasoningEffort": "high",
+        "maximumCompletionTokens": 16000,
+        "messageCharacters": [7420, 832, 33919]
+      },
+      "rawResponse": {
+        "capture": "legacy-summary-only",
+        "providerResponseId": "gen-1788227398-HMB7CI9r2ZrvnPHbEoRc",
+        "resolvedModel": "openai/gpt-5.6-sol",
+        "finishReason": "length"
+      },
+      "telemetry": {
+        "model": "openai/gpt-5.6-sol",
+        "configuredContextTokens": null,
+        "configuredCompletionTokens": 16000,
+        "requestComponents": [
+          {"id": "system", "characters": 7420},
+          {"id": "response-contract", "characters": 832},
+          {"id": "formation-context", "characters": 33919}
+        ],
+        "promptTokens": 16768,
+        "cachedPromptTokens": 0,
+        "reasoningTokens": 3002,
+        "completionTokens": 16000,
+        "totalTokens": 32768,
+        "costUsd": 0.2019185,
+        "elapsedMs": null,
+        "finishReason": "length",
+        "outputCharacters": 198299,
+        "trailingWhitespaceCharacters": 195157,
+        "validationClass": "length-truncated",
+        "retryCause": "length-truncated",
+        "entityCounts": {"programs": 5, "intermediate-results": 3}
+      }
+    },
+    {
+      "status": "accepted",
+      "providerCall": true,
+      "rawRequest": {
+        "capture": "legacy-summary-only",
+        "model": "openai/gpt-5.6-sol",
+        "seed": 1729,
+        "reasoningEffort": "high",
+        "maximumCompletionTokens": 16000,
+        "messageCharacters": [7420, 832, 33919, 1100]
+      },
+      "rawResponse": {
+        "capture": "legacy-summary-plus-parsed-output",
+        "providerResponseId": "gen-1788227531-ospQK7JKpJu25DNYXRtU",
+        "resolvedModel": "openai/gpt-5.6-sol",
+        "finishReason": "stop",
+        "contentArtifact": "transition"
+      },
+      "telemetry": {
+        "model": "openai/gpt-5.6-sol",
+        "configuredContextTokens": null,
+        "configuredCompletionTokens": 16000,
+        "requestComponents": [
+          {"id": "system", "characters": 7420},
+          {"id": "response-contract", "characters": 832},
+          {"id": "formation-context", "characters": 33919},
+          {"id": "retry-feedback", "characters": 1100}
+        ],
+        "promptTokens": 16963,
+        "cachedPromptTokens": 16765,
+        "reasoningTokens": 2291,
+        "completionTokens": 4312,
+        "totalTokens": 21275,
+        "costUsd": 0.0469665,
+        "elapsedMs": null,
+        "finishReason": "stop",
+        "outputCharacters": 8885,
+        "trailingWhitespaceCharacters": 0,
+        "validationClass": "accepted",
+        "retryCause": null,
+        "entityCounts": {"programs": 5, "intermediate-results": 3}
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "id": "transition",
+      "mediaType": "application/json",
+      "path": "protocol/experiments/bssc-credit-topology-v3/replay/seed-1729/k3/transition.json",
+      "digest": "sha256:3c9877b592c2179a8bd32d598196c2624a2afd0d863c7ed72ca01db189bd5d0f"
+    },
+    {
+      "id": "topology",
+      "mediaType": "application/json",
+      "path": "protocol/experiments/bssc-credit-topology-v3/replay/seed-1729/k3/topology-summary.json",
+      "digest": "sha256:8f3c4f79c1c2d2828d6656fc16c9603f0276fb8c8c1ff7bda1baacd47a1d0579"
+    }
+  ]
+}

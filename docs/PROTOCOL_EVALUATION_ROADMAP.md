@@ -196,6 +196,14 @@ Repeated judge samples estimate sampling variance only when the subject, state,
 prompt, model identity, and evidence are held fixed. Cross-submission dispersion
 and disagreement between protocol versions must be reported separately.
 
+The provider-free V1 substrate is implemented in
+`math_flow/teacher_student_scenarios.py` and documented in
+`docs/TEACHER_STUDENT_SCENARIOS.md`. It supports arbitrary ordered stage
+sequences, including route-to-author local builders, but intentionally has no
+provider or publication adapter. The BSSC K2/K3 V3 holdout is its first migrated
+scenario and retains the original Markdown gold alongside an executable
+relational sidecar.
+
 ## Recommended sequence
 
 1. Keep the generalized K2/K3 program-topology candidate and make result-split

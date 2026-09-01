@@ -84,6 +84,7 @@ from .research_projection import (
 from .runs import run_judge_bundle
 from .scale_probe import run_provider_free_scale_probe
 from .solver_tools import credit_status, register_direction
+from .teacher_student_scenarios import run_teacher_student_scenario
 from .two_entity_migration import audit_two_entity_migration_v2
 from .viewer import export_viewer_catalog, export_viewer_data
 from .validity import formation_dependency_transaction_ids
@@ -915,6 +916,18 @@ def build_parser() -> argparse.ArgumentParser:
     scale_parser.add_argument("--minimum-interval", type=int, default=300)
     scale_parser.add_argument("--maximum-judgments", type=int, default=64)
     scale_parser.add_argument("--output")
+
+    scenario_parser = commands.add_parser(
+        "teacher-student-scenario",
+        help="replay and score a frozen provider-free teacher-student scenario",
+    )
+    scenario_parser.add_argument("--manifest", required=True, type=Path)
+    scenario_parser.add_argument("--output-dir", required=True, type=Path)
+    scenario_parser.add_argument(
+        "--require-pass",
+        action="store_true",
+        help="return status 2 when a completed replay has hard score failures",
+    )
     return parser
 
 
@@ -933,6 +946,14 @@ def main(argv: list[str] | None = None) -> int:
                 maximum_judgments_per_build=args.maximum_judgments,
             )
             _write_json(result, args.output)
+            return 0
+        elif args.command == "teacher-student-scenario":
+            result = run_teacher_student_scenario(
+                root, args.manifest, args.output_dir
+            )
+            _write_json(result, None)
+            if args.require_pass and result["summary"]["status"] != "passed":
+                return 2
             return 0
         elif args.command == "work-accounting-dispatch-plan":
             config = load_work_accounting_hosted_config(root, args.config)
