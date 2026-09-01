@@ -247,12 +247,17 @@ complete live accounting state, and `W-` repeats the complete frozen `W+` state
 as well. A bounded digest-bound accounting slice with reducer-equivalence replay
 is required before making scalability claims.
 
-The small-real-problem input audit is implemented at
+The small-real-problem provider-free preflight is implemented at
 `protocol/experiments/no-three-v10-v2-shadow-v1/`. It binds the four exactly
 accepted No-Three-in-Line submissions, their Git/evidence/judgment/attestation
-artifacts, and the candidate specs without provider or publication authority.
-It remains an input plan until a problem-specific root contract and composed
-publication-forbidden runner are added.
+artifacts, the candidate specs, an experimental V10 projection descriptor, and
+a problem-specific root-contract review draft without provider or publication
+authority. Its zero-call runner verifies the bindings and zero origins and
+emits the exact 36-stage serial plan with 24 nominal provider stages, at most 72
+attempts, and 840,000 reserved completion tokens. It materializes no semantic
+request because later requests require trusted predecessor K/W outputs. The
+root contract still needs review, and the provider-free preflight is not the
+later checkpointed semantic runner.
 
 ## Recommended sequence
 
@@ -268,8 +273,9 @@ publication-forbidden runner are added.
 4. In parallel, implement a bounded, digest-bound accounting slice and prove by
    provider-free replay that sparse local updates reduce to the same globally
    committed state as the full-state V2 path.
-5. Add and review the No-Three-in-Line root contract and composed unpublished
-   V10-to-V2 runner, then perform a zero-call request/cost preflight.
+5. Review the No-Three-in-Line root-contract draft, then extend the completed
+   zero-call preflight into a checkpointed, publication-forbidden semantic
+   V10-to-V2 runner with a request-side verified price bound.
 6. With separate provider authorization, run its four accepted submissions
    serially from zero and stop before the next subject on any protocol concern.
 7. Run an independent adversarial transcript audit before creating a shadow

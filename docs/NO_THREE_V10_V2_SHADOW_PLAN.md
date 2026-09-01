@@ -11,8 +11,9 @@ downstream accounting consumes nontrivial hierarchy.
 
 The provider-free contract is pinned at
 `protocol/experiments/no-three-v10-v2-shadow-v1/manifest.json`. It authorizes no
-provider call and no publication. It deliberately contains no authored V10
-transition or V2 work estimate.
+provider call and no publication. A deterministic preflight now verifies every
+input and emits the exact serial stage/budget plan, but deliberately contains
+no authored V10 transition, V2 work estimate, or semantic request digest.
 
 ## Repository inventory
 
@@ -88,6 +89,9 @@ researcher-hour `W-`, `W+`, or `D` estimates.
 
 The manifest pins:
 
+- a review-draft, publication-forbidden experimental V10 knowledge-projection
+  descriptor and a problem-specific accounting root contract;
+- the canonical problem statement and provider-free preflight implementation;
 - the final Builder V10 experiment spec and Work Accounting V2 spec/policy by
   local SHA-256 digest;
 - projection commit `ed4f8bc198ce0a29f13609042712440bcff44ba5`;
@@ -105,9 +109,40 @@ then hashes the byte sequence
 the immutable Git tree object with a provider-free check that current canonical
 evidence bytes have not drifted.
 
+The root contract uses competent-human-researcher hours under conventional
+non-autonomous tools frozen at 2026-09-01. Its objective preserves the
+canonical disjunction: determine `D(77)` or improve either side of the certified
+interval. Its terminal condition is intentionally narrower and unambiguous:
+the root completes only when accepted evidence makes the lower and upper bounds
+coincide at the exact value. A one-sided bound improvement advances the program
+but is not terminal.
+
 There are no semantic fixtures or expected semantic output digests. The
-current adapter is an input-binding audit with a hard budget of zero calls,
-zero tokens, and zero cost.
+current adapter is a provider-free serial preflight with a hard budget of zero
+calls, zero tokens, and zero cost. It is implemented without a provider,
+transport, credential, checkpoint, projection store, or publication parameter.
+Run it with:
+
+```bash
+python3 -m math_flow --root . no-three-shadow-preflight \
+  --output /tmp/no-three-v10-v2-preflight.json
+```
+
+The checked replay is
+`protocol/experiments/no-three-v10-v2-shadow-v1/provider-free-preflight.json`.
+It verifies the pinned projection commit and all manifested artifacts, derives
+the exact accepted-claim and accepted-claim-reference identities, reconstructs
+all four submission evidence manifests, validates the from-zero knowledge and
+accounting origins, and emits 36 strictly serial steps. Of those, 24 are
+future provider stages and 12 are trusted local reduction/freeze steps.
+The advisory maximum is 72 attempts and 840,000 reserved completion tokens.
+Every current authorization counter remains zero.
+
+The preflight does not fabricate semantic request digests. After the first
+authoring boundary, each V10/V2 request depends on a trusted predecessor `K` or
+`W` state that does not exist before the prior semantic stage succeeds. The
+plan therefore binds the exact inputs, dependency order, per-stage limits, and
+aggregate caps while leaving request materialization deferred.
 
 ## Future shadow execution order
 
@@ -164,20 +199,23 @@ establish the accepted claims. This real benchmark therefore does not exercise
 mandatory dependency closure and must remain paired with the synthetic
 dependency cases.
 
-## Blocking prerequisites
+## Remaining blockers
 
-The candidate is input-ready but not execution-ready:
+The candidate is preflight-ready but not semantic-execution-ready:
 
-1. No experiment-scoped No-Three-in-Line root accounting contract exists. It
-   must bind the experimental V10 projection, the canonical `D(77)` objective,
-   an explicit terminal condition, competent-human-researcher hours, and a
-   fixed conventional-tool baseline. Borrowing the BSSC contract would be a
-   material protocol error.
-2. A publication-forbidden real-evidence runner must compose the pinned V10
-   route/refine/author adapter with V2 per-submission accounting and write only
-   local experiment artifacts.
-3. Provider execution needs a separate authorization after the provider-free
-   input audit, root-contract review, and request/cost preflight.
+1. The problem-specific root contract is a schema-valid review draft, not an
+   approved semantic contract. A human must explicitly review its objective,
+   exact-solution terminal condition, researcher qualification, and fixed tool
+   baseline.
+2. A later publication-forbidden semantic runner must add governed provider
+   checkpoints, materialize each request only after its exact trusted
+   predecessor exists, run the unchanged V10 and V2 reducers, and write only
+   local experiment artifacts. The current preflight has no such provider
+   boundary by design.
+3. A request-side verified price bound remains required; reported post-response
+   cost alone cannot prevent a single-call overshoot.
+4. Provider execution needs a separate authorization after contract review and
+   semantic-runner review.
 
-Until those conditions are met, the manifest remains an auditable plan and
-cannot spend or publish.
+Until those conditions are met, the manifest and runner remain auditable local
+plans and cannot spend or publish.

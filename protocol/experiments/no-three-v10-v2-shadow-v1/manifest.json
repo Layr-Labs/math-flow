@@ -1,15 +1,18 @@
 {
   "schemaVersion": 1,
   "id": "no-three-v10-v2-shadow-v1",
-  "description": "A provider-free input binding and future unpublished V10/V2 shadow contract for the four validity-v4 accepted No-Three-in-Line submissions.",
+  "description": "A provider-free serial V10/V2 shadow preflight for the four validity-v4 accepted No-Three-in-Line submissions, with semantic execution and publication disabled.",
   "status": "planned-unpublished-experiment",
   "problemId": "no-three-in-line-77",
   "publicationForbidden": true,
   "productionMutationForbidden": true,
   "execution": {
-    "adapter": "provider-free-input-binding-audit-v1",
+    "adapter": "provider-free-serial-v10-v2-preflight-v1",
+    "implementation": "math_flow.no_three_shadow.build_no_three_v10_v2_shadow_preflight",
     "providerExecutionAuthorized": false,
     "continue": false,
+    "rootContractReviewStatus": "review-required",
+    "rootContractDigest": "sha256:f8a521daff238f298671f7411ed5ce33b76725fba055379bc739cda6cb77db5a",
     "acceptedOrdering": "canonical-problem-ledger-position",
     "initialKnowledgeStateFactory": "math_flow.research_builder_v7.empty_research_program_state_v3",
     "initialAccountingStateFactory": "math_flow.work_accounting.make_zero_work_accounting_state",
@@ -40,6 +43,24 @@
     "maximumCostUsd": 0
   },
   "frozenLocalInputs": [
+    {
+      "id": "experimental-knowledge-projection",
+      "path": "protocol/experiments/no-three-v10-v2-shadow-v1/knowledge-projection-v10-shadow-v1.json",
+      "digest": "sha256:45c9b45626bcde55d196cf811981cbcf38a9a7388f86574181c4cecfda26af36",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "root-contract-review-draft",
+      "path": "protocol/experiments/no-three-v10-v2-shadow-v1/root-contract-review-draft-v1.json",
+      "digest": "sha256:df5c029831fe61a86282562fce67d5bc72d5a0aac00874749fa33072ab897183",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "preflight-runner-implementation",
+      "path": "math_flow/no_three_shadow.py",
+      "digest": "sha256:48dae5e1d7ec85146fbcd751eabe34fb12a358343d8cccdffd13e2cdcb61e25c",
+      "mediaType": "text/x-python"
+    },
     {
       "id": "knowledge-builder-spec",
       "path": "protocol/judges/openrouter-hierarchical-research-builder-v10-experiment.json",
@@ -255,13 +276,13 @@
   "blockingPrerequisites": [
     {
       "id": "experiment-scoped-root-contract",
-      "status": "missing",
-      "requirement": "Create and review an immutable No-Three-in-Line root contract bound to the experimental V10 projection, competent-human-researcher hours, a fixed conventional-tool date, the canonical D(77) objective, and an explicit terminal condition. Do not borrow the BSSC contract."
+      "status": "review-draft-present",
+      "requirement": "Review and explicitly accept the immutable No-Three-in-Line root-contract draft. It is bound to the experimental V10 projection, competent-human-researcher hours, a fixed conventional-tool date, the canonical D(77) objective, and an explicit terminal condition; semantic execution remains blocked until review."
     },
     {
       "id": "real-evidence-shadow-runner",
-      "status": "missing",
-      "requirement": "Add a publication-forbidden runner that materializes the pinned projection artifacts, derives acceptedClaims from the exact validity-v4 records, performs V10 then V2 per subject, and emits only local experiment artifacts."
+      "status": "provider-free-preflight-present",
+      "requirement": "Extend the publication-forbidden provider-free preflight into a separately authorized semantic runner only after review. The current runner verifies and materializes exact inputs plus the serial V10-to-V2 request plan, but intentionally has no provider boundary and cannot author K or W states."
     },
     {
       "id": "explicit-provider-authorization",

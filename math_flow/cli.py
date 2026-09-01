@@ -67,6 +67,7 @@ from .judgments import (
     verify_primary_judgment_artifacts,
 )
 from .judges import load_judge_spec, project, render_request
+from .no_three_shadow import build_no_three_v10_v2_shadow_preflight
 from .projection_dependencies import resolve_projection_dependencies
 from .projection_queue import (
     filter_projection_dispatch_history,
@@ -928,6 +929,18 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="return status 2 when a completed replay has hard score failures",
     )
+    no_three_shadow_parser = commands.add_parser(
+        "no-three-shadow-preflight",
+        help="verify and plan the provider-free No-Three V10/V2 shadow",
+    )
+    no_three_shadow_parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=Path(
+            "protocol/experiments/no-three-v10-v2-shadow-v1/manifest.json"
+        ),
+    )
+    no_three_shadow_parser.add_argument("--output")
     return parser
 
 
@@ -954,6 +967,12 @@ def main(argv: list[str] | None = None) -> int:
             _write_json(result, None)
             if args.require_pass and result["summary"]["status"] != "passed":
                 return 2
+            return 0
+        elif args.command == "no-three-shadow-preflight":
+            result = build_no_three_v10_v2_shadow_preflight(
+                root, args.manifest
+            )
+            _write_json(result, args.output)
             return 0
         elif args.command == "work-accounting-dispatch-plan":
             config = load_work_accounting_hosted_config(root, args.config)

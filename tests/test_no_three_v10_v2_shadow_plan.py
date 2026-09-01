@@ -4,14 +4,27 @@ import hashlib
 import json
 import re
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
+
+from math_flow.errors import MathFlowError
+from math_flow.no_three_shadow import (
+    build_no_three_v10_v2_shadow_preflight,
+)
+from math_flow.repository import sha256_json
+from math_flow.work_accounting import validate_root_contract
 
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = (
     ROOT / "protocol/experiments/no-three-v10-v2-shadow-v1/manifest.json"
 )
+EXPERIMENT_ROOT = MANIFEST_PATH.parent
+PROJECTION_PATH = EXPERIMENT_ROOT / "knowledge-projection-v10-shadow-v1.json"
+ROOT_CONTRACT_PATH = EXPERIMENT_ROOT / "root-contract-review-draft-v1.json"
+CHECKED_PREFLIGHT_PATH = EXPERIMENT_ROOT / "provider-free-preflight.json"
 DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 GIT_OBJECT = re.compile(r"^[0-9a-f]{40}$")
 
@@ -68,9 +81,12 @@ class NoThreeV10V2ShadowPlanTests(unittest.TestCase):
         self.assertFalse(manifest["execution"]["providerExecutionAuthorized"])
         self.assertEqual(
             manifest["execution"]["adapter"],
-            "provider-free-input-binding-audit-v1",
+            "provider-free-serial-v10-v2-preflight-v1",
         )
         self.assertFalse(manifest["execution"]["continue"])
+        self.assertEqual(
+            manifest["execution"]["rootContractReviewStatus"], "review-required"
+        )
         self.assertEqual(manifest["execution"]["semanticFixtures"], [])
         self.assertEqual(manifest["execution"]["semanticOutputDigests"], [])
         self.assertEqual(
@@ -90,14 +106,17 @@ class NoThreeV10V2ShadowPlanTests(unittest.TestCase):
         self.assertEqual(
             blockers,
             {
-                "experiment-scoped-root-contract": "missing",
-                "real-evidence-shadow-runner": "missing",
+                "experiment-scoped-root-contract": "review-draft-present",
+                "real-evidence-shadow-runner": "provider-free-preflight-present",
                 "explicit-provider-authorization": "missing",
             },
         )
 
     def test_local_protocol_inputs_are_exactly_digest_bound(self) -> None:
         expected_ids = {
+            "experimental-knowledge-projection",
+            "root-contract-review-draft",
+            "preflight-runner-implementation",
             "knowledge-builder-spec",
             "work-accounting-spec",
             "work-accounting-policy",
@@ -110,6 +129,35 @@ class NoThreeV10V2ShadowPlanTests(unittest.TestCase):
             actual = f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
             self.assertEqual(actual, frozen["digest"])
         self.assertEqual(observed_ids, expected_ids)
+
+    def test_root_contract_draft_is_problem_specific_and_projection_bound(self) -> None:
+        projection = json.loads(PROJECTION_PATH.read_text(encoding="utf-8"))
+        contract = validate_root_contract(
+            json.loads(ROOT_CONTRACT_PATH.read_text(encoding="utf-8")),
+            "no-three-in-line-77",
+        )
+        self.assertEqual(contract["knowledgeProjectionId"], projection["id"])
+        self.assertEqual(
+            contract["knowledgeProjectionSpecDigest"],
+            "sha256:" + sha256_json(projection),
+        )
+        self.assertEqual(
+            contract["rootContractDigest"],
+            self.manifest["execution"]["rootContractDigest"],
+        )
+        self.assertIn("determine D(77)", contract["objective"])
+        self.assertIn("152 <= D(77) <= 154", contract["objective"])
+        self.assertIn("exact value of D(77)", contract["terminalCondition"])
+        self.assertIn("not terminal", contract["terminalCondition"])
+        self.assertIn("2026-09-01", contract["workUnit"]["toolBaseline"])
+        self.assertIn("autonomous LLM", contract["workUnit"]["toolBaseline"])
+        self.assertEqual(
+            contract["referenceCommunity"]["portfolioAuthority"],
+            "math-flow-knowledge-state-builder",
+        )
+        self.assertTrue(projection["publicationForbidden"])
+        self.assertTrue(projection["productionMutationForbidden"])
+        self.assertFalse(projection["providerExecutionAuthorized"])
 
     def test_subjects_are_the_four_active_canonical_v4_acceptances(self) -> None:
         subjects = self.manifest["subjects"]
@@ -302,6 +350,64 @@ class NoThreeV10V2ShadowPlanTests(unittest.TestCase):
         self.assertTrue(envelope["stopOnFirstHardFailure"])
         self.assertTrue(envelope["stopOnProtocolConcernBeforeNextSubject"])
         self.assertTrue(envelope["blindRetryOutsideGovernedPolicyForbidden"])
+
+    def test_provider_free_preflight_verifies_and_serializes_the_full_plan(self) -> None:
+        forbidden = AssertionError("provider call escaped the preflight")
+        with mock.patch(
+            "math_flow.openrouter.send_chat_completion", side_effect=forbidden
+        ) as send:
+            result = build_no_three_v10_v2_shadow_preflight(ROOT)
+        send.assert_not_called()
+        self.assertEqual(result["providerCallCount"], 0)
+        self.assertFalse(result["providerExecutionAuthorized"])
+        self.assertTrue(result["publicationForbidden"])
+        self.assertEqual(result["semanticRequestDigests"], [])
+        self.assertEqual(
+            result["status"], "review-required-provider-free-plan-ready"
+        )
+        self.assertEqual(len(result["inputBindings"]["subjects"]), 4)
+        self.assertEqual(len(result["serialExecutionPlan"]), 4 * 9)
+        provider_stages = [
+            stage
+            for stage in result["serialExecutionPlan"]
+            if stage["kind"] == "provider-request"
+        ]
+        trusted_stages = [
+            stage
+            for stage in result["serialExecutionPlan"]
+            if stage["kind"] == "trusted-local"
+        ]
+        self.assertEqual(len(provider_stages), 24)
+        self.assertEqual(len(trusted_stages), 12)
+        for index, stage in enumerate(result["serialExecutionPlan"]):
+            self.assertEqual(stage["stageIndex"], index + 1)
+            self.assertEqual(
+                stage["dependsOnStageId"],
+                None if index == 0 else result["serialExecutionPlan"][index - 1]["stageId"],
+            )
+            self.assertFalse(stage["providerExecutionAuthorized"])
+            self.assertFalse(stage["publicationAuthorized"])
+        self.assertEqual(
+            result["budgetPlan"]["maximumReservedCompletionTokens"], 840000
+        )
+        self.assertEqual(result["budgetPlan"]["nominalProviderCalls"], 24)
+        self.assertEqual(result["budgetPlan"]["maximumProviderAttempts"], 72)
+        self.assertEqual(result["budgetPlan"]["currentProviderCallsAuthorized"], 0)
+        self.assertEqual(result["budgetPlan"]["currentCostUsdAuthorized"], 0)
+
+    def test_preflight_is_fail_closed_on_execution_authorization(self) -> None:
+        tampered = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        tampered["execution"]["providerExecutionAuthorized"] = True
+        with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
+            path = Path(temporary) / "manifest.json"
+            path.write_text(json.dumps(tampered), encoding="utf-8")
+            with self.assertRaisesRegex(MathFlowError, "not fail-closed"):
+                build_no_three_v10_v2_shadow_preflight(ROOT, path)
+
+    def test_checked_preflight_is_exact_provider_free_replay(self) -> None:
+        expected = build_no_three_v10_v2_shadow_preflight(ROOT)
+        checked = json.loads(CHECKED_PREFLIGHT_PATH.read_text(encoding="utf-8"))
+        self.assertEqual(checked, expected)
 
 
 if __name__ == "__main__":
