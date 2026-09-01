@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "bssc-joint-portfolio-wplus-k2-v3",
+  "description": "An unpublished sequential K2 gate testing accounting-aware topology extension and W+ continuation from the exact successful joint K1 state.",
+  "problemId": "bssc-sum-capacity",
+  "status": "unpublished-experiment",
+  "publicationForbidden": true,
+  "acceptedTransitionOrdinal": 2,
+  "judgeSpec": "protocol/judges/openrouter-joint-portfolio-wplus-experiment-v3.json",
+  "judgeSpecDigest": "sha256:a4914b1af4af586f679b244e1d7db512a92dc2346a11683f4000eb0fcf30b0af",
+  "model": "openai/gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "seeds": [
+    1729
+  ],
+  "maximumAttempts": 3,
+  "maximumProviderCalls": 3,
+  "maximumReportedCostUsd": 1.5,
+  "maximumSingleCallCostUsd": 0.75,
+  "maximumRequestBytes": 768000,
+  "maximumTotalProviderTokens": 300000,
+  "fixedBase": {
+    "fixture": "protocol/experiments/bssc-joint-portfolio-wplus-k2-v3/fixtures/k1-post-state.json",
+    "fileDigest": "sha256:41640e99f65d99999a554bf1841c94fac85457860d3865d3076746fab739fda4",
+    "stateDigest": "sha256:03710af10c1c9efb7796d5ae0457b016af0d1bb185818fa60425ac80021bfda4",
+    "ledgerHead": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6"
+  },
+  "fixedBaseAccounting": {
+    "fixture": "protocol/experiments/bssc-joint-portfolio-wplus-k2-v3/fixtures/k1-with-access-state.json",
+    "fileDigest": "sha256:d428b3d3442e65ec765d8ebf0b68ce8efacf0fc692766a3e7abd95ac84821499",
+    "stateDigest": "sha256:dfdd463b09b28555dbfb61a53df48c1006dcfe9bf811da3b2e34b64acfadfe0d"
+  },
+  "fixedSemanticPacket": "protocol/experiments/bssc-joint-portfolio-wplus-k2-v3/fixed-semantic-packet-v3.json",
+  "fixedSemanticPacketDigest": "sha256:ab5ea8b163db4100393a4995dad2bd6efed39d9a6d54ef0fffb5fd50574aea87",
+  "semanticPacketDigest": "sha256:4e6a2e3afbb5d7fc73fba736263faa63ac9af461034a509a4e20899c9e4f65ec",
+  "rootContract": "protocol/experiments/bssc-joint-portfolio-wplus-k1-v2/root-contract-v2.json",
+  "rootContractFileDigest": "sha256:4fa17f409ea3ce95519364da01e2c12fc689330f155ebcd17a007d2fcd259390",
+  "rootContractDigest": "sha256:da7e93bf8f96ebe743683293eeda024a897e63ce1383fb72d7404dce9fd01406",
+  "relationalGold": "protocol/experiments/bssc-joint-portfolio-wplus-k2-v3/relational-gold-v3.json",
+  "relationalGoldDigest": "sha256:ec7efb7d2d26412082faac99d302c852c3fc8ef1cf2ddc336c3c1d7f7791e684",
+  "primaryGate": "K2 must create one independently activated root-child UV work package, preserve every K1 identity and primitive, and place both fixed K2 results on the new package despite the narrow K1 result dependency.",
+  "secondaryObservation": "Record the new program and root W+ primitives and the resulting total hours. One model sample is not numerical calibration or sampling-variance evidence.",
+  "holdoutPolicy": "Dispatch exactly one K2 run only after provider-free reduction, relational scoring, and repository validation pass; do not publish or continue automatically."
+}

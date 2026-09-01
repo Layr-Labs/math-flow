@@ -23,3 +23,7 @@ parent with two independently estimable result-owning leaves.
 The root `W+` estimate must retain unresolved terminal work that is not
 represented by the local children, without duplicating child work. K2 remains a
 holdout and is not dispatched unless K1 passes.
+
+Observed run evidence is recorded in `results-run-33560558307.md`. Its exact
+accepted post-state and live W+ state are frozen only in the additive K2 V3
+successor; the V2 manifest and provider contract remain unchanged for replay.

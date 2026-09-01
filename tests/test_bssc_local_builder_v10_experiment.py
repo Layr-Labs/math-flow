@@ -101,11 +101,11 @@ class RevisedAccountingGoldTests(unittest.TestCase):
             ROOT / ".github/workflows/project-research-v7-serial.yml"
         ).read_text(encoding="utf-8")
         self.assertIn(
-            "--manifest protocol/experiments/bssc-joint-portfolio-wplus-k1-v2/manifest.json",
+            "--manifest protocol/experiments/bssc-joint-portfolio-wplus-k2-v3/manifest.json",
             workflow,
         )
         self.assertIn(
-            '--output "${RUNNER_TEMP}/bssc-joint-portfolio-wplus-k1-v2"',
+            '--output "${RUNNER_TEMP}/bssc-joint-portfolio-wplus-k2-v3"',
             workflow,
         )
         self.assertIn(

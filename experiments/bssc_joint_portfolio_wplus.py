@@ -1,4 +1,4 @@
-"""Run the unpublished fixed-semantics BSSC joint topology/W+ K1 gate."""
+"""Run an unpublished fixed-semantics BSSC joint topology/W+ gate."""
 
 from __future__ import annotations
 
@@ -32,13 +32,18 @@ from math_flow.errors import MathFlowError
 from math_flow.joint_portfolio_wplus_experiment import (
     IMPLEMENTATION,
     IMPLEMENTATION_V2,
+    IMPLEMENTATION_V3,
     OpenRouterJointPortfolioWPlusExperimentProvider,
     OpenRouterJointPortfolioWPlusExperimentProviderV2,
+    OpenRouterJointPortfolioWPlusExperimentProviderV3,
     validate_fixed_semantic_packet,
 )
 from math_flow.research_builder_v7 import validate_research_program_state_v3
 from math_flow.teacher_student_scenarios import _score_json_relational
-from math_flow.work_accounting import validate_root_contract
+from math_flow.work_accounting import (
+    validate_root_contract,
+    validate_work_accounting_state,
+)
 
 
 def _bound_file(root: Path, relative: object, expected_digest: object) -> Path:
@@ -107,13 +112,6 @@ def run(args: argparse.Namespace) -> int:
         or fixed_base["ledgerHead"] != fixed.get("ledgerHead")
     ):
         raise MathFlowError("joint topology/W+ fixed base binding mismatch")
-    semantic_packet = validate_fixed_semantic_packet(
-        load_json(semantic_path),
-        problem_id=PROBLEM_ID,
-        base_state_digest=str(fixed_base["stateDigest"]),
-    )
-    if semantic_packet["packetDigest"] != manifest.get("semanticPacketDigest"):
-        raise MathFlowError("joint topology/W+ semantic packet content binding mismatch")
     root_contract = validate_root_contract(load_json(contract_path), PROBLEM_ID)
     if root_contract["rootContractDigest"] != manifest.get("rootContractDigest"):
         raise MathFlowError("joint topology/W+ root contract binding mismatch")
@@ -128,8 +126,41 @@ def run(args: argparse.Namespace) -> int:
     elif implementation == IMPLEMENTATION_V2:
         provider_class = OpenRouterJointPortfolioWPlusExperimentProviderV2
         scorer_variant = "joint-portfolio-wplus-v2"
+    elif implementation == IMPLEMENTATION_V3:
+        provider_class = OpenRouterJointPortfolioWPlusExperimentProviderV3
+        scorer_variant = "joint-portfolio-wplus-v3"
     else:
         raise MathFlowError("joint topology/W+ implementation is unsupported")
+    semantic_packet = validate_fixed_semantic_packet(
+        load_json(semantic_path),
+        problem_id=PROBLEM_ID,
+        base_state_digest=str(fixed_base["stateDigest"]),
+        external_dependency_result_ids=(
+            set(fixed_base["intermediateResults"])
+            if implementation == IMPLEMENTATION_V3
+            else None
+        ),
+    )
+    if semantic_packet["packetDigest"] != manifest.get("semanticPacketDigest"):
+        raise MathFlowError("joint topology/W+ semantic packet content binding mismatch")
+    base_accounting: dict[str, object] | None = None
+    accounting_binding = manifest.get("fixedBaseAccounting")
+    if implementation == IMPLEMENTATION_V3:
+        if not isinstance(accounting_binding, dict):
+            raise MathFlowError("joint topology/W+ V3 base accounting binding is invalid")
+        accounting_path = _bound_file(
+            root,
+            accounting_binding["fixture"],
+            accounting_binding["fileDigest"],
+        )
+        base_accounting = validate_work_accounting_state(
+            load_json(accounting_path), fixed_base, root_contract
+        )
+        if base_accounting["stateDigest"] != accounting_binding.get("stateDigest"):
+            raise MathFlowError("joint topology/W+ V3 base accounting binding mismatch")
+        write_json(output / "fixed-base-accounting-state.json", base_accounting)
+    elif accounting_binding is not None:
+        raise MathFlowError("joint topology/W+ legacy experiment has unexpected accounting")
     if base_spec.get("model") != manifest.get("model"):
         raise MathFlowError("joint topology/W+ model binding mismatch")
     stage = base_spec.get("stages", {}).get("joint-portfolio-wplus", {})
@@ -214,15 +245,21 @@ def run(args: argparse.Namespace) -> int:
             attempt_journal_writer=lambda value: journals.append(value),
         )
         try:
+            provider_inputs: dict[str, object] = {
+                "problem_id": PROBLEM_ID,
+                "subject_transaction_id": str(case["subject"]),
+                "base_state": fixed_base,
+                "root_contract": root_contract,
+                "semantic_packet": semantic_packet,
+                "accepted_claims": case["claims"],
+                "judgment_id": str(case["judgmentId"]),
+                "evidence_files": case["evidenceFiles"],
+            }
+            if implementation == IMPLEMENTATION_V3:
+                assert base_accounting is not None
+                provider_inputs["base_accounting_state"] = base_accounting
             artifacts = provider.run(
-                problem_id=PROBLEM_ID,
-                subject_transaction_id=str(case["subject"]),
-                base_state=fixed_base,
-                root_contract=root_contract,
-                semantic_packet=semantic_packet,
-                accepted_claims=case["claims"],
-                judgment_id=str(case["judgmentId"]),
-                evidence_files=case["evidenceFiles"],
+                **provider_inputs,
             )
             for name, value in artifacts.items():
                 write_json(chain_dir / f"{name}.json", value)
@@ -232,8 +269,10 @@ def run(args: argparse.Namespace) -> int:
                 relational_gold,
                 {
                     "fixed-base-state": _scenario_artifact(fixed_base),
-                    "k1.author.transition": _scenario_artifact(artifacts["transition"]),
-                    "k1.author.topology": _scenario_artifact(topology),
+                    f"k{ordinal}.author.transition": _scenario_artifact(
+                        artifacts["transition"]
+                    ),
+                    f"k{ordinal}.author.topology": _scenario_artifact(topology),
                 },
                 variant=scorer_variant,
                 seed=seed,
@@ -252,6 +291,15 @@ def run(args: argparse.Namespace) -> int:
                         "fixedSemanticPacket": _serialized_measurement(semantic_packet),
                         "acceptedClaimAssessments": _serialized_measurement(case["claims"]),
                         "baseKnowledgeState": _serialized_measurement(fixed_base),
+                        **(
+                            {
+                                "baseLiveWorkState": _serialized_measurement(
+                                    base_accounting
+                                )
+                            }
+                            if base_accounting is not None
+                            else {}
+                        ),
                         "submissionEvidenceBytes": sum(
                             len(item.content) for item in case["evidenceFiles"]
                         ),
