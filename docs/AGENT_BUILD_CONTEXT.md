@@ -365,7 +365,7 @@ preference.
 | Solver-facing repository skill | Implemented; requires repository tools and exact-reference inspection | `.agents/skills/math-flow-solver/` |
 | Builder-facing repository skill | Implemented; routes protocol and repository maintenance away from solver participation and requires isolated worktrees for parallel agents | `.agents/skills/math-flow-builder/` |
 | Local/fractal Builder V10 experiment | Inactive, unpublished route/refine/author candidate with bounded digest-bound scopes, hidden-state preservation, provider-free widening through 1,024 programs, and a stopped BSSC paid holdout | `math_flow/research_builder_v10.py`, `math_flow/research_builder_v10_provider.py`, `docs/LOCAL_BUILDER_V10_FULL_SEND.md` |
-| Protocol evaluation substrate | Provider-free manifest/replay/scoring harness, builder and work-accounting scale probes, eight-submission exact V10-scoped miniature using the real V2 provider adapter plus public bundle run/load replay over 24 local capture-transport invocations, and review-gated No-Three zero-call serial preflight implemented; this establishes deterministic request/bundle mechanics with zero network, provider spend, or publication, while paid semantic V10/V2 execution and judge-quality evaluation remain pending | `math_flow/teacher_student_scenarios.py`, `docs/PROTOCOL_EVALUATION_ROADMAP.md` |
+| Protocol evaluation substrate | Provider-free manifest/replay/scoring harness, builder and work-accounting scale probes, eight-submission exact V10-scoped miniature using the real V2 provider adapter plus public bundle run/load replay over 24 local capture-transport invocations, and review-gated No-Three zero-call serial preflight implemented. An additive six-component umbrella suite now runs those checks in bounded `pr` or exact-regenerating `full` mode, emits canonical JSON/Markdown summaries, and accepts no provider or publication authority; paid semantic V10/V2 execution and judge-quality evaluation remain pending. | `math_flow/teacher_student_scenarios.py`, `docs/PROTOCOL_EVALUATION_SUITE.md`, `docs/PROTOCOL_EVALUATION_ROADMAP.md` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Active credit-v3 uses the two-term common-horizon hierarchical evaluator over locked research-v3 state/history; governed local/hosted execution, provider-free eligibility, bounded semantic retries, rolling coalescing, predecessor-chain terminals, and independent bundles are implemented | `math_flow/research_credit.py`, `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
 | Hierarchical work accounting V1 and V2 | Both BSSC-only lanes are active. V1 preserves the original no-access/with-access comparison; additive V2 freezes a validated with-access `W+` candidate in immutable CAS before estimating direct same-base no-access `W-`. Their identities, histories, and workflows remain separate. | `math_flow/work_projection.py`, `math_flow/work_accounting_pipeline.py`, `docs/WORK_PROJECTION_V2.md`, `protocol/projections/openrouter-work-accounting-v1.json`, `protocol/projections/openrouter-work-accounting-v2.json` |
@@ -895,6 +895,12 @@ upgrade path.
   replay over a local capture transport, exact knowledge/work bindings, and
   adversarial scorecard. Its semantics remain precommitted oracle inputs rather
   than a judge-quality result.
+- `docs/PROTOCOL_EVALUATION_SUITE.md` — additive six-component provider-free
+  umbrella command, PR/full mode boundary, canonical summary contract,
+  zero-authority invariants, and component-registry extension policy.
+- `docs/PROTOCOL_EVALUATION_ROADMAP.md` — staged path from provider-free reducer
+  and scale checks through paid holdouts, miniature problems, adversarial audit,
+  and possible shadow activation.
 - `docs/WORK_PROJECTION_V2.md` — active BSSC A-first work-accounting profile,
   frozen-live-state boundary, epistemic policy, and retry-isolation contract.
 - `docs/MVP.md` — architecture, phased roadmap, and deferred decisions.

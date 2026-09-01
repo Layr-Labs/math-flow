@@ -213,6 +213,24 @@ discovery with `providerCalls: 0`. Hosted projection workflows use verified
 parallel, while projections sharing one judge queue briefly to reuse published
 paid judgments.
 
+Run the complete provider-free protocol-evaluation surface through one
+allowlisted umbrella command:
+
+```bash
+python3 -m math_flow protocol-evaluation-suite \
+  --mode pr \
+  --output-dir /tmp/math-flow-protocol-evaluation-pr
+```
+
+The default `pr` mode verifies all six locked artifacts, uses bounded smokes for
+the two scale matrices, and fully replays the widening plan, final BSSC V10
+K2-only dry-run, miniature V10/V2 scenario, and No-Three preflight. Use
+`--mode full` to exact-regenerate both complete scale reports. Both modes write
+canonical `summary.json` and `summary.md`, accept no provider credential or
+execution flag, and verify zero provider calls, network use, and publication.
+See [the protocol evaluation suite](docs/PROTOCOL_EVALUATION_SUITE.md) for the
+manifest, output, safety, and extension contracts.
+
 ### Credit overlays
 
 Credit is an independent projection over an exact locked knowledge state, never

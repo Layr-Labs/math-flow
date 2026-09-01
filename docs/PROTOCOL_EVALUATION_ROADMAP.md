@@ -275,6 +275,34 @@ request because later requests require trusted predecessor K/W outputs. The
 root contract still needs review, and the provider-free preflight is not the
 later checkpointed semantic runner.
 
+## Provider-free umbrella suite
+
+The additive `protocol-evaluation-suite-v1` manifest now exposes the six
+implemented provider-free evaluation components through one command:
+
+```bash
+python3 -m math_flow protocol-evaluation-suite \
+  --mode pr \
+  --output-dir /tmp/math-flow-protocol-evaluation-pr
+```
+
+The required ordered components are builder context scale, Builder V10
+provider-free widening plan, final V2 BSSC K2-only dry-run, miniature V10/V2
+require-pass replay, Work Accounting V2 context scale, and the exact No-Three
+preflight. Pull-request mode verifies every locked artifact, runs bounded scale
+smokes, and fully runs the other four checks. `--mode full` exact-regenerates
+both complete scale reports; the remaining four checks are unchanged.
+
+The command accepts neither provider credentials nor provider/publication
+execution flags. Both modes verify an aggregate of zero provider calls, no
+network use, and no publication attempt, then write canonical `summary.json`
+and `summary.md`. This unifies regression execution only; it does not advance a
+candidate to a paid tier or authorize any step below. The manifest uses a
+trusted component registry rather than executable paths, leaving an additive
+slot for the future provider-free local-accounting-slice equivalence probe.
+See `docs/PROTOCOL_EVALUATION_SUITE.md` for the normative command, manifest,
+summary, and extension contracts.
+
 ## Recommended sequence
 
 1. **Complete — miniature V2 request/bundle replay.** The eight-submission
@@ -289,10 +317,12 @@ later checkpointed semantic runner.
 3. If K2 passes, widen paid route/refine teacher-student cases gradually through
    16, 64, 256, and 1,024 programs, stopping at the first semantic or budget
    concern.
-4. Convert the now-proven inactive accounting slice into a separately versioned
-   candidate request only after prompt/semantic tests, explicit bounds, and a
-   deterministic choice for cases where boundary aggregates are larger than
-   the full state. Keep active V2 unchanged until those tests pass.
+4. Append the completed provider-free accounting-slice replay to the umbrella
+   suite without replacing the full-state scale regression or changing the
+   summary envelope. Convert it into a separately versioned candidate request
+   only after prompt/semantic tests, explicit bounds, and a deterministic
+   choice for cases where boundary aggregates are larger than the full state.
+   Keep active V2 unchanged until those tests pass.
 5. Review the No-Three-in-Line root-contract draft, then extend the completed
    zero-call preflight into a checkpointed, publication-forbidden semantic
    V10-to-V2 runner with a request-side verified price bound.
