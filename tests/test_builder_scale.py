@@ -16,6 +16,10 @@ from math_flow.builder_scale import (
 )
 from math_flow.errors import MathFlowError
 from math_flow.research_builder_v7 import validate_research_program_state_v3
+from math_flow.research_builder_v10 import (
+    build_research_builder_v10_authoring_packet,
+    build_research_builder_v10_route_context,
+)
 
 
 class BuilderScaleTests(unittest.TestCase):
@@ -119,8 +123,12 @@ class BuilderScaleTests(unittest.TestCase):
             "sourceTransactionIds"
         ][0]
         self.assertIn("provenanceCounts", semantic_text)
+        self.assertIn("supportDigest", semantic_text)
+        self.assertNotIn("Proof support for", semantic_text)
         self.assertNotIn(source_transaction, semantic_text)
         self.assertIn(source_transaction, exact_text)
+        self.assertNotIn("submissionEvidence", str(semantic["route"]))
+        self.assertNotIn("submissionEvidence", str(semantic["route-refine"]))
 
     def test_probe_compares_all_core_and_bounded_views_without_calls(self) -> None:
         report = run_provider_free_builder_context_scale_probe(
@@ -185,7 +193,10 @@ class BuilderScaleTests(unittest.TestCase):
         fixture = build_synthetic_builder_fixture(self.configuration())
         strategy = make_v10_context_strategy(route_builder, author_builder)
         view = strategy(fixture, "topology-revision")
-        self.assertEqual(set(view), {"route", "author"})
+        self.assertEqual(set(view), {"route", "route-refine", "author"})
+        self.assertNotIn("submissionEvidence", view["route"])
+        self.assertNotIn("submissionEvidence", view["route-refine"])
+        self.assertIn("submissionEvidence", view["author"])
         self.assertEqual(
             set(observed),
             {
@@ -210,6 +221,25 @@ class BuilderScaleTests(unittest.TestCase):
             },
         )
 
+    def test_actual_v10_strategy_remains_bounded_without_route_evidence(self) -> None:
+        strategy = make_v10_context_strategy(
+            build_research_builder_v10_route_context,
+            build_research_builder_v10_authoring_packet,
+        )
+        report = run_provider_free_builder_context_scale_probe(
+            [self.configuration(programs=64, results=96, provenance=4)],
+            strategies={"v10-actual": strategy},
+        )
+        measured = report["cases"][0]["strategies"]["v10-actual"]
+        self.assertLess(measured["maximumStageEstimatedTokens"], 128_000)
+        self.assertEqual(
+            measured["stages"]["route"]["components"][
+                "acceptedClaimAssessments"
+            ]["utf8Bytes"],
+            measured["stages"]["route-refine"]["components"][
+                "acceptedClaimAssessments"
+            ]["utf8Bytes"],
+        )
     def test_positioned_soft_semantic_probes_keep_the_same_gold(self) -> None:
         fixture = build_synthetic_builder_fixture(self.configuration())
         expected = None

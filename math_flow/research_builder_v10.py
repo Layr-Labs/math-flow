@@ -83,6 +83,7 @@ ROUTE_CONTEXT_FIELDS = {
     "rootProgramId",
     "dependencyTransactionIds",
     "dependencyResultIds",
+    "maxDependencyResults",
     "dependencyResults",
     "rootCapsule",
     "contextDigest",
@@ -601,10 +602,21 @@ def build_research_builder_v10_route_context(
     *,
     max_root_children: int = 12,
     max_root_results: int = 12,
+    max_dependency_results: int = 64,
 ) -> dict[str, object]:
     state = validate_research_program_state_v3(copy.deepcopy(dict(base_state)))
     catalog = build_research_builder_v10_catalog(state)
     transactions, result_ids = _declared_dependency_result_ids(state, accepted_claims)
+    dependency_limit = _positive_limit(
+        max_dependency_results,
+        "route dependency result limit",
+        maximum=1024,
+    )
+    if len(result_ids) > dependency_limit:
+        raise MathFlowError(
+            "research builder v10 route dependency closure exceeds budget: "
+            f"{len(result_ids)} > {dependency_limit}"
+        )
     result_cards = catalog["resultCards"]
     assert isinstance(result_cards, dict)
     core: dict[str, object] = {
@@ -616,6 +628,7 @@ def build_research_builder_v10_route_context(
         "rootProgramId": state["rootProgramId"],
         "dependencyTransactionIds": transactions,
         "dependencyResultIds": result_ids,
+        "maxDependencyResults": dependency_limit,
         "dependencyResults": [copy.deepcopy(result_cards[item]) for item in result_ids],
         "rootCapsule": build_research_builder_v10_program_capsule(
             catalog,
@@ -655,11 +668,13 @@ def validate_research_builder_v10_route_context(
             raise MathFlowError("research builder v10 route validation needs claims")
         child_limit = capsule.get("childProgramLimit")
         result_limit = capsule.get("linkedResultLimit")
+        dependency_limit = value.get("maxDependencyResults")
         expected = build_research_builder_v10_route_context(
             base_state,
             accepted_claims,
             max_root_children=int(child_limit),
             max_root_results=int(result_limit),
+            max_dependency_results=int(dependency_limit),
         )
         if value != expected:
             raise MathFlowError("research builder v10 route context is not reducer-derived")

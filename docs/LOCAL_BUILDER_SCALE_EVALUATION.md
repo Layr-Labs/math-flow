@@ -33,25 +33,29 @@ The adversarial scorer consumes generic route-plan fields. It is therefore
 usable by the local-builder candidate without binding this harness to a
 particular V10 schema.
 
-## Three context strategies
+## Four context strategies
 
 The default scale matrix compares:
 
 - **V9 all-core:** the actual `build_research_builder_v9_context` result. Every
   program and result semantic core is present, while support is limited to the
   declared dependency closure.
-- **Bounded semantic:** a two-call model. The route call receives root and a
-  bounded number of child capsules. Trusted host-side search returns bounded
-  cards. The author call receives selected paths, dependency closure, boundary
-  cards, and semantic records. Cumulative provenance arrays are replaced by
-  counts plus exact record digests.
+- **V10 actual:** the implemented V10 route context and authoring-packet
+  constructors, including their exact binding and capsule overhead.
+- **Bounded semantic model:** an idealized route-refine-author lower bound. The route call receives
+  root and a bounded number of child capsules, but no raw submission evidence.
+  Trusted host-side search returns bounded cards to the refinement call. The
+  author call receives selected paths, dependency closure, boundary cards,
+  semantic records, and the current evidence. Cumulative provenance and support
+  arrays are replaced by counts plus exact record digests.
 - **Bounded exact provenance:** the same bounded selection, but every selected
   node retains its complete provenance arrays.
 
 The trusted search catalog is measured as host-side state, not included in any
 model request. No global catalog is smuggled into the route prompt.
 
-The distinction between the two bounded strategies is important. Merely
+The distinction between semantic V10 and the exact-provenance control is
+important. Merely
 selecting local nodes does not bound prompt growth if the root and ancestors
 still repeat every historical source ID. The eventual author protocol should
 let trusted code preserve and extend those arrays, just as V9 already preserves
@@ -66,17 +70,23 @@ The committed report uses a nominal 128,000-token input budget. Token counts are
 suitable for growth comparisons and candidate budget crossings only. Live runs
 must retain provider-reported usage alongside component bytes.
 
-| Programs | Results | Submissions | V9 max | Bounded semantic max | Bounded exact max | V9 provenance share |
-| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 16 | 24 | 24 | 7,206 | 3,894 | 4,620 | 34.1% |
-| 64 | 128 | 512 | 71,026 | 5,932 | 22,946 | 72.2% |
-| 256 | 512 | 4,096 | 500,905 | 8,773 | 143,498 | 84.8% |
-| 1,024 | 2,048 | 32,768 | 4,018,994 | 12,502 | 1,130,723 | 92.5% |
+| Programs | Results | Submissions | V9 max | V10 actual max | Semantic lower bound | Bounded exact max | V9 provenance share |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 16 | 24 | 24 | 7,206 | 12,006 | 3,614 | 4,625 | 34.1% |
+| 64 | 128 | 512 | 71,026 | 20,400 | 5,369 | 22,951 | 72.2% |
+| 256 | 512 | 4,096 | 500,905 | 34,148 | 7,813 | 143,502 | 84.8% |
+| 1,024 | 2,048 | 32,768 | 4,018,994 | 50,150 | 11,031 | 1,130,727 | 92.5% |
 
 At the nominal budget, V9 crosses between the second and third cases. The
-bounded exact-provenance strategy also crosses in the third case. The bounded
-semantic strategy remains below 13,000 estimated tokens in the largest case,
-with a 99.7% maximum-stage reduction relative to V9.
+bounded exact-provenance strategy also crosses in the third case. Actual V10
+remains at 50,150 estimated tokens in the largest case, a 98.8% maximum-stage
+reduction relative to V9; its three-stage cumulative estimate grows from 24,096
+to 100,201 tokens. At the smallest case, V10 is larger than V9 because sealed
+multi-stage bindings and capsules have fixed overhead. The idealized semantic
+model shows that capsule and packet duplication, rather than provenance, now
+dominates the remaining gap. Maximum-stage size is the relevant context-capacity
+measure; cumulative size is reported separately as a token/cost measure and is
+not compared directly to V9's single-call maximum.
 
 These cases scale several dimensions together and are not an estimate of a
 particular problem's date of failure. They demonstrate the mechanism:
@@ -128,8 +138,8 @@ packet builders without copying their schemas into this module. The next
 integration should assert:
 
 `make_v10_context_strategy(route_builder, authoring_packet_builder)` already
-binds the candidate's exact raw route-plan fields and exposes both provider
-stages to component telemetry. It takes the functions as arguments so this
+binds the candidate's exact raw route-plan fields and exposes all three
+provider stages to component telemetry. It takes the functions as arguments so this
 provider-free experiment remains replayable without importing or activating a
 particular builder version.
 

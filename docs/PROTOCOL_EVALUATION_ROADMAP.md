@@ -87,6 +87,7 @@ Current implementation evidence suggests different risk profiles by stage:
 | Primary validity | One submission plus declared dependencies | Large submission or dependency evidence |
 | Reconciliation | Conflicting judgments/evidence component | Wide conflict component |
 | Builder V9 | All program/result semantic records; support only for dependency closure | Linear long-history state plus current evidence |
+| Builder V10 candidate | Bounded route/refine/author read set; cumulative support and provenance hidden behind counts/digests | Large selected local closure, repeated capsules, or current evidence |
 | Safe facts | Current submission evidence and target knowledge bindings | Large current submission |
 | Work `W+` | Local impact subgraph plus current evidence | Large local subtree or submission |
 | Work `W-` | Local structural subgraph plus frozen `W+`; no raw evidence | Large local subtree/accounting patch |
@@ -203,6 +204,26 @@ sequences, including route-to-author local builders, but intentionally has no
 provider or publication adapter. The BSSC K2/K3 V3 holdout is its first migrated
 scenario and retains the original Markdown gold alongside an executable
 relational sidecar.
+
+The inactive local Builder V10 candidate now supplies the next two layers:
+
+- valid synthetic state-v3 scale fixtures through 1,024 programs, 2,048
+  intermediate results, and 32,768 represented submissions;
+- six deterministic adversarial routing/topology cases and beginning/middle/end
+  soft probes;
+- an actual V10 route/refine/author context measurement, rather than only an
+  idealized local-packet model; and
+- a manifest-bound unpublished BSSC K2/K3 provider holdout with request, token,
+  call, and reported-cost stops plus executable relational scoring.
+
+At the largest provider-free case, V9's maximum request is estimated at
+4,018,994 tokens and actual V10's at 50,150. V10's three-stage cumulative
+estimate is 100,201. This is strong evidence that locality plus trusted
+provenance/support expansion addresses global history growth, but it is not a
+soft-semantic result. The next paid tests must still measure retrieval quality,
+especially a cross-program clue present in raw evidence but absent from the
+accepted validity summary; that case may require one bounded author-initiated
+re-route or a stronger validity-to-builder semantic contract.
 
 ## Recommended sequence
 

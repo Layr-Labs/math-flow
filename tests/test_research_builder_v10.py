@@ -357,6 +357,12 @@ class ResearchBuilderV10Tests(unittest.TestCase):
         )
 
     def test_packet_fails_instead_of_truncating_mandatory_closure(self) -> None:
+        with self.assertRaisesRegex(MathFlowError, "dependency closure exceeds budget"):
+            build_research_builder_v10_route_context(
+                self.base,
+                self.claims,
+                max_dependency_results=1,
+            )
         with self.assertRaisesRegex(MathFlowError, "result read-set exceeds budget"):
             build_research_builder_v10_authoring_packet(
                 self.base,

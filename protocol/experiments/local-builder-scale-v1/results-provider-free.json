@@ -204,14 +204,19 @@
       },
       "comparisons": {
         "bounded-exact-provenance": {
-          "cumulativeRatioToV9SingleCall": 0.7713016930335831,
+          "cumulativeRatioToV9SingleCall": 0.9789064668331946,
           "maximumStageRatioToV9": 0.6418262558978629,
           "maximumStageTokenReductionPercent": 35.81737441021371
         },
-        "bounded-semantic": {
-          "cumulativeRatioToV9SingleCall": 0.670413544268665,
-          "maximumStageRatioToV9": 0.5409381071329448,
-          "maximumStageTokenReductionPercent": 45.906189286705526
+        "bounded-semantic-model": {
+          "cumulativeRatioToV9SingleCall": 0.8386067166250347,
+          "maximumStageRatioToV9": 0.501526505689703,
+          "maximumStageTokenReductionPercent": 49.8473494310297
+        },
+        "v10-actual": {
+          "cumulativeRatioToV9SingleCall": 3.343880099916736,
+          "maximumStageRatioToV9": 1.6661115736885928,
+          "maximumStageTokenReductionPercent": -66.61115736885928
         },
         "v9-all-core": {
           "cumulativeRatioToV9SingleCall": 1.0,
@@ -342,7 +347,7 @@
       },
       "strategies": {
         "bounded-exact-provenance": {
-          "cumulativeEstimatedTokens": 5558,
+          "cumulativeEstimatedTokens": 7054,
           "maximumStageBudget": {
             "estimatedHardInputCrossing": false,
             "estimatedUtilization": 0.0361328125,
@@ -392,7 +397,7 @@
             "route": {
               "budget": {
                 "estimatedHardInputCrossing": false,
-                "estimatedUtilization": 0.0072890625,
+                "estimatedUtilization": 0.0060546875,
                 "inputBudgetTokens": 128000,
                 "thresholdTokens": {
                   "100": 128000,
@@ -405,28 +410,66 @@
               },
               "components": {
                 "routeContext": {
-                  "characters": 3715,
-                  "estimatedTokens": 929,
+                  "characters": 3081,
+                  "estimatedTokens": 771,
                   "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                  "tokenUpperBound": 3715,
-                  "utf8Bytes": 3715
+                  "tokenUpperBound": 3081,
+                  "utf8Bytes": 3081
                 }
               },
               "total": {
-                "characters": 3732,
-                "estimatedTokens": 933,
+                "characters": 3098,
+                "estimatedTokens": 775,
                 "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                "tokenUpperBound": 3732,
-                "utf8Bytes": 3732
+                "tokenUpperBound": 3098,
+                "utf8Bytes": 3098
+              }
+            },
+            "route-refine": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.012921875,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3081,
+                  "estimatedTokens": 771,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3081,
+                  "utf8Bytes": 3081
+                },
+                "searchResultCards": {
+                  "characters": 3495,
+                  "estimatedTokens": 874,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3495,
+                  "utf8Bytes": 3495
+                }
+              },
+              "total": {
+                "characters": 6614,
+                "estimatedTokens": 1654,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 6614,
+                "utf8Bytes": 6614
               }
             }
           }
         },
-        "bounded-semantic": {
-          "cumulativeEstimatedTokens": 4831,
+        "bounded-semantic-model": {
+          "cumulativeEstimatedTokens": 6043,
           "maximumStageBudget": {
             "estimatedHardInputCrossing": false,
-            "estimatedUtilization": 0.030453125,
+            "estimatedUtilization": 0.028234375,
             "inputBudgetTokens": 128000,
             "thresholdTokens": {
               "100": 128000,
@@ -437,12 +480,12 @@
             },
             "thresholdsReachedPercent": []
           },
-          "maximumStageEstimatedTokens": 3898,
+          "maximumStageEstimatedTokens": 3614,
           "stages": {
             "author": {
               "budget": {
                 "estimatedHardInputCrossing": false,
-                "estimatedUtilization": 0.030453125,
+                "estimatedUtilization": 0.028234375,
                 "inputBudgetTokens": 128000,
                 "thresholdTokens": {
                   "100": 128000,
@@ -455,25 +498,25 @@
               },
               "components": {
                 "authoringPacket": {
-                  "characters": 15571,
-                  "estimatedTokens": 3893,
+                  "characters": 14436,
+                  "estimatedTokens": 3609,
                   "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                  "tokenUpperBound": 15571,
-                  "utf8Bytes": 15571
+                  "tokenUpperBound": 14436,
+                  "utf8Bytes": 14436
                 }
               },
               "total": {
-                "characters": 15591,
-                "estimatedTokens": 3898,
+                "characters": 14456,
+                "estimatedTokens": 3614,
                 "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                "tokenUpperBound": 15591,
-                "utf8Bytes": 15591
+                "tokenUpperBound": 14456,
+                "utf8Bytes": 14456
               }
             },
             "route": {
               "budget": {
                 "estimatedHardInputCrossing": false,
-                "estimatedUtilization": 0.0072890625,
+                "estimatedUtilization": 0.0060546875,
                 "inputBudgetTokens": 128000,
                 "thresholdTokens": {
                   "100": 128000,
@@ -486,19 +529,211 @@
               },
               "components": {
                 "routeContext": {
-                  "characters": 3715,
-                  "estimatedTokens": 929,
+                  "characters": 3081,
+                  "estimatedTokens": 771,
                   "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                  "tokenUpperBound": 3715,
-                  "utf8Bytes": 3715
+                  "tokenUpperBound": 3081,
+                  "utf8Bytes": 3081
                 }
               },
               "total": {
-                "characters": 3732,
-                "estimatedTokens": 933,
+                "characters": 3098,
+                "estimatedTokens": 775,
                 "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                "tokenUpperBound": 3732,
-                "utf8Bytes": 3732
+                "tokenUpperBound": 3098,
+                "utf8Bytes": 3098
+              }
+            },
+            "route-refine": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.012921875,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3081,
+                  "estimatedTokens": 771,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3081,
+                  "utf8Bytes": 3081
+                },
+                "searchResultCards": {
+                  "characters": 3495,
+                  "estimatedTokens": 874,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3495,
+                  "utf8Bytes": 3495
+                }
+              },
+              "total": {
+                "characters": 6614,
+                "estimatedTokens": 1654,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 6614,
+                "utf8Bytes": 6614
+              }
+            }
+          }
+        },
+        "v10-actual": {
+          "cumulativeEstimatedTokens": 24096,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": false,
+            "estimatedUtilization": 0.093796875,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": []
+          },
+          "maximumStageEstimatedTokens": 12006,
+          "stages": {
+            "author": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0798203125,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "authoringPacket": {
+                  "characters": 39837,
+                  "estimatedTokens": 9960,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 39837,
+                  "utf8Bytes": 39837
+                },
+                "submissionEvidence": {
+                  "characters": 612,
+                  "estimatedTokens": 153,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 612,
+                  "utf8Bytes": 612
+                }
+              },
+              "total": {
+                "characters": 40866,
+                "estimatedTokens": 10217,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 40866,
+                "utf8Bytes": 40866
+              }
+            },
+            "route": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0146328125,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "routeContext": {
+                  "characters": 7098,
+                  "estimatedTokens": 1775,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 7098,
+                  "utf8Bytes": 7098
+                }
+              },
+              "total": {
+                "characters": 7490,
+                "estimatedTokens": 1873,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 7490,
+                "utf8Bytes": 7490
+              }
+            },
+            "route-refine": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.093796875,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "discoveryPacket": {
+                  "characters": 39837,
+                  "estimatedTokens": 9960,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 39837,
+                  "utf8Bytes": 39837
+                },
+                "discoveryPlan": {
+                  "characters": 658,
+                  "estimatedTokens": 165,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 658,
+                  "utf8Bytes": 658
+                },
+                "routeContext": {
+                  "characters": 7098,
+                  "estimatedTokens": 1775,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 7098,
+                  "utf8Bytes": 7098
+                }
+              },
+              "total": {
+                "characters": 48021,
+                "estimatedTokens": 12006,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 48021,
+                "utf8Bytes": 48021
               }
             }
           }
@@ -783,14 +1018,19 @@
       },
       "comparisons": {
         "bounded-exact-provenance": {
-          "cumulativeRatioToV9SingleCall": 0.3362993833244164,
+          "cumulativeRatioToV9SingleCall": 0.3579111874524822,
           "maximumStageRatioToV9": 0.323135189930448,
           "maximumStageTokenReductionPercent": 67.6864810069552
         },
-        "bounded-semantic": {
-          "cumulativeRatioToV9SingleCall": 0.09675330160786191,
-          "maximumStageRatioToV9": 0.08358910821389351,
-          "maximumStageTokenReductionPercent": 91.64108917861064
+        "bounded-semantic-model": {
+          "cumulativeRatioToV9SingleCall": 0.11036803424098218,
+          "maximumStageRatioToV9": 0.07559203671894799,
+          "maximumStageTokenReductionPercent": 92.44079632810521
+        },
+        "v10-actual": {
+          "cumulativeRatioToV9SingleCall": 0.5750007039675612,
+          "maximumStageRatioToV9": 0.2872187649593107,
+          "maximumStageTokenReductionPercent": 71.27812350406893
         },
         "v9-all-core": {
           "cumulativeRatioToV9SingleCall": 1.0,
@@ -921,7 +1161,7 @@
       },
       "strategies": {
         "bounded-exact-provenance": {
-          "cumulativeEstimatedTokens": 23886,
+          "cumulativeEstimatedTokens": 25421,
           "maximumStageBudget": {
             "estimatedHardInputCrossing": false,
             "estimatedUtilization": 0.1793046875,
@@ -971,7 +1211,7 @@
             "route": {
               "budget": {
                 "estimatedHardInputCrossing": false,
-                "estimatedUtilization": 0.0073046875,
+                "estimatedUtilization": 0.0060703125,
                 "inputBudgetTokens": 128000,
                 "thresholdTokens": {
                   "100": 128000,
@@ -984,28 +1224,66 @@
               },
               "components": {
                 "routeContext": {
-                  "characters": 3722,
-                  "estimatedTokens": 931,
+                  "characters": 3088,
+                  "estimatedTokens": 772,
                   "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                  "tokenUpperBound": 3722,
-                  "utf8Bytes": 3722
+                  "tokenUpperBound": 3088,
+                  "utf8Bytes": 3088
                 }
               },
               "total": {
-                "characters": 3739,
-                "estimatedTokens": 935,
+                "characters": 3105,
+                "estimatedTokens": 777,
                 "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                "tokenUpperBound": 3739,
-                "utf8Bytes": 3739
+                "tokenUpperBound": 3105,
+                "utf8Bytes": 3105
+              }
+            },
+            "route-refine": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0132265625,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3088,
+                  "estimatedTokens": 772,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3088,
+                  "utf8Bytes": 3088
+                },
+                "searchResultCards": {
+                  "characters": 3646,
+                  "estimatedTokens": 912,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3646,
+                  "utf8Bytes": 3646
+                }
+              },
+              "total": {
+                "characters": 6772,
+                "estimatedTokens": 1693,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 6772,
+                "utf8Bytes": 6772
               }
             }
           }
         },
-        "bounded-semantic": {
-          "cumulativeEstimatedTokens": 6872,
+        "bounded-semantic-model": {
+          "cumulativeEstimatedTokens": 7839,
           "maximumStageBudget": {
             "estimatedHardInputCrossing": false,
-            "estimatedUtilization": 0.0463828125,
+            "estimatedUtilization": 0.0419453125,
             "inputBudgetTokens": 128000,
             "thresholdTokens": {
               "100": 128000,
@@ -1016,12 +1294,12 @@
             },
             "thresholdsReachedPercent": []
           },
-          "maximumStageEstimatedTokens": 5937,
+          "maximumStageEstimatedTokens": 5369,
           "stages": {
             "author": {
               "budget": {
                 "estimatedHardInputCrossing": false,
-                "estimatedUtilization": 0.0463828125,
+                "estimatedUtilization": 0.0419453125,
                 "inputBudgetTokens": 128000,
                 "thresholdTokens": {
                   "100": 128000,
@@ -1034,25 +1312,25 @@
               },
               "components": {
                 "authoringPacket": {
-                  "characters": 23725,
-                  "estimatedTokens": 5932,
+                  "characters": 21455,
+                  "estimatedTokens": 5364,
                   "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                  "tokenUpperBound": 23725,
-                  "utf8Bytes": 23725
+                  "tokenUpperBound": 21455,
+                  "utf8Bytes": 21455
                 }
               },
               "total": {
-                "characters": 23745,
-                "estimatedTokens": 5937,
+                "characters": 21475,
+                "estimatedTokens": 5369,
                 "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                "tokenUpperBound": 23745,
-                "utf8Bytes": 23745
+                "tokenUpperBound": 21475,
+                "utf8Bytes": 21475
               }
             },
             "route": {
               "budget": {
                 "estimatedHardInputCrossing": false,
-                "estimatedUtilization": 0.0073046875,
+                "estimatedUtilization": 0.0060703125,
                 "inputBudgetTokens": 128000,
                 "thresholdTokens": {
                   "100": 128000,
@@ -1065,19 +1343,211 @@
               },
               "components": {
                 "routeContext": {
-                  "characters": 3722,
-                  "estimatedTokens": 931,
+                  "characters": 3088,
+                  "estimatedTokens": 772,
                   "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                  "tokenUpperBound": 3722,
-                  "utf8Bytes": 3722
+                  "tokenUpperBound": 3088,
+                  "utf8Bytes": 3088
                 }
               },
               "total": {
-                "characters": 3739,
-                "estimatedTokens": 935,
+                "characters": 3105,
+                "estimatedTokens": 777,
                 "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                "tokenUpperBound": 3739,
-                "utf8Bytes": 3739
+                "tokenUpperBound": 3105,
+                "utf8Bytes": 3105
+              }
+            },
+            "route-refine": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0132265625,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3088,
+                  "estimatedTokens": 772,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3088,
+                  "utf8Bytes": 3088
+                },
+                "searchResultCards": {
+                  "characters": 3646,
+                  "estimatedTokens": 912,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3646,
+                  "utf8Bytes": 3646
+                }
+              },
+              "total": {
+                "characters": 6772,
+                "estimatedTokens": 1693,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 6772,
+                "utf8Bytes": 6772
+              }
+            }
+          }
+        },
+        "v10-actual": {
+          "cumulativeEstimatedTokens": 40840,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": false,
+            "estimatedUtilization": 0.159375,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": []
+          },
+          "maximumStageEstimatedTokens": 20400,
+          "stages": {
+            "author": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.140609375,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "authoringPacket": {
+                  "characters": 70962,
+                  "estimatedTokens": 17741,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 70962,
+                  "utf8Bytes": 70962
+                },
+                "submissionEvidence": {
+                  "characters": 612,
+                  "estimatedTokens": 153,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 612,
+                  "utf8Bytes": 612
+                }
+              },
+              "total": {
+                "characters": 71991,
+                "estimatedTokens": 17998,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 71991,
+                "utf8Bytes": 71991
+              }
+            },
+            "route": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.019078125,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "routeContext": {
+                  "characters": 9375,
+                  "estimatedTokens": 2344,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 9375,
+                  "utf8Bytes": 9375
+                }
+              },
+              "total": {
+                "characters": 9767,
+                "estimatedTokens": 2442,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 9767,
+                "utf8Bytes": 9767
+              }
+            },
+            "route-refine": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.159375,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "discoveryPacket": {
+                  "characters": 70962,
+                  "estimatedTokens": 17741,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 70962,
+                  "utf8Bytes": 70962
+                },
+                "discoveryPlan": {
+                  "characters": 833,
+                  "estimatedTokens": 209,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 833,
+                  "utf8Bytes": 833
+                },
+                "routeContext": {
+                  "characters": 9375,
+                  "estimatedTokens": 2344,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 9375,
+                  "utf8Bytes": 9375
+                }
+              },
+              "total": {
+                "characters": 81598,
+                "estimatedTokens": 20400,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 81598,
+                "utf8Bytes": 81598
               }
             }
           }
@@ -1380,14 +1850,19 @@
       },
       "comparisons": {
         "bounded-exact-provenance": {
-          "cumulativeRatioToV9SingleCall": 0.2883381080244757,
+          "cumulativeRatioToV9SingleCall": 0.2913965722043102,
           "maximumStageRatioToV9": 0.28648546131501984,
           "maximumStageTokenReductionPercent": 71.35145386849801
         },
-        "bounded-semantic": {
-          "cumulativeRatioToV9SingleCall": 0.019376927760753036,
-          "maximumStageRatioToV9": 0.017524281051297153,
-          "maximumStageTokenReductionPercent": 98.24757189487029
+        "bounded-semantic-model": {
+          "cumulativeRatioToV9SingleCall": 0.02050887892913826,
+          "maximumStageRatioToV9": 0.015597768039847875,
+          "maximumStageTokenReductionPercent": 98.44022319601521
+        },
+        "v10-actual": {
+          "cumulativeRatioToV9SingleCall": 0.1363032910432118,
+          "maximumStageRatioToV9": 0.0681726075802797,
+          "maximumStageTokenReductionPercent": 93.18273924197203
         },
         "v9-all-core": {
           "cumulativeRatioToV9SingleCall": 1.0,
@@ -1518,7 +1993,7 @@
       },
       "strategies": {
         "bounded-exact-provenance": {
-          "cumulativeEstimatedTokens": 144430,
+          "cumulativeEstimatedTokens": 145962,
           "maximumStageBudget": {
             "estimatedHardInputCrossing": true,
             "estimatedUtilization": 1.121109375,
@@ -1580,7 +2055,7 @@
             "route": {
               "budget": {
                 "estimatedHardInputCrossing": false,
-                "estimatedUtilization": 0.00725,
+                "estimatedUtilization": 0.0060078125,
                 "inputBudgetTokens": 128000,
                 "thresholdTokens": {
                   "100": 128000,
@@ -1593,28 +2068,66 @@
               },
               "components": {
                 "routeContext": {
-                  "characters": 3693,
-                  "estimatedTokens": 924,
+                  "characters": 3059,
+                  "estimatedTokens": 765,
                   "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                  "tokenUpperBound": 3693,
-                  "utf8Bytes": 3693
+                  "tokenUpperBound": 3059,
+                  "utf8Bytes": 3059
                 }
               },
               "total": {
-                "characters": 3710,
-                "estimatedTokens": 928,
+                "characters": 3076,
+                "estimatedTokens": 769,
                 "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                "tokenUpperBound": 3710,
-                "utf8Bytes": 3710
+                "tokenUpperBound": 3076,
+                "utf8Bytes": 3076
+              }
+            },
+            "route-refine": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0132109375,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3059,
+                  "estimatedTokens": 765,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3059,
+                  "utf8Bytes": 3059
+                },
+                "searchResultCards": {
+                  "characters": 3664,
+                  "estimatedTokens": 916,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3664,
+                  "utf8Bytes": 3664
+                }
+              },
+              "total": {
+                "characters": 6761,
+                "estimatedTokens": 1691,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 6761,
+                "utf8Bytes": 6761
               }
             }
           }
         },
-        "bounded-semantic": {
-          "cumulativeEstimatedTokens": 9706,
+        "bounded-semantic-model": {
+          "cumulativeEstimatedTokens": 10273,
           "maximumStageBudget": {
             "estimatedHardInputCrossing": false,
-            "estimatedUtilization": 0.068578125,
+            "estimatedUtilization": 0.0610390625,
             "inputBudgetTokens": 128000,
             "thresholdTokens": {
               "100": 128000,
@@ -1625,12 +2138,12 @@
             },
             "thresholdsReachedPercent": []
           },
-          "maximumStageEstimatedTokens": 8778,
+          "maximumStageEstimatedTokens": 7813,
           "stages": {
             "author": {
               "budget": {
                 "estimatedHardInputCrossing": false,
-                "estimatedUtilization": 0.068578125,
+                "estimatedUtilization": 0.0610390625,
                 "inputBudgetTokens": 128000,
                 "thresholdTokens": {
                   "100": 128000,
@@ -1643,25 +2156,25 @@
               },
               "components": {
                 "authoringPacket": {
-                  "characters": 35089,
-                  "estimatedTokens": 8773,
+                  "characters": 31230,
+                  "estimatedTokens": 7808,
                   "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                  "tokenUpperBound": 35089,
-                  "utf8Bytes": 35089
+                  "tokenUpperBound": 31230,
+                  "utf8Bytes": 31230
                 }
               },
               "total": {
-                "characters": 35109,
-                "estimatedTokens": 8778,
+                "characters": 31250,
+                "estimatedTokens": 7813,
                 "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                "tokenUpperBound": 35109,
-                "utf8Bytes": 35109
+                "tokenUpperBound": 31250,
+                "utf8Bytes": 31250
               }
             },
             "route": {
               "budget": {
                 "estimatedHardInputCrossing": false,
-                "estimatedUtilization": 0.00725,
+                "estimatedUtilization": 0.0060078125,
                 "inputBudgetTokens": 128000,
                 "thresholdTokens": {
                   "100": 128000,
@@ -1674,19 +2187,211 @@
               },
               "components": {
                 "routeContext": {
-                  "characters": 3693,
-                  "estimatedTokens": 924,
+                  "characters": 3059,
+                  "estimatedTokens": 765,
                   "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                  "tokenUpperBound": 3693,
-                  "utf8Bytes": 3693
+                  "tokenUpperBound": 3059,
+                  "utf8Bytes": 3059
                 }
               },
               "total": {
-                "characters": 3710,
-                "estimatedTokens": 928,
+                "characters": 3076,
+                "estimatedTokens": 769,
                 "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                "tokenUpperBound": 3710,
-                "utf8Bytes": 3710
+                "tokenUpperBound": 3076,
+                "utf8Bytes": 3076
+              }
+            },
+            "route-refine": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0132109375,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3059,
+                  "estimatedTokens": 765,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3059,
+                  "utf8Bytes": 3059
+                },
+                "searchResultCards": {
+                  "characters": 3664,
+                  "estimatedTokens": 916,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3664,
+                  "utf8Bytes": 3664
+                }
+              },
+              "total": {
+                "characters": 6761,
+                "estimatedTokens": 1691,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 6761,
+                "utf8Bytes": 6761
+              }
+            }
+          }
+        },
+        "v10-actual": {
+          "cumulativeEstimatedTokens": 68275,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": false,
+            "estimatedUtilization": 0.26678125,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": []
+          },
+          "maximumStageEstimatedTokens": 34148,
+          "stages": {
+            "author": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.2399921875,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "authoringPacket": {
+                  "characters": 121847,
+                  "estimatedTokens": 30462,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 121847,
+                  "utf8Bytes": 121847
+                },
+                "submissionEvidence": {
+                  "characters": 612,
+                  "estimatedTokens": 153,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 612,
+                  "utf8Bytes": 612
+                }
+              },
+              "total": {
+                "characters": 122876,
+                "estimatedTokens": 30719,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 122876,
+                "utf8Bytes": 122876
+              }
+            },
+            "route": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.026625,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "routeContext": {
+                  "characters": 13239,
+                  "estimatedTokens": 3310,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 13239,
+                  "utf8Bytes": 13239
+                }
+              },
+              "total": {
+                "characters": 13631,
+                "estimatedTokens": 3408,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 13631,
+                "utf8Bytes": 13631
+              }
+            },
+            "route-refine": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.26678125,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "discoveryPacket": {
+                  "characters": 121847,
+                  "estimatedTokens": 30462,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 121847,
+                  "utf8Bytes": 121847
+                },
+                "discoveryPlan": {
+                  "characters": 1078,
+                  "estimatedTokens": 270,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 1078,
+                  "utf8Bytes": 1078
+                },
+                "routeContext": {
+                  "characters": 13239,
+                  "estimatedTokens": 3310,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 13239,
+                  "utf8Bytes": 13239
+                }
+              },
+              "total": {
+                "characters": 136592,
+                "estimatedTokens": 34148,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 136592,
+                "utf8Bytes": 136592
               }
             }
           }
@@ -2015,14 +2720,19 @@
       },
       "comparisons": {
         "bounded-exact-provenance": {
-          "cumulativeRatioToV9SingleCall": 0.28157693193868916,
+          "cumulativeRatioToV9SingleCall": 0.28195861949532647,
           "maximumStageRatioToV9": 0.28134577956573215,
           "maximumStageTokenReductionPercent": 71.86542204342679
         },
-        "bounded-semantic": {
-          "cumulativeRatioToV9SingleCall": 0.0033431251701296393,
-          "maximumStageRatioToV9": 0.003111972797172626,
-          "maximumStageTokenReductionPercent": 99.68880272028274
+        "bounded-semantic-model": {
+          "cumulativeRatioToV9SingleCall": 0.0033575566422841137,
+          "maximumStageRatioToV9": 0.0027447167126897925,
+          "maximumStageTokenReductionPercent": 99.72552832873102
+        },
+        "v10-actual": {
+          "cumulativeRatioToV9SingleCall": 0.024931861057767193,
+          "maximumStageRatioToV9": 0.012478247043911985,
+          "maximumStageTokenReductionPercent": 98.75217529560881
         },
         "v9-all-core": {
           "cumulativeRatioToV9SingleCall": 1.0,
@@ -2153,7 +2863,7 @@
       },
       "strategies": {
         "bounded-exact-provenance": {
-          "cumulativeEstimatedTokens": 1131656,
+          "cumulativeEstimatedTokens": 1133190,
           "maximumStageBudget": {
             "estimatedHardInputCrossing": true,
             "estimatedUtilization": 8.8338046875,
@@ -2215,7 +2925,7 @@
             "route": {
               "budget": {
                 "estimatedHardInputCrossing": false,
-                "estimatedUtilization": 0.0072578125,
+                "estimatedUtilization": 0.0060234375,
                 "inputBudgetTokens": 128000,
                 "thresholdTokens": {
                   "100": 128000,
@@ -2228,28 +2938,66 @@
               },
               "components": {
                 "routeContext": {
-                  "characters": 3698,
-                  "estimatedTokens": 925,
+                  "characters": 3064,
+                  "estimatedTokens": 766,
                   "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                  "tokenUpperBound": 3698,
-                  "utf8Bytes": 3698
+                  "tokenUpperBound": 3064,
+                  "utf8Bytes": 3064
                 }
               },
               "total": {
-                "characters": 3715,
-                "estimatedTokens": 929,
+                "characters": 3081,
+                "estimatedTokens": 771,
                 "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                "tokenUpperBound": 3715,
-                "utf8Bytes": 3715
+                "tokenUpperBound": 3081,
+                "utf8Bytes": 3081
+              }
+            },
+            "route-refine": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.01321875,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3064,
+                  "estimatedTokens": 766,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3064,
+                  "utf8Bytes": 3064
+                },
+                "searchResultCards": {
+                  "characters": 3664,
+                  "estimatedTokens": 916,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3664,
+                  "utf8Bytes": 3664
+                }
+              },
+              "total": {
+                "characters": 6766,
+                "estimatedTokens": 1692,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 6766,
+                "utf8Bytes": 6766
               }
             }
           }
         },
-        "bounded-semantic": {
-          "cumulativeEstimatedTokens": 13436,
+        "bounded-semantic-model": {
+          "cumulativeEstimatedTokens": 13494,
           "maximumStageBudget": {
             "estimatedHardInputCrossing": false,
-            "estimatedUtilization": 0.0977109375,
+            "estimatedUtilization": 0.0861796875,
             "inputBudgetTokens": 128000,
             "thresholdTokens": {
               "100": 128000,
@@ -2260,12 +3008,12 @@
             },
             "thresholdsReachedPercent": []
           },
-          "maximumStageEstimatedTokens": 12507,
+          "maximumStageEstimatedTokens": 11031,
           "stages": {
             "author": {
               "budget": {
                 "estimatedHardInputCrossing": false,
-                "estimatedUtilization": 0.0977109375,
+                "estimatedUtilization": 0.0861796875,
                 "inputBudgetTokens": 128000,
                 "thresholdTokens": {
                   "100": 128000,
@@ -2278,25 +3026,25 @@
               },
               "components": {
                 "authoringPacket": {
-                  "characters": 50006,
-                  "estimatedTokens": 12502,
+                  "characters": 44104,
+                  "estimatedTokens": 11026,
                   "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                  "tokenUpperBound": 50006,
-                  "utf8Bytes": 50006
+                  "tokenUpperBound": 44104,
+                  "utf8Bytes": 44104
                 }
               },
               "total": {
-                "characters": 50026,
-                "estimatedTokens": 12507,
+                "characters": 44124,
+                "estimatedTokens": 11031,
                 "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                "tokenUpperBound": 50026,
-                "utf8Bytes": 50026
+                "tokenUpperBound": 44124,
+                "utf8Bytes": 44124
               }
             },
             "route": {
               "budget": {
                 "estimatedHardInputCrossing": false,
-                "estimatedUtilization": 0.0072578125,
+                "estimatedUtilization": 0.0060234375,
                 "inputBudgetTokens": 128000,
                 "thresholdTokens": {
                   "100": 128000,
@@ -2309,19 +3057,211 @@
               },
               "components": {
                 "routeContext": {
-                  "characters": 3698,
-                  "estimatedTokens": 925,
+                  "characters": 3064,
+                  "estimatedTokens": 766,
                   "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                  "tokenUpperBound": 3698,
-                  "utf8Bytes": 3698
+                  "tokenUpperBound": 3064,
+                  "utf8Bytes": 3064
                 }
               },
               "total": {
-                "characters": 3715,
-                "estimatedTokens": 929,
+                "characters": 3081,
+                "estimatedTokens": 771,
                 "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
-                "tokenUpperBound": 3715,
-                "utf8Bytes": 3715
+                "tokenUpperBound": 3081,
+                "utf8Bytes": 3081
+              }
+            },
+            "route-refine": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.01321875,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3064,
+                  "estimatedTokens": 766,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3064,
+                  "utf8Bytes": 3064
+                },
+                "searchResultCards": {
+                  "characters": 3664,
+                  "estimatedTokens": 916,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3664,
+                  "utf8Bytes": 3664
+                }
+              },
+              "total": {
+                "characters": 6766,
+                "estimatedTokens": 1692,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 6766,
+                "utf8Bytes": 6766
+              }
+            }
+          }
+        },
+        "v10-actual": {
+          "cumulativeEstimatedTokens": 100201,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": false,
+            "estimatedUtilization": 0.391796875,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": []
+          },
+          "maximumStageEstimatedTokens": 50150,
+          "stages": {
+            "author": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.3554921875,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "authoringPacket": {
+                  "characters": 180980,
+                  "estimatedTokens": 45245,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 180980,
+                  "utf8Bytes": 180980
+                },
+                "submissionEvidence": {
+                  "characters": 612,
+                  "estimatedTokens": 153,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 612,
+                  "utf8Bytes": 612
+                }
+              },
+              "total": {
+                "characters": 182009,
+                "estimatedTokens": 45503,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 182009,
+                "utf8Bytes": 182009
+              }
+            },
+            "route": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.03553125,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "routeContext": {
+                  "characters": 17797,
+                  "estimatedTokens": 4450,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 17797,
+                  "utf8Bytes": 17797
+                }
+              },
+              "total": {
+                "characters": 18189,
+                "estimatedTokens": 4548,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 18189,
+                "utf8Bytes": 18189
+              }
+            },
+            "route-refine": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.391796875,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "discoveryPacket": {
+                  "characters": 180980,
+                  "estimatedTokens": 45245,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 180980,
+                  "utf8Bytes": 180980
+                },
+                "discoveryPlan": {
+                  "characters": 1393,
+                  "estimatedTokens": 349,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 1393,
+                  "utf8Bytes": 1393
+                },
+                "routeContext": {
+                  "characters": 17797,
+                  "estimatedTokens": 4450,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 17797,
+                  "utf8Bytes": 17797
+                }
+              },
+              "total": {
+                "characters": 200598,
+                "estimatedTokens": 50150,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 200598,
+                "utf8Bytes": 200598
               }
             }
           }

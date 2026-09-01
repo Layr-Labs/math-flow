@@ -191,17 +191,23 @@ def make_v10_context_strategy(
             "createProgramIds": [],
             "createResultIds": [],
         }
-        authoring_packet = authoring_packet_builder(
+        discovery_packet = authoring_packet_builder(
             state,
             claims,
             route_plan,
             route_context=route_context,
         )
+        authoring_packet = copy.deepcopy(discovery_packet)
         return {
             "route": {
                 "routeContext": route_context,
                 "acceptedClaimAssessments": copy.deepcopy(claims),
-                "submissionEvidence": copy.deepcopy(evidence),
+            },
+            "route-refine": {
+                "routeContext": route_context,
+                "acceptedClaimAssessments": copy.deepcopy(claims),
+                "discoveryPlan": copy.deepcopy(route_plan),
+                "discoveryPacket": discovery_packet,
             },
             "author": {
                 "authoringPacket": authoring_packet,
@@ -785,8 +791,16 @@ def _semantic_record(
     result = {
         key: copy.deepcopy(item)
         for key, item in value.items()
-        if key not in PROVENANCE_FIELDS and key != "digest"
+        if key not in PROVENANCE_FIELDS and key not in {"digest", "support"}
     }
+    support = value.get("support")
+    if isinstance(support, dict):
+        result["supportCounts"] = {
+            str(field): len(items)
+            for field, items in sorted(support.items())
+            if isinstance(items, list)
+        }
+        result["supportDigest"] = "sha256:" + sha256_json(support)
     result["provenanceCounts"] = {
         field: len(value[field])
         for field in sorted(PROVENANCE_FIELDS)
@@ -805,7 +819,7 @@ def build_bounded_local_packet_model(
     maximum_search_results: int = 8,
     maximum_exact_results: int = 128,
 ) -> dict[str, Mapping[str, object]]:
-    """Model a two-call fractal route/author flow without guessing V10's schema."""
+    """Model a route-refine-author flow without guessing V10's schema."""
 
     state = fixture.get("state")
     claims = fixture.get("acceptedClaims")
@@ -880,7 +894,6 @@ def build_bounded_local_packet_model(
         ],
         "collapsedRootChildCount": max(0, len(children["root"]) - len(route_child_ids)),
         "acceptedClaimAssessments": copy.deepcopy(claims),
-        "submissionEvidence": copy.deepcopy(evidence),
     }
 
     catalog = build_trusted_search_catalog(state)
@@ -947,6 +960,10 @@ def build_bounded_local_packet_model(
     }
     return {
         "route": {"routeContext": route_context},
+        "route-refine": {
+            "routeContext": route_context,
+            "searchResultCards": search_cards,
+        },
         "author": {"authoringPacket": author_context},
     }
 
