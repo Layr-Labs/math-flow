@@ -96,15 +96,19 @@ class BudgetedCapturingTransportTests(unittest.TestCase):
 
 
 class RevisedAccountingGoldTests(unittest.TestCase):
-    def test_non_main_workflow_targets_the_final_k2_only_v2_manifest(self) -> None:
+    def test_non_main_workflow_targets_the_final_k2_only_v3_manifest(self) -> None:
         workflow = (
             ROOT / ".github/workflows/project-research-v7-serial.yml"
         ).read_text(encoding="utf-8")
         self.assertIn(
-            "--manifest protocol/experiments/bssc-local-builder-v10-v2/manifest.json",
+            "--manifest protocol/experiments/bssc-local-builder-v10-v3/manifest.json",
             workflow,
         )
         self.assertIn(
+            '--output "${RUNNER_TEMP}/bssc-local-builder-v10-v3"',
+            workflow,
+        )
+        self.assertNotIn(
             '--output "${RUNNER_TEMP}/bssc-local-builder-v10-v2"',
             workflow,
         )

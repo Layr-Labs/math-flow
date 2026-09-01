@@ -47,14 +47,14 @@ jobs:
             exit 1
           fi
           python -m experiments.bssc_local_builder_v10 \
-            --manifest protocol/experiments/bssc-local-builder-v10-v2/manifest.json \
-            --output "${RUNNER_TEMP}/bssc-local-builder-v10-v2"
+            --manifest protocol/experiments/bssc-local-builder-v10-v3/manifest.json \
+            --output "${RUNNER_TEMP}/bssc-local-builder-v10-v3"
       - name: Upload unpublished local Builder V10 artifacts
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: "bssc-local-builder-v10-v2-${{ github.run_id }}"
-          path: "${{ runner.temp }}/bssc-local-builder-v10-v2"
+          name: "bssc-local-builder-v10-v3-${{ github.run_id }}"
+          path: "${{ runner.temp }}/bssc-local-builder-v10-v3"
           if-no-files-found: error
           retention-days: 14
 
