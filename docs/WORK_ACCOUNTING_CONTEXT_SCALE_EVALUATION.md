@@ -62,9 +62,11 @@ Every size runs four cases, each through all three V2 stages:
 3. **Solving zero-out:** one leaf program becomes completed. `W+` must set its
    direct work and incidence to zero, while same-world `W-` may retain positive
    work for the completed-in-the-realized-world node.
-4. **Broad local subtree:** the selected non-root program exposes the configured
-   hot branch while more distant descendants remain collapsed behind boundary
-   summaries.
+4. **Broad local subtree:** the selected non-root program exposes its descendant
+   closure through the configured depth; children beyond that depth must be
+   excluded from exact nodes and represented by boundary summaries. The default
+   width-scaling matrix happens to select terminal immediate children, so a
+   separate focused deep-tree fixture requires a nonempty out-of-depth boundary.
 
 Capacity crossings and semantic/adversarial failures are separate report
 fields. A case can fit but fail an invariant, or cross the nominal input budget
@@ -93,7 +95,7 @@ input-only threshold.
 The largest envelopes are:
 
 - dependency closure `W-`: 1,282,452 proxy bytes / 320,613 estimated tokens;
-- broad-local-subtree `W-`: 1,209,826 proxy bytes / 302,457 estimated tokens;
+- broad-local-subtree `W-`: 1,221,603 proxy bytes / 305,401 estimated tokens;
 - topology-revision `W-`: 955,224 proxy bytes / 238,806 estimated tokens; and
 - solving-zero-out `W-`: 923,509 proxy bytes / 230,878 estimated tokens.
 

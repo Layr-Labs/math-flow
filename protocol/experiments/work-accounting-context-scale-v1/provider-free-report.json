@@ -333,6 +333,8 @@
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": null,
+        "broadExpectedDescendantCount": null,
         "dependencySeedPolicy": "preexpanded-result-owner-programs",
         "impactBoundarySummaryCount": 0,
         "impactIncludedProgramCount": 16,
@@ -677,6 +679,8 @@
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": null,
+        "broadExpectedDescendantCount": null,
         "dependencySeedPolicy": null,
         "impactBoundarySummaryCount": 2,
         "impactIncludedProgramCount": 11,
@@ -1022,6 +1026,8 @@
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": null,
+        "broadExpectedDescendantCount": null,
         "dependencySeedPolicy": null,
         "impactBoundarySummaryCount": 3,
         "impactIncludedProgramCount": 5,
@@ -1042,8 +1048,8 @@
         "inputBudgetMeaning": "probe threshold applied to the model-input proxy; not an observed provider tokenizer count or configured model context window",
         "inputBudgetTokens": 128000,
         "maximumStage": "no-access",
-        "maximumStageEstimatedModelInputTokens": 8823,
-        "maximumStageSerializedTransportEstimatedTokens": 9672,
+        "maximumStageEstimatedModelInputTokens": 9124,
+        "maximumStageSerializedTransportEstimatedTokens": 10003,
         "stagesCrossingModelInputProxyBudget": [],
         "stagesCrossingSerializedTransportBudget": [],
         "stagesWhoseModelInputProxyUpperBoundCrossesBudget": []
@@ -1059,12 +1065,12 @@
         "result_count": 24
       },
       "fixtureBindings": {
-        "afterKnowledgeStateDigest": "sha256:d06a7e0b9588027b7d4c71f716815c70ba50113a275c99c84b01f150e178b104",
+        "afterKnowledgeStateDigest": "sha256:e0b50a2ec6869c79494b4f02b6cc9794d756258ea0d96080c09099d75a7bdb8d",
         "baseAccountingStateDigest": "sha256:628e604fbf1809db55fbf7861c1cd28d25d5bb4660ade204d085e6a9b6fd9e5e",
         "beforeKnowledgeStateDigest": "sha256:bbd82ed3f2c61fba43ab6d498ef227e6e629ec97b7c1f19da1f143f330c32ed3",
-        "noAccessStateDigest": "sha256:c4609de9fec2bc4d9afcc592e19cc458fae8f83445e99971fe42224d3b7d288f",
-        "topologyAlignmentDigest": "sha256:6c45de666e4ca9c684cb7907fb9f46158914b9c779b7e3be158113ec1a77f303",
-        "withAccessStateDigest": "sha256:e5bc6b1d771988b8116f8c72cdeffd046aaa6fffb42cf764e0655fcb7427fd6d"
+        "noAccessStateDigest": "sha256:a9acb0dc371565be974383a38a9c2fe4f716ea59a4ca5279b755278e79a02980",
+        "topologyAlignmentDigest": "sha256:230a8fb9ff567a9969af1068cce484ef8e76911a3d0e8267af90ce9146209250",
+        "withAccessStateDigest": "sha256:cd7d0bd0cbafef25b17b789cfe5515b147367fae002b51394df6a4f45464a698"
       },
       "providerActivity": {
         "externalProviderCalls": 0,
@@ -1078,6 +1084,7 @@
           "hotBranchIncludedAtConfiguredDepth": true,
           "localCaptureOnlyNoExternalProviderCalls": true,
           "noAccessOmitsRawEvidenceAndManifest": true,
+          "outOfDepthChildrenCollapsedAtBoundary": true,
           "requiredPrimitiveUpdatesCoveredByImpactContext": true,
           "safeFactsAndWithAccessReceiveExactEvidence": true,
           "strictlyPositiveSyntheticReduction": true
@@ -1134,11 +1141,11 @@
         "no-access": {
           "components": {
             "actualTransportEnvelope": {
-              "conservativeTokenUpperBound": 38686,
+              "conservativeTokenUpperBound": 40009,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 9672,
-              "utf8Bytes": 38686
+              "estimatedTokens": 10003,
+              "utf8Bytes": 40009
             },
             "baseAccountingState": {
               "conservativeTokenUpperBound": 8446,
@@ -1155,28 +1162,28 @@
               "utf8Bytes": 8599
             },
             "governedRequest": {
-              "conservativeTokenUpperBound": 31946,
+              "conservativeTokenUpperBound": 33149,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 7987,
-              "utf8Bytes": 31946
+              "estimatedTokens": 8288,
+              "utf8Bytes": 33149
             },
             "impactContext": {
-              "conservativeTokenUpperBound": 10214,
+              "conservativeTokenUpperBound": 11417,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 2554,
-              "utf8Bytes": 10214
+              "estimatedTokens": 2855,
+              "utf8Bytes": 11417
             },
             "modelInputProxy": {
-              "conservativeTokenUpperBound": 35292,
+              "conservativeTokenUpperBound": 36495,
               "conservativeUpperBoundMethod": "message content plus response-format bytes (one token per byte)",
               "estimatedTokenMethod": "ceil((message-content-utf8-bytes + compact-response-format-bytes)/4)",
-              "estimatedTokens": 8823,
-              "messageContentBytes": 33866,
+              "estimatedTokens": 9124,
+              "messageContentBytes": 35069,
               "omittedUnknownOverhead": "provider tokenizer chat framing/control tokens",
               "structuredOutputSchemaBytes": 1426,
-              "utf8Bytes": 35292
+              "utf8Bytes": 36495
             },
             "rawSubmissionEvidence": {
               "conservativeTokenUpperBound": 0,
@@ -1200,16 +1207,16 @@
               "utf8Bytes": 991
             },
             "stageInput": {
-              "conservativeTokenUpperBound": 21003,
+              "conservativeTokenUpperBound": 22206,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 5251,
-              "utf8Bytes": 21003
+              "estimatedTokens": 5552,
+              "utf8Bytes": 22206
             }
           },
           "configuredMaxOutputTokens": 16000,
-          "estimatedInputPlusConfiguredMaxOutputTokens": 24823,
-          "requestDigest": "sha256:5bec8785a42106ea11b4d71b74a14d27313252be166c72bce6f16361f703d89b"
+          "estimatedInputPlusConfiguredMaxOutputTokens": 25124,
+          "requestDigest": "sha256:1324105578e48c33f3818c54c078015577e74923fe2fbdc947d1d7864e99ace8"
         },
         "safe-facts": {
           "components": {
@@ -1282,16 +1289,16 @@
           },
           "configuredMaxOutputTokens": 12000,
           "estimatedInputPlusConfiguredMaxOutputTokens": 17168,
-          "requestDigest": "sha256:03d68c11b90ea619cefe3d105b6b9614056fc2845950ba2ebe8cb1b994b1d6a4"
+          "requestDigest": "sha256:f24902838aeb3f97bc380cdc3dbcd46ebea07a0bd2d31d70ba997acd5679dca3"
         },
         "with-access": {
           "components": {
             "actualTransportEnvelope": {
-              "conservativeTokenUpperBound": 34500,
+              "conservativeTokenUpperBound": 35823,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 8625,
-              "utf8Bytes": 34500
+              "estimatedTokens": 8956,
+              "utf8Bytes": 35823
             },
             "baseAccountingState": {
               "conservativeTokenUpperBound": 8446,
@@ -1308,28 +1315,28 @@
               "utf8Bytes": 822
             },
             "governedRequest": {
-              "conservativeTokenUpperBound": 23092,
+              "conservativeTokenUpperBound": 24295,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 5773,
-              "utf8Bytes": 23092
+              "estimatedTokens": 6074,
+              "utf8Bytes": 24295
             },
             "impactContext": {
-              "conservativeTokenUpperBound": 10214,
+              "conservativeTokenUpperBound": 11417,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 2554,
-              "utf8Bytes": 10214
+              "estimatedTokens": 2855,
+              "utf8Bytes": 11417
             },
             "modelInputProxy": {
-              "conservativeTokenUpperBound": 31970,
+              "conservativeTokenUpperBound": 33173,
               "conservativeUpperBoundMethod": "message content plus response-format bytes (one token per byte)",
               "estimatedTokenMethod": "ceil((message-content-utf8-bytes + compact-response-format-bytes)/4)",
-              "estimatedTokens": 7993,
-              "messageContentBytes": 30544,
+              "estimatedTokens": 8294,
+              "messageContentBytes": 31747,
               "omittedUnknownOverhead": "provider tokenizer chat framing/control tokens",
               "structuredOutputSchemaBytes": 1426,
-              "utf8Bytes": 31970
+              "utf8Bytes": 33173
             },
             "rawSubmissionEvidence": {
               "conservativeTokenUpperBound": 4096,
@@ -1353,23 +1360,25 @@
               "utf8Bytes": 991
             },
             "stageInput": {
-              "conservativeTokenUpperBound": 12147,
+              "conservativeTokenUpperBound": 13350,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 3037,
-              "utf8Bytes": 12147
+              "estimatedTokens": 3338,
+              "utf8Bytes": 13350
             }
           },
           "configuredMaxOutputTokens": 16000,
-          "estimatedInputPlusConfiguredMaxOutputTokens": 23993,
-          "requestDigest": "sha256:cd0f9a038875203016d04f318d765ad2bd25daa4f4eebd5df708e30e2e94cb95"
+          "estimatedInputPlusConfiguredMaxOutputTokens": 24294,
+          "requestDigest": "sha256:e377ecb063f5c109de72d25ec710340fc8e0308f2ba118bed6f5c55f6fb57b7d"
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": 0,
+        "broadExpectedDescendantCount": 5,
         "dependencySeedPolicy": null,
         "impactBoundarySummaryCount": 7,
         "impactIncludedProgramCount": 9,
-        "impactSemanticResultRefCount": 14,
+        "impactSemanticResultRefCount": 17,
         "noAccessRequiredUpdateCount": 0,
         "processedSubmissionCount": 24,
         "programCount": 16,
@@ -1710,6 +1719,8 @@
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": null,
+        "broadExpectedDescendantCount": null,
         "dependencySeedPolicy": "preexpanded-result-owner-programs",
         "impactBoundarySummaryCount": 0,
         "impactIncludedProgramCount": 64,
@@ -2054,6 +2065,8 @@
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": null,
+        "broadExpectedDescendantCount": null,
         "dependencySeedPolicy": null,
         "impactBoundarySummaryCount": 6,
         "impactIncludedProgramCount": 19,
@@ -2399,6 +2412,8 @@
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": null,
+        "broadExpectedDescendantCount": null,
         "dependencySeedPolicy": null,
         "impactBoundarySummaryCount": 7,
         "impactIncludedProgramCount": 9,
@@ -2419,7 +2434,7 @@
         "inputBudgetMeaning": "probe threshold applied to the model-input proxy; not an observed provider tokenizer count or configured model context window",
         "inputBudgetTokens": 128000,
         "maximumStage": "no-access",
-        "maximumStageEstimatedModelInputTokens": 23660,
+        "maximumStageEstimatedModelInputTokens": 23661,
         "maximumStageSerializedTransportEstimatedTokens": 26124,
         "stagesCrossingModelInputProxyBudget": [],
         "stagesCrossingSerializedTransportBudget": [],
@@ -2436,12 +2451,12 @@
         "result_count": 64
       },
       "fixtureBindings": {
-        "afterKnowledgeStateDigest": "sha256:a43356ed84a3c856d11e4d9906c184aada5db081620d5e2f366ce70155760707",
+        "afterKnowledgeStateDigest": "sha256:62036ff46303eea42d0ecff67e55396b7a093e33bf61167c3ef10a0c512e3259",
         "baseAccountingStateDigest": "sha256:0a23c078f688b7176f8a5851dd8bb54755c4663ceca0d9c72bfe78a2f3c4ae92",
         "beforeKnowledgeStateDigest": "sha256:334fc40fc318eb48756dee8962a54b704280e3daf8ddc21ff204969325a093a8",
-        "noAccessStateDigest": "sha256:adbc147b4076228f27326162948809b51db424864fda2dbee88723b0360cfcea",
-        "topologyAlignmentDigest": "sha256:74984f1a959f8069f9a7eaa9e7fd66e1bdbabf09f61c405b54cb5e3e37fe8f08",
-        "withAccessStateDigest": "sha256:5241a56491f6a8b0c56798ba43a715573d2bf0755258b60ace9dea7c14573e85"
+        "noAccessStateDigest": "sha256:0a980d5b24225571c13aa800f1c31bca7d1abc4260bdf2cb7daf2cd40612e634",
+        "topologyAlignmentDigest": "sha256:3614fc85d68116cd18c31b8c35450936a0a4ff8329f459b7f44d510f084b3201",
+        "withAccessStateDigest": "sha256:dec6454f2f3bdb1b4d6f2137470a72b5303fe8c830e7defb4f0bc3c0797f6ae1"
       },
       "providerActivity": {
         "externalProviderCalls": 0,
@@ -2455,6 +2470,7 @@
           "hotBranchIncludedAtConfiguredDepth": true,
           "localCaptureOnlyNoExternalProviderCalls": true,
           "noAccessOmitsRawEvidenceAndManifest": true,
+          "outOfDepthChildrenCollapsedAtBoundary": true,
           "requiredPrimitiveUpdatesCoveredByImpactContext": true,
           "safeFactsAndWithAccessReceiveExactEvidence": true,
           "strictlyPositiveSyntheticReduction": true
@@ -2486,11 +2502,11 @@
           "utf8Bytes": 144299
         },
         "noAccessState": {
-          "conservativeTokenUpperBound": 30745,
+          "conservativeTokenUpperBound": 30746,
           "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
           "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
           "estimatedTokens": 7687,
-          "utf8Bytes": 30745
+          "utf8Bytes": 30746
         },
         "topologyAlignment": {
           "conservativeTokenUpperBound": 30791,
@@ -2500,22 +2516,22 @@
           "utf8Bytes": 30791
         },
         "withAccessState": {
-          "conservativeTokenUpperBound": 30789,
+          "conservativeTokenUpperBound": 30790,
           "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
           "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
           "estimatedTokens": 7698,
-          "utf8Bytes": 30789
+          "utf8Bytes": 30790
         }
       },
       "stages": {
         "no-access": {
           "components": {
             "actualTransportEnvelope": {
-              "conservativeTokenUpperBound": 104494,
+              "conservativeTokenUpperBound": 104495,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
               "estimatedTokens": 26124,
-              "utf8Bytes": 104494
+              "utf8Bytes": 104495
             },
             "baseAccountingState": {
               "conservativeTokenUpperBound": 30637,
@@ -2525,18 +2541,18 @@
               "utf8Bytes": 30637
             },
             "frozenWithAccessState": {
-              "conservativeTokenUpperBound": 30789,
+              "conservativeTokenUpperBound": 30790,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
               "estimatedTokens": 7698,
-              "utf8Bytes": 30789
+              "utf8Bytes": 30790
             },
             "governedRequest": {
-              "conservativeTokenUpperBound": 91294,
+              "conservativeTokenUpperBound": 91295,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
               "estimatedTokens": 22824,
-              "utf8Bytes": 91294
+              "utf8Bytes": 91295
             },
             "impactContext": {
               "conservativeTokenUpperBound": 25181,
@@ -2546,14 +2562,14 @@
               "utf8Bytes": 25181
             },
             "modelInputProxy": {
-              "conservativeTokenUpperBound": 94640,
+              "conservativeTokenUpperBound": 94641,
               "conservativeUpperBoundMethod": "message content plus response-format bytes (one token per byte)",
               "estimatedTokenMethod": "ceil((message-content-utf8-bytes + compact-response-format-bytes)/4)",
-              "estimatedTokens": 23660,
-              "messageContentBytes": 93214,
+              "estimatedTokens": 23661,
+              "messageContentBytes": 93215,
               "omittedUnknownOverhead": "provider tokenizer chat framing/control tokens",
               "structuredOutputSchemaBytes": 1426,
-              "utf8Bytes": 94640
+              "utf8Bytes": 94641
             },
             "rawSubmissionEvidence": {
               "conservativeTokenUpperBound": 0,
@@ -2577,16 +2593,16 @@
               "utf8Bytes": 991
             },
             "stageInput": {
-              "conservativeTokenUpperBound": 58160,
+              "conservativeTokenUpperBound": 58161,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 14540,
-              "utf8Bytes": 58160
+              "estimatedTokens": 14541,
+              "utf8Bytes": 58161
             }
           },
           "configuredMaxOutputTokens": 16000,
-          "estimatedInputPlusConfiguredMaxOutputTokens": 39660,
-          "requestDigest": "sha256:f52123e32fc469ca6371613c8af5175d2c56a53a81a3b8577945b578057e716d"
+          "estimatedInputPlusConfiguredMaxOutputTokens": 39661,
+          "requestDigest": "sha256:8ccf79afddb60bc313fe867ba7604f6dd99118c53fa0aa61d3e1ee062379ba9c"
         },
         "safe-facts": {
           "components": {
@@ -2659,7 +2675,7 @@
           },
           "configuredMaxOutputTokens": 12000,
           "estimatedInputPlusConfiguredMaxOutputTokens": 22715,
-          "requestDigest": "sha256:7409cda9eb440b83fedcef27a4ade7861abad6b16be3bdb2cf7a875458b8351a"
+          "requestDigest": "sha256:285978856b0ff0c1cf78eb2da717bf982c66e918c0998d87a486cb7418fcd808"
         },
         "with-access": {
           "components": {
@@ -2739,10 +2755,12 @@
           },
           "configuredMaxOutputTokens": 16000,
           "estimatedInputPlusConfiguredMaxOutputTokens": 33282,
-          "requestDigest": "sha256:b7d3d430d0d3636d0034e585ffff00a69b1f3a9ba4242b22d567136816074c7f"
+          "requestDigest": "sha256:8b1ba62ed9e694ef956527d4960747c04a4e8a1f011a229b5035f38e9e829c1a"
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": 0,
+        "broadExpectedDescendantCount": 9,
         "dependencySeedPolicy": null,
         "impactBoundarySummaryCount": 47,
         "impactIncludedProgramCount": 17,
@@ -3090,6 +3108,8 @@
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": null,
+        "broadExpectedDescendantCount": null,
         "dependencySeedPolicy": "preexpanded-result-owner-programs",
         "impactBoundarySummaryCount": 127,
         "impactIncludedProgramCount": 129,
@@ -3437,6 +3457,8 @@
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": null,
+        "broadExpectedDescendantCount": null,
         "dependencySeedPolicy": null,
         "impactBoundarySummaryCount": 14,
         "impactIncludedProgramCount": 35,
@@ -3785,6 +3807,8 @@
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": null,
+        "broadExpectedDescendantCount": null,
         "dependencySeedPolicy": null,
         "impactBoundarySummaryCount": 15,
         "impactIncludedProgramCount": 17,
@@ -3805,8 +3829,8 @@
         "inputBudgetMeaning": "probe threshold applied to the model-input proxy; not an observed provider tokenizer count or configured model context window",
         "inputBudgetTokens": 128000,
         "maximumStage": "no-access",
-        "maximumStageEstimatedModelInputTokens": 79519,
-        "maximumStageSerializedTransportEstimatedTokens": 88181,
+        "maximumStageEstimatedModelInputTokens": 80991,
+        "maximumStageSerializedTransportEstimatedTokens": 89798,
         "stagesCrossingModelInputProxyBudget": [],
         "stagesCrossingSerializedTransportBudget": [],
         "stagesWhoseModelInputProxyUpperBoundCrossesBudget": [
@@ -3825,12 +3849,12 @@
         "result_count": 128
       },
       "fixtureBindings": {
-        "afterKnowledgeStateDigest": "sha256:94e2d8fb7f749a86f218985a8e70afed453585510295b4ce74597698b9f91590",
+        "afterKnowledgeStateDigest": "sha256:ee080b4cd5d8e89eb5af1a50b10d5c8117fb31f36284c8d83280b3243bc4caaf",
         "baseAccountingStateDigest": "sha256:83dfa14baf6ed1b9ee89754b498969828ac7fab13ffa0058b9f0194c7c70b18f",
         "beforeKnowledgeStateDigest": "sha256:390c777c0d335e5b806fdcf627e2f7c9d675347b90780a3e456aa7270a7a59ff",
-        "noAccessStateDigest": "sha256:6a3a527efb831e2a50a747c292c8e6f5f1985d519b10aa7b9a6c7592627a7825",
-        "topologyAlignmentDigest": "sha256:1106af31ee2fde1683678ba76bb579ad935a48c3367ccb51e2a7de2eab2203da",
-        "withAccessStateDigest": "sha256:43451a6d56c34fb30a67d79a21d180d6e35f9f5dd72b6ddef6e061b96bfd44f0"
+        "noAccessStateDigest": "sha256:2583d19e830c8385904d2a439b469d2a862ca4fdbbc4387364ca78f051b3dbcf",
+        "topologyAlignmentDigest": "sha256:40a3db63143f7e225b5ff909c5714c436fd8452930e4c5463678ba85f0076628",
+        "withAccessStateDigest": "sha256:0566249001e33ae746d11c129feb4ab8afdc52ecca7a2f1e097be16bc09883e2"
       },
       "providerActivity": {
         "externalProviderCalls": 0,
@@ -3844,6 +3868,7 @@
           "hotBranchIncludedAtConfiguredDepth": true,
           "localCaptureOnlyNoExternalProviderCalls": true,
           "noAccessOmitsRawEvidenceAndManifest": true,
+          "outOfDepthChildrenCollapsedAtBoundary": true,
           "requiredPrimitiveUpdatesCoveredByImpactContext": true,
           "safeFactsAndWithAccessReceiveExactEvidence": true,
           "strictlyPositiveSyntheticReduction": true
@@ -3875,11 +3900,11 @@
           "utf8Bytes": 359508
         },
         "noAccessState": {
-          "conservativeTokenUpperBound": 115426,
+          "conservativeTokenUpperBound": 115427,
           "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
           "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
           "estimatedTokens": 28857,
-          "utf8Bytes": 115426
+          "utf8Bytes": 115427
         },
         "topologyAlignment": {
           "conservativeTokenUpperBound": 90567,
@@ -3889,22 +3914,22 @@
           "utf8Bytes": 90567
         },
         "withAccessState": {
-          "conservativeTokenUpperBound": 115470,
+          "conservativeTokenUpperBound": 115471,
           "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
           "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
           "estimatedTokens": 28868,
-          "utf8Bytes": 115470
+          "utf8Bytes": 115471
         }
       },
       "stages": {
         "no-access": {
           "components": {
             "actualTransportEnvelope": {
-              "conservativeTokenUpperBound": 352724,
+              "conservativeTokenUpperBound": 359189,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 88181,
-              "utf8Bytes": 352724
+              "estimatedTokens": 89798,
+              "utf8Bytes": 359189
             },
             "baseAccountingState": {
               "conservativeTokenUpperBound": 115318,
@@ -3914,35 +3939,35 @@
               "utf8Bytes": 115318
             },
             "frozenWithAccessState": {
-              "conservativeTokenUpperBound": 115470,
+              "conservativeTokenUpperBound": 115471,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
               "estimatedTokens": 28868,
-              "utf8Bytes": 115470
+              "utf8Bytes": 115471
             },
             "governedRequest": {
-              "conservativeTokenUpperBound": 314728,
+              "conservativeTokenUpperBound": 320617,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 78682,
-              "utf8Bytes": 314728
+              "estimatedTokens": 80155,
+              "utf8Bytes": 320617
             },
             "impactContext": {
-              "conservativeTokenUpperBound": 79253,
+              "conservativeTokenUpperBound": 85141,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 19814,
-              "utf8Bytes": 79253
+              "estimatedTokens": 21286,
+              "utf8Bytes": 85141
             },
             "modelInputProxy": {
-              "conservativeTokenUpperBound": 318074,
+              "conservativeTokenUpperBound": 323963,
               "conservativeUpperBoundMethod": "message content plus response-format bytes (one token per byte)",
               "estimatedTokenMethod": "ceil((message-content-utf8-bytes + compact-response-format-bytes)/4)",
-              "estimatedTokens": 79519,
-              "messageContentBytes": 316648,
+              "estimatedTokens": 80991,
+              "messageContentBytes": 322537,
               "omittedUnknownOverhead": "provider tokenizer chat framing/control tokens",
               "structuredOutputSchemaBytes": 1426,
-              "utf8Bytes": 318074
+              "utf8Bytes": 323963
             },
             "rawSubmissionEvidence": {
               "conservativeTokenUpperBound": 0,
@@ -3966,16 +3991,16 @@
               "utf8Bytes": 991
             },
             "stageInput": {
-              "conservativeTokenUpperBound": 196913,
+              "conservativeTokenUpperBound": 202802,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 49229,
-              "utf8Bytes": 196913
+              "estimatedTokens": 50701,
+              "utf8Bytes": 202802
             }
           },
           "configuredMaxOutputTokens": 16000,
-          "estimatedInputPlusConfiguredMaxOutputTokens": 95519,
-          "requestDigest": "sha256:4945cc5c3bb9bde025733f19f24c0d2e40200f211bb1c69b70a771b9d38e18ca"
+          "estimatedInputPlusConfiguredMaxOutputTokens": 96991,
+          "requestDigest": "sha256:3516d5b25105bc743a064ddea11992b020e984a447167e7e02ddd46e1bf41696"
         },
         "safe-facts": {
           "components": {
@@ -4048,16 +4073,16 @@
           },
           "configuredMaxOutputTokens": 12000,
           "estimatedInputPlusConfiguredMaxOutputTokens": 43886,
-          "requestDigest": "sha256:2638e82a227ab819d3ccfd745cd79b40fbe57d556d27d7967ead76880b34e16f"
+          "requestDigest": "sha256:008b586377833e4c8fecad1fc0560d19b6dade0734281b318d4c26d9b260e7f8"
         },
         "with-access": {
           "components": {
             "actualTransportEnvelope": {
-              "conservativeTokenUpperBound": 229939,
+              "conservativeTokenUpperBound": 236403,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 57485,
-              "utf8Bytes": 229939
+              "estimatedTokens": 59101,
+              "utf8Bytes": 236403
             },
             "baseAccountingState": {
               "conservativeTokenUpperBound": 115318,
@@ -4074,28 +4099,28 @@
               "utf8Bytes": 822
             },
             "governedRequest": {
-              "conservativeTokenUpperBound": 199003,
+              "conservativeTokenUpperBound": 204891,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 49751,
-              "utf8Bytes": 199003
+              "estimatedTokens": 51223,
+              "utf8Bytes": 204891
             },
             "impactContext": {
-              "conservativeTokenUpperBound": 79253,
+              "conservativeTokenUpperBound": 85141,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 19814,
-              "utf8Bytes": 79253
+              "estimatedTokens": 21286,
+              "utf8Bytes": 85141
             },
             "modelInputProxy": {
-              "conservativeTokenUpperBound": 207881,
+              "conservativeTokenUpperBound": 213769,
               "conservativeUpperBoundMethod": "message content plus response-format bytes (one token per byte)",
               "estimatedTokenMethod": "ceil((message-content-utf8-bytes + compact-response-format-bytes)/4)",
-              "estimatedTokens": 51971,
-              "messageContentBytes": 206455,
+              "estimatedTokens": 53443,
+              "messageContentBytes": 212343,
               "omittedUnknownOverhead": "provider tokenizer chat framing/control tokens",
               "structuredOutputSchemaBytes": 1426,
-              "utf8Bytes": 207881
+              "utf8Bytes": 213769
             },
             "rawSubmissionEvidence": {
               "conservativeTokenUpperBound": 4096,
@@ -4119,23 +4144,25 @@
               "utf8Bytes": 991
             },
             "stageInput": {
-              "conservativeTokenUpperBound": 81186,
+              "conservativeTokenUpperBound": 87074,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 20297,
-              "utf8Bytes": 81186
+              "estimatedTokens": 21769,
+              "utf8Bytes": 87074
             }
           },
           "configuredMaxOutputTokens": 16000,
-          "estimatedInputPlusConfiguredMaxOutputTokens": 67971,
-          "requestDigest": "sha256:668fc9227d4b8f5cc53073bebed4a7d09643398ec28b1060a5df7531aa76001f"
+          "estimatedInputPlusConfiguredMaxOutputTokens": 69443,
+          "requestDigest": "sha256:97dac3f8f50a64ce896ea5a516a0d8ae5a112381ce202594ec1ab06084478800"
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": 0,
+        "broadExpectedDescendantCount": 17,
         "dependencySeedPolicy": null,
         "impactBoundarySummaryCount": 223,
         "impactIncludedProgramCount": 33,
-        "impactSemanticResultRefCount": 17,
+        "impactSemanticResultRefCount": 33,
         "noAccessRequiredUpdateCount": 0,
         "processedSubmissionCount": 128,
         "programCount": 256,
@@ -4486,6 +4513,8 @@
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": null,
+        "broadExpectedDescendantCount": null,
         "dependencySeedPolicy": "preexpanded-result-owner-programs",
         "impactBoundarySummaryCount": 767,
         "impactIncludedProgramCount": 257,
@@ -4839,6 +4868,8 @@
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": null,
+        "broadExpectedDescendantCount": null,
         "dependencySeedPolicy": null,
         "impactBoundarySummaryCount": 30,
         "impactIncludedProgramCount": 67,
@@ -5193,6 +5224,8 @@
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": null,
+        "broadExpectedDescendantCount": null,
         "dependencySeedPolicy": null,
         "impactBoundarySummaryCount": 31,
         "impactIncludedProgramCount": 33,
@@ -5213,8 +5246,8 @@
         "inputBudgetMeaning": "probe threshold applied to the model-input proxy; not an observed provider tokenizer count or configured model context window",
         "inputBudgetTokens": 128000,
         "maximumStage": "no-access",
-        "maximumStageEstimatedModelInputTokens": 302457,
-        "maximumStageSerializedTransportEstimatedTokens": 335967,
+        "maximumStageEstimatedModelInputTokens": 305401,
+        "maximumStageSerializedTransportEstimatedTokens": 339200,
         "stagesCrossingModelInputProxyBudget": [
           "with-access",
           "no-access"
@@ -5240,12 +5273,12 @@
         "result_count": 256
       },
       "fixtureBindings": {
-        "afterKnowledgeStateDigest": "sha256:0b75f5038e541f6a53dd84a9b9242bd4478ed2ff062818800d503baf1c5c8058",
+        "afterKnowledgeStateDigest": "sha256:a6422c97810264a17489c67a3b9b70ba8883eba8d3024e9048433715ec22492e",
         "baseAccountingStateDigest": "sha256:19a375943847725601ea20d38183b5a81582553213b2d24d6bb3b3b5e99d96eb",
         "beforeKnowledgeStateDigest": "sha256:6976bc018d6f9d53c3fabdbdcb5562e05744967337d34ab84f00acea00ec0bed",
-        "noAccessStateDigest": "sha256:a678887497f697731324baecfde35b41b138eb8fb510557d5af715e0f14e4647",
-        "topologyAlignmentDigest": "sha256:17342e068e14d69e0737e94efff98aae5b7afefe200b97ceaba12ab94b84bd0b",
-        "withAccessStateDigest": "sha256:8db3f1da3cc49b5717898fa0cd7b944824610da18f9d8c7ce8723f0b9efb08d1"
+        "noAccessStateDigest": "sha256:13bb344f2359e564cff42819e347864d3aa78abcd2363cf82dcf28e0852dd544",
+        "topologyAlignmentDigest": "sha256:262077dda76053ff39ddafe85f72fc068b2a24765c7818700b5f4c54b5ffd4bb",
+        "withAccessStateDigest": "sha256:68b0c3a49da1918df9824aa8cb05c57173f2dd5c4eca51f84c022102c367cba8"
       },
       "providerActivity": {
         "externalProviderCalls": 0,
@@ -5259,6 +5292,7 @@
           "hotBranchIncludedAtConfiguredDepth": true,
           "localCaptureOnlyNoExternalProviderCalls": true,
           "noAccessOmitsRawEvidenceAndManifest": true,
+          "outOfDepthChildrenCollapsedAtBoundary": true,
           "requiredPrimitiveUpdatesCoveredByImpactContext": true,
           "safeFactsAndWithAccessReceiveExactEvidence": true,
           "strictlyPositiveSyntheticReduction": true
@@ -5290,11 +5324,11 @@
           "utf8Bytes": 1004836
         },
         "noAccessState": {
-          "conservativeTokenUpperBound": 448622,
+          "conservativeTokenUpperBound": 448623,
           "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
           "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
           "estimatedTokens": 112156,
-          "utf8Bytes": 448622
+          "utf8Bytes": 448623
         },
         "topologyAlignment": {
           "conservativeTokenUpperBound": 298823,
@@ -5304,22 +5338,22 @@
           "utf8Bytes": 298823
         },
         "withAccessState": {
-          "conservativeTokenUpperBound": 448666,
+          "conservativeTokenUpperBound": 448667,
           "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
           "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
           "estimatedTokens": 112167,
-          "utf8Bytes": 448666
+          "utf8Bytes": 448667
         }
       },
       "stages": {
         "no-access": {
           "components": {
             "actualTransportEnvelope": {
-              "conservativeTokenUpperBound": 1343868,
+              "conservativeTokenUpperBound": 1356797,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 335967,
-              "utf8Bytes": 1343868
+              "estimatedTokens": 339200,
+              "utf8Bytes": 1356797
             },
             "baseAccountingState": {
               "conservativeTokenUpperBound": 448514,
@@ -5329,35 +5363,35 @@
               "utf8Bytes": 448514
             },
             "frozenWithAccessState": {
-              "conservativeTokenUpperBound": 448666,
+              "conservativeTokenUpperBound": 448667,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
               "estimatedTokens": 112167,
-              "utf8Bytes": 448666
+              "utf8Bytes": 448667
             },
             "governedRequest": {
-              "conservativeTokenUpperBound": 1206480,
+              "conservativeTokenUpperBound": 1218257,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 301620,
-              "utf8Bytes": 1206480
+              "estimatedTokens": 304565,
+              "utf8Bytes": 1218257
             },
             "impactContext": {
-              "conservativeTokenUpperBound": 304613,
+              "conservativeTokenUpperBound": 316389,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 76154,
-              "utf8Bytes": 304613
+              "estimatedTokens": 79098,
+              "utf8Bytes": 316389
             },
             "modelInputProxy": {
-              "conservativeTokenUpperBound": 1209826,
+              "conservativeTokenUpperBound": 1221603,
               "conservativeUpperBoundMethod": "message content plus response-format bytes (one token per byte)",
               "estimatedTokenMethod": "ceil((message-content-utf8-bytes + compact-response-format-bytes)/4)",
-              "estimatedTokens": 302457,
-              "messageContentBytes": 1208400,
+              "estimatedTokens": 305401,
+              "messageContentBytes": 1220177,
               "omittedUnknownOverhead": "provider tokenizer chat framing/control tokens",
               "structuredOutputSchemaBytes": 1426,
-              "utf8Bytes": 1209826
+              "utf8Bytes": 1221603
             },
             "rawSubmissionEvidence": {
               "conservativeTokenUpperBound": 0,
@@ -5381,16 +5415,16 @@
               "utf8Bytes": 991
             },
             "stageInput": {
-              "conservativeTokenUpperBound": 755469,
+              "conservativeTokenUpperBound": 767246,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 188868,
-              "utf8Bytes": 755469
+              "estimatedTokens": 191812,
+              "utf8Bytes": 767246
             }
           },
           "configuredMaxOutputTokens": 16000,
-          "estimatedInputPlusConfiguredMaxOutputTokens": 318457,
-          "requestDigest": "sha256:68e86ae7a33a96f4dfcb51cb725a2d3d245b92a5419059c4027e6b158cc5c335"
+          "estimatedInputPlusConfiguredMaxOutputTokens": 321401,
+          "requestDigest": "sha256:61acb817ddf59a571babb7f87f3453e46fde06321f9b2b19ad1d142fe4a52ec4"
         },
         "safe-facts": {
           "components": {
@@ -5463,16 +5497,16 @@
           },
           "configuredMaxOutputTokens": 12000,
           "estimatedInputPlusConfiguredMaxOutputTokens": 127185,
-          "requestDigest": "sha256:1f72345009b5c95fc407d2a300ebec2c75816ba8bb04e35e7797e924cf766b7c"
+          "requestDigest": "sha256:1f02340c41e4eba47ea201aec2b66373068ccc81d15b5246299c8c4054ee9c10"
         },
         "with-access": {
           "components": {
             "actualTransportEnvelope": {
-              "conservativeTokenUpperBound": 850767,
+              "conservativeTokenUpperBound": 863695,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 212692,
-              "utf8Bytes": 850767
+              "estimatedTokens": 215924,
+              "utf8Bytes": 863695
             },
             "baseAccountingState": {
               "conservativeTokenUpperBound": 448514,
@@ -5489,28 +5523,28 @@
               "utf8Bytes": 822
             },
             "governedRequest": {
-              "conservativeTokenUpperBound": 757559,
+              "conservativeTokenUpperBound": 769335,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 189390,
-              "utf8Bytes": 757559
+              "estimatedTokens": 192334,
+              "utf8Bytes": 769335
             },
             "impactContext": {
-              "conservativeTokenUpperBound": 304613,
+              "conservativeTokenUpperBound": 316389,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 76154,
-              "utf8Bytes": 304613
+              "estimatedTokens": 79098,
+              "utf8Bytes": 316389
             },
             "modelInputProxy": {
-              "conservativeTokenUpperBound": 766437,
+              "conservativeTokenUpperBound": 778213,
               "conservativeUpperBoundMethod": "message content plus response-format bytes (one token per byte)",
               "estimatedTokenMethod": "ceil((message-content-utf8-bytes + compact-response-format-bytes)/4)",
-              "estimatedTokens": 191610,
-              "messageContentBytes": 765011,
+              "estimatedTokens": 194554,
+              "messageContentBytes": 776787,
               "omittedUnknownOverhead": "provider tokenizer chat framing/control tokens",
               "structuredOutputSchemaBytes": 1426,
-              "utf8Bytes": 766437
+              "utf8Bytes": 778213
             },
             "rawSubmissionEvidence": {
               "conservativeTokenUpperBound": 4096,
@@ -5534,23 +5568,25 @@
               "utf8Bytes": 991
             },
             "stageInput": {
-              "conservativeTokenUpperBound": 306546,
+              "conservativeTokenUpperBound": 318322,
               "conservativeUpperBoundMethod": "compact-json-utf8-bytes (one token per byte)",
               "estimatedTokenMethod": "ceil(compact-json-utf8-bytes/4)",
-              "estimatedTokens": 76637,
-              "utf8Bytes": 306546
+              "estimatedTokens": 79581,
+              "utf8Bytes": 318322
             }
           },
           "configuredMaxOutputTokens": 16000,
-          "estimatedInputPlusConfiguredMaxOutputTokens": 207610,
-          "requestDigest": "sha256:40320be9da575f443c4039fa83b49f349327c8f7fd0ae5dd78ac62eec0fec51b"
+          "estimatedInputPlusConfiguredMaxOutputTokens": 210554,
+          "requestDigest": "sha256:a499730a6c71c4ec644d0ac3ddbfb757c51583726d949c8af826d24dba1045f9"
         }
       },
       "stateShape": {
+        "broadExpectedBoundaryCount": 0,
+        "broadExpectedDescendantCount": 33,
         "dependencySeedPolicy": null,
         "impactBoundarySummaryCount": 959,
         "impactIncludedProgramCount": 65,
-        "impactSemanticResultRefCount": 33,
+        "impactSemanticResultRefCount": 65,
         "noAccessRequiredUpdateCount": 0,
         "processedSubmissionCount": 256,
         "programCount": 1024,
@@ -5573,7 +5609,7 @@
   "networkUsed": false,
   "probeId": "provider-free-work-accounting-context-scale-v1",
   "providerCalls": 0,
-  "reportDigest": "sha256:039561b928292648c92038d039a56086fb597ae8660dec31b028ac28924f8722",
+  "reportDigest": "sha256:05967281454223b5f3d1d749292b8aaebae53b95670f2be2bca443c493ee8dc5",
   "schemaVersion": 1,
   "summary": {
     "allSemanticAdversarialChecksPass": true,

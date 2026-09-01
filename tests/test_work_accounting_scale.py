@@ -103,6 +103,21 @@ class WorkAccountingScaleTests(unittest.TestCase):
         self.assertGreater(topology["stateShape"]["withAccessRequiredUpdateCount"], 0)
         self.assertGreater(topology["stateShape"]["noAccessRequiredUpdateCount"], 0)
 
+    def test_broad_subtree_checks_depth_closure_and_collapsed_boundary(self) -> None:
+        deep = WorkAccountingScaleConfig(
+            64,
+            64,
+            4,
+            3,
+            evidence_bytes=512,
+            descendant_depth=2,
+        )
+        case = build_work_accounting_scale_case(deep, "broad-local-subtree")
+        checks = case["semanticAdversarialClassification"]["checks"]
+        self.assertTrue(checks["hotBranchIncludedAtConfiguredDepth"])
+        self.assertTrue(checks["outOfDepthChildrenCollapsedAtBoundary"])
+        self.assertGreater(case["stateShape"]["broadExpectedBoundaryCount"], 0)
+
     def test_probe_report_is_digest_bound_and_provider_free(self) -> None:
         report = run_provider_free_work_accounting_scale_probe(
             [SMALL],
@@ -123,6 +138,8 @@ class WorkAccountingScaleTests(unittest.TestCase):
             build_work_accounting_scale_case(SMALL, "unknown")
         with self.assertRaisesRegex(MathFlowError, "needs cases"):
             run_provider_free_work_accounting_scale_probe([])
+        with self.assertRaisesRegex(MathFlowError, "out of range"):
+            WorkAccountingScaleConfig(16, 24, 3, 4, evidence_bytes=72).validate()
 
     def test_checked_in_full_scale_report_regenerates_exactly(self) -> None:
         report = run_provider_free_work_accounting_scale_probe(

@@ -59,6 +59,9 @@ SUBJECT = "f" * 40
 JUDGMENT = "sha256:" + "9" * 64
 ASSESSMENT = "sha256:" + "8" * 64
 PROJECTION = "sha256:" + "7" * 64
+EVIDENCE_PREFIX = (
+    "Synthetic untrusted benchmark evidence for request capacity measurement.\n"
+).encode("utf-8")
 
 
 @dataclass(frozen=True)
@@ -86,7 +89,7 @@ class WorkAccountingScaleConfig:
             or self.result_count < 1
             or self.maximum_depth < 1
             or self.hot_branch_width < 2
-            or self.evidence_bytes < 64
+            or self.evidence_bytes < len(EVIDENCE_PREFIX)
             or not 0 <= self.descendant_depth <= 4
             or self.dependency_depth < 0
             or self.dependency_width < 1
@@ -224,14 +227,27 @@ def _broad_seed(state: Mapping[str, object]) -> str:
     programs = state["programs"]
     assert isinstance(programs, dict)
     children = _program_children(state)
+
+    def depth(program_id: str) -> int:
+        result = 0
+        cursor = programs[program_id].get("parentId")
+        while isinstance(cursor, str):
+            result += 1
+            cursor = programs[cursor].get("parentId")
+        return result
+
     candidates = [
-        (len(child_ids), program_id)
+        (len(child_ids), depth(str(program_id)), str(program_id))
         for program_id, child_ids in children.items()
         if program_id != "root"
         and isinstance(programs[program_id], dict)
         and programs[program_id].get("status") == "active"
     ]
-    width, program_id = max(candidates, key=lambda item: (item[0], item[1]))
+    width = max(item[0] for item in candidates)
+    _, _, program_id = min(
+        (item for item in candidates if item[0] == width),
+        key=lambda item: (item[1], item[2]),
+    )
     if width < 1:
         raise MathFlowError("work-accounting broad probe needs a non-root subtree")
     return program_id
@@ -800,11 +816,8 @@ def build_work_accounting_scale_case(
     base = _base_accounting_state(before, contract)
 
     contribution_path = "problems/synthetic-builder-scale/contributions/provider-free-probe"
-    evidence_prefix = (
-        "Synthetic untrusted benchmark evidence for request capacity measurement.\n"
-    ).encode("utf-8")
-    padding = b"e" * max(0, config.evidence_bytes - len(evidence_prefix))
-    evidence = evidence_prefix + padding
+    padding = b"e" * (config.evidence_bytes - len(EVIDENCE_PREFIX))
+    evidence = EVIDENCE_PREFIX + padding
     manifest, chunks = build_submission_evidence_manifest(
         problem_id="synthetic-builder-scale",
         subject_transaction_id=SUBJECT,
@@ -1067,10 +1080,35 @@ def build_work_accounting_scale_case(
             no_annotation["directWorkHours"] != "0"
             and no_annotation["conditionalIncidence"] != "0"
         )
+    broad_expected_descendants: set[str] = set()
+    broad_expected_boundaries: set[str] = set()
     if scenario == "broad-local-subtree":
-        children = _program_children(after)[seed_ids[0]]
+        children_by_program = _program_children(after)
+        frontier = {str(seed_ids[0])}
+        broad_expected_descendants = set(frontier)
+        for _ in range(config.descendant_depth):
+            frontier = {
+                child_id
+                for program_id in frontier
+                for child_id in children_by_program[program_id]
+            }
+            broad_expected_descendants.update(frontier)
+        broad_expected_boundaries = {
+            child_id
+            for program_id in broad_expected_descendants
+            for child_id in children_by_program[program_id]
+            if child_id not in broad_expected_descendants
+        }
+        boundary_program_ids = {
+            str(item["nodeRef"]["id"])
+            for item in impact["boundarySummaries"]
+        }
         semantic_checks["hotBranchIncludedAtConfiguredDepth"] = (
-            set(children) <= included_program_ids
+            broad_expected_descendants <= included_program_ids
+        )
+        semantic_checks["outOfDepthChildrenCollapsedAtBoundary"] = (
+            broad_expected_boundaries <= boundary_program_ids
+            and not (broad_expected_boundaries & included_program_ids)
         )
 
     failed_checks = sorted(
@@ -1095,6 +1133,16 @@ def build_work_accounting_scale_case(
             "seedProgramCount": len(set(seed_ids)),
             "impactIncludedProgramCount": len(impact["includedNodes"]),
             "impactBoundarySummaryCount": len(impact["boundarySummaries"]),
+            "broadExpectedDescendantCount": (
+                len(broad_expected_descendants)
+                if scenario == "broad-local-subtree"
+                else None
+            ),
+            "broadExpectedBoundaryCount": (
+                len(broad_expected_boundaries)
+                if scenario == "broad-local-subtree"
+                else None
+            ),
             "impactSemanticResultRefCount": len(
                 impact["semanticIntermediateResultRefs"]
             ),
