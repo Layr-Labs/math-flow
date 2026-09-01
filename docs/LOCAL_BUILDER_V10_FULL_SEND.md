@@ -150,7 +150,7 @@ Four independent layers are checked in:
    synthetic evidence and assessment inputs bind the full frozen `W+`
    candidate; the `W-` request is bound to that candidate while preserving the
    no-access firewall. The exact work reducers produce
-   `D = [20, 5, 10, 15, 2, 2, 12, 59]` competent-human-researcher hours and 102
+   `D = [20, 5, 10, 15, 2, 2, 12, 59]` competent-human-researcher hours and 119
    hard assertions across eight adversarial groups.
 4. **Small real-problem zero-call preflight.** The No-Three-in-Line shadow manifest binds
    all four exactly accepted contributions, contribution Git objects and

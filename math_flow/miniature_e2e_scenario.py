@@ -1,19 +1,30 @@
 """Provider-free miniature end-to-end protocol evaluation fixture.
 
-This module deliberately contains no provider or publication adapter.  It
+This module never dispatches an external provider or publication adapter.  It
 builds one synthetic, precommitted eight-submission history through the real
-two-entity knowledge reducer and hierarchical work-accounting reducer, then
-scores the resulting transcript by deterministic replay.
+local knowledge-builder and Work Accounting V2 request/bundle paths.  A local
+capture transport returns the precommitted semantic responses while preserving
+the governed adapter, epistemic firewall, and deterministic reducers exactly.
 """
 
 from __future__ import annotations
 
+import base64
 import copy
+import json
+import tempfile
 from fractions import Fraction
+from pathlib import Path
 from typing import Mapping
 
 from .artifacts import sha256_bytes
+from .counterfactual_context import (
+    accepted_claim_refs_from_validity,
+    build_submission_evidence_manifest,
+)
 from .errors import MathFlowError
+from .governed_providers import OpenRouterWorkProjectionProviderV2
+from .judges import load_judge_spec
 from .repository import sha256_json
 from .research_builder_v7 import (
     empty_research_program_state_v3,
@@ -35,6 +46,11 @@ from .work_accounting import (
     validate_root_contract,
     validate_submission_work_value,
     validate_work_accounting_state,
+)
+from .work_projection import (
+    PROFILE_V2,
+    load_work_projection_bundle,
+    run_work_projection_bundle,
 )
 
 
@@ -68,16 +84,29 @@ REQUIRED_CASE_TAGS = {
 
 KNOWLEDGE_BUILDER_ID = "openrouter-hierarchical-research-builder-v10-experiment"
 WORK_ACCOUNTING_ID = "openrouter-work-accounting-v2"
-WORK_ACCOUNTING_PROFILE = "math-flow/work-accounting-transition-v2"
+WORK_ACCOUNTING_PROFILE = PROFILE_V2
+WORK_ACCOUNTING_SPEC_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "protocol/judges/openrouter-work-accounting-v2.json"
+)
+WORK_ACCOUNTING_STAGE_ORDER = ("safe-facts", "with-access", "no-access")
+WORK_ACCOUNTING_DESCENDANT_DEPTH = 1
 
 
-def _evidence_file_refs(subject: str) -> dict[str, str]:
-    path = f"synthetic/{PROBLEM_ID}/submissions/{subject}/README.md"
+def _evidence_files(subject: str) -> dict[str, bytes]:
+    path = f"problems/{PROBLEM_ID}/contributions/{subject}/README.md"
     content = (
         "# Synthetic accepted submission\n\n"
         f"Provider-free evidence for transaction `{subject}`.\n"
     ).encode("utf-8")
-    return {path: sha256_bytes(content)}
+    return {path: content}
+
+
+def _evidence_file_refs(subject: str) -> dict[str, str]:
+    return {
+        path: sha256_bytes(content)
+        for path, content in _evidence_files(subject).items()
+    }
 
 
 def _evidence_artifact_ref(subject: str) -> dict[str, str]:
@@ -1051,6 +1080,213 @@ def _work_plan(ordinal: int) -> tuple[list[dict[str, object]], list[dict[str, ob
     raise MathFlowError("miniature scenario ordinal is out of range")
 
 
+# These scopes are an independent semantic part of the miniature oracle.  In
+# particular, they are not inferred from the sparse work patches below.  That
+# lets the fixture exercise the real safe-fact/context coverage boundary
+# without making successful routing tautological in the implementation.
+_SAFE_FACT_PLANS = (
+    (
+        "structural-route-available",
+        "A structural line of attack is available in the reference world.",
+        (ROUTE_A,),
+    ),
+    (
+        "computational-route-available",
+        "A computational line of attack is available in the reference world.",
+        (ROUTE_B,),
+    ),
+    (
+        "technical-dependency-available",
+        "A reusable technical dependency is available in the reference world.",
+        (FOUNDATION,),
+    ),
+    (
+        "search-branch-impossible",
+        "One previously live search branch cannot succeed in the reference world.",
+        (DEAD_END,),
+    ),
+    (
+        "independent-support-available",
+        "Independent support exists for a previously represented conclusion.",
+        (ROUTE_A,),
+    ),
+    (
+        "shared-technical-scope",
+        "A technical dependency applies at shared scope in the reference world.",
+        (FOUNDATION,),
+    ),
+    (
+        "cross-route-bridge-available",
+        "A bridge can reduce residual work in two active lines of attack.",
+        (ROUTE_A, ROUTE_B),
+    ),
+    (
+        "terminal-resolution-available",
+        "A terminal resolution is available in the reference world.",
+        ("root",),
+    ),
+)
+
+
+def _safe_fact_response(
+    ordinal: int, accepted_claims: object
+) -> dict[str, object]:
+    if (
+        not isinstance(accepted_claims, list)
+        or not accepted_claims
+        or any(not isinstance(claim, dict) for claim in accepted_claims)
+    ):
+        raise MathFlowError("miniature safe-fact plan requires accepted claims")
+    fact_id, condition, program_ids = _SAFE_FACT_PLANS[ordinal - 1]
+    claim_keys = sorted(str(claim["claimKey"]) for claim in accepted_claims)
+    return {
+        "facts": [
+            {
+                "id": fact_id,
+                "condition": condition,
+                "actorVisibility": "withheld-until-independent-discovery",
+                "affectedNodeRefs": [
+                    {"kind": "program", "id": program_id}
+                    for program_id in sorted(program_ids)
+                ],
+                "acceptedClaimKeys": claim_keys,
+            }
+        ],
+        "assumptions": [
+            "The fixed root contract governs both same-world accounting branches."
+        ],
+    }
+
+
+def _synthetic_validity_judgment(
+    *,
+    subject: str,
+    judgment_id: str,
+    accepted_claims: object,
+) -> dict[str, object]:
+    if not isinstance(accepted_claims, list) or not accepted_claims:
+        raise MathFlowError("miniature validity preimage requires accepted claims")
+    assessments: list[dict[str, object]] = []
+    for claim in accepted_claims:
+        if not isinstance(claim, dict):
+            raise MathFlowError("miniature accepted claim is invalid")
+        dependencies = claim.get("dependencyTransactionIds")
+        if not isinstance(dependencies, list):
+            raise MathFlowError("miniature accepted claim dependencies are invalid")
+        assessments.append(
+            {
+                "claimKey": claim["claimKey"],
+                "status": "valid",
+                "premiseStatus": "satisfied" if dependencies else "not-required",
+                "summary": f"Synthetic accepted assessment for {claim['claimKey']}.",
+                "scopeQualifications": [],
+                "evidenceIssues": [],
+                "evidenceTransactionIds": sorted({subject, *dependencies}),
+                "requiredDependencyTransactionIds": sorted(dependencies),
+            }
+        )
+    return {
+        "schemaVersion": 4,
+        "judgmentId": judgment_id,
+        "subjects": [{"kind": "transaction", "id": subject}],
+        "assessments": sorted(
+            assessments, key=lambda assessment: str(assessment["claimKey"])
+        ),
+    }
+
+
+def _transport_user_data(payload: object) -> dict[str, object]:
+    if not isinstance(payload, dict):
+        raise MathFlowError("fixture-local transport payload is not an object")
+    messages = payload.get("messages")
+    if not isinstance(messages, list):
+        raise MathFlowError("fixture-local transport payload has no messages")
+    user_messages = [
+        message
+        for message in messages
+        if isinstance(message, dict) and message.get("role") == "user"
+    ]
+    if not user_messages or not isinstance(user_messages[-1].get("content"), str):
+        raise MathFlowError("fixture-local transport payload has no user input")
+    content = str(user_messages[-1]["content"])
+    prefix = "<math-flow-input>\n"
+    suffix = "\n</math-flow-input>"
+    start = content.find(prefix)
+    end = content.rfind(suffix)
+    if start < 0 or end <= start:
+        raise MathFlowError("fixture-local transport input framing is invalid")
+    try:
+        value = json.loads(content[start + len(prefix) : end])
+    except json.JSONDecodeError as exc:
+        raise MathFlowError("fixture-local transport input is not JSON") from exc
+    if not isinstance(value, dict):
+        raise MathFlowError("fixture-local transport user data is not an object")
+    return value
+
+
+class _StageAwareLocalCaptureTransport:
+    """Return precommitted responses without network or provider dispatch."""
+
+    def __init__(
+        self,
+        *,
+        subject: str,
+        responses: Mapping[str, Mapping[str, object]],
+    ) -> None:
+        self.subject = subject
+        self.responses = {
+            stage: copy.deepcopy(dict(response))
+            for stage, response in responses.items()
+        }
+        self.expected_stages = list(WORK_ACCOUNTING_STAGE_ORDER)
+        self.payloads: list[tuple[str, dict[str, object]]] = []
+
+    def __call__(self, payload: dict[str, object]) -> dict[str, object]:
+        user_data = _transport_user_data(payload)
+        request = user_data.get("request")
+        stage = request.get("stage") if isinstance(request, dict) else None
+        expected = self.expected_stages.pop(0) if self.expected_stages else None
+        if stage != expected or stage not in self.responses:
+            raise MathFlowError(
+                "fixture-local transport observed an unexpected V2 stage"
+            )
+        self.payloads.append((str(stage), copy.deepcopy(payload)))
+        return {
+            "id": f"provider-free-{self.subject}-{stage}",
+            "model": "provider-free/local-capture-v1",
+            "choices": [
+                {
+                    "finish_reason": "stop",
+                    "message": {
+                        "content": json.dumps(
+                            self.responses[str(stage)],
+                            sort_keys=True,
+                            separators=(",", ":"),
+                            ensure_ascii=False,
+                        )
+                    },
+                }
+            ],
+        }
+
+    def captured_records(self) -> list[dict[str, object]]:
+        if self.expected_stages:
+            raise MathFlowError("fixture-local transport did not capture every V2 stage")
+        records = []
+        for stage, payload in self.payloads:
+            records.append(
+                {
+                    "schemaVersion": 1,
+                    "kind": "fixture-local-openrouter-request-capture",
+                    "stage": stage,
+                    "networkDispatched": False,
+                    "payloadDigest": "sha256:" + sha256_json(payload),
+                    "payload": copy.deepcopy(payload),
+                }
+            )
+        return records
+
+
 def _patch(
     *,
     mode: str,
@@ -1135,33 +1371,290 @@ def _prior_credit_correction(
     return correction
 
 
-def _frozen_with_access_candidate(
+def _contains_exact_key(value: object, prohibited: set[str]) -> bool:
+    if isinstance(value, dict):
+        return bool(prohibited & set(value)) or any(
+            _contains_exact_key(item, prohibited) for item in value.values()
+        )
+    if isinstance(value, list):
+        return any(_contains_exact_key(item, prohibited) for item in value)
+    return False
+
+
+def _capture_audit(
     *,
-    subject: str,
-    base_accounting_state: Mapping[str, object],
-    with_access_patch: Mapping[str, object],
-    with_access_state: Mapping[str, object],
+    records: list[dict[str, object]],
+    evidence_files: Mapping[str, bytes],
+    candidate: Mapping[str, object],
+    no_access_input: Mapping[str, object],
+    no_access_request: Mapping[str, object],
 ) -> dict[str, object]:
-    candidate: dict[str, object] = {
-        "schemaVersion": 1,
-        "profile": WORK_ACCOUNTING_PROFILE,
-        "subjectTransactionId": subject,
-        "baseAccountingStateDigest": base_accounting_state["stateDigest"],
-        "withAccessPatchDigest": with_access_patch["patchDigest"],
-        "withAccessStateDigest": with_access_state["stateDigest"],
-        "providerFreeSubstitution": (
-            "The synthetic oracle supplies the sparse W+ patch; trusted code "
-            "materializes and freezes W+ before the W- patch is evaluated."
-        ),
+    stages = [record.get("stage") for record in records]
+    if stages != list(WORK_ACCOUNTING_STAGE_ORDER):
+        raise MathFlowError("fixture-local V2 captures have the wrong stage order")
+    expected_files = [
+        {
+            "path": path,
+            "digest": sha256_bytes(content),
+            "bytes": len(content),
+            "contentBase64": base64.b64encode(content).decode("ascii"),
+        }
+        for path, content in sorted(evidence_files.items())
+    ]
+    user_data = [
+        _transport_user_data(record.get("payload")) for record in records
+    ]
+    for index in (0, 1):
+        evidence = user_data[index].get("submissionEvidence")
+        if not isinstance(evidence, dict) or evidence.get("files") != expected_files:
+            raise MathFlowError(
+                "fixture-local evidence-bearing capture is not exact"
+            )
+    no_access_data = user_data[2]
+    if "submissionEvidence" in no_access_data:
+        raise MathFlowError("fixture-local W- capture contains submission evidence")
+    captured_no_request = no_access_data.get("request")
+    if captured_no_request != no_access_request:
+        raise MathFlowError("fixture-local W- capture changed its governed request")
+    if no_access_request.get("stageInput") != no_access_input:
+        raise MathFlowError("fixture-local W- request changed its stage input")
+    if (
+        no_access_input.get("frozenWithAccessCandidateDigest")
+        != candidate.get("candidateDigest")
+        or no_access_input.get("frozenWithAccessState")
+        != candidate.get("withAccessState")
+    ):
+        raise MathFlowError("fixture-local W- capture is not bound to frozen W+")
+    prohibited = {
+        "evidenceManifest",
+        "verifiedChunkDigests",
+        "verifiedFileCount",
+        "verifiedTotalBytes",
+        "submissionEvidence",
+        "contentBase64",
     }
-    candidate["candidateDigest"] = "sha256:" + sha256_json(candidate)
-    return candidate
+    if _contains_exact_key(no_access_data, prohibited):
+        raise MathFlowError("fixture-local W- capture crosses the evidence firewall")
+    rendered_no_access = json.dumps(
+        no_access_data, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    )
+    if any(
+        base64.b64encode(content).decode("ascii") in rendered_no_access
+        for content in evidence_files.values()
+    ):
+        raise MathFlowError("fixture-local W- capture leaks raw evidence bytes")
+    return {
+        "schemaVersion": 1,
+        "stageOrder": list(WORK_ACCOUNTING_STAGE_ORDER),
+        "evidenceBearingStages": ["safe-facts", "with-access"],
+        "evidenceFreeStages": ["no-access"],
+        "frozenWithAccessCandidateDigest": candidate["candidateDigest"],
+        "frozenWithAccessStateDigest": candidate["withAccessState"]["stateDigest"],  # type: ignore[index]
+        "noAccessInputDigest": no_access_input["inputDigest"],
+        "noAccessRequestDigest": no_access_request["requestDigest"],
+    }
+
+
+def _read_json(path: Path) -> dict[str, object]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise MathFlowError(f"miniature V2 replay artifact is unreadable: {path}") from exc
+    if not isinstance(value, dict):
+        raise MathFlowError("miniature V2 replay artifact is not an object")
+    return value
+
+
+def _build_work_accounting_replay(
+    *,
+    ordinal: int,
+    subject: str,
+    judgment_id: str,
+    accepted_claims: object,
+    root_contract: Mapping[str, object],
+    base_accounting_state: Mapping[str, object],
+    base_knowledge_state: Mapping[str, object],
+    target_knowledge_state: Mapping[str, object],
+    topology_alignment: Mapping[str, object],
+    judge_spec: Mapping[str, object],
+) -> dict[str, object]:
+    no_updates, with_updates = _work_plan(ordinal)
+    evidence_files = _evidence_files(subject)
+    contribution_path = f"problems/{PROBLEM_ID}/contributions/{subject}"
+    evidence_manifest, evidence_chunks = build_submission_evidence_manifest(
+        problem_id=PROBLEM_ID,
+        subject_transaction_id=subject,
+        contribution_path=contribution_path,
+        files=evidence_files,
+        chunk_bytes=64,
+    )
+    validity_judgment = _synthetic_validity_judgment(
+        subject=subject,
+        judgment_id=judgment_id,
+        accepted_claims=accepted_claims,
+    )
+    accepted_claim_refs = accepted_claim_refs_from_validity(
+        validity_judgment,
+        subject_transaction_id=subject,
+    )
+
+    expected_with_patch = _patch(
+        mode="with-access",
+        subject=subject,
+        root_contract=root_contract,
+        base_accounting_state=base_accounting_state,
+        base_knowledge_state=base_knowledge_state,
+        target_knowledge_state=target_knowledge_state,
+        topology_alignment=topology_alignment,
+        updates=with_updates,
+    )
+    expected_no_patch = _patch(
+        mode="no-access",
+        subject=subject,
+        root_contract=root_contract,
+        base_accounting_state=base_accounting_state,
+        base_knowledge_state=base_knowledge_state,
+        target_knowledge_state=target_knowledge_state,
+        topology_alignment=topology_alignment,
+        updates=no_updates,
+    )
+    expected_no_state, expected_with_state, expected_evaluation = (
+        materialize_submission_work_value(
+            base_state=base_accounting_state,
+            no_access_patch=expected_no_patch,
+            with_access_patch=expected_with_patch,
+            root_contract=root_contract,
+            base_knowledge_state=base_knowledge_state,
+            target_knowledge_state=target_knowledge_state,
+            topology_alignment=topology_alignment,
+        )
+    )
+
+    transport = _StageAwareLocalCaptureTransport(
+        subject=subject,
+        responses={
+            "safe-facts": _safe_fact_response(ordinal, accepted_claims),
+            "with-access": {"updates": with_updates},
+            "no-access": {"updates": no_updates},
+        },
+    )
+    provider = OpenRouterWorkProjectionProviderV2(
+        judge_spec,
+        transport=transport,
+    )
+    with tempfile.TemporaryDirectory(prefix="math-flow-miniature-v2-") as temporary:
+        bundle_dir = Path(temporary) / "bundle"
+        manifest = run_work_projection_bundle(
+            output_dir=bundle_dir,
+            provider=provider,
+            subject_transaction_id=subject,
+            root_contract=root_contract,
+            base_knowledge_state=base_knowledge_state,
+            target_knowledge_state=target_knowledge_state,
+            base_accounting_state=base_accounting_state,
+            topology_alignment=topology_alignment,
+            evidence_manifest=evidence_manifest,
+            evidence_chunks=evidence_chunks,
+            accepted_claim_refs=accepted_claim_refs,
+            descendant_depth=WORK_ACCOUNTING_DESCENDANT_DEPTH,
+            output_profile=PROFILE_V2,
+        )
+        loaded = load_work_projection_bundle(bundle_dir)
+        no_access_input = _read_json(bundle_dir / "stages/no-access/input.json")
+        no_access_request = _read_json(bundle_dir / "stages/no-access/request.json")
+        no_access_response = _read_json(bundle_dir / "stages/no-access/response.json")
+
+    observed_invocations = [
+        (record.get("stage"), record.get("attempts"))
+        for record in provider.invocation_records
+    ]
+    if observed_invocations != [
+        (stage, 1) for stage in WORK_ACCOUNTING_STAGE_ORDER
+    ]:
+        raise MathFlowError(
+            "fixture-local V2 adapter did not accept one response per stage"
+        )
+    if (
+        manifest != loaded["manifest"]
+        or loaded["withAccessPatch"] != expected_with_patch
+        or loaded["noAccessPatch"] != expected_no_patch
+        or loaded["withAccessState"] != expected_with_state
+        or loaded["noAccessState"] != expected_no_state
+        or loaded["evaluation"] != expected_evaluation
+    ):
+        raise MathFlowError(
+            "actual V2 bundle diverges from the precommitted work oracle"
+        )
+    candidate = loaded["frozenWithAccessCandidate"]
+    if not isinstance(candidate, dict):
+        raise MathFlowError("actual V2 bundle has no frozen W+ candidate")
+    captured_records = transport.captured_records()
+    capture_audit = _capture_audit(
+        records=captured_records,
+        evidence_files=evidence_files,
+        candidate=candidate,
+        no_access_input=no_access_input,
+        no_access_request=no_access_request,
+    )
+    replay_core: dict[str, object] = {
+        "schemaVersion": 1,
+        "profile": PROFILE_V2,
+        "providerSubstitution": (
+            "Precommitted structured responses are returned by an explicitly "
+            "fixture-local capture transport; no external provider is contacted."
+        ),
+        "judgeSpec": {
+            "id": judge_spec["id"],
+            # This binds the parsed canonical object.  The candidate contract
+            # separately binds the raw judge-spec file bytes.
+            "canonicalDigest": "sha256:" + sha256_json(judge_spec),
+        },
+        "descendantDepth": WORK_ACCOUNTING_DESCENDANT_DEPTH,
+        "acceptedValidityJudgmentPreimage": validity_judgment,
+        "acceptedClaimRefs": accepted_claim_refs,
+        "evidenceManifest": evidence_manifest,
+        "bundleManifest": manifest,
+        "bundleDigest": loaded["bundleDigest"],
+        "frozenWithAccessCandidateDigest": candidate["candidateDigest"],
+        "noAccessStageInput": no_access_input,
+        "noAccessRequest": no_access_request,
+        "noAccessResponse": no_access_response,
+        "capturedPayloads": captured_records,
+        "captureAudit": capture_audit,
+        "execution": {
+            "localCaptureTransportInvocations": len(captured_records),
+            "externalProviderCalls": 0,
+            "networkUsed": False,
+            "publicationAttempted": False,
+        },
+        "precommittedBindings": {
+            "noAccessPatchDigest": expected_no_patch["patchDigest"],
+            "withAccessPatchDigest": expected_with_patch["patchDigest"],
+            "noAccessStateDigest": expected_no_state["stateDigest"],
+            "withAccessStateDigest": expected_with_state["stateDigest"],
+            "evaluationDigest": expected_evaluation["evaluationDigest"],
+        },
+    }
+    replay = {
+        **replay_core,
+        "replayDigest": "sha256:" + sha256_json(replay_core),
+    }
+    return {
+        "workAccountingReplay": replay,
+        "withAccessPatch": loaded["withAccessPatch"],
+        "frozenWithAccessCandidate": candidate,
+        "noAccessPatch": loaded["noAccessPatch"],
+        "noAccessState": loaded["noAccessState"],
+        "withAccessState": loaded["withAccessState"],
+        "evaluation": loaded["evaluation"],
+    }
 
 
 def build_miniature_e2e_transcript() -> dict[str, object]:
     """Build the complete synthetic transcript through executable reducers."""
 
     root_contract = miniature_root_contract()
+    work_accounting_spec = load_judge_spec(WORK_ACCOUNTING_SPEC_PATH)
     knowledge = empty_research_program_state_v3(PROBLEM_ID)
     live_accounting = make_zero_work_accounting_state(
         root_contract=root_contract,
@@ -1200,53 +1693,24 @@ def build_miniature_e2e_transcript() -> dict[str, object]:
         )
         target = reduced["postState"]
         alignment = reduced["topologyAlignment"]
-        no_updates, with_updates = _work_plan(ordinal)
-        # Preserve the V2 A-first boundary even though semantic estimates are
-        # supplied by a synthetic oracle rather than a provider.  W+ is
-        # materialized and content-bound before W- is constructed.
-        with_patch = _patch(
-            mode="with-access",
+        accounting = _build_work_accounting_replay(
+            ordinal=ordinal,
             subject=subject,
+            judgment_id=judgment_id,
+            accepted_claims=accepted_claims,
             root_contract=root_contract,
             base_accounting_state=live_accounting,
             base_knowledge_state=knowledge,
             target_knowledge_state=target,
             topology_alignment=alignment,
-            updates=with_updates,
+            judge_spec=work_accounting_spec,
         )
-        frozen_with_state = apply_work_accounting_patch(
-            live_accounting,
-            with_patch,
-            root_contract=root_contract,
-            base_knowledge_state=knowledge,
-            target_knowledge_state=target,
-            topology_alignment=alignment,
-        )
-        frozen_candidate = _frozen_with_access_candidate(
-            subject=subject,
-            base_accounting_state=live_accounting,
-            with_access_patch=with_patch,
-            with_access_state=frozen_with_state,
-        )
-        no_patch = _patch(
-            mode="no-access",
-            subject=subject,
-            root_contract=root_contract,
-            base_accounting_state=live_accounting,
-            base_knowledge_state=knowledge,
-            target_knowledge_state=target,
-            topology_alignment=alignment,
-            updates=no_updates,
-        )
-        no_state, with_state, evaluation = materialize_submission_work_value(
-            base_state=live_accounting,
-            no_access_patch=no_patch,
-            with_access_patch=with_patch,
-            root_contract=root_contract,
-            base_knowledge_state=knowledge,
-            target_knowledge_state=target,
-            topology_alignment=alignment,
-        )
+        with_patch = accounting["withAccessPatch"]
+        frozen_candidate = accounting["frozenWithAccessCandidate"]
+        no_patch = accounting["noAccessPatch"]
+        no_state = accounting["noAccessState"]
+        with_state = accounting["withAccessState"]
+        evaluation = accounting["evaluation"]
         step: dict[str, object] = {
             "schemaVersion": 1,
             "ordinal": ordinal,
@@ -1260,6 +1724,7 @@ def build_miniature_e2e_transcript() -> dict[str, object]:
             "topologyAlignment": alignment,
             "sameWorldHandoff": reduced["sameWorldHandoff"],
             "baseLiveAccountingStateDigest": live_accounting["stateDigest"],
+            "workAccountingReplay": accounting["workAccountingReplay"],
             "withAccessPatch": with_patch,
             "frozenWithAccessCandidate": frozen_candidate,
             "noAccessPatch": no_patch,
@@ -1301,9 +1766,13 @@ def miniature_e2e_oracle() -> dict[str, object]:
             "workAccountingId": WORK_ACCOUNTING_ID,
             "workAccountingProfile": WORK_ACCOUNTING_PROFILE,
             "estimationOrder": "with-access-then-no-access",
+            "workRequestConstruction": "actual-v2-adapter-bundle-replay",
+            "localCaptureTransportInvocations": 24,
+            "externalProviderCalls": 0,
             "workJudgeSubstitution": (
-                "Precommitted sparse primitive patches substitute for the V2 "
-                "with-access and no-access judges; trusted A-first freezing and reduction remain exact."
+                "Precommitted safe-fact and sparse primitive responses are returned "
+                "by an explicitly fixture-local transport; the actual V2 governed "
+                "request, A-first freeze, firewall, bundle, loader, and reducers remain exact."
             ),
         },
         "orderedSubjectTransactionIds": list(SUBJECTS),
@@ -1396,6 +1865,7 @@ def score_miniature_e2e_scenario(
     if transcript.get("schemaVersion") != 1 or oracle.get("schemaVersion") != 1:
         raise MathFlowError("miniature E2E transcript or oracle version is unsupported")
     root_contract = validate_root_contract(transcript.get("rootContract"), PROBLEM_ID)
+    work_accounting_spec = load_judge_spec(WORK_ACCOUNTING_SPEC_PATH)
     knowledge = validate_research_program_state_v3(
         transcript.get("initialKnowledgeState"), PROBLEM_ID
     )
@@ -1418,6 +1888,10 @@ def score_miniature_e2e_scenario(
         and candidate_contract.get("workAccountingId") == WORK_ACCOUNTING_ID
         and candidate_contract.get("workAccountingProfile") == WORK_ACCOUNTING_PROFILE
         and candidate_contract.get("estimationOrder") == "with-access-then-no-access"
+        and candidate_contract.get("workRequestConstruction")
+        == "actual-v2-adapter-bundle-replay"
+        and candidate_contract.get("localCaptureTransportInvocations") == 24
+        and candidate_contract.get("externalProviderCalls") == 0
         and "Precommitted" in str(candidate_contract.get("knowledgeBuilderSubstitution"))
         and "Precommitted" in str(candidate_contract.get("workJudgeSubstitution")),
         "The fixture explicitly binds the V10/V2 candidate and records its provider-free judge substitutions.",
@@ -1449,6 +1923,9 @@ def score_miniature_e2e_scenario(
     step_by_subject: dict[str, dict[str, object]] = {}
     all_tags: set[str] = set()
     all_corrections: list[tuple[dict[str, object], frozenset[str]]] = []
+    local_capture_invocations = 0
+    external_provider_calls = 0
+    network_or_publication_attempted = False
     for ordinal, raw_step in enumerate(raw_steps, start=1):
         if not isinstance(raw_step, dict):
             raise MathFlowError("miniature E2E step must be an object")
@@ -1510,6 +1987,87 @@ def score_miniature_e2e_scenario(
             raw_step.get("baseLiveAccountingStateDigest") == live.get("stateDigest"),
             "Only the prior W+ state is used as the next live accounting base.",
         )
+        expected_accounting = _build_work_accounting_replay(
+            ordinal=ordinal,
+            subject=subject,
+            judgment_id=str(raw_step.get("judgmentId")),
+            accepted_claims=raw_step.get("acceptedClaims"),
+            root_contract=root_contract,
+            base_accounting_state=live,
+            base_knowledge_state=knowledge,
+            target_knowledge_state=target,
+            topology_alignment=alignment,
+            judge_spec=work_accounting_spec,
+        )
+        raw_replay = raw_step.get("workAccountingReplay")
+        exact_v2_replay = (
+            raw_replay == expected_accounting["workAccountingReplay"]
+            and raw_step.get("withAccessPatch")
+            == expected_accounting["withAccessPatch"]
+            and raw_step.get("frozenWithAccessCandidate")
+            == expected_accounting["frozenWithAccessCandidate"]
+            and raw_step.get("noAccessPatch") == expected_accounting["noAccessPatch"]
+            and raw_step.get("noAccessState") == expected_accounting["noAccessState"]
+            and raw_step.get("withAccessState")
+            == expected_accounting["withAccessState"]
+            and raw_step.get("evaluation") == expected_accounting["evaluation"]
+        )
+        check(
+            f"work-v2-bundle-replay-{ordinal}",
+            exact_v2_replay,
+            (
+                "The actual V2 adapter, requests, frozen W+ candidate, bundle, "
+                "and loaded semantic outputs replay exactly."
+            ),
+        )
+        execution = raw_replay.get("execution") if isinstance(raw_replay, dict) else None
+        captured = (
+            raw_replay.get("capturedPayloads")
+            if isinstance(raw_replay, dict)
+            else None
+        )
+        provider_free_capture = (
+            isinstance(execution, dict)
+            and execution
+            == {
+                "localCaptureTransportInvocations": 3,
+                "externalProviderCalls": 0,
+                "networkUsed": False,
+                "publicationAttempted": False,
+            }
+            and isinstance(captured, list)
+            and [
+                item.get("stage") if isinstance(item, dict) else None
+                for item in captured
+            ]
+            == list(WORK_ACCOUNTING_STAGE_ORDER)
+            and all(
+                isinstance(item, dict)
+                and item.get("kind")
+                == "fixture-local-openrouter-request-capture"
+                and item.get("networkDispatched") is False
+                for item in captured
+            )
+        )
+        check(
+            f"provider-free-v2-capture-{ordinal}",
+            provider_free_capture,
+            (
+                "Each V2 stage is captured once by the explicitly local transport "
+                "with no external call, network use, or publication."
+            ),
+        )
+        if isinstance(execution, dict):
+            local = execution.get("localCaptureTransportInvocations")
+            external = execution.get("externalProviderCalls")
+            if isinstance(local, int) and not isinstance(local, bool):
+                local_capture_invocations += local
+            if isinstance(external, int) and not isinstance(external, bool):
+                external_provider_calls += external
+            network_or_publication_attempted = network_or_publication_attempted or bool(
+                execution.get("networkUsed")
+                or execution.get("publicationAttempted")
+            )
         frozen_with_state = apply_work_accounting_patch(
             live,
             raw_step.get("withAccessPatch"),
@@ -1518,16 +2076,13 @@ def score_miniature_e2e_scenario(
             target_knowledge_state=target,
             topology_alignment=alignment,
         )
-        expected_candidate = _frozen_with_access_candidate(
-            subject=subject,
-            base_accounting_state=live,
-            with_access_patch=raw_step.get("withAccessPatch"),
-            with_access_state=frozen_with_state,
-        )
+        expected_candidate = expected_accounting["frozenWithAccessCandidate"]
         check(
             f"a-first-freeze-{ordinal}",
-            raw_step.get("frozenWithAccessCandidate") == expected_candidate,
-            "W+ is materialized and content-bound before W- evaluation.",
+            raw_step.get("frozenWithAccessCandidate") == expected_candidate
+            and isinstance(expected_candidate, dict)
+            and expected_candidate.get("withAccessState") == frozen_with_state,
+            "The complete W+ candidate is materialized and frozen before W- evaluation.",
         )
         no_state, with_state, evaluation = materialize_submission_work_value(
             base_state=live,
@@ -1594,6 +2149,25 @@ def score_miniature_e2e_scenario(
         evaluations[subject] = evaluation
         knowledge = target
         live = with_state
+
+    check(
+        "provider-free-v2-execution",
+        local_capture_invocations == len(raw_steps) * len(WORK_ACCOUNTING_STAGE_ORDER)
+        and external_provider_calls == 0
+        and not network_or_publication_attempted,
+        "The eight-step V2 replay uses 24 local captures and no external effects.",
+        actual={
+            "localCaptureTransportInvocations": local_capture_invocations,
+            "externalProviderCalls": external_provider_calls,
+            "networkOrPublicationAttempted": network_or_publication_attempted,
+        },
+        expected={
+            "localCaptureTransportInvocations": len(raw_steps)
+            * len(WORK_ACCOUNTING_STAGE_ORDER),
+            "externalProviderCalls": 0,
+            "networkOrPublicationAttempted": False,
+        },
+    )
 
     required_tags = set(str(item) for item in oracle.get("requiredCaseTags", []))
     check(

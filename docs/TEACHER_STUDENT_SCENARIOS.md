@@ -165,15 +165,21 @@ provider-free knowledge-plus-work candidate. Its manifest digest-binds the
 Builder V10 experiment, work-accounting V2 judge, and V2 policy. Synthetic
 oracle choices replace semantic model calls, while trusted code reconstructs
 and binds each V10 route context, route plan, and local authoring packet before
-the scoped V10/V8/V7 and work-accounting reducers replay eight ordered
-submissions from zero. The code-owned scorer checks 102 hard invariants and
-emits an aggregate adversarial scorecard. See
+the scoped V10/V8/V7 reducers replay eight ordered submissions from zero. Each
+submission then traverses the public Work Accounting V2 adapter and bundle
+run/load path through an explicitly local capture transport: 24 local stage
+invocations, with zero external calls, network use, spend, or publication. The
+code-owned scorer checks 119 hard invariants and emits an aggregate adversarial
+scorecard. See
 `docs/MINIATURE_E2E_PROTOCOL_EVALUATION.md` for the exact cases, hour states,
 and limitations.
 
 ## Current limitations
 
-- V1 replays frozen outputs; it does not construct new prompts or call models.
+- The general fixture adapter replays frozen outputs rather than calling
+  models. The miniature additionally constructs the real V2 stage requests and
+  captures them locally, while still substituting precommitted semantic
+  responses.
 - The relational scorer covers JSON structure, not mathematical correctness;
   the miniature scorer covers reducer composition against synthetic oracle
   truth, not model judgment quality.

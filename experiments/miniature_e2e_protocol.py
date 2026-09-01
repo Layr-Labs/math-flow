@@ -68,11 +68,14 @@ def write_miniature_e2e_fixture(destination_root: Path) -> dict[str, object]:
         }
         for input_id, path, media_type in CANDIDATE_INPUTS
     ]
-    accepted_text = "accepted deterministic reducer replay"
+    accepted_text = "accepted deterministic V10/V2 captured replay"
     request_component = json.dumps(
         {
-            "kind": "deterministic-reducer-replay",
+            "kind": "deterministic-v10-v2-captured-replay",
             "transcriptDigest": transcript_digest,
+            "localCaptureTransportInvocations": len(SUBJECTS) * 3,
+            "externalProviderCalls": 0,
+            "networkUsed": False,
             "candidateBindings": {
                 item["id"]: item["digest"] for item in candidate_inputs
             },
@@ -96,8 +99,11 @@ def write_miniature_e2e_fixture(destination_root: Path) -> dict[str, object]:
                 "status": "accepted",
                 "providerCall": False,
                 "rawRequest": {
-                    "kind": "deterministic-reducer-replay",
+                    "kind": "deterministic-v10-v2-captured-replay",
                     "transcriptDigest": transcript_digest,
+                    "localCaptureTransportInvocations": len(SUBJECTS) * 3,
+                    "externalProviderCalls": 0,
+                    "networkUsed": False,
                     "candidateBindings": {
                         item["id"]: item["digest"] for item in candidate_inputs
                     },
@@ -108,7 +114,10 @@ def write_miniature_e2e_fixture(destination_root: Path) -> dict[str, object]:
                     "configuredContextTokens": 0,
                     "configuredCompletionTokens": 0,
                     "requestComponents": [
-                        {"id": "deterministic-replay", "content": request_component}
+                        {
+                            "id": "deterministic-v10-v2-captured-replay",
+                            "content": request_component,
+                        }
                     ],
                     "promptTokens": 0,
                     "cachedPromptTokens": 0,
@@ -151,7 +160,8 @@ def write_miniature_e2e_fixture(destination_root: Path) -> dict[str, object]:
         "id": "miniature-e2e-protocol-v1",
         "description": (
             "Provider-free replay of an eight-submission synthetic history through "
-            "knowledge topology and hierarchical A-first work accounting."
+            "scoped V10 knowledge formation and the actual captured V2 request, "
+            "A-first bundle, loader, and hierarchical work-accounting path."
         ),
         "problemId": PROBLEM_ID,
         "ledgerHead": SUBJECTS[-1],
@@ -160,7 +170,10 @@ def write_miniature_e2e_fixture(destination_root: Path) -> dict[str, object]:
         "variants": [
             {
                 "id": "reference-reducer-history",
-                "description": "The precommitted deterministic miniature reference history.",
+                "description": (
+                    "The precommitted deterministic miniature reference history with "
+                    "fixture-local V2 request captures and zero external calls."
+                ),
             }
         ],
         "seeds": [0],
