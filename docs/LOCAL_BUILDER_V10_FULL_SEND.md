@@ -128,7 +128,7 @@ on bespoke Markdown expectations.
 
 ### 5. Progressive scale and protocol evaluations
 
-Four independent layers are checked in:
+Five independent layers are checked in:
 
 1. **Builder context scale.** Valid state-v3 fixtures widen from 16 to 1,024
    programs, from 24 to 2,048 results, and from 24 to 32,768 represented
@@ -161,6 +161,16 @@ Four independent layers are checked in:
    the exact 36-stage serial plan. Semantic execution remains blocked on
    contract review, a checkpointed runner, request-side price enforcement, and
    separate provider authorization.
+5. **Local accounting root-total replay.** Six patch shapes widen from 16 to
+   1,024 programs. Twenty bounded cuts independently reproduce trusted V2's
+   `W-` and `W+` root totals; four over-bound cuts stop without truncation.
+   Trusted full V2 still materializes canonical states and `D`.
+
+All five layers are now joined by the seven-component
+`protocol-evaluation-suite-v1` command. Its `pr` mode runs bounded smokes plus
+every exact small replay, while `full` exact-regenerates all checked reports.
+Both modes accept no provider or publication authority and require aggregate
+zero calls, network use, and publication attempts.
 
 ## Empirical findings
 
@@ -228,6 +238,16 @@ should keep global state in trusted storage and give the judges a digest-bound
 local accounting slice plus the ancestor/decision-boundary aggregates needed
 for exact reduction.
 
+The inactive follow-up keeps that global state trusted and checks local root
+totals against it. Of 24 cases, 20 fit the default 128-included/256-boundary
+bounds and match exactly; dependency closure at 256 and 1,024 programs plus
+decisive completion and broad scope at 1,024 require explicit widening. At
+1,024 programs, representative admitted slices are 40,695–62,774 bytes versus
+a 448,514-byte full baseline. This is not uniformly smaller: some 256-program
+broad/completion slices exceed the full encoding because hundreds of boundary
+records add overhead. The experiment therefore supports an exact conditional
+encoding choice, not unconditional replacement of full V2.
+
 ## What this checkpoint does not establish
 
 - It does not activate or publish Builder V10.
@@ -256,9 +276,10 @@ for exact reduction.
 2. Run one corrected BSSC K2 root-ownership holdout against the exact final V10
    digest, under a separate provider authorization and the existing hard stops.
 3. The inactive bounded, digest-bound Work Accounting slice experiment now
-   proves provider-free sparse-patch equivalence to the full-state V2 reducer
-   for every admitted cut through 1,024 programs; over-wide cuts fail closed.
-   Next test semantic judgment from that slice and set
+   proves provider-free local root-total agreement with the full-state V2
+   reducer for every admitted cut through 1,024 programs; trusted full V2 still
+   materializes canonical states and `D`, and over-wide cuts fail closed. Next
+   test semantic judgment from that slice and set
    explicit production bounds before defining or activating a new request
    profile; active V2 remains unchanged.
 4. Review the No-Three root-contract draft and extend its zero-call plan into a

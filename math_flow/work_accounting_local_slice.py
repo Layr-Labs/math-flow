@@ -936,7 +936,7 @@ def materialize_local_slice_submission_work_value(
     topology_alignment: object | None,
     impact_context: object,
 ) -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
-    """Materialize W-/W+/D and assert byte-exact full-reducer equivalence."""
+    """Guard both root totals locally, then return trusted canonical W-/W+/D."""
 
     local_no = apply_local_accounting_slice_patch(
         base_state=base_state,
@@ -968,8 +968,10 @@ def materialize_local_slice_submission_work_value(
         topology_alignment=topology_alignment,
     )
     if local_no != full_no or local_with != full_with:
-        raise MathFlowError("local accounting materialization diverges from full V2")
-    return local_no, local_with, evaluation
+        raise MathFlowError(
+            "trusted materialization diverges after the local root-total check"
+        )
+    return full_no, full_with, evaluation
 
 
 def build_frozen_with_access_local_snapshot(

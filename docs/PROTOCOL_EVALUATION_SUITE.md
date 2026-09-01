@@ -22,7 +22,7 @@ python3 -m math_flow protocol-evaluation-suite \
 `--mode` defaults to `pr`. The output directory must be new or empty. The
 runner never reuses or overwrites a prior result directory.
 
-The suite answers a narrow integration question: do the six frozen,
+The suite answers a narrow integration question: do the seven frozen,
 provider-free evaluation components still agree with their checked artifacts
 and safety contracts at this repository revision? A pass does not establish
 semantic model quality, hour calibration, shadow-lane readiness, or permission
@@ -32,7 +32,7 @@ to spend or publish.
 
 The canonical manifest is
 `protocol/experiments/protocol-evaluation-suite-v1/manifest.json`, with suite ID
-`protocol-evaluation-suite-v1`. It fixes this ordered six-component set:
+`protocol-evaluation-suite-v1`. It fixes this ordered seven-component set:
 
 | Component ID | Checked artifact | `pr` mode | `full` mode |
 | --- | --- | --- | --- |
@@ -41,6 +41,7 @@ The canonical manifest is
 | `bssc-v10-k2-dry-run` | `protocol/experiments/bssc-local-builder-v10-v2/manifest.json` | Run the complete final V2 dry-run, restricted to K2 and seed 1729 | Same complete dry-run plan |
 | `miniature-v10-v2-replay` | `protocol/experiments/miniature-e2e-v1/scenario-v1.json` | Run the exact eight-submission V10/V2 replay with its hard pass requirement | Same exact replay |
 | `work-accounting-context-scale` | `protocol/experiments/work-accounting-context-scale-v1/provider-free-report.json` | Verify the locked exact Work Accounting V2 report and run a bounded representative scale smoke | Regenerate the complete exact report and require it to match the lock |
+| `work-accounting-local-slice` | `protocol/experiments/work-accounting-local-slice-v1/provider-free-report.json` | Verify the locked 24-case report and run direct, topology, and decisive-completion root-total smokes | Regenerate the complete report and require its 20 admitted root-total checks and four explicit widening results to match the lock |
 | `no-three-v10-v2-preflight` | `protocol/experiments/no-three-v10-v2-shadow-v1/provider-free-preflight.json` | Regenerate and verify the exact four-submission zero-call preflight | Same exact preflight |
 
 Every entry names a built-in component ID plus a repository-relative checked
@@ -69,8 +70,8 @@ cannot make a new implementation executable.
 ### Pull-request mode
 
 `pr` is the default bounded integration tier. It always verifies the exact
-digest of every locked checked artifact. It then runs bounded scale smokes for
-the two expensive widening matrices and runs the other four components in
+digest of every locked checked artifact. It then runs bounded scale/reducer
+smokes for the three expensive matrices and runs the other four components in
 full:
 
 - complete provider-free V10 widening plan;
@@ -78,15 +79,15 @@ full:
 - miniature V10/V2 replay with the equivalent of `--require-pass`; and
 - exact No-Three V10/V2 preflight regeneration.
 
-The scale smokes do not replace the committed full reports. Digest verification
-still detects drift in either full report; the bounded execution check catches
+The smokes do not replace the committed full reports. Digest verification
+still detects drift in any full report; the bounded execution check catches
 constructor, reducer, and safety regressions without regenerating the largest
 fixtures on every pull request.
 
 ### Full mode
 
-`full` runs the same four exact components and exact-regenerates both complete
-scale reports:
+`full` runs the same four exact components and exact-regenerates all three
+complete scale/reducer reports:
 
 ```bash
 python3 -m math_flow protocol-evaluation-suite \
@@ -204,10 +205,9 @@ back to a smaller suite.
 
 ## Additive component registry
 
-The six current components are a required prefix, not an indefinitely closed
-set. A future provider-free local-accounting-slice probe can be appended
-without changing the summary envelope. That addition requires one coherent
-repository change:
+The seven current components are a required prefix, not an indefinitely closed
+set. A future provider-free component can be appended without changing the
+summary envelope. That addition requires one coherent repository change:
 
 1. implement a provider-free component with a normalized result and explicit
    zero-authority report;
@@ -219,20 +219,20 @@ repository change:
 Appending a component changes `componentCount`, the ordered component arrays,
 and the suite-manifest digest. It does not by itself change the suite ID,
 component envelope, or summary schema. Removing, replacing, or reordering one
-of the six base components is not additive and requires an explicit new suite
+of the seven base components is not additive and requires an explicit new suite
 contract.
 
-For the planned accounting slice, the hard criterion is provider-free
-reducer-equivalence: a bounded, digest-bound local accounting update must reduce
-to the same globally committed state as the current full-state Work Accounting
-V2 path. Until that probe exists and is appended, the present suite continues
-to report the known full-state V2 context-capacity risk; it does not claim that
-risk is solved.
+The appended accounting-slice component checks the narrower criterion the
+prototype actually establishes: for each admitted digest-bound cut, local
+`W-` and `W+` root totals equal the trusted full V2 reducer's totals. Trusted
+full V2 still materializes the canonical states and `D`; the component does not
+claim independent local reconstruction, semantic scope sufficiency, or that
+every exact slice is smaller than the full form.
 
 ## Interpretation and related contracts
 
 A suite pass establishes that the pinned provider-free integration substrate
-replays at the checked repository revision, that the two scale reports remain
+replays at the checked repository revision, that the three scale/reducer reports remain
 locked according to the selected mode, and that every component remained
 inside the zero-provider/network/publication envelope. It does not supersede
 the individual experiment documents:
@@ -242,6 +242,7 @@ the individual experiment documents:
 - `docs/LOCAL_RESEARCH_BUILDER_V10.md`
 - `docs/MINIATURE_E2E_PROTOCOL_EVALUATION.md`
 - `docs/WORK_ACCOUNTING_CONTEXT_SCALE_EVALUATION.md`
+- `docs/WORK_ACCOUNTING_LOCAL_SLICE_EXPERIMENT.md`
 - `docs/NO_THREE_V10_V2_SHADOW_PLAN.md`
 - `docs/PROTOCOL_EVALUATION_ROADMAP.md`
 

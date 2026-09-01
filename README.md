@@ -222,10 +222,11 @@ python3 -m math_flow protocol-evaluation-suite \
   --output-dir /tmp/math-flow-protocol-evaluation-pr
 ```
 
-The default `pr` mode verifies all six locked artifacts, uses bounded smokes for
-the two scale matrices, and fully replays the widening plan, final BSSC V10
-K2-only dry-run, miniature V10/V2 scenario, and No-Three preflight. Use
-`--mode full` to exact-regenerate both complete scale reports. Both modes write
+The default `pr` mode verifies all seven locked artifacts, uses bounded smokes
+for the three scale/reducer matrices, and fully replays the widening plan,
+final BSSC V10 K2-only dry-run, miniature V10/V2 scenario, and No-Three
+preflight. Use `--mode full` to exact-regenerate all three complete reports.
+Both modes write
 canonical `summary.json` and `summary.md`, accept no provider credential or
 execution flag, and verify zero provider calls, network use, and publication.
 See [the protocol evaluation suite](docs/PROTOCOL_EVALUATION_SUITE.md) for the

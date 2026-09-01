@@ -117,18 +117,20 @@ def _patch_with_extra(
 
 
 class WorkAccountingLocalSliceTests(unittest.TestCase):
-    def test_representative_cases_are_exact_full_state_replays(self) -> None:
+    def test_representative_cases_match_trusted_root_totals(self) -> None:
         for scenario in SCENARIOS:
             with self.subTest(scenario=scenario):
                 result = build_local_slice_probe_case(SMALL, scenario)
-                self.assertEqual(result["classification"], "bounded-exact-equivalence")
+                self.assertEqual(
+                    result["classification"], "bounded-exact-root-total-match"
+                )
                 self.assertEqual(
                     result["equivalence"],
                     {
                         "attempted": True,
-                        "globalNoAccessStateExact": True,
-                        "globalWithAccessStateExact": True,
-                        "evaluationExact": True,
+                        "localNoAccessRootTotalMatchesTrustedReducer": True,
+                        "localWithAccessRootTotalMatchesTrustedReducer": True,
+                        "canonicalArtifactsMaterializedByTrustedFullReducer": True,
                     },
                 )
                 self.assertGreater(Fraction(result["fullStateOracle"]["workValueHours"]), 0)
@@ -525,7 +527,10 @@ class WorkAccountingLocalSliceScaleTests(unittest.TestCase):
     def test_scale_probe_reaches_1024_and_never_truncates(self) -> None:
         self.assertEqual(self.report["providerCalls"], 0)
         self.assertFalse(self.report["networkUsed"])
-        self.assertTrue(self.report["summary"]["allAttemptedEquivalenceChecksExact"])
+        self.assertTrue(self.report["summary"]["allAttemptedRootTotalChecksMatch"])
+        self.assertEqual(
+            self.report["summary"]["boundedRootTotalMatchCaseCount"], 20
+        )
         largest = [
             case
             for case in self.report["cases"]
@@ -536,7 +541,7 @@ class WorkAccountingLocalSliceScaleTests(unittest.TestCase):
         for scenario in ("direct", "subtree", "topology-alignment"):
             self.assertEqual(
                 by_scenario[scenario]["classification"],
-                "bounded-exact-equivalence",
+                "bounded-exact-root-total-match",
             )
         for scenario in ("dependency", "completed-node", "broad-scope"):
             self.assertEqual(

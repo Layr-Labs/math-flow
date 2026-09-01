@@ -74,7 +74,10 @@ class ProtocolEvaluationSuiteTests(unittest.TestCase):
                 summary,
             )
             markdown = (output / "summary.md").read_text(encoding="utf-8")
-            self.assertIn("6/6 passed", markdown)
+            self.assertIn(
+                f"{len(COMPONENT_ORDER)}/{len(COMPONENT_ORDER)} passed",
+                markdown,
+            )
             self.assertIn("0 provider calls", markdown)
 
     def test_full_mode_exactly_regenerates_checked_scale_reports(self) -> None:
@@ -91,6 +94,19 @@ class ProtocolEvaluationSuiteTests(unittest.TestCase):
         self.assertEqual(
             by_id["work-accounting-context-scale"]["verification"],
             "exact-regeneration",
+        )
+        self.assertEqual(
+            by_id["work-accounting-local-slice"]["verification"],
+            "exact-regeneration",
+        )
+        self.assertEqual(
+            by_id["work-accounting-local-slice"]["details"],
+            {
+                "caseCount": 24,
+                "boundedRootTotalMatchCaseCount": 20,
+                "explicitWideningCaseCount": 4,
+                "allAttemptedRootTotalChecksMatch": True,
+            },
         )
         self.assertEqual(
             by_id["no-three-v10-v2-preflight"]["verification"],

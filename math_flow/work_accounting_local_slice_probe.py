@@ -24,7 +24,7 @@ from .work_accounting_local_slice import (
     DEFAULT_MAX_INCLUDED_NODES,
     build_frozen_with_access_local_snapshot,
     build_local_accounting_slice,
-    materialize_local_slice_submission_work_value,
+    reduce_local_accounting_slice,
 )
 from .work_accounting_scale import (
     ASSESSMENT,
@@ -540,33 +540,27 @@ def build_local_slice_probe_case(
             },
         }
 
-    local_no, local_with, local_evaluation = (
-        materialize_local_slice_submission_work_value(
-            **kwargs,
-            no_access_patch=no_patch,
-            with_access_patch=with_patch,
-            no_access_slice=bounded_no,
-            with_access_slice=bounded_with,
-        )
+    local_no_total = reduce_local_accounting_slice(bounded_no, no_patch)
+    local_with_total = reduce_local_accounting_slice(bounded_with, with_patch)
+    root_totals_match = (
+        local_no_total == full_no["totalWorkHours"]
+        and local_with_total == full_with["totalWorkHours"]
     )
+    if not root_totals_match:
+        raise MathFlowError(
+            "local-slice root total diverged from the trusted full-state reducer"
+        )
     frozen_snapshot = build_frozen_with_access_local_snapshot(
-        frozen_with_access_state=local_with,
+        frozen_with_access_state=full_with,
         root_contract=fixture["contract"],
         target_knowledge_state=fixture["after"],
         impact_context=fixture["impact"],
         max_included_nodes=max_included_nodes,
         max_boundary_nodes=max_boundary_nodes,
     )
-    exact = (
-        local_no == full_no
-        and local_with == full_with
-        and local_evaluation == full_evaluation
-    )
-    if not exact:
-        raise MathFlowError("local-slice probe diverged from the full-state oracle")
     return {
         **base_result,
-        "classification": "bounded-exact-equivalence",
+        "classification": "bounded-exact-root-total-match",
         "failureReason": None,
         "truncated": False,
         "localArtifacts": {
@@ -579,9 +573,13 @@ def build_local_slice_probe_case(
         },
         "equivalence": {
             "attempted": True,
-            "globalNoAccessStateExact": local_no == full_no,
-            "globalWithAccessStateExact": local_with == full_with,
-            "evaluationExact": local_evaluation == full_evaluation,
+            "localNoAccessRootTotalMatchesTrustedReducer": (
+                local_no_total == full_no["totalWorkHours"]
+            ),
+            "localWithAccessRootTotalMatchesTrustedReducer": (
+                local_with_total == full_with["totalWorkHours"]
+            ),
+            "canonicalArtifactsMaterializedByTrustedFullReducer": True,
         },
     }
 
@@ -617,7 +615,9 @@ def run_local_slice_probe(
         for scenario in selected_scenarios
     ]
     successful = [
-        case for case in cases if case["classification"] == "bounded-exact-equivalence"
+        case
+        for case in cases
+        if case["classification"] == "bounded-exact-root-total-match"
     ]
     widened = [
         case for case in cases if case["classification"] == "requires-explicit-widening"
@@ -652,13 +652,17 @@ def run_local_slice_probe(
         },
         "summary": {
             "caseCount": len(cases),
-            "boundedExactCaseCount": len(successful),
+            "boundedRootTotalMatchCaseCount": len(successful),
             "explicitWideningCaseCount": len(widened),
-            "allAttemptedEquivalenceChecksExact": all(
+            "allAttemptedRootTotalChecksMatch": all(
                 all(
                     value is True
                     for key, value in case["equivalence"].items()
-                    if key != "attempted"
+                    if key
+                    in {
+                        "localNoAccessRootTotalMatchesTrustedReducer",
+                        "localWithAccessRootTotalMatchesTrustedReducer",
+                    }
                 )
                 for case in successful
             ),
@@ -676,7 +680,7 @@ def run_local_slice_probe(
             ),
         },
         "limitations": [
-            "This proves deterministic reducer equivalence, not model judgment quality.",
+            "This proves exact local root-total agreement with the trusted reducer, not independent reconstruction of canonical states or model judgment quality.",
             "Token counts are compact-JSON byte proxies, not provider tokenizer counts.",
             "Dependency, root-wide, or topology-required cuts may exceed a bound and fail; they are never truncated.",
             "The experiment supports program-only knowledge state v3 and is not wired to a provider or active lane.",

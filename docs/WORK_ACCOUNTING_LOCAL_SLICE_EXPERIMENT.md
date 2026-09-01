@@ -33,8 +33,9 @@ context by digest. Trusted application validates the packet, reconstructs it
 from the complete global inputs, rejects any difference, validates the sparse
 patch against its exact write scope and required primitive set, reduces the
 local tree, applies the unchanged full-state V2 reducer, and requires both root
-totals to be identical. It then requires local `W-`, `W+`, and `D` artifacts to
-be byte-for-byte equal to the ordinary full-state materialization.
+totals to be identical. Trusted full V2 then materializes the canonical `W-`,
+`W+`, and `D` artifacts. The slice experiment does not independently
+reconstruct those complete objects.
 
 The no-access capacity experiment also constructs a measurement-only frozen
 `W+` snapshot with the same cut and boundary aggregates. It is explicitly not
@@ -72,9 +73,10 @@ The checked-in report runs six cases at 16, 64, 256, and 1,024 programs:
   `W-`; and
 - a deliberately broad local subtree.
 
-All 20 cases admitted by the default 128/256 bounds reproduce the complete
-global `W-`, `W+`, and evaluation objects exactly. Four cases reject before
-local reduction: dependency closure at 256 programs (129 included nodes),
+All 20 cases admitted by the default 128/256 bounds reproduce the exact trusted
+global `W-` and `W+` root totals. The trusted full reducer then materializes
+canonical states and `D`. Four cases reject before local reduction: dependency
+closure at 256 programs (129 included nodes),
 dependency closure at 1,024 (257 included and 767 boundary roots), decisive
 internal completion at 1,024 (64 included and 960 boundary roots), and broad
 scope at 1,024 (65 included and 959 boundary roots). They are recorded as
@@ -118,14 +120,15 @@ introduce that policy.
 ## What this proves—and what it does not
 
 The result proves that the current sparse primitive patch can be validated and
-reduced from this local numeric cut while trusted code preserves and commits a
-complete state, conditional on the deterministic impact cut containing every
-patch target and required primitive update. It does not prove that the cut is
-semantically sufficient. It covers direct, dependency, subtree, topology,
-completion, and broad-scope deterministic fixtures, including two independent
-seed branches, a moved subtree with unchanged collapsed descendants, and
-adversarial stale, missing, duplicate, unknown, out-of-scope, and
-rehashed-boundary mutations.
+its root total reduced from this local numeric cut while trusted code preserves
+and commits a complete state, conditional on the deterministic impact cut
+containing every patch target and required primitive update. Trusted full V2,
+not a second local state reconstructor, produces the canonical states and `D`
+after that check. It does not prove that the cut is semantically sufficient. It
+covers direct, dependency, subtree, topology, completion, and broad-scope
+deterministic fixtures, including two independent seed branches, a moved
+subtree with unchanged collapsed descendants, and adversarial stale, missing,
+duplicate, unknown, out-of-scope, and rehashed-boundary mutations.
 
 It does not prove:
 

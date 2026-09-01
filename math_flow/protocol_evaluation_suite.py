@@ -39,6 +39,7 @@ from .research_builder_v10_widening import (
     plan_widening_experiment,
 )
 from .teacher_student_scenarios import run_teacher_student_scenario
+from .work_accounting_local_slice_probe import run_local_slice_probe
 from .work_accounting_scale import (
     WorkAccountingScaleConfig,
     run_provider_free_work_accounting_scale_probe,
@@ -481,6 +482,59 @@ def _run_work_accounting_context_scale(
     }
 
 
+def _run_work_accounting_local_slice(
+    context: ComponentContext,
+) -> dict[str, object]:
+    configurations = None
+    scenarios = (
+        "direct",
+        "dependency",
+        "subtree",
+        "topology-alignment",
+        "completed-node",
+        "broad-scope",
+    )
+    verification = "exact-regeneration"
+    if context.mode == "pr":
+        configurations = (WorkAccountingScaleConfig(16, 24, 3, 4),)
+        scenarios = ("direct", "topology-alignment", "completed-node")
+        verification = "bounded-smoke-plus-locked-full-report"
+    report = run_local_slice_probe(configurations, scenarios=scenarios)
+    summary = _mapping(report.get("summary"), "local accounting-slice summary")
+    if (
+        report.get("providerCalls") != 0
+        or report.get("networkUsed") is not False
+        or summary.get("allAttemptedRootTotalChecksMatch") is not True
+        or int(summary.get("boundedRootTotalMatchCaseCount", 0)) < 1
+    ):
+        raise MathFlowError(
+            "local accounting-slice probe did not pass provider-free"
+        )
+    if context.mode == "full":
+        _require_exact_bytes(
+            _pretty_json_bytes(report, sort_keys=True),
+            context.checked_raw,
+            "local accounting-slice report",
+        )
+    return {
+        "verification": verification,
+        "outputDigest": report["reportDigest"],
+        "providerCalls": 0,
+        "networkUsed": False,
+        "publicationAttempted": False,
+        "details": {
+            "caseCount": summary["caseCount"],
+            "boundedRootTotalMatchCaseCount": summary[
+                "boundedRootTotalMatchCaseCount"
+            ],
+            "explicitWideningCaseCount": summary[
+                "explicitWideningCaseCount"
+            ],
+            "allAttemptedRootTotalChecksMatch": True,
+        },
+    }
+
+
 def _run_no_three_v10_v2_preflight(
     context: ComponentContext,
 ) -> dict[str, object]:
@@ -518,6 +572,7 @@ COMPONENT_RUNNERS: dict[str, ComponentRunner] = {
     "bssc-v10-k2-dry-run": _run_bssc_v10_k2_dry_run,
     "miniature-v10-v2-replay": _run_miniature_v10_v2_replay,
     "work-accounting-context-scale": _run_work_accounting_context_scale,
+    "work-accounting-local-slice": _run_work_accounting_local_slice,
     "no-three-v10-v2-preflight": _run_no_three_v10_v2_preflight,
 }
 COMPONENT_ORDER = tuple(COMPONENT_RUNNERS)

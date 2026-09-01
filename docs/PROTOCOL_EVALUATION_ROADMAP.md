@@ -250,17 +250,18 @@ pass, but every 1,024-program `W-` request crosses the nominal 128,000-token
 input proxy and reaches as high as 320,613 estimated tokens. The local impact
 subgraph is therefore not sufficient by itself: current V2 requests repeat the
 complete live accounting state, and `W-` repeats the complete frozen `W+` state
-as well. A bounded digest-bound accounting slice with reducer-equivalence replay
-is required before making scalability claims.
+as well. A bounded digest-bound accounting slice with an independently checked
+root-total reduction is required before making locality claims.
 
 An additive inactive local-slice experiment now supplies that deterministic
-reducer-equivalence proof. It retains complete global state in trusted code and
-exposes exact writable nodes plus digest-bound ancestor and boundary aggregates.
-All 20 cases admitted by its default bounds reproduce full-state `W-`, `W+`,
-and `D` exactly through 1,024 programs; four dependency, decisive-completion,
-or broad cases fail closed rather than truncate. Equivalence is conditional on
-the impact cut containing every patch target; scope sufficiency remains a
-semantic question. This is not yet a Work Accounting V3 request format or a
+root-total check. It retains complete global state in trusted code and exposes
+exact writable nodes plus digest-bound ancestor and boundary aggregates. All
+20 cases admitted by its default bounds reproduce the trusted full reducer's
+`W-` and `W+` root totals through 1,024 programs; trusted full V2 then creates
+the canonical states and `D`. Four dependency, decisive-completion, or broad
+cases fail closed rather than truncate. Agreement is conditional on the impact
+cut containing every patch target; scope sufficiency remains a semantic
+question. This is not yet a Work Accounting V3 request format or a
 semantic-judge result. See `docs/WORK_ACCOUNTING_LOCAL_SLICE_EXPERIMENT.md`.
 
 The small-real-problem provider-free preflight is implemented at
@@ -277,7 +278,7 @@ later checkpointed semantic runner.
 
 ## Provider-free umbrella suite
 
-The additive `protocol-evaluation-suite-v1` manifest now exposes the six
+The additive `protocol-evaluation-suite-v1` manifest now exposes the seven
 implemented provider-free evaluation components through one command:
 
 ```bash
@@ -288,18 +289,19 @@ python3 -m math_flow protocol-evaluation-suite \
 
 The required ordered components are builder context scale, Builder V10
 provider-free widening plan, final V2 BSSC K2-only dry-run, miniature V10/V2
-require-pass replay, Work Accounting V2 context scale, and the exact No-Three
-preflight. Pull-request mode verifies every locked artifact, runs bounded scale
-smokes, and fully runs the other four checks. `--mode full` exact-regenerates
-both complete scale reports; the remaining four checks are unchanged.
+require-pass replay, Work Accounting V2 context scale, the local-slice
+root-total replay, and the exact No-Three preflight. Pull-request mode verifies
+every locked artifact, runs bounded scale/reducer smokes, and fully runs the
+other four checks. `--mode full` exact-regenerates all three complete reports;
+the remaining four checks are unchanged.
 
 The command accepts neither provider credentials nor provider/publication
 execution flags. Both modes verify an aggregate of zero provider calls, no
 network use, and no publication attempt, then write canonical `summary.json`
 and `summary.md`. This unifies regression execution only; it does not advance a
 candidate to a paid tier or authorize any step below. The manifest uses a
-trusted component registry rather than executable paths, leaving an additive
-slot for the future provider-free local-accounting-slice equivalence probe.
+trusted component registry rather than executable paths, and the local-slice
+component was appended without changing the summary envelope.
 See `docs/PROTOCOL_EVALUATION_SUITE.md` for the normative command, manifest,
 summary, and extension contracts.
 
