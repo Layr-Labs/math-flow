@@ -227,16 +227,22 @@ especially a cross-program clue present in raw evidence but absent from the
 accepted validity summary; that case may require one bounded author-initiated
 re-route or a stronger validity-to-builder semantic contract.
 
-The first provider-free miniature end-to-end candidate is implemented in
+The provider-free miniature end-to-end candidate is implemented in
 `protocol/experiments/miniature-e2e-v1/`. It digest-binds the Builder V10
 experiment and work-accounting V2 spec/policy, substitutes precommitted
 synthetic semantic choices, reconstructs and binds each exact V10 route context
 and local authoring packet, and replays eight ordered submissions through the
-scoped V10/V8/V7 and work-accounting reducers. Its deterministic scorer covers
-all miniature case classes, 102 hard assertions, and an eight-group adversarial
-scorecard. This advances the protocol-composition portion of steps 4 and 5
-below; it does not replace the paid semantic run or an independent adversarial
-model.
+scoped V10/V8/V7 reducers. For every submission it now constructs the real
+`OpenRouterWorkProjectionProviderV2` with a local stage-aware capture transport
+and uses the public `PROFILE_V2` `run_work_projection_bundle` and
+`load_work_projection_bundle` path. The fixed transcript makes exactly 24 local
+transport invocations—safe facts, `W+`, and `W-` for each submission—with zero
+network calls, external/provider spend, or publication. It binds exact
+synthetic evidence and assessment inputs, the full frozen `W+` candidate, and
+the `W-` firewall/candidate boundary. This completes the provider-free
+request/bundle-replay portion of the first recommended item; it does not
+replace a paid semantic run, a model-quality evaluation, or an independent
+adversarial audit.
 
 The actual Work Accounting V2 request path now has a separate provider-free
 16-case scale probe through 1,024 programs. All deterministic semantic checks
@@ -261,8 +267,12 @@ later checkpointed semantic runner.
 
 ## Recommended sequence
 
-1. Extend the exact V10-scoped miniature so its precommitted accounting
-   responses pass through the actual captured V2 request and bundle path.
+1. **Complete — miniature V2 request/bundle replay.** The eight-submission
+   fixture uses the real V2 provider adapter behind a local stage-aware capture
+   transport, calls the public run/load bundle APIs, and records 24 local
+   invocations without network, spend, or publication. Its safe facts and
+   primitive responses remain deterministic oracle inputs, so this completion
+   establishes request/bundle mechanics and bindings, not judge quality.
 2. Run exactly one corrected BSSC K2-only holdout. Require root ownership and
    the conditional-parent test before running K3, another seed, or a wider paid
    fixture.

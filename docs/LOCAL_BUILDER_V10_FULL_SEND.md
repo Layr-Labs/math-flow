@@ -16,8 +16,11 @@ exactly bound small real-problem history without creating a publication path.
 The build also composes the intended A-first work-accounting order in a
 provider-free eight-submission miniature. That composition reuses the existing
 active BSSC Work Accounting V2 judge and policy, but the V10/V2 composition is
-inactive and unpublished. It is not a new credit projection and it does not yet
-run the semantic V2 judges on real evidence.
+inactive and unpublished. It is not a new credit projection. Each step now
+uses the real `OpenRouterWorkProjectionProviderV2` through a local stage-aware
+capture transport and the public `PROFILE_V2` run/load bundle APIs, while
+feeding deterministic precommitted safe-facts and primitive responses rather
+than asking a provider to make semantic judgments on real evidence.
 
 The candidate flow is:
 
@@ -141,7 +144,12 @@ Four independent layers are checked in:
    cross-program work, decisive completion, and a separate prior-credit
    correction record. Each step reconstructs its exact V10 route context,
    route plan, and authoring packet and passes through V10's scoped application
-   guard before the exact work reducers produce
+   guard. It then invokes the real V2 safe-facts, `W+`, and `W-` bundle path
+   through an injected local capture transport: 24 local invocations total,
+   with zero network calls, external/provider spend, or publication. Exact
+   synthetic evidence and assessment inputs bind the full frozen `W+`
+   candidate; the `W-` request is bound to that candidate while preserving the
+   no-access firewall. The exact work reducers produce
    `D = [20, 5, 10, 15, 2, 2, 12, 59]` competent-human-researcher hours and 102
    hard assertions across eight adversarial groups.
 4. **Small real-problem zero-call preflight.** The No-Three-in-Line shadow manifest binds
@@ -226,12 +234,11 @@ for exact reduction.
 - It does not create a new credit-assignment projection or UI view.
 - The large builder fixtures measure correct-route construction and deterministic
   scorer behavior, not provider routing accuracy or repeated-judge variance.
-- The miniature substitutes precommitted semantic outputs. It validates reducer
-  order and invariants, not model judgment quality, epistemic-firewall quality,
-  or hour calibration.
-- The miniature now exercises exact V10 route/packet binding and scoped
-  application, but its V2 work responses still enter at the deterministic patch
-  boundary rather than through the public V2 request/bundle adapter.
+- The miniature substitutes precommitted semantic outputs. It exercises the
+  real V2 safe-facts, request/firewall, output-validation, A-first freeze,
+  bundle, and load/replay mechanics, but it does not establish model judgment
+  quality, firewall compliance by a live model, retry quality, or hour
+  calibration.
 - No-Three-in-Line has a schema-valid root-contract review draft and zero-call
   serial preflight, but no semantic request can run until the contract is
   reviewed and a checkpointed publication-forbidden runner with price controls
@@ -241,8 +248,11 @@ for exact reduction.
 
 ## Recommended next sequence
 
-1. Route the miniature's precommitted work responses through the public V2
-   request/bundle path with an explicitly local capture transport.
+1. **Complete — V2 request/bundle miniature replay.** The public V2 adapter and
+   bundle run/load APIs now execute all eight steps over an injected local
+   stage-aware capture transport (24 deterministic local invocations, zero
+   network/spend/publication). The result remains an oracle replay, not a
+   semantic-provider evaluation.
 2. Run one corrected BSSC K2 root-ownership holdout against the exact final V10
    digest, under a separate provider authorization and the existing hard stops.
 3. Implement a bounded, digest-bound Work Accounting V2 slice and prove by
