@@ -127,6 +127,10 @@ ancestor integrity checks, with one narrow topology rule: an existing entity
 under a pure move or retirement preserves its complete predecessor content and
 provenance, while old/new ancestors and all content-refreshed programs still
 require current-submission provenance. V7's state-v3 reducer remains unchanged.
+V10's trusted normalizer reconstructs that pure topology snapshot from the
+complete predecessor and rejects model-authored support, content, provenance,
+or link changes. This repair is specific to the V10 path; the original hosted
+V8 provider and its documented combined refresh/topology seam remain unchanged.
 After reduction V10 additionally verifies that every non-operated
 program/result and every prior contribution record is byte-for-byte unchanged.
 State-v3 topology alignment and same-world accounting handoff derivation
