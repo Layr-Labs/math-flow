@@ -71,17 +71,17 @@ The resulting authoring packet contains:
 
 - exact semantic views of selected programs, with digest commitments replacing
   their cumulative source and result-link arrays;
-- exact selected result semantics and support, with digest commitments replacing
-  cumulative claim, source, and judgment provenance arrays;
+- exact selected result semantics, with counts and digest commitments replacing
+  cumulative support, claim, source, and judgment arrays;
 - bounded capsules for inspected, searched, and writable programs;
 - compact search-hit identities and scores;
 - an explicit read set and separate existing/create write scopes; and
 - a commitment to counts and ID sets for the hidden complete state.
 
-Program source/result arrays are intentionally not copied into ancestor views.
-A future provider adapter must expand model-authored additions against trusted
-existing arrays before calling the reducer, as Builder V9 already does for
-support and provenance.
+Program source/result arrays and result support/provenance arrays are
+intentionally not copied into author views. A future provider adapter must
+expand model-authored additions against trusted existing arrays before calling
+the reducer, as Builder V9 already does for support and provenance.
 
 `run_research_builder_v10_two_stage` is a provider-agnostic reference
 orchestrator. It accepts separate route and author callbacks so tests and
@@ -129,5 +129,7 @@ candidate still needs:
 Deterministic lexical search can miss paraphrases. A governed embedding index
 could later supplement it, but must bind the embedding implementation and index
 bytes. Individual heavily consolidated result records can also grow even though
-the number of loaded results is bounded; support paging is the next locality
-boundary if scale probes show that single-record growth is material.
+the number of loaded results is bounded. If method-level consolidation quality
+needs prior support bodies, add an explicitly requested, separately bounded
+support-expansion page rather than restoring cumulative support to every author
+packet.

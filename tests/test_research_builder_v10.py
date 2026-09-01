@@ -346,7 +346,15 @@ class ResearchBuilderV10Tests(unittest.TestCase):
                 self.base["intermediateResults"]["result/geometric-extension"]["claimRefs"]
             ),
         )
-        self.assertIn("Exact proof", str(exact_result["support"]))
+        self.assertNotIn("support", exact_result)
+        self.assertEqual(exact_result["supportCounts"]["proofs"], 1)
+        self.assertEqual(
+            exact_result["supportDigest"],
+            "sha256:"
+            + sha256_json(
+                self.base["intermediateResults"]["result/geometric-extension"]["support"]
+            ),
+        )
 
     def test_packet_fails_instead_of_truncating_mandatory_closure(self) -> None:
         with self.assertRaisesRegex(MathFlowError, "result read-set exceeds budget"):

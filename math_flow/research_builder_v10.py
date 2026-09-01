@@ -123,7 +123,8 @@ RESULT_VIEW_FIELDS = {
     "title",
     "statement",
     "scopeQualifications",
-    "support",
+    "supportCounts",
+    "supportDigest",
     "dependencyResultIds",
     "claimRefCount",
     "claimRefsDigest",
@@ -134,6 +135,14 @@ RESULT_VIEW_FIELDS = {
     "status",
     "supersededByResultIds",
     "recordDigest",
+}
+SUPPORT_COUNT_FIELDS = {
+    "proofs",
+    "methods",
+    "computations",
+    "tools",
+    "artifactRefs",
+    "attestationRefs",
 }
 READ_SET_FIELDS = {
     "programIds",
@@ -767,6 +776,9 @@ def _program_view(program: Mapping[str, object]) -> dict[str, object]:
 
 
 def _result_view(result: Mapping[str, object]) -> dict[str, object]:
+    support = result["support"]
+    if not isinstance(support, dict):
+        raise MathFlowError("research builder v10 result support is invalid")
     claim_refs = list(result["claimRefs"])
     source_ids = list(result["sourceTransactionIds"])
     judgment_ids = list(result["judgmentIds"])
@@ -777,7 +789,11 @@ def _result_view(result: Mapping[str, object]) -> dict[str, object]:
         "title": result["title"],
         "statement": result["statement"],
         "scopeQualifications": copy.deepcopy(result["scopeQualifications"]),
-        "support": copy.deepcopy(result["support"]),
+        "supportCounts": {
+            field: len(support[field])
+            for field in sorted(SUPPORT_COUNT_FIELDS)
+        },
+        "supportDigest": f"sha256:{sha256_json(support)}",
         "dependencyResultIds": copy.deepcopy(result["dependencyResultIds"]),
         "claimRefCount": len(claim_refs),
         "claimRefsDigest": _list_digest(claim_refs),
