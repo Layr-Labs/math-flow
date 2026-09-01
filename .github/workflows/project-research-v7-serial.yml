@@ -22,7 +22,43 @@ env:
   MATH_FLOW_VALIDITY_SOURCE: protocol/runtime/bssc-research-v4-validity-source-v1.json
 
 jobs:
+  accounting-topology-experiment:
+    if: github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          ref: "${{ github.sha }}"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Run the unpublished accounting-topology prompt ablation
+        env:
+          OPENROUTER_API_KEY: "${{ secrets.OPENROUTER_API_KEY }}"
+          MATH_FLOW_SITE_URL: "${{ github.server_url }}/${{ github.repository }}"
+        run: |
+          set -euo pipefail
+          if [[ -z "$OPENROUTER_API_KEY" ]]; then
+            echo "The OPENROUTER_API_KEY repository secret is not configured." >&2
+            exit 1
+          fi
+          python -m experiments.bssc_accounting_topology_prompt \
+            --output "${RUNNER_TEMP}/bssc-accounting-topology-v1"
+      - name: Upload unpublished experiment artifacts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: "bssc-accounting-topology-v1-${{ github.run_id }}"
+          path: "${{ runner.temp }}/bssc-accounting-topology-v1"
+          if-no-files-found: error
+          retention-days: 14
+
   produce:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
