@@ -6,8 +6,12 @@ from collections.abc import Callable, Mapping, Sequence
 
 from .errors import MathFlowError
 from .repository import sha256_json
-from .research_builder_v7 import IDENTIFIER, validate_research_program_state_v3
-from .research_builder_v9 import apply_research_builder_v9_transition
+from .research_builder_v7 import (
+    IDENTIFIER,
+    apply_research_builder_v7_transition,
+    validate_research_program_state_v3,
+)
+from .research_builder_v8 import _validate_evidence_and_program_refresh
 
 
 ENTITY_KINDS = {"program", "intermediateResult"}
@@ -1259,12 +1263,22 @@ def apply_research_builder_v10_transition(
     if transition.get("baseStateDigest") != packet["baseStateDigest"]:
         raise MathFlowError("research builder v10 transition has a stale packet binding")
     operated = _operation_scope(state, transition, packet)
-    reduced = apply_research_builder_v9_transition(
+    # Keep the active V8/V9 reducers unchanged.  V10 alone permits an existing
+    # pure move/retire to preserve the moved program's predecessor provenance;
+    # the transition and every affected ancestor still carry the current
+    # contribution through the ordinary V7/V8 checks.
+    reduced = apply_research_builder_v7_transition(
         state,
         transition,
         accepted_claims=accepted_claims,
         judgment_id=judgment_id,
+    )
+    _validate_evidence_and_program_refresh(
+        state,
+        transition,
+        reduced["postState"],
         evidence_file_refs=evidence_file_refs,
+        allow_v10_existing_topology_program_provenance=True,
     )
     post_state = reduced["postState"]
     assert isinstance(post_state, dict)

@@ -691,30 +691,20 @@ class ResearchBuilderV8Tests(unittest.TestCase):
                 evidence_file_refs={PATH_B: sha256_bytes(CONTENT_B)},
             )
 
-    def test_pure_existing_program_move_preserves_provenance_and_refreshes_ancestors(self) -> None:
+    def test_active_v8_still_rejects_pure_move_without_current_provenance(self) -> None:
         base = topology_move_base()
         transition = pure_program_move_transition(base)
-        prior_sources = base["programs"]["program/moved"]["sourceTransactionIds"]
-
-        reduced = apply_research_builder_v8_transition(
-            base,
-            transition,
-            accepted_claims=accepted("claim-b"),
-            judgment_id=JUDGMENT_B,
-            evidence_file_refs={PATH_B: sha256_bytes(CONTENT_B)},
-        )
-
-        post = reduced["postState"]
-        self.assertEqual(
-            post["programs"]["program/moved"]["parentId"],
-            "program/new-parent",
-        )
-        self.assertEqual(
-            post["programs"]["program/moved"]["sourceTransactionIds"],
-            prior_sources,
-        )
-        for program_id in ("root", "program/old-parent", "program/new-parent"):
-            self.assertIn(TX_B, post["programs"][program_id]["sourceTransactionIds"])
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "affected program refresh must cite the current submission: program/moved",
+        ):
+            apply_research_builder_v8_transition(
+                base,
+                transition,
+                accepted_claims=accepted("claim-b"),
+                judgment_id=JUDGMENT_B,
+                evidence_file_refs={PATH_B: sha256_bytes(CONTENT_B)},
+            )
 
     def test_move_does_not_exempt_content_refreshed_ancestors_from_current_source(self) -> None:
         base = topology_move_base()

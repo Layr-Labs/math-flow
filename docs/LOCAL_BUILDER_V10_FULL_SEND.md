@@ -102,12 +102,14 @@ topology oracle.
 
 ### 3. Governed execution and replay
 
-The experimental runners enforce publication prohibition, exact candidate and
-fixture digests, request/call/token/cost reservations, attempt journals, and
-terminal handling of unknown spend. Once a provider request may have left the
-process, an outcome without a concrete response is terminal; it cannot cause a
-second call. Concrete empty, invalid, or truncated responses retain the
-versioned bounded diagnostic-retry path.
+The final V2 holdout and widening runners enforce publication prohibition,
+exact candidate and fixture digests, request/call/token/cost reservations,
+attempt journals, and terminal handling of unknown spend. The historical V1
+holdout is retained only as evidence for its completed run and is not the
+current execution target. Once a provider request may have left the process,
+an outcome without a concrete response is terminal; it cannot cause a second
+call. Concrete empty, invalid, or truncated responses retain the versioned
+bounded diagnostic-retry path.
 
 Scenario fixtures now bind the exact ordered stage-input artifact IDs and
 digests they consume. Replay fails closed on substitution, reordering, unsafe

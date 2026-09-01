@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-22 (`9ff49a7`).
+Last reconciled with `main`: 2026-09-01 (`4190d6a`).
 Published-state claims below were checked against `origin/projections` at
 `ebe7a32`.
 
@@ -284,15 +284,16 @@ alignment, and emits an exact same-world accounting handoff. Its judge/profile
 identities are not used by any registered projection and no active workflow or
 projection uses them; activation remains a separate governed change.
 
-The inactive Builder V9 experiment preserves the two-entity state-v3 model but
+The BSSC-only Builder V9 lane preserves the two-entity state-v3 model but
 replaces Builder V8's complete provider-visible predecessor with a digest-bound
 progressive context: every program and result core remains visible, while full
 support is loaded only for results selected by the current submission's declared
 dependencies and recursive result-dependency closure. Provider-authored
 `supportAdditions` are merged into the complete trusted predecessor so omitted
 support cannot be deleted. The context is stored and re-derived during replay.
-Its candidate `openrouter-research-v7` lane and dedicated serial workflow remain
-inactive until separate governed projection admission. See
+Its `openrouter-research-v7` projection and dedicated serial workflow are active
+for BSSC. The local/fractal Builder V10 described later remains a separate,
+inactive experiment and does not alter this active V9 lane. See
 `docs/BSSC_RESEARCH_V7_CONTEXT_EXPERIMENT.md`.
 
 Cross-program claims belong at root or another genuinely shared active scope.
@@ -573,9 +574,11 @@ The ordinary solver path is fully automatic:
 3. If the PR is still open, non-draft, targets `main`, and every required check
    succeeded, it is squash-merged at the exact validated head SHA.
 4. For a contribution, the auto-merger explicitly dispatches the baseline and
-   every active OpenRouter knowledge projection for only the affected problem
-   and exact merged transaction. The only active OpenRouter research producer is
-   research-v3. If the merged transaction contains `verification.json`, the
+   each applicable active OpenRouter judgment stream for only the affected
+   problem and exact merged transaction. The general producer handles
+   `openrouter-research-v3`; the active BSSC-only V4 through V7 projections use
+   their dedicated serial workflows. If the merged transaction contains
+   `verification.json`, the
    auto-merger also dispatches the trusted, provider-free objective-attestation
    workflow for that exact squash SHA. A direction event dispatches only the
    provider-free viewer-catalog refresh because it has no mathematical judgment
@@ -868,9 +871,9 @@ upgrade path.
 - `docs/BSSC_RESEARCH_V4_SERIAL_PRODUCER.md` — exact historical validity-v4
   frontier, one-submission builder-v6 production, recovery, and activation
   boundary for the BSSC K0-to-K16 chain.
-- `docs/BSSC_RESEARCH_V7_CONTEXT_EXPERIMENT.md` — inactive Builder V9
-  progressive-context contract, provider-free BSSC measurements, serial route,
-  and stop conditions.
+- `docs/BSSC_RESEARCH_V7_CONTEXT_EXPERIMENT.md` — active BSSC-only Builder V9
+  progressive-context contract, provider-free measurements, serial route, and
+  stop conditions.
 - `docs/LOCAL_BUILDER_V10_FULL_SEND.md` — inactive local/fractal Builder V10
   checkpoint, exact implementation changes, empirical scale findings, limits,
   and next evaluation sequence.

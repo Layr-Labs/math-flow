@@ -55,6 +55,7 @@ def _validate_evidence_and_program_refresh(
     post_state: Mapping[str, object],
     *,
     evidence_file_refs: Mapping[str, str],
+    allow_v10_existing_topology_program_provenance: bool = False,
 ) -> None:
     subject = transition.get("subjectTransactionId")
     if not isinstance(subject, str):
@@ -109,7 +110,10 @@ def _validate_evidence_and_program_refresh(
         raw_operations = transition.get(field)
         if isinstance(raw_operations, list):
             operations.extend(raw_operations)
-            if field == "topologyOperations":
+            if (
+                allow_v10_existing_topology_program_provenance
+                and field == "topologyOperations"
+            ):
                 topology_only_existing_programs.update(
                     str(operation["entityId"])
                     for operation in raw_operations
@@ -191,7 +195,7 @@ def _validate_evidence_and_program_refresh(
             )
             if sources != prior_sources:
                 raise MathFlowError(
-                    "research builder v8 topology-only program must preserve "
+                    "research builder v10 topology-only program must preserve "
                     f"source provenance: {program_id}"
                 )
             continue
