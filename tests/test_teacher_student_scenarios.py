@@ -92,6 +92,16 @@ def _scenario(root: Path, *, failing_gold: bool = False) -> Path:
                         "pointer": "/programIds",
                     },
                 },
+                {
+                    "id": "root-pointer-addresses-the-whole-artifact",
+                    "severity": "hard",
+                    "actual": {
+                        "artifact": "k1.route.plan",
+                        "pointer": "",
+                    },
+                    "operator": "equals",
+                    "expected": {"programIds": ["program-one"]},
+                },
             ],
         },
     )

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -26,6 +27,32 @@ def _sha256_path_content_v1(directory: Path) -> str:
         digest.update(file_digest.encode("ascii"))
         digest.update(b"\n")
     return f"sha256:{digest.hexdigest()}"
+
+
+def _sha256_bytes(value: bytes) -> str:
+    return f"sha256:{hashlib.sha256(value).hexdigest()}"
+
+
+def _git_bytes(*arguments: str) -> bytes:
+    return subprocess.run(
+        ["git", *arguments],
+        cwd=ROOT,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    ).stdout
+
+
+def _projection_bundle(commit: str, path: str) -> tuple[dict[str, object], dict[str, bytes]]:
+    run_bytes = _git_bytes("show", f"{commit}:{path}/run.json")
+    manifest = json.loads(run_bytes)
+    artifacts: dict[str, bytes] = {}
+    for artifact in manifest["artifacts"]:
+        raw = _git_bytes("show", f"{commit}:{path}/{artifact['path']}")
+        if _sha256_bytes(raw) != artifact["digest"] or len(raw) != artifact["bytes"]:
+            raise AssertionError(f"projection artifact does not match its manifest: {path}/{artifact['path']}")
+        artifacts[artifact["role"]] = raw
+    return manifest, {"run.json": run_bytes, **artifacts}
 
 
 class NoThreeV10V2ShadowPlanTests(unittest.TestCase):
@@ -144,6 +171,11 @@ class NoThreeV10V2ShadowPlanTests(unittest.TestCase):
             self.assertEqual(evidence["fileCount"], len(files))
             self.assertEqual(evidence["bytes"], sum(path.stat().st_size for path in files))
             self.assertEqual(evidence["digest"], _sha256_path_content_v1(contribution))
+            historical_tree = _git_bytes(
+                "rev-parse",
+                f"{transaction}:{subject['contributionPath']}",
+            ).decode("ascii").strip()
+            self.assertEqual(subject["gitTreeObjectId"], historical_tree)
 
             self.assertRegex(judgment["runDigest"], DIGEST)
             self.assertRegex(judgment["judgmentId"], DIGEST)
@@ -161,6 +193,65 @@ class NoThreeV10V2ShadowPlanTests(unittest.TestCase):
             run_hex = judgment["runDigest"].removeprefix("sha256:")
             self.assertTrue(judgment["path"].endswith(run_hex))
             self.assertIn(f"/{run_hex[:2]}/", judgment["path"])
+
+    def test_projection_and_run_bindings_recompute_from_git_objects(self) -> None:
+        snapshot = self.manifest["projectionSnapshot"]
+        commit = snapshot["commit"]
+        self.assertEqual(_git_bytes("cat-file", "-t", commit).strip(), b"commit")
+        for record in (snapshot["catalog"], snapshot["problemRunIndex"]):
+            self.assertEqual(
+                _sha256_bytes(_git_bytes("show", f"{commit}:{record['path']}")),
+                record["digest"],
+            )
+
+        for subject in self.manifest["subjects"]:
+            judgment = subject["judgment"]
+            run, artifacts = _projection_bundle(commit, judgment["path"])
+            self.assertEqual(_sha256_bytes(artifacts["run.json"]), judgment["runDigest"])
+            self.assertEqual(run["problemLedgerHead"], snapshot["problemLedgerHead"])
+            self.assertEqual(run["problemLedgerDigest"], snapshot["problemLedgerDigest"])
+            self.assertEqual(run["inputs"]["subjectTransactionIds"], [subject["transactionId"]])
+            self.assertEqual(
+                run["inputs"]["dependencyPacketDigest"],
+                judgment["dependencyPacketDigest"],
+            )
+            validity = json.loads(artifacts["judgment-record"])
+            self.assertEqual(validity["judgmentId"], judgment["judgmentId"])
+            self.assertEqual(validity["subjects"][0]["id"], subject["transactionId"])
+            self.assertEqual(validity["assessments"][0]["claimKey"], subject["claimKey"])
+            self.assertEqual(validity["assessments"][0]["status"], "valid")
+            self.assertEqual(
+                _sha256_bytes(artifacts["judgment-record"]),
+                judgment["judgmentRecordArtifactDigest"],
+            )
+            self.assertEqual(
+                _sha256_bytes(artifacts["judgment-dependency-packet"]),
+                judgment["dependencyPacketArtifactDigest"],
+            )
+            self.assertEqual(
+                _sha256_bytes(artifacts["judgment-report"]),
+                judgment["reportArtifactDigest"],
+            )
+            for attestation_digest in judgment["objectiveAttestationRunDigests"]:
+                run_hex = attestation_digest.removeprefix("sha256:")
+                attestation_path = f"objects/verifier-attestation/{run_hex[:2]}/{run_hex}/run.json"
+                self.assertEqual(
+                    _sha256_bytes(_git_bytes("show", f"{commit}:{attestation_path}")),
+                    attestation_digest,
+                )
+
+        for baseline_key, state_role in (
+            ("legacyKnowledge", "research-program-state"),
+            ("legacyHierarchicalCredit", "hierarchical-credit-state"),
+        ):
+            baseline = self.manifest["observationalBaselines"][baseline_key]
+            run, artifacts = _projection_bundle(commit, baseline["path"])
+            self.assertEqual(_sha256_bytes(artifacts["run.json"]), baseline["runDigest"])
+            self.assertEqual(run["problemLedgerHead"], snapshot["problemLedgerHead"])
+            self.assertEqual(run["problemLedgerDigest"], snapshot["problemLedgerDigest"])
+            self.assertEqual(_sha256_bytes(artifacts[state_role]), baseline["stateArtifactDigest"])
+            state = json.loads(artifacts[state_role])
+            self.assertEqual(state["stateDigest"], baseline["stateDigest"])
 
     def test_projection_snapshot_and_baselines_are_immutable_observations(self) -> None:
         snapshot = self.manifest["projectionSnapshot"]

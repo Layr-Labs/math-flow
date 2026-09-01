@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import unittest
+from pathlib import Path
 
 from math_flow.builder_scale import (
     SyntheticBuilderStateConfig,
+    build_bounded_exact_context_view,
     build_bounded_local_packet_model,
+    build_bounded_semantic_context_view,
     build_positioned_semantic_probe,
     build_synthetic_builder_fixture,
+    build_v9_context_view,
     classify_capacity_outcome,
     make_v10_context_strategy,
     measure_provenance_growth,
@@ -292,6 +298,27 @@ class BuilderScaleTests(unittest.TestCase):
                 fixture,
                 maximum_exact_results=4,
             )
+
+    def test_checked_in_full_scale_report_regenerates_exactly(self) -> None:
+        report = run_provider_free_builder_context_scale_probe(
+            input_budget_tokens=128_000,
+            strategies={
+                "v9-all-core": build_v9_context_view,
+                "bounded-semantic-model": build_bounded_semantic_context_view,
+                "bounded-exact-provenance": build_bounded_exact_context_view,
+                "v10-actual": make_v10_context_strategy(
+                    build_research_builder_v10_route_context,
+                    build_research_builder_v10_authoring_packet,
+                ),
+            },
+        )
+        regenerated = (json.dumps(report, indent=2, sort_keys=True) + "\n").encode()
+        checked_in = (
+            Path(__file__).resolve().parents[1]
+            / "protocol/experiments/local-builder-scale-v1/results-provider-free.json"
+        ).read_bytes()
+        self.assertEqual(hashlib.sha256(regenerated).digest(), hashlib.sha256(checked_in).digest())
+        self.assertEqual(len(regenerated), len(checked_in))
 
 
 if __name__ == "__main__":

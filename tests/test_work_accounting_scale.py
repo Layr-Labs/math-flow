@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import unittest
+from pathlib import Path
 
 from math_flow.errors import MathFlowError
 from math_flow.repository import sha256_json
@@ -120,6 +123,18 @@ class WorkAccountingScaleTests(unittest.TestCase):
             build_work_accounting_scale_case(SMALL, "unknown")
         with self.assertRaisesRegex(MathFlowError, "needs cases"):
             run_provider_free_work_accounting_scale_probe([])
+
+    def test_checked_in_full_scale_report_regenerates_exactly(self) -> None:
+        report = run_provider_free_work_accounting_scale_probe(
+            input_budget_tokens=128_000
+        )
+        regenerated = (json.dumps(report, indent=2, sort_keys=True) + "\n").encode()
+        checked_in = (
+            Path(__file__).resolve().parents[1]
+            / "protocol/experiments/work-accounting-context-scale-v1/provider-free-report.json"
+        ).read_bytes()
+        self.assertEqual(hashlib.sha256(regenerated).digest(), hashlib.sha256(checked_in).digest())
+        self.assertEqual(len(regenerated), len(checked_in))
 
 
 if __name__ == "__main__":

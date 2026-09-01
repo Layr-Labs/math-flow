@@ -903,7 +903,12 @@ def _enforce_budgets(
 
 
 def _pointer(value: object, pointer: object) -> object:
-    raw = _require_string(pointer, "relational JSON pointer")
+    # RFC 6901 reserves the empty string for the document root.  Most string
+    # fields in a scenario are intentionally nonempty, so do not route this
+    # one through _require_string.
+    if not isinstance(pointer, str):
+        raise MathFlowError("relational JSON pointer must be a string")
+    raw = pointer
     if raw == "":
         return value
     if not raw.startswith("/"):
