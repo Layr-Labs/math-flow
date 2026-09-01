@@ -12,6 +12,7 @@ from math_flow.research_builder_v10_provider import (
     OpenRouterResearchBuilderV10Provider,
     _builder_transition_schema_v10,
     _normalize_v10_transition,
+    _route_plan_schema_v10,
 )
 from math_flow.work_projection import SubmissionEvidenceFile
 
@@ -25,6 +26,23 @@ SUBJECT = "a" * 40
 JUDGMENT = "sha256:" + "1" * 64
 EVIDENCE_PATH = "problems/two-entity-fixture/contributions/a/README.md"
 EVIDENCE = b"# Accepted local result\n"
+
+
+def assert_openai_strict_schema(test: unittest.TestCase, schema: object) -> None:
+    pending = [schema]
+    while pending:
+        node = pending.pop()
+        if isinstance(node, dict):
+            for unsupported in ("oneOf", "uniqueItems", "minProperties"):
+                test.assertNotIn(unsupported, node)
+            if node.get("type") == "object":
+                properties = node.get("properties")
+                test.assertIsInstance(properties, dict)
+                test.assertIs(node.get("additionalProperties"), False)
+                test.assertEqual(set(node.get("required", [])), set(properties))
+            pending.extend(node.values())
+        elif isinstance(node, list):
+            pending.extend(node)
 
 
 def accepted_claims() -> list[dict[str, object]]:
@@ -259,6 +277,15 @@ class ResearchBuilderV10ProviderTests(unittest.TestCase):
         rendered = json.dumps(schema, sort_keys=True)
         self.assertIn("intermediateResultIdAdditions", rendered)
         self.assertIn("intermediateResultIdRemovals", rendered)
+
+        route_schema_value = _route_plan_schema_v10(
+            base_state_digest="sha256:" + "a" * 64,
+            route_context_digest="sha256:" + "b" * 64,
+        )
+        assert_openai_strict_schema(self, route_schema_value)
+        assert_openai_strict_schema(self, schema)
+        route_schema = json.dumps(route_schema_value, sort_keys=True)
+        self.assertNotIn("uniqueItems", route_schema)
 
 
 if __name__ == "__main__":

@@ -34,7 +34,6 @@ def _route_plan_schema_v10(
     def identifiers() -> dict[str, object]:
         return {
             "type": "array",
-            "uniqueItems": True,
             "items": copy.deepcopy(identifier),
         }
 
@@ -45,7 +44,6 @@ def _route_plan_schema_v10(
             "entityKinds": {
                 "type": "array",
                 "minItems": 1,
-                "uniqueItems": True,
                 "items": {
                     "type": "string",
                     "enum": ["intermediateResult", "program"],
