@@ -23,6 +23,11 @@ def _write_json(path: Path, value: object) -> str:
     return sha256_bytes(raw)
 
 
+def _inline_json_digest(value: object) -> str:
+    raw = (json.dumps(value, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+    return sha256_bytes(raw)
+
+
 def _attempt(label: str) -> dict[str, object]:
     return {
         "status": "accepted",
@@ -106,18 +111,22 @@ def _scenario(root: Path, *, failing_gold: bool = False) -> Path:
         },
     )
     route_path = root / "fixtures/route.json"
+    route_output = {"programIds": ["program-one"]}
     route_digest = _write_json(
         route_path,
         {
             "schemaVersion": 1,
             "stageId": "route",
             "outcome": "accepted",
+            "inputBindings": [
+                {"artifactId": "initial-state", "digest": initial_digest}
+            ],
             "attempts": [_attempt("route")],
             "outputs": [
                 {
                     "id": "plan",
                     "mediaType": "application/json",
-                    "value": {"programIds": ["program-one"]},
+                    "value": route_output,
                 }
             ],
         },
@@ -129,6 +138,13 @@ def _scenario(root: Path, *, failing_gold: bool = False) -> Path:
             "schemaVersion": 1,
             "stageId": "author",
             "outcome": "accepted",
+            "inputBindings": [
+                {"artifactId": "initial-state", "digest": initial_digest},
+                {
+                    "artifactId": "k1.route.plan",
+                    "digest": _inline_json_digest(route_output),
+                },
+            ],
             "attempts": [_attempt("author")],
             "outputs": [
                 {
@@ -258,6 +274,17 @@ class TeacherStudentScenarioTests(unittest.TestCase):
                 [item["artifactId"] for item in stage["reads"]],
                 ["initial-state", "k1.route.plan"],
             )
+            binding = json.loads(
+                (
+                    output
+                    / "chains/candidate/seed-7/steps/k1/stages/author/input-binding.json"
+                ).read_text()
+            )
+            self.assertEqual(binding["inputBindings"], stage["reads"])
+            self.assertEqual(
+                stage["inputBindingDigest"],
+                _inline_json_digest(binding),
+            )
 
     def test_cli_can_require_a_passing_score(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -303,6 +330,49 @@ class TeacherStudentScenarioTests(unittest.TestCase):
             route.write_text(route.read_text() + " ", encoding="utf-8")
             with self.assertRaisesRegex(MathFlowError, "digest mismatch"):
                 run_teacher_student_scenario(root, manifest, root / "output")
+
+    def test_fixture_rejects_concealed_undeclared_read(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            manifest = _scenario(root)
+            value = json.loads(manifest.read_text())
+            fixture_path = root / "fixtures/route.json"
+            fixture = json.loads(fixture_path.read_text())
+            fixture["inputBindings"].append(
+                {
+                    "artifactId": "k1.author.state",
+                    "digest": "sha256:" + "0" * 64,
+                }
+            )
+            value["steps"][0]["stages"][0]["fixtures"][0]["digest"] = _write_json(
+                fixture_path, fixture
+            )
+            _write_json(manifest, value)
+            output = root / "output"
+            with self.assertRaisesRegex(
+                MathFlowError, "input bindings do not exactly match declared stage reads"
+            ):
+                run_teacher_student_scenario(root, manifest, output)
+            self.assertFalse(output.exists())
+
+    def test_fixture_input_digest_is_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            manifest = _scenario(root)
+            value = json.loads(manifest.read_text())
+            fixture_path = root / "fixtures/route.json"
+            fixture = json.loads(fixture_path.read_text())
+            fixture["inputBindings"][0]["digest"] = "sha256:" + "0" * 64
+            value["steps"][0]["stages"][0]["fixtures"][0]["digest"] = _write_json(
+                fixture_path, fixture
+            )
+            _write_json(manifest, value)
+            output = root / "output"
+            with self.assertRaisesRegex(
+                MathFlowError, "input binding digest mismatch for initial-state"
+            ):
+                run_teacher_student_scenario(root, manifest, output)
+            self.assertFalse(output.exists())
 
     def test_publication_must_be_forbidden(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

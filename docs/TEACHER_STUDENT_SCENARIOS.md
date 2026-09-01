@@ -47,7 +47,12 @@ submission K
 A later work-accounting case can use `safe-facts → W+ → W- → reduction` under
 the same contract. Read references are either frozen input IDs or fully
 qualified earlier outputs such as `k2.route.plan`; forward or undeclared reads
-are rejected before execution.
+are rejected before execution. Each fixture repeats that exact ordered read set
+as `inputBindings`, including the SHA-256 of every artifact it claims was
+visible. The fixture's own manifest-bound digest therefore commits its raw
+requests, responses, and outputs to one exact declared input set. Preflight
+compares those bindings against the actual variant-and-seed chain before
+creating an output directory.
 
 Manifests cannot name Python modules. Stage adapters and scorers are selected
 from code-owned allowlists. V1 implements only fixture replay. Most experiments
@@ -62,10 +67,19 @@ manifest alone can never enable spending or publication.
 Each fixture contains:
 
 - its exact stage ID and terminal outcome;
+- an ordered `inputBindings` array containing exactly the manifest stage's
+  declared artifact IDs and their exact content digests;
 - every raw request/response record retained by the source experiment;
 - a retry/accepted/failed attempt sequence;
 - common telemetry for every attempt; and
 - inline or path-and-digest-bound stage outputs matching the manifest contract.
+
+The harness and its checked-in fixtures are still unpublished experimental
+surfaces, so this closes the V1 contract in place instead of introducing a
+legacy-unbound mode that would keep producing evaluation-valid scores. Manifest
+shape, fixture attempt/output shape, scorer behavior, and run-envelope versions
+remain compatible; an unbound fixture must be migrated once by adding the
+bindings and refreshing its digest in the manifest.
 
 Common telemetry includes the logical request components, character and byte
 counts where known, prompt/cached/reasoning/completion/total tokens, context and
@@ -106,13 +120,18 @@ contains:
 - the exact manifest and all frozen inputs;
 - the exact fixture for every stage;
 - raw attempts and separately normalized telemetry;
-- every stage output and its read/output digest bindings;
+- every stage output and its read/output digest bindings, plus a dedicated
+  `input-binding.json` that joins the fixture digest to the exact read IDs and
+  digests for that matrix cell;
 - chain scorecards and summaries;
 - aggregate telemetry, budget checks, summary, and report.
 
 `verify_bundle` rejects missing, modified, extra, or symlinked files. The
 manifest and every external fixture/output are digest-checked before the output
-directory is created, and hard budgets are checked before replay begins.
+directory is created. Fixture input IDs must exactly equal the stage's declared
+reads, and their digests must equal the actual frozen or preceding chain
+artifacts. Missing, extra, reordered, future, or stale bindings fail closed
+before replay; hard budgets are also checked before replay begins.
 
 ## Migrated BSSC holdout
 
@@ -160,6 +179,12 @@ hour states, and limitations.
   not measure them; aggregate provider counts remain exact.
 - Scenario schemas are enforced by executable validation rather than a separate
   JSON Schema file, avoiding two competing enforcement surfaces initially.
+- The binding proves which input artifacts a frozen fixture declares and binds
+  that declaration to its complete bytes. It cannot prove the historical model
+  did not receive an off-protocol side channel; scenarios must still be produced
+  by a trusted capture path. Unbound pre-contract fixtures are rejected and
+  must be migrated by adding exact bindings and refreshing their manifest
+  digests.
 - Paid/scheduled runners, provider adapters, adversarial evaluators, and
   publication remain separate future additions.
 

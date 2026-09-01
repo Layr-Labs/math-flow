@@ -84,6 +84,13 @@ def write_miniature_e2e_fixture(destination_root: Path) -> dict[str, object]:
         "schemaVersion": 1,
         "stageId": "replay",
         "outcome": "accepted",
+        "inputBindings": [
+            {"artifactId": "miniature-oracle", "digest": oracle_digest},
+            *[
+                {"artifactId": item["id"], "digest": item["digest"]}
+                for item in candidate_inputs
+            ],
+        ],
         "attempts": [
             {
                 "status": "accepted",

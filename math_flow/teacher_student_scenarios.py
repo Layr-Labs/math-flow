@@ -43,6 +43,9 @@ class PreparedFixture:
     path: Path
     raw: bytes
     value: dict[str, object]
+    input_bindings: tuple[dict[str, str], ...]
+    binding_record: dict[str, object]
+    binding_digest: str
     attempts: tuple[dict[str, object], ...]
     telemetry: tuple[dict[str, object], ...]
     outputs: tuple[tuple[str, ScenarioArtifact, bytes | None], ...]
@@ -669,6 +672,7 @@ def _prepare_fixture(
     root: Path,
     stage: Mapping[str, object],
     fixture_ref: Mapping[str, object],
+    read_registry: Mapping[str, ScenarioArtifact] | None,
     *,
     variant: str,
     seed: int,
@@ -684,7 +688,14 @@ def _prepare_fixture(
     value = _require_mapping(
         _load_json_bytes(raw, f"scenario fixture {path}"), f"scenario fixture {path}"
     )
-    if set(value) != {"schemaVersion", "stageId", "outcome", "attempts", "outputs"}:
+    if set(value) != {
+        "schemaVersion",
+        "stageId",
+        "outcome",
+        "inputBindings",
+        "attempts",
+        "outputs",
+    }:
         raise MathFlowError(f"scenario fixture {path} has an invalid contract")
     if value.get("schemaVersion") != 1:
         raise MathFlowError(f"scenario fixture {path} schemaVersion must be 1")
@@ -693,6 +704,61 @@ def _prepare_fixture(
     outcome = _require_string(value.get("outcome"), f"scenario fixture {path} outcome")
     if outcome not in {"accepted", "failed"}:
         raise MathFlowError(f"scenario fixture {path} has unknown outcome {outcome}")
+
+    declared_reads = [str(item) for item in stage["reads"]]
+    raw_bindings = _require_list(
+        value.get("inputBindings"), f"scenario fixture {path} inputBindings"
+    )
+    input_bindings: list[dict[str, str]] = []
+    for index, raw_binding in enumerate(raw_bindings):
+        binding = _require_mapping(
+            raw_binding, f"scenario fixture {path} input binding {index + 1}"
+        )
+        if set(binding) != {"artifactId", "digest"}:
+            raise MathFlowError(
+                f"scenario fixture {path} input binding {index + 1} must contain exactly artifactId and digest"
+            )
+        input_bindings.append(
+            {
+                "artifactId": _require_string(
+                    binding["artifactId"],
+                    f"scenario fixture {path} input binding {index + 1} artifactId",
+                ),
+                "digest": _check_digest(
+                    binding["digest"],
+                    f"scenario fixture {path} input binding {index + 1} digest",
+                ),
+            }
+        )
+    bound_read_ids = [item["artifactId"] for item in input_bindings]
+    if bound_read_ids != declared_reads:
+        raise MathFlowError(
+            f"scenario fixture {path} input bindings do not exactly match declared stage reads"
+        )
+    if read_registry is not None:
+        for binding in input_bindings:
+            artifact_id = binding["artifactId"]
+            artifact = read_registry.get(artifact_id)
+            if artifact is None:
+                raise MathFlowError(
+                    f"scenario fixture {path} input binding references unavailable artifact {artifact_id}"
+                )
+            if binding["digest"] != artifact.digest:
+                raise MathFlowError(
+                    f"scenario fixture {path} input binding digest mismatch for {artifact_id}: "
+                    f"expected {artifact.digest}, observed {binding['digest']}"
+                )
+
+    binding_record = {
+        "schemaVersion": 1,
+        "variant": variant,
+        "seed": seed,
+        "step": step_id,
+        "stage": stage_id,
+        "fixtureDigest": sha256_bytes(raw),
+        "inputBindings": copy.deepcopy(input_bindings),
+    }
+    binding_digest = sha256_bytes(_json_bytes(binding_record))
     raw_attempts = _require_list(value.get("attempts"), f"scenario fixture {path} attempts")
     if not raw_attempts:
         raise MathFlowError(f"scenario fixture {path} attempts may not be empty")
@@ -793,6 +859,9 @@ def _prepare_fixture(
         path=path,
         raw=raw,
         value=value,
+        input_bindings=tuple(input_bindings),
+        binding_record=binding_record,
+        binding_digest=binding_digest,
         attempts=tuple(attempts),
         telemetry=tuple(telemetry),
         outputs=tuple(outputs),
@@ -1264,6 +1333,9 @@ def run_teacher_student_scenario(
     for variant_entry in manifest["variants"]:
         variant = str(variant_entry["id"])
         for seed in manifest["seeds"]:
+            preflight_registry = {
+                key: artifact for key, (_, artifact, _) in frozen.items()
+            }
             reachable = True
             for step in manifest["steps"]:
                 step_id = str(step["id"])
@@ -1278,6 +1350,7 @@ def run_teacher_student_scenario(
                         root,
                         stage,
                         fixture_ref,
+                        preflight_registry if reachable else None,
                         variant=variant,
                         seed=int(seed),
                         step_id=step_id,
@@ -1288,6 +1361,11 @@ def run_teacher_student_scenario(
                         telemetry_records.extend(copy.deepcopy(list(fixture.telemetry)))
                         if fixture.value["outcome"] != "accepted":
                             reachable = False
+                        else:
+                            for output_id, artifact, _ in fixture.outputs:
+                                preflight_registry[
+                                    f"{step_id}.{stage_id}.{output_id}"
+                                ] = artifact
     aggregate_telemetry = _aggregate_telemetry(telemetry_records)
     budget_report = _enforce_budgets(manifest["budgets"], aggregate_telemetry)
 
@@ -1343,6 +1421,15 @@ def run_teacher_student_scenario(
                                 "digest": chain_registry[reference].digest,
                             }
                         )
+                    if reads != list(fixture.input_bindings):
+                        raise MathFlowError(
+                            f"scenario stage {step_id}.{stage_id} fixture input bindings changed after preflight"
+                        )
+                    bundle.add_json(
+                        f"{stage_prefix}/input-binding.json",
+                        fixture.binding_record,
+                        f"teacher-student-stage-input-binding/{variant}/{seed}/{step_id}/{stage_id}",
+                    )
                     for index, (attempt, telemetry) in enumerate(
                         zip(fixture.attempts, fixture.telemetry, strict=True), start=1
                     ):
@@ -1391,6 +1478,7 @@ def run_teacher_student_scenario(
                         "adapter": stage["adapter"],
                         "outcome": fixture.value["outcome"],
                         "reads": reads,
+                        "inputBindingDigest": fixture.binding_digest,
                         "outputs": output_bindings,
                         "attempts": len(fixture.attempts),
                     }
