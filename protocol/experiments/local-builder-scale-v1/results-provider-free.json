@@ -1,0 +1,2427 @@
+{
+  "cases": [
+    {
+      "adversarialScorers": {
+        "cross-program-placement": {
+          "emptyPlan": {
+            "challenge": "cross-program-placement",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000001",
+              "program/p000002"
+            ],
+            "missingResultIds": [
+              "result/r000001"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "cross-program-placement",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "dependency-closure": {
+          "emptyPlan": {
+            "challenge": "dependency-closure",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000001",
+              "program/p000002",
+              "program/p000003",
+              "program/p000004",
+              "program/p000005"
+            ],
+            "missingResultIds": [
+              "result/r000000",
+              "result/r000001",
+              "result/r000002",
+              "result/r000003",
+              "result/r000004"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "dependency-closure",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "distant-duplicate": {
+          "emptyPlan": {
+            "challenge": "distant-duplicate",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000001",
+              "program/p000002"
+            ],
+            "missingResultIds": [
+              "result/r000022",
+              "result/r000023"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "distant-duplicate",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "misleading-capsule": {
+          "emptyPlan": {
+            "challenge": "misleading-capsule",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000002"
+            ],
+            "missingResultIds": [
+              "result/r000023"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "misleading-capsule",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "root-sibling": {
+          "emptyPlan": {
+            "challenge": "root-sibling",
+            "checks": {
+              "forbiddenParentAvoided": true,
+              "requiredParentSelected": false,
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "root"
+            ],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "root-sibling",
+            "checks": {
+              "forbiddenParentAvoided": true,
+              "requiredParentSelected": true,
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "topology-revision": {
+          "emptyPlan": {
+            "challenge": "topology-revision",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": false
+            },
+            "missingProgramIds": [
+              "program/revision-left",
+              "program/revision-old",
+              "program/revision-right"
+            ],
+            "missingResultIds": [
+              "result/r000021"
+            ],
+            "missingWriteIds": [
+              "program:program/revision-left",
+              "program:program/revision-old",
+              "program:program/revision-right"
+            ],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "topology-revision",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        }
+      },
+      "comparisons": {
+        "bounded-exact-provenance": {
+          "cumulativeRatioToV9SingleCall": 0.7713016930335831,
+          "maximumStageRatioToV9": 0.6418262558978629,
+          "maximumStageTokenReductionPercent": 35.81737441021371
+        },
+        "bounded-semantic": {
+          "cumulativeRatioToV9SingleCall": 0.670413544268665,
+          "maximumStageRatioToV9": 0.5409381071329448,
+          "maximumStageTokenReductionPercent": 45.906189286705526
+        },
+        "v9-all-core": {
+          "cumulativeRatioToV9SingleCall": 1.0,
+          "maximumStageRatioToV9": 1.0,
+          "maximumStageTokenReductionPercent": 0.0
+        },
+        "v9ProvenanceOverhead": {
+          "estimatedProvenanceOverheadPercent": 34.148798388257305,
+          "estimatedProvenanceOverheadTokens": 2373,
+          "fullEstimatedTokens": 6949,
+          "withoutCumulativeProvenanceEstimatedTokens": 4576
+        }
+      },
+      "configuration": {
+        "challenges": [
+          "dependency-closure",
+          "distant-duplicate",
+          "cross-program-placement",
+          "root-sibling",
+          "misleading-capsule",
+          "topology-revision"
+        ],
+        "dependency_depth": 2,
+        "dependency_width": 2,
+        "evidence_bytes": 512,
+        "maximum_depth": 3,
+        "maximum_width": 3,
+        "program_count": 16,
+        "provenance_per_result": 1,
+        "result_count": 24,
+        "summary_bytes": 96,
+        "support_bytes": 96
+      },
+      "fixtureDigest": "sha256:2a0851ca1bbfbda5be47f08943ea052eb720dce868b257d257132abaee4f167c",
+      "provenance": {
+        "allProvenance": {
+          "characters": 9601,
+          "estimatedTokens": 2401,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 9601,
+          "utf8Bytes": 9601
+        },
+        "occurrences": {
+          "nonRootProgramSourceTransactions": 39,
+          "resultClaimReferences": 24,
+          "resultJudgments": 24,
+          "resultSourceTransactions": 24,
+          "rootSourceTransactions": 24
+        },
+        "serialized": {
+          "nonRootProgramSourceTransactionIds": {
+            "characters": 1996,
+            "estimatedTokens": 499,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 1996,
+            "utf8Bytes": 1996
+          },
+          "resultClaimRefs": {
+            "characters": 2713,
+            "estimatedTokens": 679,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 2713,
+            "utf8Bytes": 2713
+          },
+          "resultJudgmentIds": {
+            "characters": 2233,
+            "estimatedTokens": 559,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 2233,
+            "utf8Bytes": 2233
+          },
+          "resultSourceTransactionIds": {
+            "characters": 1489,
+            "estimatedTokens": 373,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 1489,
+            "utf8Bytes": 1489
+          },
+          "rootSourceTransactionIds": {
+            "characters": 1033,
+            "estimatedTokens": 259,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 1033,
+            "utf8Bytes": 1033
+          }
+        }
+      },
+      "softSemanticProbeSizes": {
+        "beginning": {
+          "characters": 19202,
+          "estimatedTokens": 4801,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 19202,
+          "utf8Bytes": 19202
+        },
+        "end": {
+          "characters": 19196,
+          "estimatedTokens": 4799,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 19196,
+          "utf8Bytes": 19196
+        },
+        "middle": {
+          "characters": 19199,
+          "estimatedTokens": 4800,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 19199,
+          "utf8Bytes": 19199
+        }
+      },
+      "state": {
+        "contributionCount": 24,
+        "dependencyClosureResultCount": 5,
+        "programCount": 16,
+        "resultCount": 24,
+        "serialized": {
+          "characters": 50341,
+          "estimatedTokens": 12586,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 50341,
+          "utf8Bytes": 50341
+        },
+        "stateDigest": "sha256:690becdaa3aaceeffa8808d73362add4accc35cc63c030711d87cfd6a04a4186",
+        "topology": {
+          "maximumDepth": 2,
+          "maximumWidth": 6
+        }
+      },
+      "strategies": {
+        "bounded-exact-provenance": {
+          "cumulativeEstimatedTokens": 5558,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": false,
+            "estimatedUtilization": 0.0361328125,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": []
+          },
+          "maximumStageEstimatedTokens": 4625,
+          "stages": {
+            "author": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0361328125,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "authoringPacket": {
+                  "characters": 18477,
+                  "estimatedTokens": 4620,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 18477,
+                  "utf8Bytes": 18477
+                }
+              },
+              "total": {
+                "characters": 18497,
+                "estimatedTokens": 4625,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 18497,
+                "utf8Bytes": 18497
+              }
+            },
+            "route": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0072890625,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3715,
+                  "estimatedTokens": 929,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3715,
+                  "utf8Bytes": 3715
+                }
+              },
+              "total": {
+                "characters": 3732,
+                "estimatedTokens": 933,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 3732,
+                "utf8Bytes": 3732
+              }
+            }
+          }
+        },
+        "bounded-semantic": {
+          "cumulativeEstimatedTokens": 4831,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": false,
+            "estimatedUtilization": 0.030453125,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": []
+          },
+          "maximumStageEstimatedTokens": 3898,
+          "stages": {
+            "author": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.030453125,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "authoringPacket": {
+                  "characters": 15571,
+                  "estimatedTokens": 3893,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 15571,
+                  "utf8Bytes": 15571
+                }
+              },
+              "total": {
+                "characters": 15591,
+                "estimatedTokens": 3898,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 15591,
+                "utf8Bytes": 15591
+              }
+            },
+            "route": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0072890625,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3715,
+                  "estimatedTokens": 929,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3715,
+                  "utf8Bytes": 3715
+                }
+              },
+              "total": {
+                "characters": 3732,
+                "estimatedTokens": 933,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 3732,
+                "utf8Bytes": 3732
+              }
+            }
+          }
+        },
+        "v9-all-core": {
+          "cumulativeEstimatedTokens": 7206,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": false,
+            "estimatedUtilization": 0.056296875,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": []
+          },
+          "maximumStageEstimatedTokens": 7206,
+          "stages": {
+            "organize": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.056296875,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "baseStateContext": {
+                  "characters": 27794,
+                  "estimatedTokens": 6949,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 27794,
+                  "utf8Bytes": 27794
+                },
+                "submissionEvidence": {
+                  "characters": 612,
+                  "estimatedTokens": 153,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 612,
+                  "utf8Bytes": 612
+                }
+              },
+              "total": {
+                "characters": 28824,
+                "estimatedTokens": 7206,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 28824,
+                "utf8Bytes": 28824
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "adversarialScorers": {
+        "cross-program-placement": {
+          "emptyPlan": {
+            "challenge": "cross-program-placement",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000001",
+              "program/p000002"
+            ],
+            "missingResultIds": [
+              "result/r000001"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "cross-program-placement",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "dependency-closure": {
+          "emptyPlan": {
+            "challenge": "dependency-closure",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000001",
+              "program/p000002",
+              "program/p000003",
+              "program/p000004",
+              "program/p000005",
+              "program/p000006",
+              "program/p000007",
+              "program/p000008",
+              "program/p000009",
+              "program/p000010"
+            ],
+            "missingResultIds": [
+              "result/r000000",
+              "result/r000001",
+              "result/r000002",
+              "result/r000003",
+              "result/r000004",
+              "result/r000005",
+              "result/r000006",
+              "result/r000007",
+              "result/r000008",
+              "result/r000009"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "dependency-closure",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "distant-duplicate": {
+          "emptyPlan": {
+            "challenge": "distant-duplicate",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000001",
+              "program/p000002"
+            ],
+            "missingResultIds": [
+              "result/r000126",
+              "result/r000127"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "distant-duplicate",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "misleading-capsule": {
+          "emptyPlan": {
+            "challenge": "misleading-capsule",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000002"
+            ],
+            "missingResultIds": [
+              "result/r000127"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "misleading-capsule",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "root-sibling": {
+          "emptyPlan": {
+            "challenge": "root-sibling",
+            "checks": {
+              "forbiddenParentAvoided": true,
+              "requiredParentSelected": false,
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "root"
+            ],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "root-sibling",
+            "checks": {
+              "forbiddenParentAvoided": true,
+              "requiredParentSelected": true,
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "topology-revision": {
+          "emptyPlan": {
+            "challenge": "topology-revision",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": false
+            },
+            "missingProgramIds": [
+              "program/revision-left",
+              "program/revision-old",
+              "program/revision-right"
+            ],
+            "missingResultIds": [
+              "result/r000125"
+            ],
+            "missingWriteIds": [
+              "program:program/revision-left",
+              "program:program/revision-old",
+              "program:program/revision-right"
+            ],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "topology-revision",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        }
+      },
+      "comparisons": {
+        "bounded-exact-provenance": {
+          "cumulativeRatioToV9SingleCall": 0.3362993833244164,
+          "maximumStageRatioToV9": 0.323135189930448,
+          "maximumStageTokenReductionPercent": 67.6864810069552
+        },
+        "bounded-semantic": {
+          "cumulativeRatioToV9SingleCall": 0.09675330160786191,
+          "maximumStageRatioToV9": 0.08358910821389351,
+          "maximumStageTokenReductionPercent": 91.64108917861064
+        },
+        "v9-all-core": {
+          "cumulativeRatioToV9SingleCall": 1.0,
+          "maximumStageRatioToV9": 1.0,
+          "maximumStageTokenReductionPercent": 0.0
+        },
+        "v9ProvenanceOverhead": {
+          "estimatedProvenanceOverheadPercent": 72.20393109977532,
+          "estimatedProvenanceOverheadTokens": 51098,
+          "fullEstimatedTokens": 70769,
+          "withoutCumulativeProvenanceEstimatedTokens": 19671
+        }
+      },
+      "configuration": {
+        "challenges": [
+          "dependency-closure",
+          "distant-duplicate",
+          "cross-program-placement",
+          "root-sibling",
+          "misleading-capsule",
+          "topology-revision"
+        ],
+        "dependency_depth": 3,
+        "dependency_width": 3,
+        "evidence_bytes": 512,
+        "maximum_depth": 4,
+        "maximum_width": 3,
+        "program_count": 64,
+        "provenance_per_result": 4,
+        "result_count": 128,
+        "summary_bytes": 96,
+        "support_bytes": 96
+      },
+      "fixtureDigest": "sha256:5ef2decb8e72911b318af6c00d385b481e34b6f23e6aa05116a93434a6229077",
+      "provenance": {
+        "allProvenance": {
+          "characters": 204468,
+          "estimatedTokens": 51117,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 204468,
+          "utf8Bytes": 204468
+        },
+        "occurrences": {
+          "nonRootProgramSourceTransactions": 1528,
+          "resultClaimReferences": 512,
+          "resultJudgments": 512,
+          "resultSourceTransactions": 512,
+          "rootSourceTransactions": 512
+        },
+        "serialized": {
+          "nonRootProgramSourceTransactionIds": {
+            "characters": 66983,
+            "estimatedTokens": 16746,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 66983,
+            "utf8Bytes": 66983
+          },
+          "resultClaimRefs": {
+            "characters": 50561,
+            "estimatedTokens": 12641,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 50561,
+            "utf8Bytes": 50561
+          },
+          "resultJudgmentIds": {
+            "characters": 40321,
+            "estimatedTokens": 10081,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 40321,
+            "utf8Bytes": 40321
+          },
+          "resultSourceTransactionIds": {
+            "characters": 24449,
+            "estimatedTokens": 6113,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 24449,
+            "utf8Bytes": 24449
+          },
+          "rootSourceTransactionIds": {
+            "characters": 22017,
+            "estimatedTokens": 5505,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 22017,
+            "utf8Bytes": 22017
+          }
+        }
+      },
+      "softSemanticProbeSizes": {
+        "beginning": {
+          "characters": 35931,
+          "estimatedTokens": 8983,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 35931,
+          "utf8Bytes": 35931
+        },
+        "end": {
+          "characters": 35925,
+          "estimatedTokens": 8982,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 35925,
+          "utf8Bytes": 35925
+        },
+        "middle": {
+          "characters": 35928,
+          "estimatedTokens": 8982,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 35928,
+          "utf8Bytes": 35928
+        }
+      },
+      "state": {
+        "contributionCount": 512,
+        "dependencyClosureResultCount": 10,
+        "programCount": 64,
+        "resultCount": 128,
+        "serialized": {
+          "characters": 590065,
+          "estimatedTokens": 147517,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 590065,
+          "utf8Bytes": 590065
+        },
+        "stateDigest": "sha256:0c35bf1befc02d45b0cd9c2575a92443d998a14bd9ec87e5b537260a00058638",
+        "topology": {
+          "maximumDepth": 4,
+          "maximumWidth": 6
+        }
+      },
+      "strategies": {
+        "bounded-exact-provenance": {
+          "cumulativeEstimatedTokens": 23886,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": false,
+            "estimatedUtilization": 0.1793046875,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": []
+          },
+          "maximumStageEstimatedTokens": 22951,
+          "stages": {
+            "author": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.1793046875,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "authoringPacket": {
+                  "characters": 91781,
+                  "estimatedTokens": 22946,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 91781,
+                  "utf8Bytes": 91781
+                }
+              },
+              "total": {
+                "characters": 91801,
+                "estimatedTokens": 22951,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 91801,
+                "utf8Bytes": 91801
+              }
+            },
+            "route": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0073046875,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3722,
+                  "estimatedTokens": 931,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3722,
+                  "utf8Bytes": 3722
+                }
+              },
+              "total": {
+                "characters": 3739,
+                "estimatedTokens": 935,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 3739,
+                "utf8Bytes": 3739
+              }
+            }
+          }
+        },
+        "bounded-semantic": {
+          "cumulativeEstimatedTokens": 6872,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": false,
+            "estimatedUtilization": 0.0463828125,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": []
+          },
+          "maximumStageEstimatedTokens": 5937,
+          "stages": {
+            "author": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0463828125,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "authoringPacket": {
+                  "characters": 23725,
+                  "estimatedTokens": 5932,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 23725,
+                  "utf8Bytes": 23725
+                }
+              },
+              "total": {
+                "characters": 23745,
+                "estimatedTokens": 5937,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 23745,
+                "utf8Bytes": 23745
+              }
+            },
+            "route": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0073046875,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3722,
+                  "estimatedTokens": 931,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3722,
+                  "utf8Bytes": 3722
+                }
+              },
+              "total": {
+                "characters": 3739,
+                "estimatedTokens": 935,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 3739,
+                "utf8Bytes": 3739
+              }
+            }
+          }
+        },
+        "v9-all-core": {
+          "cumulativeEstimatedTokens": 71026,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": false,
+            "estimatedUtilization": 0.554890625,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": [
+              50
+            ]
+          },
+          "maximumStageEstimatedTokens": 71026,
+          "stages": {
+            "organize": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.554890625,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": [
+                  50
+                ]
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "baseStateContext": {
+                  "characters": 283073,
+                  "estimatedTokens": 70769,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 283073,
+                  "utf8Bytes": 283073
+                },
+                "submissionEvidence": {
+                  "characters": 612,
+                  "estimatedTokens": 153,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 612,
+                  "utf8Bytes": 612
+                }
+              },
+              "total": {
+                "characters": 284103,
+                "estimatedTokens": 71026,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 284103,
+                "utf8Bytes": 284103
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "adversarialScorers": {
+        "cross-program-placement": {
+          "emptyPlan": {
+            "challenge": "cross-program-placement",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000001",
+              "program/p000002"
+            ],
+            "missingResultIds": [
+              "result/r000001"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "cross-program-placement",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "dependency-closure": {
+          "emptyPlan": {
+            "challenge": "dependency-closure",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000001",
+              "program/p000002",
+              "program/p000003",
+              "program/p000004",
+              "program/p000005",
+              "program/p000006",
+              "program/p000007",
+              "program/p000008",
+              "program/p000009",
+              "program/p000010",
+              "program/p000011",
+              "program/p000012",
+              "program/p000013",
+              "program/p000014",
+              "program/p000015",
+              "program/p000016",
+              "program/p000017"
+            ],
+            "missingResultIds": [
+              "result/r000000",
+              "result/r000001",
+              "result/r000002",
+              "result/r000003",
+              "result/r000004",
+              "result/r000005",
+              "result/r000006",
+              "result/r000007",
+              "result/r000008",
+              "result/r000009",
+              "result/r000010",
+              "result/r000011",
+              "result/r000012",
+              "result/r000013",
+              "result/r000014",
+              "result/r000015",
+              "result/r000016"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "dependency-closure",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "distant-duplicate": {
+          "emptyPlan": {
+            "challenge": "distant-duplicate",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000001",
+              "program/p000002"
+            ],
+            "missingResultIds": [
+              "result/r000510",
+              "result/r000511"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "distant-duplicate",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "misleading-capsule": {
+          "emptyPlan": {
+            "challenge": "misleading-capsule",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000002"
+            ],
+            "missingResultIds": [
+              "result/r000511"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "misleading-capsule",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "root-sibling": {
+          "emptyPlan": {
+            "challenge": "root-sibling",
+            "checks": {
+              "forbiddenParentAvoided": true,
+              "requiredParentSelected": false,
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "root"
+            ],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "root-sibling",
+            "checks": {
+              "forbiddenParentAvoided": true,
+              "requiredParentSelected": true,
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "topology-revision": {
+          "emptyPlan": {
+            "challenge": "topology-revision",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": false
+            },
+            "missingProgramIds": [
+              "program/revision-left",
+              "program/revision-old",
+              "program/revision-right"
+            ],
+            "missingResultIds": [
+              "result/r000509"
+            ],
+            "missingWriteIds": [
+              "program:program/revision-left",
+              "program:program/revision-old",
+              "program:program/revision-right"
+            ],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "topology-revision",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        }
+      },
+      "comparisons": {
+        "bounded-exact-provenance": {
+          "cumulativeRatioToV9SingleCall": 0.2883381080244757,
+          "maximumStageRatioToV9": 0.28648546131501984,
+          "maximumStageTokenReductionPercent": 71.35145386849801
+        },
+        "bounded-semantic": {
+          "cumulativeRatioToV9SingleCall": 0.019376927760753036,
+          "maximumStageRatioToV9": 0.017524281051297153,
+          "maximumStageTokenReductionPercent": 98.24757189487029
+        },
+        "v9-all-core": {
+          "cumulativeRatioToV9SingleCall": 1.0,
+          "maximumStageRatioToV9": 1.0,
+          "maximumStageTokenReductionPercent": 0.0
+        },
+        "v9ProvenanceOverhead": {
+          "estimatedProvenanceOverheadPercent": 84.769338936738,
+          "estimatedProvenanceOverheadTokens": 424396,
+          "fullEstimatedTokens": 500648,
+          "withoutCumulativeProvenanceEstimatedTokens": 76252
+        }
+      },
+      "configuration": {
+        "challenges": [
+          "dependency-closure",
+          "distant-duplicate",
+          "cross-program-placement",
+          "root-sibling",
+          "misleading-capsule",
+          "topology-revision"
+        ],
+        "dependency_depth": 4,
+        "dependency_width": 4,
+        "evidence_bytes": 512,
+        "maximum_depth": 5,
+        "maximum_width": 4,
+        "program_count": 256,
+        "provenance_per_result": 8,
+        "result_count": 512,
+        "summary_bytes": 96,
+        "support_bytes": 96
+      },
+      "fixtureDigest": "sha256:03d24a21fbb72c20877eb9c6c6016e3e9a85f138d7df6b96b41e6402ac5a1b7d",
+      "provenance": {
+        "allProvenance": {
+          "characters": 1697468,
+          "estimatedTokens": 424367,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 1697468,
+          "utf8Bytes": 1697468
+        },
+        "occurrences": {
+          "nonRootProgramSourceTransactions": 14480,
+          "resultClaimReferences": 4096,
+          "resultJudgments": 4096,
+          "resultSourceTransactions": 4096,
+          "rootSourceTransactions": 4096
+        },
+        "serialized": {
+          "nonRootProgramSourceTransactionIds": {
+            "characters": 627759,
+            "estimatedTokens": 156940,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 627759,
+            "utf8Bytes": 627759
+          },
+          "resultClaimRefs": {
+            "characters": 394753,
+            "estimatedTokens": 98689,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 394753,
+            "utf8Bytes": 394753
+          },
+          "resultJudgmentIds": {
+            "characters": 312833,
+            "estimatedTokens": 78209,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 312833,
+            "utf8Bytes": 312833
+          },
+          "resultSourceTransactionIds": {
+            "characters": 185857,
+            "estimatedTokens": 46465,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 185857,
+            "utf8Bytes": 185857
+          },
+          "rootSourceTransactionIds": {
+            "characters": 176129,
+            "estimatedTokens": 44033,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 176129,
+            "utf8Bytes": 176129
+          }
+        }
+      },
+      "softSemanticProbeSizes": {
+        "beginning": {
+          "characters": 36032,
+          "estimatedTokens": 9008,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 36032,
+          "utf8Bytes": 36032
+        },
+        "end": {
+          "characters": 36026,
+          "estimatedTokens": 9007,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 36026,
+          "utf8Bytes": 36026
+        },
+        "middle": {
+          "characters": 36029,
+          "estimatedTokens": 9008,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 36029,
+          "utf8Bytes": 36029
+        }
+      },
+      "state": {
+        "contributionCount": 4096,
+        "dependencyClosureResultCount": 17,
+        "programCount": 256,
+        "resultCount": 512,
+        "serialized": {
+          "characters": 4203813,
+          "estimatedTokens": 1050954,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 4203813,
+          "utf8Bytes": 4203813
+        },
+        "stateDigest": "sha256:e6e80b07ebb9a0224a104ac9094e809ff01f12e1fde998afd2eb97727c604f0f",
+        "topology": {
+          "maximumDepth": 4,
+          "maximumWidth": 7
+        }
+      },
+      "strategies": {
+        "bounded-exact-provenance": {
+          "cumulativeEstimatedTokens": 144430,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": true,
+            "estimatedUtilization": 1.121109375,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": [
+              50,
+              70,
+              85,
+              95,
+              100
+            ]
+          },
+          "maximumStageEstimatedTokens": 143502,
+          "stages": {
+            "author": {
+              "budget": {
+                "estimatedHardInputCrossing": true,
+                "estimatedUtilization": 1.121109375,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": [
+                  50,
+                  70,
+                  85,
+                  95,
+                  100
+                ]
+              },
+              "components": {
+                "authoringPacket": {
+                  "characters": 573987,
+                  "estimatedTokens": 143497,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 573987,
+                  "utf8Bytes": 573987
+                }
+              },
+              "total": {
+                "characters": 574007,
+                "estimatedTokens": 143502,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 574007,
+                "utf8Bytes": 574007
+              }
+            },
+            "route": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.00725,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3693,
+                  "estimatedTokens": 924,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3693,
+                  "utf8Bytes": 3693
+                }
+              },
+              "total": {
+                "characters": 3710,
+                "estimatedTokens": 928,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 3710,
+                "utf8Bytes": 3710
+              }
+            }
+          }
+        },
+        "bounded-semantic": {
+          "cumulativeEstimatedTokens": 9706,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": false,
+            "estimatedUtilization": 0.068578125,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": []
+          },
+          "maximumStageEstimatedTokens": 8778,
+          "stages": {
+            "author": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.068578125,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "authoringPacket": {
+                  "characters": 35089,
+                  "estimatedTokens": 8773,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 35089,
+                  "utf8Bytes": 35089
+                }
+              },
+              "total": {
+                "characters": 35109,
+                "estimatedTokens": 8778,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 35109,
+                "utf8Bytes": 35109
+              }
+            },
+            "route": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.00725,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3693,
+                  "estimatedTokens": 924,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3693,
+                  "utf8Bytes": 3693
+                }
+              },
+              "total": {
+                "characters": 3710,
+                "estimatedTokens": 928,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 3710,
+                "utf8Bytes": 3710
+              }
+            }
+          }
+        },
+        "v9-all-core": {
+          "cumulativeEstimatedTokens": 500905,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": true,
+            "estimatedUtilization": 3.9133203125,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": [
+              50,
+              70,
+              85,
+              95,
+              100
+            ]
+          },
+          "maximumStageEstimatedTokens": 500905,
+          "stages": {
+            "organize": {
+              "budget": {
+                "estimatedHardInputCrossing": true,
+                "estimatedUtilization": 3.9133203125,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": [
+                  50,
+                  70,
+                  85,
+                  95,
+                  100
+                ]
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "baseStateContext": {
+                  "characters": 2002589,
+                  "estimatedTokens": 500648,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 2002589,
+                  "utf8Bytes": 2002589
+                },
+                "submissionEvidence": {
+                  "characters": 612,
+                  "estimatedTokens": 153,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 612,
+                  "utf8Bytes": 612
+                }
+              },
+              "total": {
+                "characters": 2003619,
+                "estimatedTokens": 500905,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 2003619,
+                "utf8Bytes": 2003619
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "adversarialScorers": {
+        "cross-program-placement": {
+          "emptyPlan": {
+            "challenge": "cross-program-placement",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000001",
+              "program/p000002"
+            ],
+            "missingResultIds": [
+              "result/r000001"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "cross-program-placement",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "dependency-closure": {
+          "emptyPlan": {
+            "challenge": "dependency-closure",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000001",
+              "program/p000002",
+              "program/p000003",
+              "program/p000004",
+              "program/p000005",
+              "program/p000006",
+              "program/p000007",
+              "program/p000008",
+              "program/p000009",
+              "program/p000010",
+              "program/p000011",
+              "program/p000012",
+              "program/p000013",
+              "program/p000014",
+              "program/p000015",
+              "program/p000016",
+              "program/p000017",
+              "program/p000018",
+              "program/p000019",
+              "program/p000020",
+              "program/p000021",
+              "program/p000022",
+              "program/p000023",
+              "program/p000024",
+              "program/p000025",
+              "program/p000026"
+            ],
+            "missingResultIds": [
+              "result/r000000",
+              "result/r000001",
+              "result/r000002",
+              "result/r000003",
+              "result/r000004",
+              "result/r000005",
+              "result/r000006",
+              "result/r000007",
+              "result/r000008",
+              "result/r000009",
+              "result/r000010",
+              "result/r000011",
+              "result/r000012",
+              "result/r000013",
+              "result/r000014",
+              "result/r000015",
+              "result/r000016",
+              "result/r000017",
+              "result/r000018",
+              "result/r000019",
+              "result/r000020",
+              "result/r000021",
+              "result/r000022",
+              "result/r000023",
+              "result/r000024",
+              "result/r000025"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "dependency-closure",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "distant-duplicate": {
+          "emptyPlan": {
+            "challenge": "distant-duplicate",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000001",
+              "program/p000002"
+            ],
+            "missingResultIds": [
+              "result/r002046",
+              "result/r002047"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "distant-duplicate",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "misleading-capsule": {
+          "emptyPlan": {
+            "challenge": "misleading-capsule",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "program/p000002"
+            ],
+            "missingResultIds": [
+              "result/r002047"
+            ],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "misleading-capsule",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "root-sibling": {
+          "emptyPlan": {
+            "challenge": "root-sibling",
+            "checks": {
+              "forbiddenParentAvoided": true,
+              "requiredParentSelected": false,
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [
+              "root"
+            ],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "root-sibling",
+            "checks": {
+              "forbiddenParentAvoided": true,
+              "requiredParentSelected": true,
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        },
+        "topology-revision": {
+          "emptyPlan": {
+            "challenge": "topology-revision",
+            "checks": {
+              "requiredProgramsLoaded": false,
+              "requiredResultsLoaded": false,
+              "requiredWriteScopeLoaded": false
+            },
+            "missingProgramIds": [
+              "program/revision-left",
+              "program/revision-old",
+              "program/revision-right"
+            ],
+            "missingResultIds": [
+              "result/r002045"
+            ],
+            "missingWriteIds": [
+              "program:program/revision-left",
+              "program:program/revision-old",
+              "program:program/revision-right"
+            ],
+            "passed": false
+          },
+          "goldPlan": {
+            "challenge": "topology-revision",
+            "checks": {
+              "requiredProgramsLoaded": true,
+              "requiredResultsLoaded": true,
+              "requiredWriteScopeLoaded": true
+            },
+            "missingProgramIds": [],
+            "missingResultIds": [],
+            "missingWriteIds": [],
+            "passed": true
+          }
+        }
+      },
+      "comparisons": {
+        "bounded-exact-provenance": {
+          "cumulativeRatioToV9SingleCall": 0.28157693193868916,
+          "maximumStageRatioToV9": 0.28134577956573215,
+          "maximumStageTokenReductionPercent": 71.86542204342679
+        },
+        "bounded-semantic": {
+          "cumulativeRatioToV9SingleCall": 0.0033431251701296393,
+          "maximumStageRatioToV9": 0.003111972797172626,
+          "maximumStageTokenReductionPercent": 99.68880272028274
+        },
+        "v9-all-core": {
+          "cumulativeRatioToV9SingleCall": 1.0,
+          "maximumStageRatioToV9": 1.0,
+          "maximumStageTokenReductionPercent": 0.0
+        },
+        "v9ProvenanceOverhead": {
+          "estimatedProvenanceOverheadPercent": 92.50012939391888,
+          "estimatedProvenanceOverheadTokens": 3717336,
+          "fullEstimatedTokens": 4018736,
+          "withoutCumulativeProvenanceEstimatedTokens": 301400
+        }
+      },
+      "configuration": {
+        "challenges": [
+          "dependency-closure",
+          "distant-duplicate",
+          "cross-program-placement",
+          "root-sibling",
+          "misleading-capsule",
+          "topology-revision"
+        ],
+        "dependency_depth": 5,
+        "dependency_width": 5,
+        "evidence_bytes": 512,
+        "maximum_depth": 6,
+        "maximum_width": 4,
+        "program_count": 1024,
+        "provenance_per_result": 16,
+        "result_count": 2048,
+        "summary_bytes": 96,
+        "support_bytes": 96
+      },
+      "fixtureDigest": "sha256:03f045246c2f9173375c2c313c30915f074137accdeebb0875d191468d5c46e5",
+      "provenance": {
+        "allProvenance": {
+          "characters": 14868460,
+          "estimatedTokens": 3717115,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 14868460,
+          "utf8Bytes": 14868460
+        },
+        "occurrences": {
+          "nonRootProgramSourceTransactions": 149024,
+          "resultClaimReferences": 32768,
+          "resultJudgments": 32768,
+          "resultSourceTransactions": 32768,
+          "rootSourceTransactions": 32768
+        },
+        "serialized": {
+          "nonRootProgramSourceTransactionIds": {
+            "characters": 6428511,
+            "estimatedTokens": 1607128,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 6428511,
+            "utf8Bytes": 6428511
+          },
+          "resultClaimRefs": {
+            "characters": 3119105,
+            "estimatedTokens": 779777,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 3119105,
+            "utf8Bytes": 3119105
+          },
+          "resultJudgmentIds": {
+            "characters": 2463745,
+            "estimatedTokens": 615937,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 2463745,
+            "utf8Bytes": 2463745
+          },
+          "resultSourceTransactionIds": {
+            "characters": 1447937,
+            "estimatedTokens": 361985,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 1447937,
+            "utf8Bytes": 1447937
+          },
+          "rootSourceTransactionIds": {
+            "characters": 1409025,
+            "estimatedTokens": 352257,
+            "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+            "tokenUpperBound": 1409025,
+            "utf8Bytes": 1409025
+          }
+        }
+      },
+      "softSemanticProbeSizes": {
+        "beginning": {
+          "characters": 36105,
+          "estimatedTokens": 9027,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 36105,
+          "utf8Bytes": 36105
+        },
+        "end": {
+          "characters": 36099,
+          "estimatedTokens": 9025,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 36099,
+          "utf8Bytes": 36099
+        },
+        "middle": {
+          "characters": 36102,
+          "estimatedTokens": 9026,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 36102,
+          "utf8Bytes": 36102
+        }
+      },
+      "state": {
+        "contributionCount": 32768,
+        "dependencyClosureResultCount": 26,
+        "programCount": 1024,
+        "resultCount": 2048,
+        "serialized": {
+          "characters": 32593948,
+          "estimatedTokens": 8148487,
+          "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+          "tokenUpperBound": 32593948,
+          "utf8Bytes": 32593948
+        },
+        "stateDigest": "sha256:e30b903c7d7359e43407ca011d08e4f867c0a521615144be87d51dcb47662d92",
+        "topology": {
+          "maximumDepth": 5,
+          "maximumWidth": 7
+        }
+      },
+      "strategies": {
+        "bounded-exact-provenance": {
+          "cumulativeEstimatedTokens": 1131656,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": true,
+            "estimatedUtilization": 8.8338046875,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": [
+              50,
+              70,
+              85,
+              95,
+              100
+            ]
+          },
+          "maximumStageEstimatedTokens": 1130727,
+          "stages": {
+            "author": {
+              "budget": {
+                "estimatedHardInputCrossing": true,
+                "estimatedUtilization": 8.8338046875,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": [
+                  50,
+                  70,
+                  85,
+                  95,
+                  100
+                ]
+              },
+              "components": {
+                "authoringPacket": {
+                  "characters": 4522888,
+                  "estimatedTokens": 1130722,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 4522888,
+                  "utf8Bytes": 4522888
+                }
+              },
+              "total": {
+                "characters": 4522908,
+                "estimatedTokens": 1130727,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 4522908,
+                "utf8Bytes": 4522908
+              }
+            },
+            "route": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0072578125,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3698,
+                  "estimatedTokens": 925,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3698,
+                  "utf8Bytes": 3698
+                }
+              },
+              "total": {
+                "characters": 3715,
+                "estimatedTokens": 929,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 3715,
+                "utf8Bytes": 3715
+              }
+            }
+          }
+        },
+        "bounded-semantic": {
+          "cumulativeEstimatedTokens": 13436,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": false,
+            "estimatedUtilization": 0.0977109375,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": []
+          },
+          "maximumStageEstimatedTokens": 12507,
+          "stages": {
+            "author": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0977109375,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "authoringPacket": {
+                  "characters": 50006,
+                  "estimatedTokens": 12502,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 50006,
+                  "utf8Bytes": 50006
+                }
+              },
+              "total": {
+                "characters": 50026,
+                "estimatedTokens": 12507,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 50026,
+                "utf8Bytes": 50026
+              }
+            },
+            "route": {
+              "budget": {
+                "estimatedHardInputCrossing": false,
+                "estimatedUtilization": 0.0072578125,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": []
+              },
+              "components": {
+                "routeContext": {
+                  "characters": 3698,
+                  "estimatedTokens": 925,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 3698,
+                  "utf8Bytes": 3698
+                }
+              },
+              "total": {
+                "characters": 3715,
+                "estimatedTokens": 929,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 3715,
+                "utf8Bytes": 3715
+              }
+            }
+          }
+        },
+        "v9-all-core": {
+          "cumulativeEstimatedTokens": 4018994,
+          "maximumStageBudget": {
+            "estimatedHardInputCrossing": true,
+            "estimatedUtilization": 31.398390625,
+            "inputBudgetTokens": 128000,
+            "thresholdTokens": {
+              "100": 128000,
+              "50": 64000,
+              "70": 89600,
+              "85": 108800,
+              "95": 121600
+            },
+            "thresholdsReachedPercent": [
+              50,
+              70,
+              85,
+              95,
+              100
+            ]
+          },
+          "maximumStageEstimatedTokens": 4018994,
+          "stages": {
+            "organize": {
+              "budget": {
+                "estimatedHardInputCrossing": true,
+                "estimatedUtilization": 31.398390625,
+                "inputBudgetTokens": 128000,
+                "thresholdTokens": {
+                  "100": 128000,
+                  "50": 64000,
+                  "70": 89600,
+                  "85": 108800,
+                  "95": 121600
+                },
+                "thresholdsReachedPercent": [
+                  50,
+                  70,
+                  85,
+                  95,
+                  100
+                ]
+              },
+              "components": {
+                "acceptedClaimAssessments": {
+                  "characters": 347,
+                  "estimatedTokens": 87,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 347,
+                  "utf8Bytes": 347
+                },
+                "baseStateContext": {
+                  "characters": 16074944,
+                  "estimatedTokens": 4018736,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 16074944,
+                  "utf8Bytes": 16074944
+                },
+                "submissionEvidence": {
+                  "characters": 612,
+                  "estimatedTokens": 153,
+                  "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                  "tokenUpperBound": 612,
+                  "utf8Bytes": 612
+                }
+              },
+              "total": {
+                "characters": 16075974,
+                "estimatedTokens": 4018994,
+                "tokenEstimateMethod": "ceil(compact-utf8-bytes/4)",
+                "tokenUpperBound": 16075974,
+                "utf8Bytes": 16075974
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "challenge": "dependency-closure",
+  "inputBudgetTokens": 128000,
+  "providerCalls": 0,
+  "schemaVersion": 1,
+  "status": "passed",
+  "tokenTelemetry": {
+    "method": "ceil(compact-utf8-bytes/4)",
+    "source": "provider-free-estimate",
+    "warning": "Use provider-reported token counts for live attempts; this estimate identifies scale trends and candidate budget crossings only."
+  },
+  "verifiedInvariants": {
+    "allSyntheticStatesValidate": true,
+    "cumulativeProvenanceMeasuredSeparately": true,
+    "fullV9AndBoundedPacketsCompared": true,
+    "goldAdversarialPlansPass": true,
+    "incompleteAdversarialPlansFail": true,
+    "inputOutputAndSoftFailureClassesAreDistinct": true,
+    "providerCallsRemainZero": true
+  }
+}
