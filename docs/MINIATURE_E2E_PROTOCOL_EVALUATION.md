@@ -1,11 +1,12 @@
 # Miniature end-to-end protocol evaluation V1
 
 This unpublished, provider-free benchmark is the first complete candidate
-contract joining the inactive local Builder V10 experiment to the inactive
-A-first work-accounting V2 policy. It processes eight synthetic accepted
-submissions from an empty knowledge and accounting lane, exercises the real
-state-v3 knowledge reducer and hierarchical work reducer, and publishes
-nothing.
+contract joining the inactive local Builder V10 experiment to the A-first Work
+Accounting V2 judge and policy already active for the separate BSSC V2 lane.
+The V10/V2 composition itself is inactive. It processes eight synthetic
+accepted submissions from an empty knowledge and accounting lane, exercises
+the real state-v3 knowledge reducer and hierarchical work reducer, and
+publishes nothing.
 
 The scenario manifest freezes these intended candidate inputs by path and
 SHA-256 digest:

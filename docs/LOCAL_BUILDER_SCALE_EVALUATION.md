@@ -128,7 +128,7 @@ thresholds at 50%, 70%, 85%, 95%, and 100%, V9/local ratios, provenance
 occurrences, adversarial scorer self-checks, and semantic-probe sizes. It always
 reports `providerCalls: 0`.
 
-## Binding an actual local builder
+## Actual V10 binding
 
 The strategy adapter is deliberately small:
 
@@ -138,15 +138,16 @@ strategy(fixture, challenge_name) -> {
 }
 ```
 
-An integration test can therefore wrap the actual route-context and authoring-
-packet builders without copying their schemas into this module. The next
-integration should assert:
+The checked integration wraps the actual V10 route-context and authoring-packet
+builders without copying their schemas into this module.
 
-`make_v10_context_strategy(route_builder, authoring_packet_builder)` already
+`make_v10_context_strategy(route_builder, authoring_packet_builder)`
 binds the candidate's exact raw route-plan fields and exposes all three
 provider stages to component telemetry. It takes the functions as arguments so this
 provider-free experiment remains replayable without importing or activating a
 particular builder version.
+
+Current tests assert that:
 
 - dependency closure is never truncated;
 - host-side global search can recover distant duplicates independently of tree

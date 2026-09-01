@@ -88,9 +88,9 @@ Current implementation evidence suggests different risk profiles by stage:
 | Reconciliation | Conflicting judgments/evidence component | Wide conflict component |
 | Builder V9 | All program/result semantic records; support only for dependency closure | Linear long-history state plus current evidence |
 | Builder V10 candidate | Bounded route/refine/author read set; cumulative support and provenance hidden behind counts/digests | Large selected local closure, repeated capsules, or current evidence |
-| Safe facts | Current submission evidence and target knowledge bindings | Large current submission |
-| Work `W+` | Local impact subgraph plus current evidence | Large local subtree or submission |
-| Work `W-` | Local structural subgraph plus frozen `W+`; no raw evidence | Large local subtree/accounting patch |
+| Safe facts | Full live accounting baseline, local impact context, current evidence | Global accounting state or large current submission |
+| Work `W+` | Full live accounting baseline, local impact subgraph, current evidence | Global accounting state, large local subtree, or submission |
+| Work `W-` | Full live accounting baseline and full frozen `W+`, plus local structural context; no raw evidence | Two global accounting states plus local subtree/patch |
 | Publication/viewer | Immutable history and catalog summaries | File count, catalog size, and rendering rather than model context |
 
 No stage should silently truncate. When a budget is exceeded, the protocol
@@ -236,19 +236,39 @@ miniature case classes, 102 hard assertions, and an eight-group adversarial
 scorecard. This advances the reducer-composition portion of steps 4 and 5 below;
 it does not replace the paid semantic run or an independent adversarial model.
 
+The actual Work Accounting V2 request path now has a separate provider-free
+16-case scale probe through 1,024 programs. All deterministic semantic checks
+pass, but every 1,024-program `W-` request crosses the nominal 128,000-token
+input proxy and reaches as high as 320,613 estimated tokens. The local impact
+subgraph is therefore not sufficient by itself: current V2 requests repeat the
+complete live accounting state, and `W-` repeats the complete frozen `W+` state
+as well. A bounded digest-bound accounting slice with reducer-equivalence replay
+is required before making scalability claims.
+
+The small-real-problem input audit is implemented at
+`protocol/experiments/no-three-v10-v2-shadow-v1/`. It binds the four exactly
+accepted No-Three-in-Line submissions, their Git/evidence/judgment/attestation
+artifacts, and the candidate specs without provider or publication authority.
+It remains an input plan until a problem-specific root contract and composed
+publication-forbidden runner are added.
+
 ## Recommended sequence
 
-1. Keep the generalized K2/K3 program-topology candidate and make result-split
-   scoring conditional on independent reuse rather than on proof decomposition.
-2. Add common request/output telemetry and provider-free scale fixtures before
-   the next paid lane.
-3. Generalize the experiment scripts into the scenario runner, beginning by
-   expressing the existing K1 and K2/K3 cases without changing their gold.
-4. Extend the implemented eight-submission synthetic miniature with paid
-   semantic judgments and then add one small real problem for ecological
-   validity.
-5. Run the first complete unpublished provider-backed knowledge-plus-work
-   candidate from zero against the same precommitted oracle and failure rubric.
-6. Use the resulting failures to decide whether the next change belongs in the
-   prompt, local context selector, reducer, or accounting policy; do not bundle
-   those classes of change into one experiment.
+1. Extend the miniature so precommitted knowledge transitions pass through the
+   actual V10 authoring-packet/scoped-application wrapper and its accounting
+   stages use the actual captured V2 request path.
+2. Run exactly one corrected BSSC K2-only holdout. Require root ownership and
+   the conditional-parent test before running K3, another seed, or a wider paid
+   fixture.
+3. If K2 passes, widen paid route/refine teacher-student cases gradually through
+   16, 64, 256, and 1,024 programs, stopping at the first semantic or budget
+   concern.
+4. In parallel, implement a bounded, digest-bound accounting slice and prove by
+   provider-free replay that sparse local updates reduce to the same globally
+   committed state as the full-state V2 path.
+5. Add and review the No-Three-in-Line root contract and composed unpublished
+   V10-to-V2 runner, then perform a zero-call request/cost preflight.
+6. With separate provider authorization, run its four accepted submissions
+   serially from zero and stop before the next subject on any protocol concern.
+7. Run an independent adversarial transcript audit before creating a shadow
+   output profile or considering activation.

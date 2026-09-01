@@ -148,8 +148,10 @@ This candidate intentionally stops before activation. Remaining work is:
 3. add state-digest keyed catalog caching;
 4. place the route, discovery, authoring, patch, attempt, and telemetry artifacts
    in a new admitted output profile before any shadow lane; and
-5. run miniature end-to-end knowledge-plus-work scenarios before considering a
-   production projection.
+5. extend the completed provider-free miniature so its precommitted transitions
+   pass through V10's exact authoring-packet and scoped-application wrapper,
+   then run semantic knowledge-plus-work judges before considering a production
+   projection.
 
 Deterministic lexical search can miss paraphrases. A governed embedding index
 could later supplement it, but must bind the embedding implementation and index
