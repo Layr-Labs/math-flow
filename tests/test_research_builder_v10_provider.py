@@ -236,6 +236,8 @@ class ResearchBuilderV10ProviderTests(unittest.TestCase):
                     EVIDENCE_PATH, sha256_bytes(EVIDENCE), EVIDENCE
                 ),
             ),
+            max_programs=2,
+            max_results=1,
         )
         self.assertEqual(len(transport.requests), 3)
         self.assertEqual(
@@ -255,6 +257,58 @@ class ResearchBuilderV10ProviderTests(unittest.TestCase):
             [{"path": EVIDENCE_PATH, "digest": sha256_bytes(EVIDENCE)}],
         )
         self.assertIsNotNone(provider.latest_artifacts)
+
+    def test_route_union_over_budget_retries_before_authoring(self) -> None:
+        base = empty_research_program_state_v3("two-entity-fixture")
+        from math_flow.research_builder_v10 import (
+            build_research_builder_v10_route_context,
+        )
+
+        context_digest = build_research_builder_v10_route_context(
+            base, accepted_claims()
+        )["contextDigest"]
+        over_limit_route = {
+            "schemaVersion": 1,
+            "baseStateDigest": base["stateDigest"],
+            "routeContextDigest": context_digest,
+            "inspectProgramIds": ["root"],
+            "inspectResultIds": [],
+            "searchQueries": [],
+            "writeProgramIds": ["root"],
+            "writeResultIds": [],
+            "createProgramIds": ["program/local"],
+            "createResultIds": ["result/local"],
+        }
+        transport = SequentialTransport(
+            [copy.deepcopy(over_limit_route) for _ in range(3)]
+        )
+        provider = OpenRouterResearchBuilderV10Provider(
+            json.loads(SPEC.read_text(encoding="utf-8")), transport=transport
+        )
+        with self.assertRaisesRegex(MathFlowError, "program ID scope exceeds budget"):
+            provider.run(
+                problem_id="two-entity-fixture",
+                subject_transaction_id=SUBJECT,
+                base_state=base,
+                accepted_claims=accepted_claims(),
+                judgment_id=JUDGMENT,
+                evidence_files=(
+                    SubmissionEvidenceFile(
+                        EVIDENCE_PATH, sha256_bytes(EVIDENCE), EVIDENCE
+                    ),
+                ),
+                max_programs=1,
+                max_results=1,
+            )
+        self.assertEqual(len(transport.requests), 3)
+        self.assertTrue(
+            all(
+                "builder-v10-local-portfolio-router"
+                in json.dumps(request, sort_keys=True)
+                for request in transport.requests
+            )
+        )
+        self.assertEqual(provider.invocation_records, [])
 
     def test_terminal_transport_outcome_suppresses_duplicate_provider_calls(self) -> None:
         base = empty_research_program_state_v3("two-entity-fixture")
@@ -337,7 +391,7 @@ class ResearchBuilderV10ProviderTests(unittest.TestCase):
         self.assertNotIn("result/prior-3", value["intermediateResultIds"])
         self.assertEqual(value["sourceTransactionIds"], [SUBJECT, "b" * 40])
 
-        schema = _builder_transition_schema_v10()
+        schema = _builder_transition_schema_v10(max_programs=3, max_results=5)
         rendered = json.dumps(schema, sort_keys=True)
         self.assertIn("intermediateResultIdAdditions", rendered)
         self.assertIn("intermediateResultIdRemovals", rendered)
@@ -345,11 +399,25 @@ class ResearchBuilderV10ProviderTests(unittest.TestCase):
         route_schema_value = _route_plan_schema_v10(
             base_state_digest="sha256:" + "a" * 64,
             route_context_digest="sha256:" + "b" * 64,
+            max_programs=3,
+            max_results=5,
         )
         assert_openai_strict_schema(self, route_schema_value)
         assert_openai_strict_schema(self, schema)
         route_schema = json.dumps(route_schema_value, sort_keys=True)
         self.assertNotIn("uniqueItems", route_schema)
+        route_properties = route_schema_value["properties"]
+        for field in ("inspectProgramIds", "writeProgramIds", "createProgramIds"):
+            self.assertEqual(route_properties[field]["maxItems"], 3)
+        for field in ("inspectResultIds", "writeResultIds", "createResultIds"):
+            self.assertEqual(route_properties[field]["maxItems"], 5)
+        self.assertEqual(
+            route_properties["searchQueries"]["items"]["properties"]["entityKinds"]["maxItems"],
+            2,
+        )
+        transition_properties = schema["properties"]
+        self.assertEqual(transition_properties["contentOperations"]["maxItems"], 8)
+        self.assertEqual(transition_properties["topologyOperations"]["maxItems"], 8)
 
 
 if __name__ == "__main__":

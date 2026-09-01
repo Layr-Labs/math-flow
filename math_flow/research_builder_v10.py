@@ -693,9 +693,16 @@ def bind_research_builder_v10_route_plan(
     route_context: Mapping[str, object],
     catalog: Mapping[str, object],
     route_plan: object,
+    *,
+    max_programs: int = 64,
+    max_results: int = 64,
 ) -> dict[str, object]:
     context = validate_research_builder_v10_route_context(copy.deepcopy(dict(route_context)))
     catalog_value = validate_research_builder_v10_catalog(copy.deepcopy(dict(catalog)))
+    program_limit = _positive_limit(
+        max_programs, "route program limit", maximum=1024
+    )
+    result_limit = _positive_limit(max_results, "route result limit", maximum=1024)
     if not isinstance(route_plan, dict):
         raise MathFlowError("research builder v10 route plan must be an object")
     raw = _raw_route_plan(route_plan)
@@ -729,6 +736,26 @@ def bind_research_builder_v10_route_plan(
         if set(ids) & set(collection) or (field == "createProgramIds" and "root" in ids):
             raise MathFlowError(f"research builder v10 route {field} is not new")
         normalized[field] = ids
+    requested_program_ids = (
+        set(normalized["inspectProgramIds"])
+        | set(normalized["writeProgramIds"])
+        | set(normalized["createProgramIds"])
+    )
+    requested_result_ids = (
+        set(normalized["inspectResultIds"])
+        | set(normalized["writeResultIds"])
+        | set(normalized["createResultIds"])
+    )
+    if len(requested_program_ids) > program_limit:
+        raise MathFlowError(
+            "research builder v10 route program ID scope exceeds budget: "
+            f"{len(requested_program_ids)} > {program_limit}"
+        )
+    if len(requested_result_ids) > result_limit:
+        raise MathFlowError(
+            "research builder v10 route result ID scope exceeds budget: "
+            f"{len(requested_result_ids)} > {result_limit}"
+        )
     raw_queries = raw.get("searchQueries")
     if not isinstance(raw_queries, list) or len(raw_queries) > 8:
         raise MathFlowError("research builder v10 route has too many search queries")
@@ -850,6 +877,8 @@ def build_research_builder_v10_authoring_packet(
 ) -> dict[str, object]:
     state = validate_research_program_state_v3(copy.deepcopy(dict(base_state)))
     catalog = build_research_builder_v10_catalog(state)
+    program_limit = _positive_limit(max_programs, "authoring program limit", maximum=1024)
+    result_limit = _positive_limit(max_results, "authoring result limit", maximum=1024)
     context = (
         validate_research_builder_v10_route_context(
             copy.deepcopy(dict(route_context)),
@@ -859,9 +888,13 @@ def build_research_builder_v10_authoring_packet(
         if route_context is not None
         else build_research_builder_v10_route_context(state, accepted_claims)
     )
-    plan = bind_research_builder_v10_route_plan(context, catalog, route_plan)
-    program_limit = _positive_limit(max_programs, "authoring program limit", maximum=1024)
-    result_limit = _positive_limit(max_results, "authoring result limit", maximum=1024)
+    plan = bind_research_builder_v10_route_plan(
+        context,
+        catalog,
+        route_plan,
+        max_programs=program_limit,
+        max_results=result_limit,
+    )
     child_limit = _positive_limit(capsule_child_limit, "authoring capsule child limit")
     linked_limit = _positive_limit(capsule_result_limit, "authoring capsule result limit")
     programs = state["programs"]
@@ -937,6 +970,18 @@ def build_research_builder_v10_authoring_packet(
     if len(result_ids) > result_limit:
         raise MathFlowError(
             f"research builder v10 local result read-set exceeds budget: {len(result_ids)} > {result_limit}"
+        )
+    created_program_ids = set(plan["createProgramIds"])
+    created_result_ids = set(plan["createResultIds"])
+    if len(program_ids) + len(created_program_ids) > program_limit:
+        raise MathFlowError(
+            "research builder v10 local program read/create scope exceeds budget: "
+            f"{len(program_ids) + len(created_program_ids)} > {program_limit}"
+        )
+    if len(result_ids) + len(created_result_ids) > result_limit:
+        raise MathFlowError(
+            "research builder v10 local result read/create scope exceeds budget: "
+            f"{len(result_ids) + len(created_result_ids)} > {result_limit}"
         )
     capsule_ids = (
         set(plan["inspectProgramIds"])
@@ -1073,11 +1118,35 @@ def _operation_scope(
         "program": base_state["programs"],
         "intermediateResult": base_state["intermediateResults"],
     }
+    limits = packet["limits"]
+    assert isinstance(limits, dict)
+    operation_limits = {
+        "program": _positive_limit(
+            limits["maxPrograms"], "transition program limit", maximum=1024
+        ),
+        "intermediateResult": _positive_limit(
+            limits["maxResults"], "transition result limit", maximum=1024
+        ),
+    }
+    maximum_operations = sum(operation_limits.values())
+    operation_counts = {"program": 0, "intermediateResult": 0}
     operated: set[tuple[str, str]] = set()
+    total_operations = 0
     for field in ("contentOperations", "topologyOperations"):
         operations = transition.get(field)
         if not isinstance(operations, list):
             raise MathFlowError("research builder v10 transition operations are invalid")
+        if len(operations) > maximum_operations:
+            raise MathFlowError(
+                f"research builder v10 {field} exceeds operation budget: "
+                f"{len(operations)} > {maximum_operations}"
+            )
+        total_operations += len(operations)
+        if total_operations > maximum_operations:
+            raise MathFlowError(
+                "research builder v10 transition exceeds aggregate operation budget: "
+                f"{total_operations} > {maximum_operations}"
+            )
         for operation in operations:
             if not isinstance(operation, dict):
                 raise MathFlowError("research builder v10 transition operation is invalid")
@@ -1085,6 +1154,15 @@ def _operation_scope(
             entity_id = operation.get("entityId")
             if kind not in ENTITY_KINDS or not isinstance(entity_id, str):
                 raise MathFlowError("research builder v10 transition entity is invalid")
+            operation_counts[str(kind)] += 1
+            if operation_counts[str(kind)] > operation_limits[str(kind)]:
+                raise MathFlowError(
+                    f"research builder v10 transition {kind} operations exceed budget: "
+                    f"{operation_counts[str(kind)]} > {operation_limits[str(kind)]}"
+                )
+            key = (str(kind), entity_id)
+            if key in operated:
+                raise MathFlowError("research builder v10 transition repeats an entity")
             collection = base_collections[str(kind)]
             assert isinstance(collection, dict)
             expected_scope = allowed_existing[str(kind)] if entity_id in collection else allowed_created[str(kind)]
@@ -1125,7 +1203,7 @@ def _operation_scope(
                             )
                     if not set(program_refs) <= readable["program"] or not result_refs <= readable["intermediateResult"]:
                         raise MathFlowError("research builder v10 result operation references unread state")
-            operated.add((str(kind), entity_id))
+            operated.add(key)
     return operated
 
 

@@ -9,6 +9,7 @@ from math_flow.research_builder_v7 import empty_research_program_state_v3
 from math_flow.research_builder_v8 import apply_research_builder_v8_transition
 from math_flow.research_builder_v10 import (
     apply_research_builder_v10_transition,
+    bind_research_builder_v10_route_plan,
     build_research_builder_v10_authoring_packet,
     build_research_builder_v10_catalog,
     build_research_builder_v10_program_capsule,
@@ -373,6 +374,101 @@ class ResearchBuilderV10Tests(unittest.TestCase):
                 ),
                 route_context=self.route_context,
                 max_results=1,
+            )
+
+    def test_route_and_packet_budgets_include_new_entity_scope(self) -> None:
+        catalog = build_research_builder_v10_catalog(self.base)
+        with self.assertRaisesRegex(MathFlowError, "program ID scope exceeds budget"):
+            bind_research_builder_v10_route_plan(
+                self.route_context,
+                catalog,
+                self.route_plan(
+                    inspect_programs=["program/algebra", "program/geometry"],
+                    write_programs=["root"],
+                    create_programs=["program/new"],
+                ),
+                max_programs=3,
+                max_results=3,
+            )
+        with self.assertRaisesRegex(MathFlowError, "result ID scope exceeds budget"):
+            bind_research_builder_v10_route_plan(
+                self.route_context,
+                catalog,
+                self.route_plan(
+                    inspect_results=["result/algebra-seed"],
+                    write_results=["result/geometric-extension"],
+                    create_results=["result/new"],
+                ),
+                max_programs=4,
+                max_results=2,
+            )
+
+        exact_plan = self.route_plan(
+            write_programs=["root", "program/geometry"],
+            write_results=["result/geometric-extension"],
+            create_programs=["program/new"],
+            create_results=["result/new"],
+        )
+        packet = build_research_builder_v10_authoring_packet(
+            self.base,
+            self.claims,
+            exact_plan,
+            route_context=self.route_context,
+            max_programs=4,
+            max_results=3,
+        )
+        self.assertEqual(packet["writeScope"]["createProgramIds"], ["program/new"])
+        self.assertEqual(packet["writeScope"]["createResultIds"], ["result/new"])
+
+        over_limit_plan = copy.deepcopy(exact_plan)
+        over_limit_plan["createProgramIds"].append("program/new-sibling")
+        with self.assertRaisesRegex(MathFlowError, "program read/create scope exceeds budget"):
+            build_research_builder_v10_authoring_packet(
+                self.base,
+                self.claims,
+                over_limit_plan,
+                route_context=self.route_context,
+                max_programs=4,
+                max_results=3,
+            )
+        over_result_plan = copy.deepcopy(exact_plan)
+        over_result_plan["createResultIds"].append("result/new-sibling")
+        with self.assertRaisesRegex(MathFlowError, "result read/create scope exceeds budget"):
+            build_research_builder_v10_authoring_packet(
+                self.base,
+                self.claims,
+                over_result_plan,
+                route_context=self.route_context,
+                max_programs=4,
+                max_results=3,
+            )
+
+    def test_transition_operation_array_is_bounded_before_reduction(self) -> None:
+        plan = self.route_plan(
+            write_programs=["root", "program/geometry"],
+            write_results=["result/geometric-extension"],
+            create_programs=["program/new"],
+            create_results=["result/new"],
+        )
+        packet = build_research_builder_v10_authoring_packet(
+            self.base,
+            self.claims,
+            plan,
+            route_context=self.route_context,
+            max_programs=4,
+            max_results=3,
+        )
+        transition = self.strengthening_transition()
+        root_operation = copy.deepcopy(transition["contentOperations"][0])
+        transition["contentOperations"] = [copy.deepcopy(root_operation) for _ in range(8)]
+        with self.assertRaisesRegex(MathFlowError, "contentOperations exceeds operation budget"):
+            apply_research_builder_v10_transition(
+                self.base,
+                transition,
+                authoring_packet=packet,
+                accepted_claims=self.claims,
+                judgment_id=JUDGMENT_C,
+                evidence_file_refs={PATH_C: sha256_bytes(CONTENT_C)},
             )
 
     def test_scoped_apply_preserves_hidden_state(self) -> None:

@@ -26,14 +26,32 @@ from .work_projection import SubmissionEvidenceFile
 BUILDER_IMPLEMENTATION_V10 = "openrouter-hierarchical-research-builder-v10"
 
 
+def _bounded_schema_limit(value: object, label: str) -> int:
+    if (
+        not isinstance(value, int)
+        or isinstance(value, bool)
+        or value < 1
+        or value > 1024
+    ):
+        raise MathFlowError(f"{label} must be an integer from 1 through 1024")
+    return value
+
+
 def _route_plan_schema_v10(
-    *, base_state_digest: str, route_context_digest: str
+    *,
+    base_state_digest: str,
+    route_context_digest: str,
+    max_programs: int = 64,
+    max_results: int = 64,
 ) -> dict[str, object]:
+    program_limit = _bounded_schema_limit(max_programs, "route program limit")
+    result_limit = _bounded_schema_limit(max_results, "route result limit")
     identifier = {"type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$"}
 
-    def identifiers() -> dict[str, object]:
+    def identifiers(maximum: int) -> dict[str, object]:
         return {
             "type": "array",
+            "maxItems": maximum,
             "items": copy.deepcopy(identifier),
         }
 
@@ -44,6 +62,7 @@ def _route_plan_schema_v10(
             "entityKinds": {
                 "type": "array",
                 "minItems": 1,
+                "maxItems": 2,
                 "items": {
                     "type": "string",
                     "enum": ["intermediateResult", "program"],
@@ -58,17 +77,17 @@ def _route_plan_schema_v10(
         "schemaVersion": {"type": "integer", "const": 1},
         "baseStateDigest": {"type": "string", "enum": [base_state_digest]},
         "routeContextDigest": {"type": "string", "enum": [route_context_digest]},
-        "inspectProgramIds": identifiers(),
-        "inspectResultIds": identifiers(),
+        "inspectProgramIds": identifiers(program_limit),
+        "inspectResultIds": identifiers(result_limit),
         "searchQueries": {
             "type": "array",
             "maxItems": 8,
             "items": search_query,
         },
-        "writeProgramIds": identifiers(),
-        "writeResultIds": identifiers(),
-        "createProgramIds": identifiers(),
-        "createResultIds": identifiers(),
+        "writeProgramIds": identifiers(program_limit),
+        "writeResultIds": identifiers(result_limit),
+        "createProgramIds": identifiers(program_limit),
+        "createResultIds": identifiers(result_limit),
     }
     return {
         "type": "object",
@@ -78,15 +97,21 @@ def _route_plan_schema_v10(
     }
 
 
-def _builder_transition_schema_v10() -> dict[str, object]:
+def _builder_transition_schema_v10(
+    *, max_programs: int = 64, max_results: int = 64
+) -> dict[str, object]:
     """Use add/remove link patches where V10 intentionally hides full arrays."""
 
+    program_limit = _bounded_schema_limit(max_programs, "transition program limit")
+    result_limit = _bounded_schema_limit(max_results, "transition result limit")
+    maximum_operations = program_limit + result_limit
     schema = copy.deepcopy(_builder_transition_schema_v9())
     properties = schema["properties"]
     assert isinstance(properties, dict)
     for operations_field in ("contentOperations", "topologyOperations"):
         operations = properties[operations_field]
         assert isinstance(operations, dict)
+        operations["maxItems"] = maximum_operations
         items = operations["items"]
         assert isinstance(items, dict)
         choices = items["anyOf"]
@@ -456,11 +481,17 @@ class OpenRouterResearchBuilderV10Provider(_GovernedOpenRouterAdapter):
         route_schema = _route_plan_schema_v10(
             base_state_digest=expected_base_digest,
             route_context_digest=str(route_context["contextDigest"]),
+            max_programs=max_programs,
+            max_results=max_results,
         )
 
         def validate_route(value: object) -> dict[str, object]:
             bound = bind_research_builder_v10_route_plan(
-                route_context, catalog, value
+                route_context,
+                catalog,
+                value,
+                max_programs=max_programs,
+                max_results=max_results,
             )
             # Keep a route whose deterministic closure exceeds the authoring
             # budget inside the governed stage retry, rather than accepting it
@@ -536,7 +567,10 @@ class OpenRouterResearchBuilderV10Provider(_GovernedOpenRouterAdapter):
             max_results=max_results,
         )
 
-        response_schema = _builder_transition_schema_v10()
+        response_schema = _builder_transition_schema_v10(
+            max_programs=max_programs,
+            max_results=max_results,
+        )
         properties = response_schema["properties"]
         assert isinstance(properties, dict)
         for field, expected in (

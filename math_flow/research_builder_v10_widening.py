@@ -980,7 +980,11 @@ def _validate_route_factory(
 ) -> Callable[[object], dict[str, object]]:
     def validate(value: object) -> dict[str, object]:
         bound = bind_research_builder_v10_route_plan(
-            route_context, catalog, value
+            route_context,
+            catalog,
+            value,
+            max_programs=max_programs,
+            max_results=max_results,
         )
         build_research_builder_v10_authoring_packet(
             state,
@@ -1215,6 +1219,8 @@ def run_v10_route_refine_case(
     route_schema = _route_plan_schema_v10(
         base_state_digest=base_digest,
         route_context_digest=str(route_context["contextDigest"]),
+        max_programs=max_programs,
+        max_results=max_results,
     )
     validate_route = _validate_route_factory(
         state=state,
