@@ -18,7 +18,7 @@ from .repository import validate_slug
 _DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 _LEDGER_HEAD = re.compile(r"^[0-9a-f]{40}$")
 _STAGE_ADAPTERS = {"fixture-replay-v1"}
-_SCORERS = {"json-relational-v1"}
+_SCORERS = {"json-relational-v1", "miniature-e2e-v1"}
 _ATTEMPT_STATUSES = {"retry", "accepted", "failed"}
 _SEVERITIES = {"hard", "advisory"}
 _BUDGET_FIELDS = (
@@ -1158,6 +1158,33 @@ def _score_json_relational(
     }
 
 
+def _score_miniature_e2e(
+    oracle: object,
+    registry: Mapping[str, ScenarioArtifact],
+    *,
+    scorer_id: str,
+) -> dict[str, object]:
+    """Run the code-owned miniature topology/accounting replay scorer."""
+
+    document = _require_mapping(oracle, f"miniature E2E oracle {scorer_id}")
+    transcript_id = _require_string(
+        document.get("transcriptArtifactId"),
+        f"miniature E2E oracle {scorer_id} transcriptArtifactId",
+    )
+    artifact = registry.get(transcript_id)
+    if artifact is None:
+        raise MathFlowError(
+            f"miniature E2E scorer references missing artifact {transcript_id}"
+        )
+    from .miniature_e2e_scenario import score_miniature_e2e_scenario
+
+    return score_miniature_e2e_scenario(
+        artifact.value,
+        document,
+        scorer_id=scorer_id,
+    )
+
+
 def _render_report(
     manifest: Mapping[str, object],
     telemetry: Mapping[str, object],
@@ -1378,13 +1405,20 @@ def run_teacher_student_scenario(
                 for scorer in manifest["scorers"]:
                     scorer_id = str(scorer["id"])
                     gold = chain_registry[str(scorer["goldInputId"])].value
-                    scorecard = _score_json_relational(
-                        gold,
-                        chain_registry,
-                        variant=variant,
-                        seed=seed,
-                        scorer_id=scorer_id,
-                    )
+                    if scorer["implementation"] == "json-relational-v1":
+                        scorecard = _score_json_relational(
+                            gold,
+                            chain_registry,
+                            variant=variant,
+                            seed=seed,
+                            scorer_id=scorer_id,
+                        )
+                    else:
+                        scorecard = _score_miniature_e2e(
+                            gold,
+                            chain_registry,
+                            scorer_id=scorer_id,
+                        )
                     scorecards.append(scorecard)
                     bundle.add_json(
                         f"{prefix}/scores/{scorer_id}.json",

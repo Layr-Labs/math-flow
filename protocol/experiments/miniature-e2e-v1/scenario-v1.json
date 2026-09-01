@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "id": "miniature-e2e-protocol-v1",
+  "description": "Provider-free replay of an eight-submission synthetic history through knowledge topology and hierarchical A-first work accounting.",
+  "problemId": "miniature-route-portfolio",
+  "ledgerHead": "0000000000000000000000000000000000000008",
+  "publicationForbidden": true,
+  "execution": {
+    "adapter": "fixture-replay-v1"
+  },
+  "variants": [
+    {
+      "id": "reference-reducer-history",
+      "description": "The precommitted deterministic miniature reference history."
+    }
+  ],
+  "seeds": [
+    0
+  ],
+  "budgets": {
+    "maximumProviderCalls": 0,
+    "maximumStageAttempts": 1,
+    "maximumPromptTokens": 0,
+    "maximumCompletionTokens": 0,
+    "maximumTotalTokens": 0,
+    "maximumCostUsd": 0
+  },
+  "frozenInputs": [
+    {
+      "id": "miniature-oracle",
+      "path": "protocol/experiments/miniature-e2e-v1/oracle.json",
+      "digest": "sha256:c04e64b88696ddd5ba9aa29da647420a1d981feebfdc9e8f892c1b9f1ffb5c0c",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "knowledge-builder-spec",
+      "path": "protocol/judges/openrouter-hierarchical-research-builder-v10-experiment.json",
+      "digest": "sha256:e86af53c8ce62ca4d8721ca914b07b0cfb50611b5dbc9b3dd45d3318b1739786",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "work-accounting-spec",
+      "path": "protocol/judges/openrouter-work-accounting-v2.json",
+      "digest": "sha256:127d60e656e62bc1f912d4b1d08ce6df94d8036e2d972a70c5654bf6ff897961",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "work-accounting-policy",
+      "path": "protocol/policies/hierarchical-work-remaining-accounting-v2.md",
+      "digest": "sha256:44e3036992b6a2401b623d615154793edbb8ad8a3e200374d2ffb4181b784daf",
+      "mediaType": "text/markdown"
+    }
+  ],
+  "steps": [
+    {
+      "id": "history",
+      "stages": [
+        {
+          "id": "replay",
+          "adapter": "fixture-replay-v1",
+          "reads": [
+            "miniature-oracle",
+            "knowledge-builder-spec",
+            "work-accounting-spec",
+            "work-accounting-policy"
+          ],
+          "outputs": [
+            "transcript"
+          ],
+          "fixtures": [
+            {
+              "variant": "reference-reducer-history",
+              "seed": 0,
+              "path": "protocol/experiments/miniature-e2e-v1/replay/fixture.json",
+              "digest": "sha256:309539fb7840d3298fb6a7aab3edf6cf93440a98111d1b7fe8a9de2d776af4bb"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scorers": [
+    {
+      "id": "knowledge-work-e2e",
+      "implementation": "miniature-e2e-v1",
+      "goldInputId": "miniature-oracle"
+    }
+  ]
+}

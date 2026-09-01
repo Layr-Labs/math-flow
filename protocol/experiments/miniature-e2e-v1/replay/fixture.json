@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "stageId": "replay",
+  "outcome": "accepted",
+  "attempts": [
+    {
+      "status": "accepted",
+      "providerCall": false,
+      "rawRequest": {
+        "kind": "deterministic-reducer-replay",
+        "transcriptDigest": "sha256:c126a69e4a4cd95d01e84b18758b800d878805e13c342af78a35b3721db4e10c",
+        "candidateBindings": {
+          "knowledge-builder-spec": "sha256:e86af53c8ce62ca4d8721ca914b07b0cfb50611b5dbc9b3dd45d3318b1739786",
+          "work-accounting-spec": "sha256:127d60e656e62bc1f912d4b1d08ce6df94d8036e2d972a70c5654bf6ff897961",
+          "work-accounting-policy": "sha256:44e3036992b6a2401b623d615154793edbb8ad8a3e200374d2ffb4181b784daf"
+        }
+      },
+      "rawResponse": {
+        "content": "accepted deterministic reducer replay"
+      },
+      "telemetry": {
+        "model": "provider-free/reducer-replay-v1",
+        "configuredContextTokens": 0,
+        "configuredCompletionTokens": 0,
+        "requestComponents": [
+          {
+            "id": "deterministic-replay",
+            "content": "{\"candidateBindings\":{\"knowledge-builder-spec\":\"sha256:e86af53c8ce62ca4d8721ca914b07b0cfb50611b5dbc9b3dd45d3318b1739786\",\"work-accounting-policy\":\"sha256:44e3036992b6a2401b623d615154793edbb8ad8a3e200374d2ffb4181b784daf\",\"work-accounting-spec\":\"sha256:127d60e656e62bc1f912d4b1d08ce6df94d8036e2d972a70c5654bf6ff897961\"},\"kind\":\"deterministic-reducer-replay\",\"transcriptDigest\":\"sha256:c126a69e4a4cd95d01e84b18758b800d878805e13c342af78a35b3721db4e10c\"}"
+          }
+        ],
+        "promptTokens": 0,
+        "cachedPromptTokens": 0,
+        "reasoningTokens": 0,
+        "completionTokens": 0,
+        "totalTokens": 0,
+        "costUsd": 0,
+        "elapsedMs": 0,
+        "finishReason": "stop",
+        "outputCharacters": 37,
+        "trailingWhitespaceCharacters": 0,
+        "validationClass": "accepted",
+        "retryCause": null,
+        "entityCounts": {
+          "contributions": 8,
+          "programs": 5,
+          "intermediate-results": 7
+        }
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "id": "transcript",
+      "mediaType": "application/json",
+      "path": "protocol/experiments/miniature-e2e-v1/transcript.json",
+      "digest": "sha256:c126a69e4a4cd95d01e84b18758b800d878805e13c342af78a35b3721db4e10c"
+    }
+  ]
+}

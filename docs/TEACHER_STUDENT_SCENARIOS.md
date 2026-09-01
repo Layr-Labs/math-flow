@@ -50,10 +50,12 @@ qualified earlier outputs such as `k2.route.plan`; forward or undeclared reads
 are rejected before execution.
 
 Manifests cannot name Python modules. Stage adapters and scorers are selected
-from code-owned allowlists. V1 intentionally implements only fixture replay and
-the safe declarative `json-relational-v1` scorer. A provider-backed adapter must
-be added separately as governed code; changing a manifest alone can never
-enable spending or publication.
+from code-owned allowlists. V1 implements only fixture replay. Most experiments
+use the safe declarative `json-relational-v1` scorer; the additive
+`miniature-e2e-v1` scorer is a code-owned deterministic replay of the exact
+knowledge and work reducers for one frozen benchmark contract. A
+provider-backed adapter must be added separately as governed code; changing a
+manifest alone can never enable spending or publication.
 
 ## Fixture V1
 
@@ -137,10 +139,23 @@ request/response metadata, exact parsed transitions, exact topology summaries,
 and exact telemetry, but identify the raw captures as `legacy-summary-only`.
 New scenarios should retain complete raw attempts when safe and available.
 
+## Miniature end-to-end candidate
+
+`protocol/experiments/miniature-e2e-v1/scenario-v1.json` is the first complete
+provider-free knowledge-plus-work candidate. Its manifest digest-binds the
+Builder V10 experiment, work-accounting V2 judge, and V2 policy. Synthetic
+oracle transitions replace semantic model calls, while the real state-v3 and
+work-accounting reducers replay eight ordered submissions from zero. The
+code-owned scorer checks 102 hard invariants and emits an aggregate adversarial
+scorecard. See `docs/MINIATURE_E2E_PROTOCOL_EVALUATION.md` for the exact cases,
+hour states, and limitations.
+
 ## Current limitations
 
 - V1 replays frozen outputs; it does not construct new prompts or call models.
-- The relational scorer covers JSON structure, not mathematical correctness.
+- The relational scorer covers JSON structure, not mathematical correctness;
+  the miniature scorer covers reducer composition against synthetic oracle
+  truth, not model judgment quality.
 - Token counts by logical component are unavailable when the source adapter did
   not measure them; aggregate provider counts remain exact.
 - Scenario schemas are enforced by executable validation rather than a separate

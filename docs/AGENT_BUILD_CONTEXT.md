@@ -866,6 +866,9 @@ upgrade path.
 - `docs/BSSC_RESEARCH_V7_CONTEXT_EXPERIMENT.md` — inactive Builder V9
   progressive-context contract, provider-free BSSC measurements, serial route,
   and stop conditions.
+- `docs/MINIATURE_E2E_PROTOCOL_EVALUATION.md` — provider-free eight-submission
+  V10/V2 candidate contract, exact knowledge/work replay, and adversarial
+  scorecard.
 - `docs/WORK_PROJECTION_V2.md` — inactive A-first work-accounting profile,
   frozen-live-state boundary, epistemic policy, and retry-isolation contract.
 - `docs/MVP.md` — architecture, phased roadmap, and deferred decisions.

@@ -225,6 +225,15 @@ especially a cross-program clue present in raw evidence but absent from the
 accepted validity summary; that case may require one bounded author-initiated
 re-route or a stronger validity-to-builder semantic contract.
 
+The first provider-free miniature end-to-end candidate is implemented in
+`protocol/experiments/miniature-e2e-v1/`. It digest-binds the Builder V10
+experiment and work-accounting V2 spec/policy, substitutes precommitted
+synthetic judgments, and replays eight ordered submissions through the exact
+state-v3 and work-accounting reducers. Its deterministic scorer covers all
+miniature case classes, 102 hard assertions, and an eight-group adversarial
+scorecard. This advances the reducer-composition portion of steps 4 and 5 below;
+it does not replace the paid semantic run or an independent adversarial model.
+
 ## Recommended sequence
 
 1. Keep the generalized K2/K3 program-topology candidate and make result-split
@@ -233,10 +242,11 @@ re-route or a stronger validity-to-builder semantic contract.
    the next paid lane.
 3. Generalize the experiment scripts into the scenario runner, beginning by
    expressing the existing K1 and K2/K3 cases without changing their gold.
-4. Define one three-to-eight-submission miniature problem and precommit its
-   knowledge topology, work portfolio, major credit invariants, and adversarial
-   failure rubric.
-5. Run the first complete unpublished knowledge-plus-work candidate from zero.
+4. Extend the implemented eight-submission synthetic miniature with paid
+   semantic judgments and then add one small real problem for ecological
+   validity.
+5. Run the first complete unpublished provider-backed knowledge-plus-work
+   candidate from zero against the same precommitted oracle and failure rubric.
 6. Use the resulting failures to decide whether the next change belongs in the
    prompt, local context selector, reducer, or accounting policy; do not bundle
    those classes of change into one experiment.
