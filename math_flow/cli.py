@@ -75,6 +75,11 @@ from .projection_queue import (
     plan_due_projection_dispatches,
     plan_projection_wakeup_dispatches,
 )
+from .protocol_evaluation_suite import (
+    DEFAULT_MANIFEST_PATH as DEFAULT_PROTOCOL_EVALUATION_SUITE_MANIFEST,
+    MODES as PROTOCOL_EVALUATION_SUITE_MODES,
+    run_provider_free_protocol_evaluation_suite,
+)
 from .repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
 from .research_projection import (
     run_research_build_bundle,
@@ -941,6 +946,28 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     no_three_shadow_parser.add_argument("--output")
+    protocol_evaluation_parser = commands.add_parser(
+        "protocol-evaluation-suite",
+        help="run the authority-free umbrella protocol-evaluation verifier",
+    )
+    protocol_evaluation_parser.add_argument(
+        "--mode",
+        choices=PROTOCOL_EVALUATION_SUITE_MODES,
+        default="pr",
+        help="bounded PR verification or exact full regeneration (default: pr)",
+    )
+    protocol_evaluation_parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=DEFAULT_PROTOCOL_EVALUATION_SUITE_MANIFEST,
+        help="repository-local additive suite manifest",
+    )
+    protocol_evaluation_parser.add_argument(
+        "--output-dir",
+        type=Path,
+        required=True,
+        help="new or empty directory for summary.json and summary.md",
+    )
     return parser
 
 
@@ -974,6 +1001,25 @@ def main(argv: list[str] | None = None) -> int:
             )
             _write_json(result, args.output)
             return 0
+        elif args.command == "protocol-evaluation-suite":
+            result = run_provider_free_protocol_evaluation_suite(
+                root,
+                args.output_dir,
+                mode=args.mode,
+                manifest_path=args.manifest,
+            )
+            print(
+                json.dumps(
+                    {
+                        "status": result["status"],
+                        "mode": result["mode"],
+                        "summary": str(args.output_dir.resolve() / "summary.json"),
+                        "report": str(args.output_dir.resolve() / "summary.md"),
+                    },
+                    sort_keys=True,
+                )
+            )
+            return 0 if result["status"] == "passed" else 2
         elif args.command == "work-accounting-dispatch-plan":
             config = load_work_accounting_hosted_config(root, args.config)
             result = plan_work_accounting_dispatch(

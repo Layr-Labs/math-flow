@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "id": "protocol-evaluation-suite-v1",
+  "status": "provider-free-local-verification",
+  "description": "An additive umbrella verifier for the checked local Builder V10 and Work Accounting V2 protocol-evaluation ladder.",
+  "publicationForbidden": true,
+  "networkForbidden": true,
+  "providerExecutionAuthorized": false,
+  "credentialInputsAccepted": [],
+  "executionFlagsAccepted": [],
+  "acceptedModes": [
+    "pr",
+    "full"
+  ],
+  "extensionPolicy": {
+    "componentEnvelopeVersion": 1,
+    "additiveRegistryEntriesAllowed": true
+  },
+  "components": [
+    {
+      "id": "builder-context-scale",
+      "checkedArtifact": {
+        "path": "protocol/experiments/local-builder-scale-v1/results-provider-free.json",
+        "digest": "sha256:72a8327e0b6db1a341867fca75cba373b02031d7553d2ea051f3bb262f6e5da3"
+      },
+      "prVerification": "bounded-smoke-plus-locked-full-report",
+      "fullVerification": "exact-regeneration"
+    },
+    {
+      "id": "builder-v10-widening-plan",
+      "checkedArtifact": {
+        "path": "protocol/experiments/local-builder-v10-widening-v1/manifest.json",
+        "digest": "sha256:a78d3bd2b73e44da113ea799de4779eba0c89e3456129dcd3fe2d94eea3cf44f"
+      },
+      "prVerification": "exact-provider-free-plan",
+      "fullVerification": "exact-provider-free-plan"
+    },
+    {
+      "id": "bssc-v10-k2-dry-run",
+      "checkedArtifact": {
+        "path": "protocol/experiments/bssc-local-builder-v10-v2/manifest.json",
+        "digest": "sha256:9af9140c695d685bd3c4ef8a53dc1607b91d9529bd50f0c9156f18b111085f03"
+      },
+      "prVerification": "exact-final-v2-k2-only-dry-run",
+      "fullVerification": "exact-final-v2-k2-only-dry-run"
+    },
+    {
+      "id": "miniature-v10-v2-replay",
+      "checkedArtifact": {
+        "path": "protocol/experiments/miniature-e2e-v1/scenario-v1.json",
+        "digest": "sha256:734274e53f0779a23face9d11be6d9ee9c8081f16ced3057983314daf25ce8a6"
+      },
+      "prVerification": "require-pass-exact-fixture-replay",
+      "fullVerification": "require-pass-exact-fixture-replay"
+    },
+    {
+      "id": "work-accounting-context-scale",
+      "checkedArtifact": {
+        "path": "protocol/experiments/work-accounting-context-scale-v1/provider-free-report.json",
+        "digest": "sha256:ad68b7baed02ab3d018e89d2970a523b3d8f32f3aea7d59313aea108a7ec3157"
+      },
+      "prVerification": "bounded-smoke-plus-locked-full-report",
+      "fullVerification": "exact-regeneration"
+    },
+    {
+      "id": "no-three-v10-v2-preflight",
+      "checkedArtifact": {
+        "path": "protocol/experiments/no-three-v10-v2-shadow-v1/provider-free-preflight.json",
+        "digest": "sha256:292e673286cb6125d671011a4fc9db0ed6f64ab4d9b526ae7cbb66977a14eb6d"
+      },
+      "prVerification": "exact-zero-call-preflight-regeneration",
+      "fullVerification": "exact-zero-call-preflight-regeneration"
+    }
+  ]
+}
