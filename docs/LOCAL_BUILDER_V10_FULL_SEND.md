@@ -255,9 +255,12 @@ for exact reduction.
    semantic-provider evaluation.
 2. Run one corrected BSSC K2 root-ownership holdout against the exact final V10
    digest, under a separate provider authorization and the existing hard stops.
-3. Implement a bounded, digest-bound Work Accounting V2 slice and prove by
-   provider-free replay that its sparse updates reduce to the same globally
-   committed state as the current full-state path.
+3. The inactive bounded, digest-bound Work Accounting slice experiment now
+   proves provider-free sparse-patch equivalence to the full-state V2 reducer
+   for every admitted cut through 1,024 programs; over-wide cuts fail closed.
+   Next test semantic judgment from that slice and set
+   explicit production bounds before defining or activating a new request
+   profile; active V2 remains unchanged.
 4. Review the No-Three root-contract draft and extend its zero-call plan into a
    checkpointed unpublished V10-to-V2 semantic runner with a verified
    request-side price bound.

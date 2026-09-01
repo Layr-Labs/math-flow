@@ -253,6 +253,16 @@ complete live accounting state, and `W-` repeats the complete frozen `W+` state
 as well. A bounded digest-bound accounting slice with reducer-equivalence replay
 is required before making scalability claims.
 
+An additive inactive local-slice experiment now supplies that deterministic
+reducer-equivalence proof. It retains complete global state in trusted code and
+exposes exact writable nodes plus digest-bound ancestor and boundary aggregates.
+All 20 cases admitted by its default bounds reproduce full-state `W-`, `W+`,
+and `D` exactly through 1,024 programs; four dependency, decisive-completion,
+or broad cases fail closed rather than truncate. Equivalence is conditional on
+the impact cut containing every patch target; scope sufficiency remains a
+semantic question. This is not yet a Work Accounting V3 request format or a
+semantic-judge result. See `docs/WORK_ACCOUNTING_LOCAL_SLICE_EXPERIMENT.md`.
+
 The small-real-problem provider-free preflight is implemented at
 `protocol/experiments/no-three-v10-v2-shadow-v1/`. It binds the four exactly
 accepted No-Three-in-Line submissions, their Git/evidence/judgment/attestation
@@ -279,9 +289,10 @@ later checkpointed semantic runner.
 3. If K2 passes, widen paid route/refine teacher-student cases gradually through
    16, 64, 256, and 1,024 programs, stopping at the first semantic or budget
    concern.
-4. In parallel, implement a bounded, digest-bound accounting slice and prove by
-   provider-free replay that sparse local updates reduce to the same globally
-   committed state as the full-state V2 path.
+4. Convert the now-proven inactive accounting slice into a separately versioned
+   candidate request only after prompt/semantic tests, explicit bounds, and a
+   deterministic choice for cases where boundary aggregates are larger than
+   the full state. Keep active V2 unchanged until those tests pass.
 5. Review the No-Three-in-Line root-contract draft, then extend the completed
    zero-call preflight into a checkpointed, publication-forbidden semantic
    V10-to-V2 runner with a request-side verified price bound.

@@ -128,6 +128,30 @@ dependency owner programs must already appear in safe-fact seeds (or be expanded
 deterministically by a future host rule). The present impact-context builder
 does not discover a transitive result dependency from one direct program seed.
 
+## Additive local-slice follow-up
+
+The inactive provider-free follow-up in
+`docs/WORK_ACCOUNTING_LOCAL_SLICE_EXPERIMENT.md` implements the proposed
+trusted-global/local-judge seam without changing active V2. Across direct,
+dependency, multi-node subtree, topology, completed-node, and broad-scope
+fixtures, every cut admitted by the experimental 128-included/256-boundary
+limits reproduces the full global `W-`, `W+`, and evaluation objects exactly.
+At 1,024 programs, representative local and frozen-`W+` packets are roughly
+9%–14% of their corresponding full-state bytes. Dependency-expanded and broad
+cuts which exceed the bounds fail before reduction and are never truncated.
+
+This closes the deterministic reducer-equivalence experiment, not the semantic
+or activation question. A future versioned judge/request path still needs
+model-facing prompt tests, a choice between local and full encodings when local
+boundary overhead is larger, explicit production bounds, and a paid shadow
+evaluation before activation.
+
+This equivalence is conditional on the deterministic impact cut containing all
+patch targets and required updates. The follow-up explicitly rejects a decisive
+internal completion if completed descendants have been collapsed, and its
+1,024-program decisive-completion and broad cases exceed the boundary bound.
+It therefore does not establish general semantic scope sufficiency.
+
 ## Reproducing the report
 
 From the repository root:
