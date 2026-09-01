@@ -7,6 +7,8 @@ import unittest
 from pathlib import Path
 
 from math_flow.artifacts import sha256_bytes
+from math_flow.errors import MathFlowError
+from math_flow.governed_providers import GovernedProviderTerminalError
 from math_flow.research_builder_v7 import empty_research_program_state_v3
 from math_flow.research_builder_v10_provider import (
     OpenRouterResearchBuilderV10Provider,
@@ -253,6 +255,46 @@ class ResearchBuilderV10ProviderTests(unittest.TestCase):
             [{"path": EVIDENCE_PATH, "digest": sha256_bytes(EVIDENCE)}],
         )
         self.assertIsNotNone(provider.latest_artifacts)
+
+    def test_terminal_transport_outcome_suppresses_duplicate_provider_calls(self) -> None:
+        base = empty_research_program_state_v3("two-entity-fixture")
+        calls: list[dict[str, object]] = []
+        journals: list[dict[str, object]] = []
+
+        def transport(request: dict[str, object]) -> dict[str, object]:
+            calls.append(copy.deepcopy(request))
+            raise GovernedProviderTerminalError(
+                "provider cost telemetry is unknown; further spending is blocked"
+            )
+
+        provider = OpenRouterResearchBuilderV10Provider(
+            json.loads(SPEC.read_text(encoding="utf-8")),
+            transport=transport,
+            attempt_journal_writer=journals.append,
+        )
+        with self.assertRaisesRegex(
+            MathFlowError,
+            r"stopped after 1 automatic attempt; further retries were suppressed",
+        ):
+            provider.run(
+                problem_id="two-entity-fixture",
+                subject_transaction_id=SUBJECT,
+                base_state=base,
+                accepted_claims=accepted_claims(),
+                judgment_id=JUDGMENT,
+                evidence_files=(
+                    SubmissionEvidenceFile(
+                        EVIDENCE_PATH, sha256_bytes(EVIDENCE), EVIDENCE
+                    ),
+                ),
+            )
+
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(journals), 1)
+        self.assertEqual(len(journals[0]["attemptRecords"]), 1)
+        self.assertEqual(
+            journals[0]["attemptRecords"][0]["outcome"], "transport-rejected"
+        )
 
     def test_program_link_patch_restores_hidden_links_and_supports_removal(self) -> None:
         prior_ids = [f"result/prior-{index}" for index in range(12)]

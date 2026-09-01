@@ -57,6 +57,10 @@ DECIMAL = re.compile(r"^(?:0|[1-9][0-9]*)(?:\.[0-9]*[1-9])?$")
 PROBABILITY = re.compile(r"^(?:0(?:\.[0-9]*[1-9])?|1)$")
 
 
+class GovernedProviderTerminalError(MathFlowError):
+    """A fail-closed provider outcome for which another call is forbidden."""
+
+
 def _digest(value: object) -> str:
     try:
         return f"sha256:{sha256_json(value)}"
@@ -925,6 +929,13 @@ class _GovernedOpenRouterAdapter:
                         rejected["providerResponseId"] = response["id"]
                 attempt_records.append(rejected)
                 record_attempt_journal()
+                if isinstance(exc, GovernedProviderTerminalError):
+                    assert self.latest_attempt_journal is not None
+                    raise MathFlowError(
+                        f"governed provider {stage} stopped after {attempt} automatic "
+                        f"attempt; further retries were suppressed; attempt journal "
+                        f"{self.latest_attempt_journal['journalDigest']}: {exc}"
+                    ) from exc
                 if response is not None:
                     if self.invalidate_last_response is not None:
                         self.invalidate_last_response()

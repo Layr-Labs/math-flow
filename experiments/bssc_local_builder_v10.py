@@ -27,6 +27,7 @@ from experiments.bssc_accounting_topology_prompt import (
 from math_flow.bssc_research_v4_producer import _accepted_frontier
 from math_flow.artifacts import sha256_bytes
 from math_flow.errors import MathFlowError
+from math_flow.governed_providers import GovernedProviderTerminalError
 from math_flow.openrouter import send_chat_completion
 from math_flow.research_builder_v7 import validate_research_program_state_v3
 from math_flow.research_builder_v10 import apply_research_builder_v10_transition
@@ -81,9 +82,11 @@ class BudgetedCapturingTransport:
 
     def __call__(self, request: dict[str, object]) -> dict[str, object]:
         if self.blocked_reason is not None:
-            raise MathFlowError(self.blocked_reason)
+            raise GovernedProviderTerminalError(self.blocked_reason)
         if len(self.requests) >= self.maximum_calls:
-            raise MathFlowError("local Builder V10 experiment provider-call budget exhausted")
+            raise GovernedProviderTerminalError(
+                "local Builder V10 experiment provider-call budget exhausted"
+            )
         request_bytes = len(
             json.dumps(
                 request,
@@ -93,7 +96,7 @@ class BudgetedCapturingTransport:
             ).encode("utf-8")
         )
         if request_bytes > self.maximum_request_bytes:
-            raise MathFlowError(
+            raise GovernedProviderTerminalError(
                 "local Builder V10 experiment request budget exhausted: "
                 f"{request_bytes} > {self.maximum_request_bytes} bytes"
             )
@@ -103,27 +106,29 @@ class BudgetedCapturingTransport:
             or not isinstance(maximum_completion_tokens, int)
             or maximum_completion_tokens < 1
         ):
-            raise MathFlowError(
+            raise GovernedProviderTerminalError(
                 "local Builder V10 request has no positive completion-token ceiling"
             )
         reserved_tokens = request_bytes + maximum_completion_tokens
         if self.reported_total_tokens + reserved_tokens > self.maximum_total_tokens:
-            raise MathFlowError(
+            raise GovernedProviderTerminalError(
                 "local Builder V10 experiment total-token budget exhausted"
             )
         if (
             self.reported_cost_usd + self.maximum_single_call_cost_usd
             > self.maximum_cost_usd
         ):
-            raise MathFlowError("local Builder V10 experiment cost budget exhausted")
+            raise GovernedProviderTerminalError(
+                "local Builder V10 experiment cost budget exhausted"
+            )
         self.requests.append(copy.deepcopy(request))
         try:
             response = self.transport(copy.deepcopy(request))
-        except Exception:
+        except Exception as exc:
             self.blocked_reason = (
                 "local Builder V10 transport outcome is uncertain; further spending is blocked"
             )
-            raise
+            raise GovernedProviderTerminalError(self.blocked_reason) from exc
         self.responses.append(copy.deepcopy(response))
         usage = response.get("usage")
         cost = usage.get("cost") if isinstance(usage, dict) else None
@@ -136,7 +141,7 @@ class BudgetedCapturingTransport:
             self.blocked_reason = (
                 "local Builder V10 response omitted valid cost telemetry; further spending is blocked"
             )
-            raise MathFlowError(self.blocked_reason)
+            raise GovernedProviderTerminalError(self.blocked_reason)
         assert isinstance(usage, dict)
         for field in ("prompt_tokens", "completion_tokens", "total_tokens"):
             token_count = usage.get(field)
@@ -149,7 +154,7 @@ class BudgetedCapturingTransport:
                     "local Builder V10 response omitted valid token telemetry; "
                     "further spending is blocked"
                 )
-                raise MathFlowError(self.blocked_reason)
+                raise GovernedProviderTerminalError(self.blocked_reason)
         if (
             int(usage["prompt_tokens"]) > request_bytes
             or int(usage["completion_tokens"]) > maximum_completion_tokens
@@ -160,18 +165,18 @@ class BudgetedCapturingTransport:
                 "local Builder V10 response exceeded a reserved token ceiling; "
                 "further spending is blocked"
             )
-            raise MathFlowError(self.blocked_reason)
+            raise GovernedProviderTerminalError(self.blocked_reason)
         if float(cost) > self.maximum_single_call_cost_usd:
             self.blocked_reason = (
                 "local Builder V10 response exceeded the reserved single-call cost ceiling; "
                 "further spending is blocked"
             )
-            raise MathFlowError(self.blocked_reason)
+            raise GovernedProviderTerminalError(self.blocked_reason)
         if self.reported_cost_usd > self.maximum_cost_usd:
             self.blocked_reason = (
                 "local Builder V10 response exceeded the total cost ceiling; further spending is blocked"
             )
-            raise MathFlowError(self.blocked_reason)
+            raise GovernedProviderTerminalError(self.blocked_reason)
         return response
 
 
