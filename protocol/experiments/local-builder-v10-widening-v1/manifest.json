@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "id": "local-builder-v10-widening-v1",
+  "description": "A local-only, publication-forbidden route/refine teacher-student widening experiment for Builder V10.",
+  "status": "unpublished-experiment",
+  "publicationForbidden": true,
+  "providerExecutionDefault": "disabled",
+  "judgeSpec": "protocol/judges/openrouter-hierarchical-research-builder-v10-experiment.json",
+  "judgeSpecDigest": "sha256:47528dfd15010796f3d6aaa2500ad8ec07e499cfeb5b5fd6bcd0c8522dbebffd",
+  "model": "openai/gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "seed": 1729,
+  "maximumAttemptsPerStage": 2,
+  "maximumProgramsInAuthorPacket": 64,
+  "maximumResultsInAuthorPacket": 64,
+  "stopOnFirstHardFailure": true,
+  "authorizationEnvironmentVariable": "MATH_FLOW_V10_WIDENING_AUTHORIZATION",
+  "authorizationValue": "local-builder-v10-widening-v1-provider-run",
+  "budgets": {
+    "maximumProviderCalls": 36,
+    "maximumRequestBytes": 500000,
+    "maximumEstimatedPromptTokens": 125000,
+    "maximumConservativePromptTokens": 501024,
+    "promptTokenOverheadReservation": 1024,
+    "maximumCompletionTokensPerCall": 6000,
+    "maximumTotalReservedTokens": 18252864,
+    "maximumTotalReportedTokens": 1200000,
+    "maximumSingleCallCostUsd": 0.25,
+    "maximumTotalCostUsd": 9.0
+  },
+  "cases": [
+    {
+      "id": "widen-0016-dependency",
+      "phase": "widening",
+      "challenge": "dependency-closure",
+      "clueMode": "validity-summary",
+      "historySteps": null,
+      "configuration": {
+        "programCount": 16,
+        "resultCount": 24,
+        "maximumDepth": 3,
+        "maximumWidth": 3,
+        "provenancePerResult": 1,
+        "dependencyDepth": 2,
+        "dependencyWidth": 2,
+        "supportBytes": 96,
+        "summaryBytes": 96,
+        "evidenceBytes": 512
+      }
+    },
+    {
+      "id": "widen-0064-duplicate",
+      "phase": "widening",
+      "challenge": "distant-duplicate",
+      "clueMode": "validity-summary",
+      "historySteps": null,
+      "configuration": {
+        "programCount": 64,
+        "resultCount": 128,
+        "maximumDepth": 4,
+        "maximumWidth": 3,
+        "provenancePerResult": 2,
+        "dependencyDepth": 3,
+        "dependencyWidth": 3,
+        "supportBytes": 128,
+        "summaryBytes": 128,
+        "evidenceBytes": 1024
+      }
+    },
+    {
+      "id": "widen-0256-misleading",
+      "phase": "widening",
+      "challenge": "misleading-capsule",
+      "clueMode": "validity-summary",
+      "historySteps": null,
+      "configuration": {
+        "programCount": 256,
+        "resultCount": 512,
+        "maximumDepth": 5,
+        "maximumWidth": 4,
+        "provenancePerResult": 4,
+        "dependencyDepth": 4,
+        "dependencyWidth": 4,
+        "supportBytes": 192,
+        "summaryBytes": 192,
+        "evidenceBytes": 2048
+      }
+    },
+    {
+      "id": "widen-1024-duplicate",
+      "phase": "widening",
+      "challenge": "distant-duplicate",
+      "clueMode": "validity-summary",
+      "historySteps": null,
+      "configuration": {
+        "programCount": 1024,
+        "resultCount": 2048,
+        "maximumDepth": 6,
+        "maximumWidth": 4,
+        "provenancePerResult": 8,
+        "dependencyDepth": 5,
+        "dependencyWidth": 5,
+        "supportBytes": 256,
+        "summaryBytes": 256,
+        "evidenceBytes": 4096
+      }
+    },
+    {
+      "id": "adversarial-cross-program",
+      "phase": "adversarial",
+      "challenge": "cross-program-placement",
+      "clueMode": "validity-summary",
+      "historySteps": null,
+      "configuration": {
+        "programCount": 64,
+        "resultCount": 128,
+        "maximumDepth": 4,
+        "maximumWidth": 3,
+        "provenancePerResult": 2,
+        "dependencyDepth": 3,
+        "dependencyWidth": 3,
+        "supportBytes": 128,
+        "summaryBytes": 128,
+        "evidenceBytes": 1024
+      }
+    },
+    {
+      "id": "adversarial-root-sibling",
+      "phase": "adversarial",
+      "challenge": "root-sibling",
+      "clueMode": "validity-summary",
+      "historySteps": null,
+      "configuration": {
+        "programCount": 64,
+        "resultCount": 128,
+        "maximumDepth": 4,
+        "maximumWidth": 3,
+        "provenancePerResult": 2,
+        "dependencyDepth": 3,
+        "dependencyWidth": 3,
+        "supportBytes": 128,
+        "summaryBytes": 128,
+        "evidenceBytes": 1024
+      }
+    },
+    {
+      "id": "adversarial-topology-revision",
+      "phase": "adversarial",
+      "challenge": "topology-revision",
+      "clueMode": "validity-summary",
+      "historySteps": null,
+      "configuration": {
+        "programCount": 256,
+        "resultCount": 512,
+        "maximumDepth": 5,
+        "maximumWidth": 4,
+        "provenancePerResult": 4,
+        "dependencyDepth": 4,
+        "dependencyWidth": 4,
+        "supportBytes": 192,
+        "summaryBytes": 192,
+        "evidenceBytes": 2048
+      }
+    },
+    {
+      "id": "sequential-hot-branch-0064",
+      "phase": "sequential-growth",
+      "challenge": "dependency-closure",
+      "clueMode": "validity-summary",
+      "historySteps": 64,
+      "configuration": {
+        "programCount": 16,
+        "resultCount": 24,
+        "maximumDepth": 3,
+        "maximumWidth": 3,
+        "provenancePerResult": 1,
+        "dependencyDepth": 2,
+        "dependencyWidth": 2,
+        "supportBytes": 96,
+        "summaryBytes": 96,
+        "evidenceBytes": 512
+      }
+    },
+    {
+      "id": "limitation-evidence-only-duplicate",
+      "phase": "limitation",
+      "challenge": "distant-duplicate",
+      "clueMode": "evidence-only",
+      "historySteps": null,
+      "configuration": {
+        "programCount": 256,
+        "resultCount": 512,
+        "maximumDepth": 5,
+        "maximumWidth": 4,
+        "provenancePerResult": 4,
+        "dependencyDepth": 4,
+        "dependencyWidth": 4,
+        "supportBytes": 192,
+        "summaryBytes": 192,
+        "evidenceBytes": 2048
+      }
+    }
+  ]
+}
