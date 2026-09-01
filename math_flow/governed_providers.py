@@ -862,6 +862,13 @@ class _GovernedOpenRouterAdapter:
             try:
                 try:
                     response = self.transport(copy.deepcopy(request))
+                except GovernedProviderTerminalError:
+                    # A governed transport may fail closed before dispatch (for
+                    # example, because a local request or spending budget is
+                    # exhausted) or report an already-classified terminal
+                    # outcome.  Preserve that distinction: only an unclassified
+                    # callback exception has an uncertain dispatch boundary.
+                    raise
                 except Exception as exc:
                     raise GovernedProviderTerminalError(
                         f"governed provider {stage} transport outcome is uncertain "

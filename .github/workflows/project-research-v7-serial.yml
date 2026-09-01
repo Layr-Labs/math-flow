@@ -47,14 +47,14 @@ jobs:
             exit 1
           fi
           python -m experiments.bssc_joint_portfolio_wplus \
-            --manifest protocol/experiments/bssc-joint-portfolio-wplus-k1-v1/manifest.json \
-            --output "${RUNNER_TEMP}/bssc-joint-portfolio-wplus-k1-v1"
+            --manifest protocol/experiments/bssc-joint-portfolio-wplus-k1-v2/manifest.json \
+            --output "${RUNNER_TEMP}/bssc-joint-portfolio-wplus-k1-v2"
       - name: Upload unpublished joint portfolio and W+ artifacts
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: "bssc-joint-portfolio-wplus-k1-v1-${{ github.run_id }}"
-          path: "${{ runner.temp }}/bssc-joint-portfolio-wplus-k1-v1"
+          name: "bssc-joint-portfolio-wplus-k1-v2-${{ github.run_id }}"
+          path: "${{ runner.temp }}/bssc-joint-portfolio-wplus-k1-v2"
           if-no-files-found: error
           retention-days: 14
 

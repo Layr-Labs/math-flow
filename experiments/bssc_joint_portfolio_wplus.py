@@ -30,7 +30,10 @@ from math_flow.artifacts import sha256_bytes
 from math_flow.bssc_research_v4_producer import _accepted_frontier
 from math_flow.errors import MathFlowError
 from math_flow.joint_portfolio_wplus_experiment import (
+    IMPLEMENTATION,
+    IMPLEMENTATION_V2,
     OpenRouterJointPortfolioWPlusExperimentProvider,
+    OpenRouterJointPortfolioWPlusExperimentProviderV2,
     validate_fixed_semantic_packet,
 )
 from math_flow.research_builder_v7 import validate_research_program_state_v3
@@ -118,6 +121,15 @@ def run(args: argparse.Namespace) -> int:
     relational_gold = load_json(relational_path)
     if not isinstance(base_spec, dict) or not isinstance(relational_gold, dict):
         raise MathFlowError("joint topology/W+ judge or gold is invalid")
+    implementation = base_spec.get("implementation")
+    if implementation == IMPLEMENTATION:
+        provider_class = OpenRouterJointPortfolioWPlusExperimentProvider
+        scorer_variant = "joint-portfolio-wplus-v1"
+    elif implementation == IMPLEMENTATION_V2:
+        provider_class = OpenRouterJointPortfolioWPlusExperimentProviderV2
+        scorer_variant = "joint-portfolio-wplus-v2"
+    else:
+        raise MathFlowError("joint topology/W+ implementation is unsupported")
     if base_spec.get("model") != manifest.get("model"):
         raise MathFlowError("joint topology/W+ model binding mismatch")
     stage = base_spec.get("stages", {}).get("joint-portfolio-wplus", {})
@@ -196,7 +208,7 @@ def run(args: argparse.Namespace) -> int:
         request_start = len(transport.requests)
         response_start = len(transport.responses)
         journals: list[dict[str, object]] = []
-        provider = OpenRouterJointPortfolioWPlusExperimentProvider(
+        provider = provider_class(
             spec,
             transport=transport,
             attempt_journal_writer=lambda value: journals.append(value),
@@ -223,9 +235,9 @@ def run(args: argparse.Namespace) -> int:
                     "k1.author.transition": _scenario_artifact(artifacts["transition"]),
                     "k1.author.topology": _scenario_artifact(topology),
                 },
-                variant="joint-portfolio-wplus-v1",
+                variant=scorer_variant,
                 seed=seed,
-                scorer_id="bssc-joint-portfolio-wplus-k1-v1",
+                scorer_id=str(manifest["id"]),
             )
             write_json(chain_dir / "relational-score.json", score)
             chain.update(
@@ -290,7 +302,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--manifest",
         type=Path,
         default=Path(
-            "protocol/experiments/bssc-joint-portfolio-wplus-k1-v1/manifest.json"
+            "protocol/experiments/bssc-joint-portfolio-wplus-k1-v2/manifest.json"
         ),
     )
     parser.add_argument("--seeds")
