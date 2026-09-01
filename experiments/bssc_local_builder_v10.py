@@ -1,4 +1,4 @@
-"""Run the unpublished sequential BSSC K2/K3 local Builder V10 experiment."""
+"""Run an unpublished BSSC local Builder V10 experiment."""
 
 from __future__ import annotations
 
@@ -289,11 +289,13 @@ def run(args: argparse.Namespace) -> int:
     configured_ordinals = tuple(
         int(value) for value in manifest.get("acceptedTransitionOrdinals", [])
     )
-    if not configured_ordinals or configured_ordinals != TRANSITION_ORDINALS[
-        : len(configured_ordinals)
-    ]:
+    allowed_ordinal_sequences = {(1,)} | {
+        TRANSITION_ORDINALS[:length]
+        for length in range(1, len(TRANSITION_ORDINALS) + 1)
+    }
+    if configured_ordinals not in allowed_ordinal_sequences:
         raise MathFlowError(
-            "local Builder V10 manifest ordinals must be a nonempty K2/K3 prefix"
+            "local Builder V10 manifest ordinals must be K1-only or a nonempty K2/K3 prefix"
         )
     if base_spec.get("model") != manifest.get("model"):
         raise MathFlowError("local Builder V10 manifest model does not match the judge")

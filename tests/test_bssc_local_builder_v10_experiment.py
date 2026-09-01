@@ -96,15 +96,19 @@ class BudgetedCapturingTransportTests(unittest.TestCase):
 
 
 class RevisedAccountingGoldTests(unittest.TestCase):
-    def test_non_main_workflow_targets_the_final_k2_only_v3_manifest(self) -> None:
+    def test_non_main_workflow_targets_the_k1_anti_collapse_gate(self) -> None:
         workflow = (
             ROOT / ".github/workflows/project-research-v7-serial.yml"
         ).read_text(encoding="utf-8")
         self.assertIn(
-            "--manifest protocol/experiments/bssc-local-builder-v10-v3/manifest.json",
+            "--manifest protocol/experiments/bssc-local-builder-v10-k1-v1/manifest.json",
             workflow,
         )
         self.assertIn(
+            '--output "${RUNNER_TEMP}/bssc-local-builder-v10-k1-v1"',
+            workflow,
+        )
+        self.assertNotIn(
             '--output "${RUNNER_TEMP}/bssc-local-builder-v10-v3"',
             workflow,
         )
@@ -112,9 +116,133 @@ class RevisedAccountingGoldTests(unittest.TestCase):
             '--output "${RUNNER_TEMP}/bssc-local-builder-v10-v2"',
             workflow,
         )
-        self.assertNotIn(
-            '--output "${RUNNER_TEMP}/bssc-local-builder-v10-v1"',
-            workflow,
+
+    def test_k1_gold_accepts_parent_plus_two_leaves_and_rejects_collapse(self) -> None:
+        gold = json.loads(
+            (
+                ROOT
+                / "protocol/experiments/bssc-local-builder-v10-k1-v1/relational-gold-v1.json"
+            ).read_text(encoding="utf-8")
+        )
+        fixed = json.loads(
+            (
+                ROOT
+                / "protocol/experiments/bssc-local-builder-v10-k1-v1/fixtures/empty-state.json"
+            ).read_text(encoding="utf-8")
+        )
+        program_values = [
+            {
+                "id": "portfolio",
+                "parentId": "root",
+                "intermediateResultIds": [],
+            },
+            {
+                "id": "leaf-a",
+                "parentId": "portfolio",
+                "intermediateResultIds": ["result-a"],
+            },
+            {
+                "id": "leaf-b",
+                "parentId": "portfolio",
+                "intermediateResultIds": ["result-b"],
+            },
+        ]
+        transition = {
+            "topologyOperations": [
+                {
+                    "action": "create",
+                    "entityKind": "program",
+                    "entityId": value["id"],
+                    "value": value,
+                }
+                for value in program_values
+            ]
+            + [
+                {
+                    "action": "create",
+                    "entityKind": "intermediateResult",
+                    "entityId": result_id,
+                    "value": {"id": result_id},
+                }
+                for result_id in ("result-a", "result-b")
+            ],
+            "contentOperations": [
+                {"entityKind": "program", "entityId": "root"}
+            ],
+            "contribution": {
+                "directProgramIds": ["leaf-a", "leaf-b"],
+                "intermediateResultIds": ["result-a", "result-b"],
+            },
+            "topologyRationale": "The leaves are independently estimable.",
+        }
+        topology = {
+            "programs": [
+                {
+                    "id": "root",
+                    "parentId": None,
+                    "intermediateResultIds": [],
+                },
+                *program_values,
+            ],
+            "subjectResults": [
+                {
+                    "id": "result-a",
+                    "primaryProgramId": "leaf-a",
+                    "dependencyResultIds": [],
+                },
+                {
+                    "id": "result-b",
+                    "primaryProgramId": "leaf-b",
+                    "dependencyResultIds": ["result-a"],
+                },
+            ],
+        }
+
+        def score(candidate_transition: object, candidate_topology: object) -> dict:
+            return _score_json_relational(
+                gold,
+                {
+                    "fixed-base-state": _scenario_artifact(fixed),
+                    "k1.author.transition": _scenario_artifact(candidate_transition),
+                    "k1.author.topology": _scenario_artifact(candidate_topology),
+                },
+                variant="local-builder-v10",
+                seed=1729,
+                scorer_id="bssc-accounting-topology-v10-k1-v1",
+            )
+
+        accepted = score(transition, topology)
+        self.assertEqual(accepted["status"], "passed")
+        self.assertEqual(accepted["hardFailures"], [])
+
+        collapsed_transition = copy.deepcopy(transition)
+        collapsed_topology = copy.deepcopy(topology)
+        collapsed_transition["topologyOperations"] = [
+            operation
+            for operation in collapsed_transition["topologyOperations"]
+            if operation.get("entityId") not in {"leaf-a", "leaf-b"}
+        ]
+        collapsed_transition["topologyOperations"][0]["value"][
+            "intermediateResultIds"
+        ] = ["result-a", "result-b"]
+        collapsed_transition["contribution"]["directProgramIds"] = ["portfolio"]
+        collapsed_topology["programs"] = [
+            program
+            for program in collapsed_topology["programs"]
+            if program["id"] not in {"leaf-a", "leaf-b"}
+        ]
+        collapsed_topology["programs"][1]["intermediateResultIds"] = [
+            "result-a",
+            "result-b",
+        ]
+        for result in collapsed_topology["subjectResults"]:
+            result["primaryProgramId"] = "portfolio"
+
+        rejected = score(collapsed_transition, collapsed_topology)
+        self.assertEqual(rejected["status"], "failed")
+        self.assertIn("k1-adds-exactly-three-programs", rejected["hardFailures"])
+        self.assertIn(
+            "k1-results-have-two-distinct-leaf-owners", rejected["hardFailures"]
         )
 
     def test_accepts_root_owned_replay_and_rejects_k1_nesting(self) -> None:
