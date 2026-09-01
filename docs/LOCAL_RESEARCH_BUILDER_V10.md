@@ -122,11 +122,15 @@ authoring packet from the exact base and accepted claims. It rejects:
 - creation of an ID outside the declared create scope; and
 - program/result references outside the resolved read set.
 
-It then calls the unchanged V9 application path, which calls the unchanged V8
-integrity checks and state-v3 reducer. After reduction it additionally verifies
-that every non-operated program/result and every prior contribution record is
-byte-for-byte unchanged. State-v3 topology alignment and same-world accounting
-handoff derivation therefore remain unchanged.
+It then calls the V9 application path. V8 retains its evidence and affected-
+ancestor integrity checks, with one narrow topology rule: an existing entity
+under a pure move or retirement preserves its complete predecessor content and
+provenance, while old/new ancestors and all content-refreshed programs still
+require current-submission provenance. V7's state-v3 reducer remains unchanged.
+After reduction V10 additionally verifies that every non-operated
+program/result and every prior contribution record is byte-for-byte unchanged.
+State-v3 topology alignment and same-world accounting handoff derivation
+therefore remain unchanged.
 
 The implementation and tests live in:
 

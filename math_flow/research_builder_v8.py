@@ -104,10 +104,21 @@ def _validate_evidence_and_program_refresh(
         )
 
     operations: list[object] = []
+    topology_only_existing_programs: set[str] = set()
     for field in ("contentOperations", "topologyOperations"):
         raw_operations = transition.get(field)
         if isinstance(raw_operations, list):
             operations.extend(raw_operations)
+            if field == "topologyOperations":
+                topology_only_existing_programs.update(
+                    str(operation["entityId"])
+                    for operation in raw_operations
+                    if isinstance(operation, dict)
+                    and operation.get("entityKind") == "program"
+                    and operation.get("action") in {"move", "retire"}
+                    and isinstance(operation.get("entityId"), str)
+                    and operation["entityId"] in base_state.get("programs", {})
+                )
     operated_programs: set[str] = set()
     for operation in operations:
         if not isinstance(operation, dict):
@@ -171,6 +182,19 @@ def _validate_evidence_and_program_refresh(
     for program_id in refresh_required:
         program = post_programs.get(program_id)
         sources = program.get("sourceTransactionIds") if isinstance(program, dict) else None
+        if program_id in topology_only_existing_programs:
+            prior_program = base_programs.get(program_id)
+            prior_sources = (
+                prior_program.get("sourceTransactionIds")
+                if isinstance(prior_program, dict)
+                else None
+            )
+            if sources != prior_sources:
+                raise MathFlowError(
+                    "research builder v8 topology-only program must preserve "
+                    f"source provenance: {program_id}"
+                )
+            continue
         if not isinstance(sources, list) or subject not in sources:
             raise MathFlowError(
                 "research builder v8 affected program refresh must cite the current "

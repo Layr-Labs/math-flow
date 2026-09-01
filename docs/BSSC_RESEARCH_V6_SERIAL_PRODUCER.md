@@ -81,21 +81,25 @@ create or move an entity, or repair a semantic topology proposal; they only
 remove duplicated serialization work from the judgment.
 
 V8 still inherits V7's strict one-operation-per-entity partition. An existing
-entity therefore cannot currently receive a semantic refresh and a move or
-retirement in the same transition; for existing programs, that also conflicts
-with V8's affected-ancestor provenance refresh. This is a known topology-
-revision seam, not something trusted normalization guesses around. It does not
-affect ordinary creation of a new local program or result. The serial lane must
-stop for protocol revision if a live submission actually needs the combined
-path.
+entity therefore cannot receive a semantic refresh and a move or retirement in
+the same transition. A pure move or retirement preserves the existing entity's
+complete content and provenance snapshot; V8 narrowly exempts that topology-
+only entity from adding the current subject. The transition contribution is the
+causal provenance record. This does not permit a topology operation to hide a
+content, support, lifecycle, or provenance change. The serial lane must still
+stop for protocol revision if one entity genuinely needs both semantic refresh
+and topology change in the same submission.
 
 ### Affected-ancestor synthesis
 
 For every direct program, linked result program, and changed topology scope,
 trusted validation computes the affected program closure in both the before
 and after states. Every affected program that existed in the predecessor—and
-every existing ancestor through root—must have an operation in the transition
-and must add the current subject to `sourceTransactionIds`.
+every existing ancestor through root—must have an operation in the transition.
+Old and new ancestors, plus every content-refreshed program, must add the
+current subject to `sourceTransactionIds`. The one narrow exception is the
+existing program operated by a pure move or retirement: its provenance must
+remain byte-for-byte equal to the predecessor.
 
 This is a semantic freshness boundary, not deterministic prose generation.
 Trusted code can prove that every relevant summary was re-authored against the

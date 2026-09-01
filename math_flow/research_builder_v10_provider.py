@@ -391,6 +391,100 @@ def _normalize_v10_transition(
             (set(prior) - set(removals)) | set(additions)
         )
 
+    def reconstruct_existing_topology_value(
+        operation: dict[str, object], existing: Mapping[str, object]
+    ) -> bool:
+        """Restore a pure move/retire from trusted predecessor state.
+
+        V7 intentionally forbids topology operations from changing content or
+        provenance. V10 author views hide cumulative arrays, so the model emits
+        current-only provenance patches. For an existing move/retire those
+        patches are causal metadata on the transition, not changes to the
+        moved entity. Trusted code therefore preserves the predecessor record
+        and overlays only the fields V7 permits for the requested action.
+        """
+
+        action = operation.get("action")
+        kind = operation.get("entityKind")
+        proposed = operation.get("value")
+        if action not in {"move", "retire"} or kind not in collection_names:
+            return False
+        if not isinstance(proposed, dict) or not existing:
+            return False
+        predecessor = {
+            key: copy.deepcopy(value)
+            for key, value in existing.items()
+            if key != "digest"
+        }
+        allowed_fields = {
+            ("program", "move"): {"parentId", "lineage"},
+            ("program", "retire"): {"status", "lineage"},
+            ("intermediateResult", "move"): {
+                "primaryProgramId",
+                "relatedProgramIds",
+            },
+            ("intermediateResult", "retire"): {"status"},
+        }[(str(kind), str(action))]
+
+        candidate = copy.deepcopy(proposed)
+        if kind == "program":
+            additions = candidate.pop("intermediateResultIdAdditions", None)
+            removals = candidate.pop("intermediateResultIdRemovals", None)
+            if additions != [] or removals != []:
+                raise MathFlowError(
+                    "builder-v10 existing topology operation may not patch "
+                    "program result links"
+                )
+        else:
+            support_additions = candidate.pop("supportAdditions", None)
+            if not isinstance(support_additions, dict) or any(
+                value != [] for value in support_additions.values()
+            ):
+                raise MathFlowError(
+                    "builder-v10 existing topology operation may not add result support"
+                )
+
+        for field, proposed_value in candidate.items():
+            if field in allowed_fields:
+                continue
+            if field == "sourceTransactionIds":
+                prior_sources = existing.get(field)
+                if proposed_value not in (prior_sources, [subject_transaction_id]):
+                    raise MathFlowError(
+                        "builder-v10 existing topology operation changes source provenance"
+                    )
+                continue
+            if kind == "intermediateResult" and field == "claimRefs":
+                if proposed_value != existing.get(field) and not (
+                    isinstance(proposed_value, list)
+                    and all(
+                        isinstance(item, dict)
+                        and item.get("transactionId") == subject_transaction_id
+                        for item in proposed_value
+                    )
+                ):
+                    raise MathFlowError(
+                        "builder-v10 existing topology operation changes claim provenance"
+                    )
+                continue
+            if kind == "intermediateResult" and field == "judgmentIds":
+                if proposed_value not in (existing.get(field), [], [judgment_id]):
+                    raise MathFlowError(
+                        "builder-v10 existing topology operation changes judgment provenance"
+                    )
+                continue
+            if proposed_value != existing.get(field):
+                raise MathFlowError(
+                    "builder-v10 existing topology operation changes protected "
+                    f"field: {field}"
+                )
+        for field in allowed_fields:
+            if field in candidate:
+                predecessor[field] = copy.deepcopy(candidate[field])
+        operation["baseDigest"] = existing.get("digest")
+        operation["value"] = predecessor
+        return True
+
     for operations_field in ("contentOperations", "topologyOperations"):
         operations = normalized.get(operations_field)
         if not isinstance(operations, list):
@@ -413,6 +507,11 @@ def _normalize_v10_transition(
             existing: Mapping[str, object] = (
                 existing_value if isinstance(existing_value, dict) else {}
             )
+            if (
+                operations_field == "topologyOperations"
+                and reconstruct_existing_topology_value(operation, existing)
+            ):
+                continue
             if operations_field == "contentOperations":
                 digest = existing.get("digest")
                 if isinstance(digest, str):

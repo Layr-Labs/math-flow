@@ -89,7 +89,7 @@ ROUTE_CONTEXT_FIELDS = {
     "rootCapsule",
     "contextDigest",
 }
-RAW_ROUTE_PLAN_FIELDS = {
+RAW_ROUTE_PLAN_FIELD_ORDER = (
     "schemaVersion",
     "baseStateDigest",
     "routeContextDigest",
@@ -100,7 +100,8 @@ RAW_ROUTE_PLAN_FIELDS = {
     "writeResultIds",
     "createProgramIds",
     "createResultIds",
-}
+)
+RAW_ROUTE_PLAN_FIELDS = set(RAW_ROUTE_PLAN_FIELD_ORDER)
 ROUTE_PLAN_FIELDS = RAW_ROUTE_PLAN_FIELDS | {"routePlanDigest"}
 SEARCH_QUERY_FIELDS = {"query", "entityKinds", "limit"}
 PROGRAM_VIEW_FIELDS = {
@@ -807,7 +808,7 @@ def bind_research_builder_v10_route_plan(
         seen_queries.add(key)
         queries.append(entry)
     normalized["searchQueries"] = queries
-    canonical = {key: normalized[key] for key in RAW_ROUTE_PLAN_FIELDS}
+    canonical = {key: normalized[key] for key in RAW_ROUTE_PLAN_FIELD_ORDER}
     return {**canonical, "routePlanDigest": _digest(canonical, "routePlanDigest")}
 
 

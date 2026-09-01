@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import tempfile
 import unittest
@@ -10,6 +11,7 @@ from experiments.miniature_e2e_protocol import (
     write_miniature_e2e_fixture,
 )
 from math_flow.artifacts import verify_bundle
+from math_flow.errors import MathFlowError
 from math_flow.miniature_e2e_scenario import (
     SUBJECTS,
     build_miniature_e2e_transcript,
@@ -17,6 +19,10 @@ from math_flow.miniature_e2e_scenario import (
     score_miniature_e2e_scenario,
 )
 from math_flow.repository import sha256_json
+from math_flow.research_builder_v10 import (
+    apply_research_builder_v10_transition,
+    build_research_builder_v10_authoring_packet,
+)
 from math_flow.teacher_student_scenarios import run_teacher_student_scenario
 
 
@@ -145,6 +151,69 @@ class MiniatureEndToEndScenarioTests(unittest.TestCase):
                 self.assertEqual(score["status"], "failed")
                 self.assertIn("prior-correction-balanced", score["hardFailures"])
                 self.assertNotIn("transcript-digest", score["hardFailures"])
+
+    def test_v10_scoped_replay_rejects_out_of_scope_write_and_stale_packet(self) -> None:
+        transcript = build_miniature_e2e_transcript()
+        step = transcript["steps"][0]
+        base = transcript["initialKnowledgeState"]
+        replay = step["knowledgeBuilderReplay"]
+        route_plan = copy.deepcopy(replay["routePlan"])
+        route_plan["createResultIds"] = []
+        route_plan.pop("routePlanDigest")
+        narrow_packet = build_research_builder_v10_authoring_packet(
+            base,
+            step["acceptedClaims"],
+            route_plan,
+        )
+        with self.assertRaisesRegex(MathFlowError, "writes outside scope"):
+            apply_research_builder_v10_transition(
+                base,
+                step["builderTransition"],
+                authoring_packet=narrow_packet,
+                accepted_claims=step["acceptedClaims"],
+                judgment_id=step["judgmentId"],
+                evidence_file_refs=replay["evidenceFileRefs"],
+            )
+
+        packet = build_research_builder_v10_authoring_packet(
+            base,
+            step["acceptedClaims"],
+            replay["routePlan"],
+        )
+        with self.assertRaisesRegex(MathFlowError, "not reducer-derived|stale"):
+            apply_research_builder_v10_transition(
+                step["knowledgeAfter"],
+                step["builderTransition"],
+                authoring_packet=packet,
+                accepted_claims=step["acceptedClaims"],
+                judgment_id=step["judgmentId"],
+                evidence_file_refs=replay["evidenceFileRefs"],
+            )
+
+    def test_v10_scoped_replay_rejects_provenance_change_on_pure_move(self) -> None:
+        transcript = build_miniature_e2e_transcript()
+        step = transcript["steps"][5]
+        base = transcript["steps"][4]["knowledgeAfter"]
+        replay = step["knowledgeBuilderReplay"]
+        packet = build_research_builder_v10_authoring_packet(
+            base,
+            step["acceptedClaims"],
+            replay["routePlan"],
+        )
+        transition = copy.deepcopy(step["builderTransition"])
+        moved = transition["topologyOperations"][0]["value"]
+        moved["sourceTransactionIds"] = sorted(
+            [*moved["sourceTransactionIds"], step["subjectTransactionId"]]
+        )
+        with self.assertRaisesRegex(MathFlowError, "move must preserve"):
+            apply_research_builder_v10_transition(
+                base,
+                transition,
+                authoring_packet=packet,
+                accepted_claims=step["acceptedClaims"],
+                judgment_id=step["judgmentId"],
+                evidence_file_refs=replay["evidenceFileRefs"],
+            )
 
     def test_checked_in_fixture_is_exactly_regenerable(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

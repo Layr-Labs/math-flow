@@ -16,13 +16,26 @@ SHA-256 digest:
 - `protocol/policies/hierarchical-work-remaining-accounting-v2.md`.
 
 The provider-free fixture substitutes precommitted synthetic transitions for
-V10's route, route-refine, and organize judgments, and precommitted sparse
-primitive patches for V2's semantic `W+` and `W-` judgments. It does not
-pretend to test model quality. It preserves the shared trusted state-v3 and
-topology reduction beneath V10, plus with-access-first materialization and
-freeze, same-base no-access reduction, strictly positive `D = W- - W+`, and
-advancement of only `W+`. It does not exercise V10's additional route-plan,
-authoring-packet, write-scope, or hidden-state-preservation checks.
+V10's semantic route, route-refine, and organize judgments, and precommitted
+sparse primitive patches for V2's semantic `W+` and `W-` judgments. It does not
+pretend to test model quality. For every accepted submission, trusted code now
+builds the exact V10 catalog and route context, binds a minimal route plan,
+derives the local authoring packet, and applies the precommitted transition
+through `apply_research_builder_v10_transition`. The replay therefore exercises
+V10's write scope, readable-reference boundary, stale-packet rejection, hidden
+state preservation, exact evidence binding, V8 affected-ancestor refresh, and
+the shared V7 state/topology reducer. It also preserves with-access-first
+materialization and freeze, same-base no-access reduction, strictly positive
+`D = W- - W+`, and advancement of only `W+`.
+
+Each transcript step stores a compact `knowledgeBuilderReplay` record: zero
+provider calls, exact synthetic evidence-file refs, the fully bound route plan,
+the route-context and authoring-packet digests, the derived read and write
+scopes, and the expanded-transition digest. The scorer reconstructs the full
+route context and authoring packet from the preceding state and requires every
+stored binding to match before applying the transition. This binds the exact
+V10 mechanics without duplicating the much larger deterministic packet in the
+fixture.
 
 ## Reference history
 
@@ -57,11 +70,14 @@ current production credit system implements that correction.
 
 ## Deterministic score
 
-The code-owned `miniature-e2e-v1` scorer replays every knowledge transition and
+The code-owned `miniature-e2e-v1` scorer reconstructs and validates every V10
+route/packet binding, replays every scoped knowledge transition, and replays
 every pair of work patches. It currently evaluates 102 hard assertions,
 including exact topology/handoff replay, the frozen `W+` candidate, audit-only
 `W-`, positive `D`, processed-submission order, terminal zero-out, and exact
-node-level reduction sums.
+node-level reduction sums. Focused negative tests additionally prove that a
+stale authoring packet, an out-of-scope write, and a provenance change hidden
+inside a pure topology move are rejected.
 
 Its aggregate adversarial scorecard has eight required groups:
 
@@ -95,10 +111,10 @@ Tests require regeneration to reproduce every checked-in byte exactly.
 
 - Synthetic accepted claims and hour estimates are oracle inputs, so this does
   not measure builder retrieval, semantic judgment quality, or hour calibration.
-- The benchmark uses the shared state-v3/topology reducer beneath V10 but
-  bypasses both its provider route/refine/author stages and its scoped V10
-  application wrapper. A future provider-free E2E fixture should replay exact
-  route plans and authoring packets through `apply_research_builder_v10_transition`.
+- The semantic route/refine/author choices remain precommitted, so the benchmark
+  bypasses provider calls and cannot establish that a model will choose the
+  bound local scope or author the precommitted transition. The deterministic
+  V10 route binding, packet construction, and scoped application are exact.
 - It mirrors V2's A-first freeze and deterministic accounting but bypasses safe
   fact extraction, epistemic-firewall prompting, retries, and provider output
   validation.

@@ -427,6 +427,264 @@ class ResearchBuilderV10ProviderTests(unittest.TestCase):
         self.assertEqual(transition_properties["contentOperations"]["maxItems"], 8)
         self.assertEqual(transition_properties["topologyOperations"]["maxItems"], 8)
 
+    def test_existing_program_move_and_retire_reconstruct_trusted_predecessor(self) -> None:
+        predecessor = {
+            "id": "program/local",
+            "parentId": "program/old-parent",
+            "title": "Stable local program",
+            "objective": "Resolve the stable local objective.",
+            "currentStateSummary": "A stable partial result is established.",
+            "localResidualSummary": "One stable local step remains.",
+            "status": "active",
+            "intermediateResultIds": ["result/prior"],
+            "sourceTransactionIds": ["b" * 40],
+            "lineage": [],
+            "digest": "sha256:" + "a" * 64,
+        }
+        base = {
+            "programs": {"program/local": predecessor},
+            "intermediateResults": {},
+            "contributions": {},
+        }
+
+        def raw_operation(action: str) -> dict[str, object]:
+            value = {
+                key: copy.deepcopy(item)
+                for key, item in predecessor.items()
+                if key not in {"digest", "intermediateResultIds"}
+            }
+            value["sourceTransactionIds"] = [SUBJECT]
+            value["intermediateResultIdAdditions"] = []
+            value["intermediateResultIdRemovals"] = []
+            if action == "move":
+                value["parentId"] = "program/new-parent"
+            else:
+                value["status"] = "retired"
+            return {
+                "action": action,
+                "entityKind": "program",
+                "entityId": "program/local",
+                "baseDigest": None,
+                "value": value,
+            }
+
+        for action in ("move", "retire"):
+            with self.subTest(action=action):
+                normalized = _normalize_v10_transition(
+                    {
+                        "contentOperations": [],
+                        "topologyOperations": [raw_operation(action)],
+                    },
+                    base_state=base,
+                    subject_transaction_id=SUBJECT,
+                    judgment_id=JUDGMENT,
+                    evidence_by_path={},
+                )
+                operation = normalized["topologyOperations"][0]
+                expected = {
+                    key: copy.deepcopy(item)
+                    for key, item in predecessor.items()
+                    if key != "digest"
+                }
+                if action == "move":
+                    expected["parentId"] = "program/new-parent"
+                else:
+                    expected["status"] = "retired"
+                self.assertEqual(operation["baseDigest"], predecessor["digest"])
+                self.assertEqual(operation["value"], expected)
+                self.assertEqual(
+                    operation["value"]["sourceTransactionIds"],
+                    predecessor["sourceTransactionIds"],
+                )
+                self.assertEqual(
+                    operation["value"]["intermediateResultIds"],
+                    predecessor["intermediateResultIds"],
+                )
+
+        invalid_cases = {
+            "protected-content": (
+                lambda operation: operation["value"].update(
+                    {"title": "Unauthorized rewrite"}
+                ),
+                "changes protected field: title",
+            ),
+            "source-provenance": (
+                lambda operation: operation["value"].update(
+                    {"sourceTransactionIds": ["c" * 40]}
+                ),
+                "changes source provenance",
+            ),
+            "result-link-patch": (
+                lambda operation: operation["value"].update(
+                    {"intermediateResultIdAdditions": ["result/injected"]}
+                ),
+                "may not patch program result links",
+            ),
+        }
+        for case_id, (mutate, message) in invalid_cases.items():
+            with self.subTest(case_id=case_id):
+                operation = raw_operation("move")
+                mutate(operation)
+                with self.assertRaisesRegex(MathFlowError, message):
+                    _normalize_v10_transition(
+                        {
+                            "contentOperations": [],
+                            "topologyOperations": [operation],
+                        },
+                        base_state=base,
+                        subject_transaction_id=SUBJECT,
+                        judgment_id=JUDGMENT,
+                        evidence_by_path={},
+                    )
+
+    def test_existing_result_move_and_retire_reject_non_topology_patches(self) -> None:
+        predecessor = {
+            "id": "result/local",
+            "primaryProgramId": "program/old-parent",
+            "relatedProgramIds": [],
+            "title": "Stable local result",
+            "statement": "The stable local result holds.",
+            "scopeQualifications": ["Stable restricted setting."],
+            "support": {
+                "proofs": ["The prior submission proves the result."],
+                "methods": [],
+                "computations": [],
+                "tools": [],
+                "artifactRefs": [
+                    {
+                        "path": "problems/two-entity-fixture/contributions/b/README.md",
+                        "digest": "sha256:" + "b" * 64,
+                    }
+                ],
+                "attestationRefs": [],
+            },
+            "dependencyResultIds": ["result/dependency"],
+            "claimRefs": [
+                {"transactionId": "b" * 40, "claimKey": "prior-claim"}
+            ],
+            "sourceTransactionIds": ["b" * 40],
+            "judgmentIds": ["sha256:" + "2" * 64],
+            "status": "active",
+            "supersededByResultIds": [],
+            "digest": "sha256:" + "c" * 64,
+        }
+        base = {
+            "programs": {},
+            "intermediateResults": {"result/local": predecessor},
+            "contributions": {},
+        }
+
+        def raw_operation(action: str) -> dict[str, object]:
+            value = {
+                key: copy.deepcopy(item)
+                for key, item in predecessor.items()
+                if key not in {"digest", "support"}
+            }
+            value["supportAdditions"] = {
+                "proofs": [],
+                "methods": [],
+                "computations": [],
+                "tools": [],
+                "artifactPaths": [],
+                "attestationRefs": [],
+            }
+            value["sourceTransactionIds"] = [SUBJECT]
+            value["claimRefs"] = [
+                {"transactionId": SUBJECT, "claimKey": "current-claim"}
+            ]
+            value["judgmentIds"] = []
+            if action == "move":
+                value["primaryProgramId"] = "program/new-parent"
+            else:
+                value["status"] = "retired"
+            return {
+                "action": action,
+                "entityKind": "intermediateResult",
+                "entityId": "result/local",
+                "baseDigest": None,
+                "value": value,
+            }
+
+        for action in ("move", "retire"):
+            with self.subTest(action=action):
+                normalized = _normalize_v10_transition(
+                    {
+                        "contentOperations": [],
+                        "topologyOperations": [raw_operation(action)],
+                    },
+                    base_state=base,
+                    subject_transaction_id=SUBJECT,
+                    judgment_id=JUDGMENT,
+                    evidence_by_path={},
+                )
+                operation = normalized["topologyOperations"][0]
+                expected = {
+                    key: copy.deepcopy(item)
+                    for key, item in predecessor.items()
+                    if key != "digest"
+                }
+                if action == "move":
+                    expected["primaryProgramId"] = "program/new-parent"
+                else:
+                    expected["status"] = "retired"
+                self.assertEqual(operation["baseDigest"], predecessor["digest"])
+                self.assertEqual(operation["value"], expected)
+
+        invalid_cases = {
+            "protected-content": (
+                lambda operation: operation["value"].update(
+                    {"statement": "Unauthorized rewrite"}
+                ),
+                "changes protected field: statement",
+            ),
+            "dependency-link": (
+                lambda operation: operation["value"].update(
+                    {"dependencyResultIds": ["result/injected"]}
+                ),
+                "changes protected field: dependencyResultIds",
+            ),
+            "source-provenance": (
+                lambda operation: operation["value"].update(
+                    {"sourceTransactionIds": ["c" * 40]}
+                ),
+                "changes source provenance",
+            ),
+            "claim-provenance": (
+                lambda operation: operation["value"].update(
+                    {
+                        "claimRefs": [
+                            {
+                                "transactionId": "c" * 40,
+                                "claimKey": "injected-claim",
+                            }
+                        ]
+                    }
+                ),
+                "changes claim provenance",
+            ),
+            "support-addition": (
+                lambda operation: operation["value"]["supportAdditions"].update(
+                    {"proofs": ["Injected support"]}
+                ),
+                "may not add result support",
+            ),
+        }
+        for case_id, (mutate, message) in invalid_cases.items():
+            with self.subTest(case_id=case_id):
+                operation = raw_operation("move")
+                mutate(operation)
+                with self.assertRaisesRegex(MathFlowError, message):
+                    _normalize_v10_transition(
+                        {
+                            "contentOperations": [],
+                            "topologyOperations": [operation],
+                        },
+                        base_state=base,
+                        subject_transaction_id=SUBJECT,
+                        judgment_id=JUDGMENT,
+                        evidence_by_path={},
+                    )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -11,7 +11,10 @@ from math_flow.governed_providers import (
     OpenRouterResearchBuilderV8Provider,
     _builder_transition_schema_v8,
 )
-from math_flow.research_builder_v7 import empty_research_program_state_v3
+from math_flow.research_builder_v7 import (
+    apply_research_builder_v7_transition,
+    empty_research_program_state_v3,
+)
 from math_flow.research_builder_v8 import apply_research_builder_v8_transition
 from math_flow.work_projection import SubmissionEvidenceFile
 
@@ -216,6 +219,229 @@ def raw_second_transition(base: dict[str, object]) -> dict[str, object]:
             "relatedProgramIds": ["program/local"],
         },
         "topologyRationale": None,
+    }
+
+
+def topology_move_base() -> dict[str, object]:
+    """Build a valid predecessor with distinct old/new parent programs."""
+
+    base = empty_research_program_state_v3("two-entity-fixture")
+    root = without_digest(base["programs"]["root"])
+    root["currentStateSummary"] = "A movable local work package is established."
+    root["localResidualSummary"] = "Its correct program parent remains open."
+    root["sourceTransactionIds"] = [TX_A]
+    old_parent = {
+        "id": "program/old-parent",
+        "parentId": "root",
+        "title": "Old parent",
+        "objective": "Organize the original local route.",
+        "currentStateSummary": "The movable package is currently organized here.",
+        "localResidualSummary": "Determine whether the package belongs elsewhere.",
+        "status": "active",
+        "intermediateResultIds": [],
+        "sourceTransactionIds": [TX_A],
+        "lineage": [],
+    }
+    new_parent = {
+        "id": "program/new-parent",
+        "parentId": "root",
+        "title": "New parent",
+        "objective": "Organize the alternate local route.",
+        "currentStateSummary": "The alternate route is available.",
+        "localResidualSummary": "Determine whether the movable package belongs here.",
+        "status": "active",
+        "intermediateResultIds": [],
+        "sourceTransactionIds": [TX_A],
+        "lineage": [],
+    }
+    moved = {
+        "id": "program/moved",
+        "parentId": "program/old-parent",
+        "title": "Movable work package",
+        "objective": "Resolve the movable local objective.",
+        "currentStateSummary": "One accepted local reduction is established.",
+        "localResidualSummary": "The terminal local step remains open.",
+        "status": "active",
+        "intermediateResultIds": ["result/moved"],
+        "sourceTransactionIds": [TX_A],
+        "lineage": [],
+    }
+    result = {
+        "id": "result/moved",
+        "primaryProgramId": "program/moved",
+        "relatedProgramIds": [],
+        "title": "Movable local reduction",
+        "statement": "The movable local case reduces to a finite subcase.",
+        "scopeQualifications": [],
+        "support": {
+            "proofs": ["The first submission proves the local reduction."],
+            "methods": [],
+            "computations": [],
+            "tools": [],
+            "artifactRefs": [
+                {"path": PATH_A, "digest": sha256_bytes(CONTENT_A)}
+            ],
+            "attestationRefs": [],
+        },
+        "dependencyResultIds": [],
+        "claimRefs": [{"transactionId": TX_A, "claimKey": "claim-a"}],
+        "sourceTransactionIds": [TX_A],
+        "judgmentIds": [JUDGMENT_A],
+        "status": "active",
+        "supersededByResultIds": [],
+    }
+    transition = {
+        "schemaVersion": 1,
+        "subjectTransactionId": TX_A,
+        "baseStateDigest": base["stateDigest"],
+        "contentOperations": [
+            {
+                "entityKind": "program",
+                "entityId": "root",
+                "baseDigest": base["programs"]["root"]["digest"],
+                "value": root,
+            },
+            {
+                "entityKind": "program",
+                "entityId": "program/old-parent",
+                "baseDigest": None,
+                "value": old_parent,
+            },
+            {
+                "entityKind": "program",
+                "entityId": "program/new-parent",
+                "baseDigest": None,
+                "value": new_parent,
+            },
+            {
+                "entityKind": "program",
+                "entityId": "program/moved",
+                "baseDigest": None,
+                "value": moved,
+            },
+            {
+                "entityKind": "intermediateResult",
+                "entityId": "result/moved",
+                "baseDigest": None,
+                "value": result,
+            },
+        ],
+        "topologyOperations": [],
+        "contribution": {
+            "claimKeys": ["claim-a"],
+            "directProgramIds": ["program/moved"],
+            "intermediateResultIds": ["result/moved"],
+        },
+        "placementAudit": {
+            "basis": "local-objective",
+            "rationale": "The result belongs to the movable local package.",
+            "relatedProgramIds": ["program/moved"],
+        },
+        "topologyRationale": None,
+    }
+    return apply_research_builder_v7_transition(
+        base,
+        transition,
+        accepted_claims=accepted("claim-a"),
+        judgment_id=JUDGMENT_A,
+    )["postState"]
+
+
+def pure_program_move_transition(base: dict[str, object]) -> dict[str, object]:
+    root = without_digest(base["programs"]["root"])
+    root["currentStateSummary"] = "The local package is reclassified under its correct route."
+    root["sourceTransactionIds"] = sorted([*root["sourceTransactionIds"], TX_B])
+    root["intermediateResultIds"] = sorted(
+        [*root["intermediateResultIds"], "result/move-justification"]
+    )
+    old_parent = without_digest(base["programs"]["program/old-parent"])
+    old_parent["currentStateSummary"] = "The movable package has left this route."
+    old_parent["sourceTransactionIds"] = sorted(
+        [*old_parent["sourceTransactionIds"], TX_B]
+    )
+    new_parent = without_digest(base["programs"]["program/new-parent"])
+    new_parent["currentStateSummary"] = "The movable package is now organized here."
+    new_parent["sourceTransactionIds"] = sorted(
+        [*new_parent["sourceTransactionIds"], TX_B]
+    )
+    moved = without_digest(base["programs"]["program/moved"])
+    moved["parentId"] = "program/new-parent"
+    result = {
+        "id": "result/move-justification",
+        "primaryProgramId": "root",
+        "relatedProgramIds": [],
+        "title": "Program placement justification",
+        "statement": "The movable work package belongs under the alternate route.",
+        "scopeQualifications": [],
+        "support": {
+            "proofs": ["The second submission proves the placement relation."],
+            "methods": [],
+            "computations": [],
+            "tools": [],
+            "artifactRefs": [
+                {"path": PATH_B, "digest": sha256_bytes(CONTENT_B)}
+            ],
+            "attestationRefs": [],
+        },
+        "dependencyResultIds": [],
+        "claimRefs": [{"transactionId": TX_B, "claimKey": "claim-b"}],
+        "sourceTransactionIds": [TX_B],
+        "judgmentIds": [JUDGMENT_B],
+        "status": "active",
+        "supersededByResultIds": [],
+    }
+    return {
+        "schemaVersion": 1,
+        "subjectTransactionId": TX_B,
+        "baseStateDigest": base["stateDigest"],
+        "contentOperations": [
+            {
+                "entityKind": "program",
+                "entityId": "root",
+                "baseDigest": base["programs"]["root"]["digest"],
+                "value": root,
+            },
+            {
+                "entityKind": "program",
+                "entityId": "program/old-parent",
+                "baseDigest": base["programs"]["program/old-parent"]["digest"],
+                "value": old_parent,
+            },
+            {
+                "entityKind": "program",
+                "entityId": "program/new-parent",
+                "baseDigest": base["programs"]["program/new-parent"]["digest"],
+                "value": new_parent,
+            },
+            {
+                "entityKind": "intermediateResult",
+                "entityId": "result/move-justification",
+                "baseDigest": None,
+                "value": result,
+            },
+        ],
+        "topologyOperations": [
+            {
+                "action": "move",
+                "entityKind": "program",
+                "entityId": "program/moved",
+                "baseDigest": base["programs"]["program/moved"]["digest"],
+                "value": moved,
+            }
+        ],
+        "contribution": {
+            "claimKeys": ["claim-b"],
+            "directProgramIds": ["root"],
+            "intermediateResultIds": ["result/move-justification"],
+        },
+        "placementAudit": {
+            "basis": "canonical-objective",
+            "rationale": "The placement result governs the shared portfolio.",
+            "relatedProgramIds": [],
+        },
+        "topologyRationale": (
+            "The accepted placement relation moves the stable package while preserving it."
+        ),
     }
 
 
@@ -464,6 +690,77 @@ class ResearchBuilderV8Tests(unittest.TestCase):
                 judgment_id=JUDGMENT_B,
                 evidence_file_refs={PATH_B: sha256_bytes(CONTENT_B)},
             )
+
+    def test_pure_existing_program_move_preserves_provenance_and_refreshes_ancestors(self) -> None:
+        base = topology_move_base()
+        transition = pure_program_move_transition(base)
+        prior_sources = base["programs"]["program/moved"]["sourceTransactionIds"]
+
+        reduced = apply_research_builder_v8_transition(
+            base,
+            transition,
+            accepted_claims=accepted("claim-b"),
+            judgment_id=JUDGMENT_B,
+            evidence_file_refs={PATH_B: sha256_bytes(CONTENT_B)},
+        )
+
+        post = reduced["postState"]
+        self.assertEqual(
+            post["programs"]["program/moved"]["parentId"],
+            "program/new-parent",
+        )
+        self.assertEqual(
+            post["programs"]["program/moved"]["sourceTransactionIds"],
+            prior_sources,
+        )
+        for program_id in ("root", "program/old-parent", "program/new-parent"):
+            self.assertIn(TX_B, post["programs"][program_id]["sourceTransactionIds"])
+
+    def test_move_does_not_exempt_content_refreshed_ancestors_from_current_source(self) -> None:
+        base = topology_move_base()
+        for program_id in ("program/old-parent", "program/new-parent"):
+            with self.subTest(program_id=program_id):
+                transition = pure_program_move_transition(base)
+                operation = next(
+                    item
+                    for item in transition["contentOperations"]
+                    if item["entityKind"] == "program"
+                    and item["entityId"] == program_id
+                )
+                operation["value"]["sourceTransactionIds"] = [TX_A]
+                with self.assertRaisesRegex(
+                    MathFlowError,
+                    "content and created entities must cite only accepted sources including their submission",
+                ):
+                    apply_research_builder_v8_transition(
+                        base,
+                        transition,
+                        accepted_claims=accepted("claim-b"),
+                        judgment_id=JUDGMENT_B,
+                        evidence_file_refs={PATH_B: sha256_bytes(CONTENT_B)},
+                    )
+
+    def test_move_still_requires_both_old_and_new_ancestor_refreshes(self) -> None:
+        base = topology_move_base()
+        for program_id in ("program/old-parent", "program/new-parent"):
+            with self.subTest(program_id=program_id):
+                transition = pure_program_move_transition(base)
+                transition["contentOperations"] = [
+                    item
+                    for item in transition["contentOperations"]
+                    if item.get("entityId") != program_id
+                ]
+                with self.assertRaisesRegex(
+                    MathFlowError,
+                    "must refresh every affected existing program and ancestor",
+                ):
+                    apply_research_builder_v8_transition(
+                        base,
+                        transition,
+                        accepted_claims=accepted("claim-b"),
+                        judgment_id=JUDGMENT_B,
+                        evidence_file_refs={PATH_B: sha256_bytes(CONTENT_B)},
+                    )
 
     def test_provider_schema_asks_for_paths_not_digests(self) -> None:
         rendered = json.dumps(_builder_transition_schema_v8(), sort_keys=True)

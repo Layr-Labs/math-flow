@@ -230,11 +230,13 @@ re-route or a stronger validity-to-builder semantic contract.
 The first provider-free miniature end-to-end candidate is implemented in
 `protocol/experiments/miniature-e2e-v1/`. It digest-binds the Builder V10
 experiment and work-accounting V2 spec/policy, substitutes precommitted
-synthetic judgments, and replays eight ordered submissions through the exact
-state-v3 and work-accounting reducers. Its deterministic scorer covers all
-miniature case classes, 102 hard assertions, and an eight-group adversarial
-scorecard. This advances the reducer-composition portion of steps 4 and 5 below;
-it does not replace the paid semantic run or an independent adversarial model.
+synthetic semantic choices, reconstructs and binds each exact V10 route context
+and local authoring packet, and replays eight ordered submissions through the
+scoped V10/V8/V7 and work-accounting reducers. Its deterministic scorer covers
+all miniature case classes, 102 hard assertions, and an eight-group adversarial
+scorecard. This advances the protocol-composition portion of steps 4 and 5
+below; it does not replace the paid semantic run or an independent adversarial
+model.
 
 The actual Work Accounting V2 request path now has a separate provider-free
 16-case scale probe through 1,024 programs. All deterministic semantic checks

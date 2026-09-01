@@ -274,6 +274,29 @@ class ResearchBuilderV10Tests(unittest.TestCase):
             "topologyRationale": None,
         }
 
+    def test_bound_route_plan_has_stable_canonical_field_order(self) -> None:
+        bound = bind_research_builder_v10_route_plan(
+            self.route_context,
+            build_research_builder_v10_catalog(self.base),
+            self.route_plan(),
+        )
+        self.assertEqual(
+            list(bound),
+            [
+                "schemaVersion",
+                "baseStateDigest",
+                "routeContextDigest",
+                "inspectProgramIds",
+                "inspectResultIds",
+                "searchQueries",
+                "writeProgramIds",
+                "writeResultIds",
+                "createProgramIds",
+                "createResultIds",
+                "routePlanDigest",
+            ],
+        )
+
     def packet(self) -> dict[str, object]:
         return build_research_builder_v10_authoring_packet(
             self.base,

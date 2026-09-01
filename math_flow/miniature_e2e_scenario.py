@@ -12,12 +12,17 @@ import copy
 from fractions import Fraction
 from typing import Mapping
 
+from .artifacts import sha256_bytes
 from .errors import MathFlowError
 from .repository import sha256_json
 from .research_builder_v7 import (
-    apply_research_builder_v7_transition,
     empty_research_program_state_v3,
     validate_research_program_state_v3,
+)
+from .research_builder_v10 import (
+    apply_research_builder_v10_transition,
+    build_research_builder_v10_authoring_packet,
+    build_research_builder_v10_route_context,
 )
 from .work_accounting import (
     apply_work_accounting_patch,
@@ -64,6 +69,20 @@ REQUIRED_CASE_TAGS = {
 KNOWLEDGE_BUILDER_ID = "openrouter-hierarchical-research-builder-v10-experiment"
 WORK_ACCOUNTING_ID = "openrouter-work-accounting-v2"
 WORK_ACCOUNTING_PROFILE = "math-flow/work-accounting-transition-v2"
+
+
+def _evidence_file_refs(subject: str) -> dict[str, str]:
+    path = f"synthetic/{PROBLEM_ID}/submissions/{subject}/README.md"
+    content = (
+        "# Synthetic accepted submission\n\n"
+        f"Provider-free evidence for transaction `{subject}`.\n"
+    ).encode("utf-8")
+    return {path: sha256_bytes(content)}
+
+
+def _evidence_artifact_ref(subject: str) -> dict[str, str]:
+    (path, digest), = _evidence_file_refs(subject).items()
+    return {"path": path, "digest": digest}
 
 
 def _without_digest(record: Mapping[str, object]) -> dict[str, object]:
@@ -127,6 +146,15 @@ def _result(
     dependency_result_ids: list[str] | None = None,
     qualifications: list[str] | None = None,
 ) -> dict[str, object]:
+    bound_support = copy.deepcopy(support)
+    artifact_refs = bound_support.get("artifactRefs")
+    if not isinstance(artifact_refs, list):
+        raise MathFlowError("miniature result support has invalid artifact refs")
+    artifact_refs.append(_evidence_artifact_ref(subject))
+    bound_support["artifactRefs"] = sorted(
+        artifact_refs,
+        key=lambda item: (str(item["path"]), str(item["digest"])),
+    )
     return {
         "id": result_id,
         "primaryProgramId": primary_program_id,
@@ -134,7 +162,7 @@ def _result(
         "title": title,
         "statement": statement,
         "scopeQualifications": sorted(qualifications or []),
-        "support": support,
+        "support": bound_support,
         "dependencyResultIds": sorted(dependency_result_ids or []),
         "claimRefs": [{"transactionId": subject, "claimKey": claim_key}],
         "sourceTransactionIds": [subject],
@@ -438,6 +466,13 @@ def _transition_5(base: Mapping[str, object]) -> tuple[dict[str, object], list[d
                 "An independent proof reproduces the same opening reduction.",
             ]
         ),
+        "artifactRefs": sorted(
+            [
+                *result["support"]["artifactRefs"],
+                _evidence_artifact_ref(subject),
+            ],
+            key=lambda item: (str(item["path"]), str(item["digest"])),
+        ),
     }
     transition = _transition(
         base,
@@ -632,6 +667,256 @@ def _transition_8(base: Mapping[str, object]) -> tuple[dict[str, object], list[d
         "The decisive argument resolves the canonical objective.",
         [SUBJECTS[5], SUBJECTS[6]],
     )
+
+
+def _linked_program_ids(result: object) -> set[str]:
+    if not isinstance(result, dict):
+        return set()
+    linked: set[str] = set()
+    primary = result.get("primaryProgramId")
+    if isinstance(primary, str):
+        linked.add(primary)
+    related = result.get("relatedProgramIds")
+    if isinstance(related, list):
+        linked.update(str(item) for item in related if isinstance(item, str))
+    return linked
+
+
+def _complete_v8_program_refreshes(
+    base: Mapping[str, object], transition: Mapping[str, object]
+) -> dict[str, object]:
+    """Complete the deterministic affected-ancestor refresh required by V8."""
+
+    completed = copy.deepcopy(dict(transition))
+    subject = completed.get("subjectTransactionId")
+    base_programs = base.get("programs")
+    base_results = base.get("intermediateResults")
+    if (
+        not isinstance(subject, str)
+        or not isinstance(base_programs, dict)
+        or not isinstance(base_results, dict)
+    ):
+        raise MathFlowError("miniature V8 refresh input is invalid")
+
+    raw_content = completed.get("contentOperations")
+    raw_topology = completed.get("topologyOperations")
+    if not isinstance(raw_content, list) or not isinstance(raw_topology, list):
+        raise MathFlowError("miniature transition operations are invalid")
+
+    operations = [*raw_content, *raw_topology]
+    planned_programs = {
+        str(program_id): program
+        for program_id, program in base_programs.items()
+        if isinstance(program, dict)
+    }
+    planned_results = {
+        str(result_id): result
+        for result_id, result in base_results.items()
+        if isinstance(result, dict)
+    }
+    operated_program_ids: set[str] = set()
+    topology_only_program_ids: set[str] = set()
+    for operation in operations:
+        if not isinstance(operation, dict):
+            raise MathFlowError("miniature transition operation is invalid")
+        kind = operation.get("entityKind")
+        entity_id = operation.get("entityId")
+        value = operation.get("value")
+        if not isinstance(entity_id, str) or not isinstance(value, dict):
+            raise MathFlowError("miniature transition operation value is invalid")
+        if kind == "program":
+            planned_programs[entity_id] = value
+            operated_program_ids.add(entity_id)
+            if operation in raw_topology and entity_id in base_programs:
+                topology_only_program_ids.add(entity_id)
+        elif kind == "intermediateResult":
+            planned_results[entity_id] = value
+
+    impacted: set[str] = set()
+    contribution = completed.get("contribution")
+    if not isinstance(contribution, dict):
+        raise MathFlowError("miniature transition contribution is invalid")
+    direct_program_ids = contribution.get("directProgramIds")
+    contribution_result_ids = contribution.get("intermediateResultIds")
+    if not isinstance(direct_program_ids, list) or not isinstance(
+        contribution_result_ids, list
+    ):
+        raise MathFlowError("miniature transition contribution is incomplete")
+    impacted.update(str(item) for item in direct_program_ids if isinstance(item, str))
+    for result_id in contribution_result_ids:
+        if isinstance(result_id, str):
+            impacted.update(_linked_program_ids(base_results.get(result_id)))
+            impacted.update(_linked_program_ids(planned_results.get(result_id)))
+    for operation in operations:
+        assert isinstance(operation, dict)
+        entity_id = str(operation["entityId"])
+        if operation.get("entityKind") == "program":
+            impacted.add(entity_id)
+            prior = base_programs.get(entity_id)
+            after = planned_programs.get(entity_id)
+            for program in (prior, after):
+                parent = program.get("parentId") if isinstance(program, dict) else None
+                if isinstance(parent, str):
+                    impacted.add(parent)
+        else:
+            impacted.update(_linked_program_ids(base_results.get(entity_id)))
+            impacted.update(_linked_program_ids(planned_results.get(entity_id)))
+
+    def add_existing_ancestors(
+        program_id: str, programs: Mapping[str, object], target: set[str]
+    ) -> None:
+        seen: set[str] = set()
+        cursor: str | None = program_id
+        while cursor is not None:
+            if cursor in seen:
+                raise MathFlowError("miniature planned program ancestry has a cycle")
+            seen.add(cursor)
+            if cursor in base_programs:
+                target.add(cursor)
+            program = programs.get(cursor)
+            parent = program.get("parentId") if isinstance(program, dict) else None
+            cursor = str(parent) if isinstance(parent, str) else None
+
+    refresh_required: set[str] = set()
+    for program_id in impacted:
+        add_existing_ancestors(program_id, base_programs, refresh_required)
+        add_existing_ancestors(program_id, planned_programs, refresh_required)
+
+    for operation in raw_content:
+        if not isinstance(operation, dict) or operation.get("entityKind") != "program":
+            continue
+        entity_id = operation.get("entityId")
+        value = operation.get("value")
+        if entity_id not in base_programs or not isinstance(value, dict):
+            continue
+        sources = value.get("sourceTransactionIds")
+        if not isinstance(sources, list) or any(
+            not isinstance(item, str) for item in sources
+        ):
+            raise MathFlowError("miniature program source provenance is invalid")
+        value["sourceTransactionIds"] = sorted({*sources, subject})
+
+    for program_id in sorted(refresh_required - operated_program_ids):
+        prior = base_programs.get(program_id)
+        if not isinstance(prior, dict):
+            raise MathFlowError("miniature affected program is absent")
+        refreshed = _without_digest(prior)
+        sources = refreshed.get("sourceTransactionIds")
+        if not isinstance(sources, list):
+            raise MathFlowError("miniature affected program provenance is invalid")
+        refreshed["sourceTransactionIds"] = sorted({*sources, subject})
+        raw_content.append(
+            _content_operation(base, "program", program_id, refreshed)
+        )
+
+    if topology_only_program_ids & {
+        str(operation.get("entityId"))
+        for operation in raw_content
+        if isinstance(operation, dict)
+        and operation.get("entityKind") == "program"
+    }:
+        raise MathFlowError("miniature topology-only program was also content-refreshed")
+    return completed
+
+
+def _raw_v10_route_plan(
+    base: Mapping[str, object],
+    transition: Mapping[str, object],
+    route_context: Mapping[str, object],
+) -> dict[str, object]:
+    existing_program_ids: set[str] = set()
+    existing_result_ids: set[str] = set()
+    create_program_ids: set[str] = set()
+    create_result_ids: set[str] = set()
+    base_programs = base.get("programs")
+    base_results = base.get("intermediateResults")
+    if not isinstance(base_programs, dict) or not isinstance(base_results, dict):
+        raise MathFlowError("miniature route base state is invalid")
+    for field in ("contentOperations", "topologyOperations"):
+        operations = transition.get(field)
+        if not isinstance(operations, list):
+            raise MathFlowError("miniature route transition operations are invalid")
+        for operation in operations:
+            if not isinstance(operation, dict):
+                raise MathFlowError("miniature route transition operation is invalid")
+            entity_id = operation.get("entityId")
+            if not isinstance(entity_id, str):
+                raise MathFlowError("miniature route entity ID is invalid")
+            if operation.get("entityKind") == "program":
+                (existing_program_ids if entity_id in base_programs else create_program_ids).add(
+                    entity_id
+                )
+            elif operation.get("entityKind") == "intermediateResult":
+                (existing_result_ids if entity_id in base_results else create_result_ids).add(
+                    entity_id
+                )
+            else:
+                raise MathFlowError("miniature route entity kind is invalid")
+    return {
+        "schemaVersion": 1,
+        "baseStateDigest": base["stateDigest"],
+        "routeContextDigest": route_context["contextDigest"],
+        "inspectProgramIds": [],
+        "inspectResultIds": [],
+        "searchQueries": [],
+        "writeProgramIds": sorted(existing_program_ids),
+        "writeResultIds": sorted(existing_result_ids),
+        "createProgramIds": sorted(create_program_ids),
+        "createResultIds": sorted(create_result_ids),
+    }
+
+
+def _knowledge_builder_replay_record(
+    *,
+    route_context: Mapping[str, object],
+    authoring_packet: Mapping[str, object],
+    transition: Mapping[str, object],
+    evidence_file_refs: Mapping[str, str],
+) -> dict[str, object]:
+    return {
+        "schemaVersion": 1,
+        "providerCallsExecuted": 0,
+        "evidenceFileRefs": copy.deepcopy(dict(evidence_file_refs)),
+        "routeContextDigest": route_context["contextDigest"],
+        "routePlan": copy.deepcopy(authoring_packet["routePlan"]),
+        "authoringPacketDigest": authoring_packet["authoringPacketDigest"],
+        "readSet": copy.deepcopy(authoring_packet["readSet"]),
+        "writeScope": copy.deepcopy(authoring_packet["writeScope"]),
+        "expandedTransitionDigest": "sha256:" + sha256_json(transition),
+    }
+
+
+def _build_v10_knowledge_artifacts(
+    base: Mapping[str, object],
+    accepted_claims: object,
+    transition: Mapping[str, object],
+    *,
+    route_plan: object | None = None,
+) -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
+    route_context = build_research_builder_v10_route_context(
+        base, accepted_claims
+    )
+    raw_plan = (
+        _raw_v10_route_plan(base, transition, route_context)
+        if route_plan is None
+        else route_plan
+    )
+    authoring_packet = build_research_builder_v10_authoring_packet(
+        base,
+        accepted_claims,
+        raw_plan,
+        route_context=route_context,
+    )
+    evidence_file_refs = _evidence_file_refs(
+        str(transition["subjectTransactionId"])
+    )
+    replay = _knowledge_builder_replay_record(
+        route_context=route_context,
+        authoring_packet=authoring_packet,
+        transition=transition,
+        evidence_file_refs=evidence_file_refs,
+    )
+    return route_context, authoring_packet, replay
 
 
 _TRANSITION_BUILDERS = (
@@ -896,14 +1181,22 @@ def build_miniature_e2e_transcript() -> dict[str, object]:
     }
     steps: list[dict[str, object]] = transcript["steps"]  # type: ignore[assignment]
     for ordinal, transition_builder in enumerate(_TRANSITION_BUILDERS, start=1):
-        transition, accepted_claims = transition_builder(knowledge)
+        raw_transition, accepted_claims = transition_builder(knowledge)
+        transition = _complete_v8_program_refreshes(knowledge, raw_transition)
         subject = SUBJECTS[ordinal - 1]
         judgment_id = JUDGMENT_IDS[ordinal - 1]
-        reduced = apply_research_builder_v7_transition(
+        _, authoring_packet, builder_replay = _build_v10_knowledge_artifacts(
+            knowledge,
+            accepted_claims,
+            transition,
+        )
+        reduced = apply_research_builder_v10_transition(
             knowledge,
             transition,
+            authoring_packet=authoring_packet,
             accepted_claims=accepted_claims,
             judgment_id=judgment_id,
+            evidence_file_refs=_evidence_file_refs(subject),
         )
         target = reduced["postState"]
         alignment = reduced["topologyAlignment"]
@@ -961,6 +1254,7 @@ def build_miniature_e2e_transcript() -> dict[str, object]:
             "caseTags": list(_CASE_TAGS[ordinal - 1]),
             "acceptedClaims": accepted_claims,
             "judgmentId": judgment_id,
+            "knowledgeBuilderReplay": builder_replay,
             "builderTransition": transition,
             "knowledgeAfter": target,
             "topologyAlignment": alignment,
@@ -1000,8 +1294,9 @@ def miniature_e2e_oracle() -> dict[str, object]:
         "candidateContract": {
             "knowledgeBuilderId": KNOWLEDGE_BUILDER_ID,
             "knowledgeBuilderSubstitution": (
-                "Precommitted synthetic transitions substitute for V10 route, "
-                "route-refine, and organize judge calls; the state-v3 reducer remains exact."
+                "Precommitted synthetic route and author choices substitute for "
+                "V10 provider calls; trusted route binding, local authoring-packet "
+                "construction, scoped application, and V8/V7 reduction remain exact."
             ),
             "workAccountingId": WORK_ACCOUNTING_ID,
             "workAccountingProfile": WORK_ACCOUNTING_PROFILE,
@@ -1167,18 +1462,42 @@ def score_miniature_e2e_scenario(
             raw_step.get("ordinal") == ordinal,
             "Step ordinals are contiguous and canonical.",
         )
-        reduced = apply_research_builder_v7_transition(
+        transition = raw_step.get("builderTransition")
+        builder_replay = raw_step.get("knowledgeBuilderReplay")
+        if not isinstance(transition, dict) or not isinstance(builder_replay, dict):
+            raise MathFlowError("miniature E2E V10 replay inputs are invalid")
+        _, authoring_packet, expected_builder_replay = (
+            _build_v10_knowledge_artifacts(
+                knowledge,
+                raw_step.get("acceptedClaims"),
+                transition,
+                route_plan=builder_replay.get("routePlan"),
+            )
+        )
+        _, canonical_authoring_packet, _ = _build_v10_knowledge_artifacts(
             knowledge,
-            raw_step.get("builderTransition"),
+            raw_step.get("acceptedClaims"),
+            transition,
+        )
+        exact_builder_binding = (
+            builder_replay == expected_builder_replay
+            and authoring_packet["routePlan"]
+            == canonical_authoring_packet["routePlan"]
+        )
+        reduced = apply_research_builder_v10_transition(
+            knowledge,
+            transition,
+            authoring_packet=authoring_packet,
             accepted_claims=raw_step.get("acceptedClaims"),
             judgment_id=str(raw_step.get("judgmentId")),
+            evidence_file_refs=_evidence_file_refs(subject),
         )
         target = reduced["postState"]
         alignment = reduced["topologyAlignment"]
         check(
             f"knowledge-replay-{ordinal}",
-            target == raw_step.get("knowledgeAfter"),
-            "The knowledge post-state is the exact reducer output.",
+            exact_builder_binding and target == raw_step.get("knowledgeAfter"),
+            "The bound V10 route/packet and scoped knowledge post-state replay exactly.",
         )
         check(
             f"topology-replay-{ordinal}",
