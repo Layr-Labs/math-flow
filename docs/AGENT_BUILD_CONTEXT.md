@@ -276,13 +276,13 @@ successor/retirement lineage, and deterministic credit invalidation or refresh
 for every affected local program edge. Preserve this evolution path when
 simplifying or replacing the experimental builder.
 
-The inactive builder-v6 foundation and one-submission bundle runner implement
-that next reducer boundary over state v2. It materializes one exact adjacent post-state per
-accepted canonical submission, composes accepted content with stable moves,
-retirement, split, and merge operations, derives rather than accepts topology
-alignment, and emits an exact same-world accounting handoff. Its judge/profile
-identities are not used by any registered projection and no active workflow or
-projection uses them; activation remains a separate governed change.
+The Builder V6 foundation and one-submission state-v2 bundle runner implement
+that next reducer boundary for the active BSSC-only `openrouter-research-v4`
+lane. It materializes one exact adjacent post-state per accepted canonical
+submission, composes accepted content with stable moves, retirement, split, and
+merge operations, derives rather than accepts topology alignment, and emits an
+exact same-world accounting handoff. Its dedicated serial workflow keeps this
+history separate from the later state-v3 Builder V7–V9 lanes.
 
 The BSSC-only Builder V9 lane preserves the two-entity state-v3 model but
 replaces Builder V8's complete provider-visible predecessor with a digest-bound
@@ -368,7 +368,7 @@ preference.
 | Protocol evaluation substrate | Provider-free manifest/replay/scoring harness, builder and work-accounting scale probes, eight-submission exact V10-scoped miniature, and review-gated No-Three zero-call serial preflight implemented; paid widening and composed semantic V10/V2 execution remain pending | `math_flow/teacher_student_scenarios.py`, `docs/PROTOCOL_EVALUATION_ROADMAP.md` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Active credit-v3 uses the two-term common-horizon hierarchical evaluator over locked research-v3 state/history; governed local/hosted execution, provider-free eligibility, bounded semantic retries, rolling coalescing, predecessor-chain terminals, and independent bundles are implemented | `math_flow/research_credit.py`, `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
-| A-first work accounting V2 | Active BSSC-only lane freezes a validated with-access `W+` candidate in immutable CAS before estimating direct same-base no-access `W-`; V1 replay and semantics remain unchanged | `math_flow/work_projection.py`, `math_flow/work_accounting_pipeline.py`, `docs/WORK_PROJECTION_V2.md`, `protocol/judges/openrouter-work-accounting-v2.json` |
+| Hierarchical work accounting V1 and V2 | Both BSSC-only lanes are active. V1 preserves the original no-access/with-access comparison; additive V2 freezes a validated with-access `W+` candidate in immutable CAS before estimating direct same-base no-access `W-`. Their identities, histories, and workflows remain separate. | `math_flow/work_projection.py`, `math_flow/work_accounting_pipeline.py`, `docs/WORK_PROJECTION_V2.md`, `protocol/projections/openrouter-work-accounting-v1.json`, `protocol/projections/openrouter-work-accounting-v2.json` |
 | Research direction registration | Implemented: append-only schema/reducer, atomic validation and auto-merge, provider-free CLI/context/catalog refresh, solver skill, viewer, and historical registration-aware qualitative credit-v2 artifacts | `math_flow/directions.py`, `protocol/schemas/research-direction-event.schema.json`, `viewer/` |
 | Objective verifier attestations | Additive v1 recipe, bounded pinned OCI runner, durable bundle, uniqueness/semantic validation, automatic hosted execution and signed publication, replay, context, viewer presentation, v3 subject-local deferral, and v4 declared-reference deferral/redispatch implemented | `math_flow/attestations.py`, `.github/workflows/project-attestation.yml`, `docs/OBJECTIVE_ATTESTATIONS.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
@@ -381,22 +381,34 @@ The active production path is intentionally small:
   evidence for the subject and requesting transactions in the subject's
   declared-reference union. Formation imports only valid declared claims and
   follows only judge-selected required premises.
+- BSSC also has active, separately versioned serial knowledge lanes V4 through
+  V7. They replay the accepted validity-v4 history one submission at a time
+  through Builders V6, V7, V8, and V9 respectively; each has its own projection
+  identity, immutable history, and dedicated workflow. Builder V10 is not one
+  of these active lanes.
 - `openrouter-research-credit-v3` has an exact dependency on that logical v3
   producer and is allowlisted for `bssc-sum-capacity` and
   `no-three-in-line-77`. It uses the common-horizon two-term policy and the
   hierarchical credit-v2 runner; both current assignments are locked to the
   exact current builder-v5 terminal for their problem.
-- `openrouter-work-accounting-v2` is the active BSSC-only A-first lane over the
-  serial research-v4 knowledge state. It advances only validated `W+`, retains
-  same-base `W-` as an audit branch, and derives per-submission `D = W- - W+`.
+- `openrouter-work-accounting-v1` remains the active BSSC comparison lane with
+  its original branch order and immutable history.
+- `openrouter-work-accounting-v2` is the separate active BSSC-only A-first lane
+  over the serial research-v4 knowledge state. It advances only validated
+  `W+`, retains same-base `W-` as an audit branch, and derives per-submission
+  `D = W- - W+`.
 
 The research-v3 producer is a wildcard specification, while the scheduled
 wake-up is deliberately targeted to the two retained active problems. The
 research-v1, research-v2, and research-credit-v2 governed specs are disabled,
 as are the specialized no-three comparison lanes. Their content-addressed
 objects remain valid explicit history and may be inspected by exact ID, but
-ordinary dispatch, default context selection, and live follow-head behavior use
-the active v3 lanes.
+ordinary dispatch follows every applicable active judgment stream, including
+the dedicated BSSC V4 through V7 and work-accounting lanes. When more than one
+active published knowledge lane applies—as it does for BSSC—context and viewer
+callers must select the projection explicitly; omission fails closed instead of
+silently preferring V3. No-Three currently retains V3 as its sole active
+knowledge lane.
 
 The active judge, builder, and credit evaluator are pinned to
 `openai/gpt-5.6-sol` with high reasoning through OpenRouter. The registry allows
@@ -479,11 +491,11 @@ Non-UI agents resolve the verified research-v3 predecessor-chain terminal
 through `math_flow context`; that command never invokes a judge or credit model.
 When `--projection` is omitted it selects exactly one published lane carrying an
 active governed projection identity, and fails if none or more than one exists.
-With the superseded lanes disabled, omission is the ordinary
-`openrouter-research-v3` path for the retained problems. An explicit logical or
-content-addressed ID remains available for historical inspection. The governed
-cadence layer wakes every five minutes, plans without a provider, and dispatches
-only eligible overlays.
+Omission therefore selects `openrouter-research-v3` for No-Three, but BSSC has
+multiple active knowledge projections and requires an explicit `--projection`.
+An explicit logical or content-addressed ID remains available for historical
+inspection. The governed cadence layer wakes every five minutes, plans without
+a provider, and dispatches only eligible overlays.
 
 Automatic credit retries are keyed to the exact rolling dependency state or UTC
 allocation window. Active duplicates are suppressed and five consecutive
