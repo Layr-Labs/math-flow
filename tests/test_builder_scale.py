@@ -174,6 +174,14 @@ class BuilderScaleTests(unittest.TestCase):
             report["verifiedInvariants"]["fullV9AndBoundedPacketsCompared"]
         )
 
+    def test_explicit_empty_probe_inputs_fail_closed(self) -> None:
+        with self.assertRaisesRegex(MathFlowError, "at least one configuration"):
+            run_provider_free_builder_context_scale_probe([])
+        with self.assertRaisesRegex(MathFlowError, "at least one context strategy"):
+            run_provider_free_builder_context_scale_probe(
+                [self.configuration()], strategies={}
+            )
+
     def test_v10_adapter_builds_the_exact_raw_route_plan_contract(self) -> None:
         observed = {}
 

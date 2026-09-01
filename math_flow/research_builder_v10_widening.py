@@ -53,6 +53,7 @@ MANIFEST_FIELDS = {
     "providerExecutionDefault",
     "judgeSpec",
     "judgeSpecDigest",
+    "candidateJudgeSpecDigest",
     "model",
     "reasoningEffort",
     "seed",
@@ -290,6 +291,20 @@ def load_widening_manifest(
     return validate_widening_manifest(value, repository_root=repository_root)
 
 
+def _derive_bound_widening_spec(
+    source: Mapping[str, object], manifest: Mapping[str, object]
+) -> dict[str, object]:
+    spec = copy.deepcopy(dict(source))
+    spec["id"] = f"{source['id']}-widening-v1"
+    parameters = copy.deepcopy(spec.get("parameters", {}))
+    parameters["seed"] = manifest["seed"]
+    spec["parameters"] = parameters
+    retry = copy.deepcopy(spec.get("retryPolicy", {}))
+    retry["maximumAttempts"] = manifest["maximumAttemptsPerStage"]
+    spec["retryPolicy"] = retry
+    return spec
+
+
 def validate_widening_manifest(
     value: object, *, repository_root: Path
 ) -> dict[str, object]:
@@ -311,6 +326,7 @@ def validate_widening_manifest(
         "description",
         "judgeSpec",
         "judgeSpecDigest",
+        "candidateJudgeSpecDigest",
         "model",
         "reasoningEffort",
         "authorizationEnvironmentVariable",
@@ -344,6 +360,9 @@ def validate_widening_manifest(
         raise MathFlowError("V10 widening judge spec digest mismatch")
     if not isinstance(spec, dict) or spec.get("model") != manifest["model"]:
         raise MathFlowError("V10 widening manifest model does not match its judge")
+    candidate_spec = _derive_bound_widening_spec(spec, manifest)
+    if _digest(candidate_spec) != manifest["candidateJudgeSpecDigest"]:
+        raise MathFlowError("V10 widening candidate judge spec digest mismatch")
     stages = spec.get("stages")
     if not isinstance(stages, dict):
         raise MathFlowError("V10 widening judge has no stages")
@@ -437,15 +456,7 @@ def load_bound_widening_spec(
     value = json.loads(raw.decode("utf-8"))
     if not isinstance(value, dict):
         raise MathFlowError("V10 widening judge spec must be an object")
-    spec = copy.deepcopy(value)
-    spec["id"] = f"{value['id']}-widening-v1"
-    parameters = copy.deepcopy(spec.get("parameters", {}))
-    parameters["seed"] = manifest["seed"]
-    spec["parameters"] = parameters
-    retry = copy.deepcopy(spec.get("retryPolicy", {}))
-    retry["maximumAttempts"] = manifest["maximumAttemptsPerStage"]
-    spec["retryPolicy"] = retry
-    return spec
+    return _derive_bound_widening_spec(value, manifest)
 
 
 def _validate_runtime_contract(
@@ -463,6 +474,8 @@ def _validate_runtime_contract(
         or spec.get("model") != manifest.get("model")
     ):
         raise MathFlowError("V10 widening runtime judge identity changed")
+    if _digest(spec) != manifest.get("candidateJudgeSpecDigest"):
+        raise MathFlowError("V10 widening runtime candidate judge changed")
     parameters = spec.get("parameters")
     retry = spec.get("retryPolicy")
     if (

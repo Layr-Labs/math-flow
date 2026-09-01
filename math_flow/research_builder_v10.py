@@ -6,11 +6,12 @@ from collections.abc import Callable, Mapping, Sequence
 
 from .errors import MathFlowError
 from .repository import sha256_json
-from .research_builder_v7 import validate_research_program_state_v3
+from .research_builder_v7 import IDENTIFIER, validate_research_program_state_v3
 from .research_builder_v9 import apply_research_builder_v9_transition
 
 
 ENTITY_KINDS = {"program", "intermediateResult"}
+MAX_ROUTE_IDENTIFIER_CHARACTERS = 256
 CATALOG_FIELDS = {
     "schemaVersion",
     "problemId",
@@ -214,6 +215,20 @@ def _unique_strings(value: object, label: str) -> list[str]:
     return sorted(value)
 
 
+def _route_identifiers(value: object, label: str) -> list[str]:
+    identifiers = _unique_strings(value, label)
+    if any(
+        len(identifier) > MAX_ROUTE_IDENTIFIER_CHARACTERS
+        or not IDENTIFIER.fullmatch(identifier)
+        for identifier in identifiers
+    ):
+        raise MathFlowError(
+            f"{label} must contain repository identifiers of at most "
+            f"{MAX_ROUTE_IDENTIFIER_CHARACTERS} characters"
+        )
+    return identifiers
+
+
 def _positive_limit(value: object, label: str, *, maximum: int = 256) -> int:
     if (
         not isinstance(value, int)
@@ -290,30 +305,40 @@ def build_research_builder_v10_catalog(
     for values in children.values():
         values.sort()
 
+    # State-v3 permits arbitrarily deep valid program chains. Compute subtree
+    # commitments with an explicit postorder stack so catalog construction does
+    # not inherit Python's recursion limit.
     memo: dict[str, tuple[int, int, str]] = {}
-
-    def subtree(program_id: str) -> tuple[int, int, str]:
-        if program_id in memo:
-            return memo[program_id]
+    stack: list[tuple[str, bool]] = [("root", False)]
+    while stack:
+        program_id, expanded = stack.pop()
+        if not expanded:
+            stack.append((program_id, True))
+            stack.extend(
+                (child_id, False)
+                for child_id in reversed(children[program_id])
+            )
+            continue
         child_entries = []
         descendant_programs = 0
         descendant_results = 0
         for child_id in children[program_id]:
-            child_programs, child_results, child_digest = subtree(child_id)
+            child_programs, child_results, child_digest = memo[child_id]
             descendant_programs += 1 + child_programs
             descendant_results += child_results
-            child_entries.append({"programId": child_id, "subtreeDigest": child_digest})
+            child_entries.append(
+                {"programId": child_id, "subtreeDigest": child_digest}
+            )
         program = programs[program_id]
         assert isinstance(program, dict)
         linked = sorted(str(item) for item in program["intermediateResultIds"])
         descendant_results += len(linked)
         digest = f"sha256:{sha256_json({'programDigest': program['digest'], 'linkedResultDigests': [results[result_id]['digest'] for result_id in linked], 'children': child_entries})}"
         memo[program_id] = (descendant_programs, descendant_results, digest)
-        return memo[program_id]
 
     directory: dict[str, dict[str, object]] = {}
     for program_id in sorted(programs):
-        descendant_programs, descendant_results, subtree_digest = subtree(str(program_id))
+        descendant_programs, descendant_results, subtree_digest = memo[str(program_id)]
         program = programs[program_id]
         assert isinstance(program, dict)
         entry: dict[str, object] = {
@@ -724,7 +749,7 @@ def bind_research_builder_v10_route_plan(
         ("writeProgramIds", program_cards),
         ("writeResultIds", result_cards),
     ):
-        ids = _unique_strings(raw.get(field), f"route {field}")
+        ids = _route_identifiers(raw.get(field), f"route {field}")
         if not set(ids) <= set(collection):
             raise MathFlowError(f"research builder v10 route {field} names an unknown entity")
         normalized[field] = ids
@@ -732,7 +757,7 @@ def bind_research_builder_v10_route_plan(
         ("createProgramIds", program_cards),
         ("createResultIds", result_cards),
     ):
-        ids = _unique_strings(raw.get(field), f"route {field}")
+        ids = _route_identifiers(raw.get(field), f"route {field}")
         if set(ids) & set(collection) or (field == "createProgramIds" and "root" in ids):
             raise MathFlowError(f"research builder v10 route {field} is not new")
         normalized[field] = ids
@@ -767,7 +792,13 @@ def bind_research_builder_v10_route_plan(
         query = raw_query.get("query")
         kinds = _unique_strings(raw_query.get("entityKinds"), "route search entity kinds")
         limit = _positive_limit(raw_query.get("limit"), "route search limit", maximum=16)
-        if not isinstance(query, str) or not query.strip() or not kinds or any(kind not in ENTITY_KINDS for kind in kinds):
+        if (
+            not isinstance(query, str)
+            or not query.strip()
+            or len(query) > 2048
+            or not kinds
+            or any(kind not in ENTITY_KINDS for kind in kinds)
+        ):
             raise MathFlowError("research builder v10 route search query is invalid")
         entry = {"query": query.strip(), "entityKinds": kinds, "limit": limit}
         key = (str(entry["query"]), tuple(kinds), limit)

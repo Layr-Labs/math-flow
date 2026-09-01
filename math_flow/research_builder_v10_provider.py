@@ -14,6 +14,7 @@ from .governed_providers import (
 from .openrouter import OpenRouterTransport, send_chat_completion
 from .research_builder_v7 import TRANSITION_FIELDS as TRANSITION_FIELDS_V7
 from .research_builder_v10 import (
+    MAX_ROUTE_IDENTIFIER_CHARACTERS,
     apply_research_builder_v10_transition,
     bind_research_builder_v10_route_plan,
     build_research_builder_v10_authoring_packet,
@@ -46,7 +47,11 @@ def _route_plan_schema_v10(
 ) -> dict[str, object]:
     program_limit = _bounded_schema_limit(max_programs, "route program limit")
     result_limit = _bounded_schema_limit(max_results, "route result limit")
-    identifier = {"type": "string", "pattern": "^[a-z0-9][a-z0-9/_-]*$"}
+    identifier = {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9/_-]*$",
+        "maxLength": MAX_ROUTE_IDENTIFIER_CHARACTERS,
+    }
 
     def identifiers(maximum: int) -> dict[str, object]:
         return {

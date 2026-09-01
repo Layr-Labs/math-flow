@@ -1400,14 +1400,22 @@ def run_provider_free_builder_context_scale_probe(
 ) -> dict[str, object]:
     """Measure scale/locality and deterministic adversarial gold with zero calls."""
 
-    selected_configurations = tuple(configurations or default_scale_configurations())
+    selected_configurations = tuple(
+        default_scale_configurations()
+        if configurations is None
+        else configurations
+    )
     if not selected_configurations:
         raise MathFlowError("builder scale probe needs at least one configuration")
-    strategy_map: Mapping[str, ContextStrategy] = strategies or {
-        "v9-all-core": build_v9_context_view,
-        "bounded-semantic": build_bounded_semantic_context_view,
-        "bounded-exact-provenance": build_bounded_exact_context_view,
-    }
+    strategy_map: Mapping[str, ContextStrategy] = (
+        {
+            "v9-all-core": build_v9_context_view,
+            "bounded-semantic": build_bounded_semantic_context_view,
+            "bounded-exact-provenance": build_bounded_exact_context_view,
+        }
+        if strategies is None
+        else strategies
+    )
     if not strategy_map:
         raise MathFlowError("builder scale probe needs at least one context strategy")
     cases: list[dict[str, object]] = []

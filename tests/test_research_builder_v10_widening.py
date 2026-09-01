@@ -214,6 +214,10 @@ class ResearchBuilderV10WideningTests(unittest.TestCase):
             "sha256:47528dfd15010796f3d6aaa2500ad8ec07e499cfeb5b5fd6bcd0c8522dbebffd",
         )
         self.assertEqual(
+            manifest["candidateJudgeSpecDigest"],
+            "sha256:62e036b564b90e3739770897bdec60c92d860cf673b48b67dea05d9d656d54de",
+        )
+        self.assertEqual(
             [
                 case["configuration"]["programCount"]
                 for case in manifest["cases"]
@@ -247,8 +251,18 @@ class ResearchBuilderV10WideningTests(unittest.TestCase):
         self.assertTrue(report["publicationForbidden"])
         self.assertEqual(len(report["cases"]), 3)
         self.assertTrue(
-            all(case["routeContextMeasurement"]["utf8Bytes"] > 0 for case in report["cases"])
+            all(
+                case["routeContextMeasurement"]["utf8Bytes"] > 0
+                for case in report["cases"]
+            )
         )
+
+    def test_runtime_rejects_a_mutated_candidate_prompt(self) -> None:
+        manifest, spec = small_manifest()
+        altered = copy.deepcopy(spec)
+        altered["systemPrompt"] = str(altered["systemPrompt"]) + " mutated"
+        with self.assertRaisesRegex(MathFlowError, "candidate judge changed"):
+            plan_widening_experiment(manifest, spec=altered)
 
     def test_fake_route_refine_suite_records_boundary_usage_and_retry(self) -> None:
         manifest, spec = small_manifest()

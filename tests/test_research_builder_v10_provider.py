@@ -81,6 +81,14 @@ class SequentialTransport:
 
 
 class ResearchBuilderV10ProviderTests(unittest.TestCase):
+    def test_route_schema_bounds_identifier_length(self) -> None:
+        schema = _route_plan_schema_v10(
+            base_state_digest="sha256:" + "a" * 64,
+            route_context_digest="sha256:" + "b" * 64,
+        )
+        create_items = schema["properties"]["createProgramIds"]["items"]
+        self.assertEqual(create_items["maxLength"], 256)
+
     def test_experiment_prompt_preserves_accounting_boundary_controls(self) -> None:
         spec = json.loads(SPEC.read_text(encoding="utf-8"))
         system_prompt = spec["systemPrompt"]

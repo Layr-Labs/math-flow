@@ -5,7 +5,11 @@ import unittest
 
 from math_flow.artifacts import sha256_bytes
 from math_flow.errors import MathFlowError
-from math_flow.research_builder_v7 import empty_research_program_state_v3
+from math_flow.research_builder_v7 import (
+    _normalize_program,
+    _with_state_digest,
+    empty_research_program_state_v3,
+)
 from math_flow.research_builder_v8 import apply_research_builder_v8_transition
 from math_flow.research_builder_v10 import (
     apply_research_builder_v10_transition,
@@ -309,6 +313,35 @@ class ResearchBuilderV10Tests(unittest.TestCase):
         with self.assertRaisesRegex(MathFlowError, "digest mismatch"):
             validate_research_builder_v10_catalog(tampered)
 
+    def test_catalog_handles_a_chain_beyond_python_recursion_depth(self) -> None:
+        state = empty_research_program_state_v3("local-builder-deep-chain")
+        programs = copy.deepcopy(state["programs"])
+        parent_id = "root"
+        for index in range(1_100):
+            program_id = f"program/deep-{index:04d}"
+            programs[program_id] = _normalize_program(
+                program_id,
+                {
+                    "id": program_id,
+                    "parentId": parent_id,
+                    "title": f"Deep program {index}",
+                    "objective": "Preserve a deeply nested work package.",
+                    "currentStateSummary": "The nested package remains active.",
+                    "localResidualSummary": "One deeper package remains.",
+                    "status": "active",
+                    "intermediateResultIds": [],
+                    "sourceTransactionIds": [],
+                    "lineage": [],
+                },
+            )
+            parent_id = program_id
+        state["programs"] = programs
+        catalog = build_research_builder_v10_catalog(_with_state_digest(state))
+        self.assertEqual(
+            catalog["programDirectory"]["root"]["descendantProgramCount"],
+            1_100,
+        )
+
     def test_global_lexical_search_finds_distant_branch(self) -> None:
         catalog = build_research_builder_v10_catalog(self.base)
         matches = search_research_builder_v10_catalog(
@@ -441,6 +474,30 @@ class ResearchBuilderV10Tests(unittest.TestCase):
                 route_context=self.route_context,
                 max_programs=4,
                 max_results=3,
+            )
+
+    def test_trusted_route_binding_rejects_schema_bypass_values(self) -> None:
+        catalog = build_research_builder_v10_catalog(self.base)
+        for invalid_identifier in ("Invalid", "bad identifier", "a" * 257):
+            with self.subTest(identifier=invalid_identifier[:20]):
+                plan = self.route_plan(create_programs=[invalid_identifier])
+                with self.assertRaisesRegex(MathFlowError, "repository identifiers"):
+                    bind_research_builder_v10_route_plan(
+                        self.route_context, catalog, plan
+                    )
+
+        oversized_query = self.route_plan(
+            searches=[
+                {
+                    "query": "q" * 2049,
+                    "entityKinds": ["program"],
+                    "limit": 1,
+                }
+            ]
+        )
+        with self.assertRaisesRegex(MathFlowError, "search query is invalid"):
+            bind_research_builder_v10_route_plan(
+                self.route_context, catalog, oversized_query
             )
 
     def test_transition_operation_array_is_bounded_before_reduction(self) -> None:

@@ -17,10 +17,11 @@ SHA-256 digest:
 The provider-free fixture substitutes precommitted synthetic transitions for
 V10's route, route-refine, and organize judgments, and precommitted sparse
 primitive patches for V2's semantic `W+` and `W-` judgments. It does not
-pretend to test model quality. It does preserve the candidate's trusted
-boundaries: exact state-v3 reduction, topology alignment, with-access-first
-materialization and freeze, same-base no-access reduction, strictly positive
-`D = W- - W+`, and advancement of only `W+`.
+pretend to test model quality. It preserves the shared trusted state-v3 and
+topology reduction beneath V10, plus with-access-first materialization and
+freeze, same-base no-access reduction, strictly positive `D = W- - W+`, and
+advancement of only `W+`. It does not exercise V10's additional route-plan,
+authoring-packet, write-scope, or hidden-state-preservation checks.
 
 ## Reference history
 
@@ -93,8 +94,10 @@ Tests require regeneration to reproduce every checked-in byte exactly.
 
 - Synthetic accepted claims and hour estimates are oracle inputs, so this does
   not measure builder retrieval, semantic judgment quality, or hour calibration.
-- The benchmark uses the V10 candidate's trusted state-v3 reducer boundary but
-  bypasses its provider route/refine/author stages.
+- The benchmark uses the shared state-v3/topology reducer beneath V10 but
+  bypasses both its provider route/refine/author stages and its scoped V10
+  application wrapper. A future provider-free E2E fixture should replay exact
+  route plans and authoring packets through `apply_research_builder_v10_transition`.
 - It mirrors V2's A-first freeze and deterministic accounting but bypasses safe
   fact extraction, epistemic-firewall prompting, retries, and provider output
   validation.
