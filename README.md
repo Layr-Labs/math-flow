@@ -172,15 +172,16 @@ transactions in that scope. The judge selects the references that are actually
 required premises; the serialized v4 builder then forms accepted knowledge
 without promoting invalid or indeterminate claims. The retained active problems
 are `bssc-sum-capacity` and `no-three-in-line-77`. Earlier projection bundles
-remain replayable history. The v1/v2 comparison lanes remain temporarily active
-during the sequenced retirement, so agents must select v3 explicitly until that
-retirement is complete.
+remain replayable history. The v1/v2 research lanes are disabled. BSSC also has
+active serialized comparison lanes V4 through V7, so BSSC callers must select
+an exact projection; No-Three currently has V3 as its sole active knowledge
+lane.
 
 The matching `openrouter-research-credit-v3` overlay is admitted with an exact
 dependency on research-v3 for those two problems. Its runtime fix is deployed
 and its governed status is active again. Its first assignments are current for
-both retained problems; the v2 credit consumer remains temporarily active until
-the governed retirement sequence removes it.
+both retained problems; the v2 credit consumer is disabled and remains
+replayable only as explicit history.
 
 Every knowledge builder consumes one exact scheduler claim and remains
 non-adjudicative. Research-v3 organizes accepted validity findings and their

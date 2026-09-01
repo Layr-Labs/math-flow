@@ -248,6 +248,26 @@ broad/completion slices exceed the full encoding because hundreds of boundary
 records add overhead. The experiment therefore supports an exact conditional
 encoding choice, not unconditional replacement of full V2.
 
+## Final integrated validation
+
+The combined implementation passed the following local checks on 2026-09-01:
+
+- 578 repository tests in 969.647 seconds;
+- exact Python compilation for `math_flow`, `experiments`, and `tests`;
+- canonical-tree validation for 9 problems, 47 contributions, 6 research
+  directions, and 9 direction events;
+- projection validation for 15 governed projections, 8 active;
+- the seven-component umbrella in both `pr` and `full` modes, with 7/7
+  components passed and aggregate zero provider calls, network use, or
+  publication attempts; and
+- a clean repository diff/whitespace check against `origin/main`.
+
+The full umbrella exact-regenerated all three scale/root-total reports and
+replayed the V10 widening plan, corrected BSSC K2-only dry-run, eight-submission
+miniature, and four-submission No-Three preflight. Measured run summaries are
+local outputs rather than checked protocol artifacts because elapsed times and
+summary digests legitimately differ between runs.
+
 ## What this checkpoint does not establish
 
 - It does not activate or publish Builder V10.
