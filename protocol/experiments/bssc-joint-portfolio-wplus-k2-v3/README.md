@@ -23,3 +23,5 @@ K1 result is not accounting ancestry when the UV route has an independently
 variable inclusion and stopping policy.
 
 Publication is forbidden. The workflow must run with `continue=false`.
+
+The observed K2 outcome is recorded in `results-run-33564954137.md`.
