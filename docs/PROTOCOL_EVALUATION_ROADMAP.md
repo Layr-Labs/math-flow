@@ -261,9 +261,8 @@ later checkpointed semantic runner.
 
 ## Recommended sequence
 
-1. Extend the miniature so precommitted knowledge transitions pass through the
-   actual V10 authoring-packet/scoped-application wrapper and its accounting
-   stages use the actual captured V2 request path.
+1. Extend the exact V10-scoped miniature so its precommitted accounting
+   responses pass through the actual captured V2 request and bundle path.
 2. Run exactly one corrected BSSC K2-only holdout. Require root ownership and
    the conditional-parent test before running K3, another seed, or a wider paid
    fixture.

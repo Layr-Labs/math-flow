@@ -137,15 +137,20 @@ Four independent layers are checked in:
 3. **Synthetic end to end.** Eight ordered submissions exercise independent
    routes, dependency, pruning, duplicate support, topology correction,
    cross-program work, decisive completion, and a separate prior-credit
-   correction record. The exact state-v3 and work reducers produce
+   correction record. Each step reconstructs its exact V10 route context,
+   route plan, and authoring packet and passes through V10's scoped application
+   guard before the exact work reducers produce
    `D = [20, 5, 10, 15, 2, 2, 12, 59]` competent-human-researcher hours and 102
    hard assertions across eight adversarial groups.
-4. **Small real-problem input audit.** The No-Three-in-Line shadow manifest binds
+4. **Small real-problem zero-call preflight.** The No-Three-in-Line shadow manifest binds
    all four exactly accepted contributions, contribution Git objects and
    evidence digests, validity artifacts, attestations, projection artifacts,
-   V10/V2 specs, and observational historical V5 knowledge/credit states. It
-   has zero execution authority pending its problem-specific root contract and
-   a composed unpublished runner.
+   V10/V2 specs, an experimental V10 projection descriptor, a problem-specific
+   root-contract review draft, and observational historical V5 knowledge/credit
+   states. Its provider/transport-free runner verifies zero origins and emits
+   the exact 36-stage serial plan. Semantic execution remains blocked on
+   contract review, a checkpointed runner, request-side price enforcement, and
+   separate provider authorization.
 
 ## Empirical findings
 
@@ -181,6 +186,19 @@ That failure led to the final author-blind work-policy rubric above. The
 corrected V10 candidate has a new digest and must not be evaluated by treating
 the failed earlier sample as a pass.
 
+### Topology-revision execution
+
+Routing the miniature's sixth submission through the real V10 wrapper exposed
+an otherwise untested contradiction: V7 correctly required a pure move to
+preserve the entity's provenance, while V8 required every affected program to
+add the current subject. V10 now reconstructs an existing move/retire from the
+complete trusted predecessor and permits only the action-specific topology
+fields to change. The moved entity preserves content and provenance; the
+transition contribution and every affected old/new ancestor carry the current
+submission. Attempts to smuggle content, support, provenance, or result-link
+changes into the topology operation fail. The original hosted V8 provider's
+combined refresh/topology seam is unchanged; this repair is scoped to V10.
+
 ### Work-accounting context growth
 
 The provider-free Work Accounting V2 probe uses the real safe-facts, `W+`, and
@@ -209,28 +227,34 @@ for exact reduction.
 - The miniature substitutes precommitted semantic outputs. It validates reducer
   order and invariants, not model judgment quality, epistemic-firewall quality,
   or hour calibration.
-- The miniature uses the shared state-v3 reducer beneath V10 but does not pass
-  its synthetic transitions through the V10 scoped authoring wrapper.
-- No-Three-in-Line is input-bound but cannot execute until its own root contract
-  and composed publication-forbidden V10-to-V2 runner exist.
+- The miniature now exercises exact V10 route/packet binding and scoped
+  application, but its V2 work responses still enter at the deterministic patch
+  boundary rather than through the public V2 request/bundle adapter.
+- No-Three-in-Line has a schema-valid root-contract review draft and zero-call
+  serial preflight, but no semantic request can run until the contract is
+  reviewed and a checkpointed publication-forbidden runner with price controls
+  is separately authorized.
 - Deterministic lexical search is replayable but can miss paraphrases. Any
   semantic index would need its own versioned, digest-bound implementation.
 
 ## Recommended next sequence
 
-1. Run one corrected BSSC K2 root-ownership holdout against the exact final V10
+1. Route the miniature's precommitted work responses through the public V2
+   request/bundle path with an explicitly local capture transport.
+2. Run one corrected BSSC K2 root-ownership holdout against the exact final V10
    digest, under a separate provider authorization and the existing hard stops.
-2. Implement a bounded, digest-bound Work Accounting V2 slice and prove by
+3. Implement a bounded, digest-bound Work Accounting V2 slice and prove by
    provider-free replay that its sparse updates reduce to the same globally
    committed state as the current full-state path.
-3. Add the No-Three-in-Line experimental root contract and composed unpublished
-   real-evidence V10-to-V2 runner; review the contract before provider use.
-4. Run the eight-submission miniature and then No-Three through semantic judges
+4. Review the No-Three root-contract draft and extend its zero-call plan into a
+   checkpointed unpublished V10-to-V2 semantic runner with a verified
+   request-side price bound.
+5. Run the eight-submission miniature and then No-Three through semantic judges
    with precommitted relational scoring and hard spend/stop limits.
-5. Add an independent adversarial transcript evaluator that reports concrete
+6. Add an independent adversarial transcript evaluator that reports concrete
    missing work, invented work, ancestry errors, dependency double counting,
    duplicated credit, nonpositive deltas, and unstable hour scales.
-6. Only after those gates, run a full real-problem shadow lane. Activation and
+7. Only after those gates, run a full real-problem shadow lane. Activation and
    cleanup remain separate decisions.
 
 Detailed contracts and reproduction commands are in:
