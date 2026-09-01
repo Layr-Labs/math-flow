@@ -1,0 +1,296 @@
+{
+  "schemaVersion": 1,
+  "id": "no-three-v10-v2-shadow-v1",
+  "description": "A provider-free input binding and future unpublished V10/V2 shadow contract for the four validity-v4 accepted No-Three-in-Line submissions.",
+  "status": "planned-unpublished-experiment",
+  "problemId": "no-three-in-line-77",
+  "publicationForbidden": true,
+  "productionMutationForbidden": true,
+  "execution": {
+    "adapter": "provider-free-input-binding-audit-v1",
+    "providerExecutionAuthorized": false,
+    "continue": false,
+    "acceptedOrdering": "canonical-problem-ledger-position",
+    "initialKnowledgeStateFactory": "math_flow.research_builder_v7.empty_research_program_state_v3",
+    "initialAccountingStateFactory": "math_flow.work_accounting.make_zero_work_accounting_state",
+    "knowledgeStagesPerSubject": [
+      "route",
+      "route-refine",
+      "organize",
+      "trusted-reduce"
+    ],
+    "accountingStagesPerSubject": [
+      "safe-facts",
+      "with-access",
+      "freeze-with-access",
+      "no-access",
+      "trusted-reduce"
+    ],
+    "accountingCommitRule": "Advance only the validated with-access W+ state after trusted code derives a strictly positive D(x)=W--W+ from same-base W- and W+.",
+    "semanticFixtures": [],
+    "semanticOutputDigests": []
+  },
+  "budgets": {
+    "maximumProviderCalls": 0,
+    "maximumStageAttempts": 0,
+    "maximumRequestBytes": 0,
+    "maximumPromptTokens": 0,
+    "maximumCompletionTokens": 0,
+    "maximumTotalTokens": 0,
+    "maximumCostUsd": 0
+  },
+  "frozenLocalInputs": [
+    {
+      "id": "knowledge-builder-spec",
+      "path": "protocol/judges/openrouter-hierarchical-research-builder-v10-experiment.json",
+      "digest": "sha256:47528dfd15010796f3d6aaa2500ad8ec07e499cfeb5b5fd6bcd0c8522dbebffd",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "work-accounting-spec",
+      "path": "protocol/judges/openrouter-work-accounting-v2.json",
+      "digest": "sha256:127d60e656e62bc1f912d4b1d08ce6df94d8036e2d972a70c5654bf6ff897961",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "work-accounting-policy",
+      "path": "protocol/policies/hierarchical-work-remaining-accounting-v2.md",
+      "digest": "sha256:44e3036992b6a2401b623d615154793edbb8ad8a3e200374d2ffb4181b784daf",
+      "mediaType": "text/markdown"
+    }
+  ],
+  "projectionSnapshot": {
+    "ref": "refs/remotes/origin/projections",
+    "commit": "ed4f8bc198ce0a29f13609042712440bcff44ba5",
+    "catalog": {
+      "path": "viewer/catalog.json",
+      "digest": "sha256:5d452d295f67947b36356f1bcea0221c770f81329d5917f40d87b24ea0d4083d"
+    },
+    "problemRunIndex": {
+      "path": "indexes/problems/no-three-in-line-77/runs.json",
+      "digest": "sha256:c561ab0f7b47f1315da350ecb684fbccd4317da62cfa672d5da419dec9f0444b"
+    },
+    "problemLedgerHead": "17928a941d7503ff0dc32740b707f475728300a3",
+    "problemLedgerDigest": "sha256:621d2dfa7452294f9698c71e4f086eca0f0d77f6c1314b7c08450465092d519a"
+  },
+  "subjectSelection": {
+    "validityJudgeSpecId": "openrouter-validity-judgment-v4",
+    "validityJudgeSpecDigest": "sha256:d215d9551070236ded41ea38bb8f8403e8a7aa2d47954555907b7aee005212f6",
+    "canonicalContributionCount": 10,
+    "acceptedCount": 4,
+    "indeterminateCount": 6,
+    "invalidCount": 0,
+    "selectionRule": "Include exactly the canonical transactions whose pinned validity-v4 assessment status is valid; preserve canonical ledger position and consume each exactly once."
+  },
+  "subjects": [
+    {
+      "acceptedSequenceIndex": 1,
+      "ledgerPosition": 4,
+      "transactionId": "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+      "contributionId": "finite-rotation-classification-proof",
+      "contributionPath": "problems/no-three-in-line-77/contributions/finite-rotation-classification-proof",
+      "gitTreeObjectId": "8b87c5ec13750e8925dd93f067c75d8d6c297db0",
+      "evidenceBundle": {
+        "algorithm": "sha256-path-content-v1",
+        "digest": "sha256:5806e00463de8cb8e97870fbee74bc2a12e9db32ea76d6e0e71d4d7b345d1949",
+        "fileCount": 1,
+        "bytes": 6662
+      },
+      "claimKey": "no-three-in-line-77/finite-rotation-classification-proof",
+      "requiredDependencyTransactionIds": [],
+      "judgment": {
+        "runDigest": "sha256:515d9727f59936cb26ba0ac7b1e68a844cc30e3662d747fb214064cd466d75c1",
+        "path": "objects/judgment/51/515d9727f59936cb26ba0ac7b1e68a844cc30e3662d747fb214064cd466d75c1",
+        "judgmentId": "sha256:471c7800e63ce6bb749608b6f9c6c668822275c6e4796b8e64bbd7f63f37833a",
+        "judgmentRecordArtifactDigest": "sha256:db3b38457a6cf635c632037bcb210595f0191641ccfce2a19d70b29730223451",
+        "dependencyPacketArtifactDigest": "sha256:e4161065981fc12f15e0dddbe941f06c0c1ef98c31c37a8e4db94241af329fdd",
+        "dependencyPacketDigest": "sha256:6b3106fc45fc2dcfd20a69f65b46e77ac3332914b24854e049772ab7081c4224",
+        "reportArtifactDigest": "sha256:ac4705571c7c00c88e4063f6f3564fc4fbf1b077c0d73d6c9e5f98c2900514bd",
+        "objectiveAttestationRunDigests": []
+      }
+    },
+    {
+      "acceptedSequenceIndex": 2,
+      "ledgerPosition": 5,
+      "transactionId": "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+      "contributionId": "record-152-objective-verification",
+      "contributionPath": "problems/no-three-in-line-77/contributions/record-152-objective-verification",
+      "gitTreeObjectId": "6edb1406af5cca700089648fd00bd959da0d9ca9",
+      "evidenceBundle": {
+        "algorithm": "sha256-path-content-v1",
+        "digest": "sha256:adb28df1808d234d119f94299435c72c8146563f8e4ffae9cef8b4f6a2cc1215",
+        "fileCount": 4,
+        "bytes": 4164
+      },
+      "claimKey": "no-three-in-line-77/record-152-objective-verification",
+      "requiredDependencyTransactionIds": [],
+      "judgment": {
+        "runDigest": "sha256:e30ec607c35bad20ceb46a23bb736e1d372fe6ccdd4ff7033bead30f23f0544a",
+        "path": "objects/judgment/e3/e30ec607c35bad20ceb46a23bb736e1d372fe6ccdd4ff7033bead30f23f0544a",
+        "judgmentId": "sha256:2c30e85cbe4588ba3cb4ee952e0b895347cfcd48c59a3731d92257c11978d386",
+        "judgmentRecordArtifactDigest": "sha256:5e2072e7b4734bf0743eb060effbc4a1291e11496035448fb9caa8513b3ba9ab",
+        "dependencyPacketArtifactDigest": "sha256:6baba8fb017eb14d1be87be2bc4ddd47fe5c72bb9d6767362b2e652bf2fe7d87",
+        "dependencyPacketDigest": "sha256:23b99ce51457a27f611fd5b0d5bdab78266225eaaf3797967c56befb62c9c618",
+        "reportArtifactDigest": "sha256:5464d6381120276eeb89bc728eeed1f946c2f6110988ba31a9b343036af8d186",
+        "objectiveAttestationRunDigests": [
+          "sha256:293d1eed676a28d8792ee835465116065cf690742da9d53ba515f7a2ac661731"
+        ]
+      }
+    },
+    {
+      "acceptedSequenceIndex": 3,
+      "ledgerPosition": 9,
+      "transactionId": "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+      "contributionId": "rct4-154-subclass-encoding-theorem",
+      "contributionPath": "problems/no-three-in-line-77/contributions/rct4-154-subclass-encoding-theorem",
+      "gitTreeObjectId": "4f623ade819bad6d9d1e800e0439d01ee9617608",
+      "evidenceBundle": {
+        "algorithm": "sha256-path-content-v1",
+        "digest": "sha256:e34f27126790cdfbac7cf734f83f5a2a0c8d337eb2808c790d6467893cf299c2",
+        "fileCount": 2,
+        "bytes": 6835
+      },
+      "claimKey": "no-three-in-line-77/rct4-154-subclass-encoding-theorem",
+      "requiredDependencyTransactionIds": [],
+      "judgment": {
+        "runDigest": "sha256:528f61614dd026e6572e1aec9675dd435030e47721ed67847034b88ee117099f",
+        "path": "objects/judgment/52/528f61614dd026e6572e1aec9675dd435030e47721ed67847034b88ee117099f",
+        "judgmentId": "sha256:c4463a9cacd5427f287bdb7239066657965cbb97abd1056b2869f35ef884de8c",
+        "judgmentRecordArtifactDigest": "sha256:889316b8a6c3cdf068bf114b3996764a8cad0bc131d9758c9f88074c6ea5e15d",
+        "dependencyPacketArtifactDigest": "sha256:f6564ee2d9291b3321b05f85ceb21fbcc457e433a085028accad75c47a3393f5",
+        "dependencyPacketDigest": "sha256:5f8c98a7b9724070bdc27f0fc0af3ea070d5e98d65ea8bcd6a152516652b6743",
+        "reportArtifactDigest": "sha256:b3c2f75dddca16be846eae53d6639ac0cf173671832c46ce3c7fbb1532f889c2",
+        "objectiveAttestationRunDigests": []
+      }
+    },
+    {
+      "acceptedSequenceIndex": 4,
+      "ledgerPosition": 10,
+      "transactionId": "17928a941d7503ff0dc32740b707f475728300a3",
+      "contributionId": "record-152-eight-embedding-rigidity-attested",
+      "contributionPath": "problems/no-three-in-line-77/contributions/record-152-eight-embedding-rigidity-attested",
+      "gitTreeObjectId": "f98119980da51f655c7f042ec553a699dccb101b",
+      "evidenceBundle": {
+        "algorithm": "sha256-path-content-v1",
+        "digest": "sha256:bd134ba4f4405cf2b55ae0e0444721e61137b9174a97f9713e104256f92cb8c1",
+        "fileCount": 6,
+        "bytes": 65168
+      },
+      "claimKey": "no-three-in-line-77/record-152-eight-embedding-rigidity-attested",
+      "requiredDependencyTransactionIds": [],
+      "judgment": {
+        "runDigest": "sha256:07ca42e610421fd1fc8157444b9cf85de8a8a39114072a67cbe80169b434faf8",
+        "path": "objects/judgment/07/07ca42e610421fd1fc8157444b9cf85de8a8a39114072a67cbe80169b434faf8",
+        "judgmentId": "sha256:491b9b543314f9ab034e6eb52d7ad8f927d47ccc6ef5908b9be74149187f42ea",
+        "judgmentRecordArtifactDigest": "sha256:dcb944f3d5ac91a0bdc89779f22ca9fc92f24ed539546ce0965045078e5222dc",
+        "dependencyPacketArtifactDigest": "sha256:f632dc3435c6914343d174c13d5eb88b810a4813f00a958c78d392af73b2665d",
+        "dependencyPacketDigest": "sha256:7d47848c67f4540c2a420148203605c447258f23c287347ce31879306304a46c",
+        "reportArtifactDigest": "sha256:247d55925ebbf2646c12a0a8b2ce9a40b45d08e4882cdc5bb0db4217fb51327c",
+        "objectiveAttestationRunDigests": [
+          "sha256:2c7b640541f933a6678c392fefdf71cf5b7fb495b36b230a1863da6edd4cb1c8",
+          "sha256:903ffa4b4ce185c8d872b584afe08694df7215c11e306cd105b79f422efebdad"
+        ]
+      }
+    }
+  ],
+  "observationalBaselines": {
+    "legacyKnowledge": {
+      "role": "observational-relational-reference-not-gold",
+      "projectionId": "openrouter-research-v3",
+      "builderId": "openrouter-hierarchical-research-builder-v5",
+      "builderSpecDigest": "sha256:fd7309037add6ee2ae833e0c225212be9da1b9465bc8859d62082ba3dcfe36d1",
+      "runDigest": "sha256:cba0e290245079415b8e86997009d7a14e5c41f18413183fb8e56ac058a26f38",
+      "path": "objects/knowledge-build/cb/cba0e290245079415b8e86997009d7a14e5c41f18413183fb8e56ac058a26f38",
+      "stateArtifactDigest": "sha256:3e588bc5add20eaa5ff9f7f824e9d38a75731ad7ec3bb8a7ac1576aab360d56f",
+      "stateDigest": "sha256:c39e315e169c787341e4e8bc1c0d7bee10cbb1dbd8ca4fab13e0976e8479fffd",
+      "counts": {
+        "programs": 4,
+        "threads": 11,
+        "items": 9,
+        "contributions": 4
+      },
+      "maximumProgramDepth": 2,
+      "nonRootProgramIds": [
+        "certified-configurations",
+        "rotational-symmetry",
+        "rotational-symmetry/rct4"
+      ],
+      "itemTypeCounts": {
+        "result": 4,
+        "proof": 1,
+        "method": 1,
+        "computation": 1,
+        "tool": 2
+      }
+    },
+    "legacyHierarchicalCredit": {
+      "role": "observational-topology-consumer-not-v2-work-accounting-oracle",
+      "judgeId": "openrouter-hierarchical-research-credit-v2",
+      "projectionId": "openrouter-research-credit-v3",
+      "runDigest": "sha256:2f802f3abe19690f951bafdc53f0bf5a5ba351f13fe7aaf5056a92d8a9447f43",
+      "path": "objects/credit-assignment/2f/2f802f3abe19690f951bafdc53f0bf5a5ba351f13fe7aaf5056a92d8a9447f43",
+      "stateArtifactDigest": "sha256:a554715583ed511850cd4fc29f779a9915c3cfa333fd5d4b3904705968944a53",
+      "stateDigest": "sha256:9afe5e37893d48afa1c591a84fc1aa0c73f418c03ee7411ec0d49a9c9db009bb",
+      "programEvaluationCount": 4,
+      "allocationCount": 4,
+      "comparableToWorkAccountingV2": false
+    }
+  },
+  "advisoryRelationalQuestions": [
+    "Does V10 preserve separately estimable certified-configuration/local-rigidity and rotational-symmetry work packages under root?",
+    "Does V10 place the rct4 package according to the author-blind intervention test rather than merely copying the legacy hierarchy?",
+    "Does each accepted claim become one durable intermediate result whose proof, method, computation, tool, artifacts, and attestations remain packaged as support rather than separate entities?",
+    "Does V2 update only the post-topology nodes whose remaining work changes while preserving a strictly positive same-world reduction for every accepted submission?",
+    "How do request size, selected read/write scope, topology, W-, W+, D, and retry behavior differ across the four evidence forms?"
+  ],
+  "hardScoringRequirements": [
+    "Consume exactly the four pinned valid subjects once in canonical ledger order and consume no indeterminate subject.",
+    "Validate every evidence, validity, builder-spec, accounting-spec, policy, state, and projection-snapshot commitment before a semantic stage.",
+    "Start the knowledge and accounting lanes from zero; never import the legacy V5 state or historical credit state as a predecessor.",
+    "Replay every V10 transition through the trusted state-v3 reducer with exact read/write scope and hidden-state preservation.",
+    "For each subject, build the post-submission topology before V2, freeze W+, estimate W- from the same old live base, derive D in trusted code, require D>0, and advance only W+.",
+    "Record exact request, selected context, response, token, cost, retry, state, and node-level W-/W+/D telemetry for every stage.",
+    "Write no production projection, publication batch, catalog, coordination, workflow, or pull-request artifact."
+  ],
+  "blockingPrerequisites": [
+    {
+      "id": "experiment-scoped-root-contract",
+      "status": "missing",
+      "requirement": "Create and review an immutable No-Three-in-Line root contract bound to the experimental V10 projection, competent-human-researcher hours, a fixed conventional-tool date, the canonical D(77) objective, and an explicit terminal condition. Do not borrow the BSSC contract."
+    },
+    {
+      "id": "real-evidence-shadow-runner",
+      "status": "missing",
+      "requirement": "Add a publication-forbidden runner that materializes the pinned projection artifacts, derives acceptedClaims from the exact validity-v4 records, performs V10 then V2 per subject, and emits only local experiment artifacts."
+    },
+    {
+      "id": "explicit-provider-authorization",
+      "status": "missing",
+      "requirement": "Obtain a separate authorization after the provider-free input audit, root-contract review, and request/cost preflight pass."
+    }
+  ],
+  "futureExecutionEnvelope": {
+    "advisoryNotAuthorization": true,
+    "model": "openai/gpt-5.6-sol",
+    "seed": 1729,
+    "maximumAttemptsPerProviderStage": 3,
+    "nominalProviderCalls": 24,
+    "maximumProviderCalls": 72,
+    "maximumRequestBytes": 512000,
+    "maximumEstimatedPromptTokensPerCall": 125000,
+    "maximumReservedCompletionTokens": 840000,
+    "maximumTotalReportedTokens": 3000000,
+    "maximumSingleCallCostUsd": 0.75,
+    "maximumTotalCostUsd": 12.0,
+    "requestSideVerifiedPriceBoundRequired": true,
+    "stopOnFirstHardFailure": true,
+    "stopOnProtocolConcernBeforeNextSubject": true,
+    "blindRetryOutsideGovernedPolicyForbidden": true
+  },
+  "knownCoverageLimits": [
+    "All four accepted validity-v4 assessments declare an empty required dependency set, so this real case does not replace synthetic dependency-closure tests.",
+    "The legacy knowledge and hierarchical-credit runs are single historical samples and cannot measure repeated-judge variance.",
+    "The legacy credit run uses a different judge, units, and reduction construction; it is topology-consumption evidence only, not numerical gold for W-, W+, or D.",
+    "The pinned validity judgments share the final problem-ledger horizon; the runner must expose only the accepted assessment and exact manifested evidence for the current subject, not unrelated later-submission material."
+  ]
+}
