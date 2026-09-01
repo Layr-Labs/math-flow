@@ -230,6 +230,16 @@ class ResearchBuilderV10WideningTests(unittest.TestCase):
 
             validate_widening_manifest(altered, repository_root=ROOT)
 
+        for unsafe_path in (
+            "../openrouter-hierarchical-research-builder-v10-experiment.json",
+            str(ROOT / "protocol/judges/openrouter-hierarchical-research-builder-v10-experiment.json"),
+        ):
+            with self.subTest(unsafe_path=unsafe_path):
+                altered = copy.deepcopy(manifest)
+                altered["judgeSpec"] = unsafe_path
+                with self.assertRaisesRegex(MathFlowError, "repository-relative"):
+                    validate_widening_manifest(altered, repository_root=ROOT)
+
     def test_plan_is_provider_free_and_records_widening_context(self) -> None:
         manifest, spec = small_manifest()
         report = plan_widening_experiment(manifest, spec=spec)

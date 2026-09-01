@@ -40,8 +40,11 @@ The default scale matrix compares:
 - **V9 all-core:** the actual `build_research_builder_v9_context` result. Every
   program and result semantic core is present, while support is limited to the
   declared dependency closure.
-- **V10 actual:** the implemented V10 route context and authoring-packet
-  constructors, including their exact binding and capsule overhead.
+- **V10 actual constructors / oracle-correct route:** the implemented V10 route
+  context and authoring-packet constructors, including their exact binding and
+  capsule overhead, driven by the fixture's precommitted required IDs. This is
+  a correct-route packet-size measurement, not a routing-quality result or a
+  maximum-legal-route bound.
 - **Bounded semantic model:** an idealized route-refine-author lower bound. The route call receives
   root and a bounded number of child capsules, but no raw submission evidence.
   Trusted host-side search returns bounded cards to the refinement call. The
@@ -70,7 +73,7 @@ The committed report uses a nominal 128,000-token input budget. Token counts are
 suitable for growth comparisons and candidate budget crossings only. Live runs
 must retain provider-reported usage alongside component bytes.
 
-| Programs | Results | Submissions | V9 max | V10 actual max | Semantic lower bound | Bounded exact max | V9 provenance share |
+| Programs | Results | Submissions | V9 max | V10 correct-route max | Semantic lower bound | Bounded exact max | V9 provenance share |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 16 | 24 | 24 | 7,206 | 12,006 | 3,614 | 4,625 | 34.1% |
 | 64 | 128 | 512 | 71,026 | 20,400 | 5,369 | 22,951 | 72.2% |
@@ -78,15 +81,17 @@ must retain provider-reported usage alongside component bytes.
 | 1,024 | 2,048 | 32,768 | 4,018,994 | 50,150 | 11,031 | 1,130,727 | 92.5% |
 
 At the nominal budget, V9 crosses between the second and third cases. The
-bounded exact-provenance strategy also crosses in the third case. Actual V10
-remains at 50,150 estimated tokens in the largest case, a 98.8% maximum-stage
-reduction relative to V9; its three-stage cumulative estimate grows from 24,096
-to 100,201 tokens. At the smallest case, V10 is larger than V9 because sealed
-multi-stage bindings and capsules have fixed overhead. The idealized semantic
-model shows that capsule and packet duplication, rather than provenance, now
-dominates the remaining gap. Maximum-stage size is the relevant context-capacity
-measure; cumulative size is reported separately as a token/cost measure and is
-not compared directly to V9's single-call maximum.
+bounded exact-provenance strategy also crosses in the third case. V10's actual
+constructors, when supplied the oracle-correct route, remain at 50,150 estimated
+tokens in the largest case, a 98.8% maximum-stage reduction relative to V9; the
+three-stage cumulative estimate grows from 24,096 to 100,201 tokens. This does
+not cap a noisy router that selects the maximum permitted scope. At the smallest
+case, V10 is larger than V9 because sealed multi-stage bindings and capsules
+have fixed overhead. The idealized semantic model shows that capsule and packet
+duplication, rather than provenance, now dominates the remaining gap.
+Maximum-stage size is the relevant context-capacity measure; cumulative size is
+reported separately as a token/cost measure and is not compared directly to
+V9's single-call maximum.
 
 These cases scale several dimensions together and are not an estimate of a
 particular problem's date of failure. They demonstrate the mechanism:

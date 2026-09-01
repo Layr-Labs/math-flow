@@ -32,10 +32,10 @@ escaping that a model does not tokenize as prompt text. Budget classification
 uses `ceil(modelInputProxy bytes / 4)`; every component also carries a
 one-token-per-byte conservative upper bound. These remain size proxies, not
 model-tokenizer counts. The nominal input threshold is 128,000 estimated
-tokens, matching the existing local-builder scale report. The active V2 judge
-spec separately allows 12,000 output tokens for safe facts and 16,000 for each
-work-estimation stage. Each case records input-only estimates and input plus the
-configured maximum output reservation.
+tokens, matching the existing local-builder scale report. The bound experimental
+V2 judge spec separately allows 12,000 output tokens for safe facts and 16,000
+for each work-estimation stage. Each case records input-only estimates and input
+plus the configured maximum output reservation.
 
 ## Matrix and adversarial cases
 

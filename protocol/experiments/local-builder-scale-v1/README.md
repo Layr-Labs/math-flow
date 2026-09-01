@@ -8,6 +8,9 @@ route/author packet models.
   `experiments/local_builder_scale_probe.py` using the nominal 128,000-token
   evaluation budget.
 - No judge or builder provider is invoked.
+- The `v10-actual` strategy uses the actual V10 constructors with the fixture's
+  oracle-correct route IDs. It measures correct-route packet size, not routing
+  quality or the maximum legal route.
 - Estimated tokens use compact UTF-8 bytes divided by four. They are not
   provider-reported usage.
 - The full design, limitations, and measured summary are in

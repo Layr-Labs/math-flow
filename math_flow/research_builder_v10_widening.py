@@ -15,7 +15,7 @@ import math
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from decimal import Decimal, InvalidOperation
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from .artifacts import sha256_bytes
 from .builder_scale import (
@@ -138,6 +138,30 @@ def _nonnegative_decimal(value: object, label: str) -> Decimal:
     if not result.is_finite() or result < 0:
         raise MathFlowError(f"{label} must be a nonnegative decimal")
     return result
+
+
+def _safe_repository_file(
+    repository_root: Path, raw_path: object, label: str
+) -> Path:
+    if not isinstance(raw_path, str) or not raw_path:
+        raise MathFlowError(f"{label} must be a nonempty repository-relative path")
+    relative = PurePosixPath(raw_path)
+    if relative.is_absolute() or ".." in relative.parts or not relative.parts:
+        raise MathFlowError(f"{label} must be a repository-relative path")
+    root = repository_root.resolve()
+    cursor = root
+    for part in relative.parts:
+        cursor = cursor / part
+        if cursor.is_symlink():
+            raise MathFlowError(f"{label} may not traverse a symlink")
+    resolved = root.joinpath(*relative.parts).resolve()
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise MathFlowError(f"{label} escapes the repository") from exc
+    if not resolved.is_file():
+        raise MathFlowError(f"{label} does not exist")
+    return resolved
 
 
 @dataclass(frozen=True)
@@ -308,7 +332,9 @@ def validate_widening_manifest(
     )
     budgets = WideningBudgets.from_mapping(manifest.get("budgets"))
 
-    spec_path = repository_root / str(manifest["judgeSpec"])
+    spec_path = _safe_repository_file(
+        repository_root, manifest["judgeSpec"], "V10 widening judge spec"
+    )
     try:
         raw_spec = spec_path.read_bytes()
         spec = json.loads(raw_spec.decode("utf-8"))
@@ -402,7 +428,9 @@ def validate_widening_manifest(
 def load_bound_widening_spec(
     manifest: Mapping[str, object], *, repository_root: Path
 ) -> dict[str, object]:
-    path = repository_root / str(manifest["judgeSpec"])
+    path = _safe_repository_file(
+        repository_root, manifest.get("judgeSpec"), "V10 widening judge spec"
+    )
     raw = path.read_bytes()
     if sha256_bytes(raw) != manifest.get("judgeSpecDigest"):
         raise MathFlowError("V10 widening judge spec changed after validation")

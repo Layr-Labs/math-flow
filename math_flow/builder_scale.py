@@ -130,7 +130,11 @@ def make_v10_context_strategy(
     route_context_builder: Callable[[Mapping[str, object], object], dict[str, object]],
     authoring_packet_builder: Callable[..., dict[str, object]],
 ) -> ContextStrategy:
-    """Bind the scale harness to V10's route/author API without importing it."""
+    """Measure V10 constructors using the fixture's oracle-correct route plan.
+
+    This is a packet-size strategy, not a routing-quality simulation or a
+    maximum-legal-route bound. Provider-backed routing is evaluated separately.
+    """
 
     def strategy(
         fixture: Mapping[str, object], challenge_name: str

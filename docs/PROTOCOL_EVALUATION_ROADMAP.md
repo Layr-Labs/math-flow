@@ -211,16 +211,18 @@ The inactive local Builder V10 candidate now supplies the next two layers:
   intermediate results, and 32,768 represented submissions;
 - six deterministic adversarial routing/topology cases and beginning/middle/end
   soft probes;
-- an actual V10 route/refine/author context measurement, rather than only an
-  idealized local-packet model; and
+- an actual V10 route/refine/author constructor measurement using the fixture's
+  oracle-correct route, rather than only an idealized local-packet model; and
 - a manifest-bound unpublished BSSC K2/K3 provider holdout with request, token,
   call, and reported-cost stops plus executable relational scoring.
 
 At the largest provider-free case, V9's maximum request is estimated at
-4,018,994 tokens and actual V10's at 50,150. V10's three-stage cumulative
-estimate is 100,201. This is strong evidence that locality plus trusted
-provenance/support expansion addresses global history growth, but it is not a
-soft-semantic result. The next paid tests must still measure retrieval quality,
+4,018,994 tokens and V10's actual-constructor, oracle-correct-route packet at
+50,150. V10's three-stage cumulative estimate is 100,201. This is strong
+evidence that locality plus trusted provenance/support expansion addresses
+global history growth for a correct bounded route, but it is neither a
+maximum-legal-route bound nor a soft-semantic result. Paid tests must still
+measure retrieval quality,
 especially a cross-program clue present in raw evidence but absent from the
 accepted validity summary; that case may require one bounded author-initiated
 re-route or a stronger validity-to-builder semantic contract.
