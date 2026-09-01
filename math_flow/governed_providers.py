@@ -860,7 +860,15 @@ class _GovernedOpenRouterAdapter:
             request_digest = _digest(request)
             response: dict[str, object] | None = None
             try:
-                response = self.transport(copy.deepcopy(request))
+                try:
+                    response = self.transport(copy.deepcopy(request))
+                except Exception as exc:
+                    raise GovernedProviderTerminalError(
+                        f"governed provider {stage} transport outcome is uncertain "
+                        "after request dispatch; provider spend is unknown; automatic "
+                        "retry and response invalidation are forbidden: "
+                        f"{type(exc).__name__}: {str(exc)[:500]}"
+                    ) from exc
                 if _finish_reason(response) == "length":
                     raise MathFlowError("OpenRouter governed response was length-truncated")
                 value = validate(_structured_content(response, stage))

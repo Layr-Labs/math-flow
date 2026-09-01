@@ -16,6 +16,7 @@ from math_flow.governed_providers import (
     OpenRouterResearchBuilderV6Provider,
     OpenRouterWorkProjectionProvider,
     OpenRouterWorkProjectionProviderV2,
+    _GovernedOpenRouterAdapter,
     _builder_transition_schema,
     _builder_transition_schema_v9,
     _primitive_patch_schema,
@@ -143,6 +144,109 @@ class SequentialTransport:
 
 
 class GovernedProviderTests(unittest.TestCase):
+    def _assert_raw_transport_failure_is_terminal(self, failure: Exception) -> None:
+        spec = load_judge_spec(BUILDER_SPEC)
+        calls: list[dict[str, object]] = []
+        invalidations = 0
+        journals: list[dict[str, object]] = []
+
+        def transport(request: dict[str, object]) -> dict[str, object]:
+            calls.append(copy.deepcopy(request))
+            raise failure
+
+        def invalidate() -> None:
+            nonlocal invalidations
+            invalidations += 1
+
+        provider = _GovernedOpenRouterAdapter(
+            spec,
+            expected_implementation=str(spec["implementation"]),
+            transport=transport,
+            invalidate_last_response=invalidate,
+            attempt_journal_writer=journals.append,
+        )
+        with self.assertRaisesRegex(
+            MathFlowError,
+            r"stopped after 1 automatic attempt; further retries were suppressed;.*"
+            r"provider spend is unknown; automatic retry and response invalidation "
+            r"are forbidden",
+        ):
+            provider._invoke(
+                stage="organize",
+                user_data={},
+                schema={
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": False,
+                },
+                validate=lambda value: dict(value),
+            )
+
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(invalidations, 0)
+        self.assertEqual(len(journals), 1)
+        self.assertEqual(len(journals[0]["attemptRecords"]), 1)
+        self.assertEqual(
+            journals[0]["attemptRecords"][0]["outcome"], "transport-rejected"
+        )
+        self.assertEqual(provider.invocation_records, [])
+
+    def test_math_flow_transport_failure_is_terminal_unknown_spend(self) -> None:
+        self._assert_raw_transport_failure_is_terminal(
+            MathFlowError("simulated transport failure")
+        )
+
+    def test_ordinary_transport_exception_is_terminal_unknown_spend(self) -> None:
+        self._assert_raw_transport_failure_is_terminal(
+            Exception("simulated transport crash")
+        )
+
+    def test_concrete_empty_response_remains_retryable(self) -> None:
+        spec = load_judge_spec(BUILDER_SPEC)
+        empty = {
+            "id": "response-1",
+            "model": "openai/gpt-5.6-sol",
+            "choices": [
+                {"finish_reason": "stop", "message": {"content": ""}}
+            ],
+        }
+        accepted = {"accepted": True}
+        transport = SequentialTransport([empty, _response(accepted, ordinal=2)])
+        invalidations = 0
+
+        def invalidate() -> None:
+            nonlocal invalidations
+            invalidations += 1
+
+        provider = _GovernedOpenRouterAdapter(
+            spec,
+            expected_implementation=str(spec["implementation"]),
+            transport=transport,
+            invalidate_last_response=invalidate,
+        )
+        result = provider._invoke(
+            stage="organize",
+            user_data={},
+            schema={
+                "type": "object",
+                "properties": {
+                    "accepted": {"type": "boolean"},
+                },
+                "required": ["accepted"],
+                "additionalProperties": False,
+            },
+            validate=lambda value: dict(value),
+        )
+
+        self.assertEqual(result, accepted)
+        self.assertEqual(len(transport.requests), 2)
+        self.assertEqual(invalidations, 1)
+        self.assertEqual(
+            [item["outcome"] for item in provider.invocation_records[0]["attemptRecords"]],
+            ["validation-rejected", "accepted"],
+        )
+
     def test_response_schemas_fit_openai_strict_subset(self) -> None:
         for schema in (
             _safe_facts_schema(),
