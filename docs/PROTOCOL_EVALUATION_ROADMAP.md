@@ -319,12 +319,12 @@ summary, and extension contracts.
 3. If K2 passes, widen paid route/refine teacher-student cases gradually through
    16, 64, 256, and 1,024 programs, stopping at the first semantic or budget
    concern.
-4. Append the completed provider-free accounting-slice replay to the umbrella
-   suite without replacing the full-state scale regression or changing the
-   summary envelope. Convert it into a separately versioned candidate request
-   only after prompt/semantic tests, explicit bounds, and a deterministic
-   choice for cases where boundary aggregates are larger than the full state.
-   Keep active V2 unchanged until those tests pass.
+4. **Complete — append the accounting-slice replay.** It is now included in the
+   seven-component umbrella suite without replacing the full-state scale
+   regression or changing the summary envelope. Convert it into a separately
+   versioned candidate request only after prompt/semantic tests, explicit
+   bounds, and a deterministic choice for cases where boundary aggregates are
+   larger than the full state. Keep active V2 unchanged until those tests pass.
 5. Review the No-Three-in-Line root-contract draft, then extend the completed
    zero-call preflight into a checkpointed, publication-forbidden semantic
    V10-to-V2 runner with a request-side verified price bound.

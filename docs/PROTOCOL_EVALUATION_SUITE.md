@@ -9,9 +9,9 @@ semantic execution.
 The protocol evaluation substrate has several independent provider-free checks:
 builder context scale, Builder V10 route/refine planning, the final BSSC V10
 K2-only holdout dry-run, the miniature V10/V2 reducer replay, Work Accounting
-V2 context scale, and the exact No-Three shadow preflight. The umbrella suite
-runs those checks through one stable command and emits one machine-readable
-result:
+V2 context scale, the bounded local-slice root-total replay, and the exact
+No-Three shadow preflight. The umbrella suite runs those checks through one
+stable command and emits one machine-readable result:
 
 ```bash
 python3 -m math_flow protocol-evaluation-suite \
