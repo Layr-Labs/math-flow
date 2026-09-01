@@ -16,6 +16,7 @@ from math_flow.miniature_e2e_scenario import (
     miniature_e2e_oracle,
     score_miniature_e2e_scenario,
 )
+from math_flow.repository import sha256_json
 from math_flow.teacher_student_scenarios import run_teacher_student_scenario
 
 
@@ -24,6 +25,28 @@ MANIFEST = RELATIVE_DIR / "scenario-v1.json"
 
 
 class MiniatureEndToEndScenarioTests(unittest.TestCase):
+    @staticmethod
+    def _rebind_correction_and_transcript(transcript: dict[str, object]) -> None:
+        correction = next(
+            correction
+            for step in transcript["steps"]
+            for correction in step["priorCreditCorrections"]
+        )
+        correction["correctionDigest"] = "sha256:" + sha256_json(
+            {
+                key: value
+                for key, value in correction.items()
+                if key != "correctionDigest"
+            }
+        )
+        transcript["transcriptDigest"] = "sha256:" + sha256_json(
+            {
+                key: value
+                for key, value in transcript.items()
+                if key != "transcriptDigest"
+            }
+        )
+
     def test_reference_history_passes_full_deterministic_score(self) -> None:
         transcript = build_miniature_e2e_transcript()
         score = score_miniature_e2e_scenario(
@@ -77,6 +100,51 @@ class MiniatureEndToEndScenarioTests(unittest.TestCase):
         self.assertIn("live-base-5", score["hardFailures"])
         self.assertIn("node-reduction-replay-7", score["hardFailures"])
         self.assertIn("transcript-digest", score["hardFailures"])
+
+    def test_scorer_rejects_invalid_prior_credit_allocations(self) -> None:
+        invalid_allocations = {
+            "balanced-out-of-range": [
+                {"programId": "route-a", "share": "1.6"},
+                {"programId": "route-b", "share": "-0.6"},
+            ],
+            "nonexistent-program": [
+                {"programId": "route-a", "share": "0.6"},
+                {"programId": "missing-program", "share": "0.4"},
+            ],
+            "duplicate-program": [
+                {"programId": "route-a", "share": "0.6"},
+                {"programId": "route-a", "share": "0.4"},
+            ],
+            "nan": [
+                {"programId": "route-a", "share": float("nan")},
+                {"programId": "route-b", "share": "0"},
+            ],
+            "infinity": [
+                {"programId": "route-a", "share": float("inf")},
+                {"programId": "route-b", "share": "0"},
+            ],
+            "non-numeric": [
+                {"programId": "route-a", "share": "many"},
+                {"programId": "route-b", "share": "0"},
+            ],
+        }
+        for case_id, allocation in invalid_allocations.items():
+            with self.subTest(case_id=case_id):
+                transcript = build_miniature_e2e_transcript()
+                correction = next(
+                    correction
+                    for step in transcript["steps"]
+                    for correction in step["priorCreditCorrections"]
+                )
+                correction["afterAllocation"] = allocation
+                self._rebind_correction_and_transcript(transcript)
+                score = score_miniature_e2e_scenario(
+                    transcript,
+                    miniature_e2e_oracle(),
+                )
+                self.assertEqual(score["status"], "failed")
+                self.assertIn("prior-correction-balanced", score["hardFailures"])
+                self.assertNotIn("transcript-digest", score["hardFailures"])
 
     def test_checked_in_fixture_is_exactly_regenerable(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

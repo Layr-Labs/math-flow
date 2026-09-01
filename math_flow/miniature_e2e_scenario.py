@@ -1030,6 +1030,43 @@ def _correction_digest(value: Mapping[str, object]) -> str:
     return "sha256:" + sha256_json(content)
 
 
+def _normalized_allocation_total(
+    value: object,
+    *,
+    valid_program_ids: frozenset[str],
+) -> Fraction | None:
+    """Return one only for a well-formed, exactly normalized allocation."""
+
+    if not isinstance(value, list) or not value:
+        return None
+    seen_program_ids: set[str] = set()
+    total = Fraction(0)
+    for raw_item in value:
+        if not isinstance(raw_item, dict):
+            return None
+        program_id = raw_item.get("programId")
+        if (
+            not isinstance(program_id, str)
+            or program_id not in valid_program_ids
+            or program_id in seen_program_ids
+        ):
+            return None
+        raw_share = raw_item.get("share")
+        if isinstance(raw_share, bool) or not isinstance(
+            raw_share, (str, int, float)
+        ):
+            return None
+        try:
+            share = Fraction(str(raw_share))
+        except (TypeError, ValueError, ZeroDivisionError, OverflowError):
+            return None
+        if share < 0 or share > 1:
+            return None
+        seen_program_ids.add(program_id)
+        total += share
+    return total if total == 1 else None
+
+
 def score_miniature_e2e_scenario(
     transcript: object,
     oracle: object,
@@ -1116,7 +1153,7 @@ def score_miniature_e2e_scenario(
     evaluations: dict[str, dict[str, object]] = {}
     step_by_subject: dict[str, dict[str, object]] = {}
     all_tags: set[str] = set()
-    all_corrections: list[dict[str, object]] = []
+    all_corrections: list[tuple[dict[str, object], frozenset[str]]] = []
     for ordinal, raw_step in enumerate(raw_steps, start=1):
         if not isinstance(raw_step, dict):
             raise MathFlowError("miniature E2E step must be an object")
@@ -1224,8 +1261,16 @@ def score_miniature_e2e_scenario(
         corrections = raw_step.get("priorCreditCorrections")
         if not isinstance(corrections, list):
             raise MathFlowError("miniature prior-credit corrections must be an array")
+        target_programs = target.get("programs")
+        valid_program_ids = (
+            frozenset(str(program_id) for program_id in target_programs)
+            if isinstance(target_programs, dict)
+            else frozenset()
+        )
         all_corrections.extend(
-            item for item in corrections if isinstance(item, dict)
+            (item, valid_program_ids)
+            for item in corrections
+            if isinstance(item, dict)
         )
         evaluations[subject] = evaluation
         knowledge = target
@@ -1379,14 +1424,14 @@ def score_miniature_e2e_scenario(
         expected=1,
     )
     if all_corrections:
-        correction = all_corrections[0]
-        before_total = sum(
-            (Fraction(str(item["share"])) for item in correction["beforeAllocation"]),
-            Fraction(0),
+        correction, valid_program_ids = all_corrections[0]
+        before_total = _normalized_allocation_total(
+            correction.get("beforeAllocation"),
+            valid_program_ids=valid_program_ids,
         )
-        after_total = sum(
-            (Fraction(str(item["share"])) for item in correction["afterAllocation"]),
-            Fraction(0),
+        after_total = _normalized_allocation_total(
+            correction.get("afterAllocation"),
+            valid_program_ids=valid_program_ids,
         )
         check(
             "prior-correction-separate",
@@ -1401,10 +1446,13 @@ def score_miniature_e2e_scenario(
         )
         check(
             "prior-correction-balanced",
-            before_total == after_total == 1
-            and correction["beforeAllocation"] != correction["afterAllocation"]
+            before_total == after_total == Fraction(1)
+            and correction.get("beforeAllocation") != correction.get("afterAllocation")
             and correction.get("correctionDigest") == _correction_digest(correction),
-            "Prior allocation changes are normalized, changed, and digest-bound.",
+            (
+                "Prior allocations cite distinct existing programs, use finite shares "
+                "in [0, 1], normalize exactly, change, and remain digest-bound."
+            ),
         )
 
     check(
