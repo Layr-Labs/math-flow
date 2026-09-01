@@ -752,6 +752,66 @@ class GovernedProviderTests(unittest.TestCase):
         core = {key: value for key, value in record.items() if key != "invocationDigest"}
         self.assertEqual(record["invocationDigest"], f"sha256:{sha256_json(core)}")
 
+    def test_accepted_response_journal_failure_never_retries_provider(self) -> None:
+        from math_flow.research_topology import empty_research_program_state_v2
+
+        base = empty_research_program_state_v2("handoff-fixture")
+        accepted = _first_transition(base)
+        transport = SequentialTransport([_response(accepted, ordinal=1)])
+        invalidations = 0
+        journal_writes = 0
+
+        def invalidate() -> None:
+            nonlocal invalidations
+            invalidations += 1
+
+        def fail_journal_write(_journal: dict[str, object]) -> None:
+            nonlocal journal_writes
+            journal_writes += 1
+            if journal_writes == 1:
+                raise OSError("simulated transient local journal storage outage")
+
+        provider = OpenRouterResearchBuilderV6Provider(
+            load_judge_spec(BUILDER_SPEC),
+            transport=transport,
+            invalidate_last_response=invalidate,
+            attempt_journal_writer=fail_journal_write,
+        )
+        content = b"# Exact accepted submission\n"
+        evidence = (
+            SubmissionEvidenceFile(
+                path="problems/handoff-fixture/contributions/accepted/README.md",
+                digest=sha256_bytes(content),
+                content=content,
+            ),
+        )
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "attempt journal persistence failed after a provider attempt; "
+            "automatic retry and response invalidation were suppressed",
+        ):
+            provider.run(
+                problem_id="handoff-fixture",
+                subject_transaction_id=TX_A,
+                base_state=base,
+                accepted_claims=_accepted_claim("claim-a"),
+                judgment_id=JUDGMENT_A,
+                evidence_files=evidence,
+            )
+
+        self.assertEqual(len(transport.requests), 1)
+        self.assertEqual(journal_writes, 1)
+        self.assertEqual(invalidations, 0)
+        self.assertEqual(provider.invocation_records, [])
+        journal = provider.latest_attempt_journal
+        self.assertIsNotNone(journal)
+        assert journal is not None
+        self.assertEqual(len(journal["attemptRecords"]), 1)
+        self.assertEqual(journal["attemptRecords"][0]["outcome"], "accepted")
+        self.assertEqual(
+            journal["attemptRecords"][0]["providerResponseId"], "response-1"
+        )
+
     def test_builder_adapter_retries_with_exact_current_base_digest(self) -> None:
         from math_flow.research_topology import empty_research_program_state_v2
 

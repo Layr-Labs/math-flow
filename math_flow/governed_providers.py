@@ -61,6 +61,10 @@ class GovernedProviderTerminalError(MathFlowError):
     """A fail-closed provider outcome for which another call is forbidden."""
 
 
+class _AttemptJournalPersistenceError(MathFlowError):
+    """A local audit-write failure after a provider attempt has been consumed."""
+
+
 def _digest(value: object) -> str:
     try:
         return f"sha256:{sha256_json(value)}"
@@ -840,7 +844,15 @@ class _GovernedOpenRouterAdapter:
             journal = {**core, "journalDigest": _digest(core)}
             self.latest_attempt_journal = copy.deepcopy(journal)
             if self.attempt_journal_writer is not None:
-                self.attempt_journal_writer(copy.deepcopy(journal))
+                try:
+                    self.attempt_journal_writer(copy.deepcopy(journal))
+                except Exception as exc:
+                    raise _AttemptJournalPersistenceError(
+                        f"governed provider {stage} attempt journal persistence failed "
+                        "after a provider attempt; automatic retry and response "
+                        f"invalidation were suppressed; in-memory journal "
+                        f"{journal['journalDigest']}: {str(exc)[:500]}"
+                    ) from exc
             return journal
 
         for attempt in range(1, self.maximum_attempts + 1):
@@ -902,6 +914,8 @@ class _GovernedOpenRouterAdapter:
                     {**record_core, "invocationDigest": _digest(record_core)}
                 )
                 return copy.deepcopy(value)
+            except _AttemptJournalPersistenceError:
+                raise
             except (MathFlowError, TypeError, ValueError) as exc:
                 last_error = exc
                 rejected: dict[str, object] = {
