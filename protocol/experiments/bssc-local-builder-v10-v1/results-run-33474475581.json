@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "bssc-local-builder-v10-v1",
+  "diagnosticRun": {
+    "id": 33474307250,
+    "status": "strict-schema-rejected",
+    "providerCalls": 1,
+    "reportedUsage": null,
+    "semanticStageReached": false
+  },
+  "holdoutRun": {
+    "id": 33474475581,
+    "status": "failed",
+    "completeArtifactDigest": "sha256:060b988466963e1b842b2712e81055feb45e3f7522a03bf0e16d2a8488336733",
+    "seed1729RelationalScoreDigest": "sha256:cd81823e151b457a4567b194d65321ca688314bb5cbbae7c1c92dc0124c227c7",
+    "providerCalls": 9,
+    "reportedUsage": {
+      "promptTokens": 123333,
+      "completionTokens": 24718,
+      "reasoningTokens": 17377,
+      "totalTokens": 148051,
+      "costUsd": 0.5386691
+    },
+    "unreportedProviderResponses": 1,
+    "seeds": [
+      {
+        "seed": 1729,
+        "status": "evaluation-failed",
+        "acceptedTransitions": 2,
+        "providerCalls": 8,
+        "hardFailures": [
+          "k2-adds-one-root-child-program",
+          "k2-creates-one-program-operation",
+          "k2-refreshes-root-by-content"
+        ],
+        "hardFailureInterpretation": {
+          "placementRegression": [
+            "k2-adds-one-root-child-program",
+            "k2-creates-one-program-operation"
+          ],
+          "overconstrainedGeneralOracleButSupportingEvidenceInThisRun": [
+            "k2-refreshes-root-by-content"
+          ]
+        },
+        "advisoryFailures": [
+          "k2-separates-two-reusable-results",
+          "k2-creates-two-result-operations",
+          "k3-retains-two-result-partition"
+        ]
+      },
+      {
+        "seed": 2718,
+        "status": "provider-telemetry-blocked",
+        "acceptedTransitions": 0,
+        "providerCalls": 1,
+        "providerErrorCode": 502,
+        "providerError": "Provider returned an empty response"
+      }
+    ]
+  },
+  "publicationForbidden": true,
+  "projectionPublished": false,
+  "decision": "revise-before-retry"
+}

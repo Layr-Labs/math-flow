@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-08-22 (`9ff49a7`).
+Last reconciled with `main`: 2026-09-01 (`4190d6a`).
 Published-state claims below were checked against `origin/projections` at
 `ebe7a32`.
 
@@ -276,23 +276,24 @@ successor/retirement lineage, and deterministic credit invalidation or refresh
 for every affected local program edge. Preserve this evolution path when
 simplifying or replacing the experimental builder.
 
-The inactive builder-v6 foundation and one-submission bundle runner implement
-that next reducer boundary over state v2. It materializes one exact adjacent post-state per
-accepted canonical submission, composes accepted content with stable moves,
-retirement, split, and merge operations, derives rather than accepts topology
-alignment, and emits an exact same-world accounting handoff. Its judge/profile
-identities are not used by any registered projection and no active workflow or
-projection uses them; activation remains a separate governed change.
+The Builder V6 foundation and one-submission state-v2 bundle runner implement
+that next reducer boundary for the active BSSC-only `openrouter-research-v4`
+lane. It materializes one exact adjacent post-state per accepted canonical
+submission, composes accepted content with stable moves, retirement, split, and
+merge operations, derives rather than accepts topology alignment, and emits an
+exact same-world accounting handoff. Its dedicated serial workflow keeps this
+history separate from the later state-v3 Builder V7–V9 lanes.
 
-The inactive Builder V9 experiment preserves the two-entity state-v3 model but
+The BSSC-only Builder V9 lane preserves the two-entity state-v3 model but
 replaces Builder V8's complete provider-visible predecessor with a digest-bound
 progressive context: every program and result core remains visible, while full
 support is loaded only for results selected by the current submission's declared
 dependencies and recursive result-dependency closure. Provider-authored
 `supportAdditions` are merged into the complete trusted predecessor so omitted
 support cannot be deleted. The context is stored and re-derived during replay.
-Its candidate `openrouter-research-v7` lane and dedicated serial workflow remain
-inactive until separate governed projection admission. See
+Its `openrouter-research-v7` projection and dedicated serial workflow are active
+for BSSC. The local/fractal Builder V10 described later remains a separate,
+inactive experiment and does not alter this active V9 lane. See
 `docs/BSSC_RESEARCH_V7_CONTEXT_EXPERIMENT.md`.
 
 Cross-program claims belong at root or another genuinely shared active scope.
@@ -330,6 +331,41 @@ preference.
   validates the assessments, computes local shares, and propagates them through
   the hierarchy. Credit never changes validity or knowledge state.
 
+### Unpublished joint portfolio/work candidate
+
+The branch-only `bssc-joint-portfolio-credit-k2-v1` experiment is the first
+hosted candidate to join one accepted accounting-aware topology/W+ judgment to
+a direct same-world W- estimate and a submission-level allocation. It freezes
+the exact successful K2 joint response from run `33564954137`; trusted replay
+must reproduce the post-knowledge digest, W+ state digest, and 4,351.7375-hour
+W+ total before another provider call is possible. It never asks a second judge
+to regenerate topology or W+.
+
+Hosted run `33588922200` completed the remaining candidate without publication
+or continuation. Its W- estimate was 4,595.7375 hours, so trusted reduction
+assigned `D = 244` competent-human-researcher hours directly to canonical K2
+submission `f236017c...`. The additive explanation was 144 hours on the new
+root-child UV product/branchwise-additivity package and 100 hours of root-level
+integration/pruning work. Those node effects are explanatory differences, not
+separate credit recipients. W- passed on its first attempt; the run used four
+provider calls, 137,556 reported tokens, and $0.1852836.
+
+The safe-fact stage used all three attempts because a deterministic 32-byte
+overlap rule rejected ordinary mathematical phrases copied from the submission.
+That literal-copy rule has now been removed from safe-fact validation and final
+W- request assembly. Evidence manifests, chunks, attached files, submission
+payload fields, W+ patch rationales/evidence, and unexpected schema fields
+remain structurally excluded from W-. Safe-fact prose may overlap submission
+wording. A future teacher-student exposure ablation must measure whether
+outcome-only, paraphrased, near-verbatim, or proof-bearing summaries materially
+bias W-; lexical overlap alone is not a quality criterion.
+
+This experiment remains unpublished, K2-only, and absent from the Research
+Atlas. Its 244-hour result is one uncalibrated model judgment, not sampling-
+variance or numerical-accuracy evidence. It proves the candidate call order,
+bindings, frozen-W+ authority, trusted reduction, and submission allocation;
+it does not yet establish a sequential multi-submission credit lane.
+
 ### Projection protocol and publication
 
 - The core run envelope standardizes identity, provenance, and artifact
@@ -363,9 +399,13 @@ preference.
 | Non-UI agent discovery and context commands | Implemented; canonical problem discovery includes admitted problems with no projection, omitted context selection resolves exactly one active registered knowledge lane while explicit IDs preserve historical access, `credit-status` reads governed policy without a run, and `register-direction` scaffolds a policy-neutral initial event | `math_flow/discovery.py`, `math_flow/context.py`, `math_flow/credit_context.py`, `math_flow/solver_tools.py` |
 | Solver-facing repository skill | Implemented; requires repository tools and exact-reference inspection | `.agents/skills/math-flow-solver/` |
 | Builder-facing repository skill | Implemented; routes protocol and repository maintenance away from solver participation and requires isolated worktrees for parallel agents | `.agents/skills/math-flow-builder/` |
+| Local/fractal Builder V10 experiment | Inactive, unpublished route/refine/author candidate with bounded digest-bound scopes, hidden-state preservation, provider-free widening through 1,024 programs, and a stopped BSSC paid holdout | `math_flow/research_builder_v10.py`, `math_flow/research_builder_v10_provider.py`, `docs/LOCAL_BUILDER_V10_FULL_SEND.md` |
+| Joint topology/W+ credit candidate | Unpublished K2-only hosted candidate freezes an accepted joint topology/W+ result, estimates only safe facts and W-, derives positive D in trusted code, and allocates all work directly to the submission; no publication or continuation path | `math_flow/joint_portfolio_credit_experiment.py`, `experiments/bssc_joint_portfolio_credit.py`, `protocol/experiments/bssc-joint-portfolio-credit-k2-v1/` |
+| Protocol evaluation substrate | Provider-free manifest/replay/scoring harness, builder/work-accounting scale probes, bounded accounting-root-total replay, eight-submission exact V10-scoped miniature using the real V2 provider adapter plus public bundle run/load replay over 24 local capture-transport invocations, and review-gated No-Three zero-call serial preflight implemented. An additive seven-component umbrella suite now runs those checks in bounded `pr` or exact-regenerating `full` mode, emits canonical JSON/Markdown summaries, and accepts no provider or publication authority; paid semantic V10/V2 execution and judge-quality evaluation remain pending. | `math_flow/teacher_student_scenarios.py`, `docs/PROTOCOL_EVALUATION_SUITE.md`, `docs/PROTOCOL_EVALUATION_ROADMAP.md` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Active credit-v3 uses the two-term common-horizon hierarchical evaluator over locked research-v3 state/history; governed local/hosted execution, provider-free eligibility, bounded semantic retries, rolling coalescing, predecessor-chain terminals, and independent bundles are implemented | `math_flow/research_credit.py`, `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
-| A-first work accounting V2 | Additive, inactive provider/runner foundation freezes a validated with-access `W+` candidate in immutable CAS before estimating direct same-base no-access `W-`; V1 replay and active V1 semantics remain unchanged | `math_flow/work_projection.py`, `math_flow/work_accounting_pipeline.py`, `docs/WORK_PROJECTION_V2.md`, `protocol/judges/openrouter-work-accounting-v2.json` |
+| Hierarchical work accounting V1 and V2 | Both BSSC-only lanes are active. V1 preserves the original no-access/with-access comparison; additive V2 freezes a validated with-access `W+` candidate in immutable CAS before estimating direct same-base no-access `W-`. Their identities, histories, and workflows remain separate. | `math_flow/work_projection.py`, `math_flow/work_accounting_pipeline.py`, `docs/WORK_PROJECTION_V2.md`, `protocol/projections/openrouter-work-accounting-v1.json`, `protocol/projections/openrouter-work-accounting-v2.json` |
+| Inactive local accounting slice | Provider-free experiment keeps complete accounting state in trusted code and proves exact local root-total agreement with trusted full V2 for admitted cuts from bounded writable nodes plus digest-bound ancestor/boundary aggregates through 1,024 programs; trusted full V2 materializes canonical states and `D`, while over-wide dependency/completion/broad cuts fail rather than truncate; no provider or active profile | `math_flow/work_accounting_local_slice.py`, `docs/WORK_ACCOUNTING_LOCAL_SLICE_EXPERIMENT.md` |
 | Research direction registration | Implemented: append-only schema/reducer, atomic validation and auto-merge, provider-free CLI/context/catalog refresh, solver skill, viewer, and historical registration-aware qualitative credit-v2 artifacts | `math_flow/directions.py`, `protocol/schemas/research-direction-event.schema.json`, `viewer/` |
 | Objective verifier attestations | Additive v1 recipe, bounded pinned OCI runner, durable bundle, uniqueness/semantic validation, automatic hosted execution and signed publication, replay, context, viewer presentation, v3 subject-local deferral, and v4 declared-reference deferral/redispatch implemented | `math_flow/attestations.py`, `.github/workflows/project-attestation.yml`, `docs/OBJECTIVE_ATTESTATIONS.md` |
 | GitHub App / immutable contributor identity | Not yet implemented | `docs/MVP.md` |
@@ -378,19 +418,34 @@ The active production path is intentionally small:
   evidence for the subject and requesting transactions in the subject's
   declared-reference union. Formation imports only valid declared claims and
   follows only judge-selected required premises.
+- BSSC also has active, separately versioned serial knowledge lanes V4 through
+  V7. They replay the accepted validity-v4 history one submission at a time
+  through Builders V6, V7, V8, and V9 respectively; each has its own projection
+  identity, immutable history, and dedicated workflow. Builder V10 is not one
+  of these active lanes.
 - `openrouter-research-credit-v3` has an exact dependency on that logical v3
   producer and is allowlisted for `bssc-sum-capacity` and
   `no-three-in-line-77`. It uses the common-horizon two-term policy and the
   hierarchical credit-v2 runner; both current assignments are locked to the
   exact current builder-v5 terminal for their problem.
+- `openrouter-work-accounting-v1` remains the active BSSC comparison lane with
+  its original branch order and immutable history.
+- `openrouter-work-accounting-v2` is the separate active BSSC-only A-first lane
+  over the serial research-v4 knowledge state. It advances only validated
+  `W+`, retains same-base `W-` as an audit branch, and derives per-submission
+  `D = W- - W+`.
 
 The research-v3 producer is a wildcard specification, while the scheduled
 wake-up is deliberately targeted to the two retained active problems. The
 research-v1, research-v2, and research-credit-v2 governed specs are disabled,
 as are the specialized no-three comparison lanes. Their content-addressed
 objects remain valid explicit history and may be inspected by exact ID, but
-ordinary dispatch, default context selection, and live follow-head behavior use
-the active v3 lanes.
+ordinary dispatch follows every applicable active judgment stream, including
+the dedicated BSSC V4 through V7 and work-accounting lanes. When more than one
+active published knowledge lane applies—as it does for BSSC—context and viewer
+callers must select the projection explicitly; omission fails closed instead of
+silently preferring V3. No-Three currently retains V3 as its sole active
+knowledge lane.
 
 The active judge, builder, and credit evaluator are pinned to
 `openai/gpt-5.6-sol` with high reasoning through OpenRouter. The registry allows
@@ -473,11 +528,11 @@ Non-UI agents resolve the verified research-v3 predecessor-chain terminal
 through `math_flow context`; that command never invokes a judge or credit model.
 When `--projection` is omitted it selects exactly one published lane carrying an
 active governed projection identity, and fails if none or more than one exists.
-With the superseded lanes disabled, omission is the ordinary
-`openrouter-research-v3` path for the retained problems. An explicit logical or
-content-addressed ID remains available for historical inspection. The governed
-cadence layer wakes every five minutes, plans without a provider, and dispatches
-only eligible overlays.
+Omission therefore selects `openrouter-research-v3` for No-Three, but BSSC has
+multiple active knowledge projections and requires an explicit `--projection`.
+An explicit logical or content-addressed ID remains available for historical
+inspection. The governed cadence layer wakes every five minutes, plans without
+a provider, and dispatches only eligible overlays.
 
 Automatic credit retries are keyed to the exact rolling dependency state or UTC
 allocation window. Active duplicates are suppressed and five consecutive
@@ -568,9 +623,11 @@ The ordinary solver path is fully automatic:
 3. If the PR is still open, non-draft, targets `main`, and every required check
    succeeded, it is squash-merged at the exact validated head SHA.
 4. For a contribution, the auto-merger explicitly dispatches the baseline and
-   every active OpenRouter knowledge projection for only the affected problem
-   and exact merged transaction. The only active OpenRouter research producer is
-   research-v3. If the merged transaction contains `verification.json`, the
+   each applicable active OpenRouter judgment stream for only the affected
+   problem and exact merged transaction. The general producer handles
+   `openrouter-research-v3`; the active BSSC-only V4 through V7 projections use
+   their dedicated serial workflows. If the merged transaction contains
+   `verification.json`, the
    auto-merger also dispatches the trusted, provider-free objective-attestation
    workflow for that exact squash SHA. A direction event dispatches only the
    provider-free viewer-catalog refresh because it has no mathematical judgment
@@ -762,11 +819,14 @@ experiments and product gaps as of this document's reconciliation date:
    their boundaries remain useful as accepted work accumulates, then design the
    governed topology-evolution version that can move, reparent, split, merge,
    retire, and refresh affected local credit without rewriting history.
-2. **Calibrate hierarchical credit.** Compare common-horizon direct/obviated
-   assessments across repeated runs and growing accepted histories. Test whether
-   local thread ledgers, counterfactual evidence, residuals, and hierarchical
-   propagation are stable enough for the intended credit semantics before
-   introducing a finite award pool or time-bucketed allocation profile.
+2. **Complete and calibrate an end-to-end credit candidate.** The unpublished
+   joint K2 experiment now proves one frozen-W+ to W- to submission-allocation
+   path. Extend it through an ordered miniature and then a small real history;
+   compare repeated fixed-input samples, growing accepted histories, safe-fact
+   exposure levels, and node-level drivers. Test whether counterfactual evidence,
+   local scope, live-W+ chaining, corrections, and hour estimates are stable
+   enough for the intended semantics before introducing a finite award pool or
+   time-bucketed allocation profile.
 3. **Run the hosted scale pilot.** The provider-free congestion probe covers
    scheduler, retry, merge, chunking, viewer, and context invariants locally.
    Admit several real problems with simultaneous solver contributions to
@@ -863,11 +923,28 @@ upgrade path.
 - `docs/BSSC_RESEARCH_V4_SERIAL_PRODUCER.md` — exact historical validity-v4
   frontier, one-submission builder-v6 production, recovery, and activation
   boundary for the BSSC K0-to-K16 chain.
-- `docs/BSSC_RESEARCH_V7_CONTEXT_EXPERIMENT.md` — inactive Builder V9
-  progressive-context contract, provider-free BSSC measurements, serial route,
-  and stop conditions.
-- `docs/WORK_PROJECTION_V2.md` — inactive A-first work-accounting profile,
+- `docs/BSSC_RESEARCH_V7_CONTEXT_EXPERIMENT.md` — active BSSC-only Builder V9
+  progressive-context contract, provider-free measurements, serial route, and
+  stop conditions.
+- `docs/LOCAL_BUILDER_V10_FULL_SEND.md` — inactive local/fractal Builder V10
+  checkpoint, exact implementation changes, empirical scale findings, limits,
+  and next evaluation sequence.
+- `docs/MINIATURE_E2E_PROTOCOL_EVALUATION.md` — provider-free eight-submission
+  V10/V2 candidate contract, including the real V2 adapter and public bundle
+  replay over a local capture transport, exact knowledge/work bindings, and
+  adversarial scorecard. Its semantics remain precommitted oracle inputs rather
+  than a judge-quality result.
+- `docs/PROTOCOL_EVALUATION_SUITE.md` — additive seven-component provider-free
+  umbrella command, PR/full mode boundary, canonical summary contract,
+  zero-authority invariants, and component-registry extension policy.
+- `docs/PROTOCOL_EVALUATION_ROADMAP.md` — staged path from provider-free reducer
+  and scale checks through paid holdouts, miniature problems, adversarial audit,
+  and possible shadow activation.
+- `docs/WORK_PROJECTION_V2.md` — active BSSC A-first work-accounting profile,
   frozen-live-state boundary, epistemic policy, and retry-isolation contract.
+- `protocol/experiments/bssc-joint-portfolio-credit-k2-v1/README.md` —
+  unpublished K2 joint topology/W+ to W- candidate, submission allocation, and
+  hosted execution boundary.
 - `docs/MVP.md` — architecture, phased roadmap, and deferred decisions.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V5.md` — current audited initial
   sibling/nested program formation, fixed-topology boundary, and rollout.

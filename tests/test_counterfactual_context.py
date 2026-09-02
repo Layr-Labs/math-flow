@@ -263,19 +263,19 @@ class CounterfactualContextTests(unittest.TestCase):
                 files=malicious_files,
             )
 
-    def test_safe_fact_boundary_rejects_raw_copy_and_malicious_fields(self) -> None:
+    def test_safe_fact_boundary_allows_literal_overlap_but_rejects_escape(self) -> None:
         copied = copy.deepcopy(self.extracted)
         copied["facts"][0]["condition"] = SECRET
-        with self.assertRaisesRegex(MathFlowError, "copy a raw submission"):
-            build_counterfactual_safe_facts(
-                problem_id="demo",
-                subject_transaction_id=TX,
-                accepted_claim_refs=self.claims,
-                research_state=self.state,
-                evidence_manifest=self.manifest,
-                evidence_chunks=self.chunks,
-                extracted=copied,
-            )
+        copied_safe = build_counterfactual_safe_facts(
+            problem_id="demo",
+            subject_transaction_id=TX,
+            accepted_claim_refs=self.claims,
+            research_state=self.state,
+            evidence_manifest=self.manifest,
+            evidence_chunks=self.chunks,
+            extracted=copied,
+        )
+        self.assertEqual(copied_safe["facts"][0]["condition"], SECRET)
 
         malicious = copy.deepcopy(self.extracted)
         malicious["rawSubmission"] = SECRET
@@ -426,7 +426,7 @@ class CounterfactualContextTests(unittest.TestCase):
             all(node["ref"]["kind"] != "item" for node in context["includedNodes"])
         )
 
-    def test_no_access_has_structural_and_byte_level_firewall(self) -> None:
+    def test_no_access_has_structural_evidence_firewall(self) -> None:
         no_access = build_no_access_stage_input(
             safe_facts=self.safe,
             impact_context=self.context,

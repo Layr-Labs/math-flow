@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "description": "Executable relational subset of gold.md. The Markdown gold remains authoritative for semantic and qualification review.",
+  "assertions": [
+    {
+      "id": "k2-adds-one-root-child-program",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "difference",
+          "left": {
+            "operation": "map",
+            "value": {
+              "operation": "filter",
+              "value": {"artifact": "k2.author.topology", "pointer": "/programs"},
+              "where": [
+                {"pointer": "/parentId", "operator": "equals", "expected": "root"}
+              ]
+            },
+            "pointer": "/id"
+          },
+          "right": {
+            "operation": "map",
+            "value": {
+              "operation": "filter",
+              "value": {
+                "operation": "values",
+                "value": {"artifact": "fixed-base-state", "pointer": "/programs"}
+              },
+              "where": [
+                {"pointer": "/parentId", "operator": "equals", "expected": "root"}
+              ]
+            },
+            "pointer": "/id"
+          }
+        }
+      },
+      "operator": "equals",
+      "expected": 1,
+      "message": "K2 should add one UV work package directly beneath root, without a wrapper."
+    },
+    {
+      "id": "k2-preserves-k1-program-identities",
+      "severity": "hard",
+      "actual": {
+        "operation": "keys",
+        "value": {"artifact": "fixed-base-state", "pointer": "/programs"}
+      },
+      "operator": "subset-of",
+      "expectedExpression": {
+        "operation": "map",
+        "value": {"artifact": "k2.author.topology", "pointer": "/programs"},
+        "pointer": "/id"
+      },
+      "message": "K2 must leave the fixed K1 accounting topology present."
+    },
+    {
+      "id": "k2-creates-one-program-operation",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "filter",
+          "value": {"artifact": "k2.author.transition", "pointer": "/topologyOperations"},
+          "where": [
+            {"pointer": "/action", "operator": "equals", "expected": "create"},
+            {"pointer": "/entityKind", "operator": "equals", "expected": "program"}
+          ]
+        }
+      },
+      "operator": "equals",
+      "expected": 1
+    },
+    {
+      "id": "k2-separates-two-reusable-results",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {"artifact": "k2.author.topology", "pointer": "/subjectResults"}
+      },
+      "operator": "equals",
+      "expected": 2,
+      "message": "The precommitted gold separates the general additivity theorem from its dependent BSSC specialization."
+    },
+    {
+      "id": "k2-creates-two-result-operations",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "filter",
+          "value": {"artifact": "k2.author.transition", "pointer": "/topologyOperations"},
+          "where": [
+            {"pointer": "/action", "operator": "equals", "expected": "create"},
+            {"pointer": "/entityKind", "operator": "equals", "expected": "intermediateResult"}
+          ]
+        }
+      },
+      "operator": "equals",
+      "expected": 2
+    },
+    {
+      "id": "k2-records-narrow-dependency",
+      "severity": "hard",
+      "actual": {
+        "operation": "flatten",
+        "value": {
+          "operation": "map",
+          "value": {"artifact": "k2.author.topology", "pointer": "/subjectResults"},
+          "pointer": "/dependencyResultIds"
+        }
+      },
+      "operator": "contains",
+      "expected": "result-coarse-entropy-copy-no-go"
+    },
+    {
+      "id": "k2-refreshes-root-by-content",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {"artifact": "k2.author.transition", "pointer": "/contentOperations"}
+      },
+      "operator": "equals",
+      "expected": 1
+    },
+    {
+      "id": "k3-reuses-program-topology",
+      "severity": "hard",
+      "actual": {
+        "operation": "map",
+        "value": {"artifact": "k3.author.topology", "pointer": "/programs"},
+        "pointer": "/id"
+      },
+      "operator": "set-equals",
+      "expectedExpression": {
+        "operation": "map",
+        "value": {"artifact": "k2.author.topology", "pointer": "/programs"},
+        "pointer": "/id"
+      }
+    },
+    {
+      "id": "k3-reuses-result-identities",
+      "severity": "hard",
+      "actual": {
+        "operation": "map",
+        "value": {"artifact": "k3.author.topology", "pointer": "/subjectResults"},
+        "pointer": "/id"
+      },
+      "operator": "set-equals",
+      "expectedExpression": {
+        "operation": "map",
+        "value": {"artifact": "k2.author.topology", "pointer": "/subjectResults"},
+        "pointer": "/id"
+      }
+    },
+    {
+      "id": "k3-retains-two-result-partition",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {"artifact": "k3.author.topology", "pointer": "/subjectResults"}
+      },
+      "operator": "equals",
+      "expected": 2
+    },
+    {
+      "id": "k3-retains-both-transaction-provenances",
+      "severity": "hard",
+      "actual": {
+        "operation": "map",
+        "value": {
+          "operation": "flatten",
+          "value": {
+            "operation": "map",
+            "value": {"artifact": "k3.author.topology", "pointer": "/subjectResults"},
+            "pointer": "/claimRefs"
+          }
+        },
+        "pointer": "/transactionId"
+      },
+      "operator": "set-equals",
+      "expected": [
+        "f236017c62c67ce4218c1f81ea34134f0954b556",
+        "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9"
+      ]
+    },
+    {
+      "id": "k3-has-no-topology-operations",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {"artifact": "k3.author.transition", "pointer": "/topologyOperations"}
+      },
+      "operator": "equals",
+      "expected": 0
+    },
+    {
+      "id": "k3-refreshes-two-results-program-and-root",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {"artifact": "k3.author.transition", "pointer": "/contentOperations"}
+      },
+      "operator": "equals",
+      "expected": 4,
+      "message": "Under the original two-result gold, K3 should update two results, their program, and root."
+    }
+  ]
+}

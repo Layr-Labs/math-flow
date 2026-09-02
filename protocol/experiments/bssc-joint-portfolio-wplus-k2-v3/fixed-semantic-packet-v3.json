@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "subjectTransactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+  "baseStateDigest": "sha256:03710af10c1c9efb7796d5ae0457b016af0d1bb185818fa60425ac80021bfda4",
+  "rootUpdate": {
+    "currentStateSummary": "The canonical problem remains unresolved. Alongside the code-induced-converse directions, exact additivity is now established for the averaged scalar formed from the two separately relaxed UV sum-rate rows on arbitrary finite-alphabet DMBC products, including correlated product-channel inputs and joint envelope auxiliaries. Receiver-exchanging involutive symmetry makes the branchwise minimum equal this averaged scalar and preserves additivity on finite products; for the half-skew BSSC this gives the normalized value 2h_2(1/4)-5/4=0.3725562489182657… for every finite block product. This UV value is accepted as non-frontier and changes neither governed capacity endpoint. The contextual assertion identifying 0.369296945969202842443 as a certified full-Theorem-9 bound lacked terminal attestation in this packet and was not used as a premise.",
+    "localResidualSummary": "Resolve the BSSC sum-capacity problem. Continue the structure-preserving reduction and channel-specific code-induced-converse directions, and investigate converse structures not eliminated by the exact UV scalar tensorization result, including coupling between UV branches or richer auxiliary constraints. The accepted UV theorem does not tensorize the complete UV region, other weighted scalarizations, the GK functional, or the full Theorem-9 system."
+  },
+  "intermediateResults": [
+    {
+      "id": "result-uv-average-product-additivity",
+      "title": "Exact product additivity of the averaged relaxed-UV scalar",
+      "statement": "For a finite-alphabet discrete memoryless broadcast channel W, let t_W(p)=I_p(X;Y)-I_p(X;Z), let C denote the upper concave envelope on the input simplex, define A_W(p)=I_p(X;Y)+C[-t_W](p) and D_W(p)=I_p(X;Z)+C[t_W](p), and set B_avg(W)=sup_p (A_W(p)+D_W(p))/2. For arbitrary finite-alphabet DMBCs W_1 and W_2, B_avg(W_1×W_2)=B_avg(W_1)+B_avg(W_2). The product-channel input prior may be correlated across factors, and the envelope auxiliary may be joint across factors.",
+      "scopeQualifications": [
+        "No objective execution attestations were supplied; scripts and hash statements are merely corroborative, while the theorem is supported by the analytic proof.",
+        "The general product-additivity argument is established internally and does not require the declared BSSC dependency.",
+        "This result concerns the averaged scalar formed from two separately relaxed UV sum-rate rows. It does not establish tensorization of the complete UV rate region, a common joint (U,V) optimization, the branchwise minimum for nonsymmetric channels, other weighted UV scalarizations, the GK functional, or the full Theorem-9 system."
+      ],
+      "support": {
+        "proofs": [
+          "Analytic chain-rule factorization with cancellation of cross-factor correction terms, followed by concave-envelope inequalities, mutual-information subadditivity, and the reverse construction from product priors and product posterior decompositions."
+        ],
+        "methods": [
+          "Upper-concave-envelope factorization for the equally weighted average of the two separately relaxed UV sum-rate rows."
+        ],
+        "computations": [
+          "Deterministic finite-channel and hostile-case audit scripts were supplied only as corroboration; no objective execution attestation was supplied."
+        ],
+        "tools": [
+          "Python standard-library audit sources for factorization identities and hostile cases."
+        ],
+        "artifactPaths": [
+          "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/README.md",
+          "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/FULL.md",
+          "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/verify_uv_factorization.py",
+          "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/verify_uv_hostile_cases.py"
+        ],
+        "attestationRefs": []
+      },
+      "dependencyResultIds": [],
+      "claimKeys": [
+        "bssc-sum-capacity/uv-product-branchwise-additivity"
+      ],
+      "status": "active"
+    },
+    {
+      "id": "result-uv-branchwise-symmetry-specialization",
+      "title": "Receiver-skew symmetry bridge and exact BSSC product value",
+      "statement": "With A_W and D_W as in result-uv-average-product-additivity, define B_br(W)=sup_p min{A_W(p),D_W(p)}. If a finite-alphabet DMBC has an involutive input relabeling that exchanges its two receivers, then B_br(W)=B_avg(W), and the optimization may be restricted to input laws invariant under that involution. Finite products preserve this receiver-skew symmetry, so B_br and B_avg are both exactly additive on arbitrary finite products of such channels. For the half-skew BSSC P, whose unique invariant binary input law is the fair prior, the sharp one-letter BSSC posterior-support result gives, for every finite n≥1, B_br(P^{×n})=B_avg(P^{×n})=n(2h_2(1/4)-5/4), with normalized value 0.3725562489182657… bits per channel use.",
+      "scopeQualifications": [
+        "Branchwise equality is established only under receiver-exchanging involutive input symmetry; no corresponding claim is made for nonsymmetric channels.",
+        "No objective execution attestations were supplied; scripts and hash statements are merely corroborative, while the theorem is supported by the analytic proof.",
+        "The declared reference is required only for the sharp one-letter BSSC posterior-support inequality and equality-achieving posterior mixture used in the BSSC specialization; the general product-additivity and symmetry arguments are established internally.",
+        "The resulting UV converse value is non-frontier because it exceeds an already governed stronger benchmark.",
+        "The separate assertion that 0.369296945969202842443 is a certified full-Theorem-9 bound lacks terminal attestation in the packet; this contextual certification claim is not used as a premise and does not affect validity.",
+        "This result concerns the pointwise minimum of two separately relaxed UV rows. It does not establish simultaneous attainment by a common joint (U,V) law, tensorization of the complete UV region, other weighted scalarizations, the GK functional, or the full Theorem-9 system."
+      ],
+      "support": {
+        "proofs": [
+          "Analytic envelope-covariance and concavity argument: the receiver-exchanging involution swaps A_W and D_W, and symmetrizing any input law makes both rows at least their prior average.",
+          "Finite-product closure of receiver-skew symmetry combined with exact B_avg additivity, followed by the sharp BSSC posterior-support inequality and equality-achieving mixture for the fair-prior specialization."
+        ],
+        "methods": [
+          "Involution-based input symmetrization, product-symmetry closure, and specialization through the sharp BSSC posterior-support contact value."
+        ],
+        "computations": [
+          "The decimal evaluation and deterministic hostile-case checks were supplied as corroboration only; no objective execution attestation was supplied."
+        ],
+        "tools": [
+          "Python hostile-case and high-precision symbolic-contact audit source."
+        ],
+        "artifactPaths": [
+          "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/README.md",
+          "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/frontier-uv-branchwise/FULL.md",
+          "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/verify_uv_hostile_cases.py"
+        ],
+        "attestationRefs": []
+      },
+      "dependencyResultIds": [
+        "result-bssc-coarse-entropy-copy-refinement-no-go",
+        "result-uv-average-product-additivity"
+      ],
+      "claimKeys": [
+        "bssc-sum-capacity/uv-product-branchwise-additivity"
+      ],
+      "status": "active"
+    }
+  ],
+  "packetDigest": "sha256:4e6a2e3afbb5d7fc73fba736263faa63ac9af461034a509a4e20899c9e4f65ec"
+}

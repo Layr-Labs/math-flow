@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "bssc-joint-portfolio-wplus-k1-v1",
+  "description": "An unpublished K1 gate testing joint accounting-aware program formation and post-submission W+ estimation over fixed intermediate-result semantics.",
+  "problemId": "bssc-sum-capacity",
+  "status": "unpublished-experiment",
+  "publicationForbidden": true,
+  "acceptedTransitionOrdinal": 1,
+  "judgeSpec": "protocol/judges/openrouter-joint-portfolio-wplus-experiment-v1.json",
+  "judgeSpecDigest": "sha256:c69284abf8c22a9e51cb3fcbb50a79bfa68e879d588b7915a10b83a59bcbb2f2",
+  "model": "openai/gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "seeds": [
+    1729
+  ],
+  "maximumAttempts": 3,
+  "maximumProviderCalls": 3,
+  "maximumReportedCostUsd": 1.5,
+  "maximumSingleCallCostUsd": 0.75,
+  "maximumRequestBytes": 768000,
+  "maximumTotalProviderTokens": 180000,
+  "fixedBase": {
+    "fixture": "protocol/experiments/bssc-local-builder-v10-k1-v1/fixtures/empty-state.json",
+    "fileDigest": "sha256:6fd978624468c5cdb15558f67cf01c3ba150cfd3f517917ab5c17e605c74ed79",
+    "stateDigest": "sha256:caaeeb5894c3e77c4e222c5c0e04b281ebf89fab1afe269576fe7b7098c29822",
+    "ledgerHead": null
+  },
+  "fixedSemanticPacket": "protocol/experiments/bssc-joint-portfolio-wplus-k1-v1/fixed-semantic-packet-v1.json",
+  "fixedSemanticPacketDigest": "sha256:02c568486fd3135e2e270b199bc6e346a1b0ebdd49b3472c720ed5478783f328",
+  "semanticPacketDigest": "sha256:10cf83f7c81635b3c8eb602b05ab119efc226531b3bd8623d53e98d3092a03d4",
+  "rootContract": "protocol/experiments/bssc-joint-portfolio-wplus-k1-v1/root-contract-v1.json",
+  "rootContractFileDigest": "sha256:bde4de5ea67f5756b0a5c92d53d342ba5bcefe18a9f6817f61929c6dd1c5baf5",
+  "rootContractDigest": "sha256:5d0d95f91773a96685f5dbd150713a2bab8eed0c9af3c86847a2cc190fde14f4",
+  "relationalGold": "protocol/experiments/bssc-local-builder-v10-k1-v1/relational-gold-v1.json",
+  "relationalGoldDigest": "sha256:dbbee1da89933a92e585e97c9dff54ccf62f37042e43c4a0b7ce7b3077eaf917",
+  "primaryGate": "The existing K1 relational scorer must pass: one narrow parent plus two independently estimable leaves, with one fixed result owned by each leaf.",
+  "secondaryObservation": "Record complete reducer-valid W+ primitives and total hours, but do not treat one model sample as evidence of numerical calibration or sampling variance.",
+  "holdoutPolicy": "Do not construct or dispatch K2 until K1 passes without protocol-level failure."
+}

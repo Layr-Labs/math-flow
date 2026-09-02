@@ -1,0 +1,414 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import re
+import subprocess
+import tempfile
+import unittest
+from pathlib import Path
+from unittest import mock
+
+from math_flow.errors import MathFlowError
+from math_flow.no_three_shadow import (
+    build_no_three_v10_v2_shadow_preflight,
+)
+from math_flow.repository import sha256_json
+from math_flow.work_accounting import validate_root_contract
+
+
+ROOT = Path(__file__).resolve().parents[1]
+MANIFEST_PATH = (
+    ROOT / "protocol/experiments/no-three-v10-v2-shadow-v1/manifest.json"
+)
+EXPERIMENT_ROOT = MANIFEST_PATH.parent
+PROJECTION_PATH = EXPERIMENT_ROOT / "knowledge-projection-v10-shadow-v1.json"
+ROOT_CONTRACT_PATH = EXPERIMENT_ROOT / "root-contract-review-draft-v1.json"
+CHECKED_PREFLIGHT_PATH = EXPERIMENT_ROOT / "provider-free-preflight.json"
+DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
+GIT_OBJECT = re.compile(r"^[0-9a-f]{40}$")
+
+
+def _sha256_path_content_v1(directory: Path) -> str:
+    digest = hashlib.sha256()
+    files = sorted(path for path in directory.rglob("*") if path.is_file())
+    for path in files:
+        relative = path.relative_to(directory).as_posix()
+        file_digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(file_digest.encode("ascii"))
+        digest.update(b"\n")
+    return f"sha256:{digest.hexdigest()}"
+
+
+def _sha256_bytes(value: bytes) -> str:
+    return f"sha256:{hashlib.sha256(value).hexdigest()}"
+
+
+def _git_bytes(*arguments: str) -> bytes:
+    return subprocess.run(
+        ["git", *arguments],
+        cwd=ROOT,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    ).stdout
+
+
+def _projection_bundle(commit: str, path: str) -> tuple[dict[str, object], dict[str, bytes]]:
+    run_bytes = _git_bytes("show", f"{commit}:{path}/run.json")
+    manifest = json.loads(run_bytes)
+    artifacts: dict[str, bytes] = {}
+    for artifact in manifest["artifacts"]:
+        raw = _git_bytes("show", f"{commit}:{path}/{artifact['path']}")
+        if _sha256_bytes(raw) != artifact["digest"] or len(raw) != artifact["bytes"]:
+            raise AssertionError(f"projection artifact does not match its manifest: {path}/{artifact['path']}")
+        artifacts[artifact["role"]] = raw
+    return manifest, {"run.json": run_bytes, **artifacts}
+
+
+class NoThreeV10V2ShadowPlanTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+
+    def test_current_contract_is_provider_free_and_fail_closed(self) -> None:
+        manifest = self.manifest
+        self.assertEqual(manifest["status"], "planned-unpublished-experiment")
+        self.assertTrue(manifest["publicationForbidden"])
+        self.assertTrue(manifest["productionMutationForbidden"])
+        self.assertFalse(manifest["execution"]["providerExecutionAuthorized"])
+        self.assertEqual(
+            manifest["execution"]["adapter"],
+            "provider-free-serial-v10-v2-preflight-v1",
+        )
+        self.assertFalse(manifest["execution"]["continue"])
+        self.assertEqual(
+            manifest["execution"]["rootContractReviewStatus"], "review-required"
+        )
+        self.assertEqual(manifest["execution"]["semanticFixtures"], [])
+        self.assertEqual(manifest["execution"]["semanticOutputDigests"], [])
+        self.assertEqual(
+            manifest["execution"]["initialKnowledgeStateFactory"],
+            "math_flow.research_builder_v7.empty_research_program_state_v3",
+        )
+        self.assertEqual(
+            manifest["execution"]["initialAccountingStateFactory"],
+            "math_flow.work_accounting.make_zero_work_accounting_state",
+        )
+        self.assertTrue(all(value == 0 for value in manifest["budgets"].values()))
+
+        blockers = {
+            blocker["id"]: blocker["status"]
+            for blocker in manifest["blockingPrerequisites"]
+        }
+        self.assertEqual(
+            blockers,
+            {
+                "experiment-scoped-root-contract": "review-draft-present",
+                "real-evidence-shadow-runner": "provider-free-preflight-present",
+                "explicit-provider-authorization": "missing",
+            },
+        )
+
+    def test_local_protocol_inputs_are_exactly_digest_bound(self) -> None:
+        expected_ids = {
+            "experimental-knowledge-projection",
+            "root-contract-review-draft",
+            "preflight-runner-implementation",
+            "knowledge-builder-spec",
+            "work-accounting-spec",
+            "work-accounting-policy",
+        }
+        observed_ids: set[str] = set()
+        for frozen in self.manifest["frozenLocalInputs"]:
+            observed_ids.add(frozen["id"])
+            path = ROOT / frozen["path"]
+            self.assertTrue(path.is_file(), frozen["path"])
+            actual = f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
+            self.assertEqual(actual, frozen["digest"])
+        self.assertEqual(observed_ids, expected_ids)
+
+    def test_root_contract_draft_is_problem_specific_and_projection_bound(self) -> None:
+        projection = json.loads(PROJECTION_PATH.read_text(encoding="utf-8"))
+        contract = validate_root_contract(
+            json.loads(ROOT_CONTRACT_PATH.read_text(encoding="utf-8")),
+            "no-three-in-line-77",
+        )
+        self.assertEqual(contract["knowledgeProjectionId"], projection["id"])
+        self.assertEqual(
+            contract["knowledgeProjectionSpecDigest"],
+            "sha256:" + sha256_json(projection),
+        )
+        self.assertEqual(
+            contract["rootContractDigest"],
+            self.manifest["execution"]["rootContractDigest"],
+        )
+        self.assertIn("determine D(77)", contract["objective"])
+        self.assertIn("152 <= D(77) <= 154", contract["objective"])
+        self.assertIn("exact value of D(77)", contract["terminalCondition"])
+        self.assertIn("not terminal", contract["terminalCondition"])
+        self.assertIn("2026-09-01", contract["workUnit"]["toolBaseline"])
+        self.assertIn("autonomous LLM", contract["workUnit"]["toolBaseline"])
+        self.assertEqual(
+            contract["referenceCommunity"]["portfolioAuthority"],
+            "math-flow-knowledge-state-builder",
+        )
+        self.assertTrue(projection["publicationForbidden"])
+        self.assertTrue(projection["productionMutationForbidden"])
+        self.assertFalse(projection["providerExecutionAuthorized"])
+
+    def test_subjects_are_the_four_active_canonical_v4_acceptances(self) -> None:
+        subjects = self.manifest["subjects"]
+        self.assertEqual(len(subjects), 4)
+        self.assertEqual(
+            [subject["acceptedSequenceIndex"] for subject in subjects],
+            [1, 2, 3, 4],
+        )
+        self.assertEqual(
+            [subject["ledgerPosition"] for subject in subjects], [4, 5, 9, 10]
+        )
+        self.assertEqual(
+            [subject["transactionId"] for subject in subjects],
+            [
+                "29ccbd396781fd36d436ed2e6d0952a4730361b9",
+                "0ffe9a12c3ad44cf136dd22df7083dcdd53af1b0",
+                "87f78eb20d47a1db7d4ef35702bf00b4af94ad8d",
+                "17928a941d7503ff0dc32740b707f475728300a3",
+            ],
+        )
+        self.assertEqual(
+            self.manifest["subjectSelection"]["acceptedCount"], len(subjects)
+        )
+        self.assertEqual(
+            self.manifest["subjectSelection"]["canonicalContributionCount"], 10
+        )
+        self.assertEqual(self.manifest["subjectSelection"]["indeterminateCount"], 6)
+        self.assertEqual(self.manifest["subjectSelection"]["invalidCount"], 0)
+
+        contribution_root = ROOT / "problems/no-three-in-line-77/contributions"
+        self.assertEqual(
+            len([path for path in contribution_root.iterdir() if path.is_dir()]), 10
+        )
+        registry = json.loads(
+            (ROOT / "protocol/problem-registry.json").read_text(encoding="utf-8")
+        )
+        self.assertNotIn("no-three-in-line-77", registry["archivedProblems"])
+
+    def test_subject_evidence_and_validity_bindings_are_complete(self) -> None:
+        seen_transactions: set[str] = set()
+        seen_judgments: set[str] = set()
+        for subject in self.manifest["subjects"]:
+            transaction = subject["transactionId"]
+            judgment = subject["judgment"]
+            self.assertRegex(transaction, GIT_OBJECT)
+            self.assertNotIn(transaction, seen_transactions)
+            seen_transactions.add(transaction)
+            self.assertRegex(subject["gitTreeObjectId"], GIT_OBJECT)
+            self.assertTrue(
+                subject["claimKey"].startswith("no-three-in-line-77/")
+            )
+            self.assertEqual(subject["requiredDependencyTransactionIds"], [])
+
+            contribution = ROOT / subject["contributionPath"]
+            self.assertTrue(contribution.is_dir(), subject["contributionPath"])
+            files = sorted(path for path in contribution.rglob("*") if path.is_file())
+            evidence = subject["evidenceBundle"]
+            self.assertEqual(evidence["algorithm"], "sha256-path-content-v1")
+            self.assertEqual(evidence["fileCount"], len(files))
+            self.assertEqual(evidence["bytes"], sum(path.stat().st_size for path in files))
+            self.assertEqual(evidence["digest"], _sha256_path_content_v1(contribution))
+            historical_tree = _git_bytes(
+                "rev-parse",
+                f"{transaction}:{subject['contributionPath']}",
+            ).decode("ascii").strip()
+            self.assertEqual(subject["gitTreeObjectId"], historical_tree)
+
+            self.assertRegex(judgment["runDigest"], DIGEST)
+            self.assertRegex(judgment["judgmentId"], DIGEST)
+            self.assertNotIn(judgment["judgmentId"], seen_judgments)
+            seen_judgments.add(judgment["judgmentId"])
+            for field in (
+                "judgmentRecordArtifactDigest",
+                "dependencyPacketArtifactDigest",
+                "dependencyPacketDigest",
+                "reportArtifactDigest",
+            ):
+                self.assertRegex(judgment[field], DIGEST)
+            for attestation in judgment["objectiveAttestationRunDigests"]:
+                self.assertRegex(attestation, DIGEST)
+            run_hex = judgment["runDigest"].removeprefix("sha256:")
+            self.assertTrue(judgment["path"].endswith(run_hex))
+            self.assertIn(f"/{run_hex[:2]}/", judgment["path"])
+
+    def test_projection_and_run_bindings_recompute_from_git_objects(self) -> None:
+        snapshot = self.manifest["projectionSnapshot"]
+        commit = snapshot["commit"]
+        self.assertEqual(_git_bytes("cat-file", "-t", commit).strip(), b"commit")
+        for record in (snapshot["catalog"], snapshot["problemRunIndex"]):
+            self.assertEqual(
+                _sha256_bytes(_git_bytes("show", f"{commit}:{record['path']}")),
+                record["digest"],
+            )
+
+        for subject in self.manifest["subjects"]:
+            judgment = subject["judgment"]
+            run, artifacts = _projection_bundle(commit, judgment["path"])
+            self.assertEqual(_sha256_bytes(artifacts["run.json"]), judgment["runDigest"])
+            self.assertEqual(run["problemLedgerHead"], snapshot["problemLedgerHead"])
+            self.assertEqual(run["problemLedgerDigest"], snapshot["problemLedgerDigest"])
+            self.assertEqual(run["inputs"]["subjectTransactionIds"], [subject["transactionId"]])
+            self.assertEqual(
+                run["inputs"]["dependencyPacketDigest"],
+                judgment["dependencyPacketDigest"],
+            )
+            validity = json.loads(artifacts["judgment-record"])
+            self.assertEqual(validity["judgmentId"], judgment["judgmentId"])
+            self.assertEqual(validity["subjects"][0]["id"], subject["transactionId"])
+            self.assertEqual(validity["assessments"][0]["claimKey"], subject["claimKey"])
+            self.assertEqual(validity["assessments"][0]["status"], "valid")
+            self.assertEqual(
+                _sha256_bytes(artifacts["judgment-record"]),
+                judgment["judgmentRecordArtifactDigest"],
+            )
+            self.assertEqual(
+                _sha256_bytes(artifacts["judgment-dependency-packet"]),
+                judgment["dependencyPacketArtifactDigest"],
+            )
+            self.assertEqual(
+                _sha256_bytes(artifacts["judgment-report"]),
+                judgment["reportArtifactDigest"],
+            )
+            for attestation_digest in judgment["objectiveAttestationRunDigests"]:
+                run_hex = attestation_digest.removeprefix("sha256:")
+                attestation_path = f"objects/verifier-attestation/{run_hex[:2]}/{run_hex}/run.json"
+                self.assertEqual(
+                    _sha256_bytes(_git_bytes("show", f"{commit}:{attestation_path}")),
+                    attestation_digest,
+                )
+
+        for baseline_key, state_role in (
+            ("legacyKnowledge", "research-program-state"),
+            ("legacyHierarchicalCredit", "hierarchical-credit-state"),
+        ):
+            baseline = self.manifest["observationalBaselines"][baseline_key]
+            run, artifacts = _projection_bundle(commit, baseline["path"])
+            self.assertEqual(_sha256_bytes(artifacts["run.json"]), baseline["runDigest"])
+            self.assertEqual(run["problemLedgerHead"], snapshot["problemLedgerHead"])
+            self.assertEqual(run["problemLedgerDigest"], snapshot["problemLedgerDigest"])
+            self.assertEqual(_sha256_bytes(artifacts[state_role]), baseline["stateArtifactDigest"])
+            state = json.loads(artifacts[state_role])
+            self.assertEqual(state["stateDigest"], baseline["stateDigest"])
+
+    def test_projection_snapshot_and_baselines_are_immutable_observations(self) -> None:
+        snapshot = self.manifest["projectionSnapshot"]
+        self.assertRegex(snapshot["commit"], GIT_OBJECT)
+        self.assertRegex(snapshot["problemLedgerHead"], GIT_OBJECT)
+        self.assertRegex(snapshot["problemLedgerDigest"], DIGEST)
+        self.assertRegex(snapshot["catalog"]["digest"], DIGEST)
+        self.assertRegex(snapshot["problemRunIndex"]["digest"], DIGEST)
+
+        knowledge = self.manifest["observationalBaselines"]["legacyKnowledge"]
+        self.assertEqual(knowledge["role"], "observational-relational-reference-not-gold")
+        self.assertEqual(
+            knowledge["counts"],
+            {"programs": 4, "threads": 11, "items": 9, "contributions": 4},
+        )
+        self.assertEqual(
+            knowledge["nonRootProgramIds"],
+            [
+                "certified-configurations",
+                "rotational-symmetry",
+                "rotational-symmetry/rct4",
+            ],
+        )
+        self.assertEqual(sum(knowledge["itemTypeCounts"].values()), 9)
+
+        credit = self.manifest["observationalBaselines"][
+            "legacyHierarchicalCredit"
+        ]
+        self.assertEqual(
+            credit["role"],
+            "observational-topology-consumer-not-v2-work-accounting-oracle",
+        )
+        self.assertFalse(credit["comparableToWorkAccountingV2"])
+        self.assertEqual(credit["programEvaluationCount"], 4)
+
+    def test_future_envelope_is_bounded_but_not_authorization(self) -> None:
+        envelope = self.manifest["futureExecutionEnvelope"]
+        self.assertTrue(envelope["advisoryNotAuthorization"])
+        self.assertEqual(envelope["nominalProviderCalls"], 4 * 6)
+        self.assertEqual(envelope["maximumProviderCalls"], 4 * 6 * 3)
+        v10_completion = 6000 + 4000 + 16000
+        v2_completion = 12000 + 16000 + 16000
+        self.assertEqual(
+            envelope["maximumReservedCompletionTokens"],
+            4 * 3 * (v10_completion + v2_completion),
+        )
+        self.assertTrue(envelope["requestSideVerifiedPriceBoundRequired"])
+        self.assertTrue(envelope["stopOnFirstHardFailure"])
+        self.assertTrue(envelope["stopOnProtocolConcernBeforeNextSubject"])
+        self.assertTrue(envelope["blindRetryOutsideGovernedPolicyForbidden"])
+
+    def test_provider_free_preflight_verifies_and_serializes_the_full_plan(self) -> None:
+        forbidden = AssertionError("provider call escaped the preflight")
+        with mock.patch(
+            "math_flow.openrouter.send_chat_completion", side_effect=forbidden
+        ) as send:
+            result = build_no_three_v10_v2_shadow_preflight(ROOT)
+        send.assert_not_called()
+        self.assertEqual(result["providerCallCount"], 0)
+        self.assertFalse(result["providerExecutionAuthorized"])
+        self.assertTrue(result["publicationForbidden"])
+        self.assertEqual(result["semanticRequestDigests"], [])
+        self.assertEqual(
+            result["status"], "review-required-provider-free-plan-ready"
+        )
+        self.assertEqual(len(result["inputBindings"]["subjects"]), 4)
+        self.assertEqual(len(result["serialExecutionPlan"]), 4 * 9)
+        provider_stages = [
+            stage
+            for stage in result["serialExecutionPlan"]
+            if stage["kind"] == "provider-request"
+        ]
+        trusted_stages = [
+            stage
+            for stage in result["serialExecutionPlan"]
+            if stage["kind"] == "trusted-local"
+        ]
+        self.assertEqual(len(provider_stages), 24)
+        self.assertEqual(len(trusted_stages), 12)
+        for index, stage in enumerate(result["serialExecutionPlan"]):
+            self.assertEqual(stage["stageIndex"], index + 1)
+            self.assertEqual(
+                stage["dependsOnStageId"],
+                None if index == 0 else result["serialExecutionPlan"][index - 1]["stageId"],
+            )
+            self.assertFalse(stage["providerExecutionAuthorized"])
+            self.assertFalse(stage["publicationAuthorized"])
+        self.assertEqual(
+            result["budgetPlan"]["maximumReservedCompletionTokens"], 840000
+        )
+        self.assertEqual(result["budgetPlan"]["nominalProviderCalls"], 24)
+        self.assertEqual(result["budgetPlan"]["maximumProviderAttempts"], 72)
+        self.assertEqual(result["budgetPlan"]["currentProviderCallsAuthorized"], 0)
+        self.assertEqual(result["budgetPlan"]["currentCostUsdAuthorized"], 0)
+
+    def test_preflight_is_fail_closed_on_execution_authorization(self) -> None:
+        tampered = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        tampered["execution"]["providerExecutionAuthorized"] = True
+        with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
+            path = Path(temporary) / "manifest.json"
+            path.write_text(json.dumps(tampered), encoding="utf-8")
+            with self.assertRaisesRegex(MathFlowError, "not fail-closed"):
+                build_no_three_v10_v2_shadow_preflight(ROOT, path)
+
+    def test_checked_preflight_is_exact_provider_free_replay(self) -> None:
+        expected = build_no_three_v10_v2_shadow_preflight(ROOT)
+        checked = json.loads(CHECKED_PREFLIGHT_PATH.read_text(encoding="utf-8"))
+        self.assertEqual(checked, expected)
+
+
+if __name__ == "__main__":
+    unittest.main()

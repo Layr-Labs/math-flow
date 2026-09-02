@@ -1,0 +1,149 @@
+{
+  "baseStateDigest": "sha256:0f1e8c9399c977ce92b38a6617c3981858adf1123bb04c258d2eb3e6d9218846",
+  "contentOperations": [
+    {
+      "baseDigest": "sha256:cc601a004df5ab194831dada7dbb6ef87a9184c14657d41c530894e72247f447",
+      "entityId": "root",
+      "entityKind": "program",
+      "value": {
+        "currentStateSummary": "The canonical problem remains unresolved. The code-induced-converse program continues to pursue structure-preserving reduction of finite-block induced laws and channel-specific constraints beyond a coarse entropy/copy relaxation. Separately, exact additivity is now established for the averaged separately relaxed UV scalar on arbitrary finite-alphabet DMBC products and for the branchwise-minimum scalar on receiver-skew-symmetric products. For the half-skew BSSC, every finite product has normalized value 2h_2(1/4)-5/4=0.3725562489182657... for these scalar relaxations, so correlated block inputs and joint envelope auxiliaries do not improve them; this converse value is non-frontier and does not change the governed capacity interval.",
+        "id": "root",
+        "intermediateResultIds": [],
+        "lineage": [],
+        "localResidualSummary": "Resolve the BSSC sum-capacity problem. Continue investigating a structure-preserving reduction of code-induced laws and genuine binary-posterior or other channel-specific constraints. Outside the now-settled separately relaxed UV scalars, investigate whether coupled common-auxiliary UV constraints, richer scalarizations, nested auxiliary systems, or direct multiletter inequalities yield a stronger certified converse.",
+        "objective": "Resolve the canonical problem.",
+        "parentId": null,
+        "sourceTransactionIds": [
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "status": "active",
+        "title": "Canonical problem"
+      }
+    }
+  ],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/uv-product-branchwise-additivity"
+    ],
+    "directProgramIds": [
+      "program-uv-scalar-tensorization"
+    ],
+    "intermediateResultIds": [
+      "result-uv-product-branchwise-additivity"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted theorem directly changes the remaining work for a distinct UV-scalar tensorization policy and therefore belongs in a new leaf under root, not in the existing code-induced dependence-balance program. Its reliance on the prior sharp BSSC posterior-support result is evidentiary and does not make the new work a child of channel-specific entropy refinement. The result is linked only to the new leaf; root is updated as an ancestor but receives no direct result membership.",
+    "relatedProgramIds": [
+      "program-uv-scalar-tensorization"
+    ]
+  },
+  "schemaVersion": 1,
+  "subjectTransactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+  "topologyOperations": [
+    {
+      "action": "create",
+      "baseDigest": null,
+      "entityId": "program-uv-scalar-tensorization",
+      "entityKind": "program",
+      "value": {
+        "currentStateSummary": "For finite-alphabet DMBCs, the averaged scalar formed from the two separately relaxed UV sum-rate rows is exactly additive on arbitrary finite products, including correlated product-channel inputs and joint envelope auxiliaries. Receiver-exchanging involutive symmetry makes the branchwise-minimum scalar equal to the averaged scalar and permits restriction to invariant input laws; finite symmetric products inherit exact additivity. Applied to the half-skew BSSC using the established sharp one-letter posterior-support result, both scalars equal n(2h_2(1/4)-5/4) on every finite n-fold product. The resulting normalized converse value 0.3725562489182657... is non-frontier.",
+        "id": "program-uv-scalar-tensorization",
+        "intermediateResultIds": [
+          "result-uv-product-branchwise-additivity"
+        ],
+        "lineage": [],
+        "localResidualSummary": "The specified averaged and branchwise-minimum relaxations cannot gain strength for the BSSC through finite blocking, correlated super-symbol priors, or envelope auxiliaries joint across coordinates. Investigate whether stronger coupled UV formulations, other weighted scalarizations, the complete UV region, or richer nested auxiliary constraints behave differently and can support a frontier converse; no such extension follows from the established theorem.",
+        "objective": "Determine which UV-derived scalar converse functionals tensorize and whether multiletter coupling can strengthen the BSSC converse.",
+        "parentId": "root",
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "status": "active",
+        "title": "Multiletter UV scalar converse tensorization"
+      }
+    },
+    {
+      "action": "create",
+      "baseDigest": null,
+      "entityId": "result-uv-product-branchwise-additivity",
+      "entityKind": "intermediateResult",
+      "value": {
+        "claimRefs": [
+          {
+            "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity",
+            "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556"
+          }
+        ],
+        "dependencyResultIds": [
+          "result-coarse-entropy-copy-no-go"
+        ],
+        "id": "result-uv-product-branchwise-additivity",
+        "judgmentIds": [
+          "sha256:2c29fd881dec9aa923aa0713acc56df2c05d02f30ac544213f720af9158b7a41"
+        ],
+        "primaryProgramId": "program-uv-scalar-tensorization",
+        "relatedProgramIds": [],
+        "scopeQualifications": [
+          "Exact additivity of B_avg applies to arbitrary finite-alphabet DMBC products; equality and additivity for B_br are established only under receiver-exchanging involutive input symmetry and its finite-product closure.",
+          "The functionals use separately optimized concave-envelope relaxations of the two UV sum-rate rows. The result does not establish tensorization of the complete UV region, simultaneous attainment by a common joint (U,V), other weighted scalarizations, the simplified GK functional, or the full Theorem-9 system.",
+          "The BSSC specialization depends on the previously established sharp one-letter BSSC posterior-support inequality and its equality-achieving posterior mixture; the general product-additivity and symmetry arguments are established internally.",
+          "The resulting BSSC converse value is non-frontier because it exceeds an already governed stronger benchmark; it proves neither achievability nor a capacity formula.",
+          "The contextual assertion that 0.369296945969202842443 is a certified full-Theorem-9 bound lacks terminal attestation in this packet, is not used as a premise, and does not affect the accepted theorem.",
+          "No objective execution attestations were supplied. The scripts and hash statements are corroborative only; the theorem is supported by the analytic proof."
+        ],
+        "sourceTransactionIds": [
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "statement": "For a finite-alphabet discrete memoryless broadcast channel W, let t_W(p)=I_p(X;Y)-I_p(X;Z), let 𝔠 be the upper concave envelope on the input simplex, and define A_W(p)=I_p(X;Y)+𝔠[-t_W](p), D_W(p)=I_p(X;Z)+𝔠[t_W](p), B_avg(W)=sup_p (A_W(p)+D_W(p))/2, and B_br(W)=sup_p min{A_W(p),D_W(p)}. For arbitrary finite-alphabet DMBCs W_1 and W_2, B_avg(W_1×W_2)=B_avg(W_1)+B_avg(W_2), even when the product-channel input law is correlated and the envelope auxiliary is joint across factors. If an involutive input relabeling exchanges a channel's receivers, then B_br(W)=B_avg(W), and the optimization may be restricted to invariant input laws. Finite products preserve this receiver-skew symmetry, so for every finite family of such channels both scalar functionals are exactly additive. For the half-skew BSSC P, whose unique invariant binary prior is fair, combining these conclusions with the established sharp BSSC posterior-support inequality and equality-achieving posterior mixture gives B_br(P^{×n})=B_avg(P^{×n})=n(2h_2(1/4)-5/4) for every finite n≥1, with normalized value 0.3725562489182657... bits per channel use. This BSSC value is a valid but non-frontier UV converse and does not change the governed capacity interval.",
+        "status": "active",
+        "supersededByResultIds": [],
+        "support": {
+          "artifactRefs": [
+            {
+              "digest": "sha256:fe480b29698c63afd6c80d4e3c5b155d227ce19b74910de8a38f73b807a94e9a",
+              "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/README.md"
+            },
+            {
+              "digest": "sha256:64ddb2c3d0c375bbca746842e21689f11883d989d56a0f0028ceaf216715e623",
+              "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/frontier-uv-branchwise/FULL.md"
+            },
+            {
+              "digest": "sha256:69a33f9fc84a5dbabbad6bdf53b34e722238c6a6b3f625d49e00f599e942b94a",
+              "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/FULL.md"
+            },
+            {
+              "digest": "sha256:bdd966d11f1914425ed4932b459c83508a6a61a73131f4f2a184204ad0c4153e",
+              "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/verify_uv_factorization.py"
+            },
+            {
+              "digest": "sha256:ffa2b5d66670f0fd03338e73f8ecc5400bf23b162a92fa327f363c7bb1aac6c0",
+              "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/verify_uv_hostile_cases.py"
+            }
+          ],
+          "attestationRefs": [],
+          "computations": [
+            "Corroborative audits check randomized and hostile product-channel chain identities, mutual-information subadditivity, product posterior mixtures, the BSSC symmetry maps, and the 90-digit evaluation of 2h_2(1/4)-5/4."
+          ],
+          "methods": [
+            "Symmetrization of input laws under the receiver-exchanging involution and finite-product closure of that symmetry.",
+            "Upper-concave-envelope factorization with forward/reverse chain rules, including cancellation of the cross-coordinate co-information term at equal weighting."
+          ],
+          "proofs": [
+            "Envelope covariance under a receiver-exchanging involution and concavity at the symmetrized input law prove B_br=B_avg and restriction to invariant laws; coordinatewise relabeling extends the conclusion to finite products.",
+            "Exact chain-rule cancellation for correlated product-channel inputs, followed by one-factor envelope bounds and concavity, proves the product upper bound; product priors and product posterior decompositions prove the reverse inequality for B_avg.",
+            "The half-skew BSSC specialization combines the symmetry and product theorem with the established sharp posterior-support inequality and equality-achieving mixture to obtain the exact symbolic value for every finite blocklength."
+          ],
+          "tools": [
+            "Python 3 script verify_uv_hostile_cases.py checks deterministic and zero-probability cases and high-precision BSSC evaluation; neither script is an objective execution attestation.",
+            "Python 3 standard-library script verify_uv_factorization.py provides randomized numerical corroboration of the factorization identities."
+          ]
+        },
+        "title": "Exact product and branchwise additivity for separately relaxed UV scalars"
+      }
+    }
+  ],
+  "topologyRationale": "The new leaf is activated by the question whether multiletter coupling can strengthen UV-derived scalar converses and can be continued, stopped, or pruned independently of support reduction and channel-specific refinement for code-induced laws. Root is the narrowest existing parent because no existing program has a UV-functional tensorization objective. No additional grouping parent or child split is introduced: universal B_avg factorization, symmetry-based B_br equality, finite-product closure, and the BSSC corollary form one dependency-ordered theorem chain and jointly settle the same continue-or-stop decision for these separately relaxed scalar rows."
+}

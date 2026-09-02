@@ -1,0 +1,417 @@
+{
+  "schemaVersion": 1,
+  "description": "ID-agnostic K1 anti-collapse checks for the local Builder V10 accounting rubric. The first submission must create one narrow parent, two independently creditable leaves, and one result owned by each leaf.",
+  "assertions": [
+    {
+      "id": "k1-adds-exactly-three-programs",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "difference",
+          "left": {
+            "operation": "map",
+            "value": {
+              "artifact": "k1.author.topology",
+              "pointer": "/programs"
+            },
+            "pointer": "/id"
+          },
+          "right": {
+            "operation": "keys",
+            "value": {
+              "artifact": "fixed-base-state",
+              "pointer": "/programs"
+            }
+          }
+        }
+      },
+      "operator": "equals",
+      "expected": 3,
+      "message": "K1 requires one coordinating parent and two independently estimable leaf work packages."
+    },
+    {
+      "id": "k1-creates-exactly-three-program-operations",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "filter",
+          "value": {
+            "artifact": "k1.author.transition",
+            "pointer": "/topologyOperations"
+          },
+          "where": [
+            {
+              "pointer": "/action",
+              "operator": "equals",
+              "expected": "create"
+            },
+            {
+              "pointer": "/entityKind",
+              "operator": "equals",
+              "expected": "program"
+            }
+          ]
+        }
+      },
+      "operator": "equals",
+      "expected": 3
+    },
+    {
+      "id": "k1-creates-one-narrow-root-child",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "filter",
+          "value": {
+            "operation": "filter",
+            "value": {
+              "artifact": "k1.author.transition",
+              "pointer": "/topologyOperations"
+            },
+            "where": [
+              {
+                "pointer": "/action",
+                "operator": "equals",
+                "expected": "create"
+              },
+              {
+                "pointer": "/entityKind",
+                "operator": "equals",
+                "expected": "program"
+              }
+            ]
+          },
+          "where": [
+            {
+              "pointer": "/value/parentId",
+              "operator": "equals",
+              "expected": "root"
+            }
+          ]
+        }
+      },
+      "operator": "equals",
+      "expected": 1
+    },
+    {
+      "id": "k1-nests-two-leaves-under-new-root-child",
+      "severity": "hard",
+      "actual": {
+        "operation": "unique",
+        "value": {
+          "operation": "difference",
+          "left": {
+            "operation": "map",
+            "value": {
+              "operation": "filter",
+              "value": {
+                "artifact": "k1.author.transition",
+                "pointer": "/topologyOperations"
+              },
+              "where": [
+                {
+                  "pointer": "/action",
+                  "operator": "equals",
+                  "expected": "create"
+                },
+                {
+                  "pointer": "/entityKind",
+                  "operator": "equals",
+                  "expected": "program"
+                }
+              ]
+            },
+            "pointer": "/value/parentId"
+          },
+          "right": {
+            "operation": "keys",
+            "value": {
+              "artifact": "fixed-base-state",
+              "pointer": "/programs"
+            }
+          }
+        }
+      },
+      "operator": "set-equals",
+      "expectedExpression": {
+        "operation": "map",
+        "value": {
+          "operation": "filter",
+          "value": {
+            "operation": "filter",
+            "value": {
+              "artifact": "k1.author.transition",
+              "pointer": "/topologyOperations"
+            },
+            "where": [
+              {
+                "pointer": "/action",
+                "operator": "equals",
+                "expected": "create"
+              },
+              {
+                "pointer": "/entityKind",
+                "operator": "equals",
+                "expected": "program"
+              }
+            ]
+          },
+          "where": [
+            {
+              "pointer": "/value/parentId",
+              "operator": "equals",
+              "expected": "root"
+            }
+          ]
+        },
+        "pointer": "/entityId"
+      },
+      "message": "The two non-root children must share the new narrow portfolio as their parent."
+    },
+    {
+      "id": "k1-parent-has-no-direct-result-membership",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "flatten",
+          "value": {
+            "operation": "map",
+            "value": {
+              "operation": "filter",
+              "value": {
+                "operation": "filter",
+                "value": {
+                  "artifact": "k1.author.transition",
+                  "pointer": "/topologyOperations"
+                },
+                "where": [
+                  {
+                    "pointer": "/action",
+                    "operator": "equals",
+                    "expected": "create"
+                  },
+                  {
+                    "pointer": "/entityKind",
+                    "operator": "equals",
+                    "expected": "program"
+                  }
+                ]
+              },
+              "where": [
+                {
+                  "pointer": "/value/parentId",
+                  "operator": "equals",
+                  "expected": "root"
+                }
+              ]
+            },
+            "pointer": "/value/intermediateResultIds"
+          }
+        }
+      },
+      "operator": "equals",
+      "expected": 0,
+      "message": "The parent retains coordination work; accepted results are owned by the independently estimable leaves."
+    },
+    {
+      "id": "k1-creates-exactly-two-results",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "filter",
+          "value": {
+            "artifact": "k1.author.transition",
+            "pointer": "/topologyOperations"
+          },
+          "where": [
+            {
+              "pointer": "/action",
+              "operator": "equals",
+              "expected": "create"
+            },
+            {
+              "pointer": "/entityKind",
+              "operator": "equals",
+              "expected": "intermediateResult"
+            }
+          ]
+        }
+      },
+      "operator": "equals",
+      "expected": 2
+    },
+    {
+      "id": "k1-has-exactly-two-subject-results",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "artifact": "k1.author.topology",
+          "pointer": "/subjectResults"
+        }
+      },
+      "operator": "equals",
+      "expected": 2
+    },
+    {
+      "id": "k1-results-have-two-distinct-leaf-owners",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "unique",
+          "value": {
+            "operation": "map",
+            "value": {
+              "artifact": "k1.author.topology",
+              "pointer": "/subjectResults"
+            },
+            "pointer": "/primaryProgramId"
+          }
+        }
+      },
+      "operator": "equals",
+      "expected": 2
+    },
+    {
+      "id": "k1-result-owners-are-created-programs",
+      "severity": "hard",
+      "actual": {
+        "operation": "unique",
+        "value": {
+          "operation": "map",
+          "value": {
+            "artifact": "k1.author.topology",
+            "pointer": "/subjectResults"
+          },
+          "pointer": "/primaryProgramId"
+        }
+      },
+      "operator": "subset-of",
+      "expectedExpression": {
+        "operation": "map",
+        "value": {
+          "operation": "filter",
+          "value": {
+            "artifact": "k1.author.transition",
+            "pointer": "/topologyOperations"
+          },
+          "where": [
+            {
+              "pointer": "/action",
+              "operator": "equals",
+              "expected": "create"
+            },
+            {
+              "pointer": "/entityKind",
+              "operator": "equals",
+              "expected": "program"
+            }
+          ]
+        },
+        "pointer": "/entityId"
+      }
+    },
+    {
+      "id": "k1-direct-programs-match-result-owners",
+      "severity": "hard",
+      "actual": {
+        "artifact": "k1.author.transition",
+        "pointer": "/contribution/directProgramIds"
+      },
+      "operator": "set-equals",
+      "expectedExpression": {
+        "operation": "unique",
+        "value": {
+          "operation": "map",
+          "value": {
+            "artifact": "k1.author.topology",
+            "pointer": "/subjectResults"
+          },
+          "pointer": "/primaryProgramId"
+        }
+      }
+    },
+    {
+      "id": "k1-contribution-results-match-subject-results",
+      "severity": "hard",
+      "actual": {
+        "artifact": "k1.author.transition",
+        "pointer": "/contribution/intermediateResultIds"
+      },
+      "operator": "set-equals",
+      "expectedExpression": {
+        "operation": "map",
+        "value": {
+          "artifact": "k1.author.topology",
+          "pointer": "/subjectResults"
+        },
+        "pointer": "/id"
+      }
+    },
+    {
+      "id": "k1-records-result-dependency",
+      "severity": "advisory",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "flatten",
+          "value": {
+            "operation": "map",
+            "value": {
+              "artifact": "k1.author.topology",
+              "pointer": "/subjectResults"
+            },
+            "pointer": "/dependencyResultIds"
+          }
+        }
+      },
+      "operator": "equals",
+      "expected": 1,
+      "message": "The accepted entropy/copy obstruction uses the finite-block structure result; exact dependency orientation is inspected semantically."
+    },
+    {
+      "id": "k1-refreshes-root",
+      "severity": "hard",
+      "actual": {
+        "operation": "length",
+        "value": {
+          "operation": "filter",
+          "value": {
+            "artifact": "k1.author.transition",
+            "pointer": "/contentOperations"
+          },
+          "where": [
+            {
+              "pointer": "/entityKind",
+              "operator": "equals",
+              "expected": "program"
+            },
+            {
+              "pointer": "/entityId",
+              "operator": "equals",
+              "expected": "root"
+            }
+          ]
+        }
+      },
+      "operator": "equals",
+      "expected": 1
+    },
+    {
+      "id": "k1-explains-topology",
+      "severity": "hard",
+      "actual": {
+        "artifact": "k1.author.transition",
+        "pointer": "/topologyRationale"
+      },
+      "operator": "truthy",
+      "expected": true
+    }
+  ]
+}

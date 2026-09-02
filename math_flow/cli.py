@@ -67,12 +67,18 @@ from .judgments import (
     verify_primary_judgment_artifacts,
 )
 from .judges import load_judge_spec, project, render_request
+from .no_three_shadow import build_no_three_v10_v2_shadow_preflight
 from .projection_dependencies import resolve_projection_dependencies
 from .projection_queue import (
     filter_projection_dispatch_history,
     merge_scheduler_states,
     plan_due_projection_dispatches,
     plan_projection_wakeup_dispatches,
+)
+from .protocol_evaluation_suite import (
+    DEFAULT_MANIFEST_PATH as DEFAULT_PROTOCOL_EVALUATION_SUITE_MANIFEST,
+    MODES as PROTOCOL_EVALUATION_SUITE_MODES,
+    run_provider_free_protocol_evaluation_suite,
 )
 from .repository import affected_problems, ledger, sha256_json, validate_pr, validate_tree
 from .research_projection import (
@@ -84,6 +90,7 @@ from .research_projection import (
 from .runs import run_judge_bundle
 from .scale_probe import run_provider_free_scale_probe
 from .solver_tools import credit_status, register_direction
+from .teacher_student_scenarios import run_teacher_student_scenario
 from .two_entity_migration import audit_two_entity_migration_v2
 from .viewer import export_viewer_catalog, export_viewer_data
 from .validity import formation_dependency_transaction_ids
@@ -915,6 +922,52 @@ def build_parser() -> argparse.ArgumentParser:
     scale_parser.add_argument("--minimum-interval", type=int, default=300)
     scale_parser.add_argument("--maximum-judgments", type=int, default=64)
     scale_parser.add_argument("--output")
+
+    scenario_parser = commands.add_parser(
+        "teacher-student-scenario",
+        help="replay and score a frozen provider-free teacher-student scenario",
+    )
+    scenario_parser.add_argument("--manifest", required=True, type=Path)
+    scenario_parser.add_argument("--output-dir", required=True, type=Path)
+    scenario_parser.add_argument(
+        "--require-pass",
+        action="store_true",
+        help="return status 2 when a completed replay has hard score failures",
+    )
+    no_three_shadow_parser = commands.add_parser(
+        "no-three-shadow-preflight",
+        help="verify and plan the provider-free No-Three V10/V2 shadow",
+    )
+    no_three_shadow_parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=Path(
+            "protocol/experiments/no-three-v10-v2-shadow-v1/manifest.json"
+        ),
+    )
+    no_three_shadow_parser.add_argument("--output")
+    protocol_evaluation_parser = commands.add_parser(
+        "protocol-evaluation-suite",
+        help="run the authority-free umbrella protocol-evaluation verifier",
+    )
+    protocol_evaluation_parser.add_argument(
+        "--mode",
+        choices=PROTOCOL_EVALUATION_SUITE_MODES,
+        default="pr",
+        help="bounded PR verification or exact full regeneration (default: pr)",
+    )
+    protocol_evaluation_parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=DEFAULT_PROTOCOL_EVALUATION_SUITE_MANIFEST,
+        help="repository-local additive suite manifest",
+    )
+    protocol_evaluation_parser.add_argument(
+        "--output-dir",
+        type=Path,
+        required=True,
+        help="new or empty directory for summary.json and summary.md",
+    )
     return parser
 
 
@@ -934,6 +987,39 @@ def main(argv: list[str] | None = None) -> int:
             )
             _write_json(result, args.output)
             return 0
+        elif args.command == "teacher-student-scenario":
+            result = run_teacher_student_scenario(
+                root, args.manifest, args.output_dir
+            )
+            _write_json(result, None)
+            if args.require_pass and result["summary"]["status"] != "passed":
+                return 2
+            return 0
+        elif args.command == "no-three-shadow-preflight":
+            result = build_no_three_v10_v2_shadow_preflight(
+                root, args.manifest
+            )
+            _write_json(result, args.output)
+            return 0
+        elif args.command == "protocol-evaluation-suite":
+            result = run_provider_free_protocol_evaluation_suite(
+                root,
+                args.output_dir,
+                mode=args.mode,
+                manifest_path=args.manifest,
+            )
+            print(
+                json.dumps(
+                    {
+                        "status": result["status"],
+                        "mode": result["mode"],
+                        "summary": str(args.output_dir.resolve() / "summary.json"),
+                        "report": str(args.output_dir.resolve() / "summary.md"),
+                    },
+                    sort_keys=True,
+                )
+            )
+            return 0 if result["status"] == "passed" else 2
         elif args.command == "work-accounting-dispatch-plan":
             config = load_work_accounting_hosted_config(root, args.config)
             result = plan_work_accounting_dispatch(

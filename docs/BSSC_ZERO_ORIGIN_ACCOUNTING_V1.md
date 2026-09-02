@@ -99,13 +99,15 @@ strictly positive `D(x) = R(x) - C(x)` per accepted submission without clamping.
 Operational batching may package calls but cannot change subject boundaries or
 predecessor order.
 
-Running the exact inputs also exposed two byte-firewall false positives:
-accepted claim keys and the public root objective can legitimately occur in a
-submission. The guard now scans only provider-authored fact conditions and
-assumptions for verbatim evidence spans, while structural validation separately
-prohibits evidence manifests, chunks, and submission payload fields from the
-no-access request. This preserves the epistemic boundary without rejecting the
-mandatory identity and public-policy bindings.
+Running the exact inputs first exposed byte-overlap false positives on accepted
+claim keys and the public root objective. A later K2 joint-credit run showed the
+same failure mode on ordinary mathematical phrases and exhausted the safe-fact
+stage's three attempts before accepting a materially terser summary. Literal
+overlap rejection is therefore removed. Structural validation still prohibits
+evidence manifests, chunks, submission payload fields, and attached evidence
+files from the no-access request. Semantic leakage or anchoring through the
+safe-fact summary is now an explicit empirical evaluation question rather than
+a substring invariant.
 
 ## Prior-credit corrections
 

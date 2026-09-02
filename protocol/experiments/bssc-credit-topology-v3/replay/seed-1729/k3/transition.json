@@ -1,0 +1,174 @@
+{
+  "baseStateDigest": "sha256:9c482e2ade8935d9c441255797cbc72a66584fa391f9ff41c279d7abc5abc62c",
+  "contentOperations": [
+    {
+      "baseDigest": "sha256:c3f92c6223ae97fced61a0e963517b53cccd31016d998abde016cdd9835e461f",
+      "entityId": "result-uv-product-branchwise-additivity",
+      "entityKind": "intermediateResult",
+      "value": {
+        "claimRefs": [
+          {
+            "claimKey": "bssc-sum-capacity/uv-relaxed-converse-tensorization",
+            "transactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9"
+          },
+          {
+            "claimKey": "bssc-sum-capacity/uv-product-branchwise-additivity",
+            "transactionId": "f236017c62c67ce4218c1f81ea34134f0954b556"
+          }
+        ],
+        "dependencyResultIds": [
+          "result-coarse-entropy-copy-no-go"
+        ],
+        "id": "result-uv-product-branchwise-additivity",
+        "judgmentIds": [
+          "sha256:2c29fd881dec9aa923aa0713acc56df2c05d02f30ac544213f720af9158b7a41",
+          "sha256:34c5377dbd5c5d147acb250ac80640770b6176749e6c235d4a71ebc508b615c2"
+        ],
+        "primaryProgramId": "program-uv-scalar-product-converse",
+        "relatedProgramIds": [],
+        "scopeQualifications": [
+          "The theorem concerns only the averaged and branchwise-minimum scalars formed from two separately relaxed UV sum-rate rows.",
+          "It does not establish tensorization of the full UV region, optimization over a common joint (U,V), the GK functional, broadcast-channel capacity, capacity tensorization, other weighted UV scalarizations, or richer full auxiliary-receiver systems.",
+          "Branchwise equality is established for receiver-skew channels having the receiver-exchanging involutive symmetry; no corresponding equality is established here for channels without that symmetry.",
+          "The sharp global one-letter BSSC posterior-support inequality from the declared dependency is logically necessary for the half-skew BSSC specialization; the general product and receiver-skew arguments are established analytically within this submission.",
+          "The executable audit checks selected numerical and algebraic specialization facts, but not the global support inequality, concave-envelope optimization, or product theorem.",
+          "A decimal approximation in the current README is inaccurate; the exact expression n(2h_2(1/4)-5/4) is correct and unaffected.",
+          "No objective execution attestation was supplied for the executable audit."
+        ],
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "statement": "For a finite-alphabet discrete memoryless broadcast channel W, let t_W(p)=I_p(X;Y)-I_p(X;Z), let C be the upper concave envelope on the input simplex, and define A_W(p)=I_p(X;Y)+C[-t_W](p), D_W(p)=I_p(X;Z)+C[t_W](p), B_avg(W)=sup_p(A_W(p)+D_W(p))/2, and B_br(W)=sup_p min{A_W(p),D_W(p)}. Then B_avg is exactly additive under arbitrary finite products of finite-alphabet discrete memoryless broadcast channels, including correlated product-channel input laws and envelope auxiliaries joint across factors. On a receiver-skew channel, where an involutive input relabeling exchanges the receiver marginals up to output relabeling, B_br(W)=B_avg(W); finite products preserve this equality and additivity. Consequently, for the half-skew BSSC P and every finite integer n≥1, B_br(P^{×n})=B_avg(P^{×n})=n(2h_2(1/4)-5/4) bits. These are two separately relaxed scalar UV functionals; the result does not establish tensorization of the full UV region, optimization over a common joint (U,V), the GK functional, broadcast-channel capacity, or capacity tensorization. The resulting separately relaxed UV value is non-frontier and does not change the governed capacity interval.",
+        "status": "active",
+        "supersededByResultIds": [],
+        "support": {
+          "artifactRefs": [
+            {
+              "digest": "sha256:fe480b29698c63afd6c80d4e3c5b155d227ce19b74910de8a38f73b807a94e9a",
+              "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/README.md"
+            },
+            {
+              "digest": "sha256:64ddb2c3d0c375bbca746842e21689f11883d989d56a0f0028ceaf216715e623",
+              "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/frontier-uv-branchwise/FULL.md"
+            },
+            {
+              "digest": "sha256:69a33f9fc84a5dbabbad6bdf53b34e722238c6a6b3f625d49e00f599e942b94a",
+              "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/FULL.md"
+            },
+            {
+              "digest": "sha256:bdd966d11f1914425ed4932b459c83508a6a61a73131f4f2a184204ad0c4153e",
+              "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/source-artifacts/upper-uv-additivity/verify_uv_factorization.py"
+            },
+            {
+              "digest": "sha256:ffa2b5d66670f0fd03338e73f8ecc5400bf23b162a92fa327f363c7bb1aac6c0",
+              "path": "problems/bssc-sum-capacity/contributions/uv-product-branchwise-additivity/verify_uv_hostile_cases.py"
+            },
+            {
+              "digest": "sha256:c4df63434cb0c5f76918bd0ba578629f7373d4f2b24d6d6b5e21d3c253f2e852",
+              "path": "problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/README.md"
+            },
+            {
+              "digest": "sha256:d0dce591c90e6b529890b34e4bd515167ea3c447daef11e95f28e1c5f3c328d2",
+              "path": "problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/verification.json"
+            },
+            {
+              "digest": "sha256:96375d4961d1ed5f5f5b3da368e59c60c4bd0fc6779b741a484b40f2114db4a2",
+              "path": "problems/bssc-sum-capacity/contributions/uv-relaxed-converse-tensorization/verify_specialization.py"
+            }
+          ],
+          "attestationRefs": [],
+          "computations": [
+            "Closed-form BSSC evaluation 2h_2(1/4)-5/4=0.3725562489182657... bits per use; supplied scripts provide only corroborative numerical and algebraic checks.",
+            "High-precision audit of selected half-skew BSSC mutual-information identities, the equality-achieving posterior mixture, receiver-skew channel relations, and the exact-value expression."
+          ],
+          "methods": [
+            "Csiszar sum-identity decomposition, factorwise posterior ensembles, concave-envelope subadditivity and product constructions.",
+            "Mutual-information chain-rule cancellation, one-factor upper-concave-envelope bounds, product posterior decompositions, and product priors for the reverse inequality.",
+            "Receiver-skew relabeling covariance followed by averaging an input law with its involutive image.",
+            "Symmetrization under a receiver-exchanging involutive input relabeling."
+          ],
+          "proofs": [
+            "Analytic chain-rule factorization and concave-envelope argument proving exact additivity of B_avg for arbitrary finite-alphabet product channels with correlated inputs and joint envelope auxiliaries.",
+            "Analytic concave-envelope product argument proving exact additivity of the averaged separately relaxed UV scalar, including correlated product inputs and joint envelope auxiliaries.",
+            "Envelope-covariance and concavity symmetrization proof showing B_br=B_avg under a receiver-exchanging involution and permitting restriction to invariant input laws.",
+            "Finite-product symmetry argument and half-skew BSSC specialization using the accepted sharp posterior-support inequality and equality-achieving posterior mixture.",
+            "Half-skew BSSC specialization using the dependency's sharp global posterior-support inequality and equality-achieving posterior mixture.",
+            "Receiver-skew symmetrization argument proving equality of the branchwise and averaged scalars and preservation under finite products."
+          ],
+          "tools": [
+            "Python standard-library script verify_specialization.py performs the submitted high-precision specialization audit; it does not verify the global support inequality or general product theorem.",
+            "Python standard-library script verify_uv_factorization.py textually implements randomized audits of chain identities, mutual-information subadditivity, product mixtures, and the BSSC contact value.",
+            "Python standard-library script verify_uv_hostile_cases.py textually implements deterministic and zero-probability hostile-case checks and a high-precision Decimal audit of the BSSC specialization; no execution attestation was supplied."
+          ]
+        },
+        "title": "Exact product and branchwise additivity of separately relaxed UV scalars"
+      }
+    },
+    {
+      "baseDigest": "sha256:6a539ace8f67ba97e1430dda918a81971b04ad0a3235a2a36d7045424f6d2e7d",
+      "entityId": "program-uv-scalar-product-converse",
+      "entityKind": "program",
+      "value": {
+        "currentStateSummary": "The averaged separately relaxed UV scalar is exactly additive for arbitrary finite-alphabet broadcast-channel products, including correlated product inputs and envelope auxiliaries joint across factors. On receiver-skew channels the branchwise scalar equals the averaged scalar, and finite products preserve that equality and additivity. Thus both scalars on every finite n-fold power of the half-skew BSSC equal n(2h_2(1/4)-5/4). The general theorem and specialization are analytic; the current executable audit checks only selected algebraic and numerical specialization facts. This result concerns only the two separately relaxed scalars, is non-frontier, and does not establish full-UV-region, common joint-(U,V), GK-functional, or capacity tensorization.",
+        "id": "program-uv-scalar-product-converse",
+        "intermediateResultIds": [
+          "result-uv-product-branchwise-additivity"
+        ],
+        "lineage": [],
+        "localResidualSummary": "Investigate product behavior of the branchwise scalar without receiver-skew symmetry and whether UV constructions retaining coupling between branches, the complete UV region, other weighted scalarizations, or richer auxiliary-receiver constraints yield a stronger certified converse. Blocking the two separately relaxed rows covered by the theorem cannot by itself strengthen the half-skew BSSC converse.",
+        "objective": "Determine the product and symmetry behavior of the separately relaxed UV sum-rate scalar functionals and whether blocking strengthens their half-skew BSSC converse.",
+        "parentId": "root",
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "status": "active",
+        "title": "Product behavior of separately relaxed UV sum-rate scalars"
+      }
+    },
+    {
+      "baseDigest": "sha256:45c84842a4f70cf10d16134429a75df08873c732391558252083059f579f9a5e",
+      "entityId": "root",
+      "entityKind": "program",
+      "value": {
+        "currentStateSummary": "The canonical problem remains unresolved. The code-induced-converse program retains active structure-preserving-reduction and channel-specific-refinement directions. Separately, the averaged relaxed UV scalar is exactly additive for arbitrary finite-alphabet broadcast-channel products, and receiver-skew symmetry makes the branchwise scalar equal to it on finite products. For the half-skew BSSC both scalars therefore equal n(2h_2(1/4)-5/4) on every finite n-fold product. This non-frontier theorem concerns only two separately relaxed scalar rows and establishes neither full-UV-region, common joint-(U,V), GK-functional, nor capacity tensorization.",
+        "id": "root",
+        "intermediateResultIds": [],
+        "lineage": [],
+        "localResidualSummary": "Resolve the BSSC sum-capacity problem. Continue investigating structure-preserving reductions and channel-specific constraints for genuine code-induced BSSC laws, and investigate converse constructions retaining coupling between UV branches or richer nested auxiliary constraints. The separately relaxed scalar blocking route is settled for the half-skew BSSC but does not resolve the capacity converse.",
+        "objective": "Resolve the canonical problem.",
+        "parentId": null,
+        "sourceTransactionIds": [
+          "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+          "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+          "f236017c62c67ce4218c1f81ea34134f0954b556"
+        ],
+        "status": "active",
+        "title": "Canonical problem"
+      }
+    }
+  ],
+  "contribution": {
+    "claimKeys": [
+      "bssc-sum-capacity/uv-relaxed-converse-tensorization"
+    ],
+    "directProgramIds": [
+      "program-uv-scalar-product-converse"
+    ],
+    "intermediateResultIds": [
+      "result-uv-product-branchwise-additivity"
+    ]
+  },
+  "placementAudit": {
+    "basis": "local-objective",
+    "rationale": "The accepted claim is the same independently reusable theorem already represented by result-uv-product-branchwise-additivity, so it is consolidated under the existing durable UV-scalar product-converse program rather than creating a submission-shaped duplicate. It directly changes that leaf program's evidence base and synthesis, while the root is refreshed only as its ancestor. No topology change is warranted.",
+    "relatedProgramIds": [
+      "program-uv-scalar-product-converse"
+    ]
+  },
+  "schemaVersion": 1,
+  "subjectTransactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+  "topologyOperations": [],
+  "topologyRationale": null
+}

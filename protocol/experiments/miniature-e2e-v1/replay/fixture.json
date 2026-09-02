@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "stageId": "replay",
+  "outcome": "accepted",
+  "inputBindings": [
+    {
+      "artifactId": "miniature-oracle",
+      "digest": "sha256:26d8f76dd9d5c5e4410d855b71bc83b52dbfc55cde7b3a2a919edbf51729df8b"
+    },
+    {
+      "artifactId": "knowledge-builder-spec",
+      "digest": "sha256:47528dfd15010796f3d6aaa2500ad8ec07e499cfeb5b5fd6bcd0c8522dbebffd"
+    },
+    {
+      "artifactId": "work-accounting-spec",
+      "digest": "sha256:127d60e656e62bc1f912d4b1d08ce6df94d8036e2d972a70c5654bf6ff897961"
+    },
+    {
+      "artifactId": "work-accounting-policy",
+      "digest": "sha256:44e3036992b6a2401b623d615154793edbb8ad8a3e200374d2ffb4181b784daf"
+    }
+  ],
+  "attempts": [
+    {
+      "status": "accepted",
+      "providerCall": false,
+      "rawRequest": {
+        "kind": "deterministic-v10-v2-captured-replay",
+        "transcriptDigest": "sha256:6478c0ff788e8e3c5e488ad0b48563bb54995f838124271d8efeb7f6a6eeab4a",
+        "localCaptureTransportInvocations": 24,
+        "externalProviderCalls": 0,
+        "networkUsed": false,
+        "candidateBindings": {
+          "knowledge-builder-spec": "sha256:47528dfd15010796f3d6aaa2500ad8ec07e499cfeb5b5fd6bcd0c8522dbebffd",
+          "work-accounting-spec": "sha256:127d60e656e62bc1f912d4b1d08ce6df94d8036e2d972a70c5654bf6ff897961",
+          "work-accounting-policy": "sha256:44e3036992b6a2401b623d615154793edbb8ad8a3e200374d2ffb4181b784daf"
+        }
+      },
+      "rawResponse": {
+        "content": "accepted deterministic V10/V2 captured replay"
+      },
+      "telemetry": {
+        "model": "provider-free/reducer-replay-v1",
+        "configuredContextTokens": 0,
+        "configuredCompletionTokens": 0,
+        "requestComponents": [
+          {
+            "id": "deterministic-v10-v2-captured-replay",
+            "content": "{\"candidateBindings\":{\"knowledge-builder-spec\":\"sha256:47528dfd15010796f3d6aaa2500ad8ec07e499cfeb5b5fd6bcd0c8522dbebffd\",\"work-accounting-policy\":\"sha256:44e3036992b6a2401b623d615154793edbb8ad8a3e200374d2ffb4181b784daf\",\"work-accounting-spec\":\"sha256:127d60e656e62bc1f912d4b1d08ce6df94d8036e2d972a70c5654bf6ff897961\"},\"externalProviderCalls\":0,\"kind\":\"deterministic-v10-v2-captured-replay\",\"localCaptureTransportInvocations\":24,\"networkUsed\":false,\"transcriptDigest\":\"sha256:6478c0ff788e8e3c5e488ad0b48563bb54995f838124271d8efeb7f6a6eeab4a\"}"
+          }
+        ],
+        "promptTokens": 0,
+        "cachedPromptTokens": 0,
+        "reasoningTokens": 0,
+        "completionTokens": 0,
+        "totalTokens": 0,
+        "costUsd": 0,
+        "elapsedMs": 0,
+        "finishReason": "stop",
+        "outputCharacters": 45,
+        "trailingWhitespaceCharacters": 0,
+        "validationClass": "accepted",
+        "retryCause": null,
+        "entityCounts": {
+          "contributions": 8,
+          "programs": 5,
+          "intermediate-results": 7
+        }
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "id": "transcript",
+      "mediaType": "application/json",
+      "path": "protocol/experiments/miniature-e2e-v1/transcript.json",
+      "digest": "sha256:6478c0ff788e8e3c5e488ad0b48563bb54995f838124271d8efeb7f6a6eeab4a"
+    }
+  ]
+}

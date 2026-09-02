@@ -57,6 +57,14 @@ DECIMAL = re.compile(r"^(?:0|[1-9][0-9]*)(?:\.[0-9]*[1-9])?$")
 PROBABILITY = re.compile(r"^(?:0(?:\.[0-9]*[1-9])?|1)$")
 
 
+class GovernedProviderTerminalError(MathFlowError):
+    """A fail-closed provider outcome for which another call is forbidden."""
+
+
+class _AttemptJournalPersistenceError(MathFlowError):
+    """A local audit-write failure after a provider attempt has been consumed."""
+
+
 def _digest(value: object) -> str:
     try:
         return f"sha256:{sha256_json(value)}"
@@ -836,7 +844,15 @@ class _GovernedOpenRouterAdapter:
             journal = {**core, "journalDigest": _digest(core)}
             self.latest_attempt_journal = copy.deepcopy(journal)
             if self.attempt_journal_writer is not None:
-                self.attempt_journal_writer(copy.deepcopy(journal))
+                try:
+                    self.attempt_journal_writer(copy.deepcopy(journal))
+                except Exception as exc:
+                    raise _AttemptJournalPersistenceError(
+                        f"governed provider {stage} attempt journal persistence failed "
+                        "after a provider attempt; automatic retry and response "
+                        f"invalidation were suppressed; in-memory journal "
+                        f"{journal['journalDigest']}: {str(exc)[:500]}"
+                    ) from exc
             return journal
 
         for attempt in range(1, self.maximum_attempts + 1):
@@ -844,7 +860,22 @@ class _GovernedOpenRouterAdapter:
             request_digest = _digest(request)
             response: dict[str, object] | None = None
             try:
-                response = self.transport(copy.deepcopy(request))
+                try:
+                    response = self.transport(copy.deepcopy(request))
+                except GovernedProviderTerminalError:
+                    # A governed transport may fail closed before dispatch (for
+                    # example, because a local request or spending budget is
+                    # exhausted) or report an already-classified terminal
+                    # outcome.  Preserve that distinction: only an unclassified
+                    # callback exception has an uncertain dispatch boundary.
+                    raise
+                except Exception as exc:
+                    raise GovernedProviderTerminalError(
+                        f"governed provider {stage} transport outcome is uncertain "
+                        "after request dispatch; provider spend is unknown; automatic "
+                        "retry and response invalidation are forbidden: "
+                        f"{type(exc).__name__}: {str(exc)[:500]}"
+                    ) from exc
                 if _finish_reason(response) == "length":
                     raise MathFlowError("OpenRouter governed response was length-truncated")
                 value = validate(_structured_content(response, stage))
@@ -898,6 +929,8 @@ class _GovernedOpenRouterAdapter:
                     {**record_core, "invocationDigest": _digest(record_core)}
                 )
                 return copy.deepcopy(value)
+            except _AttemptJournalPersistenceError:
+                raise
             except (MathFlowError, TypeError, ValueError) as exc:
                 last_error = exc
                 rejected: dict[str, object] = {
@@ -925,6 +958,13 @@ class _GovernedOpenRouterAdapter:
                         rejected["providerResponseId"] = response["id"]
                 attempt_records.append(rejected)
                 record_attempt_journal()
+                if isinstance(exc, GovernedProviderTerminalError):
+                    assert self.latest_attempt_journal is not None
+                    raise MathFlowError(
+                        f"governed provider {stage} stopped after {attempt} automatic "
+                        f"attempt; further retries were suppressed; attempt journal "
+                        f"{self.latest_attempt_journal['journalDigest']}: {exc}"
+                    ) from exc
                 if response is not None:
                     if self.invalidate_last_response is not None:
                         self.invalidate_last_response()
@@ -1178,9 +1218,9 @@ class OpenRouterWorkProjectionProvider(_GovernedOpenRouterAdapter):
             diagnostic = str(exc)[:1000]
             if stage == "safe-facts":
                 stage_guidance = (
-                    "Paraphrase latent conditions concisely. Do not quote or copy "
-                    "any raw submission-evidence span. Reference only accepted claim "
-                    "keys and builder-owned program/thread nodes present in the input."
+                    "State latent conditions concisely without unnecessary proof detail "
+                    "or submission instructions. Reference only accepted claim keys and "
+                    "builder-owned program/thread nodes present in the input."
                 )
             elif stage == "no-access":
                 stage_guidance = (

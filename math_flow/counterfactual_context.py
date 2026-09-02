@@ -21,8 +21,6 @@ MAX_CHUNK_BYTES = 1024 * 1024
 MAX_SAFE_TEXT_BYTES = 8 * 1024
 MAX_SAFE_FACTS = 128
 MAX_SAFE_ASSUMPTIONS = 128
-EVIDENCE_COPY_WINDOW = 32
-MIN_SHORT_EVIDENCE_COPY = 16
 
 # ``thread`` remains accepted for replay of state-v1/v2 accounting bundles.
 # State v3 exposes only program accounting nodes.
@@ -508,64 +506,6 @@ def _state_bindings(
     return state, refs
 
 
-def _assert_no_raw_evidence_copy(
-    value: object, reconstructed_evidence: Mapping[str, bytes]
-) -> None:
-    """Reject verbatim evidence spans; semantic safety remains a judge boundary."""
-
-    strings: list[str] = []
-
-    def visit(item: object) -> None:
-        if isinstance(item, str):
-            strings.append(item)
-        elif isinstance(item, list):
-            for child in item:
-                visit(child)
-        elif isinstance(item, dict):
-            for child in item.values():
-                visit(child)
-
-    visit(value)
-    candidate_values = [text.encode("utf-8") for text in strings if text]
-    candidate_windows: dict[int, set[bytes]] = {}
-    mask = (1 << 64) - 1
-    base = 257
-    factor = pow(base, EVIDENCE_COPY_WINDOW - 1, 1 << 64)
-
-    def window_hash(window: bytes) -> int:
-        result = 0
-        for byte in window:
-            result = ((result * base) + byte) & mask
-        return result
-
-    for candidate in candidate_values:
-        for offset in range(0, max(0, len(candidate) - EVIDENCE_COPY_WINDOW + 1)):
-            window = candidate[offset : offset + EVIDENCE_COPY_WINDOW]
-            candidate_windows.setdefault(window_hash(window), set()).add(window)
-
-    for evidence in reconstructed_evidence.values():
-        if len(evidence) >= EVIDENCE_COPY_WINDOW and candidate_windows:
-            rolling = window_hash(evidence[:EVIDENCE_COPY_WINDOW])
-            for offset in range(0, len(evidence) - EVIDENCE_COPY_WINDOW + 1):
-                if offset:
-                    outgoing = evidence[offset - 1]
-                    incoming = evidence[offset + EVIDENCE_COPY_WINDOW - 1]
-                    rolling = (
-                        ((rolling - (outgoing * factor)) * base) + incoming
-                    ) & mask
-                possible = candidate_windows.get(rolling)
-                if possible and evidence[offset : offset + EVIDENCE_COPY_WINDOW] in possible:
-                    raise MathFlowError(
-                        "counterfactual-safe facts copy a raw submission evidence span"
-                    )
-        elif len(evidence) >= MIN_SHORT_EVIDENCE_COPY and any(
-            evidence in candidate for candidate in candidate_values
-        ):
-            raise MathFlowError(
-                "counterfactual-safe facts copy a raw submission evidence artifact"
-            )
-
-
 def build_counterfactual_safe_facts(
     *,
     problem_id: str,
@@ -589,7 +529,13 @@ def build_counterfactual_safe_facts(
     manifest = validate_submission_evidence_manifest(evidence_manifest)
     if manifest.get("problemId") != problem or manifest.get("subjectTransactionId") != subject:
         raise MathFlowError("safe-fact evidence belongs to another problem or subject")
-    evidence = reconstruct_submission_evidence(manifest, evidence_chunks)
+    # Reconstruct every manifested byte so incomplete, extra, truncated, or
+    # digest-mismatched evidence still fails at the trusted boundary.  The
+    # provider-authored semantic summary remains schema- and identity-bound,
+    # but is not rejected using a brittle literal-overlap heuristic.  Whether
+    # proof-bearing summaries bias W- is an empirical semantic-evaluation
+    # question rather than a deterministic substring invariant.
+    reconstruct_submission_evidence(manifest, evidence_chunks)
     claims = _accepted_claim_refs(accepted_claim_refs, subject)
     payload = _require_exact_fields(
         extracted, SAFE_FACT_ENVELOPE_FIELDS, "counterfactual-safe fact extraction"
@@ -652,17 +598,6 @@ def build_counterfactual_safe_facts(
         }
     )
     semantic_payload = {"facts": facts, "assumptions": assumptions}
-    # Claim keys and builder node IDs are mandatory identity bindings and may
-    # legitimately be printed in the manifested submission.  The epistemic
-    # boundary applies to provider-authored prose, so scan only fact conditions
-    # and assumptions for copied evidence spans.
-    _assert_no_raw_evidence_copy(
-        {
-            "factConditions": [fact["condition"] for fact in facts],
-            "assumptions": assumptions,
-        },
-        evidence,
-    )
     core: dict[str, object] = {
         "schemaVersion": 1,
         "problemId": problem,

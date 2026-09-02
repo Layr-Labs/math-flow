@@ -16,6 +16,7 @@ from math_flow.governed_providers import (
     OpenRouterResearchBuilderV6Provider,
     OpenRouterWorkProjectionProvider,
     OpenRouterWorkProjectionProviderV2,
+    _GovernedOpenRouterAdapter,
     _builder_transition_schema,
     _builder_transition_schema_v9,
     _primitive_patch_schema,
@@ -143,6 +144,109 @@ class SequentialTransport:
 
 
 class GovernedProviderTests(unittest.TestCase):
+    def _assert_raw_transport_failure_is_terminal(self, failure: Exception) -> None:
+        spec = load_judge_spec(BUILDER_SPEC)
+        calls: list[dict[str, object]] = []
+        invalidations = 0
+        journals: list[dict[str, object]] = []
+
+        def transport(request: dict[str, object]) -> dict[str, object]:
+            calls.append(copy.deepcopy(request))
+            raise failure
+
+        def invalidate() -> None:
+            nonlocal invalidations
+            invalidations += 1
+
+        provider = _GovernedOpenRouterAdapter(
+            spec,
+            expected_implementation=str(spec["implementation"]),
+            transport=transport,
+            invalidate_last_response=invalidate,
+            attempt_journal_writer=journals.append,
+        )
+        with self.assertRaisesRegex(
+            MathFlowError,
+            r"stopped after 1 automatic attempt; further retries were suppressed;.*"
+            r"provider spend is unknown; automatic retry and response invalidation "
+            r"are forbidden",
+        ):
+            provider._invoke(
+                stage="organize",
+                user_data={},
+                schema={
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": False,
+                },
+                validate=lambda value: dict(value),
+            )
+
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(invalidations, 0)
+        self.assertEqual(len(journals), 1)
+        self.assertEqual(len(journals[0]["attemptRecords"]), 1)
+        self.assertEqual(
+            journals[0]["attemptRecords"][0]["outcome"], "transport-rejected"
+        )
+        self.assertEqual(provider.invocation_records, [])
+
+    def test_math_flow_transport_failure_is_terminal_unknown_spend(self) -> None:
+        self._assert_raw_transport_failure_is_terminal(
+            MathFlowError("simulated transport failure")
+        )
+
+    def test_ordinary_transport_exception_is_terminal_unknown_spend(self) -> None:
+        self._assert_raw_transport_failure_is_terminal(
+            Exception("simulated transport crash")
+        )
+
+    def test_concrete_empty_response_remains_retryable(self) -> None:
+        spec = load_judge_spec(BUILDER_SPEC)
+        empty = {
+            "id": "response-1",
+            "model": "openai/gpt-5.6-sol",
+            "choices": [
+                {"finish_reason": "stop", "message": {"content": ""}}
+            ],
+        }
+        accepted = {"accepted": True}
+        transport = SequentialTransport([empty, _response(accepted, ordinal=2)])
+        invalidations = 0
+
+        def invalidate() -> None:
+            nonlocal invalidations
+            invalidations += 1
+
+        provider = _GovernedOpenRouterAdapter(
+            spec,
+            expected_implementation=str(spec["implementation"]),
+            transport=transport,
+            invalidate_last_response=invalidate,
+        )
+        result = provider._invoke(
+            stage="organize",
+            user_data={},
+            schema={
+                "type": "object",
+                "properties": {
+                    "accepted": {"type": "boolean"},
+                },
+                "required": ["accepted"],
+                "additionalProperties": False,
+            },
+            validate=lambda value: dict(value),
+        )
+
+        self.assertEqual(result, accepted)
+        self.assertEqual(len(transport.requests), 2)
+        self.assertEqual(invalidations, 1)
+        self.assertEqual(
+            [item["outcome"] for item in provider.invocation_records[0]["attemptRecords"]],
+            ["validation-rejected", "accepted"],
+        )
+
     def test_response_schemas_fit_openai_strict_subset(self) -> None:
         for schema in (
             _safe_facts_schema(),
@@ -329,20 +433,17 @@ class GovernedProviderTests(unittest.TestCase):
 
     def test_v2_semantic_retries_preserve_the_accepted_frozen_w_plus(self) -> None:
         fixture = self._work_fixture()
-        copied_safe_facts = _safe_response()
-        copied_safe_facts["facts"][0]["condition"] = SECRET
         outside_context = _patch("2", "with-access")
         outside_context["updates"][0]["nodeRef"]["id"] = "root/outside-context"
         outside_no_access = _patch("8", "no-access")
         outside_no_access["updates"][0]["nodeRef"]["id"] = "root/outside-context"
         transport = SequentialTransport(
             [
-                _response(copied_safe_facts, ordinal=1),
-                _response(_safe_response(), ordinal=2),
-                _response(outside_context, ordinal=3),
-                _response(_patch("2", "with-access"), ordinal=4),
-                _response(outside_no_access, ordinal=5),
-                _response(_patch("8", "no-access"), ordinal=6),
+                _response(_safe_response(), ordinal=1),
+                _response(outside_context, ordinal=2),
+                _response(_patch("2", "with-access"), ordinal=3),
+                _response(outside_no_access, ordinal=4),
+                _response(_patch("8", "no-access"), ordinal=5),
             ]
         )
         provider = OpenRouterWorkProjectionProviderV2(
@@ -369,13 +470,17 @@ class GovernedProviderTests(unittest.TestCase):
         )
         self.assertEqual(
             [record["attempts"] for record in provider.invocation_records],
-            [2, 2, 2],
+            [1, 2, 2],
+        )
+        self.assertEqual(
+            [item["outcome"] for item in provider.invocation_records[0]["attemptRecords"]],
+            ["accepted"],
         )
         self.assertTrue(
             all(
                 [item["outcome"] for item in record["attemptRecords"]]
                 == ["validation-rejected", "accepted"]
-                for record in provider.invocation_records
+                for record in provider.invocation_records[1:]
             )
         )
 
@@ -390,10 +495,9 @@ class GovernedProviderTests(unittest.TestCase):
             )
 
         self.assertEqual(
-            frozen_input(transport.requests[4]), frozen_input(transport.requests[5])
+            frozen_input(transport.requests[3]), frozen_input(transport.requests[4])
         )
-        self.assertIn("impact context", transport.requests[5]["messages"][-1]["content"])
-        self.assertNotIn(SECRET, transport.requests[1]["messages"][-1]["content"])
+        self.assertIn("impact context", transport.requests[4]["messages"][-1]["content"])
 
     def test_v2_nonpositive_delta_never_enters_provider_retry_feedback(self) -> None:
         fixture = self._work_fixture()
@@ -543,41 +647,27 @@ class GovernedProviderTests(unittest.TestCase):
         self.assertEqual(provider.invocation_records[0]["attempts"], 2)
         self.assertFalse(load_judge_spec(WORK_SPEC)["retryPolicy"]["manualReview"])
 
-    def test_work_safe_facts_retry_after_complete_firewall_validation(self) -> None:
+    def test_work_safe_facts_literal_overlap_does_not_force_retry(self) -> None:
         copied = _safe_response()
         copied["facts"][0]["condition"] = SECRET
         transport = SequentialTransport(
             [
                 _response(copied, ordinal=1),
-                _response(_safe_response(), ordinal=2),
-                _response(_patch("8", "no-access"), ordinal=3),
-                _response(_patch("2", "with-access"), ordinal=4),
+                _response(_patch("8", "no-access"), ordinal=2),
+                _response(_patch("2", "with-access"), ordinal=3),
             ]
         )
         _, provider, _ = self._run_work(transport)
-        self.assertEqual(len(transport.requests), 4)
+        self.assertEqual(len(transport.requests), 3)
         first = provider.invocation_records[0]
         self.assertEqual(first["stage"], "safe-facts")
-        self.assertEqual(first["attempts"], 2)
+        self.assertEqual(first["attempts"], 1)
         self.assertEqual(
             [item["outcome"] for item in first["attemptRecords"]],
-            ["validation-rejected", "accepted"],
+            ["accepted"],
         )
-        feedback = transport.requests[1]["messages"][-1]["content"]
-        self.assertIn(
-            "counterfactual-safe facts copy a raw submission evidence span",
-            feedback,
-        )
-        self.assertIn("Do not quote or copy", feedback)
-        self.assertNotIn(SECRET, feedback)
-        self.assertNotEqual(
-            f"sha256:{sha256_json(transport.requests[0])}",
-            f"sha256:{sha256_json(transport.requests[1])}",
-        )
-        self.assertEqual(
-            [request["seed"] for request in transport.requests[:2]],
-            [1729, 1729],
-        )
+        self.assertIn(SECRET, json.dumps(transport.requests[1]))
+        self.assertNotIn('"submissionEvidence"', json.dumps(transport.requests[1]))
 
     def test_work_with_access_retries_until_reduction_is_positive(self) -> None:
         transport = SequentialTransport(
@@ -751,6 +841,66 @@ class GovernedProviderTests(unittest.TestCase):
         self.assertEqual(attempt_records[1]["providerResponseId"], "response-2")
         core = {key: value for key, value in record.items() if key != "invocationDigest"}
         self.assertEqual(record["invocationDigest"], f"sha256:{sha256_json(core)}")
+
+    def test_accepted_response_journal_failure_never_retries_provider(self) -> None:
+        from math_flow.research_topology import empty_research_program_state_v2
+
+        base = empty_research_program_state_v2("handoff-fixture")
+        accepted = _first_transition(base)
+        transport = SequentialTransport([_response(accepted, ordinal=1)])
+        invalidations = 0
+        journal_writes = 0
+
+        def invalidate() -> None:
+            nonlocal invalidations
+            invalidations += 1
+
+        def fail_journal_write(_journal: dict[str, object]) -> None:
+            nonlocal journal_writes
+            journal_writes += 1
+            if journal_writes == 1:
+                raise OSError("simulated transient local journal storage outage")
+
+        provider = OpenRouterResearchBuilderV6Provider(
+            load_judge_spec(BUILDER_SPEC),
+            transport=transport,
+            invalidate_last_response=invalidate,
+            attempt_journal_writer=fail_journal_write,
+        )
+        content = b"# Exact accepted submission\n"
+        evidence = (
+            SubmissionEvidenceFile(
+                path="problems/handoff-fixture/contributions/accepted/README.md",
+                digest=sha256_bytes(content),
+                content=content,
+            ),
+        )
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "attempt journal persistence failed after a provider attempt; "
+            "automatic retry and response invalidation were suppressed",
+        ):
+            provider.run(
+                problem_id="handoff-fixture",
+                subject_transaction_id=TX_A,
+                base_state=base,
+                accepted_claims=_accepted_claim("claim-a"),
+                judgment_id=JUDGMENT_A,
+                evidence_files=evidence,
+            )
+
+        self.assertEqual(len(transport.requests), 1)
+        self.assertEqual(journal_writes, 1)
+        self.assertEqual(invalidations, 0)
+        self.assertEqual(provider.invocation_records, [])
+        journal = provider.latest_attempt_journal
+        self.assertIsNotNone(journal)
+        assert journal is not None
+        self.assertEqual(len(journal["attemptRecords"]), 1)
+        self.assertEqual(journal["attemptRecords"][0]["outcome"], "accepted")
+        self.assertEqual(
+            journal["attemptRecords"][0]["providerResponseId"], "response-1"
+        )
 
     def test_builder_adapter_retries_with_exact_current_base_digest(self) -> None:
         from math_flow.research_topology import empty_research_program_state_v2

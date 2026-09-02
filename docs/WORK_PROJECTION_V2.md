@@ -32,6 +32,14 @@ submission evidence manifest, raw chunks, raw claims, or item-bearing topology.
 The evaluator can use the realized numeric state, while the simulated actors
 remain unable to use `x` before independent discovery.
 
+Safe-fact conditions and assumptions are model-authored semantic context. Their
+schema, identities, affected nodes, evidence integrity, and hidden-from-actors
+status remain validated, but literal overlap with submission wording is not a
+failure. The former 32-byte overlap heuristic produced false positives and was
+removed after the unpublished joint K2 credit run. Semantic anchoring through
+safe-fact detail is a planned teacher-student ablation rather than a lexical
+invariant.
+
 ## Retry isolation
 
 V2 checkpoint identity is stable across automatic attempts for the same exact

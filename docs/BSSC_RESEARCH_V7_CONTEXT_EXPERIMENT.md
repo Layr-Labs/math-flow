@@ -1,9 +1,10 @@
 # BSSC research-v7 Builder V9 context experiment
 
-Status: inactive additive runtime candidate. It does not alter Builder V8,
-`openrouter-research-v6`, or any published state. Activation requires a separate
-one-file admission of `protocol/projections/openrouter-research-v7.json` whose
-bytes match the runtime candidate.
+Status: active BSSC-only additive lane. Its admitted
+`protocol/projections/openrouter-research-v7.json` bytes match the governed
+runtime candidate, and its dedicated serial workflow advances the lane one
+accepted submission at a time. It does not alter Builder V8,
+`openrouter-research-v6`, or either lane's immutable published history.
 
 ## Question
 
@@ -98,10 +99,10 @@ it does not establish organizer quality.
 
 ## Hosted experiment route
 
-The candidate projection is `openrouter-research-v7`, while the organizer is
-Builder V9. It deliberately starts from the state-v3 zero state and replays the
-same 16 accepted BSSC submissions as V5 and V6. It does not use a V6 state as a
-predecessor.
+The active BSSC-only projection is `openrouter-research-v7`, while the
+organizer is Builder V9. It deliberately starts from the state-v3 zero state
+and replays the same 16 accepted BSSC submissions as V5 and V6. It does not use
+a V6 state as a predecessor.
 
 `.github/workflows/project-research-v7-serial.yml` is the only intended hosted
 route. It claims and publishes exactly one accepted submission per run, defaults

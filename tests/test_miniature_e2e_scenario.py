@@ -1,0 +1,403 @@
+from __future__ import annotations
+
+import base64
+import copy
+import json
+import tempfile
+import unittest
+from pathlib import Path
+
+from experiments.miniature_e2e_protocol import (
+    RELATIVE_DIR,
+    write_miniature_e2e_fixture,
+)
+from math_flow.artifacts import verify_bundle
+from math_flow.errors import MathFlowError
+from math_flow.miniature_e2e_scenario import (
+    SUBJECTS,
+    WORK_ACCOUNTING_STAGE_ORDER,
+    _evidence_files,
+    build_miniature_e2e_transcript,
+    miniature_e2e_oracle,
+    score_miniature_e2e_scenario,
+)
+from math_flow.repository import sha256_json
+from math_flow.research_builder_v10 import (
+    apply_research_builder_v10_transition,
+    build_research_builder_v10_authoring_packet,
+)
+from math_flow.teacher_student_scenarios import run_teacher_student_scenario
+
+
+ROOT = Path(__file__).resolve().parents[1]
+MANIFEST = RELATIVE_DIR / "scenario-v1.json"
+
+
+class MiniatureEndToEndScenarioTests(unittest.TestCase):
+    @staticmethod
+    def _rebind_transcript(transcript: dict[str, object]) -> None:
+        transcript["transcriptDigest"] = "sha256:" + sha256_json(
+            {
+                key: value
+                for key, value in transcript.items()
+                if key != "transcriptDigest"
+            }
+        )
+
+    @classmethod
+    def _rebind_replay_and_transcript(
+        cls, transcript: dict[str, object], step_index: int
+    ) -> None:
+        replay = transcript["steps"][step_index]["workAccountingReplay"]
+        replay["replayDigest"] = "sha256:" + sha256_json(
+            {
+                key: value
+                for key, value in replay.items()
+                if key != "replayDigest"
+            }
+        )
+        cls._rebind_transcript(transcript)
+
+    @staticmethod
+    def _rebind_correction_and_transcript(transcript: dict[str, object]) -> None:
+        correction = next(
+            correction
+            for step in transcript["steps"]
+            for correction in step["priorCreditCorrections"]
+        )
+        correction["correctionDigest"] = "sha256:" + sha256_json(
+            {
+                key: value
+                for key, value in correction.items()
+                if key != "correctionDigest"
+            }
+        )
+        MiniatureEndToEndScenarioTests._rebind_transcript(transcript)
+
+    def test_reference_history_passes_full_deterministic_score(self) -> None:
+        transcript = build_miniature_e2e_transcript()
+        score = score_miniature_e2e_scenario(
+            transcript,
+            miniature_e2e_oracle(),
+        )
+        self.assertEqual(score["status"], "passed")
+        self.assertEqual(score["hardFailures"], [])
+        self.assertEqual(score["passed"], 119)
+        self.assertEqual(score["adversarialAudit"]["status"], "passed")
+        self.assertEqual(
+            [item["id"] for item in score["adversarialAudit"]["checks"]],
+            [
+                "duplicate-credit",
+                "dependency-double-count",
+                "nonpositive-d",
+                "live-w-plus-chaining",
+                "solving-zero-out",
+                "cross-program-contribution",
+                "topology-revelation",
+                "prior-credit-correction-separation",
+            ],
+        )
+        self.assertEqual(len(transcript["steps"]), 8)
+        self.assertEqual(
+            [step["evaluation"]["workValueHours"] for step in transcript["steps"]],
+            ["20", "5", "10", "15", "2", "2", "12", "59"],
+        )
+        self.assertEqual(
+            transcript["steps"][-1]["withAccessState"]["totalWorkHours"],
+            "0",
+        )
+        self.assertEqual(
+            [
+                correction["correctedSubjectTransactionId"]
+                for step in transcript["steps"]
+                for correction in step["priorCreditCorrections"]
+            ],
+            [SUBJECTS[2]],
+        )
+        self.assertEqual(
+            sum(
+                step["workAccountingReplay"]["execution"][
+                    "localCaptureTransportInvocations"
+                ]
+                for step in transcript["steps"]
+            ),
+            24,
+        )
+        for step in transcript["steps"]:
+            replay = step["workAccountingReplay"]
+            candidate = step["frozenWithAccessCandidate"]
+            no_input = replay["noAccessStageInput"]
+            no_request = replay["noAccessRequest"]
+            manifest = replay["bundleManifest"]
+            captures = replay["capturedPayloads"]
+            self.assertEqual(
+                [capture["stage"] for capture in captures],
+                list(WORK_ACCOUNTING_STAGE_ORDER),
+            )
+            self.assertTrue(
+                all(
+                    capture["kind"]
+                    == "fixture-local-openrouter-request-capture"
+                    and capture["networkDispatched"] is False
+                    for capture in captures
+                )
+            )
+            self.assertNotIn("invocationRecords", replay)
+            self.assertEqual(replay["execution"]["externalProviderCalls"], 0)
+            self.assertFalse(replay["execution"]["networkUsed"])
+            self.assertEqual(candidate["profile"], "math-flow/work-accounting-transition-v2")
+            self.assertEqual(candidate["withAccessPatch"], step["withAccessPatch"])
+            self.assertEqual(candidate["withAccessState"], step["withAccessState"])
+            self.assertEqual(
+                no_input["frozenWithAccessCandidateDigest"],
+                candidate["candidateDigest"],
+            )
+            self.assertEqual(no_input["frozenWithAccessState"], candidate["withAccessState"])
+            self.assertEqual(no_request["stageInput"], no_input)
+            self.assertEqual(
+                manifest["requestDigests"],
+                [
+                    candidate["safeRequest"]["requestDigest"],
+                    candidate["withAccessRequest"]["requestDigest"],
+                    no_request["requestDigest"],
+                ],
+            )
+            self.assertEqual(
+                [item["stage"] for item in manifest["responseDigests"]],
+                list(WORK_ACCOUNTING_STAGE_ORDER),
+            )
+            evidence = next(iter(_evidence_files(step["subjectTransactionId"]).values()))
+            encoded = base64.b64encode(evidence).decode("ascii")
+            rendered = [
+                json.dumps(capture["payload"], sort_keys=True)
+                for capture in captures
+            ]
+            self.assertIn(encoded, rendered[0])
+            self.assertIn(encoded, rendered[1])
+            self.assertNotIn(encoded, rendered[2])
+            self.assertNotIn('"contentBase64"', rendered[2])
+            self.assertNotIn('"evidenceManifest"', rendered[2])
+
+    def test_v2_replay_rejects_candidate_firewall_and_stage_tampering(self) -> None:
+        baseline = build_miniature_e2e_transcript()
+
+        candidate = copy.deepcopy(baseline)
+        candidate["steps"][0]["workAccountingReplay"]["noAccessStageInput"][
+            "frozenWithAccessCandidateDigest"
+        ] = "sha256:" + "0" * 64
+        self._rebind_replay_and_transcript(candidate, 0)
+        candidate_score = score_miniature_e2e_scenario(
+            candidate, miniature_e2e_oracle()
+        )
+        self.assertIn("work-v2-bundle-replay-1", candidate_score["hardFailures"])
+        self.assertNotIn("transcript-digest", candidate_score["hardFailures"])
+
+        firewall = copy.deepcopy(baseline)
+        replay = firewall["steps"][0]["workAccountingReplay"]
+        no_capture = replay["capturedPayloads"][2]
+        message = no_capture["payload"]["messages"][-1]
+        content = message["content"]
+        prefix = "<math-flow-input>\n"
+        suffix = "\n</math-flow-input>"
+        start = content.index(prefix) + len(prefix)
+        end = content.rindex(suffix)
+        user_data = json.loads(content[start:end])
+        user_data["submissionEvidence"] = {"files": []}
+        message["content"] = (
+            content[:start]
+            + json.dumps(user_data, sort_keys=True, separators=(",", ":"))
+            + content[end:]
+        )
+        no_capture["payloadDigest"] = "sha256:" + sha256_json(no_capture["payload"])
+        self._rebind_replay_and_transcript(firewall, 0)
+        firewall_score = score_miniature_e2e_scenario(
+            firewall, miniature_e2e_oracle()
+        )
+        self.assertIn("work-v2-bundle-replay-1", firewall_score["hardFailures"])
+        self.assertNotIn("transcript-digest", firewall_score["hardFailures"])
+
+        reordered = copy.deepcopy(baseline)
+        captures = reordered["steps"][0]["workAccountingReplay"]["capturedPayloads"]
+        captures[0], captures[1] = captures[1], captures[0]
+        self._rebind_replay_and_transcript(reordered, 0)
+        reordered_score = score_miniature_e2e_scenario(
+            reordered, miniature_e2e_oracle()
+        )
+        self.assertIn("work-v2-bundle-replay-1", reordered_score["hardFailures"])
+        self.assertIn("provider-free-v2-capture-1", reordered_score["hardFailures"])
+        self.assertNotIn("transcript-digest", reordered_score["hardFailures"])
+
+    def test_scorer_detects_node_reduction_and_live_chain_tampering(self) -> None:
+        transcript = build_miniature_e2e_transcript()
+        transcript["steps"][6]["nodeReductions"][0]["deltaWorkHours"] = "999"
+        transcript["steps"][4]["baseLiveAccountingStateDigest"] = "sha256:" + "0" * 64
+        score = score_miniature_e2e_scenario(
+            transcript,
+            miniature_e2e_oracle(),
+        )
+        self.assertEqual(score["status"], "failed")
+        self.assertIn("live-base-5", score["hardFailures"])
+        self.assertIn("node-reduction-replay-7", score["hardFailures"])
+        self.assertIn("transcript-digest", score["hardFailures"])
+
+    def test_scorer_rejects_invalid_prior_credit_allocations(self) -> None:
+        invalid_allocations = {
+            "balanced-out-of-range": [
+                {"programId": "route-a", "share": "1.6"},
+                {"programId": "route-b", "share": "-0.6"},
+            ],
+            "nonexistent-program": [
+                {"programId": "route-a", "share": "0.6"},
+                {"programId": "missing-program", "share": "0.4"},
+            ],
+            "duplicate-program": [
+                {"programId": "route-a", "share": "0.6"},
+                {"programId": "route-a", "share": "0.4"},
+            ],
+            "nan": [
+                {"programId": "route-a", "share": float("nan")},
+                {"programId": "route-b", "share": "0"},
+            ],
+            "infinity": [
+                {"programId": "route-a", "share": float("inf")},
+                {"programId": "route-b", "share": "0"},
+            ],
+            "non-numeric": [
+                {"programId": "route-a", "share": "many"},
+                {"programId": "route-b", "share": "0"},
+            ],
+        }
+        for case_id, allocation in invalid_allocations.items():
+            with self.subTest(case_id=case_id):
+                transcript = build_miniature_e2e_transcript()
+                correction = next(
+                    correction
+                    for step in transcript["steps"]
+                    for correction in step["priorCreditCorrections"]
+                )
+                correction["afterAllocation"] = allocation
+                self._rebind_correction_and_transcript(transcript)
+                score = score_miniature_e2e_scenario(
+                    transcript,
+                    miniature_e2e_oracle(),
+                )
+                self.assertEqual(score["status"], "failed")
+                self.assertIn("prior-correction-balanced", score["hardFailures"])
+                self.assertNotIn("transcript-digest", score["hardFailures"])
+
+    def test_v10_scoped_replay_rejects_out_of_scope_write_and_stale_packet(self) -> None:
+        transcript = build_miniature_e2e_transcript()
+        step = transcript["steps"][0]
+        base = transcript["initialKnowledgeState"]
+        replay = step["knowledgeBuilderReplay"]
+        route_plan = copy.deepcopy(replay["routePlan"])
+        route_plan["createResultIds"] = []
+        route_plan.pop("routePlanDigest")
+        narrow_packet = build_research_builder_v10_authoring_packet(
+            base,
+            step["acceptedClaims"],
+            route_plan,
+        )
+        with self.assertRaisesRegex(MathFlowError, "writes outside scope"):
+            apply_research_builder_v10_transition(
+                base,
+                step["builderTransition"],
+                authoring_packet=narrow_packet,
+                accepted_claims=step["acceptedClaims"],
+                judgment_id=step["judgmentId"],
+                evidence_file_refs=replay["evidenceFileRefs"],
+            )
+
+        packet = build_research_builder_v10_authoring_packet(
+            base,
+            step["acceptedClaims"],
+            replay["routePlan"],
+        )
+        with self.assertRaisesRegex(MathFlowError, "not reducer-derived|stale"):
+            apply_research_builder_v10_transition(
+                step["knowledgeAfter"],
+                step["builderTransition"],
+                authoring_packet=packet,
+                accepted_claims=step["acceptedClaims"],
+                judgment_id=step["judgmentId"],
+                evidence_file_refs=replay["evidenceFileRefs"],
+            )
+
+    def test_v10_scoped_replay_rejects_provenance_change_on_pure_move(self) -> None:
+        transcript = build_miniature_e2e_transcript()
+        step = transcript["steps"][5]
+        base = transcript["steps"][4]["knowledgeAfter"]
+        replay = step["knowledgeBuilderReplay"]
+        packet = build_research_builder_v10_authoring_packet(
+            base,
+            step["acceptedClaims"],
+            replay["routePlan"],
+        )
+        transition = copy.deepcopy(step["builderTransition"])
+        moved = transition["topologyOperations"][0]["value"]
+        moved["sourceTransactionIds"] = sorted(
+            [*moved["sourceTransactionIds"], step["subjectTransactionId"]]
+        )
+        with self.assertRaisesRegex(MathFlowError, "move must preserve"):
+            apply_research_builder_v10_transition(
+                base,
+                transition,
+                authoring_packet=packet,
+                accepted_claims=step["acceptedClaims"],
+                judgment_id=step["judgmentId"],
+                evidence_file_refs=replay["evidenceFileRefs"],
+            )
+
+    def test_checked_in_fixture_is_exactly_regenerable(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            generated_root = Path(directory)
+            result = write_miniature_e2e_fixture(generated_root)
+            self.assertEqual(result["score"]["status"], "passed")
+            generated_dir = generated_root / RELATIVE_DIR
+            checked_dir = ROOT / RELATIVE_DIR
+            generated_files = sorted(
+                path.relative_to(generated_dir) for path in generated_dir.rglob("*") if path.is_file()
+            )
+            checked_files = sorted(
+                path.relative_to(checked_dir) for path in checked_dir.rglob("*") if path.is_file()
+            )
+            self.assertEqual(generated_files, checked_files)
+            for relative in generated_files:
+                self.assertEqual(
+                    (generated_dir / relative).read_bytes(),
+                    (checked_dir / relative).read_bytes(),
+                    relative.as_posix(),
+                )
+
+    def test_common_scenario_runner_replays_without_provider_or_publication(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "bundle"
+            manifest = run_teacher_student_scenario(ROOT, MANIFEST, output)
+            verified, _ = verify_bundle(output)
+            self.assertEqual(manifest, verified)
+            self.assertEqual(manifest["summary"]["status"], "passed")
+            self.assertEqual(manifest["summary"]["hardFailures"], 0)
+            self.assertEqual(manifest["execution"]["providerCallsExecuted"], 0)
+            self.assertTrue(manifest["execution"]["publicationForbidden"])
+            telemetry = json.loads((output / "telemetry.json").read_text())
+            self.assertEqual(telemetry["providerCallsExecuted"], 0)
+            self.assertEqual(telemetry["providerCallsRecorded"], 0)
+            frozen_ids = {
+                item["id"]
+                for item in json.loads((output / "scenario/manifest.json").read_text())[
+                    "frozenInputs"
+                ]
+            }
+            self.assertEqual(
+                frozen_ids,
+                {
+                    "miniature-oracle",
+                    "knowledge-builder-spec",
+                    "work-accounting-spec",
+                    "work-accounting-policy",
+                },
+            )
+
+
+if __name__ == "__main__":
+    unittest.main()
