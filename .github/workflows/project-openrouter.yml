@@ -124,6 +124,10 @@ jobs:
             echo "openrouter-research-v7 must run through project-research-v7-serial.yml" >&2
             exit 1
           fi
+          if [[ "$MATH_FLOW_PROJECTION_ID" == "openrouter-research-v8" ]]; then
+            echo "openrouter-research-v8 must run through project-research-v8-serial.yml" >&2
+            exit 1
+          fi
           resolved="${RUNNER_TEMP}/projection-spec.json"
           python -m math_flow resolve-projection \
             --projection "$MATH_FLOW_PROJECTION_ID" \

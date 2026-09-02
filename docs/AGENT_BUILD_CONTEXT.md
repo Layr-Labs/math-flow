@@ -400,6 +400,7 @@ it does not yet establish a sequential multi-submission credit lane.
 | Solver-facing repository skill | Implemented; requires repository tools and exact-reference inspection | `.agents/skills/math-flow-solver/` |
 | Builder-facing repository skill | Implemented; routes protocol and repository maintenance away from solver participation and requires isolated worktrees for parallel agents | `.agents/skills/math-flow-builder/` |
 | Local/fractal Builder V10 experiment | Inactive, unpublished route/refine/author candidate with bounded digest-bound scopes, hidden-state preservation, provider-free widening through 1,024 programs, and a stopped BSSC paid holdout | `math_flow/research_builder_v10.py`, `math_flow/research_builder_v10_provider.py`, `docs/LOCAL_BUILDER_V10_FULL_SEND.md` |
+| BSSC V10 plus separate V2 shadow runtime | Additive serial runtime and dispatch-only workflows are available for a fresh Builder V10 knowledge chain and an independently zero-origin A-first V2 accounting chain. Each active-form candidate requires its own byte-identical governed admission before execution; runtime deployment and admission make no provider call or projection publication. | `docs/BSSC_RESEARCH_V8_V10_V2_PROTOCOL.md`, `.github/workflows/project-research-v8-serial.yml`, `.github/workflows/project-bssc-v10-work-accounting-v2.yml` |
 | Joint topology/W+ credit candidate | Unpublished K2-only hosted candidate freezes an accepted joint topology/W+ result, estimates only safe facts and W-, derives positive D in trusted code, and allocates all work directly to the submission; no publication or continuation path | `math_flow/joint_portfolio_credit_experiment.py`, `experiments/bssc_joint_portfolio_credit.py`, `protocol/experiments/bssc-joint-portfolio-credit-k2-v1/` |
 | Protocol evaluation substrate | Provider-free manifest/replay/scoring harness, builder/work-accounting scale probes, bounded accounting-root-total replay, eight-submission exact V10-scoped miniature using the real V2 provider adapter plus public bundle run/load replay over 24 local capture-transport invocations, and review-gated No-Three zero-call serial preflight implemented. An additive seven-component umbrella suite now runs those checks in bounded `pr` or exact-regenerating `full` mode, emits canonical JSON/Markdown summaries, and accepts no provider or publication authority; paid semantic V10/V2 execution and judge-quality evaluation remain pending. | `math_flow/teacher_student_scenarios.py`, `docs/PROTOCOL_EVALUATION_SUITE.md`, `docs/PROTOCOL_EVALUATION_ROADMAP.md` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
@@ -421,8 +422,9 @@ The active production path is intentionally small:
 - BSSC also has active, separately versioned serial knowledge lanes V4 through
   V7. They replay the accepted validity-v4 history one submission at a time
   through Builders V6, V7, V8, and V9 respectively; each has its own projection
-  identity, immutable history, and dedicated workflow. Builder V10 is not one
-  of these active lanes.
+  identity, immutable history, and dedicated workflow. The additive V8/V10
+  active-form candidate remains a separate fresh lane and becomes runnable only
+  after its required one-file governed admission.
 - `openrouter-research-credit-v3` has an exact dependency on that logical v3
   producer and is allowlisted for `bssc-sum-capacity` and
   `no-three-in-line-77`. It uses the common-horizon two-term policy and the
@@ -929,6 +931,9 @@ upgrade path.
 - `docs/LOCAL_BUILDER_V10_FULL_SEND.md` — inactive local/fractal Builder V10
   checkpoint, exact implementation changes, empirical scale findings, limits,
   and next evaluation sequence.
+- `docs/BSSC_RESEARCH_V8_V10_V2_PROTOCOL.md` — additive serial Builder V10
+  knowledge and separate A-first V2 accounting runtime, admission, publication,
+  and semantic-evaluation boundaries.
 - `docs/MINIATURE_E2E_PROTOCOL_EVALUATION.md` — provider-free eight-submission
   V10/V2 candidate contract, including the real V2 adapter and public bundle
   replay over a local capture transport, exact knowledge/work bindings, and

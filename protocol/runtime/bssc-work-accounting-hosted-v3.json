@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "id": "bssc-work-accounting-hosted-v3",
+  "status": "active",
+  "problemId": "bssc-sum-capacity",
+  "projectionId": "openrouter-v10-work-accounting-v2",
+  "knowledgeProjectionId": "openrouter-research-v8",
+  "projectionSpec": {
+    "path": "protocol/runtime/active-openrouter-v10-work-accounting-v2-projection.json",
+    "id": "openrouter-v10-work-accounting-v2",
+    "digest": "sha256:ebd8d572db8adb82e9eec8f5c69ce18ac8d7bd327ad762d157532dba078d35c0"
+  },
+  "knowledgeProjectionSpec": {
+    "path": "protocol/runtime/openrouter-research-v8-projection.json",
+    "id": "openrouter-research-v8",
+    "digest": "sha256:6a90c918aa2912fc4a211751651a800ec762d6a0ac04b02081c13a4289938d8b"
+  },
+  "rootContract": {
+    "path": "protocol/runtime/bssc-v10-work-accounting-root-contract-v2.json",
+    "digest": "sha256:6f39d4b9d3c6e79bfe1ec57a356afa86b480d7e548d090ace96eb2c7cc20a629"
+  },
+  "validitySource": {
+    "path": "protocol/runtime/bssc-work-accounting-source-v1.json",
+    "digest": "sha256:d59e031a6c2e2a2b752522326bfc3244378d0e5c6521b5b21b753354954efe77"
+  },
+  "builderSpec": {
+    "path": "protocol/judges/openrouter-hierarchical-research-builder-v10.json",
+    "id": "openrouter-hierarchical-research-builder-v10",
+    "implementation": "openrouter-hierarchical-research-builder-v10",
+    "digest": "sha256:7808076a61f1c5696213ee9d0921e31b6b4df7ecf454a363c2233cc0589e578c"
+  },
+  "workProviderSpec": {
+    "path": "protocol/judges/openrouter-work-accounting-v2.json",
+    "id": "openrouter-work-accounting-v2",
+    "implementation": "openrouter-work-accounting-v2",
+    "digest": "sha256:94f058ee7e0a1ddc1b2828d87514e942c3a9b7b3e756e97d42662b4224e86b35"
+  },
+  "transport": {
+    "implementation": "openrouter-chat-completions-v1",
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "digest": "sha256:0b5ef303cbe83668ce8dfb9fe6c5dec811a949794a2a8b177a8262431e4cba59"
+  },
+  "hostedRunner": {
+    "implementation": "bssc-work-accounting-hosted-v3",
+    "path": "math_flow/bssc_work_accounting_hosted_v3.py",
+    "digest": "sha256:578e34e7f2fe1c0e8d84a746474b0657b260d04c392a6ff891a8a1461a695fbd"
+  },
+  "runner": {
+    "implementation": "work-accounting-pipeline-v3",
+    "path": "math_flow/work_accounting_pipeline_v3.py",
+    "digest": "sha256:b306239b0591e2c19118e3a78a1a974ddff51fa1f7499618d97ce5465a9d3cef"
+  },
+  "retryPolicy": {
+    "mode": "automatic",
+    "manualReview": false,
+    "maximumAttempts": 5,
+    "baseRetrySeconds": 60,
+    "staleClaimSeconds": 3600
+  },
+  "hostedBatching": {
+    "maximumSubjectsPerRun": 1,
+    "semanticEffect": "none"
+  },
+  "runtimePolicyDigest": "sha256:7ec95ae8df427276814756d0a47810b87e06a642b36b72d489b614606d7963c3",
+  "configDigest": "sha256:6768713b53b7f46ef1c73b8e612a61a031af198a90feeed8f9dd338f820884ee"
+}

@@ -19,6 +19,11 @@ from math_flow.bssc_work_accounting_hosted import (
     load_bssc_work_accounting_deployment,
     validate_frozen_work_accounting_plan,
 )
+from math_flow.bssc_work_accounting_hosted_v3 import (
+    _load_governed_work_provider as _load_governed_work_provider_v3,
+    build_bssc_work_disposition_snapshot as build_bssc_work_disposition_snapshot_v3,
+    load_bssc_work_accounting_deployment as load_bssc_work_accounting_deployment_v3,
+)
 from math_flow.errors import MathFlowError
 from math_flow.bssc_work_replay import load_bssc_replay_source
 from math_flow.governed_providers import (
@@ -201,6 +206,35 @@ class BsscHostedAccountingTests(unittest.TestCase):
             ).read_bytes(),
         )
         load_bssc_work_accounting_deployment(root, config_path)
+
+    def test_v10_hosted_runtime_uses_rich_claims_and_v2_accounting(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        config_path = root / "protocol/runtime/bssc-work-accounting-hosted-v3.json"
+        deployment = load_bssc_work_accounting_deployment_v3(
+            root, config_path, require_admitted=False
+        )
+        config = deployment["config"]
+        self.assertEqual(config["projectionId"], "openrouter-v10-work-accounting-v2")
+        self.assertEqual(config["knowledgeProjectionId"], "openrouter-research-v8")
+        self.assertEqual(work_projection_profile_for_hosted_config(config), PROFILE_V2)
+        provider = _load_governed_work_provider_v3(root, config)
+        self.assertIsInstance(provider, OpenRouterWorkProjectionProviderV2)
+        snapshot = build_bssc_work_disposition_snapshot_v3(
+            root, deployment=deployment
+        )
+        accepted = [
+            item for item in snapshot["subjects"] if item["status"] == "accepted"
+        ]
+        self.assertEqual(len(accepted), 16)
+        self.assertTrue(
+            all(item["acceptedSubmissionInputDigest"] is not None for item in accepted)
+        )
+        workflow = (
+            root / ".github/workflows/project-bssc-v10-work-accounting-v2.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("bssc-work-accounting-hosted-v3.json", workflow)
+        self.assertEqual(workflow.count("math_flow.bssc_work_accounting_hosted_v3"), 4)
+        self.assertNotIn("schedule:", workflow)
 
     def test_v2_hosted_workflow_uses_only_v2_config_and_history(self) -> None:
         root = Path(__file__).resolve().parents[1]
