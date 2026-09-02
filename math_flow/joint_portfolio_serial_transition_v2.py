@@ -637,6 +637,12 @@ def _validate_response(
         program_changes[program_id] = copy.deepcopy(raw)
     if list(program_changes) != sorted(program_changes):
         raise MathFlowError("joint serial V2 program changes must be canonical")
+    program_actions = {str(raw["action"]) for raw in program_changes.values()}
+    if "retire" in program_actions and program_actions != {"retire"}:
+        raise MathFlowError(
+            "joint serial V2 program retirement cannot accompany create, refresh, or move "
+            "until atomic program lineage is supported"
+        )
 
     semantic_ids = [str(raw["id"]) for raw in semantic_packet["resultChanges"]]
     raw_placements = value.get("resultPlacements")

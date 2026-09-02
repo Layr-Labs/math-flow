@@ -70,7 +70,14 @@ must be in the exact V10 write scope.
 V2 deliberately does not support program move plus semantic refresh in one
 operation, intermediate-result placement moves, split/merge lineage, or
 reopening a completed program. Those cases need separately versioned atomic
-contracts rather than implicit multi-operation behavior. A result shared
+contracts rather than implicit multi-operation behavior. Until such a lineage
+contract exists, any transition containing a program `retire` may contain only
+other program `retire` operations: program creation, refresh, or move in the
+same transition is rejected to prevent anonymous split/merge successors.
+Multiple retire-only operations remain valid pure pruning. Result create,
+supersede, and retire operations may accompany pure program retirement because
+they cannot introduce or repurpose a program successor; this preserves the
+root-owned pruning-result pattern above. A result shared
 between root and a non-root program is also deferred because the inherited V7
 placement audit permits root-only or incomparable non-root direct placements,
 but not their mixture.
@@ -169,6 +176,8 @@ Provider-free tests cover:
 - K3 support refresh of both K2 results without new IDs or topology;
 - root-owned and shared results;
 - active-to-completed, solve/prune/retire, explicit supersession, and pure move;
+- pure multi-program retirement while rejecting retire+create, retire+refresh,
+  retire+move, and a fully rebound anonymous one-to-two successor split;
 - cumulative boundary carry, typed evidence, complete affected-node `W+`, and
   exact preservation outside that set;
 - stale state/accounting/boundary/semantic/scope bindings, evidence

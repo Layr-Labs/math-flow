@@ -479,7 +479,7 @@ class JointPortfolioSerialTransitionV2Tests(unittest.TestCase):
         old_claims = reduced["postState"]["intermediateResults"][RESULT2A]["claimRefs"]
         self.assertFalse(any(row["transactionId"] == TX3 for row in old_claims))
 
-    def test_program_and_results_can_be_retired_as_one_pruned_package(self) -> None:
+    def retirement_inputs(self) -> dict[str, object]:
         k1, _ = self.k1(); k2, _ = self.k2(k1)
         state, accounting, boundaries = k2["postState"], k2["withAccessState"], k2["boundaryState"]
         claim = f"{PROBLEM}/k3-prune-uv-package"
@@ -527,18 +527,223 @@ class JointPortfolioSerialTransitionV2Tests(unittest.TestCase):
             assessments=[self.assessment(PROGRAM2, "0", "0", packet, claim), self.assessment("root", "900", None, packet, claim)],
             rationale="The program and both owned results are pruned and retired atomically.",
         )
-        reduced = self.reduce({
+        return {
             "state": state, "accounting": accounting, "boundaries": boundaries,
             "packet": packet, "scope": scope, "claims": claims, "evidence": evidence,
             "judgment": "sha256:" + "3" * 64, "response": response,
-        })
+        }
+
+    def test_program_and_results_can_be_retired_as_one_pruned_package(self) -> None:
+        inputs = self.retirement_inputs()
+        reduced = self.reduce(inputs)
         self.assertEqual(reduced["postState"]["programs"][PROGRAM2]["status"], "retired")
         self.assertTrue(all(reduced["postState"]["intermediateResults"][result_id]["status"] == "retired" for result_id in (RESULT2A, RESULT2B)))
         self.assertEqual(
             reduced["postState"]["contributions"][TX3]["intermediateResultIds"],
-            [pruning_result],
+            ["result-uv-package-pruned"],
         )
         self.assertEqual(reduced["postState"]["contributions"][TX3]["directProgramIds"], ["root"])
+
+    def test_multiple_program_retire_only_operations_are_pure_pruning(self) -> None:
+        k1, _ = self.k1(); k2, _ = self.k2(k1)
+        state, accounting, boundaries = (
+            k2["postState"], k2["withAccessState"], k2["boundaryState"]
+        )
+        claim = f"{PROBLEM}/k3-prune-both-packages"
+        claims, evidence = accepted(claim, [TX1, TX2]), self.evidence(TX3)
+        path = next(iter(evidence))
+        pruning_result = "result-both-packages-pruned"
+        retired_results = (RESULT1, RESULT2A, RESULT2B)
+        packet = make_joint_portfolio_semantic_packet_v2(
+            problem_id=PROBLEM, subject_transaction_id=TX3,
+            base_state_digest=state["stateDigest"], accepted_claims=claims,
+            evidence_file_refs=evidence,
+            root_update={
+                "currentStateSummary": "Both obsolete packages are retired.",
+                "localResidualSummary": "The root continues through other routes.",
+            },
+            result_changes=sorted(
+                [
+                    self.result_change(
+                        action="retire", result_id=result_id, claim_keys=[],
+                        evidence_path=path,
+                        base=state["intermediateResults"][result_id], status="retired",
+                    )
+                    for result_id in retired_results
+                ]
+                + [
+                    self.create_result(
+                        result_id=pruning_result, claim=claim, path=path,
+                        title="Joint package pruning result",
+                        statement="Both represented packages can be pruned.",
+                        dependencies=list(retired_results),
+                    )
+                ],
+                key=lambda row: row["id"],
+            ),
+        )
+        scope = self.scope(
+            state, claims, write_programs=["root", PROGRAM1, PROGRAM2],
+            write_results=list(retired_results), create_programs=[],
+            create_results=[pruning_result],
+        )
+        program_changes = []
+        for program_id in (PROGRAM1, PROGRAM2):
+            prior = state["programs"][program_id]
+            program_changes.append({
+                "action": "retire", "programId": program_id,
+                "baseDigest": prior["digest"], "parentId": prior["parentId"],
+                "title": prior["title"], "objective": prior["objective"],
+                "currentStateSummary": prior["currentStateSummary"],
+                "localResidualSummary": prior["localResidualSummary"],
+                "status": "retired",
+            })
+        placements = [
+            {
+                "resultId": result_id,
+                "primaryProgramId": state["intermediateResults"][result_id][
+                    "primaryProgramId"
+                ],
+                "relatedProgramIds": state["intermediateResults"][result_id][
+                    "relatedProgramIds"
+                ],
+            }
+            for result_id in retired_results
+        ] + [{
+            "resultId": pruning_result, "primaryProgramId": "root",
+            "relatedProgramIds": [],
+        }]
+        response = self.response(
+            state=state, accounting=accounting, boundary_state=boundaries,
+            packet=packet, scope=scope, programs=program_changes,
+            placements=placements, affected=["root", PROGRAM1, PROGRAM2],
+            assessments=[
+                self.assessment(PROGRAM1, "0", "0", packet, claim),
+                self.assessment(PROGRAM2, "0", "0", packet, claim),
+                self.assessment("root", "900", None, packet, claim),
+            ],
+            rationale="Both programs are pruned with no successor program.",
+        )
+        reduced = self.reduce({
+            "state": state, "accounting": accounting, "boundaries": boundaries,
+            "packet": packet, "scope": scope, "claims": claims,
+            "evidence": evidence, "judgment": "sha256:" + "3" * 64,
+            "response": response,
+        })
+        self.assertTrue(all(
+            reduced["postState"]["programs"][program_id]["status"] == "retired"
+            for program_id in (PROGRAM1, PROGRAM2)
+        ))
+        self.assertEqual(
+            reduced["postState"]["contributions"][TX3]["directProgramIds"], ["root"]
+        )
+
+    def test_program_retire_cannot_accompany_create_refresh_or_move(self) -> None:
+        mutations: list[tuple[str, dict[str, object], list[str], list[str]]] = []
+
+        created = {
+            "action": "create", "programId": "program-anonymous-successor",
+            "baseDigest": None, "parentId": "root", "title": "Anonymous successor",
+            "objective": "Continue the retired package without explicit lineage.",
+            "currentStateSummary": "A replacement package appears.",
+            "localResidualSummary": "Replacement work remains.", "status": "active",
+        }
+        mutations.append(("create", created, [], ["program-anonymous-successor"]))
+
+        base_inputs = self.retirement_inputs()
+        prior_program = base_inputs["state"]["programs"][PROGRAM1]
+        refreshed = {
+            "action": "refresh", "programId": PROGRAM1,
+            "baseDigest": prior_program["digest"], "parentId": prior_program["parentId"],
+            "title": prior_program["title"], "objective": prior_program["objective"],
+            "currentStateSummary": "The surviving route absorbs replacement work.",
+            "localResidualSummary": prior_program["localResidualSummary"],
+            "status": prior_program["status"],
+        }
+        mutations.append(("refresh", refreshed, [PROGRAM1], []))
+
+        moved = {
+            "action": "move", "programId": PROGRAM1,
+            "baseDigest": prior_program["digest"], "parentId": PROGRAM2,
+            "title": prior_program["title"], "objective": prior_program["objective"],
+            "currentStateSummary": prior_program["currentStateSummary"],
+            "localResidualSummary": prior_program["localResidualSummary"],
+            "status": prior_program["status"],
+        }
+        mutations.append(("move", moved, [PROGRAM1], []))
+
+        for label, mutation, extra_writes, creates in mutations:
+            with self.subTest(action=label):
+                inputs = self.retirement_inputs()
+                inputs["scope"] = self.scope(
+                    inputs["state"], inputs["claims"],
+                    write_programs=sorted({"root", PROGRAM2, *extra_writes}),
+                    write_results=[RESULT2A, RESULT2B],
+                    create_programs=creates,
+                    create_results=["result-uv-package-pruned"],
+                )
+                inputs["response"]["authoringPacketDigest"] = inputs["scope"][
+                    "authoringPacketDigest"
+                ]
+                inputs["response"]["programChanges"] = sorted(
+                    [*inputs["response"]["programChanges"], mutation],
+                    key=lambda row: row["programId"],
+                )
+                with self.assertRaisesRegex(
+                    MathFlowError,
+                    "program retirement cannot accompany create, refresh, or move",
+                ):
+                    self.reduce(inputs)
+
+    def test_anonymous_one_to_two_program_successor_split_is_rejected(self) -> None:
+        inputs = self.retirement_inputs()
+        successor_ids = ["program-anonymous-successor-a", "program-anonymous-successor-b"]
+        inputs["scope"] = self.scope(
+            inputs["state"], inputs["claims"],
+            write_programs=["root", PROGRAM2],
+            write_results=[RESULT2A, RESULT2B],
+            create_programs=successor_ids,
+            create_results=["result-uv-package-pruned"],
+        )
+        inputs["response"]["authoringPacketDigest"] = inputs["scope"][
+            "authoringPacketDigest"
+        ]
+        successors = [
+            {
+                "action": "create", "programId": program_id, "baseDigest": None,
+                "parentId": "root", "title": f"Anonymous successor {index}",
+                "objective": "Continue one anonymous portion of the retired package.",
+                "currentStateSummary": "A successor package appears without lineage.",
+                "localResidualSummary": "Successor work remains.", "status": "active",
+            }
+            for index, program_id in enumerate(successor_ids, start=1)
+        ]
+        inputs["response"]["programChanges"] = sorted(
+            [*inputs["response"]["programChanges"], *successors],
+            key=lambda row: row["programId"],
+        )
+        affected = ["root", PROGRAM2, *successor_ids]
+        inputs["response"]["programBoundaries"] = [
+            boundary(program_id) for program_id in sorted(affected)
+        ]
+        claim = str(inputs["claims"][0]["claimKey"])
+        inputs["response"]["withAccessAssessments"] = sorted(
+            [
+                self.assessment(PROGRAM2, "0", "0", inputs["packet"], claim),
+                self.assessment(successor_ids[0], "40", "0.5", inputs["packet"], claim),
+                self.assessment(successor_ids[1], "60", "0.5", inputs["packet"], claim),
+                self.assessment("root", "900", None, inputs["packet"], claim),
+            ],
+            key=lambda row: row["programId"],
+        )
+        inputs["response"]["topologyRationale"] = (
+            "The retired program is anonymously replaced by two successor packages."
+        )
+        with self.assertRaisesRegex(
+            MathFlowError,
+            "program retirement cannot accompany create, refresh, or move",
+        ):
+            self.reduce(inputs)
 
     def test_move_refresh_is_rejected_but_pure_move_is_explicit(self) -> None:
         k1, _ = self.k1(); k2, _ = self.k2(k1); _, inputs = self.k3(k2)
