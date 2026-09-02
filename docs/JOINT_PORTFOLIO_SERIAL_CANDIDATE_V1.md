@@ -56,8 +56,8 @@ Trusted reduction then:
 - builds the topology alignment and same-world handoff;
 - converts full local W+ assessments into only the primitive changes actually
   needed; and
-- derives global reach, conditional subtree work, and total W from the
-  authored direct work C and conditional incidence R.
+- derives global reach `R`, conditional subtree work `C`, and total `W` from
+  the authored direct residual work `d` and conditional edge incidence `P`.
 
 Programs outside the exact write scope cannot be changed. Existing primitives
 outside the assessed local set are carried forward unchanged. The K3 contract

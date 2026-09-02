@@ -1,0 +1,165 @@
+# Joint portfolio serial candidate V2
+
+Status: inactive additive reducer milestone. It has no registered judge,
+projection, workflow, CLI command, joint-response provider runner, publication
+path, or viewer integration. Its credit library accepts the existing
+counterfactual provider interface for safe-fact and no-access calls, but it does
+not change an active lane.
+
+## Purpose
+
+V2 turns the successful K2 joint topology/live-work experiment into a bounded
+serial state transition while preserving the established credit order:
+
+1. bind accepted submission semantics, exact evidence, and a V10 local scope;
+2. jointly author the local knowledge/topology change and the new live `W+`
+   primitives;
+3. reduce and freeze that exact post-state and `W+` once;
+4. extract counterfactual-safe facts with submission evidence;
+5. estimate `W-` without raw submission evidence or joint-judge rationales;
+6. derive positive `D = W- - W+` in trusted code; and
+7. allocate the complete value directly to the canonical submission.
+
+The provider never authors `R`, `C`, `W`, `D`, node effects, percentages, or a
+second with-access state.
+
+## Semantic transition
+
+The semantic packet binds the old state, accepted claims, evidence manifest,
+root synthesis, and a canonical list of result changes. Result operations have
+separate meanings:
+
+- `create` creates an active result with accepted-claim provenance;
+- `support` preserves title, statement, qualifications, dependencies, status,
+  and placement while adding accepted support and provenance;
+- `supersede` preserves the predecessor's semantic core, identifies one or
+  more newly created active successors, and changes only lifecycle/provenance;
+- `retire` preserves semantic core and successor links while changing only
+  lifecycle/provenance.
+
+A changed statement, qualification, dependency set, or meaning must use a new
+result ID and explicit supersession. A supersession or retirement operation may
+not attach the new accepted claim as proof of the old semantic statement. The
+new claim must be represented by a created or support-refreshed result. Thus a
+pruning submission can create a root-owned pruning result while retiring the
+obsolete package and its old results.
+
+Root-owned results are first-class. One result may also be shared by several
+incomparable non-root programs through one primary owner plus related owners;
+the reducer maintains one result identity and reciprocal membership rather than
+duplicating it.
+
+## Program and lifecycle transition
+
+Scoped program operations are:
+
+- `create`: a new active program;
+- `refresh`: a semantic summary refresh with stable parent, including an
+  explicit active-to-completed transition;
+- `move`: a pure move that preserves program semantics, lifecycle, and
+  provenance; and
+- `retire`: a pure active/completed-to-retired lifecycle transition.
+
+Root is synthesized in trusted code and remains active. Completion and
+retirement require zero live direct work and zero non-root incidence in `W+`,
+as enforced by the existing work-accounting reducer. The affected set always
+contains root, every changed or result-owning program, and both the old and new
+parent of a moved or inserted package. Every affected existing non-root program
+must be in the exact V10 write scope.
+
+V2 deliberately does not support program move plus semantic refresh in one
+operation, intermediate-result placement moves, split/merge lineage, or
+reopening a completed program. Those cases need separately versioned atomic
+contracts rather than implicit multi-operation behavior. A result shared
+between root and a non-root program is also deferred because the inherited V7
+placement audit permits root-only or incomparable non-root direct placements,
+but not their mixture.
+
+## Cumulative work-policy boundaries
+
+`joint_portfolio_boundaries.py` stores exactly one digest-bound work-policy
+boundary for every program:
+
+- direct residual work scope;
+- activation condition;
+- stopping condition; and
+- independent-variation rationale.
+
+Each state binds the exact knowledge-state and ledger-head digests. A transition
+must replace boundaries for the complete accounting-affected set. Trusted code
+carries every unaffected boundary's text forward and rebinds it to the new
+knowledge state. Missing, stale, duplicate, or tampered boundaries fail closed.
+
+## Primitive and derived accounting quantities
+
+The joint judge authors only the primitive state:
+
+- `d_v = directWorkHours`: competent-human-researcher hours incurred at program
+  `v`, conditional on activating it; and
+- `P_{v|u} = conditionalIncidence`: the probability that child `v` is included
+  or activated conditional on reaching its parent `u`.
+
+Trusted code derives:
+
+```text
+R_root = 1
+R_v = R_parent(v) * P_{v|parent(v)}
+C_v = d_v + sum_child P_{child|v} * C_child
+W = C_root = sum_v R_v * d_v
+```
+
+Here `R_v` is global reach probability and `C_v` is conditional subtree work.
+They are not provider-authored aliases for incidence or direct hours. Every
+affected program supplies a complete `d/P` assessment; unchanged primitives
+outside the affected set are carried forward exactly.
+
+Each assessment cites typed evidence: accepted claim, submission evidence,
+prior program, prior result, or semantic-packet result. The reducer resolves the
+ID/digest pair against authoritative inputs and rejects unresolved, duplicate,
+or noncanonical references.
+
+## Frozen W+ and credit
+
+The V2 credit adapter re-reduces the joint response and seals a frozen candidate
+binding the old/new knowledge states, old accounting and boundary states,
+topology alignment, semantic and authoring packets, same-world handoff, `W+`
+patch, and `W+` state. An optional expected candidate provides a replay guard
+before any provider call.
+
+Safe-fact extraction receives exact evidence. The no-access stage receives the
+safe facts, structural impact context, old live state, and frozen numeric `W+`.
+It receives no raw evidence bytes, evidence manifest, joint response, `W+`
+patch, or joint topology/accounting rationales. Trusted materialization requires
+the reproduced with-access state to equal frozen `W+`, rejects `D <= 0` without
+clamping, derives conserving node effects, and assigns the value to the subject
+submission.
+
+A rejected nonpositive `W-` invalidates only its no-access checkpoint. The
+evidence-bound safe-fact checkpoint and frozen `W+` remain reusable.
+
+## Regression evidence and limits
+
+Provider-free tests cover:
+
+- K1 creation, an actual frozen successful K1 state/live-work fixture, and the
+  exact successful hosted K2 two-result response;
+- K2 creation of one independent program containing both theorem-chain results;
+- K3 support refresh of both K2 results without new IDs or topology;
+- root-owned and shared results;
+- active-to-completed, solve/prune/retire, explicit supersession, and pure move;
+- cumulative boundary carry, typed evidence, complete affected-node `W+`, and
+  exact preservation outside that set;
+- stale state/accounting/boundary/semantic/scope bindings, evidence
+  substitution, out-of-scope writes, lifecycle contamination, and boundary
+  tampering; and
+- frozen-candidate tampering, no-access evidence exclusion, nonpositive `D`,
+  node-effect conservation, and checkpoint retry/replay.
+
+The accepted K1 provider response itself was not checked into the repository,
+so V2 can validate its frozen successful post-state and live-work artifacts but
+cannot replay that missing response byte-for-byte. The K2 response is checked in
+and replayed through the V2 reducer, reproducing `W+ = 4351.7375` hours.
+
+These tests establish reducer semantics, not judge quality. Prompt reliability,
+semantic packet generation, long-context behavior, calibration, repeated-judge
+variance, hosted continuation, and publication remain later milestones.
