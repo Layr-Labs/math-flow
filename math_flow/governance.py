@@ -85,6 +85,7 @@ EXPECTED_IMPLEMENTATIONS = {
         "openrouter-hierarchical-research-builder-v7",
         "openrouter-hierarchical-research-builder-v8",
         "openrouter-hierarchical-research-builder-v9",
+        "openrouter-hierarchical-research-builder-v10",
     },
 }
 LOGIN = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$")
@@ -379,6 +380,10 @@ def validate_projection_spec(
             "openrouter-validity-judgment-v4",
             "openrouter-hierarchical-research-builder-v9",
         ),
+        (
+            "openrouter-validity-judgment-v4",
+            "openrouter-hierarchical-research-builder-v10",
+        ),
     }
     if reconciliation is None and not validity_research_pair:
         raise MathFlowError(
@@ -394,6 +399,7 @@ def validate_projection_spec(
         "openrouter-hierarchical-research-builder-v7",
         "openrouter-hierarchical-research-builder-v8",
         "openrouter-hierarchical-research-builder-v9",
+        "openrouter-hierarchical-research-builder-v10",
     } and (not validity_research_pair or reconciliation is not None):
         raise MathFlowError(
             f"projection {projection_id!r} hierarchical research builder requires "

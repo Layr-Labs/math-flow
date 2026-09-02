@@ -1,0 +1,273 @@
+name: Project serial BSSC research-v8 builder-v10 state
+
+on:
+  workflow_dispatch:
+    inputs:
+      continue:
+        description: Dispatch the remaining accepted frontiers after each successful publication
+        required: true
+        default: false
+        type: boolean
+
+concurrency:
+  group: openrouter-research-v8-bssc-serial
+  cancel-in-progress: false
+
+permissions: {}
+
+env:
+  MATH_FLOW_PROBLEM_ID: bssc-sum-capacity
+  MATH_FLOW_PROJECTION_ID: openrouter-research-v8
+  MATH_FLOW_RUNTIME_PROJECTION: protocol/runtime/openrouter-research-v8-projection.json
+  MATH_FLOW_VALIDITY_SOURCE: protocol/runtime/bssc-research-v4-validity-source-v1.json
+
+jobs:
+  produce:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      actions: write
+      contents: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          ref: "${{ github.sha }}"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - id: governed
+        name: Bind the admitted projection to the approved runtime candidate
+        run: |
+          set -euo pipefail
+          staging_dir="${RUNNER_TEMP}/bssc-research-v8"
+          mkdir -p "$staging_dir"
+          python -m math_flow resolve-projection \
+            --projection "$MATH_FLOW_PROJECTION_ID" \
+            --problem "$MATH_FLOW_PROBLEM_ID" \
+            --head HEAD \
+            --output "$staging_dir/governed-projection.json"
+          runtime_digest="$(python - "$MATH_FLOW_RUNTIME_PROJECTION" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          from math_flow.repository import sha256_json
+          print("sha256:" + sha256_json(json.loads(Path(sys.argv[1]).read_text())))
+          PY
+          )"
+          governed_digest="$(jq -r '.projectionSpecDigest' "$staging_dir/governed-projection.json")"
+          if [[ "$governed_digest" != "$runtime_digest" ]]; then
+            echo "The admitted projection differs from the approved runtime candidate." >&2
+            exit 1
+          fi
+          if [[ "$(jq -r '.scheduling.maximumJudgmentsPerBuild' "$staging_dir/governed-projection.json")" != "1" ]]; then
+            echo "The serial builder-v10 producer requires maximumJudgmentsPerBuild=1." >&2
+            exit 1
+          fi
+          echo "projection_digest=$governed_digest" >> "$GITHUB_OUTPUT"
+          echo "builder=$(jq -r '.knowledgeBuilder' "$staging_dir/governed-projection.json")" >> "$GITHUB_OUTPUT"
+          echo "minimum_interval=$(jq -r '.scheduling.knowledgeMinimumIntervalSeconds' "$staging_dir/governed-projection.json")" >> "$GITHUB_OUTPUT"
+      - name: Prepare the published projection worktree
+        run: |
+          set -euo pipefail
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          staging_dir="${RUNNER_TEMP}/bssc-research-v8"
+          if git ls-remote --exit-code origin refs/heads/projections >/dev/null 2>&1; then
+            git fetch origin refs/heads/projections:refs/remotes/origin/projections
+            git worktree add --detach "$projection_dir" refs/remotes/origin/projections
+          else
+            git worktree add --detach "$projection_dir" HEAD
+            git -C "$projection_dir" switch --orphan projection-publish
+          fi
+          scheduler="$projection_dir/coordination/scheduler.json"
+          if [[ -f "$scheduler" ]]; then
+            cp "$scheduler" "$staging_dir/scheduler-base.json"
+          else
+            printf '{"schemaVersion":1,"lanes":{}}\n' > "$staging_dir/scheduler-base.json"
+          fi
+      - id: frontier
+        name: Materialize one exact accepted frontier
+        run: |
+          set -euo pipefail
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          staging_dir="${RUNNER_TEMP}/bssc-research-v8"
+          python -m math_flow bssc-research-v8-frontier \
+            --source "$MATH_FLOW_VALIDITY_SOURCE" \
+            --projection "$MATH_FLOW_RUNTIME_PROJECTION" \
+            --expected-projection-digest "${{ steps.governed.outputs.projection_digest }}" \
+            --projection-dir "$projection_dir" \
+            --scheduler-file "$projection_dir/coordination/scheduler.json" \
+            --materialization-dir "$staging_dir/validity" \
+            --output "$staging_dir/frontier.json"
+          echo "status=$(jq -r '.status' "$staging_dir/frontier.json")" >> "$GITHUB_OUTPUT"
+          echo "remaining=$(jq -r '.remainingAcceptedCount' "$staging_dir/frontier.json")" >> "$GITHUB_OUTPUT"
+      - id: claim
+        name: Claim exactly the planned accepted submission
+        if: steps.frontier.outputs.status == 'ready'
+        run: |
+          set -euo pipefail
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          staging_dir="${RUNNER_TEMP}/bssc-research-v8"
+          scheduler="$projection_dir/coordination/scheduler.json"
+          subject="$(jq -r '.nextTransition.subjectTransactionId' "$staging_dir/frontier.json")"
+          now="$(date +%s)"
+          trigger=(
+            python -m math_flow knowledge-trigger
+            --scheduler-file "$scheduler"
+            --problem "$MATH_FLOW_PROBLEM_ID"
+            --head "$subject"
+            --builder "${{ steps.governed.outputs.builder }}"
+            --projection-digest "${{ steps.governed.outputs.projection_digest }}"
+            --minimum-interval "${{ steps.governed.outputs.minimum_interval }}"
+            --now "$now"
+            --output "$staging_dir/lane.json"
+          )
+          while IFS= read -r relative; do
+            trigger+=(--judgment-dir "$staging_dir/validity/$relative")
+          done < <(jq -r '.judgmentBundles[].relativePath' "$staging_dir/frontier.json")
+          "${trigger[@]}"
+          lane_id="$(jq -r '.laneId' "$staging_dir/lane.json")"
+          python -m math_flow knowledge-claim \
+            --scheduler-file "$scheduler" \
+            --lane-id "$lane_id" \
+            --maximum-judgments 1 \
+            --now "$now" \
+            --output "$staging_dir/claim.json"
+          expected="$(jq -r '.nextTransition.judgmentId' "$staging_dir/frontier.json")"
+          if ! jq -e --arg expected "$expected" \
+            '.judgmentIds == [$expected] and .conflictIds == []' \
+            "$staging_dir/claim.json" >/dev/null; then
+            echo "The scheduler did not claim exactly the planned accepted frontier." >&2
+            exit 1
+          fi
+          echo "lane_id=$lane_id" >> "$GITHUB_OUTPUT"
+          echo "build_token=$(jq -r '.buildToken' "$staging_dir/claim.json")" >> "$GITHUB_OUTPUT"
+      - id: formation
+        name: Build one builder-v10 post-state
+        if: steps.frontier.outputs.status == 'ready'
+        env:
+          OPENROUTER_API_KEY: "${{ secrets.OPENROUTER_API_KEY }}"
+          MATH_FLOW_SITE_URL: "${{ github.server_url }}/${{ github.repository }}"
+        run: |
+          set -euo pipefail
+          if [[ -z "$OPENROUTER_API_KEY" ]]; then
+            echo "The OPENROUTER_API_KEY repository secret is not configured." >&2
+            exit 1
+          fi
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          staging_dir="${RUNNER_TEMP}/bssc-research-v8"
+          subject="$(jq -r '.nextTransition.subjectTransactionId' "$staging_dir/frontier.json")"
+          judgment_relative="$(jq -r '.nextTransition.judgmentBundleRelativePath' "$staging_dir/frontier.json")"
+          command=(
+            python -m math_flow knowledge-build
+            --problem "$MATH_FLOW_PROBLEM_ID"
+            --builder "${{ steps.governed.outputs.builder }}"
+            --head "$subject"
+            --claim "$staging_dir/claim.json"
+            --judgment-dir "$staging_dir/validity/$judgment_relative"
+            --checkpoint-dir "$staging_dir/checkpoints"
+            --output-dir "$staging_dir/knowledge-build"
+          )
+          base_relative="$(jq -r '.nextTransition.baseRunRelativePath // empty' "$staging_dir/frontier.json")"
+          if [[ -n "$base_relative" ]]; then
+            command+=(--base-run "$projection_dir/$base_relative")
+          fi
+          "${command[@]}"
+      - id: staging
+        name: Close the lease and stage an atomic publication
+        if: always() && steps.claim.outcome == 'success'
+        run: |
+          set -euo pipefail
+          projection_dir="${RUNNER_TEMP}/projection-branch"
+          staging_dir="${RUNNER_TEMP}/bssc-research-v8"
+          scheduler="$projection_dir/coordination/scheduler.json"
+          if [[ "${{ steps.formation.outcome }}" == "success" ]]; then
+            python -m math_flow knowledge-complete \
+              --scheduler-file "$scheduler" \
+              --lane-id "${{ steps.claim.outputs.lane_id }}" \
+              --build-token "${{ steps.claim.outputs.build_token }}" \
+              --state-run-dir "$staging_dir/knowledge-build"
+          else
+            python -m math_flow knowledge-fail \
+              --scheduler-file "$scheduler" \
+              --lane-id "${{ steps.claim.outputs.lane_id }}" \
+              --build-token "${{ steps.claim.outputs.build_token }}" \
+              --problem-ledger-digest "$(jq -r '.nextTransition.problemLedgerDigest' "$staging_dir/frontier.json")"
+          fi
+          publication="$staging_dir/publication"
+          mkdir -p "$publication/bundles"
+          if [[ "${{ steps.formation.outcome }}" == "success" ]]; then
+            cp -R "$staging_dir/knowledge-build" "$publication/bundles/knowledge-build"
+          fi
+          cp "$staging_dir/scheduler-base.json" "$publication/scheduler-base.json"
+          cp "$scheduler" "$publication/scheduler-next.json"
+      - name: Publish the builder-v10 bundle and scheduler
+        if: always() && steps.staging.outcome == 'success'
+        env:
+          GITHUB_TOKEN: "${{ github.token }}"
+        run: |
+          set -euo pipefail
+          publication="${RUNNER_TEMP}/bssc-research-v8/publication"
+          for attempt in {1..8}; do
+            projection_dir="${RUNNER_TEMP}/projection-publish-${attempt}"
+            git fetch origin +refs/heads/main:refs/remotes/origin/main
+            git fetch origin +refs/heads/projections:refs/remotes/origin/projections
+            git worktree add --detach "$projection_dir" refs/remotes/origin/projections
+            current_scheduler="${RUNNER_TEMP}/scheduler-current-${attempt}.json"
+            if [[ -f "$projection_dir/coordination/scheduler.json" ]]; then
+              cp "$projection_dir/coordination/scheduler.json" "$current_scheduler"
+            else
+              printf '{"schemaVersion":1,"lanes":{}}\n' > "$current_scheduler"
+            fi
+            python -m math_flow merge-schedulers \
+              --base "$publication/scheduler-base.json" \
+              --ours "$publication/scheduler-next.json" \
+              --theirs "$current_scheduler" \
+              --output "$projection_dir/coordination/scheduler.json"
+            if [[ -d "$publication/bundles/knowledge-build" ]]; then
+              python -m math_flow publish-batch \
+                --projection-dir "$projection_dir" \
+                --bundle "$publication/bundles/knowledge-build"
+            fi
+            if python -m math_flow github-publish-projection \
+              --projection-dir "$projection_dir" \
+              --repository "$GITHUB_REPOSITORY" \
+              --branch projections \
+              --message "Publish serial research-v8 BSSC state from run ${GITHUB_RUN_ID}"; then
+              exit 0
+            fi
+            if [[ "$attempt" -eq 8 ]]; then
+              exit 1
+            fi
+            sleep $((attempt * 2))
+          done
+      - name: Refresh the viewer catalog after publication
+        if: steps.formation.outcome == 'success' && steps.staging.outcome == 'success'
+        env:
+          GH_TOKEN: "${{ github.token }}"
+        run: |
+          set -euo pipefail
+          gh workflow run refresh-viewer-catalog.yml --repo "$GITHUB_REPOSITORY"
+      - name: Upload builder-v10 attempt diagnostics after a failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: "builder-v10-diagnostics-${{ github.run_id }}"
+          path: "${{ runner.temp }}/bssc-research-v8/checkpoints/diagnostics"
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Dispatch the next accepted frontier
+        if: >-
+          success() &&
+          inputs.continue == true &&
+          steps.formation.outcome == 'success' &&
+          fromJSON(steps.frontier.outputs.remaining) > 1
+        env:
+          GH_TOKEN: "${{ github.token }}"
+        run: |
+          set -euo pipefail
+          gh workflow run project-research-v8-serial.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f continue=true

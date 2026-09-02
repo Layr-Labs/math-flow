@@ -252,6 +252,8 @@ def _historical_judgment_artifact(
 def load_bssc_zero_lane_accepted_submissions(
     repository_root: Path,
     replay_source: object,
+    *,
+    rich_claims: bool = False,
 ) -> list[AcceptedWorkSubmission]:
     """Materialize the exact 16 accepted BSSC inputs without reusing v5 state."""
 
@@ -310,16 +312,37 @@ def load_bssc_zero_lane_accepted_submissions(
         ):
             raise MathFlowError("historical accepted claim set mismatch")
         accepted_claims = [
-            {
-                "claimKey": claim_key,
-                "statement": claims_by_key[claim_key]["statement"],
-                "dependencyTransactionIds": sorted(
-                    str(item)
-                    for item in valid_assessments[claim_key][
-                        "requiredDependencyTransactionIds"
-                    ]
-                ),
-            }
+            (
+                {
+                    "claimKey": claim_key,
+                    "declaredStatement": claims_by_key[claim_key]["statement"],
+                    "validitySummary": valid_assessments[claim_key]["summary"],
+                    "scopeQualifications": sorted(
+                        set(valid_assessments[claim_key]["scopeQualifications"])
+                    ),
+                    "evidenceTransactionIds": sorted(
+                        set(valid_assessments[claim_key]["evidenceTransactionIds"])
+                    ),
+                    "dependencyTransactionIds": sorted(
+                        set(
+                            valid_assessments[claim_key][
+                                "requiredDependencyTransactionIds"
+                            ]
+                        )
+                    ),
+                }
+                if rich_claims
+                else {
+                    "claimKey": claim_key,
+                    "statement": claims_by_key[claim_key]["statement"],
+                    "dependencyTransactionIds": sorted(
+                        str(item)
+                        for item in valid_assessments[claim_key][
+                            "requiredDependencyTransactionIds"
+                        ]
+                    ),
+                }
+            )
             for claim_key in expected_keys
         ]
         evidence_manifest, evidence_chunks = manifest_submission_at(

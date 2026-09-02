@@ -138,7 +138,10 @@ def _state_node_views(
         if isinstance(item, dict)
     }
     knowledge_nodes: dict[tuple[str, str], Mapping[str, object]] = {}
-    for kind, collection_name in (("program", "programs"), ("thread", "threads")):
+    collections = [("program", "programs")]
+    if knowledge_state.get("schemaVersion") != 3:
+        collections.append(("thread", "threads"))
+    for kind, collection_name in collections:
         collection = knowledge_state[collection_name]
         assert isinstance(collection, dict)
         for node_id, record in collection.items():

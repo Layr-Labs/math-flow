@@ -70,6 +70,8 @@ HOSTED_RUNTIME_IDENTITIES = {
         "hostedRunnerImplementation": "bssc-work-accounting-hosted-v1",
         "runnerImplementation": "work-accounting-pipeline-v1",
         "outputProfile": PROFILE_V1,
+        "knowledgeProjectionId": "openrouter-research-v4",
+        "builderImplementation": "openrouter-hierarchical-research-builder-v6",
     },
     ("inactive", "inactive-work-accounting-hosted-v1"): {
         "production": False,
@@ -79,6 +81,8 @@ HOSTED_RUNTIME_IDENTITIES = {
         "hostedRunnerImplementation": None,
         "runnerImplementation": "work-accounting-pipeline-v1",
         "outputProfile": PROFILE_V1,
+        "knowledgeProjectionId": None,
+        "builderImplementation": "openrouter-hierarchical-research-builder-v6",
     },
     ("active", "bssc-work-accounting-hosted-v2"): {
         "production": True,
@@ -88,6 +92,19 @@ HOSTED_RUNTIME_IDENTITIES = {
         "hostedRunnerImplementation": "bssc-work-accounting-hosted-v2",
         "runnerImplementation": "work-accounting-pipeline-v2",
         "outputProfile": PROFILE_V2,
+        "knowledgeProjectionId": "openrouter-research-v4",
+        "builderImplementation": "openrouter-hierarchical-research-builder-v6",
+    },
+    ("active", "bssc-work-accounting-hosted-v3"): {
+        "production": True,
+        "projectionId": "openrouter-v10-work-accounting-v2",
+        "projectionImplementation": "openrouter-work-accounting-v2",
+        "workProviderImplementation": "openrouter-work-accounting-v2",
+        "hostedRunnerImplementation": "bssc-work-accounting-hosted-v3",
+        "runnerImplementation": "work-accounting-pipeline-v3",
+        "outputProfile": PROFILE_V2,
+        "knowledgeProjectionId": "openrouter-research-v8",
+        "builderImplementation": "openrouter-hierarchical-research-builder-v10",
     },
 }
 
@@ -344,7 +361,8 @@ def load_work_accounting_hosted_config(
     if production:
         if (
             config.get("problemId") != "bssc-sum-capacity"
-            or config.get("knowledgeProjectionId") != "openrouter-research-v4"
+            or config.get("knowledgeProjectionId")
+            != runtime["knowledgeProjectionId"]
         ):
             raise MathFlowError("production hosted config is not the exact BSSC lane")
         knowledge_binding = config.get("knowledgeProjectionSpec")
@@ -412,7 +430,7 @@ def load_work_accounting_hosted_config(
     expected_specs = (
         (
             "builderSpec",
-            "openrouter-hierarchical-research-builder-v6",
+            str(runtime["builderImplementation"]),
         ),
         ("workProviderSpec", str(runtime["workProviderImplementation"])),
     )

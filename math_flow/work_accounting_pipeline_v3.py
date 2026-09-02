@@ -48,6 +48,7 @@ from .work_projection import (
     prepare_frozen_with_access_candidate_v2,
     run_work_projection_bundle,
 )
+from .work_accounting_pipeline import CASConflict, ImmutableConflict, StoredValue
 
 
 DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
@@ -136,22 +137,8 @@ WORK_INDEX_FIELDS = {
 }
 
 
-class CASConflict(MathFlowError):
-    """The mutable lane head changed from the caller's expected version."""
-
-
-class ImmutableConflict(MathFlowError):
-    """An immutable key already contains different bytes."""
-
-
 class WorkProviderFailure(MathFlowError):
     """An injected work provider failed before producing valid stage output."""
-
-
-@dataclass(frozen=True)
-class StoredValue:
-    value: bytes
-    version: str
 
 
 class CASObjectStore(Protocol):
@@ -531,15 +518,45 @@ def normalize_work_accounting_submission(
         raise MathFlowError("accepted pipeline submission has no accepted claims")
     claim_keys: list[str] = []
     for claim in claims:
-        if set(claim) != {"claimKey", "statement", "dependencyTransactionIds"}:
+        simple = set(claim) == {
+            "claimKey",
+            "statement",
+            "dependencyTransactionIds",
+        }
+        rich = set(claim) == {
+            "claimKey",
+            "declaredStatement",
+            "validitySummary",
+            "scopeQualifications",
+            "evidenceTransactionIds",
+            "dependencyTransactionIds",
+        }
+        if not simple and not rich:
             raise MathFlowError("accepted pipeline claim has invalid fields")
         claim_key = claim.get("claimKey")
         dependencies = claim.get("dependencyTransactionIds")
+        statement = claim.get("statement" if simple else "declaredStatement")
+        qualifications = claim.get("scopeQualifications") if rich else []
+        evidence_transactions = claim.get("evidenceTransactionIds") if rich else []
         if (
             not isinstance(claim_key, str)
             or not IDENTIFIER.fullmatch(claim_key)
-            or not isinstance(claim.get("statement"), str)
-            or not str(claim["statement"]).strip()
+            or not isinstance(statement, str)
+            or not statement.strip()
+            or rich
+            and (
+                not isinstance(claim.get("validitySummary"), str)
+                or not str(claim["validitySummary"]).strip()
+                or not isinstance(qualifications, list)
+                or qualifications != sorted(set(qualifications))
+                or any(not isinstance(item, str) or not item.strip() for item in qualifications)
+                or not isinstance(evidence_transactions, list)
+                or evidence_transactions != sorted(set(evidence_transactions))
+                or any(
+                    not isinstance(item, str) or not GIT_SHA.fullmatch(item)
+                    for item in evidence_transactions
+                )
+            )
             or not isinstance(dependencies, list)
             or len(dependencies) != len(set(dependencies))
             or any(not isinstance(item, str) or not GIT_SHA.fullmatch(item) for item in dependencies)
@@ -610,13 +627,43 @@ def validate_work_accounting_submission_input(value: object) -> dict[str, object
     claim_keys: list[str] = []
     for claim in claims:
         dependencies = claim.get("dependencyTransactionIds") if isinstance(claim, dict) else None
+        simple = isinstance(claim, dict) and set(claim) == {
+            "claimKey",
+            "statement",
+            "dependencyTransactionIds",
+        }
+        rich = isinstance(claim, dict) and set(claim) == {
+            "claimKey",
+            "declaredStatement",
+            "validitySummary",
+            "scopeQualifications",
+            "evidenceTransactionIds",
+            "dependencyTransactionIds",
+        }
+        statement = claim.get("statement" if simple else "declaredStatement") if isinstance(claim, dict) else None
+        qualifications = claim.get("scopeQualifications") if rich else []
+        evidence_transactions = claim.get("evidenceTransactionIds") if rich else []
         if (
             not isinstance(claim, dict)
-            or set(claim) != {"claimKey", "statement", "dependencyTransactionIds"}
+            or not (simple or rich)
             or not isinstance(claim.get("claimKey"), str)
             or not IDENTIFIER.fullmatch(str(claim["claimKey"]))
-            or not isinstance(claim.get("statement"), str)
-            or not str(claim["statement"]).strip()
+            or not isinstance(statement, str)
+            or not statement.strip()
+            or rich
+            and (
+                not isinstance(claim.get("validitySummary"), str)
+                or not str(claim["validitySummary"]).strip()
+                or not isinstance(qualifications, list)
+                or qualifications != sorted(set(qualifications))
+                or any(not isinstance(item, str) or not item.strip() for item in qualifications)
+                or not isinstance(evidence_transactions, list)
+                or evidence_transactions != sorted(set(evidence_transactions))
+                or any(
+                    not isinstance(item, str) or not GIT_SHA.fullmatch(item)
+                    for item in evidence_transactions
+                )
+            )
             or not isinstance(dependencies, list)
             or len(dependencies) != len(set(dependencies))
             or any(

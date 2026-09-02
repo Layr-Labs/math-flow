@@ -732,6 +732,27 @@ def build_parser() -> argparse.ArgumentParser:
     )
     bssc_research_v7_parser.add_argument("--output", type=Path)
 
+    bssc_research_v8_parser = commands.add_parser(
+        "bssc-research-v8-frontier",
+        help="materialize the next exact accepted BSSC builder-v10 frontier",
+    )
+    bssc_research_v8_parser.add_argument("--source", required=True, type=Path)
+    bssc_research_v8_parser.add_argument("--projection", required=True, type=Path)
+    bssc_research_v8_parser.add_argument(
+        "--expected-projection-digest",
+        help="digest resolved from the separately admitted governed projection",
+    )
+    bssc_research_v8_parser.add_argument(
+        "--projection-dir", required=True, type=Path
+    )
+    bssc_research_v8_parser.add_argument(
+        "--scheduler-file", required=True, type=Path
+    )
+    bssc_research_v8_parser.add_argument(
+        "--materialization-dir", required=True, type=Path
+    )
+    bssc_research_v8_parser.add_argument("--output", type=Path)
+
     two_entity_audit_parser = commands.add_parser(
         "two-entity-migration-audit",
         help="audit a state-v2 snapshot for a provider-free two-entity mapping",
@@ -1546,6 +1567,7 @@ def main(argv: list[str] | None = None) -> int:
                     "openrouter-hierarchical-research-builder-v7",
                     "openrouter-hierarchical-research-builder-v8",
                     "openrouter-hierarchical-research-builder-v9",
+                    "openrouter-hierarchical-research-builder-v10",
                 }
             ):
                 result = run_research_build_bundle(
@@ -1654,6 +1676,27 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 projection=load_bssc_research_v7_json(
                     args.projection, "BSSC research-v7 projection"
+                ),
+                expected_projection_digest=args.expected_projection_digest,
+            )
+            _write_json(result, str(args.output) if args.output else None)
+            return 0
+        elif args.command == "bssc-research-v8-frontier":
+            from .bssc_research_v8_producer import (
+                load_json_file as load_bssc_research_v8_json,
+                plan_bssc_research_v8_frontier,
+            )
+
+            result = plan_bssc_research_v8_frontier(
+                root,
+                projection_root=args.projection_dir,
+                scheduler_file=args.scheduler_file,
+                materialization_root=args.materialization_dir,
+                replay_source=load_bssc_research_v8_json(
+                    args.source, "BSSC research-v8 source"
+                ),
+                projection=load_bssc_research_v8_json(
+                    args.projection, "BSSC research-v8 projection"
                 ),
                 expected_projection_digest=args.expected_projection_digest,
             )
