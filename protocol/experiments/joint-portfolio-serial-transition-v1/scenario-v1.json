@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "problemId": "bssc-sum-capacity",
+  "subjects": {
+    "k1": "1111111111111111111111111111111111111111",
+    "k2": "2222222222222222222222222222222222222222",
+    "k3": "3333333333333333333333333333333333333333"
+  },
+  "programIds": {
+    "k1": "program-bssc-code-induced-converse",
+    "k2": "program-bssc-uv-product-branchwise-additivity"
+  },
+  "resultIds": {
+    "k1": "result-bssc-code-induced-finite-block-dependence-balance",
+    "k2": "result-uv-average-product-additivity"
+  },
+  "relationalExpectations": [
+    "K1 creates one result-owning root-child accounting program.",
+    "K2 creates one independent root-child accounting program rather than nesting under K1 merely because it depends on the K1 result.",
+    "K3 refreshes the exact K2 program and result IDs, appends evidence and provenance, and creates no program or result.",
+    "Every transition is bound to the exact old knowledge state, old live W+ state, accepted-claim digest, current evidence manifest, semantic packet, and reducer-derived local authoring scope.",
+    "Only root and explicitly changed local programs are reassessed; all other W+ primitives are carried forward unchanged and R, C, and W remain trusted derived fields."
+  ]
+}
