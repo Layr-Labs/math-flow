@@ -1218,9 +1218,9 @@ class OpenRouterWorkProjectionProvider(_GovernedOpenRouterAdapter):
             diagnostic = str(exc)[:1000]
             if stage == "safe-facts":
                 stage_guidance = (
-                    "Paraphrase latent conditions concisely. Do not quote or copy "
-                    "any raw submission-evidence span. Reference only accepted claim "
-                    "keys and builder-owned program/thread nodes present in the input."
+                    "State latent conditions concisely without unnecessary proof detail "
+                    "or submission instructions. Reference only accepted claim keys and "
+                    "builder-owned program/thread nodes present in the input."
                 )
             elif stage == "no-access":
                 stage_guidance = (

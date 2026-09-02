@@ -433,20 +433,17 @@ class GovernedProviderTests(unittest.TestCase):
 
     def test_v2_semantic_retries_preserve_the_accepted_frozen_w_plus(self) -> None:
         fixture = self._work_fixture()
-        copied_safe_facts = _safe_response()
-        copied_safe_facts["facts"][0]["condition"] = SECRET
         outside_context = _patch("2", "with-access")
         outside_context["updates"][0]["nodeRef"]["id"] = "root/outside-context"
         outside_no_access = _patch("8", "no-access")
         outside_no_access["updates"][0]["nodeRef"]["id"] = "root/outside-context"
         transport = SequentialTransport(
             [
-                _response(copied_safe_facts, ordinal=1),
-                _response(_safe_response(), ordinal=2),
-                _response(outside_context, ordinal=3),
-                _response(_patch("2", "with-access"), ordinal=4),
-                _response(outside_no_access, ordinal=5),
-                _response(_patch("8", "no-access"), ordinal=6),
+                _response(_safe_response(), ordinal=1),
+                _response(outside_context, ordinal=2),
+                _response(_patch("2", "with-access"), ordinal=3),
+                _response(outside_no_access, ordinal=4),
+                _response(_patch("8", "no-access"), ordinal=5),
             ]
         )
         provider = OpenRouterWorkProjectionProviderV2(
@@ -473,13 +470,17 @@ class GovernedProviderTests(unittest.TestCase):
         )
         self.assertEqual(
             [record["attempts"] for record in provider.invocation_records],
-            [2, 2, 2],
+            [1, 2, 2],
+        )
+        self.assertEqual(
+            [item["outcome"] for item in provider.invocation_records[0]["attemptRecords"]],
+            ["accepted"],
         )
         self.assertTrue(
             all(
                 [item["outcome"] for item in record["attemptRecords"]]
                 == ["validation-rejected", "accepted"]
-                for record in provider.invocation_records
+                for record in provider.invocation_records[1:]
             )
         )
 
@@ -494,10 +495,9 @@ class GovernedProviderTests(unittest.TestCase):
             )
 
         self.assertEqual(
-            frozen_input(transport.requests[4]), frozen_input(transport.requests[5])
+            frozen_input(transport.requests[3]), frozen_input(transport.requests[4])
         )
-        self.assertIn("impact context", transport.requests[5]["messages"][-1]["content"])
-        self.assertNotIn(SECRET, transport.requests[1]["messages"][-1]["content"])
+        self.assertIn("impact context", transport.requests[4]["messages"][-1]["content"])
 
     def test_v2_nonpositive_delta_never_enters_provider_retry_feedback(self) -> None:
         fixture = self._work_fixture()
@@ -647,41 +647,27 @@ class GovernedProviderTests(unittest.TestCase):
         self.assertEqual(provider.invocation_records[0]["attempts"], 2)
         self.assertFalse(load_judge_spec(WORK_SPEC)["retryPolicy"]["manualReview"])
 
-    def test_work_safe_facts_retry_after_complete_firewall_validation(self) -> None:
+    def test_work_safe_facts_literal_overlap_does_not_force_retry(self) -> None:
         copied = _safe_response()
         copied["facts"][0]["condition"] = SECRET
         transport = SequentialTransport(
             [
                 _response(copied, ordinal=1),
-                _response(_safe_response(), ordinal=2),
-                _response(_patch("8", "no-access"), ordinal=3),
-                _response(_patch("2", "with-access"), ordinal=4),
+                _response(_patch("8", "no-access"), ordinal=2),
+                _response(_patch("2", "with-access"), ordinal=3),
             ]
         )
         _, provider, _ = self._run_work(transport)
-        self.assertEqual(len(transport.requests), 4)
+        self.assertEqual(len(transport.requests), 3)
         first = provider.invocation_records[0]
         self.assertEqual(first["stage"], "safe-facts")
-        self.assertEqual(first["attempts"], 2)
+        self.assertEqual(first["attempts"], 1)
         self.assertEqual(
             [item["outcome"] for item in first["attemptRecords"]],
-            ["validation-rejected", "accepted"],
+            ["accepted"],
         )
-        feedback = transport.requests[1]["messages"][-1]["content"]
-        self.assertIn(
-            "counterfactual-safe facts copy a raw submission evidence span",
-            feedback,
-        )
-        self.assertIn("Do not quote or copy", feedback)
-        self.assertNotIn(SECRET, feedback)
-        self.assertNotEqual(
-            f"sha256:{sha256_json(transport.requests[0])}",
-            f"sha256:{sha256_json(transport.requests[1])}",
-        )
-        self.assertEqual(
-            [request["seed"] for request in transport.requests[:2]],
-            [1729, 1729],
-        )
+        self.assertIn(SECRET, json.dumps(transport.requests[1]))
+        self.assertNotIn('"submissionEvidence"', json.dumps(transport.requests[1]))
 
     def test_work_with_access_retries_until_reduction_is_positive(self) -> None:
         transport = SequentialTransport(

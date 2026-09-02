@@ -36,3 +36,23 @@ Signed node effects must sum exactly to the submission allocation.
 
 Publication and continuation are forbidden. A hosted run requires explicit
 approval and must use `continue=false`.
+
+## Hosted result
+
+Approved GitHub Actions run `33588922200` completed successfully without
+publication or continuation. Trusted reduction reproduced frozen
+`W+ = 4351.7375` hours, accepted `W- = 4595.7375` hours, and assigned
+`D = 244` competent-human-researcher hours to K2 submission
+`f236017c62c67ce4218c1f81ea34134f0954b556`. Its node-level explanation was
+144 hours on `program-bssc-uv-product-branchwise-additivity` plus 100 hours on
+`root`. W- passed on its first attempt. The run made four calls, reported
+137,556 tokens, and cost $0.1852836.
+
+Safe-fact extraction exhausted three attempts because the former deterministic
+32-byte overlap check rejected ordinary mathematical phrases in the first two
+otherwise structured responses. That lexical guard is removed in the current
+candidate. The no-access request still structurally excludes evidence
+containers and attached files, submission payload fields, item-bearing
+alignment, and W+ patch rationales/evidence. A future fixed-input semantic
+exposure ablation will test whether increasingly proof-bearing safe facts bias
+W-; this single run cannot answer that question.

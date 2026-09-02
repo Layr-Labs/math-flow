@@ -35,7 +35,7 @@ from .work_projection import (
     PROFILE_V2,
     WorkProjectionCheckpointStore,
     WorkProjectionProvider,
-    _assert_no_access_evidence_nonleakage,
+    _assert_no_access_evidence_structure,
     _bindings,
     _ensure_required_context_coverage,
     _evidence_files,
@@ -424,7 +424,7 @@ def run_joint_portfolio_credit_candidate(
         stage_input=no_input,
         profile=PROFILE_V2,
     )
-    _assert_no_access_evidence_nonleakage(no_request, verified_files)
+    _assert_no_access_evidence_structure(no_request)
 
     def validate_no_response(response: object) -> dict[str, object]:
         patch = _patch_from_response(

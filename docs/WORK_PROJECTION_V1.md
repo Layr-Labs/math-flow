@@ -33,9 +33,11 @@ state; the no-access state remains an evaluation branch.
 
 The safe-fact extraction stage receives the exact verified submission as a
 sequence of byte-preserving evidence files outside its JSON request. The
-validated extraction is the governed epistemic judgment boundary: structural
-validation rejects copied evidence spans and context escape, but cannot prove
-that an otherwise valid paraphrase is semantically non-actionable.
+validated extraction is the governed semantic judgment boundary. Structural
+validation rejects unexpected fields, actor-visible facts, invalid claim/node
+references, and evidence-integrity failures, but it deliberately does not use
+literal text overlap as a proxy for semantic leakage. It cannot prove that a
+valid summary is non-actionable or unbiased.
 
 The no-access request contains the validated safe facts, builder-owned impact
 context, root contract, prior numeric annotations, a deterministic topology
@@ -43,7 +45,9 @@ alignment reference, and digest bindings. It does not contain the full topology
 alignment (which can include submission-revealed item identities), the evidence
 manifest, evidence chunks, target knowledge records, with-access request or
 patch, or raw submission bytes. Its provider call receives an empty evidence
-sequence.
+sequence. Provider-authored safe-fact prose may overlap submission wording; the
+protocol relies on the role contract rather than a deterministic substring
+rejection until a semantic exposure test establishes a better rule.
 
 The with-access request binds the metadata-only evidence manifest and complete
 chunk index. The provider call separately receives every reconstructed file as

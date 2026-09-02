@@ -331,6 +331,41 @@ preference.
   validates the assessments, computes local shares, and propagates them through
   the hierarchy. Credit never changes validity or knowledge state.
 
+### Unpublished joint portfolio/work candidate
+
+The branch-only `bssc-joint-portfolio-credit-k2-v1` experiment is the first
+hosted candidate to join one accepted accounting-aware topology/W+ judgment to
+a direct same-world W- estimate and a submission-level allocation. It freezes
+the exact successful K2 joint response from run `33564954137`; trusted replay
+must reproduce the post-knowledge digest, W+ state digest, and 4,351.7375-hour
+W+ total before another provider call is possible. It never asks a second judge
+to regenerate topology or W+.
+
+Hosted run `33588922200` completed the remaining candidate without publication
+or continuation. Its W- estimate was 4,595.7375 hours, so trusted reduction
+assigned `D = 244` competent-human-researcher hours directly to canonical K2
+submission `f236017c...`. The additive explanation was 144 hours on the new
+root-child UV product/branchwise-additivity package and 100 hours of root-level
+integration/pruning work. Those node effects are explanatory differences, not
+separate credit recipients. W- passed on its first attempt; the run used four
+provider calls, 137,556 reported tokens, and $0.1852836.
+
+The safe-fact stage used all three attempts because a deterministic 32-byte
+overlap rule rejected ordinary mathematical phrases copied from the submission.
+That literal-copy rule has now been removed from safe-fact validation and final
+W- request assembly. Evidence manifests, chunks, attached files, submission
+payload fields, W+ patch rationales/evidence, and unexpected schema fields
+remain structurally excluded from W-. Safe-fact prose may overlap submission
+wording. A future teacher-student exposure ablation must measure whether
+outcome-only, paraphrased, near-verbatim, or proof-bearing summaries materially
+bias W-; lexical overlap alone is not a quality criterion.
+
+This experiment remains unpublished, K2-only, and absent from the Research
+Atlas. Its 244-hour result is one uncalibrated model judgment, not sampling-
+variance or numerical-accuracy evidence. It proves the candidate call order,
+bindings, frozen-W+ authority, trusted reduction, and submission allocation;
+it does not yet establish a sequential multi-submission credit lane.
+
 ### Projection protocol and publication
 
 - The core run envelope standardizes identity, provenance, and artifact
@@ -365,6 +400,7 @@ preference.
 | Solver-facing repository skill | Implemented; requires repository tools and exact-reference inspection | `.agents/skills/math-flow-solver/` |
 | Builder-facing repository skill | Implemented; routes protocol and repository maintenance away from solver participation and requires isolated worktrees for parallel agents | `.agents/skills/math-flow-builder/` |
 | Local/fractal Builder V10 experiment | Inactive, unpublished route/refine/author candidate with bounded digest-bound scopes, hidden-state preservation, provider-free widening through 1,024 programs, and a stopped BSSC paid holdout | `math_flow/research_builder_v10.py`, `math_flow/research_builder_v10_provider.py`, `docs/LOCAL_BUILDER_V10_FULL_SEND.md` |
+| Joint topology/W+ credit candidate | Unpublished K2-only hosted candidate freezes an accepted joint topology/W+ result, estimates only safe facts and W-, derives positive D in trusted code, and allocates all work directly to the submission; no publication or continuation path | `math_flow/joint_portfolio_credit_experiment.py`, `experiments/bssc_joint_portfolio_credit.py`, `protocol/experiments/bssc-joint-portfolio-credit-k2-v1/` |
 | Protocol evaluation substrate | Provider-free manifest/replay/scoring harness, builder/work-accounting scale probes, bounded accounting-root-total replay, eight-submission exact V10-scoped miniature using the real V2 provider adapter plus public bundle run/load replay over 24 local capture-transport invocations, and review-gated No-Three zero-call serial preflight implemented. An additive seven-component umbrella suite now runs those checks in bounded `pr` or exact-regenerating `full` mode, emits canonical JSON/Markdown summaries, and accepts no provider or publication authority; paid semantic V10/V2 execution and judge-quality evaluation remain pending. | `math_flow/teacher_student_scenarios.py`, `docs/PROTOCOL_EVALUATION_SUITE.md`, `docs/PROTOCOL_EVALUATION_ROADMAP.md` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Active credit-v3 uses the two-term common-horizon hierarchical evaluator over locked research-v3 state/history; governed local/hosted execution, provider-free eligibility, bounded semantic retries, rolling coalescing, predecessor-chain terminals, and independent bundles are implemented | `math_flow/research_credit.py`, `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |
@@ -783,11 +819,14 @@ experiments and product gaps as of this document's reconciliation date:
    their boundaries remain useful as accepted work accumulates, then design the
    governed topology-evolution version that can move, reparent, split, merge,
    retire, and refresh affected local credit without rewriting history.
-2. **Calibrate hierarchical credit.** Compare common-horizon direct/obviated
-   assessments across repeated runs and growing accepted histories. Test whether
-   local thread ledgers, counterfactual evidence, residuals, and hierarchical
-   propagation are stable enough for the intended credit semantics before
-   introducing a finite award pool or time-bucketed allocation profile.
+2. **Complete and calibrate an end-to-end credit candidate.** The unpublished
+   joint K2 experiment now proves one frozen-W+ to W- to submission-allocation
+   path. Extend it through an ordered miniature and then a small real history;
+   compare repeated fixed-input samples, growing accepted histories, safe-fact
+   exposure levels, and node-level drivers. Test whether counterfactual evidence,
+   local scope, live-W+ chaining, corrections, and hour estimates are stable
+   enough for the intended semantics before introducing a finite award pool or
+   time-bucketed allocation profile.
 3. **Run the hosted scale pilot.** The provider-free congestion probe covers
    scheduler, retry, merge, chunking, viewer, and context invariants locally.
    Admit several real problems with simultaneous solver contributions to
@@ -903,6 +942,9 @@ upgrade path.
   and possible shadow activation.
 - `docs/WORK_PROJECTION_V2.md` — active BSSC A-first work-accounting profile,
   frozen-live-state boundary, epistemic policy, and retry-isolation contract.
+- `protocol/experiments/bssc-joint-portfolio-credit-k2-v1/README.md` —
+  unpublished K2 joint topology/W+ to W- candidate, submission allocation, and
+  hosted execution boundary.
 - `docs/MVP.md` — architecture, phased roadmap, and deferred decisions.
 - `docs/HIERARCHICAL_RESEARCH_PROTOCOL_V5.md` — current audited initial
   sibling/nested program formation, fixed-topology boundary, and rollout.

@@ -124,6 +124,15 @@ manifests with relational gold rather than bespoke scripts. Score topology,
 semantic partition, qualification fidelity, operation validity, retry behavior,
 token use, and cost independently.
 
+Add a safe-fact exposure ablation with the subject, base state, frozen `W+`,
+model identity, and seed held fixed. Compare an outcome-only summary, a normal
+semantic paraphrase, a near-verbatim result summary, and an intentionally
+proof-bearing/actionable summary while every arm retains the same structural
+ban on raw evidence containers and attached evidence files. Measure changes in
+`W-` totals, node patches, scope, retries, and cost across repeated samples. The
+test should identify material semantic anchoring; it must not substitute a
+substring-overlap score for counterfactual quality.
+
 ### 4. Sequential real-contribution holdouts
 
 Freeze accepted repository judgments and evidence, hide later submissions, and

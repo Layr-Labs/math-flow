@@ -477,9 +477,13 @@ The governed pipeline needs:
 5. optional automated consistency assessment, with no human review gate.
 
 The no-access request builder must enforce the epistemic firewall structurally.
-Tests should establish that it cannot contain raw actionable submission text or
-with-access artifacts. Complete evidence should be content-addressed and
-manifested rather than silently truncated.
+Tests should establish that it cannot contain evidence manifests, chunks,
+attached raw evidence files, submission payload fields, or with-access patch
+rationales/evidence. Safe-fact prose is a governed semantic judgment and may
+overlap submission wording; literal overlap is not a deterministic failure.
+Complete evidence should be content-addressed and manifested rather than
+silently truncated. A separate semantic exposure ablation should measure
+whether increasingly proof-bearing safe-fact summaries bias `W-`.
 
 ### Scheduling and publication
 

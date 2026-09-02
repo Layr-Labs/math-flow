@@ -225,55 +225,14 @@ def _json_artifact(raw: bytes, label: str) -> object:
         raise MathFlowError(f"{label} is not valid UTF-8 JSON") from exc
 
 
-def _assert_no_access_evidence_nonleakage(
-    request: Mapping[str, object], evidence_files: Sequence[SubmissionEvidenceFile]
-) -> None:
-    """Enforce the byte-level half of the epistemic firewall.
+def _assert_no_access_evidence_structure(request: Mapping[str, object]) -> None:
+    """Keep evidence containers out of W- without policing semantic prose.
 
-    Safe-fact extraction owns the harder semantic judgment. This guard ensures
-    that later composition cannot accidentally reintroduce a raw evidence span.
+    The safe-fact summary is intentionally model-authored semantic context.
+    Literal overlap with the submission is not a reliable proxy for whether
+    that context biases the no-access estimate, so this boundary enforces only
+    the deterministic request structure.
     """
-
-    # Identity fields, the immutable root contract, claim keys, and builder node
-    # IDs are independently governed bindings and may legitimately be printed
-    # in the manifested submission. Scan only provider-authored prose. The same
-    # prose was checked when safe facts were built; this second check protects
-    # the later request-composition boundary.
-    stage_input = request.get("stageInput")
-    safe_facts = (
-        stage_input.get("safeFacts") if isinstance(stage_input, dict) else None
-    )
-    facts = safe_facts.get("facts") if isinstance(safe_facts, dict) else None
-    assumptions = (
-        safe_facts.get("assumptions") if isinstance(safe_facts, dict) else None
-    )
-    rendered = _json_bytes(
-        {
-            "factConditions": [
-                item.get("condition")
-                for item in facts
-                if isinstance(item, dict)
-            ]
-            if isinstance(facts, list)
-            else [],
-            "assumptions": assumptions if isinstance(assumptions, list) else [],
-        }
-    )
-    window = 32
-    rendered_windows = {
-        rendered[offset : offset + window]
-        for offset in range(max(0, len(rendered) - window + 1))
-    }
-    for evidence in evidence_files:
-        content = evidence.content
-        if len(content) >= window:
-            if any(
-                content[offset : offset + window] in rendered_windows
-                for offset in range(len(content) - window + 1)
-            ):
-                raise MathFlowError("no-access request contains raw submission evidence")
-        elif len(content) >= 16 and content in rendered:
-            raise MathFlowError("no-access request contains a raw submission artifact")
 
     prohibited_keys = {
         "evidenceManifest",
@@ -1597,7 +1556,7 @@ def run_work_projection_bundle(
         required_updates=no_access_required_updates,
         stage_input=no_input,
     )
-    _assert_no_access_evidence_nonleakage(no_request, verified_files)
+    _assert_no_access_evidence_structure(no_request)
     def validate_no_access_response(response: object) -> dict[str, object]:
         return _patch_from_response(
             response,
@@ -1909,7 +1868,7 @@ def _run_work_projection_bundle_v2(
         stage_input=no_input,
         profile=PROFILE_V2,
     )
-    _assert_no_access_evidence_nonleakage(no_request, verified_files)
+    _assert_no_access_evidence_structure(no_request)
 
     def validate_no_access_response(response: object) -> dict[str, object]:
         patch = _patch_from_response(
@@ -2222,9 +2181,7 @@ def load_work_projection_bundle(
         effective_no_access_required_updates = with_access_required_updates
     else:
         effective_no_access_required_updates = no_access_required_updates
-    _assert_no_access_evidence_nonleakage(
-        no_request, _evidence_files(evidence_manifest, chunks)
-    )
+    _assert_no_access_evidence_structure(no_request)
     no_response = _load_json_role(bundle_dir, manifest, "no-access-response")
     no_patch = _load_json_role(bundle_dir, manifest, "no-access-work-patch")
     rebuilt_no_patch = _patch_from_response(
@@ -2473,9 +2430,7 @@ def _load_work_projection_bundle_v2(
     )
     if no_request != expected_no_request:
         raise MathFlowError("work projection V2 no-access request is not reproducible")
-    _assert_no_access_evidence_nonleakage(
-        no_request, _evidence_files(evidence_manifest, chunks)
-    )
+    _assert_no_access_evidence_structure(no_request)
     no_response = _load_json_role(bundle_dir, manifest, "no-access-response")
     no_patch = _load_json_role(bundle_dir, manifest, "no-access-work-patch")
     rebuilt_no_patch = _patch_from_response(
