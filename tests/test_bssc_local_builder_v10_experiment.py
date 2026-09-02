@@ -96,19 +96,23 @@ class BudgetedCapturingTransportTests(unittest.TestCase):
 
 
 class RevisedAccountingGoldTests(unittest.TestCase):
-    def test_non_main_workflow_targets_the_joint_portfolio_wplus_gate(self) -> None:
+    def test_non_main_workflow_targets_the_joint_portfolio_credit_gate(self) -> None:
         workflow = (
             ROOT / ".github/workflows/project-research-v7-serial.yml"
         ).read_text(encoding="utf-8")
         self.assertIn(
-            "--manifest protocol/experiments/bssc-joint-portfolio-wplus-k2-v3/manifest.json",
+            "--manifest protocol/experiments/bssc-joint-portfolio-credit-k2-v1/manifest.json",
             workflow,
         )
         self.assertIn(
-            '--output "${RUNNER_TEMP}/bssc-joint-portfolio-wplus-k2-v3"',
+            '--output "${RUNNER_TEMP}/bssc-joint-portfolio-credit-k2-v1"',
             workflow,
         )
         self.assertIn(
+            "python -m experiments.bssc_joint_portfolio_credit",
+            workflow,
+        )
+        self.assertNotIn(
             "python -m experiments.bssc_joint_portfolio_wplus",
             workflow,
         )

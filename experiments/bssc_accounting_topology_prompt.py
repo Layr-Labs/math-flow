@@ -22,6 +22,7 @@ from math_flow.bssc_research_v4_producer import (
     _materialize_validity_bundle,
 )
 from math_flow.counterfactual_context import (
+    accepted_claim_refs_from_validity,
     manifest_submission_at,
     reconstruct_submission_evidence,
 )
@@ -136,7 +137,13 @@ def materialize_case(
     return {
         "subject": subject,
         "judgmentId": str(judgment["judgmentId"]),
+        "judgment": judgment,
         "claims": claims,
+        "acceptedClaimRefs": accepted_claim_refs_from_validity(
+            judgment, subject_transaction_id=subject
+        ),
+        "evidenceManifest": evidence_manifest,
+        "evidenceChunks": chunks,
         "evidenceFiles": evidence_files,
         "ledgerOrdinal": int(transaction["ordinal"]),
     }
