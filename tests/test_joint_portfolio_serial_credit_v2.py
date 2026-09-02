@@ -10,8 +10,10 @@ from pathlib import Path
 from math_flow.counterfactual_context import build_submission_evidence_manifest
 from math_flow.errors import MathFlowError
 from math_flow.joint_portfolio_serial_credit_v2 import (
+    PROFILE,
     run_joint_portfolio_serial_credit_v2,
     validate_joint_portfolio_serial_credit_candidate_v2,
+    validate_joint_portfolio_serial_credit_replay_v2,
 )
 from math_flow.repository import sha256_json
 from tests import test_joint_portfolio_serial_transition_v2 as fixtures
@@ -76,7 +78,12 @@ class JointPortfolioSerialCreditV2Tests(unittest.TestCase):
             contribution_path=f"problems/{fixtures.PROBLEM}/contributions/{subject}",
             files=evidence_chunks, chunk_bytes=11,
         )
-        accepted_refs = [{"transactionId": subject, "claimKey": claim, "judgmentId": inputs["judgment"], "assessmentDigest": "sha256:" + subject[0] * 64}]
+        accepted_refs = [{
+            "transactionId": subject,
+            "claimKey": claim,
+            "judgmentId": inputs["judgment"],
+            "assessmentDigest": f"sha256:{sha256_json(inputs['claims'][0])}",
+        }]
         return {"joint": joint, "inputs": inputs, "subject": subject, "claim": claim, "expected": expected, "affected": affected, "updates": updates, "chunks": chunks, "manifest": manifest, "acceptedRefs": accepted_refs}
 
     def provider(self, case: dict[str, object], updates: list[dict[str, object]] | None = None) -> CounterfactualProviderV2:
@@ -95,6 +102,35 @@ class JointPortfolioSerialCreditV2Tests(unittest.TestCase):
             evidence_chunks=case["chunks"], **extra,
         )
 
+    def reseal_candidate(self, candidate: dict[str, object]) -> dict[str, object]:
+        value = copy.deepcopy(candidate)
+        value["nodeEffectsDigest"] = f"sha256:{sha256_json({'evaluationDigest': value['evaluationDigest'], 'nodeEffects': value['nodeEffects']})}"
+        core = {key: item for key, item in value.items() if key != "candidateDigest"}
+        value["candidateDigest"] = f"sha256:{sha256_json(core)}"
+        return value
+
+    def replay_candidate(
+        self,
+        candidate: dict[str, object],
+        *,
+        result: dict[str, object],
+        case: dict[str, object],
+    ) -> dict[str, object]:
+        return validate_joint_portfolio_serial_credit_replay_v2(
+            candidate,
+            accepted_claim_refs=case["acceptedRefs"],
+            base_boundary_state=case["inputs"]["boundaries"],
+            base_knowledge_state=case["inputs"]["state"],
+            target_knowledge_state=result["jointArtifacts"]["postState"],
+            impact_context=result["impactContext"],
+            no_access_policy_context=result["noAccessPolicyContext"],
+            no_access_request=result["noAccessRequest"],
+            no_access_state=result["noAccessState"],
+            with_access_state=result["withAccessState"],
+            no_access_patch=result["noAccessPatch"],
+            with_access_patch=result["withAccessPatch"],
+        )
+
     def test_k1_k2_k3_freeze_boundary_aware_wplus_and_allocate_to_submission(self) -> None:
         for ordinal in (1, 2, 3):
             case = self.case(ordinal)
@@ -104,6 +140,103 @@ class JointPortfolioSerialCreditV2Tests(unittest.TestCase):
             self.assertEqual(candidate["allocationTarget"], {"kind": "submission", "id": case["subject"]})
             self.assertEqual(candidate["targetBoundaryStateDigest"], case["joint"]["boundaryState"]["stateDigest"])
             self.assertEqual(sum((Fraction(effect["workReductionHours"]) for effect in candidate["nodeEffects"]), Fraction(0)), Fraction(case["expected"]))
+
+    def test_claim_judgment_and_semantic_assessment_substitution_fail_before_calls(self) -> None:
+        case = self.case(2)
+        for field in ("judgmentId", "assessmentDigest"):
+            with self.subTest(field=field):
+                substituted = copy.deepcopy(case)
+                substituted["acceptedRefs"][0][field] = "sha256:" + "f" * 64
+                provider = self.provider(substituted)
+                with self.assertRaisesRegex(
+                    MathFlowError,
+                    "accepted claim identities do not match the semantic assessments",
+                ):
+                    self.run_credit(substituted, provider)
+                self.assertEqual(provider.calls, [])
+
+    def test_no_access_request_carries_prior_and_sanitized_local_policy_only(self) -> None:
+        case = self.case(2)
+        result = self.run_credit(case, self.provider(case))
+        request = result["noAccessRequest"]
+        self.assertEqual(request["profile"], PROFILE)
+        policy = request["stageInput"]["workPolicyContext"]
+        self.assertEqual(policy, result["noAccessPolicyContext"])
+        self.assertEqual(
+            policy["baseBoundaryStateDigest"],
+            case["inputs"]["boundaries"]["stateDigest"],
+        )
+        rows = {row["programId"]: row for row in policy["programPolicies"]}
+        self.assertEqual(rows["root"]["source"], "pre-contribution-boundary")
+        prior_root = {
+            row["programId"]: row for row in case["inputs"]["boundaries"]["boundaries"]
+        }["root"]
+        self.assertEqual(rows["root"]["baseBoundaryDigest"], prior_root["boundaryDigest"])
+        self.assertEqual(
+            rows[fixtures.PROGRAM2]["source"], "sanitized-new-target-package"
+        )
+        self.assertIsNone(rows[fixtures.PROGRAM2]["baseBoundaryDigest"])
+        for field in (
+            "directResidualWorkScope",
+            "activationCondition",
+            "stoppingCondition",
+            "independentVariationRationale",
+        ):
+            self.assertTrue(rows[fixtures.PROGRAM2][field])
+        rendered = json.dumps(request, sort_keys=True)
+        for key in (
+            '"evidenceManifest":',
+            '"verifiedChunkDigests":',
+            '"withAccessPatch":',
+            '"programBoundaries":',
+            '"topologyRationale":',
+        ):
+            self.assertNotIn(key, rendered)
+        self.assertNotIn(
+            case["inputs"]["response"]["programBoundaries"][0][
+                "independentVariationRationale"
+            ],
+            rendered,
+        )
+        for assessment in case["inputs"]["response"]["withAccessAssessments"]:
+            self.assertNotIn(assessment["rationale"], rendered)
+
+    def test_node_effect_schema_and_replay_reject_rehashed_tampering(self) -> None:
+        case = self.case(1)
+        result = self.run_credit(case, self.provider(case))
+        candidate = result["creditCandidate"]
+        self.replay_candidate(candidate, result=result, case=case)
+
+        truncated = copy.deepcopy(candidate)
+        truncated["nodeEffects"][0].pop("withAccess")
+        truncated = self.reseal_candidate(truncated)
+        with self.assertRaisesRegex(MathFlowError, "invalid fields"):
+            validate_joint_portfolio_serial_credit_candidate_v2(truncated)
+
+        rebound = copy.deepcopy(candidate)
+        rebound["nodeEffects"][0]["nodeRef"]["id"] = "program-substituted-binding"
+        rebound = self.reseal_candidate(rebound)
+        validate_joint_portfolio_serial_credit_candidate_v2(rebound)
+        with self.assertRaisesRegex(MathFlowError, "do not replay"):
+            self.replay_candidate(rebound, result=result, case=case)
+
+        reordered = copy.deepcopy(candidate)
+        reordered["nodeEffects"] = list(reversed(reordered["nodeEffects"]))
+        reordered = self.reseal_candidate(reordered)
+        with self.assertRaisesRegex(MathFlowError, "uniquely ordered"):
+            validate_joint_portfolio_serial_credit_candidate_v2(reordered)
+
+        duplicated = copy.deepcopy(candidate)
+        duplicated["nodeEffects"].insert(1, copy.deepcopy(duplicated["nodeEffects"][0]))
+        duplicated = self.reseal_candidate(duplicated)
+        with self.assertRaisesRegex(MathFlowError, "uniquely ordered"):
+            validate_joint_portfolio_serial_credit_candidate_v2(duplicated)
+
+        noncanonical = copy.deepcopy(candidate)
+        noncanonical["nodeEffects"][0]["workReductionHours"] += ".0"
+        noncanonical = self.reseal_candidate(noncanonical)
+        with self.assertRaisesRegex(MathFlowError, "canonical signed"):
+            validate_joint_portfolio_serial_credit_candidate_v2(noncanonical)
 
     def test_nonpositive_wminus_is_rejected_without_clamp(self) -> None:
         case = self.case(2)

@@ -116,7 +116,8 @@ outside the affected set are carried forward exactly.
 Each assessment cites typed evidence: accepted claim, submission evidence,
 prior program, prior result, or semantic-packet result. The reducer resolves the
 ID/digest pair against authoritative inputs and rejects unresolved, duplicate,
-or noncanonical references.
+or noncanonical references. Prior-program and prior-result references must also
+belong to the exact V10 read set; global existence is not sufficient authority.
 
 ## Frozen W+ and credit
 
@@ -127,12 +128,33 @@ patch, and `W+` state. An optional expected candidate provides a replay guard
 before any provider call.
 
 Safe-fact extraction receives exact evidence. The no-access stage receives the
-safe facts, structural impact context, old live state, and frozen numeric `W+`.
-It receives no raw evidence bytes, evidence manifest, joint response, `W+`
-patch, or joint topology/accounting rationales. Trusted materialization requires
-the reproduced with-access state to equal frozen `W+`, rejects `D <= 0` without
-clamping, derives conserving node effects, and assigns the value to the subject
-submission.
+safe facts, structural impact context, old live state, frozen numeric `W+`, and
+a digest-bound local work-policy context. Existing target nodes receive their
+exact pre-contribution boundary (direct-work scope, activation, stopping, and
+independent-variation policy). A target-only newly created package receives a
+fixed generic policy explaining how to estimate its no-access inclusion and
+work without importing the contribution's semantics. The context binds the
+base boundary state, both knowledge states, the impact packet, every prior
+boundary digest, and every target node digest.
+
+The no-access request receives no raw evidence bytes, evidence manifest, joint
+response, target boundary text, `W+` patch, or joint topology/accounting
+rationales. Its distinct inactive profile and request digest bind the safe
+policy context. Trusted materialization requires the reproduced with-access
+state to equal frozen `W+`, rejects `D <= 0` without clamping, derives
+conserving node effects, and assigns the value to the subject submission.
+
+Every accepted claim reference must use the exact post-state contribution
+judgment and `assessmentDigest = sha256(canonical accepted semantic claim)`.
+This binds counterfactual inputs to the same per-claim assessment identity used
+by the joint semantic transition instead of accepting any well-formed digest.
+
+Node effects have one complete canonical schema and are uniquely ordered by
+program reference. Trusted validation checks every primitive/derived field,
+canonical decimal, difference list, direct branch, signed work reduction, and
+knowledge-node binding. Given the two states and patches, it re-derives the
+entire effect array byte-for-byte; rehashed explanatory substitutions are not
+accepted.
 
 A rejected nonpositive `W-` invalidates only its no-access checkpoint. The
 evidence-bound safe-fact checkpoint and frozen `W+` remain reusable.
@@ -150,15 +172,18 @@ Provider-free tests cover:
 - cumulative boundary carry, typed evidence, complete affected-node `W+`, and
   exact preservation outside that set;
 - stale state/accounting/boundary/semantic/scope bindings, evidence
-  substitution, out-of-scope writes, lifecycle contamination, and boundary
-  tampering; and
+  substitution, typed evidence outside the V10 read set, out-of-scope writes,
+  lifecycle contamination, and boundary tampering; and
 - frozen-candidate tampering, no-access evidence exclusion, nonpositive `D`,
-  node-effect conservation, and checkpoint retry/replay.
+  accepted-claim identity substitution, boundary-aware request surfaces,
+  complete node-effect schema/replay, and checkpoint retry/replay.
 
 The accepted K1 provider response itself was not checked into the repository,
 so V2 can validate its frozen successful post-state and live-work artifacts but
 cannot replay that missing response byte-for-byte. The K2 response is checked in
 and replayed through the V2 reducer, reproducing `W+ = 4351.7375` hours.
+The complete deterministic K2 V2 reducer output is additionally pinned by one
+whole-object digest in the regression.
 
 These tests establish reducer semantics, not judge quality. Prompt reliability,
 semantic packet generation, long-context behavior, calibration, repeated-judge

@@ -500,6 +500,8 @@ def _validate_evidence_refs(
     semantic_packet: Mapping[str, object],
     base_state: Mapping[str, object],
     evidence_file_refs: Mapping[str, str],
+    readable_program_ids: set[str],
+    readable_result_ids: set[str],
 ) -> list[dict[str, str]]:
     if not isinstance(value, list) or not value:
         raise MathFlowError("joint serial V2 W+ assessment needs typed evidence")
@@ -516,9 +518,17 @@ def _validate_evidence_refs(
             expected = str(semantic_packet["acceptedClaimsDigest"])
         elif kind == "submission-evidence" and identifier in evidence_file_refs:
             expected = evidence_file_refs[identifier]
-        elif kind == "prior-program" and identifier in base_state["programs"]:
+        elif (
+            kind == "prior-program"
+            and identifier in readable_program_ids
+            and identifier in base_state["programs"]
+        ):
             expected = str(base_state["programs"][identifier]["digest"])
-        elif kind == "prior-result" and identifier in base_state["intermediateResults"]:
+        elif (
+            kind == "prior-result"
+            and identifier in readable_result_ids
+            and identifier in base_state["intermediateResults"]
+        ):
             expected = str(base_state["intermediateResults"][identifier]["digest"])
         elif kind == "semantic-result" and identifier in result_ids:
             expected = str(semantic_packet["packetDigest"])
@@ -566,6 +576,8 @@ def _validate_response(
     existing_programs = set(write["existingProgramIds"])
     created_programs = set(write["createProgramIds"])
     readable_programs = set(read["programIds"]) | created_programs | {"root"}
+    readable_prior_programs = set(read["programIds"])
+    readable_prior_results = set(read["resultIds"])
     existing_results = set(write["existingResultIds"])
     created_results = set(write["createResultIds"])
 
@@ -699,7 +711,14 @@ def _validate_response(
         elif Fraction(canonical_decimal(incidence, "joint serial V2 incidence")) > 1:
             raise MathFlowError("joint serial V2 incidence exceeds one")
         _require_text(raw.get("rationale"), "joint serial V2 W+ rationale")
-        _validate_evidence_refs(raw.get("evidenceRefs"), semantic_packet=semantic_packet, base_state=base_state, evidence_file_refs=evidence_file_refs)
+        _validate_evidence_refs(
+            raw.get("evidenceRefs"),
+            semantic_packet=semantic_packet,
+            base_state=base_state,
+            evidence_file_refs=evidence_file_refs,
+            readable_program_ids=readable_prior_programs,
+            readable_result_ids=readable_prior_results,
+        )
     if assessment_ids != affected_ids:
         raise MathFlowError("joint serial V2 W+ assessments must cover every accounting-affected program")
     rationale = value.get("topologyRationale")

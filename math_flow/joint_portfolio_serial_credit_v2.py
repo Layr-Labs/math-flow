@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import copy
+import json
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from fractions import Fraction
 from pathlib import Path
 
@@ -12,9 +13,15 @@ from math_flow.counterfactual_context import (
     build_counterfactual_safe_facts,
     build_impact_subgraph_context,
     build_no_access_stage_input_v2,
+    validate_no_access_stage_input_v2,
     validate_submission_evidence_manifest,
 )
 from math_flow.errors import MathFlowError
+from math_flow.joint_portfolio_boundaries import (
+    build_joint_portfolio_no_access_policy_context_v1,
+    validate_joint_portfolio_no_access_policy_context_envelope_v1,
+    validate_joint_portfolio_no_access_policy_context_v1,
+)
 from math_flow.joint_portfolio_credit_experiment import build_joint_credit_node_effects
 from math_flow.joint_portfolio_serial_transition_v2 import reduce_joint_portfolio_serial_transition_v2
 from math_flow.repository import sha256_json
@@ -38,6 +45,7 @@ from math_flow.work_projection import (
     _safe_fact_stage_input,
     _seed_refs_from_safe_facts,
     _validate_transition,
+    validate_work_projection_request,
 )
 
 
@@ -45,6 +53,7 @@ PROFILE = "math-flow/joint-portfolio-serial-credit-candidate-v2"
 FROZEN_AUTHORITY = "joint-portfolio-serial-transition-v2"
 DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 TRANSACTION = re.compile(r"^[0-9a-f]{40}$")
+IDENTIFIER = re.compile(r"^[a-z0-9][a-z0-9._/-]*$")
 FROZEN_FIELDS = {
     "schemaVersion", "authority", "problemId", "subjectTransactionId",
     "rootContractDigest", "baseKnowledgeStateDigest", "targetKnowledgeStateDigest",
@@ -60,11 +69,30 @@ CREDIT_FIELDS = {
     "targetBoundaryStateDigest", "topologyAlignmentDigest", "jointWithAccessCandidateDigest",
     "jointResponseDigest", "semanticPacketDigest", "authoringPacketDigest",
     "sameWorldHandoffDigest", "safeFactsDigest", "impactContextDigest",
+    "acceptedClaimRefsDigest", "noAccessPolicyContextDigest", "noAccessRequestDigest",
     "noAccessPatchDigest", "withAccessPatchDigest", "noAccessStateDigest",
     "withAccessStateDigest", "evaluationDigest", "noAccessWorkHours",
     "withAccessWorkHours", "allocatedWorkHours", "nodeEffectsDigest", "nodeEffects",
     "candidateDigest",
 }
+REQUEST_FIELDS = {
+    "schemaVersion", "profile", "stage", "problemId", "subjectTransactionId",
+    "bindings", "rootContract", "baseAccountingState", "topologyAlignmentRef",
+    "requiredPrimitiveUpdates", "stageInput", "requestDigest",
+}
+NODE_EFFECT_FIELDS = {
+    "nodeRef", "knowledgeNodeDigest", "effectKind", "directUpdateBranches",
+    "primitiveDifferenceFields", "derivedDifferenceFields", "noAccess",
+    "withAccess", "workReductionHours",
+}
+NODE_VIEW_FIELDS = {
+    "directWorkHours", "conditionalIncidence", "globalReach",
+    "conditionalSubtreeWorkHours", "expectedDirectWorkHours",
+}
+PRIMITIVE_EFFECT_FIELDS = ("directWorkHours", "conditionalIncidence")
+DERIVED_EFFECT_FIELDS = (
+    "globalReach", "conditionalSubtreeWorkHours", "expectedDirectWorkHours",
+)
 
 
 def _digest(value: object) -> str:
@@ -74,6 +102,301 @@ def _digest(value: object) -> str:
 def _seal(value: Mapping[str, object], field: str) -> dict[str, object]:
     core = {key: copy.deepcopy(item) for key, item in value.items() if key != field}
     return {**core, field: _digest(core)}
+
+
+def _signed_decimal(value: object, label: str) -> tuple[str, Fraction]:
+    if not isinstance(value, str) or not value:
+        raise MathFlowError(f"{label} must be a canonical signed finite decimal")
+    negative = value.startswith("-")
+    magnitude = value[1:] if negative else value
+    normalized = canonical_decimal(magnitude, label)
+    expected = f"-{normalized}" if negative and normalized != "0" else normalized
+    if value != expected:
+        raise MathFlowError(f"{label} must be a canonical signed finite decimal")
+    return expected, Fraction(value)
+
+
+def _accepted_semantic_claim_refs(
+    *,
+    accepted_claims: Sequence[Mapping[str, object]],
+    subject_transaction_id: str,
+    judgment_id: str,
+) -> list[dict[str, str]]:
+    if not isinstance(accepted_claims, Sequence) or isinstance(accepted_claims, (str, bytes)):
+        raise MathFlowError("joint serial V2 accepted semantic claims are invalid")
+    refs: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for raw in accepted_claims:
+        if not isinstance(raw, Mapping):
+            raise MathFlowError("joint serial V2 accepted semantic claim is invalid")
+        claim = copy.deepcopy(dict(raw))
+        claim_key = claim.get("claimKey")
+        if (
+            not isinstance(claim_key, str)
+            or not claim_key
+            or claim_key in seen
+        ):
+            raise MathFlowError("joint serial V2 accepted semantic claim identity is invalid")
+        seen.add(claim_key)
+        refs.append(
+            {
+                "transactionId": subject_transaction_id,
+                "claimKey": claim_key,
+                "judgmentId": judgment_id,
+                "assessmentDigest": _digest(claim),
+            }
+        )
+    return sorted(
+        refs,
+        key=lambda item: (
+            item["claimKey"], item["judgmentId"], item["assessmentDigest"]
+        ),
+    )
+
+
+def _bind_accepted_claim_refs(
+    *,
+    accepted_claim_refs: Sequence[Mapping[str, object]],
+    accepted_claims: Sequence[Mapping[str, object]],
+    target_knowledge_state: Mapping[str, object],
+    subject_transaction_id: str,
+    judgment_id: str,
+) -> list[dict[str, str]]:
+    contribution = target_knowledge_state["contributions"].get(subject_transaction_id)
+    if (
+        not isinstance(contribution, dict)
+        or contribution.get("judgmentId") != judgment_id
+    ):
+        raise MathFlowError("joint serial V2 accepted claims do not bind the post-state judgment")
+    expected = _accepted_semantic_claim_refs(
+        accepted_claims=accepted_claims,
+        subject_transaction_id=subject_transaction_id,
+        judgment_id=judgment_id,
+    )
+    observed = [copy.deepcopy(dict(item)) for item in accepted_claim_refs]
+    if observed != expected:
+        raise MathFlowError(
+            "joint serial V2 accepted claim identities do not match the semantic assessments"
+        )
+    return expected
+
+
+def _standard_no_access_input(value: Mapping[str, object]) -> dict[str, object]:
+    if value.get("schemaVersion") != 3:
+        raise MathFlowError("joint serial V2 no-access input has an invalid version")
+    standard = copy.deepcopy(dict(value))
+    policy = standard.pop("workPolicyContext", None)
+    counterfactual_digest = standard.pop("counterfactualInputDigest", None)
+    standard["schemaVersion"] = 2
+    standard["inputDigest"] = counterfactual_digest
+    validate_no_access_stage_input_v2(standard)
+    context = validate_joint_portfolio_no_access_policy_context_envelope_v1(policy)
+    if (
+        context["problemId"] != standard["problemId"]
+        or context["subjectTransactionId"] != standard["subjectTransactionId"]
+        or context["targetKnowledgeStateDigest"] != standard["knowledgeStateDigest"]
+        or context["impactContextDigest"] != standard["impactContext"]["contextDigest"]
+    ):
+        raise MathFlowError("joint serial V2 no-access policy identity binding mismatch")
+    return standard
+
+
+def _build_joint_no_access_input(
+    *,
+    safe_facts: object,
+    impact_context: object,
+    research_state: Mapping[str, object],
+    frozen_with_access_state: object,
+    frozen_with_access_candidate_digest: str,
+    policy_context: Mapping[str, object],
+) -> dict[str, object]:
+    standard = build_no_access_stage_input_v2(
+        safe_facts=safe_facts,
+        impact_context=impact_context,
+        research_state=research_state,
+        frozen_with_access_state=frozen_with_access_state,
+        frozen_with_access_candidate_digest=frozen_with_access_candidate_digest,
+    )
+    core = {
+        **{key: copy.deepcopy(item) for key, item in standard.items() if key != "inputDigest"},
+        "schemaVersion": 3,
+        "counterfactualInputDigest": standard["inputDigest"],
+        "workPolicyContext": copy.deepcopy(dict(policy_context)),
+    }
+    result = {**core, "inputDigest": _digest(core)}
+    _validate_joint_no_access_input(result)
+    return result
+
+
+def _validate_joint_no_access_input(value: object) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise MathFlowError("joint serial V2 no-access input is invalid")
+    expected_fields = {
+        "schemaVersion", "evaluationMode", "problemId", "subjectTransactionId",
+        "acceptedClaimRefs", "knowledgeStateDigest", "safeFacts", "impactContext",
+        "frozenWithAccessCandidateDigest", "frozenWithAccessStateDigest",
+        "frozenWithAccessState", "visibilityPolicy", "counterfactualInputDigest",
+        "workPolicyContext", "inputDigest",
+    }
+    if set(value) != expected_fields:
+        raise MathFlowError("joint serial V2 no-access input has invalid fields")
+    _standard_no_access_input(value)
+    core = {key: copy.deepcopy(item) for key, item in value.items() if key != "inputDigest"}
+    if value.get("inputDigest") != _digest(core):
+        raise MathFlowError("joint serial V2 no-access input digest mismatch")
+    return copy.deepcopy(value)
+
+
+def _validate_joint_no_access_request(value: object) -> dict[str, object]:
+    if not isinstance(value, dict) or set(value) != REQUEST_FIELDS:
+        raise MathFlowError("joint serial V2 no-access request has an invalid envelope")
+    if (
+        value.get("schemaVersion") != 2
+        or value.get("profile") != PROFILE
+        or value.get("stage") != "no-access"
+    ):
+        raise MathFlowError("joint serial V2 no-access request has an invalid profile")
+    stage_input = _validate_joint_no_access_input(value.get("stageInput"))
+    standard = copy.deepcopy(value)
+    standard["profile"] = PROFILE_V2
+    standard["stageInput"] = _standard_no_access_input(stage_input)
+    standard_core = {
+        key: copy.deepcopy(item) for key, item in standard.items() if key != "requestDigest"
+    }
+    standard["requestDigest"] = _digest(standard_core)
+    validate_work_projection_request(standard)
+    core = {key: copy.deepcopy(item) for key, item in value.items() if key != "requestDigest"}
+    if value.get("requestDigest") != _digest(core):
+        raise MathFlowError("joint serial V2 no-access request digest mismatch")
+    return copy.deepcopy(value)
+
+
+def _make_joint_no_access_request(
+    *,
+    problem_id: str,
+    subject_transaction_id: str,
+    bindings: Mapping[str, object],
+    root_contract: Mapping[str, object],
+    base_accounting_state: Mapping[str, object],
+    topology_alignment: Mapping[str, object],
+    required_updates: Sequence[Mapping[str, object]],
+    stage_input: Mapping[str, object],
+) -> dict[str, object]:
+    standard = _make_request(
+        stage="no-access",
+        problem_id=problem_id,
+        subject_transaction_id=subject_transaction_id,
+        bindings=bindings,
+        root_contract=root_contract,
+        base_accounting_state=base_accounting_state,
+        topology_alignment=topology_alignment,
+        required_updates=required_updates,
+        stage_input=_standard_no_access_input(stage_input),
+        profile=PROFILE_V2,
+    )
+    core = {
+        **{key: copy.deepcopy(item) for key, item in standard.items() if key != "requestDigest"},
+        "profile": PROFILE,
+        "stageInput": copy.deepcopy(dict(stage_input)),
+    }
+    return _validate_joint_no_access_request({**core, "requestDigest": _digest(core)})
+
+
+class _JointNoAccessCheckpointStore:
+    """Content-bound cache for the inactive boundary-aware request profile."""
+
+    def __init__(self, checkpoint_dir: Path):
+        self.checkpoint_dir = checkpoint_dir.resolve()
+        self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
+    @staticmethod
+    def _round_trip(value: object) -> object:
+        try:
+            return json.loads(json.dumps(value, ensure_ascii=False, allow_nan=False))
+        except (TypeError, ValueError) as error:
+            raise MathFlowError("joint serial V2 provider output must be canonical JSON") from error
+
+    def call(
+        self,
+        provider: WorkProjectionProvider,
+        *,
+        stage: str,
+        request: Mapping[str, object],
+        evidence_files: Sequence[object],
+    ) -> object:
+        if stage != "no-access":
+            raise MathFlowError("joint serial V2 checkpoint received another stage")
+        validated = _validate_joint_no_access_request(dict(request))
+        request_digest = str(validated["requestDigest"])
+        checkpoint = self.checkpoint_dir / f"{request_digest.removeprefix('sha256:')}.json"
+        if checkpoint.is_symlink():
+            raise MathFlowError("joint serial V2 checkpoint may not be a symlink")
+        if checkpoint.is_file():
+            try:
+                envelope = json.loads(checkpoint.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+                raise MathFlowError("joint serial V2 checkpoint is unreadable") from error
+            if (
+                not isinstance(envelope, dict)
+                or set(envelope)
+                != {"schemaVersion", "stage", "requestDigest", "responseDigest", "response"}
+                or envelope.get("schemaVersion") != 1
+                or envelope.get("stage") != stage
+                or envelope.get("requestDigest") != request_digest
+                or envelope.get("responseDigest") != _digest(envelope.get("response"))
+            ):
+                raise MathFlowError("joint serial V2 checkpoint binding mismatch")
+            return copy.deepcopy(envelope["response"])
+        response = self._round_trip(
+            provider(
+                stage=stage,
+                request=copy.deepcopy(validated),
+                evidence_files=tuple(evidence_files),
+            )
+        )
+        envelope = {
+            "schemaVersion": 1,
+            "stage": stage,
+            "requestDigest": request_digest,
+            "responseDigest": _digest(response),
+            "response": response,
+        }
+        temporary = checkpoint.with_suffix(".tmp")
+        if temporary.is_symlink():
+            raise MathFlowError("joint serial V2 temporary checkpoint may not be a symlink")
+        temporary.write_text(
+            json.dumps(envelope, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        temporary.replace(checkpoint)
+        return copy.deepcopy(response)
+
+    def invalidate(self, *, stage: str, request: Mapping[str, object]) -> None:
+        if stage != "no-access":
+            raise MathFlowError("joint serial V2 checkpoint invalidation has another stage")
+        validated = _validate_joint_no_access_request(dict(request))
+        checkpoint = self.checkpoint_dir / (
+            str(validated["requestDigest"]).removeprefix("sha256:") + ".json"
+        )
+        if checkpoint.is_symlink():
+            raise MathFlowError("joint serial V2 checkpoint may not be a symlink")
+        if checkpoint.is_file():
+            checkpoint.unlink()
+
+
+def _joint_impact_seeds(
+    safe_facts: Mapping[str, object],
+    accounting_affected_program_ids: Sequence[str],
+) -> list[dict[str, str]]:
+    seeds = {
+        (str(ref["kind"]), str(ref["id"]))
+        for ref in _seed_refs_from_safe_facts(safe_facts)
+    }
+    seeds.update(("program", str(program_id)) for program_id in accounting_affected_program_ids)
+    return [
+        {"kind": kind, "id": node_id}
+        for kind, node_id in sorted(seeds)
+    ]
 
 
 def validate_joint_portfolio_serial_frozen_wplus_v2(value: object) -> dict[str, object]:
@@ -94,7 +417,115 @@ def validate_joint_portfolio_serial_frozen_wplus_v2(value: object) -> dict[str, 
     return candidate
 
 
-def validate_joint_portfolio_serial_credit_candidate_v2(value: object) -> dict[str, object]:
+def _canonical_nonnegative(value: object, label: str) -> str:
+    normalized = canonical_decimal(value, label)
+    if value != normalized:
+        raise MathFlowError(f"{label} must use its canonical decimal representation")
+    return normalized
+
+
+def _validate_effect_view(value: object, *, node_id: str, label: str) -> dict[str, object]:
+    if not isinstance(value, dict) or set(value) != NODE_VIEW_FIELDS:
+        raise MathFlowError(f"joint serial V2 {label} node-effect view is invalid")
+    view = copy.deepcopy(value)
+    for field in (
+        "directWorkHours", "globalReach", "conditionalSubtreeWorkHours",
+        "expectedDirectWorkHours",
+    ):
+        _canonical_nonnegative(view[field], f"joint serial V2 {label} {field}")
+    incidence = view["conditionalIncidence"]
+    if node_id == "root":
+        if incidence is not None:
+            raise MathFlowError("joint serial V2 root node effect must have null incidence")
+    else:
+        normalized = _canonical_nonnegative(
+            incidence, f"joint serial V2 {label} conditionalIncidence"
+        )
+        if Fraction(normalized) > 1:
+            raise MathFlowError("joint serial V2 node-effect incidence exceeds one")
+    return view
+
+
+def _validate_node_effects(
+    effects: object,
+    *,
+    allocated: Fraction,
+) -> list[dict[str, object]]:
+    if not isinstance(effects, list) or not effects:
+        raise MathFlowError("joint serial V2 credit node effects must be a non-empty array")
+    normalized: list[dict[str, object]] = []
+    keys: list[tuple[str, str]] = []
+    total = Fraction(0)
+    for effect in effects:
+        if not isinstance(effect, dict) or set(effect) != NODE_EFFECT_FIELDS:
+            raise MathFlowError("joint serial V2 credit node effect has invalid fields")
+        node_ref = effect.get("nodeRef")
+        if (
+            not isinstance(node_ref, dict)
+            or set(node_ref) != {"kind", "id"}
+            or node_ref.get("kind") != "program"
+            or not isinstance(node_ref.get("id"), str)
+            or not IDENTIFIER.fullmatch(str(node_ref["id"]))
+        ):
+            raise MathFlowError("joint serial V2 credit node effect has an invalid node reference")
+        key = ("program", str(node_ref["id"]))
+        keys.append(key)
+        knowledge_digest = effect.get("knowledgeNodeDigest")
+        if not isinstance(knowledge_digest, str) or not DIGEST.fullmatch(knowledge_digest):
+            raise MathFlowError("joint serial V2 credit node effect has an invalid knowledge binding")
+        branches = effect.get("directUpdateBranches")
+        if (
+            not isinstance(branches, list)
+            or branches != sorted(set(branches))
+            or not set(branches) <= {"no-access", "with-access"}
+        ):
+            raise MathFlowError("joint serial V2 credit node-effect branches are not canonical")
+        expected_kind = "direct" if branches else "propagated"
+        if effect.get("effectKind") != expected_kind:
+            raise MathFlowError("joint serial V2 credit node-effect kind is inconsistent")
+        no_view = _validate_effect_view(
+            effect.get("noAccess"), node_id=key[1], label="no-access"
+        )
+        with_view = _validate_effect_view(
+            effect.get("withAccess"), node_id=key[1], label="with-access"
+        )
+        primitive = [
+            field for field in PRIMITIVE_EFFECT_FIELDS if no_view[field] != with_view[field]
+        ]
+        derived = [
+            field for field in DERIVED_EFFECT_FIELDS if no_view[field] != with_view[field]
+        ]
+        if effect.get("primitiveDifferenceFields") != primitive:
+            raise MathFlowError("joint serial V2 credit primitive differences are not derived")
+        if effect.get("derivedDifferenceFields") != derived:
+            raise MathFlowError("joint serial V2 credit derived differences are not derived")
+        if not branches and not derived:
+            raise MathFlowError("joint serial V2 propagated node effect is a no-op")
+        expected_reduction = Fraction(str(no_view["expectedDirectWorkHours"])) - Fraction(
+            str(with_view["expectedDirectWorkHours"])
+        )
+        rendered, reduction = _signed_decimal(
+            effect.get("workReductionHours"), "joint serial V2 node-effect work reduction"
+        )
+        if reduction != expected_reduction or effect.get("workReductionHours") != rendered:
+            raise MathFlowError("joint serial V2 credit node-effect reduction is not derived")
+        total += reduction
+        normalized.append(copy.deepcopy(effect))
+    if keys != sorted(set(keys)):
+        raise MathFlowError("joint serial V2 credit node effects are not uniquely ordered")
+    if total != allocated:
+        raise MathFlowError("joint serial V2 credit node effects do not conserve allocation")
+    return normalized
+
+
+def validate_joint_portfolio_serial_credit_candidate_v2(
+    value: object,
+    *,
+    no_access_state: Mapping[str, object] | None = None,
+    with_access_state: Mapping[str, object] | None = None,
+    no_access_patch: Mapping[str, object] | None = None,
+    with_access_patch: Mapping[str, object] | None = None,
+) -> dict[str, object]:
     if not isinstance(value, dict) or set(value) != CREDIT_FIELDS:
         raise MathFlowError("joint serial V2 credit candidate has an invalid envelope")
     candidate = copy.deepcopy(value)
@@ -123,31 +554,89 @@ def validate_joint_portfolio_serial_credit_candidate_v2(value: object) -> dict[s
         raise MathFlowError("joint serial V2 credit work values are invalid") from error
     if allocated <= 0 or no_work - with_work != allocated:
         raise MathFlowError("joint serial V2 credit must equal positive W-minus minus W-plus")
-    effects = candidate.get("nodeEffects")
-    if not isinstance(effects, list):
-        raise MathFlowError("joint serial V2 credit node effects must be an array")
-    total = Fraction(0)
-    for effect in effects:
-        if not isinstance(effect, dict):
-            raise MathFlowError("joint serial V2 credit node effect is invalid")
-        node_ref = effect.get("nodeRef")
-        if (
-            not isinstance(node_ref, dict)
-            or set(node_ref) != {"kind", "id"}
-            or node_ref.get("kind") != "program"
-            or not isinstance(node_ref.get("id"), str)
-        ):
-            raise MathFlowError("joint serial V2 credit node effect has an invalid node reference")
-        try:
-            total += Fraction(str(effect.get("workReductionHours")))
-        except (TypeError, ValueError, ZeroDivisionError) as error:
-            raise MathFlowError("joint serial V2 credit node effect has invalid work") from error
-    if total != allocated:
-        raise MathFlowError("joint serial V2 credit node effects do not conserve allocation")
+    effects = _validate_node_effects(candidate.get("nodeEffects"), allocated=allocated)
     if candidate["nodeEffectsDigest"] != _digest({"evaluationDigest": candidate["evaluationDigest"], "nodeEffects": effects}):
         raise MathFlowError("joint serial V2 credit node-effects digest mismatch")
     if candidate["candidateDigest"] != _digest({key: item for key, item in candidate.items() if key != "candidateDigest"}):
         raise MathFlowError("joint serial V2 credit candidate digest mismatch")
+    replay_values = (
+        no_access_state,
+        with_access_state,
+        no_access_patch,
+        with_access_patch,
+    )
+    if any(item is not None for item in replay_values):
+        if not all(isinstance(item, Mapping) for item in replay_values):
+            raise MathFlowError("joint serial V2 credit replay inputs are incomplete")
+        assert no_access_state is not None
+        assert with_access_state is not None
+        assert no_access_patch is not None
+        assert with_access_patch is not None
+        if (
+            candidate["noAccessStateDigest"] != no_access_state.get("stateDigest")
+            or candidate["withAccessStateDigest"] != with_access_state.get("stateDigest")
+            or candidate["noAccessPatchDigest"] != no_access_patch.get("patchDigest")
+            or candidate["withAccessPatchDigest"] != with_access_patch.get("patchDigest")
+        ):
+            raise MathFlowError("joint serial V2 credit replay artifact binding mismatch")
+        replayed = build_joint_credit_node_effects(
+            no_access_state=no_access_state,
+            with_access_state=with_access_state,
+            no_access_patch=no_access_patch,
+            with_access_patch=with_access_patch,
+            expected_work_value=str(candidate["allocatedWorkHours"]),
+        )
+        if effects != replayed:
+            raise MathFlowError("joint serial V2 credit node effects do not replay")
+    return candidate
+
+
+def validate_joint_portfolio_serial_credit_replay_v2(
+    value: object,
+    *,
+    accepted_claim_refs: Sequence[Mapping[str, object]],
+    base_boundary_state: Mapping[str, object],
+    base_knowledge_state: Mapping[str, object],
+    target_knowledge_state: Mapping[str, object],
+    impact_context: Mapping[str, object],
+    no_access_policy_context: Mapping[str, object],
+    no_access_request: Mapping[str, object],
+    no_access_state: Mapping[str, object],
+    with_access_state: Mapping[str, object],
+    no_access_patch: Mapping[str, object],
+    with_access_patch: Mapping[str, object],
+) -> dict[str, object]:
+    """Replay policy/request bindings and rederive effects from trusted artifacts."""
+
+    candidate = validate_joint_portfolio_serial_credit_candidate_v2(
+        value,
+        no_access_state=no_access_state,
+        with_access_state=with_access_state,
+        no_access_patch=no_access_patch,
+        with_access_patch=with_access_patch,
+    )
+    refs = [copy.deepcopy(dict(item)) for item in accepted_claim_refs]
+    policy = validate_joint_portfolio_no_access_policy_context_v1(
+        no_access_policy_context,
+        base_boundary_state=base_boundary_state,
+        base_knowledge_state=base_knowledge_state,
+        target_knowledge_state=target_knowledge_state,
+        impact_context=impact_context,
+    )
+    request = _validate_joint_no_access_request(no_access_request)
+    if (
+        candidate["acceptedClaimRefsDigest"] != _digest(refs)
+        or candidate["noAccessPolicyContextDigest"] != policy["contextDigest"]
+        or candidate["noAccessRequestDigest"] != request["requestDigest"]
+        or request["bindings"]["acceptedClaimRefsDigest"] != _digest(refs)
+        or request["stageInput"]["acceptedClaimRefs"] != refs
+        or request["stageInput"]["workPolicyContext"] != policy
+        or candidate["baseBoundaryStateDigest"] != policy["baseBoundaryStateDigest"]
+        or candidate["baseKnowledgeStateDigest"] != policy["baseKnowledgeStateDigest"]
+        or candidate["targetKnowledgeStateDigest"] != policy["targetKnowledgeStateDigest"]
+        or candidate["impactContextDigest"] != policy["impactContextDigest"]
+    ):
+        raise MathFlowError("joint serial V2 credit policy/request replay binding mismatch")
     return candidate
 
 
@@ -220,9 +709,30 @@ def run_joint_portfolio_serial_credit_v2(
     )
     if subject != semantic_packet.get("subjectTransactionId") or chunks != dict(evidence_chunks):
         raise MathFlowError("joint serial V2 credit transition binding changed")
+    if not isinstance(accepted_claims, list):
+        raise MathFlowError("joint serial V2 accepted semantic claims must be an array")
+    bound_claim_refs = _bind_accepted_claim_refs(
+        accepted_claim_refs=claim_refs,
+        accepted_claims=accepted_claims,
+        target_knowledge_state=after,
+        subject_transaction_id=subject,
+        judgment_id=judgment_id,
+    )
+    if claim_refs != bound_claim_refs:
+        raise MathFlowError("joint serial V2 work transition changed accepted claim identities")
+    claim_refs = bound_claim_refs
     bindings = _bindings(contract=contract, base=base, before=before, after=after, alignment=alignment, manifest=manifest, accepted_claim_refs=claim_refs)
     required = _required_primitive_updates(before, after, base, evaluation_mode="no-access")
-    checkpoint = WorkProjectionCheckpointStore(checkpoint_dir) if checkpoint_dir is not None else None
+    safe_checkpoint = (
+        WorkProjectionCheckpointStore(checkpoint_dir / "standard")
+        if checkpoint_dir is not None
+        else None
+    )
+    no_access_checkpoint = (
+        _JointNoAccessCheckpointStore(checkpoint_dir / "joint-no-access")
+        if checkpoint_dir is not None
+        else None
+    )
     safe_request = _make_request(
         stage="safe-facts", problem_id=str(contract["problemId"]), subject_transaction_id=subject,
         bindings=bindings, root_contract=contract, base_accounting_state=base,
@@ -240,30 +750,49 @@ def run_joint_portfolio_serial_credit_v2(
         context = build_impact_subgraph_context(
             problem_id=str(contract["problemId"]), subject_transaction_id=subject,
             accepted_claim_refs=claim_refs, research_state=after,
-            seed_node_refs=_seed_refs_from_safe_facts(safe), descendant_depth=descendant_depth,
+            seed_node_refs=_joint_impact_seeds(
+                safe, joint["accountingAffectedProgramIds"]
+            ),
+            descendant_depth=descendant_depth,
         )
         _ensure_required_context_coverage(required, context)
         return safe
 
-    safe_response = _invoke(provider, checkpoint, stage="safe-facts", request=safe_request, evidence_files=files, semantic_validate=validate_safe)
+    safe_response = _invoke(provider, safe_checkpoint, stage="safe-facts", request=safe_request, evidence_files=files, semantic_validate=validate_safe)
     safe = validate_safe(safe_response)
     context = build_impact_subgraph_context(
         problem_id=str(contract["problemId"]), subject_transaction_id=subject,
         accepted_claim_refs=claim_refs, research_state=after,
-        seed_node_refs=_seed_refs_from_safe_facts(safe), descendant_depth=descendant_depth,
+        seed_node_refs=_joint_impact_seeds(
+            safe, joint["accountingAffectedProgramIds"]
+        ),
+        descendant_depth=descendant_depth,
     )
     _ensure_required_context_coverage(required, context)
     with_state = joint["withAccessState"]
-    no_input = build_no_access_stage_input_v2(
+    policy_context = build_joint_portfolio_no_access_policy_context_v1(
+        base_boundary_state=base_boundary_state,
+        base_knowledge_state=before,
+        target_knowledge_state=after,
+        impact_context=context,
+    )
+    validate_joint_portfolio_no_access_policy_context_v1(
+        policy_context,
+        base_boundary_state=base_boundary_state,
+        base_knowledge_state=before,
+        target_knowledge_state=after,
+        impact_context=context,
+    )
+    no_input = _build_joint_no_access_input(
         safe_facts=safe, impact_context=context, research_state=after,
         frozen_with_access_state=with_state,
         frozen_with_access_candidate_digest=str(frozen["candidateDigest"]),
+        policy_context=policy_context,
     )
-    no_request = _make_request(
-        stage="no-access", problem_id=str(contract["problemId"]), subject_transaction_id=subject,
+    no_request = _make_joint_no_access_request(
+        problem_id=str(contract["problemId"]), subject_transaction_id=subject,
         bindings=bindings, root_contract=contract, base_accounting_state=base,
         topology_alignment=alignment, required_updates=required, stage_input=no_input,
-        profile=PROFILE_V2,
     )
     _assert_no_access_evidence_structure(no_request)
 
@@ -274,7 +803,7 @@ def run_joint_portfolio_serial_credit_v2(
             base_accounting_state=base, required_updates=required, impact_context=context,
         )
 
-    no_response = _invoke(provider, checkpoint, stage="no-access", request=no_request, evidence_files=(), semantic_validate=validate_no)
+    no_response = _invoke(provider, no_access_checkpoint, stage="no-access", request=no_request, evidence_files=(), semantic_validate=validate_no)
     try:
         no_patch = validate_no(no_response)
         no_state, reproduced_with, evaluation = materialize_submission_work_value(
@@ -284,8 +813,8 @@ def run_joint_portfolio_serial_credit_v2(
             topology_alignment=alignment,
         )
     except Exception:
-        if checkpoint is not None:
-            checkpoint.invalidate(stage="no-access", request=no_request)
+        if no_access_checkpoint is not None:
+            no_access_checkpoint.invalidate(stage="no-access", request=no_request)
         raise
     if reproduced_with != with_state:
         raise MathFlowError("joint serial V2 credit changed frozen W+")
@@ -309,17 +838,34 @@ def run_joint_portfolio_serial_credit_v2(
         "jointResponseDigest": frozen["responseDigest"], "semanticPacketDigest": frozen["semanticPacketDigest"],
         "authoringPacketDigest": frozen["authoringPacketDigest"], "sameWorldHandoffDigest": frozen["sameWorldHandoffDigest"],
         "safeFactsDigest": safe["safeFactsDigest"], "impactContextDigest": context["contextDigest"],
+        "acceptedClaimRefsDigest": bindings["acceptedClaimRefsDigest"],
+        "noAccessPolicyContextDigest": policy_context["contextDigest"],
+        "noAccessRequestDigest": no_request["requestDigest"],
         "noAccessPatchDigest": no_patch["patchDigest"], "withAccessPatchDigest": joint["withAccessPatch"]["patchDigest"],
         "noAccessStateDigest": no_state["stateDigest"], "withAccessStateDigest": with_state["stateDigest"],
         "evaluationDigest": evaluation["evaluationDigest"], "noAccessWorkHours": evaluation["noAccessWorkHours"],
         "withAccessWorkHours": evaluation["withAccessWorkHours"], "allocatedWorkHours": evaluation["workValueHours"],
         "nodeEffectsDigest": effects_digest, "nodeEffects": effects,
     }, "candidateDigest")
-    validate_joint_portfolio_serial_credit_candidate_v2(credit)
+    validate_joint_portfolio_serial_credit_replay_v2(
+        credit,
+        accepted_claim_refs=claim_refs,
+        base_boundary_state=base_boundary_state,
+        base_knowledge_state=before,
+        target_knowledge_state=after,
+        impact_context=context,
+        no_access_policy_context=policy_context,
+        no_access_request=no_request,
+        no_access_state=no_state,
+        with_access_state=with_state,
+        no_access_patch=no_patch,
+        with_access_patch=joint["withAccessPatch"],
+    )
     return {
         "jointArtifacts": joint, "jointWithAccessCandidate": frozen,
         "safeRequest": safe_request, "safeResponse": safe_response, "safeFacts": safe,
-        "impactContext": context, "noAccessInput": no_input, "noAccessRequest": no_request,
+        "impactContext": context, "noAccessPolicyContext": policy_context,
+        "noAccessInput": no_input, "noAccessRequest": no_request,
         "noAccessResponse": no_response, "noAccessPatch": no_patch, "noAccessState": no_state,
         "withAccessPatch": joint["withAccessPatch"], "withAccessState": with_state,
         "evaluation": evaluation, "creditCandidate": credit,
@@ -329,5 +875,6 @@ def run_joint_portfolio_serial_credit_v2(
 __all__ = [
     "PROFILE", "run_joint_portfolio_serial_credit_v2",
     "validate_joint_portfolio_serial_credit_candidate_v2",
+    "validate_joint_portfolio_serial_credit_replay_v2",
     "validate_joint_portfolio_serial_frozen_wplus_v2",
 ]

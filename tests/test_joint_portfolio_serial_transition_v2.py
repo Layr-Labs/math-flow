@@ -9,6 +9,7 @@ from math_flow.artifacts import sha256_bytes
 from math_flow.errors import MathFlowError
 from math_flow.joint_portfolio_boundaries import make_joint_portfolio_boundary_state_v1
 from math_flow.joint_portfolio_serial_transition_v2 import (
+    _validate_evidence_refs,
     joint_portfolio_serial_response_schema_v2,
     make_joint_portfolio_semantic_packet_v2,
     reduce_joint_portfolio_serial_transition_v2,
@@ -570,6 +571,33 @@ class JointPortfolioSerialTransitionV2Tests(unittest.TestCase):
         with self.assertRaisesRegex(MathFlowError, "does not resolve"):
             self.reduce(inputs)
 
+    def test_prior_typed_evidence_must_be_in_exact_v10_read_set(self) -> None:
+        k1, _ = self.k1()
+        _, inputs = self.k2(k1)
+        cases = (
+            (
+                "prior-program",
+                PROGRAM1,
+                k1["postState"]["programs"][PROGRAM1]["digest"],
+            ),
+            (
+                "prior-result",
+                RESULT1,
+                k1["postState"]["intermediateResults"][RESULT1]["digest"],
+            ),
+        )
+        for kind, identifier, digest in cases:
+            with self.subTest(kind=kind):
+                with self.assertRaisesRegex(MathFlowError, "does not resolve"):
+                    _validate_evidence_refs(
+                        [{"kind": kind, "id": identifier, "digest": digest}],
+                        semantic_packet=inputs["packet"],
+                        base_state=inputs["state"],
+                        evidence_file_refs=inputs["evidence"],
+                        readable_program_ids=set(),
+                        readable_result_ids=set(),
+                    )
+
     def test_stale_response_bindings_fail_before_reduction(self) -> None:
         _, inputs = self.k1()
         for field in (
@@ -752,6 +780,10 @@ class JointPortfolioSerialTransitionV2Tests(unittest.TestCase):
             judgment_id="sha256:" + "2" * 64, evidence_file_refs=evidence,
         )
         self.assertEqual(reduced["withAccessState"]["totalWorkHours"], "4351.7375")
+        self.assertEqual(
+            f"sha256:{sha256_json(reduced)}",
+            "sha256:28e15a36e848c69192d6e29d490aa2029ee003f0da2d7e3df5d7977c6a72e602",
+        )
         self.assertEqual(
             set(reduced["postState"]["programs"][program["id"]]["intermediateResultIds"]),
             {RESULT2A, RESULT2B},
