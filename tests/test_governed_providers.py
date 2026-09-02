@@ -1213,6 +1213,12 @@ class GovernedProviderTests(unittest.TestCase):
         progressive_context_admission = (
             ROOT / "protocol/projections/openrouter-research-v7.json"
         )
+        local_builder_admission = (
+            ROOT / "protocol/projections/openrouter-research-v8.json"
+        )
+        local_builder_overlay_admission = (
+            ROOT / "protocol/projections/openrouter-v10-work-accounting-v2.json"
+        )
         registry = validate_projection_registry(ROOT)
         self.assertEqual(
             registry,
@@ -1223,16 +1229,24 @@ class GovernedProviderTests(unittest.TestCase):
                 + int(v2_overlay_admission.exists())
                 + int(two_entity_admission.exists())
                 + int(validity_complete_admission.exists())
-                + int(progressive_context_admission.exists()),
+                + int(progressive_context_admission.exists())
+                + int(local_builder_admission.exists())
+                + int(local_builder_overlay_admission.exists()),
                 "active": 2
                 + int(serial_admission.exists())
                 + int(overlay_admission.exists())
                 + int(v2_overlay_admission.exists())
                 + int(two_entity_admission.exists())
                 + int(validity_complete_admission.exists())
-                + int(progressive_context_admission.exists()),
+                + int(progressive_context_admission.exists())
+                + int(local_builder_admission.exists())
+                + int(local_builder_overlay_admission.exists()),
             },
         )
+        registered_projection_ids = {
+            path.stem
+            for path in (ROOT / "protocol/projections").glob("*.json")
+        }
         registered = "\n".join(
             path.read_text(encoding="utf-8")
             for path in (ROOT / "protocol/projections").glob("*.json")
@@ -1274,6 +1288,17 @@ class GovernedProviderTests(unittest.TestCase):
             self.assertIn("openrouter-research-v7", registered)
         else:
             self.assertNotIn("openrouter-research-v7", registered)
+        if local_builder_admission.exists():
+            self.assertEqual(
+                local_builder_admission.read_bytes(),
+                (
+                    ROOT
+                    / "protocol/runtime/openrouter-research-v8-projection.json"
+                ).read_bytes(),
+            )
+            self.assertIn("openrouter-research-v8", registered_projection_ids)
+        else:
+            self.assertNotIn("openrouter-research-v8", registered_projection_ids)
         if v2_overlay_admission.exists():
             self.assertEqual(
                 v2_overlay_admission.read_bytes(),
@@ -1285,6 +1310,21 @@ class GovernedProviderTests(unittest.TestCase):
             self.assertIn("openrouter-work-accounting-v2", registered)
         else:
             self.assertNotIn("openrouter-work-accounting-v2", registered)
+        if local_builder_overlay_admission.exists():
+            self.assertEqual(
+                local_builder_overlay_admission.read_bytes(),
+                (
+                    ROOT
+                    / "protocol/runtime/active-openrouter-v10-work-accounting-v2-projection.json"
+                ).read_bytes(),
+            )
+            self.assertIn(
+                "openrouter-v10-work-accounting-v2", registered_projection_ids
+            )
+        else:
+            self.assertNotIn(
+                "openrouter-v10-work-accounting-v2", registered_projection_ids
+            )
         if serial_admission.exists():
             self.assertIn("openrouter-hierarchical-research-builder-v6", registered)
         else:
