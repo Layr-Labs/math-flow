@@ -297,6 +297,54 @@ class JointPortfolioSerialProviderV2Tests(unittest.TestCase):
             provider.spec_digest,
         )
 
+    def test_sealed_author_retries_complete_trusted_reduction(self) -> None:
+        stale = copy.deepcopy(self.k1_inputs["response"])
+        stale["baseStateDigest"] = "sha256:" + "f" * 64
+        transport = SequentialOpenRouterTransport(
+            [stale, self.k1_inputs["response"]]
+        )
+        provider = OpenRouterJointPortfolioSerialAuthorV2Provider(
+            _spec(), transport=transport
+        )
+        result = run_joint_portfolio_serial_author_v2(
+            provider=provider, **_provider_inputs(self.k1_inputs)
+        )
+
+        self.assertEqual(result["reduced"], self.k1)
+        self.assertEqual(len(transport.requests), 2)
+        self.assertEqual(len(provider.invocation_records), 1)
+        record = provider.invocation_records[0]
+        self.assertEqual(record["stage"], "joint-author")
+        self.assertEqual(record["attempts"], 2)
+        self.assertEqual(
+            [row["outcome"] for row in record["attemptRecords"]],
+            ["validation-rejected", "accepted"],
+        )
+        retry_message = transport.requests[1]["messages"][-1]["content"]
+        self.assertIn("stale baseStateDigest", retry_message)
+        self.assertIn("Do not author W-, D, credit, or payout", retry_message)
+
+    def test_sealed_author_rejects_wrong_spec_before_transport(self) -> None:
+        calls: list[dict[str, object]] = []
+
+        def transport(request: dict[str, object]) -> dict[str, object]:
+            calls.append(copy.deepcopy(request))
+            raise AssertionError("provider must not be called")
+
+        provider = OpenRouterJointPortfolioSerialAuthorV2Provider(
+            _spec(), transport=transport
+        )
+        kwargs = _provider_inputs(self.k1_inputs)
+        request = build_joint_portfolio_serial_author_request_v2(**kwargs)
+        request["bindings"]["judgeSpecDigest"] = "sha256:" + "f" * 64
+        with self.assertRaisesRegex(MathFlowError, "bindings are invalid"):
+            provider(
+                stage="joint-author",
+                request=request,
+                evidence_files=kwargs["evidence_files"],
+            )
+        self.assertEqual(calls, [])
+
     def test_length_and_empty_provider_outputs_exhaust_governed_retries(self) -> None:
         raw_plan = {
             key: copy.deepcopy(value)
