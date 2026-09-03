@@ -1,8 +1,9 @@
 # Joint portfolio serial provider V2
 
-Status: inactive additive provider milestone. This component has no projection,
-workflow, CLI command, publication, continuation, viewer path, or provider-spend
-authority.
+Status: inactive additive provider milestone. The component now has a
+manual-only, publication-forbidden K1-K3 holdout runner and workflow, but no
+projection, scheduler, publication, continuation, viewer path, or automatic
+provider-spend authority.
 
 ## Boundary
 
@@ -103,8 +104,11 @@ tests cover empty and length-truncated outputs, structured-schema failure,
 stale predecessor bindings, out-of-scope writes, request/response tampering,
 attempt journals, and uncertain-spend suppression.
 
-This milestone establishes transport safety and exact reducer replay, not judge
-quality. It does not provide semantic-packet generation, checkpoints across
-process crashes, a K1-to-K3 holdout bundle, split/merge lineage, projection
-admission, publication, UI integration, or automatic continuation. Those
-remain separately reviewable inactive stages.
+The additive hosted holdout composes this adapter with the serial K1-K3 bundle,
+fresh-run checkpoints, durable attempt journals, exact stage ordering, request
+and token ceilings, and a request-side OpenRouter `max_price` filter. It is
+manual-only and read-only, and retains local Actions artifacts without
+publication. It does not provide general semantic-packet generation,
+cross-workflow checkpoint resume, split/merge lineage, projection admission,
+publication, UI integration, or automatic continuation. Those remain
+separately reviewable inactive stages.

@@ -17,6 +17,11 @@ from math_flow.joint_portfolio_serial_holdout import (
     load_bssc_joint_portfolio_serial_holdout_bundle_v1,
     run_bssc_joint_portfolio_serial_holdout_v1,
 )
+from math_flow.joint_portfolio_serial_hosted import (
+    build_joint_hosted_plan,
+    load_joint_hosted_manifest,
+    run_joint_hosted_holdout,
+)
 from math_flow.joint_portfolio_serial_credit_v2 import (
     OpenRouterJointPortfolioSerialCreditV2Provider,
 )
@@ -321,6 +326,12 @@ class OpenRouterFixtureTransport:
         return {
             "id": f"fixture-{len(self.requests)}",
             "model": "openai/gpt-5.6-sol",
+            "usage": {
+                "prompt_tokens": 100,
+                "completion_tokens": 50,
+                "total_tokens": 150,
+                "cost": 0.01,
+            },
             "choices": [
                 {
                     "finish_reason": "stop",
@@ -505,6 +516,133 @@ class JointPortfolioSerialHoldoutTests(unittest.TestCase):
                     for request in transport.requests
                 )
             )
+
+    def test_hosted_runner_plan_is_zero_call_and_fixed_route(self) -> None:
+        manifest = load_joint_hosted_manifest(repository_root=ROOT)
+        plan = build_joint_hosted_plan(manifest)
+        self.assertEqual(plan["status"], "provider-free-plan")
+        self.assertEqual(plan["providerCallsAuthorized"], 0)
+        self.assertEqual(plan["nominalProviderCalls"], 9)
+        self.assertEqual(plan["maximumProviderCalls"], 27)
+        self.assertEqual(
+            [
+                (row["subjectTransactionId"], row["stage"])
+                for row in plan["serialStagePlan"]
+            ],
+            [
+                (subject, stage)
+                for subject in SUBJECTS
+                for stage in ("joint-author", "safe-facts", "no-access")
+            ],
+        )
+
+    def test_hosted_runner_executes_nine_budgeted_calls_without_publication(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            manifest = load_joint_hosted_manifest(repository_root=ROOT)
+            transport = OpenRouterFixtureTransport()
+            report = run_joint_hosted_holdout(
+                repository_root=ROOT,
+                manifest=manifest,
+                bundle_dir=base / "bundle",
+                checkpoint_dir=base / "checkpoints",
+                authorization=str(manifest["authorizationValue"]),
+                transport=transport,
+            )
+            self.assertEqual(report["status"], "completed")
+            self.assertFalse(report["publicationAttempted"])
+            self.assertFalse(report["continue"])
+            self.assertEqual(report["telemetry"]["providerCalls"], 9)
+            self.assertEqual(report["telemetry"]["reportedTokens"], 1350)
+            self.assertAlmostEqual(report["telemetry"]["reportedCostUsd"], 0.09)
+            self.assertEqual(len(report["authorInvocations"]), 3)
+            self.assertEqual(len(report["creditInvocations"]), 6)
+            self.assertGreaterEqual(report["attemptJournalFiles"], 9)
+            self.assertTrue(
+                all(
+                    request["provider"].get("max_price")
+                    == {"prompt": 2.0, "completion": 10.0}
+                    for request in transport.requests
+                )
+            )
+            load_bssc_joint_portfolio_serial_holdout_bundle_v1(
+                base / "bundle", expected_bundle_digest=report["bundleDigest"]
+            )
+
+    def test_hosted_runner_rejects_missing_authorization_before_transport(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            manifest = load_joint_hosted_manifest(repository_root=ROOT)
+            transport = OpenRouterFixtureTransport()
+            with self.assertRaisesRegex(MathFlowError, "authorization is not exact"):
+                run_joint_hosted_holdout(
+                    repository_root=ROOT,
+                    manifest=manifest,
+                    bundle_dir=base / "bundle",
+                    checkpoint_dir=base / "checkpoints",
+                    authorization="",
+                    transport=transport,
+                )
+            self.assertEqual(transport.requests, [])
+            self.assertFalse((base / "bundle").exists())
+            self.assertFalse((base / "checkpoints").exists())
+
+    def test_hosted_runner_rejects_runtime_budget_widening_before_transport(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            manifest = load_joint_hosted_manifest(repository_root=ROOT)
+            manifest["budgets"]["maximumTotalCostUsd"] = 1000.0
+            transport = OpenRouterFixtureTransport()
+            with self.assertRaisesRegex(MathFlowError, "not the canonical bound file"):
+                run_joint_hosted_holdout(
+                    repository_root=ROOT,
+                    manifest=manifest,
+                    bundle_dir=base / "bundle",
+                    checkpoint_dir=base / "checkpoints",
+                    authorization=str(manifest["authorizationValue"]),
+                    transport=transport,
+                )
+            self.assertEqual(transport.requests, [])
+
+    def test_hosted_runner_stops_after_one_reported_cost_violation(self) -> None:
+        class CostViolationTransport:
+            def __init__(self) -> None:
+                self.delegate = OpenRouterFixtureTransport()
+
+            def __call__(self, request):
+                response = self.delegate(request)
+                response["usage"]["cost"] = 9.0
+                return response
+
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            manifest = load_joint_hosted_manifest(repository_root=ROOT)
+            transport = CostViolationTransport()
+            report = run_joint_hosted_holdout(
+                repository_root=ROOT,
+                manifest=manifest,
+                bundle_dir=base / "bundle",
+                checkpoint_dir=base / "checkpoints",
+                authorization=str(manifest["authorizationValue"]),
+                transport=transport,
+            )
+            self.assertEqual(report["status"], "failed")
+            self.assertEqual(report["telemetry"]["providerCalls"], 1)
+            self.assertIn("reported cost exceeds", report["telemetry"]["blockedReason"])
+            self.assertEqual(len(transport.delegate.requests), 1)
+
+    def test_hosted_workflow_is_manual_read_only_and_nonpublishing(self) -> None:
+        workflow = (
+            ROOT / ".github/workflows/hosted-bssc-joint-portfolio-k1-k3.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("workflow_dispatch:", workflow)
+        self.assertNotIn("schedule:", workflow)
+        self.assertNotIn("push:", workflow)
+        self.assertIn("contents: read", workflow)
+        self.assertNotIn("contents: write", workflow)
+        self.assertIn("--execute-provider", workflow)
+        self.assertNotIn("publish-batch", workflow)
+        self.assertNotIn("github-publish-projection", workflow)
 
     def test_rejected_k2_wminus_retains_validated_author_and_safe_checkpoints(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
