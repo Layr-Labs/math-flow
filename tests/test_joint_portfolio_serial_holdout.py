@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import shutil
 import tempfile
@@ -15,6 +16,12 @@ from math_flow.joint_portfolio_serial_holdout import (
     SUBJECTS,
     load_bssc_joint_portfolio_serial_holdout_bundle_v1,
     run_bssc_joint_portfolio_serial_holdout_v1,
+)
+from math_flow.joint_portfolio_serial_credit_v2 import (
+    OpenRouterJointPortfolioSerialCreditV2Provider,
+)
+from math_flow.joint_portfolio_serial_provider_v2 import (
+    OpenRouterJointPortfolioSerialAuthorV2Provider,
 )
 from math_flow.repository import sha256_json
 
@@ -266,6 +273,63 @@ class FixtureCreditProvider:
         return {"updates": updates}
 
 
+class OpenRouterFixtureTransport:
+    def __init__(self) -> None:
+        self.author = FixtureJointAuthorProvider()
+        self.credit = FixtureCreditProvider()
+        self.requests: list[dict[str, object]] = []
+        self.stages: list[tuple[str, str]] = []
+
+    @staticmethod
+    def quoted_input(request: dict[str, object]) -> dict[str, object]:
+        prefix = "<math-flow-input>\n"
+        suffix = "\n</math-flow-input>"
+        for message in reversed(request["messages"]):
+            content = message.get("content") if isinstance(message, dict) else None
+            if not isinstance(content, str) or prefix not in content:
+                continue
+            raw = content.split(prefix, 1)[1]
+            if not raw.endswith(suffix):
+                raise AssertionError("malformed governed request")
+            value = json.loads(raw[: -len(suffix)])
+            if not isinstance(value, dict):
+                raise AssertionError("governed request is not an object")
+            return value
+        raise AssertionError("governed request is missing")
+
+    def __call__(self, request: dict[str, object]) -> dict[str, object]:
+        self.requests.append(copy.deepcopy(request))
+        user_data = self.quoted_input(request)
+        if user_data.get("stage") == "joint-author":
+            stage = "joint-author"
+            subject = str(user_data["subjectTransactionId"])
+            response = self.author(
+                stage=stage,
+                request=user_data,
+                evidence_files=(object(),),
+            )
+        else:
+            work_request = user_data["request"]
+            stage = str(work_request["stage"])
+            subject = str(work_request["subjectTransactionId"])
+            response = self.credit(
+                stage=stage,
+                request=work_request,
+                evidence_files=(object(),) if stage == "safe-facts" else (),
+            )
+        self.stages.append((stage, subject))
+        return {
+            "id": f"fixture-{len(self.requests)}",
+            "model": "openai/gpt-5.6-sol",
+            "choices": [
+                {
+                    "finish_reason": "stop",
+                    "message": {"content": json.dumps(response)},
+                }
+            ],
+        }
+
+
 class JointPortfolioSerialHoldoutTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -393,6 +457,54 @@ class JointPortfolioSerialHoldoutTests(unittest.TestCase):
                         **{field: True},
                     )
                 self.assertEqual(author_provider.calls, [])
+
+    def test_real_openrouter_adapters_compose_for_all_nine_stages(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            transport = OpenRouterFixtureTransport()
+            author_spec = json.loads(
+                (
+                    ROOT
+                    / "protocol/judges/openrouter-joint-portfolio-serial-author-v2.json"
+                ).read_text(encoding="utf-8")
+            )
+            work_spec = json.loads(
+                (
+                    ROOT / "protocol/judges/openrouter-work-accounting-v2.json"
+                ).read_text(encoding="utf-8")
+            )
+            author = OpenRouterJointPortfolioSerialAuthorV2Provider(
+                author_spec, transport=transport
+            )
+            credit = OpenRouterJointPortfolioSerialCreditV2Provider(
+                work_spec, transport=transport
+            )
+            result = run_bssc_joint_portfolio_serial_holdout_v1(
+                root=ROOT,
+                output_dir=base / "bundle",
+                checkpoint_dir=base / "checkpoints",
+                joint_author_provider=author,
+                credit_provider=credit,
+            )
+
+            self.assertEqual(len(result["steps"]), 3)
+            self.assertEqual(
+                transport.stages,
+                [
+                    (stage, subject)
+                    for subject in SUBJECTS
+                    for stage in ("joint-author", "safe-facts", "no-access")
+                ],
+            )
+            self.assertEqual(len(author.invocation_records), 3)
+            self.assertEqual(len(credit.invocation_records), 6)
+            self.assertTrue(
+                all(
+                    len(json.dumps(request, sort_keys=True).encode("utf-8"))
+                    < 4_000_000
+                    for request in transport.requests
+                )
+            )
 
     def test_rejected_k2_wminus_retains_validated_author_and_safe_checkpoints(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

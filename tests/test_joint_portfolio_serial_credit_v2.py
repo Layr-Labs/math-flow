@@ -10,6 +10,7 @@ from pathlib import Path
 from math_flow.counterfactual_context import build_submission_evidence_manifest
 from math_flow.errors import MathFlowError
 from math_flow.joint_portfolio_serial_credit_v2 import (
+    OpenRouterJointPortfolioSerialCreditV2Provider,
     PROFILE,
     run_joint_portfolio_serial_credit_v2,
     validate_joint_portfolio_serial_credit_candidate_v2,
@@ -17,6 +18,26 @@ from math_flow.joint_portfolio_serial_credit_v2 import (
 )
 from math_flow.repository import sha256_json
 from tests import test_joint_portfolio_serial_transition_v2 as fixtures
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _quoted_input(request: dict[str, object]) -> dict[str, object]:
+    prefix = "<math-flow-input>\n"
+    suffix = "\n</math-flow-input>"
+    for message in reversed(request["messages"]):
+        content = message.get("content") if isinstance(message, dict) else None
+        if not isinstance(content, str) or prefix not in content:
+            continue
+        raw = content.split(prefix, 1)[1]
+        if not raw.endswith(suffix):
+            raise AssertionError("malformed governed input")
+        value = json.loads(raw[: -len(suffix)])
+        if not isinstance(value, dict):
+            raise AssertionError("governed input is not an object")
+        return value
+    raise AssertionError("governed input is missing")
 
 
 class CounterfactualProviderV2:
@@ -43,6 +64,33 @@ class CounterfactualProviderV2:
         if stage != "no-access" or evidence:
             raise AssertionError("invalid counterfactual stage boundary")
         return {"updates": copy.deepcopy(self.updates)}
+
+
+class FixtureOpenRouterTransport:
+    def __init__(self, provider: CounterfactualProviderV2) -> None:
+        self.provider = provider
+        self.requests: list[dict[str, object]] = []
+
+    def __call__(self, request: dict[str, object]) -> dict[str, object]:
+        self.requests.append(copy.deepcopy(request))
+        user_data = _quoted_input(request)
+        work_request = user_data["request"]
+        stage = str(work_request["stage"])
+        response = self.provider(
+            stage=stage,
+            request=work_request,
+            evidence_files=(object(),) if stage == "safe-facts" else (),
+        )
+        return {
+            "id": f"fixture-{len(self.requests)}",
+            "model": "openai/gpt-5.6-sol",
+            "choices": [
+                {
+                    "finish_reason": "stop",
+                    "message": {"content": json.dumps(response)},
+                }
+            ],
+        }
 
 
 class JointPortfolioSerialCreditV2Tests(unittest.TestCase):
@@ -200,6 +248,36 @@ class JointPortfolioSerialCreditV2Tests(unittest.TestCase):
         )
         for assessment in case["inputs"]["response"]["withAccessAssessments"]:
             self.assertNotIn(assessment["rationale"], rendered)
+
+    def test_openrouter_adapter_accepts_joint_no_access_profile(self) -> None:
+        case = self.case(2)
+        fixture_provider = self.provider(case)
+        transport = FixtureOpenRouterTransport(fixture_provider)
+        spec = json.loads(
+            (
+                ROOT / "protocol/judges/openrouter-work-accounting-v2.json"
+            ).read_text(encoding="utf-8")
+        )
+        provider = OpenRouterJointPortfolioSerialCreditV2Provider(
+            spec, transport=transport
+        )
+        result = self.run_credit(case, provider)
+
+        self.assertEqual(result["creditCandidate"]["allocatedWorkHours"], "300")
+        self.assertEqual(
+            [record["stage"] for record in provider.invocation_records],
+            ["safe-facts", "no-access"],
+        )
+        self.assertEqual(len(transport.requests), 2)
+        safe_input = _quoted_input(transport.requests[0])
+        no_access_input = _quoted_input(transport.requests[1])
+        self.assertIn("submissionEvidence", safe_input)
+        self.assertNotIn("submissionEvidence", no_access_input)
+        self.assertEqual(no_access_input["request"]["profile"], PROFILE)
+        self.assertIn(
+            "workPolicyContext",
+            no_access_input["request"]["stageInput"],
+        )
 
     def test_node_effect_schema_and_replay_reject_rehashed_tampering(self) -> None:
         case = self.case(1)
