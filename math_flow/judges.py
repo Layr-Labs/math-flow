@@ -42,6 +42,7 @@ SUPPORTED_IMPLEMENTATIONS = {
     "openrouter-hierarchical-research-builder-v8",
     "openrouter-hierarchical-research-builder-v9",
     "openrouter-hierarchical-research-builder-v10",
+    "openrouter-joint-portfolio-serial-author-v2",
     "openrouter-hierarchical-research-credit-v2",
     "openrouter-work-accounting-v1",
     "openrouter-work-accounting-v2",
@@ -92,6 +93,7 @@ SUPPORTED_OUTPUT_PROFILES = {
     "math-flow/hierarchical-research-v8",
     "math-flow/hierarchical-research-v9",
     "math-flow/hierarchical-research-v10",
+    "math-flow/joint-portfolio-serial-author-v2",
     "math-flow/hierarchical-research-credit-v2",
     "math-flow/work-accounting-transition-v1",
     "math-flow/work-accounting-transition-v2",
@@ -120,6 +122,7 @@ SUPPORTED_OUTPUT_ADAPTERS = {
     "structured-research-submission-v8",
     "structured-research-submission-v9",
     "structured-research-submission-v10",
+    "structured-joint-portfolio-serial-author-v2",
     "structured-hierarchical-credit-v2",
     "structured-work-estimation-v1",
 }
@@ -138,6 +141,7 @@ SUPPORTED_REDUCERS = {
     "sequential-research-state-v8",
     "sequential-research-state-v9",
     "sequential-research-state-v10",
+    "joint-portfolio-serial-transition-v2",
     "hierarchical-credit-allocation-v2",
     "per-submission-work-accounting-v1",
 }
@@ -349,6 +353,12 @@ def load_judge_spec(path: Path) -> dict[str, object]:
             "outputProfile": "math-flow/hierarchical-research-v10",
             "outputAdapter": "structured-research-submission-v10",
             "reducer": "sequential-research-state-v10",
+        },
+        "openrouter-joint-portfolio-serial-author-v2": {
+            "inputBuilder": "accepted-validity-submission-local-program-state-v10",
+            "outputProfile": "math-flow/joint-portfolio-serial-author-v2",
+            "outputAdapter": "structured-joint-portfolio-serial-author-v2",
+            "reducer": "joint-portfolio-serial-transition-v2",
         },
         "openrouter-hierarchical-research-credit-v2": {
             "inputBuilder": "locked-research-history-v2",
