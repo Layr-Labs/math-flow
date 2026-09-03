@@ -374,13 +374,17 @@ support and refreshing live W+. Every validated author response is durably
 checkpointed before safe-fact extraction or W-, and the final nested bundle is
 fully replayed from its byte-pinned validity and submission evidence.
 
-The holdout remains inactive, unpublished, fixed-route, and provider-neutral.
-Its OpenRouter adapters can now be composed without network access: complete
-trusted joint-author reduction runs inside the governed semantic retry loop,
-and an additive joint-credit adapter accepts the standard safe-fact request plus
-the boundary-aware joint W- profile under the exact Work V2 judge identity. No
-hosted runner, workflow dispatch, publication, continuation, or paid K1-K3
-sample is implied by this adapter support.
+The holdout remains inactive, unpublished, and fixed-route. Its OpenRouter
+adapters can be composed without network access: complete trusted joint-author
+reduction runs inside the governed semantic retry loop, and an additive
+joint-credit adapter accepts the standard safe-fact request plus the
+boundary-aware joint W- profile under the exact Work V2 judge identity. A
+manual-only hosted runner now adds fresh-run checkpoints, durable attempt
+journals, exact K1-K3 stage ordering, request/token/cost stops, and a
+request-side OpenRouter price filter. It has read-only repository permission,
+retains local artifacts, and cannot publish or continue. Merge alone makes no
+provider call; every paid K1-K3 sample still requires a distinct exact manual
+dispatch authorization.
 
 ### Projection protocol and publication
 
@@ -417,8 +421,8 @@ sample is implied by this adapter support.
 | Builder-facing repository skill | Implemented; routes protocol and repository maintenance away from solver participation and requires isolated worktrees for parallel agents | `.agents/skills/math-flow-builder/` |
 | Local/fractal Builder V10 experiment | Inactive, unpublished route/refine/author candidate with bounded digest-bound scopes, hidden-state preservation, provider-free widening through 1,024 programs, and a stopped BSSC paid holdout | `math_flow/research_builder_v10.py`, `math_flow/research_builder_v10_provider.py`, `docs/LOCAL_BUILDER_V10_FULL_SEND.md` |
 | BSSC V10 plus separate V2 shadow runtime | Additive serial runtime and dispatch-only workflows are available for a fresh Builder V10 knowledge chain and an independently zero-origin A-first V2 accounting chain. Each active-form candidate requires its own byte-identical governed admission before execution; runtime deployment and admission make no provider call or projection publication. | `docs/BSSC_RESEARCH_V8_V10_V2_PROTOCOL.md`, `.github/workflows/project-research-v8-serial.yml`, `.github/workflows/project-bssc-v10-work-accounting-v2.yml` |
-| Joint topology/W+ credit candidates | The unpublished K2-only hosted candidate freezes one accepted W+ result and derives submission credit. The additive provider-neutral K1-K3 holdout serializes three fixed local author scopes, live W+, boundary-aware W-, and direct submission allocation with exact bundle replay; its real OpenRouter author/credit adapters are composable but it still has no hosted runner, publication, or continuation path. | `math_flow/joint_portfolio_credit_experiment.py`, `math_flow/joint_portfolio_serial_holdout.py`, `math_flow/joint_portfolio_serial_provider_v2.py`, `math_flow/joint_portfolio_serial_credit_v2.py`, `protocol/experiments/bssc-joint-portfolio-serial-k1-k3-v1/` |
-| Serial joint portfolio candidate V2 | Inactive reducer milestone generalizes joint knowledge/topology/live-W+ through K1/K2/K3, cumulative work-policy boundaries, support-versus-supersession semantics, root-owned and shared results, bounded lifecycle/move operations, typed evidence, frozen W+ replay, safe-facts/W-/positive-D, and direct submission allocation. Provider-neutral and OpenRouter author/credit adapters now exist, but there is no hosted runner, projection, workflow, publication, or viewer path. | `math_flow/joint_portfolio_serial_transition_v2.py`, `math_flow/joint_portfolio_serial_provider_v2.py`, `math_flow/joint_portfolio_serial_credit_v2.py`, `docs/JOINT_PORTFOLIO_SERIAL_CANDIDATE_V2.md` |
+| Joint topology/W+ credit candidates | The unpublished K2-only hosted candidate freezes one accepted W+ result and derives submission credit. The additive K1-K3 holdout serializes three fixed local author scopes, live W+, boundary-aware W-, and direct submission allocation with exact bundle replay. Its manual hosted seam is fresh-run-only, hard-budgeted, read-only, and publication-forbidden; merge never dispatches it. | `math_flow/joint_portfolio_credit_experiment.py`, `math_flow/joint_portfolio_serial_holdout.py`, `math_flow/joint_portfolio_serial_hosted.py`, `.github/workflows/hosted-bssc-joint-portfolio-k1-k3.yml`, `protocol/experiments/bssc-joint-portfolio-serial-k1-k3-v1/` |
+| Serial joint portfolio candidate V2 | Inactive reducer milestone generalizes joint knowledge/topology/live-W+ through K1/K2/K3, cumulative work-policy boundaries, support-versus-supersession semantics, root-owned and shared results, bounded lifecycle/move operations, typed evidence, frozen W+ replay, safe-facts/W-/positive-D, and direct submission allocation. Provider-neutral and OpenRouter author/credit adapters plus the bounded K1-K3 hosted holdout now exist, but there is no projection, publication, continuation, or viewer path. | `math_flow/joint_portfolio_serial_transition_v2.py`, `math_flow/joint_portfolio_serial_provider_v2.py`, `math_flow/joint_portfolio_serial_credit_v2.py`, `math_flow/joint_portfolio_serial_hosted.py`, `docs/JOINT_PORTFOLIO_SERIAL_CANDIDATE_V2.md` |
 | Protocol evaluation substrate | Provider-free manifest/replay/scoring harness, builder/work-accounting scale probes, bounded accounting-root-total replay, eight-submission exact V10-scoped miniature using the real V2 provider adapter plus public bundle run/load replay over 24 local capture-transport invocations, and review-gated No-Three zero-call serial preflight implemented. An additive seven-component umbrella suite now runs those checks in bounded `pr` or exact-regenerating `full` mode, emits canonical JSON/Markdown summaries, and accepts no provider or publication authority; paid semantic V10/V2 execution and judge-quality evaluation remain pending. | `math_flow/teacher_student_scenarios.py`, `docs/PROTOCOL_EVALUATION_SUITE.md`, `docs/PROTOCOL_EVALUATION_ROADMAP.md` |
 | Typed projection dependencies | Implemented in PR #20: governed declarations plus exact verified knowledge-state locks | `math_flow/governance.py`, `math_flow/projection_dependencies.py` |
 | Credit overlay runner, profile, cadence, and publication transport | Active credit-v3 uses the two-term common-horizon hierarchical evaluator over locked research-v3 state/history; governed local/hosted execution, provider-free eligibility, bounded semantic retries, rolling coalescing, predecessor-chain terminals, and independent bundles are implemented | `math_flow/research_credit.py`, `math_flow/credit.py`, `math_flow/credit_schedule.py`, `.github/workflows/project-credit.yml` |

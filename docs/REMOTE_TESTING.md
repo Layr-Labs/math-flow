@@ -172,3 +172,33 @@ confirm `Validate transaction` passes. Also try a deliberately invalid PR that
 edits `problem.md` alongside the contribution and confirm it is rejected. Squash-
 confirm that the valid PR is automatically squash-merged after every check
 passes, then compare projections at the old and new commit heads.
+
+## 8. Run the unpublished joint K1-K3 holdout
+
+The joint portfolio candidate has a separate manual-only hosted workflow. Its
+merge or ordinary repository activity never executes it. Before authorizing
+provider work, rebuild its provider-free plan locally:
+
+```bash
+python -m experiments.bssc_joint_portfolio_serial_hosted \
+  --output-dir /tmp/math-flow-joint-k1-k3-plan
+```
+
+After reviewing the current workflow revision and budget manifest, explicitly
+dispatch one sample with:
+
+```bash
+gh workflow run hosted-bssc-joint-portfolio-k1-k3.yml \
+  --repo Layr-Labs/math-flow \
+  --ref main \
+  -f confirmation=bssc-joint-portfolio-serial-k1-k3-v1-provider-run
+```
+
+The workflow refuses stale `main`, runs the exact K1, K2, and K3 subjects from
+zero with fresh checkpoints, and retains the complete local bundle and
+telemetry. It permits nine nominal calls and at most 27 governed attempts. Each
+request receives the manifest-bound OpenRouter `max_price` filter before
+dispatch, and call, request-byte, token-reservation, reported-token, per-call
+cost, and total-cost ceilings fail closed. The workflow has read-only repository
+permission and contains no scheduler, projection publication, viewer refresh,
+or continuation step.

@@ -2,7 +2,7 @@
 
 This inactive experiment is the first complete provider-neutral holdout around
 the merged joint topology/live-work V2 foundation. It is deliberately not a
-projection: it has no scheduler, publication, catalog, viewer, CLI, automatic
+projection: it has no scheduler, publication, catalog, viewer, automatic
 continuation, or provider credentials.
 
 The plan resolves the first three accepted BSSC subjects from the exact pinned
@@ -44,3 +44,25 @@ Every stored author request, response, reduction, and replay envelope is rebuilt
 through the public adapter validator. The bundle separately records the sealed
 request-core digest, full request-envelope digest, response digest, and replay
 result digest; none can be substituted by rewriting a self-digest.
+
+## Manual hosted runner
+
+`hosted-runner-v1.json` and
+`.github/workflows/hosted-bssc-joint-portfolio-k1-k3.yml` add one separately
+reviewable execution seam. The default command only builds a zero-call plan.
+The workflow is manual-only, accepts one exact confirmation phrase, requires a
+fresh checkpoint directory, runs only at the current canonical `main`, has
+read-only repository permission, and always retains its local evidence. It has
+no publication or continuation code.
+
+One fresh successful sample makes nine nominal calls: `joint-author`,
+`safe-facts`, and `no-access` for each of K1, K2, and K3. Governed semantic
+retries reserve at most 27 calls. Before each network request, the transport
+enforces the fixed subject/stage order, request and token ceilings, cumulative
+reservations, and an OpenRouter `provider.max_price` filter of $2 per million
+prompt tokens and $10 per million completion tokens. Reported usage and cost
+must remain inside those reservations or every later call is blocked.
+
+The runner remains unexecuted by admission or merge. A paid sample still needs
+a distinct manual dispatch authorization after the hosted code and checks are
+reviewed.

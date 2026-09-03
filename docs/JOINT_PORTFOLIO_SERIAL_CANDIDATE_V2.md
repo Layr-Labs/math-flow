@@ -1,10 +1,9 @@
 # Joint portfolio serial candidate V2
 
-Status: inactive additive reducer milestone. It has no registered judge,
-projection, workflow, CLI command, joint-response provider runner, publication
-path, or viewer integration. Its credit library accepts the existing
-counterfactual provider interface for safe-fact and no-access calls, but it does
-not change an active lane.
+Status: inactive additive reducer milestone. Its registered judge adapters now
+compose through a manual-only, publication-forbidden K1-K3 hosted holdout, but
+it has no projection, scheduler, publication path, continuation, or viewer
+integration and does not change an active lane.
 
 ## Purpose
 
@@ -196,4 +195,7 @@ whole-object digest in the regression.
 
 These tests establish reducer semantics, not judge quality. Prompt reliability,
 semantic packet generation, long-context behavior, calibration, repeated-judge
-variance, hosted continuation, and publication remain later milestones.
+variance, hosted continuation, and publication remain later milestones. The
+manual hosted runner can collect one complete semantic sample under exact
+request, token, price, cost, stage-order, and retry stops. Its merge does not
+execute that sample; dispatch remains a distinct approval.
