@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "bssc-joint-portfolio-serial-k1-k3-v1",
+  "description": "An unpublished exact-frontier K1-K2-K3 holdout for the provider-neutral joint topology, live-W+, counterfactual W-, and direct submission-credit candidate.",
+  "problemId": "bssc-sum-capacity",
+  "status": "unpublished-experiment",
+  "publicationForbidden": true,
+  "continue": false,
+  "protocolBaseCommit": "2e4017ba97bdcf25c154f87716544f16518ef8e1",
+  "validitySource": "protocol/runtime/bssc-research-v4-validity-source-v1.json",
+  "validitySourceFileDigest": "sha256:e64676838d7c8771b1ae8f0f106fbf622bf8b63747d93218959cd8017f60f4a6",
+  "rootContract": "protocol/experiments/bssc-joint-portfolio-wplus-k1-v2/root-contract-v2.json",
+  "rootContractFileDigest": "sha256:4fa17f409ea3ce95519364da01e2c12fc689330f155ebcd17a007d2fcd259390",
+  "workJudgeSpec": "protocol/judges/openrouter-work-accounting-v2.json",
+  "workJudgeSpecFileDigest": "sha256:127d60e656e62bc1f912d4b1d08ce6df94d8036e2d972a70c5654bf6ff897961",
+  "workJudgeSpecDigest": "sha256:94f058ee7e0a1ddc1b2828d87514e942c3a9b7b3e756e97d42662b4224e86b35",
+  "jointAuthorJudgeSpec": "protocol/judges/openrouter-joint-portfolio-serial-author-v2.json",
+  "jointAuthorJudgeSpecFileDigest": "sha256:d8c1d61392f973011150781b303a3863c240d86f2ce4003a6480a305708ee65f",
+  "jointAuthorJudgeSpecDigest": "sha256:3678379bc097aaaea97f52548eee62d1f886dcd38151ee26a0b0bd9b1b11eda2",
+  "subjects": [
+    "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+    "f236017c62c67ce4218c1f81ea34134f0954b556",
+    "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9"
+  ],
+  "steps": [
+    {
+      "ordinal": 1,
+      "ledgerOrdinal": 3,
+      "subjectTransactionId": "c70e1829a7c6a2a8cb8cfc2383f8abf825ac5ea6",
+      "validityJudgmentId": "sha256:6811dbc06c253fd81a1d9244887b661fff26b22c3cdcda708cd6bdf5642a7293",
+      "validityRunDigest": "sha256:fd6e2748ffa7a88e1b992001d4a36cfed0194c2ee608acf68907286e7facd0fe"
+    },
+    {
+      "ordinal": 2,
+      "ledgerOrdinal": 4,
+      "subjectTransactionId": "f236017c62c67ce4218c1f81ea34134f0954b556",
+      "validityJudgmentId": "sha256:2c29fd881dec9aa923aa0713acc56df2c05d02f30ac544213f720af9158b7a41",
+      "validityRunDigest": "sha256:5ad78e67ec6a1f83651aa590ff7f3c2fb809eac8201422a69cd2bc8783a475c9"
+    },
+    {
+      "ordinal": 3,
+      "ledgerOrdinal": 5,
+      "subjectTransactionId": "14889884ae6ac1f80cc56485e7acf1b0b2cb6ae9",
+      "validityJudgmentId": "sha256:34c5377dbd5c5d147acb250ac80640770b6176749e6c235d4a71ebc508b615c2",
+      "validityRunDigest": "sha256:cd8752f9eade1a095dd49c5b3d80463c89786ecf9e6587d57fb6f08c31ce86ec"
+    }
+  ],
+  "primaryGate": "K3 must preserve every K1/K2 program and result identity, create no topology, append the canonical K3 validity/evidence to both K2 results, and refresh the existing UV program's live W+ primitives before a separately isolated W- estimate derives strictly positive submission credit.",
+  "holdoutPolicy": "Materialize the exact immutable validity-v4 bundles and canonical contribution snapshots. Run one subject at a time in the declared order, with continue=false and publication forbidden. Persist and verify W+ before safe facts or W-. Retain validated author/W+ and safe-fact checkpoints across a rejected W- attempt, but never retain a semantically rejected W- checkpoint."
+}
