@@ -66,3 +66,23 @@ must remain inside those reservations or every later call is blocked.
 The runner remains unexecuted by admission or merge. A paid sample still needs
 a distinct manual dispatch authorization after the hosted code and checks are
 reviewed.
+
+## First hosted run and response-order correction
+
+Run `33801731822` at `6c1aca0` stopped during K1 joint authoring after three
+attempts, 143,089 reported tokens, and $0.2340176. No W+ checkpoint, W-, credit,
+K2/K3 output, publication, or continuation was produced. The model included both
+required results exactly once, but their order differed from the reducer's
+canonical order; root-first boundaries/assessments and evidence ordering exposed
+the same unnecessary restriction. The first attempt additionally put root in
+`programChanges`, although its knowledge update belongs to the semantic packet.
+
+The generic joint reducer now normalizes those set-like lists without changing
+their entries. The raw response remains intact in the author replay envelope;
+the canonical response lives in the separate reduction. Exact response-only
+fixtures in `tests/fixtures/joint_portfolio_k1_hosted_ordering.json` cover this
+failure without network access. Root program changes are still rejected, and
+the inactive author prompt clarifies the distinction. Its new exact digests are
+re-pinned in both manifests. Budgets, subjects, accounting rubric, retry limits,
+and publication/continuation prohibitions are unchanged. A replacement paid
+sample needs a separate explicit authorization.

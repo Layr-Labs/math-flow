@@ -80,6 +80,21 @@ result digest. Digest names are deliberately distinct:
 - `resultDigest` is the self-digest of the complete result core, which includes
   both request digests, the response digest, and the trusted reduction.
 
+The raw response and its digest preserve the provider's list order. The reducer
+separately canonicalizes a copy of the set-like response fields: program changes,
+result placements and their related program IDs, work-policy boundaries, live
+assessments, and typed evidence references. It does not deduplicate, fill missing
+rows, repair references, change numbers or prose, or alter authoritative input
+packets. Permutations therefore yield the same reduced state, while raw-response
+substitution still fails exact audit replay. Previously canonical reducer outputs
+and their digests are unchanged.
+
+Root knowledge is supplied by `semanticPacket.rootUpdate`, not a root row in
+`programChanges`. The author must still supply the root boundary and direct-work
+assessment in `programBoundaries` and `withAccessAssessments`. The governed
+joint-author stage prompt now states this distinction explicitly; root program
+changes remain errors and are never silently removed.
+
 `validate_joint_portfolio_serial_author_replay_v2` rebuilds the request from the
 authoritative inputs, checks every digest, and re-runs
 `reduce_joint_portfolio_serial_transition_v2`. A changed request, response,
@@ -103,6 +118,22 @@ two results, and K3 in-place support refresh with no topology creation. Negative
 tests cover empty and length-truncated outputs, structured-schema failure,
 stale predecessor bindings, out-of-scope writes, request/response tampering,
 attempt journals, and uncertain-spend suppression.
+
+The first hosted holdout (`33801731822`, runtime `6c1aca0`) stopped at K1 after
+three responses and $0.2340176. Attempt 1 supplied an extra root program change;
+attempts 2 and 3 supplied all required entities in a noncanonical order. Exact
+parsed response fixtures now exercise the generic adapter with no network:
+attempts 2 and 3 pass in one invocation with raw evidence preserved, and attempt
+1 still rejects its root row. A separately labeled diagnostic correction of that
+row also passes. None of these fixture replays is a published state or credit
+assignment. The inactive author prompt and holdout pins change together; no
+active projection or accounting rubric changes, and this fix dispatches no run.
+
+The three unaccepted responses implied W+ totals of 446, 1,712, and 3,440 hours.
+Their full-response retries changed numerical judgments despite formatting-only
+rejections. These are not credit scores or a controlled sampling-variance study:
+retry feedback differed and no W- was generated. Deterministic ordering removes
+that unnecessary reason to reopen the live-work estimate.
 
 The additive hosted holdout composes this adapter with the serial K1-K3 bundle,
 fresh-run checkpoints, durable attempt journals, exact stage ordering, request

@@ -548,6 +548,46 @@ def _accepted_claim_keys_from_packet(packet: Mapping[str, object]) -> set[str]:
     }
 
 
+def _order_response_rows(value: object, *keys: str) -> object:
+    # Leave malformed shapes for the field-specific validators below. Sorting
+    # never removes duplicates, resolves conflicting rows, or invents fields.
+    if not isinstance(value, list) or any(
+        not isinstance(row, dict)
+        or any(not isinstance(row.get(key), str) for key in keys)
+        for row in value
+    ):
+        return value
+    return sorted(value, key=lambda row: tuple(row[key] for key in keys))
+
+
+def _canonical_response_order(value: dict[str, object]) -> dict[str, object]:
+    """Order set-like author fields without mutating the raw audit response."""
+    candidate = copy.deepcopy(value)
+    for field, key in (
+        ("programChanges", "programId"),
+        ("resultPlacements", "resultId"),
+        ("programBoundaries", "programId"),
+        ("withAccessAssessments", "programId"),
+    ):
+        candidate[field] = _order_response_rows(candidate[field], key)
+    placements = candidate["resultPlacements"]
+    if isinstance(placements, list):
+        for row in placements:
+            if not isinstance(row, dict):
+                continue
+            related = row.get("relatedProgramIds")
+            if isinstance(related, list) and all(isinstance(item, str) for item in related):
+                row["relatedProgramIds"] = sorted(related)
+    assessments = candidate["withAccessAssessments"]
+    if isinstance(assessments, list):
+        for row in assessments:
+            if isinstance(row, dict) and "evidenceRefs" in row:
+                row["evidenceRefs"] = _order_response_rows(
+                    row["evidenceRefs"], "kind", "id", "digest"
+                )
+    return candidate
+
+
 def _validate_response(
     value: object,
     *,
@@ -560,6 +600,7 @@ def _validate_response(
 ) -> tuple[dict[str, object], list[str]]:
     if not isinstance(value, dict) or set(value) != RESPONSE_FIELDS or value.get("schemaVersion") != 2:
         raise MathFlowError("joint serial V2 response has an invalid envelope")
+    value = _canonical_response_order(value)
     expected = {
         "subjectTransactionId": semantic_packet["subjectTransactionId"],
         "baseStateDigest": base_state["stateDigest"],
@@ -592,7 +633,11 @@ def _validate_response(
             raise MathFlowError("joint serial V2 program change has invalid fields")
         program_id = _require_identifier(raw.get("programId"), "joint serial V2 program ID")
         if program_id == "root" or program_id in program_changes:
-            raise MathFlowError("joint serial V2 program changes must be unique and exclude root")
+            raise MathFlowError(
+                "joint serial V2 program changes must be unique and exclude root; "
+                "root knowledge is supplied by semanticPacket.rootUpdate, while root "
+                "accounting belongs in programBoundaries and withAccessAssessments"
+            )
         action = raw.get("action")
         existing = base_state["programs"].get(program_id)
         parent = raw.get("parentId")

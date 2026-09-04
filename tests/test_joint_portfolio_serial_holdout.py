@@ -454,6 +454,42 @@ class JointPortfolioSerialHoldoutTests(unittest.TestCase):
                 sorted([SUBJECTS[1], SUBJECTS[2]]),
             )
 
+    def test_permuted_author_responses_preserve_serial_credit_and_bundle_replay(self) -> None:
+        fixture = FixtureJointAuthorProvider()
+
+        def permuted_author(**kwargs):
+            response = fixture(**kwargs)
+            for field in ("programChanges", "resultPlacements", "programBoundaries", "withAccessAssessments"):
+                response[field].reverse()
+            for row in response["resultPlacements"]:
+                row["relatedProgramIds"].reverse()
+            for row in response["withAccessAssessments"]:
+                row["evidenceRefs"].reverse()
+            return response
+
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "bundle"
+            loaded = run_bssc_joint_portfolio_serial_holdout_v1(
+                root=ROOT, output_dir=output,
+                checkpoint_dir=Path(directory) / "checkpoints",
+                joint_author_provider=permuted_author,
+                credit_provider=FixtureCreditProvider(),
+            )
+            replay = load_bssc_joint_portfolio_serial_holdout_bundle_v1(
+                output, expected_bundle_digest=loaded["bundleDigest"]
+            )
+            for expected, actual in zip(self.loaded["steps"], replay["steps"], strict=True):
+                self.assertEqual(actual["joint"], expected["joint"])
+                self.assertNotEqual(
+                    actual["authorResult"]["response"], actual["joint"]["response"]
+                )
+                self.assertEqual(
+                    actual["authorResult"]["responseDigest"],
+                    _object_digest(actual["authorResult"]["response"]),
+                )
+                self.assertEqual(actual["creditCandidate"], expected["creditCandidate"])
+            self.assertEqual(len(fixture.calls), 3)
+
     def test_continue_and_publication_are_rejected_before_provider_calls(self) -> None:
         for field in ("continue_run", "publish"):
             with self.subTest(field=field), tempfile.TemporaryDirectory() as directory:

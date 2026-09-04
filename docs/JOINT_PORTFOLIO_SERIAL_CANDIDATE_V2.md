@@ -122,7 +122,14 @@ outside the affected set are carried forward exactly.
 Each assessment cites typed evidence: accepted claim, submission evidence,
 prior program, prior result, or semantic-packet result. The reducer resolves the
 ID/digest pair against authoritative inputs and rejects unresolved, duplicate,
-or noncanonical references. Prior-program and prior-result references must also
+or malformed references. Set-like response lists are sorted on a copied input
+before validation; their order is not a model-authored semantic decision. This
+includes program changes, placements, related owners, boundaries, assessments,
+and evidence references. Sorting never removes duplicate rows or repairs missing
+coverage, invalid scope, stale identities, or contradictory content. Canonical
+reducer artifacts remain deterministic; the provider adapter separately retains
+the original response and its order-sensitive digest.
+Prior-program and prior-result references must also
 belong to the exact V10 read set; global existence is not sufficient authority.
 
 ## Frozen W+ and credit
@@ -184,7 +191,12 @@ Provider-free tests cover:
   lifecycle contamination, and boundary tampering; and
 - frozen-candidate tampering, no-access evidence exclusion, nonpositive `D`,
   accepted-claim identity substitution, boundary-aware request surfaces,
-  complete node-effect schema/replay, and checkpoint retry/replay.
+  complete node-effect schema/replay, and checkpoint retry/replay;
+- permutation-invariant reduction with exact raw-response preservation, and
+  duplicate/missing/malformed rows remaining errors; and
+- the three actual K1 responses from failed hosted run `33801731822`: the two
+  root-free responses pass without a formatting retry, while the original root
+  program change remains rejected with an explicit field-routing diagnostic.
 
 The accepted K1 provider response itself was not checked into the repository,
 so V2 can validate its frozen successful post-state and live-work artifacts but
