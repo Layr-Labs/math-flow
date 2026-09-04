@@ -95,6 +95,15 @@ assessment in `programBoundaries` and `withAccessAssessments`. The governed
 joint-author stage prompt now states this distinction explicitly; root program
 changes remain errors and are never silently removed.
 
+The author may create an already-completed program with zero W+ direct work
+and incidence. It need not widen the objective to manufacture residual work.
+The subsequent W- branch may estimate positive counterfactual work for that
+completed live program. Support-only updates still explicitly refresh their
+non-root owners and supply complete current-subject assessments; the assessed
+numbers may remain unchanged. A nonempty explanation of unchanged topology is
+also valid. The inactive stage prompt states all three rules explicitly, and
+the exact holdout/hosted pins change with it. No active projection is repinned.
+
 `validate_joint_portfolio_serial_author_replay_v2` rebuilds the request from the
 authoritative inputs, checks every digest, and re-runs
 `reduce_joint_portfolio_serial_transition_v2`. A changed request, response,
@@ -134,6 +143,24 @@ Their full-response retries changed numerical judgments despite formatting-only
 rejections. These are not credit scores or a controlled sampling-variance study:
 retry feedback differed and no W- was generated. Deterministic ordering removes
 that unnecessary reason to reopen the live-work estimate.
+
+Replacement run `33834473772` (`1ddb8a8`) used 10 calls, 347,787 reported tokens,
+and $0.8194814, then stopped at K3. K1 succeeded on its first author attempt;
+K2 required one retry. Provider-free checkpoint replay verified K1 W-=1410,
+W+=1188, D=222 hours and K2 W-=1348, W+=1158, D=190 hours. There is no completed
+K1-K3 bundle, K3 credit, publication, or continuation from that run.
+
+K2's rejected first author response created a completed package; the retry
+instead broadened it to an active residual-work package. Completed creation is
+now admitted without changing the original response. K3 first omitted the
+required owner refresh, then twice supplied valid support refreshes and
+unchanged work estimates with an explanation of unchanged topology. Those
+last two responses now pass generic validation and the holdout reuse gate
+unchanged. The old holdout additionally demanded numerical W+ change; it now
+relies on the generic complete current-subject assessment requirement instead.
+The response-only fixture retains both accepted and rejected author outputs
+with provenance and digests, never raw provider envelopes or reasoning fields.
+These are mechanical replay tests, not a new paid semantic result.
 
 The additive hosted holdout composes this adapter with the serial K1-K3 bundle,
 fresh-run checkpoints, durable attempt journals, exact stage ordering, request

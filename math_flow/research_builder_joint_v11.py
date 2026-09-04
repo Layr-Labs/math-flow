@@ -85,6 +85,18 @@ def _active_shadow(
         if not terminal:
             topology.append(raw)
             continue
+        if (
+            key[0] == "program"
+            and raw.get("action") == "create"
+            and program_statuses[key[1]] == "completed"
+            and raw["value"].get("status") == "completed"
+            and raw.get("baseDigest") is None
+        ):
+            # Validate the authorized creation through V10's active-only
+            # placement audit, then restore completion in the real post-state.
+            raw["value"]["status"] = "active"
+            topology.append(raw)
+            continue
         if raw.get("action") != "retire" or key in seen:
             raise MathFlowError("joint V11 terminal lifecycle operation is inconsistent")
         value = copy.deepcopy(raw["value"])
