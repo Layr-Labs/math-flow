@@ -646,7 +646,7 @@ def _validate_response(
         for field in ("title", "objective", "currentStateSummary", "localResidualSummary"):
             _require_text(raw.get(field), f"joint serial V2 program {field}")
         if action == "create":
-            if existing is not None or program_id not in created_programs or raw.get("baseDigest") is not None or raw.get("status") != "active":
+            if existing is not None or program_id not in created_programs or raw.get("baseDigest") is not None or raw.get("status") not in ("active", "completed"):
                 raise MathFlowError("joint serial V2 program creation escapes its scope")
             topology = True
         elif action in {"refresh", "move", "retire"}:
@@ -773,10 +773,8 @@ def _validate_response(
     if assessment_ids != affected_ids:
         raise MathFlowError("joint serial V2 W+ assessments must cover every accounting-affected program")
     rationale = value.get("topologyRationale")
-    if topology:
+    if topology or rationale is not None:
         _require_text(rationale, "joint serial V2 topology rationale")
-    elif rationale is not None:
-        raise MathFlowError("joint serial V2 topology rationale requires a topology/lifecycle operation")
     return copy.deepcopy(value), affected_ids
 
 

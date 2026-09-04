@@ -703,7 +703,6 @@ def _load_author_checkpoint(path: Path) -> dict[str, object] | None:
 def _assert_k3_reuse_and_refresh(
     *,
     before_state: Mapping[str, object],
-    base_accounting_state: Mapping[str, object],
     joint: Mapping[str, object],
     evidence_manifest: Mapping[str, object],
 ) -> None:
@@ -741,21 +740,9 @@ def _assert_k3_reuse_and_refresh(
             raise MathFlowError(
                 "joint holdout K3 did not append canonical support to both K2 results"
             )
-    prior = {
-        row["nodeRef"]["id"]: row
-        for row in base_accounting_state["annotations"]
-    }
-    current = {
-        row["nodeRef"]["id"]: row
-        for row in joint["withAccessState"]["annotations"]
-    }
-    if not any(
-        current[K2_PROGRAM][field] != prior[K2_PROGRAM][field]
-        for field in ("directWorkHours", "conditionalIncidence")
-    ):
-        raise MathFlowError(
-            "joint holdout K3 did not refresh existing-program W+ primitives"
-        )
+    # Generic author validation already requires a complete, evidence-backed
+    # current-subject assessment for every affected program. Reassessment may
+    # retain exactly the prior numbers, including zero on a completed package.
 
 
 def run_bssc_joint_portfolio_serial_holdout_v1(
@@ -864,7 +851,6 @@ def run_bssc_joint_portfolio_serial_holdout_v1(
             if ordinal == 3:
                 _assert_k3_reuse_and_refresh(
                     before_state=state,
-                    base_accounting_state=accounting,
                     joint=joint,
                     evidence_manifest=case["evidenceManifest"],
                 )
@@ -1548,7 +1534,6 @@ def load_bssc_joint_portfolio_serial_holdout_bundle_v1(
         if ordinal == 3:
             _assert_k3_reuse_and_refresh(
                 before_state=before,
-                base_accounting_state=base,
                 joint=joint,
                 evidence_manifest=evidence_manifest,
             )

@@ -52,7 +52,8 @@ duplicating it.
 
 Scoped program operations are:
 
-- `create`: a new active program;
+- `create`: a new active program, or a new already-completed program when the
+  current submission resolves its objective;
 - `refresh`: a semantic summary refresh with stable parent, including an
   explicit active-to-completed transition;
 - `move`: a pure move that preserves program semantics, lifecycle, and
@@ -65,6 +66,20 @@ as enforced by the existing work-accounting reducer. The affected set always
 contains root, every changed or result-owning program, and both the old and new
 parent of a moved or inserted package. Every affected existing non-root program
 must be in the exact V10 write scope.
+
+Completion is the live with-access outcome, not a constraint on the same-world
+no-access work estimate. The V11 compatibility adapter validates a scoped
+completed creation using an active validation-only shadow, then restores the
+completed status before deriving the real knowledge state, alignment, handoff,
+and W+. The W- accounting branch can assign positive work and incidence to that
+same target program without reopening its live knowledge status. Creating an
+already-retired program remains unsupported. Do not invent a broader objective
+or residual work merely to keep a solved package active.
+
+`topologyRationale` must contain nonempty text for a topology/lifecycle change.
+Otherwise it may be null or explain why the existing topology is appropriate.
+Such an explanation remains in the response and placement audit; it does not
+create a topology operation or change lifecycle by itself.
 
 V2 deliberately does not support program move plus semantic refresh in one
 operation, intermediate-result placement moves, split/merge lineage, or
@@ -118,6 +133,14 @@ Here `R_v` is global reach probability and `C_v` is conditional subtree work.
 They are not provider-authored aliases for incidence or direct hours. Every
 affected program supplies a complete `d/P` assessment; unchanged primitives
 outside the affected set are carried forward exactly.
+
+A current-subject assessment may also retain both previous primitive values
+inside the affected set. Its complete response, rationale, typed evidence, and
+bindings remain mandatory, even when trusted reduction emits no numerical
+patch updates. Support-only result owners still require an explicit program
+refresh. Neither generic validation nor the K3 holdout requires numerical drift
+as proof that a reassessment occurred; zero remains valid for a completed
+package. Strictly positive submission D is still checked separately against W-.
 
 Each assessment cites typed evidence: accepted claim, submission evidence,
 prior program, prior result, or semantic-packet result. The reducer resolves the
@@ -181,7 +204,9 @@ Provider-free tests cover:
 - K2 creation of one independent program containing both theorem-chain results;
 - K3 support refresh of both K2 results without new IDs or topology;
 - root-owned and shared results;
-- active-to-completed, solve/prune/retire, explicit supersession, and pure move;
+- completed-at-creation with positive no-access work, continued support of a
+  completed package, active-to-completed, solve/prune/retire, explicit
+  supersession, and pure move;
 - pure multi-program retirement while rejecting retire+create, retire+refresh,
   retire+move, and a fully rebound anonymous one-to-two successor split;
 - cumulative boundary carry, typed evidence, complete affected-node `W+`, and
@@ -197,6 +222,11 @@ Provider-free tests cover:
 - the three actual K1 responses from failed hosted run `33801731822`: the two
   root-free responses pass without a formatting retry, while the original root
   program change remains rejected with an explicit field-routing diagnostic.
+- exact response-only fixtures from `33834473772`: its rejected completed K2
+  creation and final two unchanged K3 responses now pass without editing the
+  model output; missing explicit owners/assessments remain rejected;
+- complete fake-provider K1-K3 credit and bundle replay for active and completed
+  packages with unchanged K3 W+, including a synthetic positive W- difference.
 
 The accepted K1 provider response itself was not checked into the repository,
 so V2 can validate its frozen successful post-state and live-work artifacts but

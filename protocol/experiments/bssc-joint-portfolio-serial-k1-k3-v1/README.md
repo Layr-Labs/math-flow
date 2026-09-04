@@ -19,6 +19,13 @@ validity-v4 source:
    appends the independent accepted proof and attestation support, creates no
    program or result, and reassesses the existing UV package's live W+ state.
 
+K2 may represent its new package as already completed, with zero W+ work and
+incidence; W- can still estimate positive counterfactual work for that package.
+K3 reassessment requires explicit owner refresh and complete current-subject
+assessments, not changed numerical values. Unchanged values, including zero on
+a completed package, are valid. A topology explanation may state why no change
+is needed. Positive D remains a separate counterfactual requirement.
+
 For each subject, the runner freezes and durably checkpoints the validated W+
 candidate before safe-fact extraction or W-. The existing credit adapter keeps
 safe facts across a failed W- retry and invalidates only the rejected W-
@@ -86,3 +93,20 @@ the inactive author prompt clarifies the distinction. Its new exact digests are
 re-pinned in both manifests. Budgets, subjects, accounting rubric, retry limits,
 and publication/continuation prohibitions are unchanged. A replacement paid
 sample needs a separate explicit authorization.
+
+## Replacement run and completion/reassessment correction
+
+Run `33834473772` at `1ddb8a8` reached K3 after completing K1/K2 authoring and
+credit. It used 10 calls and $0.8194814. Its first K2 response was rejected for
+creating a completed program; the retry changed the represented residual scope.
+K3's final two responses were rejected for explaining unchanged topology rather
+than returning a null explanation. Diagnostic replay also exposed a holdout
+rule requiring numerical W+ change despite complete reassessment.
+
+Completed creation is now accepted through the terminal-lifecycle adapter,
+unchanged-topology explanations are retained, and the numeric-change gate is
+removed. Exact response-only fixtures replay all three formerly rejected
+responses unchanged; a missing explicit owner update still fails. Full local
+fake-provider bundles cover completed W+ with positive W-, and unchanged K3 W+
+with a separately authored positive counterfactual difference. No live credit
+has been generated for K3 by these tests, and no new sample is dispatched.

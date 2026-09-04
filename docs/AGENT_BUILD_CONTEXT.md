@@ -400,6 +400,23 @@ and work assessments remain required. Its exact holdout pins are refreshed;
 the accounting rubric, active projections, and spending limits are unchanged.
 No replacement sample is dispatched by this correction.
 
+Replacement run `33834473772` at `1ddb8a8` passed K1/K2 but stopped at K3 after
+10 calls and $0.8194814. Retained checkpoints replay K1 W-=1410, W+=1188,
+D=222 hours and K2 W-=1348, W+=1158, D=190 hours; no complete holdout bundle or
+K3 credit was produced. Its first K2 author response was wrongly rejected for
+creating an already-completed program, leading the retry to broaden its scope
+into active residual work. The joint V2 validator and V11 compatibility adapter
+now admit scoped completed creation with zero W+ work/incidence; W- can assign
+positive counterfactual work without reopening the live program. K3's final
+responses explained unchanged topology and retained their work estimates.
+Nonempty no-change explanations are now valid, and the holdout no longer
+requires numerical W+ change as evidence of reassessment. Explicit owner
+refreshes, complete current-subject assessments and evidence, exact scope and
+bindings, and positive counterfactual D remain required. Exact response-only
+fixtures plus active/completed serial bundle tests cover these rules. The
+inactive author prompt and exact experiment pins change together; no active
+lane, budget, publication, or provider authorization changes.
+
 ### Projection protocol and publication
 
 - The core run envelope standardizes identity, provenance, and artifact
