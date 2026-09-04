@@ -386,6 +386,20 @@ retains local artifacts, and cannot publish or continue. Merge alone makes no
 provider call; every paid K1-K3 sample still requires a distinct exact manual
 dispatch authorization.
 
+The first K1-K3 hosted run (`33801731822` at `6c1aca0`) stopped at K1 after three
+author attempts, 143,089 reported tokens, and $0.2340176. No valid W+ checkpoint
+or credit was produced. Its root-free responses contained every required result
+but failed hidden array-order requirements. The generic joint V2 reducer now
+sorts copied set-like author lists before validation, preserving raw response
+digests and leaving duplicate/missing rows, stale bindings, invalid references,
+and scope/lifecycle failures rejected. Actual response-only fixtures cover
+one-invocation acceptance of those two responses and continued rejection of the
+first attempt's extra root-program row. The inactive author prompt clarifies
+that root knowledge comes from `semanticPacket.rootUpdate`, while root boundary
+and work assessments remain required. Its exact holdout pins are refreshed;
+the accounting rubric, active projections, and spending limits are unchanged.
+No replacement sample is dispatched by this correction.
+
 ### Projection protocol and publication
 
 - The core run envelope standardizes identity, provenance, and artifact
