@@ -170,3 +170,45 @@ publication. It does not provide general semantic-packet generation,
 cross-workflow checkpoint resume, split/merge lineage, projection admission,
 publication, UI integration, or automatic continuation. Those remain
 separately reviewable inactive stages.
+
+## Complete hosted sample and context-handoff finding
+
+Run `33839277447` at canonical `04e139a` completed the full holdout. All nine
+nominal calls passed on their first attempt, with 253,246 reported tokens and
+$0.765019 reported cost. Its byte-verified bundle digest is
+`sha256:a9c027373380880cf6fbdb4cab9378d820a306932634d4ccaff9888f5074d788`.
+K1 produced `W-=1832`, `W+=1408`, `D=424`; K2 produced `1480`, `1408`, `72`;
+and K3 produced `1600`, `1408`, `192` competent-researcher hours. The run made
+no publication or continuation attempt.
+
+The mechanics passed, including K2 completed-at-creation and K3 unchanged live
+W+, but the K3 counterfactual is not yet semantically acceptable as a reference
+result. The joint author received K2's complete relevant prior result records
+and correctly classified K3 as new support for the same completed results. The
+safe-fact request did not receive those prior records. Its schema permits only
+subject-derived facts labeled `withheld-until-independent-discovery`. The W-
+request received the zero-work completed package, its exact prior stopping
+policy, and structural result/provenance references, but the state-v3 impact
+packet deliberately omits prior result statements, support bodies, titles, and
+scope prose. It then charged 480 conditional hours at incidence 0.4 for proving
+the already completed theorem package.
+
+A provider-free reconstruction reproduced the exact recorded safe-fact and W-
+provider request digests, including the effective price-filtered digests. Those
+requests were 26,001 and 26,484 bytes, used 12,415 and 7,345 reported prompt
+tokens, and both returned with `finish_reason=stop`. This rules out request
+truncation or context-window overflow for the observation. A separate local
+diagnostic proved that an empty K3 W- patch is structurally valid and reproduces
+`W-=W+=1408`, after which the current strictly-positive-D gate rejects it.
+
+The next candidate should add a bounded, digest-bound pre-submission epistemic
+packet for the local impact slice. It should carry compact prior statements,
+qualifications, support summaries, and provenance to the safe-fact and W-
+stages, and distinguish independently available information from information
+unique to the current submission. Do not expose the full global predecessor or
+raw prior artifacts. Implement this under an additive joint-only profile rather
+than changing the active work-V2 identity in place. Provider-free regressions
+must cover a truly novel contribution, an independently supported duplicate,
+and exact absence of raw subject evidence from W-. Whether a valid zero marginal
+reduction should be recorded rather than rejected remains an explicit policy
+decision, not a prompt-only correction.

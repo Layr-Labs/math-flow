@@ -5,7 +5,7 @@ protocol. It describes the current architecture, operational deployment, safety
 boundaries, and next build priorities. It is not a replacement for the detailed
 protocol documents linked below.
 
-Last reconciled with `main`: 2026-09-01 (`4190d6a`).
+Last reconciled with `main`: 2026-09-04 (`04e139a`).
 Published-state claims below were checked against `origin/projections` at
 `ebe7a32`.
 
@@ -416,6 +416,44 @@ bindings, and positive counterfactual D remain required. Exact response-only
 fixtures plus active/completed serial bundle tests cover these rules. The
 inactive author prompt and exact experiment pins change together; no active
 lane, budget, publication, or provider authorization changes.
+
+Run `33839277447` at `04e139a` is the first complete hosted K1-K3 sample. All
+nine nominal stages passed on their first attempt, using 253,246 reported tokens
+and $0.765019. The byte-verified bundle
+`sha256:a9c027373380880cf6fbdb4cab9378d820a306932634d4ccaff9888f5074d788`
+records `(W-, W+, D)` of `(1832, 1408, 424)`, `(1480, 1408, 72)`, and
+`(1600, 1408, 192)` competent-researcher hours for K1, K2, and K3 respectively.
+K2 created the relaxed-UV package already completed with zero live work and
+incidence. K3 reused that completed package, added support, and retained the
+same live W+ values. The workflow published and continued nothing.
+
+That successful mechanics sample exposed an unresolved credit-context defect.
+The K3 joint author received K2's full prior result statements, support summaries,
+and the explicit support-only semantic packet. The safe-fact stage received none
+of those prior semantics, and its schema required every K3-derived condition to
+be labeled `withheld-until-independent-discovery`. W- received the completed
+zero-work base, the exact pre-contribution boundary saying that the accepted
+theorem chain already satisfied the stopping condition, and structural result
+IDs/provenance, but not the prior result statements or proof summaries. Its
+response nevertheless assigned 480 conditional hours at incidence 0.4 to prove
+the completed theorem package again, yielding K3's 192 hours. Exact provider-free
+request reconstruction matched both recorded request digests; the K3 safe-fact
+and W- requests were only 26,001 and 26,484 bytes (12,415 and 7,345 reported
+prompt tokens) and ended normally, so this is a deliberate semantic handoff gap,
+not context overflow or transport truncation.
+
+Before another paid sample, design a bounded pre-submission epistemic packet for
+the affected local slice. It should expose relevant prior result statements,
+scope qualifications, compact support summaries, and provenance to both credit
+stages while withholding only information uniquely supplied by the subject.
+Keep this additive and joint-candidate-only; do not repin the active work-V2 lane
+in place. Add provider-free request-surface regressions for a genuinely new
+result and a support-only/duplicate result. Also resolve the policy question
+exposed by a validated local diagnostic: an empty K3 no-access patch reproduces
+`W- = W+ = 1408`, but the current final gate rejects `D = 0`. Additional
+verification may deserve positive credit, but it must not be represented by
+removing an independently available theorem. No implementation choice or new
+provider authorization has yet been made for either issue.
 
 ### Projection protocol and publication
 
