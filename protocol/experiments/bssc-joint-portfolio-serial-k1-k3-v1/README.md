@@ -70,9 +70,8 @@ reservations, and an OpenRouter `provider.max_price` filter of $2 per million
 prompt tokens and $10 per million completion tokens. Reported usage and cost
 must remain inside those reservations or every later call is blocked.
 
-The runner remains unexecuted by admission or merge. A paid sample still needs
-a distinct manual dispatch authorization after the hosted code and checks are
-reviewed.
+Admission or merge never executes the runner. Every paid sample needs a distinct
+manual dispatch authorization after the hosted code and checks are reviewed.
 
 ## First hosted run and response-order correction
 
@@ -110,3 +109,31 @@ responses unchanged; a missing explicit owner update still fails. Full local
 fake-provider bundles cover completed W+ with positive W-, and unchanged K3 W+
 with a separately authored positive counterfactual difference. No live credit
 has been generated for K3 by these tests, and no new sample is dispatched.
+
+## Complete sample and pre-submission-context gap
+
+Run `33839277447` at `04e139a` completed K1-K3 with nine first-attempt calls,
+253,246 reported tokens, and $0.765019. Bundle
+`sha256:a9c027373380880cf6fbdb4cab9378d820a306932634d4ccaff9888f5074d788`
+replays `(W-, W+, D)` as `(1832, 1408, 424)` for K1, `(1480, 1408, 72)`
+for K2, and `(1600, 1408, 192)` for K3. K2 was created completed at zero
+live work/incidence; K3 retained that state while adding independent support.
+No publication or continuation occurred.
+
+K3's 192-hour counterfactual is a protocol warning rather than a calibrated
+credit result. The author saw K2's prior theorem statements and support-only
+classification. Safe-fact extraction did not see those prior semantics and had
+to label every current condition unavailable until independent discovery. W-
+saw the completed zero-work state, the exact prior policy saying the theorem
+chain already met its stopping condition, and structural result/provenance
+references, but no prior statements or proof summaries. It estimated the work
+of proving the completed theorem package again: 480 conditional hours at 0.4
+incidence.
+
+Exact provider-free reconstruction matched the two recorded K3 credit request
+digests and showed ordinary-sized, normally completed prompts, ruling out
+overflow or truncation. An unchanged W- patch is structurally valid and yields
+`W-=W+=1408`; only the final positive-D gate rejects it. Before another paid
+sample, add a bounded local pre-submission epistemic packet under an additive
+joint-only identity and test novel versus duplicate/support-only cases. The
+separate question of admitting zero marginal credit remains unresolved.
